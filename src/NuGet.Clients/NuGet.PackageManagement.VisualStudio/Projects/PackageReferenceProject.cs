@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public abstract class PackageReferenceProject<T, U> : BuildIntegratedNuGetProject, IPackageReferenceProject where T : ICollection<U>, new()
     {
         internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
+        private static readonly NuGetFrameworkSorter FrameworkSorter = new();
 
         private readonly protected string _projectName;
         private readonly protected string _projectUniqueName;
@@ -51,7 +52,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private protected DateTime _lastTimeAssetsModified;
         private protected WeakReference<PackageSpec> _lastPackageSpec;
         private protected IList<LockFileItem> _packageFolders;
-        private readonly NuGetFrameworkSorter _frameworkSorter;
 
         protected bool IsInstalledAndTransitiveComputationNeeded { get; set; } = true;
 
@@ -63,7 +63,6 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectName = projectName;
             ProjectUniqueName = projectUniqueName;
             ProjectFullPath = projectFullPath;
-            _frameworkSorter = new NuGetFrameworkSorter();
         }
 
         public override async Task<string> GetAssetsFilePathAsync()
@@ -136,7 +135,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else
                 {
-                    // Don't mutate cache for threadsafety, instead we works on copy then replace cache when done.
+                    // Make a copy of the caches to prevent concurrency issues.
                     lock (_installedAndTransitivePackagesLock)
                     {
                         (installedPackages, transitivePackages) = GetInstalledAndTransitivePackagesCacheCopy();
@@ -149,7 +148,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .TargetFrameworks
                 .SelectMany(f => ResolvedInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, installedPackages))
                 .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, _frameworkSorter).First())
+                .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First())
                 .ToList();
 
             // get transitive packages
@@ -157,7 +156,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .TargetFrameworks
                 .SelectMany(f => ResolvedTransitivePackagesList(f.FrameworkName, targetsList, installedPackages, transitivePackages))
                 .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, _frameworkSorter).First());
+                .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First());
 
             CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
