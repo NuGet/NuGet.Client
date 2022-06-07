@@ -807,7 +807,7 @@ namespace NuGet.CommandLine.Test
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -843,7 +843,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include='..\proj1\proj1.csproj' />
@@ -1023,7 +1023,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs'/>
@@ -1109,7 +1109,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -1145,7 +1145,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include='..\proj1\proj1.csproj' />
@@ -1226,7 +1226,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='B.cs' />
@@ -1296,7 +1296,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>exe</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='B.cs' />
@@ -1363,7 +1363,7 @@ public class B
   <PropertyGroup>
     <OutputType>library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <DocumentationFile>out\A.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
@@ -2302,7 +2302,7 @@ public class B
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='file1.cs' />
@@ -2844,7 +2844,7 @@ namespace " + projectName + @"
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -2886,7 +2886,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -2965,7 +2965,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3007,7 +3007,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3143,7 +3143,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -3232,7 +3232,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -3317,7 +3317,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -3438,7 +3438,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -3549,7 +3549,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3643,7 +3643,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3688,7 +3688,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3768,7 +3768,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3813,7 +3813,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3892,7 +3892,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3937,7 +3937,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4015,7 +4015,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4060,7 +4060,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4144,7 +4144,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4189,7 +4189,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4274,7 +4274,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4319,7 +4319,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4558,7 +4558,7 @@ stuff \n <<".Replace("\r\n", "\n");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>");
@@ -4672,7 +4672,7 @@ stuff \n <<".Replace("\r\n", "\n");
     <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
     <OutputType>Library</OutputType>
     <OutputPath>out\$(Configuration)\</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include=""proj1_file1.cs"" />
@@ -4744,7 +4744,7 @@ $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <NoWarn>{value}</NoWarn>
   </PropertyGroup>
   <ItemGroup>
@@ -4812,7 +4812,7 @@ $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <{property}>{value}</{property}>
   </PropertyGroup>
   <ItemGroup>
@@ -5571,7 +5571,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
    <PropertyGroup>
      <OutputType>library</OutputType>
      <OutputPath>out</OutputPath>
-     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
    </PropertyGroup>
    <ItemGroup>
      <Compile Include='B.cs' />
@@ -6056,7 +6056,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='B.cs' />
@@ -6127,7 +6127,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <PackageIconUrl>https://test/icon.jpg</PackageIconUrl>
     <Authors>Alice</Authors>
   </PropertyGroup>
@@ -6725,7 +6725,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>");
@@ -6775,7 +6775,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>");
@@ -6829,7 +6829,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include='..\proj2\proj2.csproj' />
@@ -6843,7 +6843,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='Program.cs' />
@@ -6959,7 +6959,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -7019,7 +7019,7 @@ namespace Proj1
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include='System'/>
@@ -7134,7 +7134,7 @@ using System.Runtime.InteropServices;
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include='System'/>
@@ -7250,7 +7250,7 @@ using System.Runtime.InteropServices;
   <PropertyGroup>
     <OutputType>library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>");
@@ -7354,7 +7354,7 @@ using System.Runtime.InteropServices;
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='file1.cs' />
