@@ -803,18 +803,15 @@ namespace NuGet.Commands
                 {
                     packages = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
 
-                    var allKeys = thisPackages.Keys.Concat(otherPackages.Keys)
-                        .Distinct(StringComparer.OrdinalIgnoreCase);
-
-                    foreach (var key in allKeys)
+                    foreach (var pair in thisPackages)
                     {
-                        thisPackages.TryGetValue(key, out var thisCodes);
-                        otherPackages.TryGetValue(key, out var otherCodes);
-
-                        var intersect = Intersect(thisCodes, otherCodes);
-                        if (intersect != null)
+                        if (otherPackages.TryGetValue(pair.Key, out var otherCodes))
                         {
-                            packages.Add(key, intersect);
+                            var intersect = Intersect(pair.Value, otherCodes);
+                            if (intersect != null)
+                            {
+                                packages.Add(pair.Key, intersect);
+                            }
                         }
                     }
 
