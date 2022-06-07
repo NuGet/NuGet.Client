@@ -114,16 +114,20 @@ namespace NuGet.Configuration
         }
 
         protected override IReadOnlyCollection<string> AllowedAttributes { get; }
-            = IReadOnlyCollectionUtility.Create<string>(
+            = new HashSet<string>(new[]
+            {
                 ConfigurationConstants.PackageSourceAttribute,
                 ConfigurationConstants.PathAttribute,
                 ConfigurationConstants.PasswordAttribute,
-                ConfigurationConstants.ClearTextPasswordAttribute);
+                ConfigurationConstants.ClearTextPasswordAttribute
+            });
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; }
-            = IReadOnlyCollectionUtility.Create<string>(
+            = new HashSet<string>(new[]
+            {
                 ConfigurationConstants.PackageSourceAttribute,
-                ConfigurationConstants.PathAttribute);
+                ConfigurationConstants.PathAttribute
+            });
 
 
         internal override XNode AsXNode()
