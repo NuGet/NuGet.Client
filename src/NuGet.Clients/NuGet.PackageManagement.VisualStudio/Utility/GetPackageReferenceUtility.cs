@@ -180,7 +180,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             Requires.NotNull(transitiveEntry, nameof(transitiveEntry));
 
             var transitiveOrigins = new SortedSet<PackageReference>(PackageReferenceMergeComparer);
-            transitiveEntry.Keys?.ForEach(fwRuntimePair =>
+            transitiveEntry.Keys.ForEach(fwRuntimePair =>
             {
                 if (fwRuntimePair != null)
                 {
