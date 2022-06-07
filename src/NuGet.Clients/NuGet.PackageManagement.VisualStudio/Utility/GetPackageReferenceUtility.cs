@@ -176,14 +176,8 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
 
         internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, IDictionary<FrameworkRuntimePair, IList<PackageReference>> transitiveEntry)
         {
-            if (currentPackage == null)
-            {
-                throw new ArgumentNullException(nameof(currentPackage));
-            }
-            if (transitiveEntry == null)
-            {
-                throw new ArgumentNullException(nameof(transitiveEntry));
-            }
+            Requires.NotNull(currentPackage, nameof(currentPackage));
+            Requires.NotNull(transitiveEntry, nameof(transitiveEntry));
 
             var transitiveOrigins = new SortedSet<PackageReference>(PackageReferenceMergeComparer);
             transitiveEntry.Keys?.ForEach(fwRuntimePair =>
