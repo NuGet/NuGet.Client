@@ -160,7 +160,7 @@ namespace Dotnet.Integration.Test
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib");
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib");
 
-                msbuildFixture.RunDotnet(testDirectory.Path, $"new solution -n {solutionName}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"new sln -n {solutionName}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
@@ -216,7 +216,7 @@ namespace Dotnet.Integration.Test
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib");
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib");
 
-                msbuildFixture.RunDotnet(testDirectory.Path, $"new solution -n {solutionName}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"new sln -n {solutionName}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
@@ -3297,7 +3297,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib -f netstandard2.0");
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, rederence2Folder), referencedProject2, "classlib -f netstandard2.0");
 
-                msbuildFixture.RunDotnet(testDirectory.Path, $"new solution -n {solutionName}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"new sln -n {solutionName}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");

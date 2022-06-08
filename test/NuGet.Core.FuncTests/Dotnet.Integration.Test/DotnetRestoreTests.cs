@@ -1115,7 +1115,7 @@ EndGlobal";
                 }
                 projectRoot.Save();
                 var solutionPath = Path.Combine(pathContext.SolutionRoot, "solution.sln");
-                _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"new sln {solutionPath}");
+                _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"new sln -n solution");
 
                 foreach (var child in projects.Values)
                 {
@@ -1593,7 +1593,6 @@ EndGlobal";
         [InlineData("webapp")]
         [InlineData("angular")]
         [InlineData("react")]
-        [InlineData("reactredux")]
         [InlineData("webapi")]
         [InlineData("grpc")]
         public void Dotnet_New_Template_Restore_Success(string template)
@@ -2553,10 +2552,10 @@ EndGlobal";
 
             var targetsWithoutARuntime = assetsFile.Targets.Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
             targetsWithoutARuntime.Count().Should().Be(1, because: "Expected that only the framework passed in as a global property is restored.");
-            var net50Target = targetsWithoutARuntime.Single();
+            var net60Target = targetsWithoutARuntime.Single();
 
-            net50Target.Libraries.Should().HaveCount(1);
-            net50Target.Libraries.Single().Name.Should().Be("b");
+            net60Target.Libraries.Should().HaveCount(1);
+            net60Target.Libraries.Single().Name.Should().Be("b");
         }
 
         [PlatformTheory(Platform.Windows)]
