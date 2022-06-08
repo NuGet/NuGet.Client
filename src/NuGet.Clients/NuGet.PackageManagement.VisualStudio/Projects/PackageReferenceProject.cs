@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly protected string _projectFullPath;
 
         // Cache
-        private protected Dictionary<string, IDictionary<FrameworkRuntimePair, IList<PackageReference>>> TransitiveOriginsCache = new();
+        private protected IDictionary<string, ISet<PackageReference>> TransitiveOriginsCache; // key is packageId
         protected T InstalledPackages { get; set; }
         protected T TransitivePackages { get; set; }
 
@@ -58,6 +58,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectName = projectName;
             ProjectUniqueName = projectUniqueName;
             ProjectFullPath = projectFullPath;
+            TransitiveOriginsCache = new Dictionary<string, ISet<PackageReference>>();
         }
 
         public override async Task<string> GetAssetsFilePathAsync()
@@ -158,17 +159,17 @@ namespace NuGet.PackageManagement.VisualStudio
             if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {
                 // Compute Transitive Origins
-                Dictionary<string, IDictionary<FrameworkRuntimePair, IList<PackageReference>>> transitiveOrigins;
+                IDictionary<string, ISet<PackageReference>> transitiveOrigins;
                 if (IsInstalledAndTransitiveComputationNeeded || TransitiveOriginsCache == null)
                 {
-                    transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedInstalledPackages, targetsList, token) : new Dictionary<string, IDictionary<FrameworkRuntimePair, IList<PackageReference>>>();
+                    transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedInstalledPackages, targetsList, token) : new Dictionary<string, ISet<PackageReference>>();
                 }
                 else
                 {
                     lock (_transitiveOriginsLock)
                     {
                         // Make a copy of the cache to prevent concurrency issues.
-                        transitiveOrigins = new Dictionary<string, IDictionary<FrameworkRuntimePair, IList<PackageReference>>>(TransitiveOriginsCache);
+                        transitiveOrigins = new Dictionary<string, ISet<PackageReference>>(TransitiveOriginsCache);
                     }
                 }
 
@@ -176,8 +177,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 transitivePackagesWithOrigins = calculatedTransitivePackages
                     .Select(packageRef =>
                     {
-                        transitiveOrigins.TryGetValue(packageRef.PackageIdentity.Id, out IDictionary<FrameworkRuntimePair, IList<PackageReference>> cacheEntry);
-                        return GetPackageReferenceUtility.MergeTransitiveOrigin(packageRef, cacheEntry);
+                        transitiveOrigins.TryGetValue(packageRef.PackageIdentity.Id, out ISet<PackageReference> cacheEntry);
+                        var transitivePR = new TransitivePackageReference(packageRef)
+                        {
+                            TransitiveOrigins = cacheEntry != null && cacheEntry.Any() ? cacheEntry : Enumerable.Empty<PackageReference>(),
+                        };
+
+                        return transitivePR;
                     });
 
                 lock (_transitiveOriginsLock)
@@ -265,11 +271,11 @@ namespace NuGet.PackageManagement.VisualStudio
         /// packages that depends on given transitive package</returns>
         /// <remarks>Computes all transitive origins for each Framework/Runtime-ID combiation. Runtime-ID can be <c>null</c>.
         /// Transitive origins are calculated using a Depth First Search algorithm on all direct dependencies exhaustively</remarks>
-        internal static Dictionary<string, IDictionary<FrameworkRuntimePair, IList<PackageReference>>> ComputeTransitivePackageOrigins(List<PackageReference> installedPackages, IReadOnlyList<LockFileTarget> targetsList, CancellationToken ct)
+        internal static IDictionary<string, ISet<PackageReference>> ComputeTransitivePackageOrigins(List<PackageReference> installedPackages, IReadOnlyList<LockFileTarget> targetsList, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
-            Dictionary<string, IDictionary<FrameworkRuntimePair, IList<PackageReference>>> transitiveOriginsCache = new();
+            Dictionary<string, ISet<PackageReference>> transitiveOriginsCache = new();
 
             // Find all Transitive origins and update cache
             var memoryVisited = new HashSet<PackageIdentity>();
@@ -350,7 +356,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="graph">Package dependency graph, from assets file</param>
         /// <param name="visited">Dictionary to remember visited nodes</param>
         /// <param name="fxRidEntry">Framework/Runtime-ID associated with current <paramref name="graph"/></param>
-        private static void MarkTransitiveOrigin(Dictionary<string, IDictionary<FrameworkRuntimePair, IList<PackageReference>>> transitiveOriginsCache, PackageReference top, PackageReference current, LockFileTarget graph, HashSet<PackageIdentity> visited, FrameworkRuntimePair fxRidEntry, CancellationToken token)
+        private static void MarkTransitiveOrigin(IDictionary<string, ISet<PackageReference>> transitiveOriginsCache, PackageReference top, PackageReference current, LockFileTarget graph, HashSet<PackageIdentity> visited, FrameworkRuntimePair fxRidEntry, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -374,23 +380,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 visited.Add(current.PackageIdentity); // visited
 
                 // Lookup Transitive Origins Cache
-                IDictionary<FrameworkRuntimePair, IList<PackageReference>> cachedEntry;
+                ISet<PackageReference> cachedEntry;
                 if (!transitiveOriginsCache.TryGetValue(current.PackageIdentity.Id, out cachedEntry))
                 {
-                    cachedEntry = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
-                    {
-                        [fxRidEntry] = new List<PackageReference>()
-                    };
+                    cachedEntry = new SortedSet<PackageReference>(GetPackageReferenceUtility.PackageReferenceMergeComparer);
                 }
 
-                if (!cachedEntry.ContainsKey(fxRidEntry))
+                if (!cachedEntry.Contains(top)) // Cache entry value is a List. If perf. is bad, change to HashSet.
                 {
-                    cachedEntry[fxRidEntry] = new List<PackageReference>();
-                }
-
-                if (!cachedEntry[fxRidEntry].Contains(top)) // Dictionary value is a List. If perf. is bad, change to HashSet.
-                {
-                    cachedEntry[fxRidEntry].Add(top);
+                    cachedEntry.Add(top);
                 }
 
                 // Upsert Transitive Origins Cache
