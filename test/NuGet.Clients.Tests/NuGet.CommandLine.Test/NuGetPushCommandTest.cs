@@ -816,7 +816,7 @@ namespace NuGet.CommandLine.Test
                         packageDirectory,
                         args,
                         waitForExit: true,
-                        timeOutInMilliseconds: 10000,
+                        timeOutInMilliseconds: 15000,
                         inputAction: (w) =>
                         {
                             // This user/password pair is first sent to
@@ -1120,7 +1120,7 @@ namespace NuGet.CommandLine.Test
                         packageDirectory,
                         args,
                         waitForExit: true,
-                        timeOutInMilliseconds: 10000,
+                        timeOutInMilliseconds: 15000,
                         inputAction: (w) =>
                         {
                         },
