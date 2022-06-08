@@ -308,6 +308,19 @@ namespace NuGet.Commands
         }
 
         /// <summary>
+        /// Extracts the no warn  codes for a libraryId from the warning properties at the node in the graph.
+        /// </summary>
+        /// <param name="nodeWarningProperties">warning properties at the node in the graph.</param>
+        /// <param name="libraryId">libraryId for which the no warn codes have to be extracted.</param>
+        /// <returns>HashSet of NuGetLogCodes containing the no warn codes for the libraryId.</returns>
+        public static HashSet<NuGetLogCode> ExtractPathNoWarnProperties(
+            NodeWarningProperties nodeWarningProperties,
+            string libraryId)
+        {
+            return nodeWarningProperties.ExtractPathNoWarnProperties(libraryId);
+        }
+
+        /// <summary>
         /// Merge 2 WarningProperties objects.
         /// This method will combine the warning properties from both the collections.
         /// </summary>
@@ -621,6 +634,13 @@ namespace NuGet.Commands
                 IsProject = isProject;
             }
 
+            public DependencyNode(string id, bool isProject, HashSet<NuGetLogCode> projectWideNoWarn, Dictionary<string, HashSet<NuGetLogCode>> packageSpecificNoWarn)
+            {
+                Id = id ?? throw new ArgumentNullException(nameof(id));
+                NodeWarningProperties = NodeWarningProperties.Create(projectWideNoWarn, packageSpecificNoWarn);
+                IsProject = isProject;
+            }
+
             public override int GetHashCode()
             {
                 var hashCode = new HashCodeCombiner();
@@ -686,13 +706,19 @@ namespace NuGet.Commands
             // We do not use framework here as DependencyNode is created per parent project framework.
             private readonly Dictionary<string, HashSet<NuGetLogCode>> _packageSpecific;
 
-            private NodeWarningProperties(
+            public NodeWarningProperties(
                 HashSet<NuGetLogCode> projectWide,
                 Dictionary<string, HashSet<NuGetLogCode>> packageSpecific)
             {
                 _projectWide = projectWide;
                 _packageSpecific = packageSpecific;
             }
+
+            // Note: this set should not be modified by callers
+            public HashSet<NuGetLogCode> ProjectWide { get { return _projectWide; } }
+
+            // Note: this dictionary should not be modified by callers
+            public Dictionary<string, HashSet<NuGetLogCode>> PackageSpecific { get { return _packageSpecific; } }
 
             public static NodeWarningProperties Create(
                 HashSet<NuGetLogCode> projectWide,
