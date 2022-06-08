@@ -439,7 +439,7 @@ namespace NuGet.CommandLine
                 var solution = new Solution(solutionFile, msbuildPath);
                 var solutionDirectory = Path.GetDirectoryName(solutionFile);
                 return solution.Projects.Where(project => !project.IsSolutionFolder)
-                    .Select(project => Path.Combine(solutionDirectory, project.RelativePath));
+                    .Select(project => CombinePathWithVerboseError(solutionDirectory, project.RelativePath));
             }
             catch (Exception ex)
             {
@@ -980,15 +980,9 @@ namespace NuGet.CommandLine
                 {
                     return msbuildExe;
                 }
-                else
-                {
-                    return Path.Combine(msbuildDirectory, "xbuild.exe");
-                }
             }
-            else
-            {
-                return Path.Combine(msbuildDirectory, "msbuild.exe");
-            }
+
+            return CombinePathWithVerboseError(msbuildDirectory, "msbuild.exe");
         }
 
         internal static string GetMSBuild(IEnvironmentVariableReader reader)
@@ -1007,7 +1001,7 @@ namespace NuGet.CommandLine
             {
                 foreach (var exeName in exeNames)
                 {
-                    var exePath = pathDirs.Select(dir => Path.Combine(dir.Trim('\"'), exeName)).FirstOrDefault(File.Exists);
+                    var exePath = pathDirs.Select(dir => CombinePathWithVerboseError(dir.Trim('\"'), exeName)).FirstOrDefault(File.Exists);
                     if (exePath != null)
                     {
                         return exePath;
@@ -1016,6 +1010,22 @@ namespace NuGet.CommandLine
             }
 
             return null;
+        }
+
+        internal static string CombinePathWithVerboseError(params string[] paths)
+        {
+            try
+            {
+                return Path.Combine(paths);
+            }
+            catch (ArgumentException e)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("Error_InvalidCharactersInPathSegment"),
+                        string.Join("', '", paths)),
+                    e);
+            }
+
         }
 
         /// <summary>

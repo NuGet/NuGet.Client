@@ -333,6 +333,21 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public void CombinePathWithVerboseError_CombinesPaths()
+        {
+            var paths = new[] {"C:\\", "directory/", "\\folder", "file.txt"};
+            Assert.Equal(Path.Combine(paths), MsBuildUtility.CombinePathWithVerboseError(paths));
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void CombinePathWithVerboseError_IllegalCharacters_MessageContainsBadPath()
+        {
+            const string badPath = @"C:\bad:>dir";
+            var exception = Assert.Throws<ArgumentException>(() => MsBuildUtility.CombinePathWithVerboseError(badPath, "file.txt"));
+            Assert.Contains(badPath, exception.Message);
+        }
+
         public static class ToolsetDataSource
         {
             // Legacy toolsets

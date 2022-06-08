@@ -886,10 +886,22 @@ namespace NuGet.CommandLine
             restoreInputs.NameOfSolutionFile = Path.GetFileNameWithoutExtension(solutionFileFullPath);
 
             // restore packages for the solution
-            var solutionLevelPackagesConfig = Path.Combine(
-                restoreInputs.DirectoryOfSolutionFile,
-                NuGetConstants.NuGetSolutionSettingsFolder,
-                Constants.PackageReferenceFile);
+            string solutionLevelPackagesConfig;
+
+            try
+            {
+                solutionLevelPackagesConfig = Path.Combine(
+                    restoreInputs.DirectoryOfSolutionFile,
+                    NuGetConstants.NuGetSolutionSettingsFolder,
+                    Constants.PackageReferenceFile);
+            }
+            catch (ArgumentException e)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("Error_InvalidSolutionDirectory"),
+                        restoreInputs.DirectoryOfSolutionFile),
+                    e);
+            }
 
             if (File.Exists(solutionLevelPackagesConfig))
             {
