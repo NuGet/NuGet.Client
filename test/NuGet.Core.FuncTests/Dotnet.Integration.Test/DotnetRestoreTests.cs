@@ -2528,7 +2528,7 @@ EndGlobal";
         <TargetFrameworks>netstandard2.1;net6.0</TargetFrameworks>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Condition=""'$(TargetFramework)' == 'net5.0'"" Include=""..\b\b.csproj"" Version=""1.0.0"" />
+        <ProjectReference Condition=""'$(TargetFramework)' == 'net6.0'"" Include=""..\b\b.csproj"" Version=""1.0.0"" />
     </ItemGroup>
 </Project>";
             string projectBFileContents =
