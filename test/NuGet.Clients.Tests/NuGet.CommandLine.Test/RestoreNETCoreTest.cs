@@ -7024,9 +7024,9 @@ namespace NuGet.CommandLine.Test
                     packageX1,
                     packageX2);
 
-                projectA.AddPackageDownloadToFramework("net45", packageX1);
+                projectA.AddPackageDownloadToFramework("net472", packageX1);
 
-                projectA.AddPackageDownloadToFramework("net46", packageX2);
+                projectA.AddPackageDownloadToFramework("net48", packageX2);
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);

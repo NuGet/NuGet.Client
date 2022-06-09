@@ -4249,7 +4249,7 @@ namespace Proj2
                     {
                         "content/proj1_file2.txt",
                         "lib/net472/proj1.dll",
-                        "lib/net427/proj2.dll"
+                        "lib/net472/proj2.dll"
                     },
                     files);
             }
