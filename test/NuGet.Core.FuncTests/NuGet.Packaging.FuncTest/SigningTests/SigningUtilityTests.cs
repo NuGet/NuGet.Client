@@ -17,8 +17,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection(SigningTestCollection.Name)]
-    public class SigningUtilityTests
+    public class SigningUtilityTests : IClassFixture<SigningTestFixture>
     {
         private readonly SigningTestFixture _testFixture;
 

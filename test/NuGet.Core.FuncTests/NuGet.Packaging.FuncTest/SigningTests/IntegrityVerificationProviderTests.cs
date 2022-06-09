@@ -23,8 +23,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection(SigningTestCollection.Name)]
-    public class IntegrityVerificationProviderTests
+    public class IntegrityVerificationProviderTests : IClassFixture<SigningTestFixture>
     {
         private const string _packageTamperedError = "The package integrity check failed. The package has changed since it was signed. Try clearing the local http-cache and run nuget operation again.";
         private const string _packageUnsignedError = "The package is not signed.";

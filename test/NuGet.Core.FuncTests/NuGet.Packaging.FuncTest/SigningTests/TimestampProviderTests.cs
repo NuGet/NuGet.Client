@@ -21,8 +21,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection(SigningTestCollection.Name)]
-    public class TimestampProviderTests
+    public class TimestampProviderTests : IClassFixture<SigningTestFixture>
     {
         private const string OperationCancelledExceptionMessage = "The operation was canceled.";
 

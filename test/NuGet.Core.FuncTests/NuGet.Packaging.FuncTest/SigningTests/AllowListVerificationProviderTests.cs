@@ -19,8 +19,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection(SigningTestCollection.Name)]
-    public class AllowListVerificationProviderTests : IDisposable
+    public class AllowListVerificationProviderTests : IClassFixture<SigningTestFixture>, IDisposable
     {
         private const string _noMatchInAllowList = "The package signature certificate fingerprint does not match any certificate fingerprint in the allow list.";
         private const string _noAllowList = "A list of trusted signers is required but none was found.";

@@ -20,8 +20,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection(SigningTestCollection.Name)]
-    public class ClientPolicyTests : IDisposable
+    public class ClientPolicyTests : IClassFixture<SigningTestFixture>, IDisposable
     {
         private readonly SigningTestFixture _testFixture;
         private readonly TrustedTestCert<TestCertificate> _trustedRepoTestCert;

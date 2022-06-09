@@ -19,8 +19,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection(SigningTestCollection.Name)]
-    public class RepositoryCountersignatureTests
+    public class RepositoryCountersignatureTests : IClassFixture<SigningTestFixture>
     {
         private readonly SigningTestFixture _fixture;
 

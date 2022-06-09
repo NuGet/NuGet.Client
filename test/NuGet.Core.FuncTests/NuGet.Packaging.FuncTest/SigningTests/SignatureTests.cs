@@ -4,7 +4,6 @@
 #if IS_SIGNING_SUPPORTED
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.Pkcs;
@@ -25,8 +24,7 @@ using CryptographicAttributeObject = System.Security.Cryptography.CryptographicA
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection(SigningTestCollection.Name)]
-    public class SignatureTests
+    public class SignatureTests : IClassFixture<SigningTestFixture>
     {
         private readonly SigningTestFixture _testFixture;
         private readonly TestCertificate _untrustedTestCertificate;

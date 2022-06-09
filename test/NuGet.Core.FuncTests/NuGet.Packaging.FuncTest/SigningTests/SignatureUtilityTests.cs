@@ -17,8 +17,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest.SigningTests
 {
-    [Collection(SigningTestCollection.Name)]
-    public class SignatureUtilityTests
+    public class SignatureUtilityTests : IClassFixture<SigningTestFixture>
     {
         private readonly SigningTestFixture _fixture;
         private const int SHA1HashLength = 20;

@@ -16,8 +16,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection(SigningTestCollection.Name)]
-    public class TimestampTests
+    public class TimestampTests : IClassFixture<SigningTestFixture>
     {
         private readonly SigningTestFixture _testFixture;
         private readonly TrustedTestCert<TestCertificate> _trustedTestCert;

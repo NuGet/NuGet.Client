@@ -25,8 +25,7 @@ using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection(SigningTestCollection.Name)]
-    public class SignatureTrustAndValidityVerificationProviderTests
+    public class SignatureTrustAndValidityVerificationProviderTests : IClassFixture<SigningTestFixture>
     {
         private const string UntrustedChainCertError = "The author primary signature's signing certificate is not trusted by the trust provider.";
         private readonly SignedPackageVerifierSettings _verifyCommandSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
@@ -571,8 +570,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [Collection(SigningTestCollection.Name)]
-        public class AuthorPrimarySignatures
+        public class AuthorPrimarySignatures : IClassFixture<SigningTestFixture>
         {
             private readonly SigningTestFixture _fixture;
             private readonly SignatureTrustAndValidityVerificationProvider _provider;
@@ -838,8 +836,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [Collection(SigningTestCollection.Name)]
-        public class RepositoryPrimarySignatures
+        public class RepositoryPrimarySignatures : IClassFixture<SigningTestFixture>
         {
             private readonly SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
             private readonly SigningTestFixture _fixture;
@@ -1167,8 +1164,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [Collection(SigningTestCollection.Name)]
-        public class RepositoryCountersignatures
+        public class RepositoryCountersignatures : IClassFixture<SigningTestFixture>
         {
             private readonly SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
             private readonly SigningTestFixture _fixture;
@@ -1531,8 +1527,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [Collection(SigningTestCollection.Name)]
-        public class FallbackFromPrimarySignaturesToCountersignatures
+        public class FallbackFromPrimarySignaturesToCountersignatures : IClassFixture<SigningTestFixture>
         {
             //The settings when validating packages from nuget.org in accept mode (AcceptModeDefaultPolicy + allowUnsigned:false + allowUntrusted:false)
             private readonly SignedPackageVerifierSettings _defaultNuGetOrgSettings = new SignedPackageVerifierSettings(

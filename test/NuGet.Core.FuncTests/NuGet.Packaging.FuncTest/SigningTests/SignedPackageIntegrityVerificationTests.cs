@@ -21,8 +21,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection(SigningTestCollection.Name)]
-    public class SignedPackageIntegrityVerificationTests
+    public class SignedPackageIntegrityVerificationTests : IClassFixture<SigningTestFixture>
     {
         private readonly UTF8Encoding _readerEncoding = new UTF8Encoding();
         private readonly UTF8Encoding _writerEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);

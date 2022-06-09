@@ -22,8 +22,7 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
-    [Collection(SigningTestCollection.Name)]
-    public class PrimarySignatureTests
+    public class PrimarySignatureTests : IClassFixture<SigningTestFixture>
     {
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
