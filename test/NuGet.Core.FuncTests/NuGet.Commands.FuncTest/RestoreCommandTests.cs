@@ -3717,6 +3717,7 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Libraries.Should().HaveCount(0);
             result.LockFile.LogMessages.Should().HaveCount(1);
             result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1301);
+            result.LockFile.Targets.Should().HaveCount(1);
         }
 
         [Fact]

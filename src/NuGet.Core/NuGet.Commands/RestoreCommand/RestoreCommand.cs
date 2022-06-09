@@ -1081,6 +1081,11 @@ namespace NuGet.Commands
             else
             {
                 _success = false;
+                var frameworkRuntimePairs = CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request));
+                foreach (var frameworkRuntimePair in frameworkRuntimePairs)
+                {
+                    allGraphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
+                }
             }
 
             // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
