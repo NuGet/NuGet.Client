@@ -1831,9 +1831,9 @@ public class B
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj3.dll"),
-                        Path.Combine("lib", "net40", "proj7.dll")
+                        Path.Combine("lib", "net472", "proj1.dll"),
+                        Path.Combine("lib", "net472", "proj3.dll"),
+                        Path.Combine("lib", "net472", "proj7.dll")
                     },
                     files);
 
@@ -2060,9 +2060,9 @@ public class B
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj3.dll"),
-                        Path.Combine("lib", "net40", "proj7.dll")
+                        Path.Combine("lib", "net472", "proj1.dll"),
+                        Path.Combine("lib", "net472", "proj3.dll"),
+                        Path.Combine("lib", "net472", "proj7.dll")
                     },
                     files);
 
@@ -3865,8 +3865,8 @@ namespace Proj2
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
+                        Path.Combine("lib", "net472", "proj1.dll"),
+                        Path.Combine("lib", "net472", "proj2.dll")
                     },
                     files);
             }
