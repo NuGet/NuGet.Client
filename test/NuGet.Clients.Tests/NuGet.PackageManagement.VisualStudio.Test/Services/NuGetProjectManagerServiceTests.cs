@@ -1670,7 +1670,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             //                                  -> packageD_0.1.1
             // case useSameversions = false
             // packageX_3.0.0 -> packageD_0.1.2
-            // packageX_4.0.0 -> packageD_0.1.2
             // packageA_2.0.0 -> packageB_1.0.0 -> packageC_0.0.1
             //                                  -> packageD_0.1.1
 
@@ -1702,7 +1701,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSourceDir, "packageX", "4.0.0",
                 new PackageDependency[]
                 {
-                        new PackageDependency("packageD", VersionRange.Parse("0.1.2"))
+                        new PackageDependency("packageD", VersionRange.Parse(useSameVersions? "0.1.1" : "0.1.2"))
                 });
             }
         }
