@@ -193,5 +193,52 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
 
             return null;
         }
+
+        internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, IDictionary<FrameworkRuntimePair, IList<PackageReference>> transitiveEntry)
+        {
+            Requires.NotNull(currentPackage, nameof(currentPackage));
+            Requires.NotNull(transitiveEntry, nameof(transitiveEntry));
+
+            var transitiveOrigins = new SortedSet<PackageReference>(PackageReferenceMergeComparer);
+            transitiveEntry.Keys.ForEach(fwRuntimePair =>
+            {
+                if (fwRuntimePair != null)
+                {
+                    IList<PackageReference> fwTransitiveOrigins = transitiveEntry[fwRuntimePair];
+                    if (fwTransitiveOrigins != null)
+                    {
+                        foreach (PackageReference transitiveOrigin in fwTransitiveOrigins)
+                        {
+                            if (transitiveOrigin?.PackageIdentity != null && transitiveOrigin.PackageIdentity.Id != null && transitiveOrigin.PackageIdentity.Version != null)
+                            {
+                                transitiveOrigins.Add(transitiveOrigin);
+                            }
+                        }
+                    }
+                }
+            });
+
+            IEnumerable<PackageReference> merged;
+            if (transitiveOrigins.Any())
+            {
+                merged = transitiveOrigins
+                    // unique packageId per project
+                    .GroupBy(tr => tr.PackageIdentity.Id)
+                    // highest version found
+                    .Select(g => g.OrderByDescending(pr => pr.PackageIdentity.Version).ThenByDescending(pr => pr.TargetFramework, NuGetFrameworkSorter.Instance).First())
+                    .ToList();
+            }
+            else
+            {
+                merged = Enumerable.Empty<PackageReference>();
+            }
+
+            var transitivePR = new TransitivePackageReference(currentPackage)
+            {
+                TransitiveOrigins = merged,
+            };
+
+            return transitivePR;
+        }
     }
 }
