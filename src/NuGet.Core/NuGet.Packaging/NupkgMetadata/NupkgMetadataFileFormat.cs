@@ -26,10 +26,7 @@ namespace NuGet.Packaging
 
         public static NupkgMetadataFile Read(string filePath, ILogger log)
         {
-            using (var stream = File.OpenRead(filePath))
-            {
-                return Read(stream, log, filePath);
-            }
+            return FileUtility.SafeRead(filePath, (stream, nupkgMetadataFilePath) => Read(stream, log, nupkgMetadataFilePath));
         }
 
         public static NupkgMetadataFile Read(Stream stream, ILogger log, string path)
