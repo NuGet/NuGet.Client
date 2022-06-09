@@ -1,4 +1,0 @@
-NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.ExtractPathNoWarnProperties(string libraryId) -> System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>
-NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.Merge(NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties other) -> NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties
-static NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.Create(System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode> projectWide, System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<NuGet.Common.NuGetLogCode>> packageSpecific) -> NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties
-static readonly NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties.Empty -> NuGet.Commands.TransitiveNoWarnUtils.NodeWarningProperties

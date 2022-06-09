@@ -697,7 +697,7 @@ namespace NuGet.Commands
         public class NodeWarningProperties : IEquatable<NodeWarningProperties>
         {
             // Empty NodeWarningProperties singleton - to avoid allocation for most-common case
-            public static readonly NodeWarningProperties Empty = new NodeWarningProperties(null, null);
+            internal static readonly NodeWarningProperties Empty = new NodeWarningProperties(null, null);
 
             // ProjectWide NoWarn properties
             private readonly HashSet<NuGetLogCode> _projectWide;
@@ -706,6 +706,7 @@ namespace NuGet.Commands
             // We do not use framework here as DependencyNode is created per parent project framework.
             private readonly Dictionary<string, HashSet<NuGetLogCode>> _packageSpecific;
 
+            // Note: internal callers should use the Create function instead so the null/null case re-uses the Empty singleton
             public NodeWarningProperties(
                 HashSet<NuGetLogCode> projectWide,
                 Dictionary<string, HashSet<NuGetLogCode>> packageSpecific)
@@ -719,18 +720,6 @@ namespace NuGet.Commands
 
             // Note: this dictionary should not be modified by callers
             public Dictionary<string, HashSet<NuGetLogCode>> PackageSpecific { get { return _packageSpecific; } }
-
-            public static NodeWarningProperties Create(
-                HashSet<NuGetLogCode> projectWide,
-                Dictionary<string, HashSet<NuGetLogCode>> packageSpecific)
-            {
-                if (projectWide == null && packageSpecific == null)
-                {
-                    return Empty;
-                }
-
-                return new NodeWarningProperties(projectWide, packageSpecific);
-            }
 
             public override int GetHashCode()
             {
@@ -761,44 +750,6 @@ namespace NuGet.Commands
 
                 return EqualityUtility.SetEqualsWithNullCheck(_projectWide, other._projectWide) &&
                     EqualityUtility.DictionaryEquals(_packageSpecific, other._packageSpecific, (s, o) => EqualityUtility.SetEqualsWithNullCheck(s, o));
-            }
-
-            /// <summary>
-            /// Extracts the no warn codes for a libraryId from the warning properties at the node in the graph.
-            /// </summary>
-            /// <param name="libraryId">libraryId for which the no warn codes have to be extracted.</param>
-            /// <returns>HashSet of NuGetLogCodes containing the no warn codes for the libraryId.</returns>
-            public HashSet<NuGetLogCode> ExtractPathNoWarnProperties(
-                string libraryId)
-            {
-                var result = new HashSet<NuGetLogCode>();
-                if (_projectWide?.Count > 0)
-                {
-                    result.UnionWith(_projectWide);
-                }
-
-                if (_packageSpecific?.Count > 0 &&
-                    _packageSpecific.TryGetValue(libraryId, out var codes) &&
-                    codes?.Count > 0)
-                {
-                    result.UnionWith(codes);
-                }
-
-                return result;
-            }
-
-            /// <summary>
-            /// Merge this NodeWarningProperties object with the provided one.
-            /// This method will return a combination of the warning properties from both sets, not modifying either object.
-            /// </summary>
-            /// <param name="other">Object to merge with.</param>
-            /// <returns>Returns a NodeWarningProperties combining this class's and the other class's node warning properties.</returns>
-            public NodeWarningProperties Merge(NodeWarningProperties other)
-            {
-                var mergedProjectWideNoWarn = MergeCodes(_projectWide, other?._projectWide);
-                var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(_packageSpecific, other?._packageSpecific);
-
-                return Create(mergedProjectWideNoWarn, mergedPackageSpecificNoWarn);
             }
 
             /// <summary>
@@ -906,6 +857,56 @@ namespace NuGet.Commands
                 }
 
                 return false;
+            }
+
+            internal static NodeWarningProperties Create(
+                HashSet<NuGetLogCode> projectWide,
+                Dictionary<string, HashSet<NuGetLogCode>> packageSpecific)
+            {
+                if (projectWide == null && packageSpecific == null)
+                {
+                    return Empty;
+                }
+
+                return new NodeWarningProperties(projectWide, packageSpecific);
+            }
+
+            /// <summary>
+            /// Merge this NodeWarningProperties object with the provided one.
+            /// This method will return a combination of the warning properties from both sets, not modifying either object.
+            /// </summary>
+            /// <param name="other">Object to merge with.</param>
+            /// <returns>Returns a NodeWarningProperties combining this class's and the other class's node warning properties.</returns>
+            internal NodeWarningProperties Merge(NodeWarningProperties other)
+            {
+                var mergedProjectWideNoWarn = MergeCodes(_projectWide, other?._projectWide);
+                var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(_packageSpecific, other?._packageSpecific);
+
+                return Create(mergedProjectWideNoWarn, mergedPackageSpecificNoWarn);
+            }
+
+            /// <summary>
+            /// Extracts the no warn codes for a libraryId from the warning properties at the node in the graph.
+            /// </summary>
+            /// <param name="libraryId">libraryId for which the no warn codes have to be extracted.</param>
+            /// <returns>HashSet of NuGetLogCodes containing the no warn codes for the libraryId.</returns>
+            internal HashSet<NuGetLogCode> ExtractPathNoWarnProperties(
+                string libraryId)
+            {
+                var result = new HashSet<NuGetLogCode>();
+                if (_projectWide?.Count > 0)
+                {
+                    result.UnionWith(_projectWide);
+                }
+
+                if (_packageSpecific?.Count > 0 &&
+                    _packageSpecific.TryGetValue(libraryId, out var codes) &&
+                    codes?.Count > 0)
+                {
+                    result.UnionWith(codes);
+                }
+
+                return result;
             }
 
             private static bool IsSubSetOfWithNullCheck(HashSet<NuGetLogCode> parent, HashSet<NuGetLogCode> other)
