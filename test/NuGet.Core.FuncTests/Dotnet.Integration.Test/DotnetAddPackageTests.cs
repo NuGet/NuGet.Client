@@ -613,5 +613,49 @@ namespace Dotnet.Integration.Test
             Assert.Contains($"Installed {packageX} {version} from {packageSource2}", result.AllOutput);
             Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})' for 'net5.0'", result.AllOutput);
         }
+
+        [Fact]
+        public async Task AddPkg_WhenProjectOnboardedToCPM()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projectName = "projectA";
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+
+            const string version = "1.0.0";
+            const string packageX = "X";
+
+            var packageFrameworks = "net5.0";
+            var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100);
+
+            var propsFile = @$"<Project>
+                                <PropertyGroup>
+                                <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                                </PropertyGroup>
+                            </Project>
+                            ";
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
+            File.WriteAllText(Path.Combine(projectADirectory, "Directory.Packages.Props"), propsFile);
+
+            //Act
+            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version}", ignoreExitCode: true);
+
+            // Assert
+            // log the CPMEnabled flag to see if it is being recognized that this is a CPM project
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            //Assert.Contains($"Installed {packageX} {version} from {packageSource2}", result.AllOutput);
+        }
     }
 }
+

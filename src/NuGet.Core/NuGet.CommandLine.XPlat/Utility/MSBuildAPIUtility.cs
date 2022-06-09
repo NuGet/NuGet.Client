@@ -162,6 +162,7 @@ namespace NuGet.CommandLine.XPlat
         private ProjectRootElement GetDirectoryBuildPropsRootElement(Project project)
         {
             string directoryPackagesPropsPath = GetPropsPath(project);
+            Console.WriteLine("Directory build props path: " + directoryPackagesPropsPath);
             ProjectRootElement directoryBuildPropsRootElement = project.Imports.FirstOrDefault(i => i.ImportedProject.FullPath.Equals(directoryPackagesPropsPath)).ImportedProject;
             return directoryBuildPropsRootElement;
         }
@@ -174,13 +175,17 @@ namespace NuGet.CommandLine.XPlat
 
             if (libraryDependency.VersionCentrallyManaged)
             {
+                Console.Write("adding package reference\n");
                 // TODO: can we integrate GetItemGroups() here?
 
                 // If onboarded to CPM onboarded get the directoryBuildPropsRootElement
                 ProjectRootElement directoryBuildPropsRootElement = GetDirectoryBuildPropsRootElement(project);
+                //Console.Write("Directory build props root element: " + directoryBuildPropsRootElement. + "\n");
 
                 // Get the ItemGroup to add a PackageVersion to
                 var itemGroup = GetItemGroup(directoryBuildPropsRootElement.ItemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
+                Console.Write("Item group: " + itemGroup + "\n");
+
                 AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
                 directoryBuildPropsRootElement.Save();
 
