@@ -1,11 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Moq;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -104,7 +109,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.True(result8 < 0);
         }
 
-        private static PackageReference CreatePackageReference(string id, string version, NuGetFramework fw) => new(CreatePackageIdentity(id, version), fw);
+        private static PackageReference CreatePackageReference(string id, string version, NuGetFramework fw) => new PackageReference(CreatePackageIdentity(id, version), fw);
 
         private static PackageReference CreatePackageReference(string id, string version, string framework)
         {
@@ -116,6 +121,39 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             NuGetVersion ver = string.IsNullOrEmpty(version) ? null : NuGetVersion.Parse(version);
             return new PackageIdentity(id, ver);
+        }
+
+        public static IEnumerable<object[]> GetTransitiveOriginListsWithNulls()
+        {
+            // Returns list and expectedResultCount
+            yield return new object[]
+            {
+                new List<PackageReference>() { null, null },
+                0,
+            };
+
+            yield return new object[]
+            {
+                new List<PackageReference>()
+                {
+                    null,
+                    CreatePackageReference("package1", "0.0.1", "net6.0"),
+                    null,
+                },
+                1,
+            };
+
+            yield return new object[]
+            {
+                new List<PackageReference>(),
+                0,
+            };
+
+            yield return new object[]
+            {
+                null,
+                0,
+            };
         }
     }
 }
