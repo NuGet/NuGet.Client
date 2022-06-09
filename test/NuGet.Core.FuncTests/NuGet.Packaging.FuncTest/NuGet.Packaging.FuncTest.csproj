@@ -6,6 +6,7 @@
     <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Integration tests for the more involved NuGet.Packaging functionality, such as signing.</Description>
+    <UseParallelXunit>true</UseParallelXunit>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
@@ -26,12 +27,6 @@
 
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
