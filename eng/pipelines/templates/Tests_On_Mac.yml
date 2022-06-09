@@ -6,6 +6,8 @@ steps:
     targetType: "inline"
     script: |
           echo "##vso[task.setvariable variable=MSBuildEnableWorkloadResolver]false"
+          echo $(Build.Repository.LocalPath)/build/TestResults
+          echo $
 
 - task: UseDotNet@2
   displayName: 'Use .NET Core sdk'
@@ -43,7 +45,7 @@ steps:
   inputs:
     testRunner: "VSTest"
     testResultsFiles: "*.trx"
-    searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
+    searchFolder: "$(Build.Repository.LocalPath)/TestResults"
     mergeTestResults: "true"
     testRunTitle: "NuGet.Client Tests On Mac"
   condition: "succeededOrFailed()"
@@ -51,7 +53,7 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: "Publish Test Freeze Dump"
   inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
+    PathtoPublish: "$(Build.Repository.LocalPath)/TestResults"
     ArtifactName: "$(Agent.JobName)"
     ArtifactType: "Container"
   condition: "failed()"
