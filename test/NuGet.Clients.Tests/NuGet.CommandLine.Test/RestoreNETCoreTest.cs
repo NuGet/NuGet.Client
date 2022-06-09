@@ -7000,7 +7000,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-                var projectFrameworks = "net45;net46";
+                var projectFrameworks = "net472;net48";
 
                 var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
                             projectName: "a",

@@ -882,8 +882,8 @@ namespace Proj2
                     new string[]
                     {
                         "content/proj1_file2.txt",
-                        "lib/net40/proj1.dll",
-                        "lib/net40/proj2.dll"
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj2.dll"
                     },
                     files);
             }
@@ -1187,22 +1187,22 @@ namespace Proj2
                         new string[]
                         {
                             Path.Combine("content", "proj1_file2.txt"),
-                            Path.Combine("lib", "net40", "proj1.dll"),
-                            Path.Combine("lib", "net40", "proj1.pdb"),
-                            Path.Combine("lib", "net40", "proj2.dll"),
-                            Path.Combine("lib", "net40", "proj2.pdb"),
+                            Path.Combine("lib", "net472", "proj1.dll"),
+                            Path.Combine("lib", "net472", "proj1.pdb"),
+                            Path.Combine("lib", "net472", "proj2.dll"),
+                            Path.Combine("lib", "net472", "proj2.pdb"),
                             "proj2.nuspec",
                             Path.Combine("src", "proj1", "proj1_file1.cs"),
                             Path.Combine("src", "proj2", "proj2_file1.cs"),
                         }
                         : new string[]
                         {
-                            Path.Combine("lib", "net40", "proj1.pdb"),
-                            Path.Combine("lib", "net40", "proj2.pdb"),
+                            Path.Combine("lib", "net472", "proj1.pdb"),
+                            Path.Combine("lib", "net472", "proj2.pdb"),
                             "proj2.nuspec"
                         };
                     actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
-                    Assert.Equal(actual, files);
+                    Assert.Equal(files, actual);
                 }
             }
         }
@@ -1262,17 +1262,17 @@ namespace Proj2
                     var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
                         {
                         "A.nuspec",
-                        "lib/net40/A.dll",
-                        "lib/net40/A.pdb",
+                        "lib/net472/A.dll",
+                        "lib/net472/A.pdb",
                         "src/B.cs"
                         }
                         : new string[]
                         {
                         "A.nuspec",
-                        "lib/net40/A.pdb"
+                        "lib/net472/A.pdb"
                         };
                     actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
-                    Assert.Equal(actual, files);
+                    Assert.Equal(files, actual);
                 }
             }
         }
@@ -1332,14 +1332,14 @@ public class B
                     var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
                         {
                         "A.nuspec",
-                        "lib/net40/A.exe",
-                        "lib/net40/A.pdb",
+                        "lib/net472/A.exe",
+                        "lib/net472/A.pdb",
                         "src/B.cs"
                         }
                         : new string[]
                         {
                         "A.nuspec",
-                        "lib/net40/A.pdb"
+                        "lib/net472/A.pdb"
                         };
                     Assert.Equal(actual, files);
                 }
@@ -1401,8 +1401,8 @@ public class B
                 Assert.Equal(
                     new string[]
                     {
-                        "lib/net40/A.dll",
-                        "lib/net40/A.xml",
+                        "lib/net472/A.dll",
+                        "lib/net472/A.xml",
                     },
                     files);
             }
@@ -1499,9 +1499,9 @@ public class B
                 Assert.Equal(
                     new string[]
                     {
-                        "lib/net40/proj1.dll",
-                        "lib/net40/proj3.dll",
-                        "lib/net40/proj7.dll",
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj3.dll",
+                        "lib/net472/proj7.dll",
                     },
                     files);
 
@@ -1615,9 +1615,9 @@ public class B
                 Assert.Equal(
                     new string[]
                     {
-                        "lib/net40/proj1.dll",
-                        "lib/net40/proj3.dll",
-                        "lib/net40/proj7.dll",
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj3.dll",
+                        "lib/net472/proj7.dll",
                     },
                     files);
 
@@ -2377,7 +2377,7 @@ namespace " + projectName + @"
                     new string[] {
                         @"..\proj2\proj2.csproj"
                     });
-                CreateTestProject(workingDirectory, "proj2", null, "v4.0", "1.2");
+                CreateTestProject(workingDirectory, "proj2", null, "4.7.2", "1.2");
                 Util.CreateFile(
                     Path.Combine(workingDirectory, "proj2"),
                     "proj2.nuspec",
@@ -2413,7 +2413,7 @@ namespace " + projectName + @"
                 Assert.Equal(
                     new string[]
                     {
-                        "lib/net40/proj1.dll"
+                        "lib/net472/proj1.dll"
                     },
                     files);
 
@@ -2716,7 +2716,7 @@ namespace " + projectName + @"
                 Assert.Equal(
                     new string[]
                     {
-                        "lib/net40/proj1.dll"
+                        "lib/net472/proj1.dll"
                     },
                     files);
             }
@@ -2765,9 +2765,9 @@ namespace " + projectName + @"
                 Assert.Equal(
                     new string[]
                     {
-                       "lib/net40/proj1.dll",
-                       "lib/net40/proj2.dll",
-                       "lib/net40/proj3.dll"
+                       "lib/net472/proj1.dll",
+                       "lib/net472/proj2.dll",
+                       "lib/net472/proj3.dll"
                     },
                     files);
             }
@@ -2808,8 +2808,8 @@ namespace " + projectName + @"
                 Assert.Equal(
                     new string[]
                     {
-                        "lib/net40/proj1.dll",
-                        "lib/net40/proj2.dll"
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj2.dll"
                     },
                     files);
             }
@@ -3056,8 +3056,8 @@ namespace Proj2
                     new string[]
                     {
                         "content/proj1_file2.txt",
-                        "lib/net40/proj1.dll",
-                        "lib/net40/proj2.dll"
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj2.dll"
                     },
                     files);
             }
@@ -4119,8 +4119,8 @@ namespace Proj2
                     new string[]
                     {
                         "content/proj1_file2.txt",
-                        "lib/net40/proj1.dll",
-                        "lib/net40/proj2.dll"
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj2.dll"
                     });
             }
         }
@@ -4245,13 +4245,13 @@ namespace Proj2
                 var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         "content/proj1_file2.txt",
-                        "lib/net40/proj1.dll",
-                        "lib/net40/proj2.dll"
-                    });
+                        "lib/net472/proj1.dll",
+                        "lib/net427/proj2.dll"
+                    },
+                    files);
             }
         }
 
@@ -4406,7 +4406,7 @@ namespace Proj2
             string baseDirectory,
             string projectName,
             string[] referencedProject,
-            string targetFrameworkVersion = "v4.0",
+            string targetFrameworkVersion = "v4.7.2",
             string version = "0.0.0.0")
         {
             var projectDirectory = Path.Combine(baseDirectory, projectName);
@@ -4718,7 +4718,7 @@ namespace Proj1
                     new string[]
                     {
                         "content/proj1_file2.txt",
-                        "lib/net40/proj1.dll"
+                        "lib/net472/proj1.dll"
                     },
                     files);
             }
@@ -5662,15 +5662,15 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                         {
 
                          $"{packageName}.nuspec",
-                         $"lib/net40/{packageName}.dll",
-                         $"lib/net40/{packageName}.pdb",
+                         $"lib/net472/{packageName}.dll",
+                         $"lib/net472/{packageName}.pdb",
                          "LICENSE.txt",
                          "src/B.cs"
                         }
                         : new string[]
                         {
                          $"{packageName}.nuspec",
-                         $"lib/net40/{packageName}.pdb",
+                         $"lib/net472/{packageName}.pdb",
                          "LICENSE.txt"
                         };
                     actual = actual.Select(t => Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
@@ -7407,7 +7407,7 @@ namespace proj1
                     Assert.Equal(
                         new string[]
                         {
-                          "lib/net40/proj1.dll"
+                          "lib/net472/proj1.dll"
                         },
                         files);
 
