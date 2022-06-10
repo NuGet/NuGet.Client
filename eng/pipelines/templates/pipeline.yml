@@ -67,20 +67,6 @@ stages:
     steps:
     - template: Initialize_Build.yml
 
-- stage: StaticSourceAnalysis
-  displayName: Static Source Analysis
-  dependsOn: []
-  jobs:
-  - job: RunStaticSourceAnalysis
-    displayName: Run Static Source Analysis
-    timeoutInMinutes: 15
-    pool:
-      vmImage: windows-latest
-    steps:
-    - template: Static_Source_Analysis.yml
-      parameters:
-        isOfficialBuild: ${{ parameters.isOfficialBuild }}
-
 - stage: MacTests
   dependsOn:
   - Initialize
