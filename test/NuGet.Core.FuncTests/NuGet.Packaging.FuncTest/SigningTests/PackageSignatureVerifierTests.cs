@@ -27,7 +27,8 @@ using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
 namespace NuGet.Packaging.FuncTest
 {
-    public class PackageSignatureVerifierTests : IClassFixture<SigningTestFixture>
+    [Collection(SigningTestCollection.Name)]
+    public class PackageSignatureVerifierTests
     {
         private readonly SigningTestFixture _testFixture;
 
@@ -45,7 +46,8 @@ namespace NuGet.Packaging.FuncTest
             Assert.Equal("verificationProviders", exception.ParamName);
         }
 
-        public class SignatureTrustAndValidityVerificationProviderTests : IClassFixture<SigningTestFixture>
+        [Collection(SigningTestCollection.Name)]
+        public class SignatureTrustAndValidityVerificationProviderTests
         {
             private static readonly Uri TestServiceIndexUrl = new Uri("https://v3serviceIndex.test/api/index.json");
             private readonly SignedPackageVerifierSettings _verifyCommandSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
