@@ -92,6 +92,21 @@ stages:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     pool:
-      vmImage: macOS-12
+      vmImage: macOS-latest
     steps:
     - template: Tests_On_Mac.yml
+
+- stage: MacTests
+  dependsOn:
+  - Initialize
+  condition: "and(succeeded(), eq(variables['RunTestsOnMac'], 'true'))"
+  jobs:
+  - job: Tests_On_Mac
+    timeoutInMinutes: 90
+    variables:
+      FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+      SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+    pool:
+      vmImage: macOS-latest
+    steps:
+    - template: Tests_On_Mac2.yml
