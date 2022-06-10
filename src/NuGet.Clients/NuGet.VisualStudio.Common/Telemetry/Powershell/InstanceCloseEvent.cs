@@ -2,28 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Common;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Common.Telemetry.PowerShell
 {
-    public class InstanceCloseEvent : TelemetryEvent
+    public static class InstanceCloseEvent
     {
-        public InstanceCloseEvent(
-            int pmcExecuteCommandCount,
-            int pmcWindowLoadCount,
-            int pmuiExecuteCommandCount,
-            int pmcPowerShellLoadedSolutionCount,
-            int pmuiPowerShellLoadedSolutionCount,
-            bool reOpenAtStart,
-            int solutionCount
-            ) : base(NuGetPowerShellUsageCollector.InstanceClose)
+        private const string EventName = "InstanceClose";
+
+        public static void OnShutdown()
         {
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcExecuteCommandCount] = pmcExecuteCommandCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcWindowLoadCount] = pmcWindowLoadCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmuiExecuteCommandCount] = pmuiExecuteCommandCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmcPowerShellLoadedSolutionCount] = pmcPowerShellLoadedSolutionCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.PmuiPowerShellLoadedSolutionCount] = pmuiPowerShellLoadedSolutionCount;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.ReOpenAtStart] = reOpenAtStart;
-            base[NuGetPowerShellUsageCollector.PowerShellHost + NuGetPowerShellUsageCollector.SolutionCount] = solutionCount;
+            var telemetryEvent = new TelemetryEvent(EventName);
+
+            AddEventsOnShutdown?.Invoke(null, telemetryEvent);
+
+            telemetryEvent["faults.total"] = TelemetryUtility.TotalFaultEvents;
+
+            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
         }
+
+        public static event System.EventHandler<TelemetryEvent> AddEventsOnShutdown;
     }
 }

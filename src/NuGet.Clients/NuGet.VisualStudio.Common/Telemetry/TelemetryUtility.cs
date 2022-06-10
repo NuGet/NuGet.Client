@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -22,6 +23,9 @@ namespace NuGet.VisualStudio.Telemetry
 {
     public static class TelemetryUtility
     {
+        private static int FaultEventCount = 0;
+        public static int TotalFaultEvents => FaultEventCount;
+
         public static async Task PostFaultAsync(Exception e, string callerClassName, [CallerMemberName] string callerMemberName = null, IDictionary<string, object> extraProperties = null)
         {
             if (e == null)
@@ -45,6 +49,7 @@ namespace NuGet.VisualStudio.Telemetry
             }
 
             TelemetryService.DefaultSession.PostEvent(fault);
+            Interlocked.Increment(ref FaultEventCount);
 
             if (await IsShellAvailable.GetValueAsync())
             {

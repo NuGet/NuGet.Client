@@ -11,9 +11,6 @@ namespace NuGet.VisualStudio.Common.Telemetry.PowerShell
         public delegate void SolutionCloseHandler();
         public static event SolutionCloseHandler SolutionCloseEvent;
 
-        public delegate void VSInstanceCloseHandler();
-        public static event VSInstanceCloseHandler VSInstanceCloseEvent;
-
         public delegate void PowerShellLoadEventHandler(bool isPMC);
         public static event PowerShellLoadEventHandler PowerShellLoadEvent;
 
@@ -62,11 +59,6 @@ namespace NuGet.VisualStudio.Common.Telemetry.PowerShell
         public static void RaiseSolutionCloseEvent()
         {
             SolutionCloseEvent?.Invoke();
-        }
-
-        public static void RaiseVSInstanceCloseEvent()
-        {
-            VSInstanceCloseEvent?.Invoke();
         }
     }
 }

@@ -189,7 +189,7 @@ namespace NuGetVSExtension
 
             await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
 
-            VsShellUtilities.ShutdownToken.Register(RegisterEmitVSInstancePowerShellTelemetry);
+            VsShellUtilities.ShutdownToken.Register(InstanceCloseEvent.OnShutdown);
 
             var componentModel = await this.GetFreeThreadedServiceAsync<SComponentModel, IComponentModel>();
             Assumes.Present(componentModel);
@@ -1263,11 +1263,6 @@ namespace NuGetVSExtension
         }
 
         #endregion IVsPackageExtensionProvider implementation
-
-        private void RegisterEmitVSInstancePowerShellTelemetry()
-        {
-            NuGetPowerShellUsage.RaiseVSInstanceCloseEvent();
-        }
 
         #region IVsPersistSolutionOpts
 
