@@ -1081,8 +1081,9 @@ namespace NuGet.Commands
             else
             {
                 _success = false;
-                var frameworkRuntimePairs = CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request));
-                foreach (var frameworkRuntimePair in frameworkRuntimePairs)
+                // When we fail to create the graphs, we want to write a `target` for each target framework
+                // in order to avoid missing target errors from the SDK build tasks and ensure that NuGet errors don't get cleared.
+                foreach (FrameworkRuntimePair frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
                 {
                     allGraphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
                 }
