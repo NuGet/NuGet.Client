@@ -196,7 +196,7 @@ stages:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     pool:
-      vmImage: macOS-12
+      vmImage: macOS-latest
     steps:
     - template: Tests_On_Mac.yml
 
