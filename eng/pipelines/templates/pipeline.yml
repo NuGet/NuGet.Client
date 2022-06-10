@@ -96,12 +96,12 @@ stages:
     steps:
     - template: Tests_On_Mac.yml
 
-- stage: MacTests
+- stage: MacTests2
   dependsOn:
   - Initialize
   condition: "and(succeeded(), eq(variables['RunTestsOnMac'], 'true'))"
   jobs:
-  - job: Tests_On_Mac
+  - job: Tests_On_Mac2
     timeoutInMinutes: 90
     variables:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
