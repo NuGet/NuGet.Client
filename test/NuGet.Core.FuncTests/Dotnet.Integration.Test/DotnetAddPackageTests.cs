@@ -749,6 +749,8 @@ namespace Dotnet.Integration.Test
             Assert.Contains(@$"<PackageVersion Include=""X"" Version=""2.0.0"" />", File.ReadAllText(Path.Combine(projectADirectory, "Directory.Packages.Props")));
             Assert.DoesNotContain(@$"Include=""X"" Version=""2.0.0""", File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj")));
         }
+
+       
     }
 }
 
