@@ -152,59 +152,8 @@ fi
 
 echo "Core tests finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
-# Func tests
-echo "dotnet msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/04.CoreFuncTests.binlog"
-dotnet msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/04.CoreFuncTests.binlog
-
-if [ $? -ne 0 ]; then
-	RESULTCODE='1'
-	echo "CoreFuncTests failed!!"
-fi
-
-if [ -z "$CI" ]; then
-	popd
-	exit $RESULTCODE
-fi
-
-#run mono test
-TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
-VsTestConsole="$DIR/artifacts/NuGet.CommandLine.Test/vstest/vstest.console.exe"
-TestResultsTrx="$DIR/build/TestResults/monoonmac.trx"
-VsTestVerbosity="minimal"
-
-if [ "$SYSTEM_DEBUG" == "true" ]; then
-	VsTestVerbosity="detailed"
-fi
-
 #Clean System dll
 rm -rf "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSharp.dll" "$TestDir/Microsoft.Build.Engine.dll"
-
-#Run xunit test
-
-case "$(uname -s)" in
-		Linux)
-			# We are not testing Mono on linux currently, so comment it out.
-			#echo "mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --TestCaseFilter:Platform!=Windows&Platform!=Darwin --logger:console;verbosity=$VsTestVerbosity --logger:trx;LogFilePath=$TestResultsTrx"
-			#mono $VsTestConsole "$TestDir/NuGet.CommandLine.Test.dll" --TestCaseFilter:"Platform!=Windows&Platform!=Darwin" --logger:"console;verbosity=$VsTestVerbosity" --logger:"trx;LogFilePath=$TestResultsTrx"
-			if [ $RESULTCODE -ne '0' ]; then
-				RESULTCODE=$?
-				echo "Unit Tests or Core Func Tests failed on Linux"
-				exit 1
-			fi
-			;;
-		Darwin)
-			echo "mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --TestCaseFilter:Platform!=Windows&Platform!=Linux --logger:console;verbosity=$VsTestVerbosity --logger:trx;LogFilePath=$TestResultsTrx"
-			mono $VsTestConsole "$TestDir/NuGet.CommandLine.Test.dll" --TestCaseFilter:"Platform!=Windows&Platform!=Linux" --logger:"console;verbosity=$VsTestVerbosity" --logger:"trx;LogFilePath=$TestResultsTrx"
-			if [ $? -ne '0' ]; then
-				RESULTCODE=$?
-				echo "Mono tests failed!"
-				exit 1
-			fi
-			;;
-		*) ;;
-esac
-
-echo "Func tests finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
 popd
 

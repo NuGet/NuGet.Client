@@ -14,12 +14,6 @@ steps:
     version: 6.x
     installationPath: $(Agent.TempDirectory)/dotnet
 
-- task: DownloadBuildArtifacts@0
-  displayName: "Download NuGet.CommandLine.Test artifacts"
-  inputs:
-    artifactName: "NuGet.CommandLine.Test"
-    downloadPath: "$(Build.Repository.LocalPath)/artifacts"
-
 - task: ShellScript@2
   displayName: "Run Tests (continue on error)"
   continueOnError: "true"
