@@ -477,6 +477,8 @@ namespace NuGet.CommandLine
                     "pack Assembly.csproj -build",
                     waitForExit: true);
 
+                Util.VerifyResultSuccess(r);
+
                 // Assert
                 using (var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Assembly.1.0.0.nupkg")))
                 {
@@ -485,12 +487,12 @@ namespace NuGet.CommandLine
                     Assert.Equal(0, r.ExitCode);
                     Array.Sort(files);
                     Assert.Equal(
-                        files,
                         new[]
                         {
-                            @"lib/net45/Assembly.dll",
-                            @"lib/net45/Assembly.xml"
-                        });
+                            @"lib/net472/Assembly.dll",
+                            @"lib/net472/Assembly.xml"
+                        },
+                        files);
                 }
             }
         }
@@ -532,8 +534,8 @@ namespace NuGet.CommandLine
                         files,
                         new[]
                         {
-                            @"lib/net45/A.dll",
-                            @"lib/net45/Link.dll"
+                            @"lib/net472/A.dll",
+                            @"lib/net472/Link.dll"
                         });
                 }
             }
@@ -586,9 +588,9 @@ namespace NuGet.CommandLine
                         files,
                         new[]
                         {
-                            @"lib/net45/A.dll",
-                            @"lib/net45/C.dll",
-                            @"lib/net45/Link.dll"
+                            @"lib/net472/A.dll",
+                            @"lib/net472/C.dll",
+                            @"lib/net472/Link.dll"
                         });
                 }
             }
@@ -608,8 +610,8 @@ namespace NuGet.CommandLine
         <description>Description for Assembly.</description>
     </metadata>
     <files>
-        <file src=""bin\Debug\Assembly.dll"" target=""lib\net45\Assembly.dll"" />
-        <file src=""bin\Debug\Assembly.xml"" target=""lib\net45\Assembly.xml"" />
+        <file src=""bin\Debug\Assembly.dll"" target=""lib\net472\Assembly.dll"" />
+        <file src=""bin\Debug\Assembly.xml"" target=""lib\net472\Assembly.xml"" />
     </files>
 </package>";
         }
@@ -627,7 +629,7 @@ namespace NuGet.CommandLine
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Assembly</RootNamespace>
     <AssemblyName>Assembly</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
@@ -639,7 +641,7 @@ namespace NuGet.CommandLine
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
     <DebugType>pdbonly</DebugType>
