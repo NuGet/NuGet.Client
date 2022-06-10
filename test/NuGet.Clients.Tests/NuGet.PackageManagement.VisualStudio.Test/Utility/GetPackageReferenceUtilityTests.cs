@@ -4,6 +4,8 @@
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio.Utility;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -102,10 +104,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.True(result8 < 0);
         }
 
+        private static PackageReference CreatePackageReference(string id, string version, NuGetFramework fw) => new PackageReference(CreatePackageIdentity(id, version), fw);
+
         private static PackageReference CreatePackageReference(string id, string version, string framework)
         {
             NuGetFramework fw = string.IsNullOrEmpty(framework) ? null : NuGetFramework.Parse(framework);
-            return CreatePackageReference(id, version, framework);
+            return CreatePackageReference(id, version, fw);
+        }
+
+        private static PackageIdentity CreatePackageIdentity(string id, string version)
+        {
+            NuGetVersion ver = string.IsNullOrEmpty(version) ? null : NuGetVersion.Parse(version);
+            return new PackageIdentity(id, ver);
         }
     }
 }
