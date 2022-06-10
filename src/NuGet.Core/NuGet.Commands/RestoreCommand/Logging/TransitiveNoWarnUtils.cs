@@ -700,33 +700,29 @@ namespace NuGet.Commands
             internal static readonly NodeWarningProperties Empty = new NodeWarningProperties(null, null);
 
             // ProjectWide NoWarn properties
-            private readonly HashSet<NuGetLogCode> _projectWide;
+            // Note: this set should not be modified by callers.  In the future, this should be converted to a private readonly instance variable
+            public HashSet<NuGetLogCode> ProjectWide { get; }
 
             // PackageSpecific NoWarn
             // We do not use framework here as DependencyNode is created per parent project framework.
-            private readonly Dictionary<string, HashSet<NuGetLogCode>> _packageSpecific;
+            // Note: this dictionary should not be modified by callers.  In the future, this should be converted to a private readonly instance variable
+            public Dictionary<string, HashSet<NuGetLogCode>> PackageSpecific { get; }
 
             // Note: internal callers should use the Create function instead so the null/null case re-uses the Empty singleton
             public NodeWarningProperties(
                 HashSet<NuGetLogCode> projectWide,
                 Dictionary<string, HashSet<NuGetLogCode>> packageSpecific)
             {
-                _projectWide = projectWide;
-                _packageSpecific = packageSpecific;
+                ProjectWide = projectWide;
+                PackageSpecific = packageSpecific;
             }
-
-            // Note: this set should not be modified by callers
-            public HashSet<NuGetLogCode> ProjectWide { get { return _projectWide; } }
-
-            // Note: this dictionary should not be modified by callers
-            public Dictionary<string, HashSet<NuGetLogCode>> PackageSpecific { get { return _packageSpecific; } }
 
             public override int GetHashCode()
             {
                 var hashCode = new HashCodeCombiner();
 
-                hashCode.AddSequence(_projectWide);
-                hashCode.AddDictionary(_packageSpecific);
+                hashCode.AddSequence(ProjectWide);
+                hashCode.AddDictionary(PackageSpecific);
 
                 return hashCode.CombinedHash;
             }
@@ -748,8 +744,8 @@ namespace NuGet.Commands
                     return true;
                 }
 
-                return EqualityUtility.SetEqualsWithNullCheck(_projectWide, other._projectWide) &&
-                    EqualityUtility.DictionaryEquals(_packageSpecific, other._packageSpecific, (s, o) => EqualityUtility.SetEqualsWithNullCheck(s, o));
+                return EqualityUtility.SetEqualsWithNullCheck(ProjectWide, other.ProjectWide) &&
+                    EqualityUtility.DictionaryEquals(PackageSpecific, other.PackageSpecific, (s, o) => EqualityUtility.SetEqualsWithNullCheck(s, o));
             }
 
             /// <summary>
@@ -771,8 +767,8 @@ namespace NuGet.Commands
                     return this;
                 }
 
-                var thisPackages = _packageSpecific;
-                var otherPackages = other._packageSpecific;
+                var thisPackages = PackageSpecific;
+                var otherPackages = other.PackageSpecific;
 
                 // null is empty and cannot intersect
                 Dictionary<string, HashSet<NuGetLogCode>> packages = null;
@@ -798,7 +794,7 @@ namespace NuGet.Commands
                     }
                 }
 
-                var projectWide = Intersect(_projectWide, other._projectWide);
+                var projectWide = Intersect(ProjectWide, other.ProjectWide);
                 return Create(projectWide, packages);
             }
 
@@ -818,10 +814,10 @@ namespace NuGet.Commands
                     return true;
                 }
 
-                if (IsSubSetOfWithNullCheck(_projectWide, other._projectWide))
+                if (IsSubSetOfWithNullCheck(ProjectWide, other.ProjectWide))
                 {
-                    var package = _packageSpecific;
-                    var otherPackage = other._packageSpecific;
+                    var package = PackageSpecific;
+                    var otherPackage = other.PackageSpecific;
 
                     if (otherPackage == null)
                     {
@@ -879,8 +875,8 @@ namespace NuGet.Commands
             /// <returns>Returns a NodeWarningProperties combining this class's and the other class's node warning properties.</returns>
             internal NodeWarningProperties Merge(NodeWarningProperties other)
             {
-                var mergedProjectWideNoWarn = MergeCodes(_projectWide, other?._projectWide);
-                var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(_packageSpecific, other?._packageSpecific);
+                var mergedProjectWideNoWarn = MergeCodes(ProjectWide, other?.ProjectWide);
+                var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(PackageSpecific, other?.PackageSpecific);
 
                 return Create(mergedProjectWideNoWarn, mergedPackageSpecificNoWarn);
             }
@@ -894,13 +890,13 @@ namespace NuGet.Commands
                 string libraryId)
             {
                 var result = new HashSet<NuGetLogCode>();
-                if (_projectWide?.Count > 0)
+                if (ProjectWide?.Count > 0)
                 {
-                    result.UnionWith(_projectWide);
+                    result.UnionWith(ProjectWide);
                 }
 
-                if (_packageSpecific?.Count > 0 &&
-                    _packageSpecific.TryGetValue(libraryId, out var codes) &&
+                if (PackageSpecific?.Count > 0 &&
+                    PackageSpecific.TryGetValue(libraryId, out var codes) &&
                     codes?.Count > 0)
                 {
                     result.UnionWith(codes);
