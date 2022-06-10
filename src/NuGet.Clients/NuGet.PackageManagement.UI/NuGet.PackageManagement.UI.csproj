@@ -84,6 +84,12 @@
     <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LicenseFileText.cs" />
     <Compile Include="Models\PackageItemDeprecationLabelState.cs" />
+    <Compile Include="Options\PackageSourceMappingOptionsControl.xaml.cs">
+      <DependentUpon>PackageSourceMappingOptionsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Options\PackageSourceMappingOptionsPage.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Utility\IReconnectingNuGetSearchService.cs" />
     <Compile Include="Utility\NuGetSearchServiceReconnector.cs" />
     <Compile Include="ViewModels\LoadingStatusViewModel.cs" />
@@ -303,6 +309,10 @@
     <DesignDataWithDesignTimeCreatableTypes Include="Design\PackageItemListViewSampleData.xaml">
       <SubType>Designer</SubType>
     </DesignDataWithDesignTimeCreatableTypes>
+    <Page Include="Options\PackageSourceMappingOptionsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Themes\generic.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
