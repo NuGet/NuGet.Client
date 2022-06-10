@@ -615,7 +615,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkg_WhenProjectOnboardedToCPM()
+        public async Task AddPkg_WhenProjectOnboardedToCPMAndNoPackagesExistInProps()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -656,6 +656,10 @@ namespace Dotnet.Integration.Test
             result.Success.Should().BeTrue(because: result.AllOutput);
             //Assert.Contains($"Installed {packageX} {version} from {packageSource2}", result.AllOutput);
         }
+
+       
     }
 }
+
+
 
