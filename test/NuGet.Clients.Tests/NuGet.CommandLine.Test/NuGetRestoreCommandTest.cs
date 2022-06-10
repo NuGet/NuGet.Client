@@ -353,7 +353,7 @@ namespace NuGet.CommandLine.Test
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -621,7 +621,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project='..\packages\a.targets' />
 </Project>");
@@ -847,7 +847,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -864,7 +864,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -920,7 +920,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -937,7 +937,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1004,7 +1004,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1533,7 +1533,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1606,7 +1606,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1679,7 +1679,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1762,7 +1762,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1856,7 +1856,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1955,7 +1955,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='project.json' />
@@ -1979,7 +1979,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include=""..\A\A.Util\A.Util.csproj"">
@@ -2251,7 +2251,7 @@ EndProject";
     <OutputType>Library</OutputType>
     <RootNamespace>ClassLibrary1</RootNamespace>
     <AssemblyName>ClassLibrary1</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
     <OutputPath>bin\Debug\</OutputPath>
@@ -2404,7 +2404,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2568,7 +2568,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2656,7 +2656,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2742,7 +2742,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2817,7 +2817,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2900,7 +2900,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2978,7 +2978,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -3045,7 +3045,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -3130,7 +3130,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -3219,7 +3219,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />

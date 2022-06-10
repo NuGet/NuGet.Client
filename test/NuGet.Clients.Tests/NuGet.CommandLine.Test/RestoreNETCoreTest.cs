@@ -7000,7 +7000,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-                var projectFrameworks = "net45;net46";
+                var projectFrameworks = "net472;net48";
 
                 var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
                             projectName: "a",
@@ -7024,9 +7024,9 @@ namespace NuGet.CommandLine.Test
                     packageX1,
                     packageX2);
 
-                projectA.AddPackageDownloadToFramework("net45", packageX1);
+                projectA.AddPackageDownloadToFramework("net472", packageX1);
 
-                projectA.AddPackageDownloadToFramework("net46", packageX2);
+                projectA.AddPackageDownloadToFramework("net48", packageX2);
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);

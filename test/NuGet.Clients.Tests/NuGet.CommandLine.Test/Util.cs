@@ -794,7 +794,7 @@ namespace NuGet.CommandLine.Test
 
         public static string CreateProjFileContent(
             string projectName = "proj1",
-            string targetFrameworkVersion = "v4.5",
+            string targetFrameworkVersion = "v4.7.2",
             string[] references = null,
             string[] contentFiles = null)
         {
@@ -804,7 +804,7 @@ namespace NuGet.CommandLine.Test
 
         public static XElement CreateProjFileXmlContent(
             string projectName = "proj1",
-            string targetFrameworkVersion = "v4.5",
+            string targetFrameworkVersion = "v4.7.2",
             string[] references = null,
             string[] contentFiles = null)
         {
@@ -1041,7 +1041,7 @@ EndProject";
                     <AppDesignerFolder>Properties</AppDesignerFolder>
                     <RootNamespace>$NAME$</RootNamespace>
                     <AssemblyName>$NAME$</AssemblyName>
-                    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+                    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
                     <FileAlignment>512</FileAlignment>
                     <DebugSymbols>true</DebugSymbols>
                     <DebugType>full</DebugType>
@@ -1100,7 +1100,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='{include1}' />
@@ -1129,7 +1129,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='{include2}' />
