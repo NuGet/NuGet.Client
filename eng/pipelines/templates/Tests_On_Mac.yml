@@ -10,8 +10,9 @@ steps:
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - script: |
+    cd $BUILD_REPOSITORY_LOCALPATH
     echo "$BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed"
-    $BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --logger "console;verbosity=detailed" --diag:$BUILD_REPOSITORY_LOCALPATH/log/log.txt
+    ./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --diag:./log/log.txt
     echo "single test exitcode is $?"
     cd $BUILD_REPOSITORY_LOCALPATH
     echo "==== current path ====="
