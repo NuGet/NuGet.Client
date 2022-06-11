@@ -10,9 +10,17 @@ steps:
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - script: |
-    echo "$BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --blame-crash-collect-always"
-    $BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --logger "console;verbosity=detailed" --blame-crash-collect-always
+    echo "$BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed"
+    $BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --logger "console;verbosity=detailed" --diag:$BUILD_REPOSITORY_LOCALPATH/log/log.txt
     echo "single test exitcode is $?"
+
+- task: PublishBuildArtifacts@1
+  displayName: "Publish log"
+  inputs:
+    PathtoPublish: "$(Build.Repository.LocalPath)/log"
+    ArtifactName: "$(Agent.JobName)"
+    ArtifactType: "Container"
+  condition: "succeededOrFailed()"
 
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
