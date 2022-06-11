@@ -123,8 +123,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "================== try to run a single test ==============="
-echo "$BUILD_STAGINGDIRECTORY/cli/dotnet test $BUILD_STAGINGDIRECTORY/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --blame-crash-collect-always"
-$BUILD_STAGINGDIRECTORY/cli/dotnet test $BUILD_STAGINGDIRECTORY/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --blame-crash-collect-always
+echo "cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --blame-crash-collect-always"
+cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --blame-crash-collect-always
 echo "CoreUnitTests failed!! exitcode is $?"
 
 echo "Core tests finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
