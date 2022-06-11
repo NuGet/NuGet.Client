@@ -1850,7 +1850,6 @@ override NuGet.Protocol.VersionRangeConverter.WriteJson(Newtonsoft.Json.JsonWrit
 override NuGet.Repositories.LocalPackageInfo.ToString() -> string
 static NuGet.Protocol.CachingUtility.ComputeHash(string value, bool addIdentifiableCharacters = true) -> string
 static NuGet.Protocol.CachingUtility.IsFileAlreadyOpen(string filePath) -> bool
-static NuGet.Protocol.CachingUtility.ReadCacheFile(System.TimeSpan maxAge, string cacheFile) -> System.IO.Stream
 static NuGet.Protocol.CachingUtility.RemoveInvalidFileNameChars(string value) -> string
 static NuGet.Protocol.Core.Types.FindPackageByIdResource.GetDependencyInfo(NuGet.Packaging.NuspecReader reader) -> NuGet.Protocol.Core.Types.FindPackageByIdDependencyInfo
 static NuGet.Protocol.Core.Types.HttpSourceCacheContext.Create(NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, bool isFirstAttempt) -> NuGet.Protocol.Core.Types.HttpSourceCacheContext
@@ -2058,7 +2057,6 @@ virtual NuGet.Protocol.FindLocalPackagesResource.Exists(NuGet.Packaging.Core.Pac
 virtual NuGet.Protocol.FindLocalPackagesResource.Exists(string packageId, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> bool
 virtual NuGet.Protocol.HttpSource.Dispose(bool disposing) -> void
 virtual NuGet.Protocol.HttpSource.GetAsync<T>(NuGet.Protocol.HttpSourceCachedRequest request, System.Func<NuGet.Protocol.HttpSourceResult, System.Threading.Tasks.Task<T>> processAsync, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>
-virtual NuGet.Protocol.HttpSource.TryReadCacheFile(string uri, System.TimeSpan maxAge, string cacheFile) -> System.IO.Stream
 virtual NuGet.Protocol.HttpSourceResult.Dispose(bool disposing) -> void
 virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddFiles(string expandedPath) -> System.Lazy<System.Collections.Generic.IReadOnlyList<string>>
 virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddNuspec(string manifestPath, string expandedPath) -> System.Lazy<NuGet.Packaging.NuspecReader>

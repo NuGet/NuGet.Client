@@ -5,7 +5,9 @@ NuGet.Protocol.HttpSourceUsage
 NuGet.Protocol.HttpSourceUsage.HttpSourceHitCacheEventHandler
 NuGet.Protocol.HttpSourceUsage.HttpSourceMissCacheEventHandler
 NuGet.Protocol.InvalidCacheProtocolException.InvalidCacheProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
+static NuGet.Protocol.CachingUtility.ReadCacheFile(System.TimeSpan maxAge, string cacheFile) -> (System.IO.Stream, bool isExpired)
 static NuGet.Protocol.HttpSourceUsage.HttpSourceHitCacheEvent -> NuGet.Protocol.HttpSourceUsage.HttpSourceHitCacheEventHandler
 static NuGet.Protocol.HttpSourceUsage.HttpSourceMissCacheEvent -> NuGet.Protocol.HttpSourceUsage.HttpSourceMissCacheEventHandler
 static NuGet.Protocol.HttpSourceUsage.RaiseHttpSourceHitCacheEvent() -> void
-static NuGet.Protocol.HttpSourceUsage.RaiseHttpSourceMissCacheEvent() -> void
+static NuGet.Protocol.HttpSourceUsage.RaiseHttpSourceMissCacheEvent(bool cacheByPass, bool isExpired) -> void
+virtual NuGet.Protocol.HttpSource.TryReadCacheFile(System.TimeSpan maxAge, string cacheFile) -> (System.IO.Stream, bool isExpired)

@@ -34,7 +34,7 @@ namespace NuGet.Protocol
             return EncodingUtility.ToHex(hash, HashLength) + (addIdentifiableCharacters ? "$" + trailing : string.Empty);
         }
 
-        public static Stream ReadCacheFile(TimeSpan maxAge, string cacheFile)
+        public static (Stream, bool isExpired) ReadCacheFile(TimeSpan maxAge, string cacheFile)
         {
             var fileInfo = new FileInfo(cacheFile);
 
@@ -50,11 +50,13 @@ namespace NuGet.Protocol
                         FileShare.Read | FileShare.Delete,
                         BufferSize);
 
-                    return stream;
+                    return (stream, false);
                 }
+
+                return (null, true);
             }
 
-            return null;
+            return (null, false);
         }
 
         public static bool IsFileAlreadyOpen(string filePath)

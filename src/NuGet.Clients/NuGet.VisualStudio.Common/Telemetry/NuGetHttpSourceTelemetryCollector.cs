@@ -14,6 +14,8 @@ namespace NuGet.VisualStudio.Common.Telemetry
         // PMC, PMUI powershell telemetry consts
         public const string HitCount = nameof(HitCount);
         public const string MissCount = nameof(MissCount);
+        public const string CacheByPassCount = nameof(CacheByPassCount);
+        public const string ExpiredCacheCount = nameof(ExpiredCacheCount);
         public const string HttpSource = "HttpSource.";
 
         private readonly InstanceData _vsInstanceData;
@@ -33,9 +35,9 @@ namespace NuGet.VisualStudio.Common.Telemetry
             _vsInstanceData.IncrementCacheHitCount();
         }
 
-        private void HttpSourceUsage_HttpSourceMissCacheEventHandler()
+        private void HttpSourceUsage_HttpSourceMissCacheEventHandler(bool cacheByPass, bool isExpired)
         {
-            _vsInstanceData.IncrementCacheMissCount();
+            _vsInstanceData.IncrementCacheMissCount(cacheByPass, isExpired);
         }
 
         private void NuGetSourceTelemetry_VSInstanseCloseHandler(object sender, TelemetryEvent telemetryEvent)
@@ -59,13 +61,21 @@ namespace NuGet.VisualStudio.Common.Telemetry
         {
             private int _hitCount = 0;
             internal int HitCount => _hitCount;
+
             private int _missCount = 0;
-            internal int MissCount { get; set; }
+            internal int MissCount => _missCount;
+
+            private int _cacheByPassCount = 0;
+            internal int CacheByPassCount => _cacheByPassCount;
+
+            private int _expiredCacheCount = 0;
+            internal int ExpiredCacheCount => _expiredCacheCount;
 
             internal InstanceData()
             {
                 _hitCount = 0;
                 _missCount = 0;
+                _cacheByPassCount = 0;
             }
 
             internal void IncrementCacheHitCount()
@@ -73,15 +83,27 @@ namespace NuGet.VisualStudio.Common.Telemetry
                 Interlocked.Increment(ref _hitCount);
             }
 
-            internal void IncrementCacheMissCount()
+            internal void IncrementCacheMissCount(bool cacheByPass, bool isExpired)
             {
                 Interlocked.Increment(ref _missCount);
+
+                if (cacheByPass)
+                {
+                    Interlocked.Increment(ref _cacheByPassCount);
+                }
+
+                if (isExpired)
+                {
+                    Interlocked.Increment(ref _expiredCacheCount);
+                }
             }
 
             internal void AddProperties(TelemetryEvent telemetryEvent)
             {
                 telemetryEvent[HttpSource + NuGetHttpSourceTelemetryCollector.HitCount] = HitCount;
                 telemetryEvent[HttpSource + NuGetHttpSourceTelemetryCollector.MissCount] = MissCount;
+                telemetryEvent[HttpSource + NuGetHttpSourceTelemetryCollector.CacheByPassCount] = CacheByPassCount;
+                telemetryEvent[HttpSource + NuGetHttpSourceTelemetryCollector.ExpiredCacheCount] = ExpiredCacheCount;
             }
         }
     }

@@ -8,7 +8,7 @@ namespace NuGet.Protocol
         public delegate void HttpSourceHitCacheEventHandler();
         public static event HttpSourceHitCacheEventHandler HttpSourceHitCacheEvent;
 
-        public delegate void HttpSourceMissCacheEventHandler();
+        public delegate void HttpSourceMissCacheEventHandler(bool cacheByPass, bool isExpired);
         public static event HttpSourceMissCacheEventHandler HttpSourceMissCacheEvent;
 
         public static void RaiseHttpSourceHitCacheEvent()
@@ -16,9 +16,9 @@ namespace NuGet.Protocol
             HttpSourceHitCacheEvent?.Invoke();
         }
 
-        public static void RaiseHttpSourceMissCacheEvent()
+        public static void RaiseHttpSourceMissCacheEvent(bool cacheByPass, bool isExpired)
         {
-            HttpSourceMissCacheEvent?.Invoke();
+            HttpSourceMissCacheEvent?.Invoke(cacheByPass, isExpired);
         }
     }
 }

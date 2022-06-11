@@ -46,7 +46,7 @@ namespace NuGet.Protocol.Plugins
             Stream content = null;
             try
             {
-                content = CachingUtility.ReadCacheFile(MaxAge, CacheFileName);
+                (content, _) = CachingUtility.ReadCacheFile(MaxAge, CacheFileName);
                 if (content != null)
                 {
                     ProcessContent(content);
