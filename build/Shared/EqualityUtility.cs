@@ -11,7 +11,7 @@ namespace NuGet.Shared
     internal static class EqualityUtility
     {
         /// <summary>
-        /// Compares two enumberables for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
+        /// Compares two enumerables for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
         /// </summary>
         /// <typeparam name="TSource">The type of the list</typeparam>
         /// <typeparam name="TKey">The type of the sorting key</typeparam>
@@ -29,6 +29,83 @@ namespace NuGet.Shared
             if (TryIdentityEquals(self, other, out identityEquals))
             {
                 return identityEquals;
+            }
+
+            return self
+                .OrderBy(keySelector, orderComparer)
+                .SequenceEqual(other.OrderBy(keySelector, orderComparer), sequenceComparer);
+        }
+
+        /// <summary>
+        /// Compares two collections for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the list</typeparam>
+        /// <typeparam name="TKey">The type of the sorting key</typeparam>
+        /// <param name="self">This list</param>
+        /// <param name="other">The other list</param>
+        /// <param name="keySelector">The function to extract the key from each item in the list</param>
+        /// <param name="orderComparer">An optional comparer for comparing keys</param>
+        /// <param name="sequenceComparer">An optional comparer for sequences</param>
+        internal static bool OrderedEquals<TSource, TKey>(this ICollection<TSource> self, ICollection<TSource> other, Func<TSource, TKey> keySelector, IComparer<TKey> orderComparer = null, IEqualityComparer<TSource> sequenceComparer = null)
+        {
+            Debug.Assert(orderComparer != null || typeof(TKey) != typeof(string), "Argument " + "orderComparer" + " must be provided if " + "TKey" + " is a string.");
+            Debug.Assert(sequenceComparer != null || typeof(TSource) != typeof(string), "Argument " + "sequenceComparer" + " must be provided if " + "TSource" + " is a string.");
+
+            bool identityEquals;
+            if (TryIdentityEquals(self, other, out identityEquals))
+            {
+                return identityEquals;
+            }
+
+            if (self.Count != other.Count)
+            {
+                return false;
+            }
+
+            if (self.Count == 0)
+            {
+                return true;
+            }
+
+            return self
+                .OrderBy(keySelector, orderComparer)
+                .SequenceEqual(other.OrderBy(keySelector, orderComparer), sequenceComparer);
+        }
+
+        /// <summary>
+        /// Compares two lists for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the list</typeparam>
+        /// <typeparam name="TKey">The type of the sorting key</typeparam>
+        /// <param name="self">This list</param>
+        /// <param name="other">The other list</param>
+        /// <param name="keySelector">The function to extract the key from each item in the list</param>
+        /// <param name="orderComparer">An optional comparer for comparing keys</param>
+        /// <param name="sequenceComparer">An optional comparer for sequences</param>
+        internal static bool OrderedEquals<TSource, TKey>(this IList<TSource> self, IList<TSource> other, Func<TSource, TKey> keySelector, IComparer<TKey> orderComparer = null, IEqualityComparer<TSource> sequenceComparer = null)
+        {
+            Debug.Assert(orderComparer != null || typeof(TKey) != typeof(string), "Argument " + "orderComparer" + " must be provided if " + "TKey" + " is a string.");
+            Debug.Assert(sequenceComparer != null || typeof(TSource) != typeof(string), "Argument " + "sequenceComparer" + " must be provided if " + "TSource" + " is a string.");
+
+            bool identityEquals;
+            if (TryIdentityEquals(self, other, out identityEquals))
+            {
+                return identityEquals;
+            }
+
+            if (self.Count != other.Count)
+            {
+                return false;
+            }
+
+            if (self.Count == 0)
+            {
+                return true;
+            }
+
+            if (self.Count == 1)
+            {
+                return (sequenceComparer ?? EqualityComparer<TSource>.Default).Equals(self[0], other[0]);
             }
 
             return self
@@ -60,6 +137,77 @@ namespace NuGet.Shared
         }
 
         /// <summary>
+        /// Compares two collections for equality, allowing either collection to be null. If one is null, both have to be
+        /// null for equality.
+        /// </summary>
+        internal static bool SequenceEqualWithNullCheck<T>(
+            this ICollection<T> self,
+            ICollection<T> other,
+            IEqualityComparer<T> comparer = null)
+        {
+            bool identityEquals;
+            if (TryIdentityEquals(self, other, out identityEquals))
+            {
+                return identityEquals;
+            }
+
+            if (self.Count != other.Count)
+            {
+                return false;
+            }
+
+            if (self.Count == 0)
+            {
+                return true;
+            }
+
+            if (comparer == null)
+            {
+                comparer = EqualityComparer<T>.Default;
+            }
+
+            return self.SequenceEqual(other, comparer);
+        }
+
+        /// <summary>
+        /// Compares two lists for equality, allowing either list to be null. If one is null, both have to be
+        /// null for equality.
+        /// </summary>
+        internal static bool SequenceEqualWithNullCheck<T>(
+            this IList<T> self,
+            IList<T> other,
+            IEqualityComparer<T> comparer = null)
+        {
+            bool identityEquals;
+            if (TryIdentityEquals(self, other, out identityEquals))
+            {
+                return identityEquals;
+            }
+
+            if (self.Count != other.Count)
+            {
+                return false;
+            }
+
+            if (self.Count == 0)
+            {
+                return true;
+            }
+
+            if (comparer == null)
+            {
+                comparer = EqualityComparer<T>.Default;
+            }
+
+            if (self.Count == 1)
+            {
+                return comparer.Equals(self[0], other[0]);
+            }
+
+            return self.SequenceEqual(other, comparer);
+        }
+
+        /// <summary>
         /// Compares two sets for equality, allowing either sequence to be null.
         /// If one is null, both have to be null for equality.
         /// </summary>
@@ -78,6 +226,11 @@ namespace NuGet.Shared
             if (self.Count != other.Count)
             {
                 return false;
+            }
+
+            if (self.Count == 0)
+            {
+                return true;
             }
 
             if (comparer == null)
@@ -109,6 +262,11 @@ namespace NuGet.Shared
             if (self.Count != other.Count)
             {
                 return false;
+            }
+
+            if (self.Count == 0)
+            {
+                return true;
             }
 
             if (!self.Keys.OrderedEquals(

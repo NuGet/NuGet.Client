@@ -600,7 +600,7 @@ namespace NuGet.CommandLine
             var entryPointProjects = dgFileOutput
                 .Projects
                 .Where(project => dgFileOutput.Restore.Contains(project.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal))
-                .ToList();
+                .ToHashSet();
 
             // possible packages.config
             // Compare paths case-insenstive here since we do not know how msbuild modified them
