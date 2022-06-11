@@ -1,19 +1,23 @@
 steps:
-- task: UseDotNet@2
-  displayName: 'Use .NET Core sdk'
-  inputs:
-    packageType: sdk
-    version: 6.x
-    installationPath: $(Agent.TempDirectory)/dotnet
-
 - task: ShellScript@2
   displayName: "Run Tests (stop on error)"
   continueOnError: "false"
   inputs:
-    scriptPath: "scripts/funcTests/runFuncTests.sh"
+    scriptPath: "scripts/funcTests/runFuncTests2.sh"
+    args: '5.0'
     disableAutoCwd: "true"
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
+
+- task: Bash@3
+  displayName: "Run single Test (stop on error)"
+  continueOnError: "false"
+  inputs:
+    targetType: 'inline'
+    script: |
+echo "$BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --blame-crash-collect-always"
+$BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --logger "console;verbosity=detailed" --blame-crash-collect-always
+echo "single test exitcode is $?"
 
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
