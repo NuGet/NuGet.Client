@@ -98,6 +98,8 @@ namespace NuGet.Protocol
                                 cacheResult.CacheFile,
                                 cacheResult.Stream);
 
+                            HttpSourceUsage.RaiseHttpSourceHitCacheEvent();
+
                             return await processAsync(httpSourceResult);
                         }
                         catch (Exception e)
@@ -110,6 +112,10 @@ namespace NuGet.Protocol
                                              + ExceptionUtilities.DisplayMessage(e);
                             log.LogWarning(message);
                         }
+                    }
+                    else
+                    {
+                        HttpSourceUsage.RaiseHttpSourceMissCacheEvent();
                     }
 
                     Func<HttpRequestMessage> requestFactory = () =>
@@ -244,6 +250,7 @@ namespace NuGet.Protocol
                     response.EnsureSuccessStatusCode();
 
                     var networkStream = await response.Content.ReadAsStreamAsync();
+                    HttpSourceUsage.RaiseHttpSourceHitCacheEvent();
                     return await processAsync(networkStream);
                 },
                 cacheContext,

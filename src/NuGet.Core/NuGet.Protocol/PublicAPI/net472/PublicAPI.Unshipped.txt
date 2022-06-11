@@ -1,4 +1,11 @@
 NuGet.Protocol.Core.Types.FatalProtocolException.FatalProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Protocol.Core.Types.NuGetProtocolException.NuGetProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Protocol.Core.Types.RetriableProtocolException.RetriableProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
+NuGet.Protocol.HttpSourceUsage
+NuGet.Protocol.HttpSourceUsage.HttpSourceHitCacheEventHandler
+NuGet.Protocol.HttpSourceUsage.HttpSourceMissCacheEventHandler
 NuGet.Protocol.InvalidCacheProtocolException.InvalidCacheProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
+static NuGet.Protocol.HttpSourceUsage.HttpSourceHitCacheEvent -> NuGet.Protocol.HttpSourceUsage.HttpSourceHitCacheEventHandler
+static NuGet.Protocol.HttpSourceUsage.HttpSourceMissCacheEvent -> NuGet.Protocol.HttpSourceUsage.HttpSourceMissCacheEventHandler
+static NuGet.Protocol.HttpSourceUsage.RaiseHttpSourceHitCacheEvent() -> void
+static NuGet.Protocol.HttpSourceUsage.RaiseHttpSourceMissCacheEvent() -> void
