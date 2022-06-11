@@ -13,6 +13,15 @@ steps:
     echo "$BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed"
     $BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --logger "console;verbosity=detailed" --diag:$BUILD_REPOSITORY_LOCALPATH/log/log.txt
     echo "single test exitcode is $?"
+    cd $BUILD_REPOSITORY_LOCALPATH
+    echo "==== current path ====="
+    pwd
+    echo "==== ls ====="
+    ls
+    echo "==== ls -l log ====="
+    ls -l log
+    echo "==== find $BUILD_REPOSITORY_LOCALPATH -name log.txt ====="
+    find $BUILD_REPOSITORY_LOCALPATH -name log.txt
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish log"
