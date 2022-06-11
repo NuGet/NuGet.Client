@@ -87,14 +87,14 @@ namespace NuGet.LibraryModel
             var hashCode = new HashCodeCombiner();
 
             hashCode.AddObject(LibraryRange);
-            hashCode.AddObject(IncludeType);
-            hashCode.AddObject(SuppressParent);
+            hashCode.AddStruct(IncludeType);
+            hashCode.AddStruct(SuppressParent);
             hashCode.AddObject(AutoReferenced);
             hashCode.AddSequence(NoWarn);
             hashCode.AddObject(GeneratePathProperty);
             hashCode.AddObject(VersionCentrallyManaged);
             hashCode.AddObject(Aliases);
-            hashCode.AddObject(ReferenceType);
+            hashCode.AddStruct(ReferenceType);
 
             return hashCode.CombinedHash;
         }

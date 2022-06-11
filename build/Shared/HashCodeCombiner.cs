@@ -58,6 +58,15 @@ namespace NuGet.Shared
             }
         }
 
+        // Optimization: for value types, we can avoid boxing "o" by skipping the null check
+        internal void AddStruct<T>(T o)
+            where T : struct
+        {
+            CheckInitialized();
+
+            AddHashCode(o.GetHashCode());
+        }
+
         internal void AddStringIgnoreCase(string s)
         {
             CheckInitialized();
