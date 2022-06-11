@@ -408,7 +408,7 @@
     <ItemGroup Condition=" '$(SkipCoreAssemblies)' != 'true' ">
       <CoreInputTestAssemblies Include="@(TestAssemblyPath->WithMetadataValue('IsCore', 'true'))" />
     </ItemGroup>
-    
+
     <PropertyGroup Condition=" '$(SkipCoreAssemblies)' != 'true' ">
       <CoreTestCommand>&quot;$(DotnetExePath)&quot; test @(CoreInputTestAssemblies->'&quot;%(Identity)&quot;', ' ') --logger:&quot;console;verbosity=$(DotNetTestConsoleVerbosity)&quot; --settings:&quot;$(MSBuildThisFileDirectory)xunit.runsettings&quot;</CoreTestCommand>
       <CoreTestCommand Condition=" '$(CoreTestResultsTrx)' != '' ">$(CoreTestCommand) --logger:&quot;trx;LogFilePath=$(CoreTestResultsTrx)&quot;</CoreTestCommand>
@@ -426,7 +426,7 @@
           Condition=" '$(SkipDesktopAssemblies)' != 'true' AND @(DesktopInputTestAssemblies->Count()) > 0 ">
       <Output TaskParameter="ExitCode" PropertyName="DesktopTestErrorCode"/>
     </Exec>
-    
+
     <!-- VSTest/NETCore -->
     <Message Text="Running $(CoreTestCommand)"
              Importance="High"
@@ -441,7 +441,7 @@
 
     <Error Text="Desktop $(TestResultsFileName) tests failed! Results: $(DesktopTestResultsTrx)"
            Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopTestErrorCode)' != '0' AND '$(DesktopTestErrorCode)' != '' " />
-    
+
     <Error Text="NETCore $(TestResultsFileName) tests failed! Results: $(CoreTestResultsTrx)"
            Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(VSTestErrorCode)' != '0' AND '$(VSTestErrorCode)' != '' " />
 
