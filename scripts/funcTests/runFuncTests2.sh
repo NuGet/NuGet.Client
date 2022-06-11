@@ -116,7 +116,7 @@ echo "Restore finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 echo "dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/03.CoreUnitTests.binlog"
 dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/03.CoreUnitTests.binlog
 
-echo $?
+echo "CoreUnitTests failed!! exitcode is $?"
 if [ $? -ne 0 ]; then
 	echo "CoreUnitTests failed!! exitcode is $?"
 	RESULTCODE=1
@@ -124,8 +124,8 @@ fi
 
 echo "================== try to run a single test ==============="
 echo "cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --blame-crash-collect-always"
-cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --blame-crash-collect-always
-echo "CoreUnitTests failed!! exitcode is $?"
+cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --logger "console;verbosity=detailed" --blame-crash-collect-always
+echo "single test failed!! exitcode is $?"
 
 echo "Core tests finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
