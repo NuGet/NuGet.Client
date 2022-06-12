@@ -30,7 +30,7 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: "Publish log"
   inputs:
-    PathtoPublish: "$BUILD_REPOSITORY_LOCALPATH/log"
+    PathtoPublish: "$(Build.Repository.LocalPath)/log"
     ArtifactName: "$(Agent.JobName)"
     ArtifactType: "Container"
   condition: "succeededOrFailed()"
