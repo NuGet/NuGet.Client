@@ -21,11 +21,16 @@ steps:
     ls -l system.log*
     echo "==== tail system.log ====="
     tail system.log
+    cd $BUILD_REPOSITORY_LOCALPATH
+    midir log
+    cp ./system.log*  $BUILD_REPOSITORY_LOCALPATH/log
+    echo "==== ls -l $BUILD_REPOSITORY_LOCALPATH/log ====="
+    ls -l $BUILD_REPOSITORY_LOCALPATH/log
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish log"
   inputs:
-    PathtoPublish: "/var/log/system.log*"
+    PathtoPublish: "$BUILD_REPOSITORY_LOCALPATH/log"
     ArtifactName: "$(Agent.JobName)"
     ArtifactType: "Container"
   condition: "succeededOrFailed()"

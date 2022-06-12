@@ -10,9 +10,30 @@ steps:
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - script: |
-    echo "$BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --blame-crash-collect-always"
-    $BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed --logger "console;verbosity=detailed" --blame-crash-collect-always
+    cd $BUILD_REPOSITORY_LOCALPATH
+    echo "$BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed"
+    ./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --blame-crash-collect-always
     echo "single test exitcode is $?"
+    cd /var/log
+    echo "==== ls ====="
+    ls -l
+    echo "==== ls -l system.log* ====="
+    ls -l system.log*
+    echo "==== tail system.log ====="
+    tail system.log
+    cd $BUILD_REPOSITORY_LOCALPATH
+    midir log
+    cp ./system.log*  $BUILD_REPOSITORY_LOCALPATH/log
+    echo "==== ls -l $BUILD_REPOSITORY_LOCALPATH/log ====="
+    ls -l $BUILD_REPOSITORY_LOCALPATH/log
+
+- task: PublishBuildArtifacts@1
+  displayName: "Publish log"
+  inputs:
+    PathtoPublish: "$BUILD_REPOSITORY_LOCALPATH/log"
+    ArtifactName: "$(Agent.JobName)"
+    ArtifactType: "Container"
+  condition: "succeededOrFailed()"
 
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
