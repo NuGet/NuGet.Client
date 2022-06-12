@@ -12,22 +12,20 @@ steps:
 - script: |
     cd $BUILD_REPOSITORY_LOCALPATH
     echo "$BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed"
-    ./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --diag:./log/log.txt
+    ./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --blame-crash-collect-always
     echo "single test exitcode is $?"
-    cd $BUILD_REPOSITORY_LOCALPATH
-    echo "==== current path ====="
-    pwd
+    cd /var/log
     echo "==== ls ====="
-    ls
-    echo "==== ls -l log ====="
-    ls -l log
-    echo "==== find $BUILD_REPOSITORY_LOCALPATH -name log.txt ====="
-    find $BUILD_REPOSITORY_LOCALPATH -name log.txt
+    ls -l
+    echo "==== ls -l system.log* ====="
+    ls -l system.log*
+    echo "==== tail system.log ====="
+    tail system.log
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish log"
   inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)/log"
+    PathtoPublish: "/var/log/system.log*"
     ArtifactName: "$(Agent.JobName)"
     ArtifactType: "Container"
   condition: "succeededOrFailed()"
