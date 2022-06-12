@@ -23,7 +23,7 @@ steps:
     tail system.log
     cd $BUILD_REPOSITORY_LOCALPATH
     mkdir log
-    cp ./system.log*  $BUILD_REPOSITORY_LOCALPATH/log
+    cp /var/log/system.log*  $BUILD_REPOSITORY_LOCALPATH/log
     echo "==== ls -l $BUILD_REPOSITORY_LOCALPATH/log ====="
     ls -l $BUILD_REPOSITORY_LOCALPATH/log
 
