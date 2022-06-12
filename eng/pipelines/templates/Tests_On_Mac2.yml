@@ -22,7 +22,7 @@ steps:
     echo "==== tail system.log ====="
     tail system.log
     cd $BUILD_REPOSITORY_LOCALPATH
-    midir log
+    mkdir log
     cp ./system.log*  $BUILD_REPOSITORY_LOCALPATH/log
     echo "==== ls -l $BUILD_REPOSITORY_LOCALPATH/log ====="
     ls -l $BUILD_REPOSITORY_LOCALPATH/log
