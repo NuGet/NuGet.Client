@@ -57,7 +57,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 var vcReference = reference as VCReference;
                 if (vcReference.UseInBuild)
                 {
-                    var childProjectPath = vcReference.FullPath;
+                    var childProjectPath = vcReference.FullPath; // TODO: This returns the assembly path, but we really want the vcxproj path instead.
+
                     var projectRestoreReference = new ProjectRestoreReference()
                     {
                         ProjectPath = childProjectPath,
