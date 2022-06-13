@@ -2141,8 +2141,8 @@ namespace NuGet.Commands.Test
                     new List<CentralPackageVersion>() { centralVersionFoo, centralVersionDummy },
                     framework);
 
-                PackageSpec packageSpec2 = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfi }, framework, projectName2, projectPath2, cpvmEnabled: true);
-                PackageSpec packageSpec1 = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfi }, framework, projectName1, projectPath1, cpvmEnabled: true);
+                PackageSpec packageSpec2 = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfi }, framework, projectName2, projectPath2, centralPackageManagementEnabled: true);
+                PackageSpec packageSpec1 = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfi }, framework, projectName1, projectPath1, centralPackageManagementEnabled: true);
                 packageSpec1 = packageSpec1.WithTestProjectReference(packageSpec2);
 
                 var dgspec = new DependencyGraphSpec();
@@ -2176,6 +2176,103 @@ namespace NuGet.Commands.Test
                 Assert.NotNull(targetLib);
                 Assert.Equal(1, targetLib.Dependencies.Count);
                 Assert.True(targetLib.Dependencies.Where(d => d.Id == packageName).Any());
+            }
+        }
+
+        /// <summary>
+        /// Verifies that when a transitive package version is pinned, the PrivateAssets flow from the package that pulled it into the graph to the pinned dependency.
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task RestoreCommand_CentralVersion_AssetsFile_PrivateAssetsFlowsToPinnedDependencies()
+        {
+            // Arrange
+            var framework = new NuGetFramework("net46");
+
+            var privateAssets = LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile;
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectInfo = new
+                {
+                    Name = "ProjectA",
+                    Directory = Directory.CreateDirectory(Path.Combine(pathContext.SolutionRoot, "ProjectA")),
+                    Path = new FileInfo(Path.Combine(pathContext.SolutionRoot, "ProjectA", "Project1.csproj")).FullName
+                };
+                
+                var logger = new TestLogger();
+
+                // PackageA 1.0.0 -> PackageB 1.0.0 -> PackageC 1.0.0
+                var packageA = new PackageIdentity("PackageA", new NuGetVersion("1.0.0"));
+                var packageB = new PackageIdentity("PackageB", new NuGetVersion("1.0.0"));
+                var packageC = new PackageIdentity("PackageC", new NuGetVersion("1.0.0"));
+
+                var packageCContext = new SimpleTestPackageContext(packageC);
+                packageCContext.AddFile("lib/net46/PackageC.dll");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageCContext);
+
+                var packageBContext = new SimpleTestPackageContext(packageB);
+                packageBContext.AddFile("lib/net46/PackageB.dll");
+                packageBContext.Dependencies.Add(packageCContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageBContext);
+
+                var packageAContext = new SimpleTestPackageContext(packageA);
+                packageAContext.AddFile("lib/net46/PackageA.dll");
+                packageAContext.Dependencies.Add(packageBContext);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageAContext);
+                
+                var tfi = CreateTargetFrameworkInformation(
+                    new List<LibraryDependency>
+                    {
+                        new LibraryDependency()
+                        {
+                            LibraryRange = new LibraryRange()
+                            {
+                                Name = packageA.Id,
+                                TypeConstraint = LibraryDependencyTarget.Package,
+                            },
+                            VersionCentrallyManaged = true,
+                            SuppressParent = privateAssets
+                        }
+                    },
+                    new List<CentralPackageVersion>
+                    {
+                        new CentralPackageVersion(packageA.Id, new VersionRange(packageA.Version)),
+                        new CentralPackageVersion(packageB.Id, new VersionRange(packageB.Version)),
+                        new CentralPackageVersion(packageC.Id, new VersionRange(packageC.Version))
+                    },
+                    framework);
+
+                PackageSpec packageSpec = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfi }, framework, projectInfo.Name, projectInfo.Path, centralPackageManagementEnabled: true, centralPackageTransitivePinningEnabled: true);
+                
+
+                var dgspec = new DependencyGraphSpec();
+                dgspec.AddProject(packageSpec);
+
+                var request = new TestRestoreRequest(dgspec.GetProjectSpec(projectInfo.Name), new[] { new PackageSource(pathContext.PackageSource) }, pathContext.PackagesV2, logger)
+                {
+                    LockFilePath = Path.Combine(projectInfo.Directory.FullName, "project.assets.json"),
+                    ProjectStyle = ProjectStyle.PackageReference
+                };
+
+                var restoreCommand = new RestoreCommand(request);
+                var result = await restoreCommand.ExecuteAsync();
+                var lockFile = result.LockFile;
+
+                var targetLib = lockFile.Targets.First().Libraries.Where(l => l.Name == packageA.Id).FirstOrDefault();
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal(lockFile.CentralTransitiveDependencyGroups.Count, 1);
+
+                List<LibraryDependency> transitiveDependencies = lockFile.CentralTransitiveDependencyGroups.First().TransitiveDependencies.ToList();
+
+                Assert.Equal(transitiveDependencies.Count, 2);
+
+                foreach (LibraryDependency transitiveDependency in transitiveDependencies)
+                {
+                    Assert.Equal(LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile, transitiveDependency.SuppressParent);
+                }
             }
         }
 
@@ -2218,7 +2315,7 @@ namespace NuGet.Commands.Test
                         packageVersion
                     });
 
-                PackageSpec packageSpec = CreatePackageSpec(new List<TargetFrameworkInformation>() { targetFrameworkInformation }, targetFrameworkInformation.FrameworkName, projectName, projectPath, cpvmEnabled: true);
+                PackageSpec packageSpec = CreatePackageSpec(new List<TargetFrameworkInformation>() { targetFrameworkInformation }, targetFrameworkInformation.FrameworkName, projectName, projectPath, centralPackageManagementEnabled: true);
 
                 packageSpec.RestoreMetadata.CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled;
 
@@ -2569,13 +2666,14 @@ namespace NuGet.Commands.Test
             return tfi;
         }
 
-        private static PackageSpec CreatePackageSpec(List<TargetFrameworkInformation> tfis, NuGetFramework framework, string projectName, string projectPath, bool cpvmEnabled)
+        private static PackageSpec CreatePackageSpec(List<TargetFrameworkInformation> tfis, NuGetFramework framework, string projectName, string projectPath, bool centralPackageManagementEnabled, bool centralPackageTransitivePinningEnabled = false)
         {
             var packageSpec = new PackageSpec(tfis);
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata()
             {
                 ProjectUniqueName = projectName,
-                CentralPackageVersionsEnabled = cpvmEnabled,
+                CentralPackageVersionsEnabled = centralPackageManagementEnabled,
+                CentralPackageTransitivePinningEnabled = centralPackageTransitivePinningEnabled,
                 ProjectStyle = ProjectStyle.PackageReference,
                 TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>() { new ProjectRestoreMetadataFrameworkInfo(framework) },
                 OutputPath = Path.Combine(projectPath, "obj"),

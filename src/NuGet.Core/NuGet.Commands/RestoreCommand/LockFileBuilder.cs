@@ -476,29 +476,61 @@ namespace NuGet.Commands
 
             // Do not pack anything from the runtime graphs
             // The runtime graphs are added in addition to the graphs without a runtime
-            foreach (var targetGraph in targetGraphs.Where(targetGraph => string.IsNullOrEmpty(targetGraph.RuntimeIdentifier)))
+            foreach (RestoreTargetGraph targetGraph in targetGraphs.Where(targetGraph => string.IsNullOrEmpty(targetGraph.RuntimeIdentifier)))
             {
-                var centralPackageVersionsForFramework = project.TargetFrameworks.Where(tfmi => tfmi.FrameworkName.Equals(targetGraph.Framework)).FirstOrDefault()?.CentralPackageVersions;
+                TargetFrameworkInformation targetFrameworkInformation = project.TargetFrameworks.FirstOrDefault(i => i.FrameworkName.Equals(targetGraph.Framework));
+
+                if (targetFrameworkInformation == null)
+                {
+                    continue;
+                }
 
                 // The transitive dependencies enforced by the central package version management file are written to the assets to be used by the pack task.
                 IEnumerable<LibraryDependency> centralEnforcedTransitiveDependencies = targetGraph
-                    .Flattened
-                    .Where(graphItem => graphItem.IsCentralTransitive && centralPackageVersionsForFramework?.ContainsKey(graphItem.Key.Name) == true)
-                    .Select((graphItem) =>
+                    .Graphs
+                    .SelectMany(i => i.InnerNodes)
+                    .Where(node => node.Item.IsCentralTransitive && targetFrameworkInformation.CentralPackageVersions.ContainsKey(node.Item.Key.Name))
+                    .Select((node) =>
                     {
-                        CentralPackageVersion matchingCentralVersion = centralPackageVersionsForFramework[graphItem.Key.Name];
+                        CentralPackageVersion matchingCentralVersion = targetFrameworkInformation.CentralPackageVersions[node.Item.Key.Name];
                         Dictionary<string, LibraryIncludeFlags> dependenciesIncludeFlags = _includeFlagGraphs[targetGraph];
+
+                        LibraryIncludeFlags suppressParent = LibraryIncludeFlags.None;
+
+                        if (project.RestoreMetadata.CentralPackageTransitivePinningEnabled)
+                        {
+                            // Centrally pinned dependencies are not directly declared but the PrivateAssets from the top-level dependency that pulled it in should apply to it also
+                            foreach (GraphNode<RemoteResolveResult> parentNode in FlattenParentNodes(node))
+                            {
+                                LibraryDependency parentDependency = targetFrameworkInformation.Dependencies.FirstOrDefault(i => i.Name.Equals(parentNode.Item.Key.Name, StringComparison.OrdinalIgnoreCase));
+
+                                // A transitive dependency that is a few levels deep won't be a top-level dependency so skip it
+                                if (parentDependency == null)
+                                {
+                                    continue;
+                                }
+
+                                suppressParent |= parentDependency.SuppressParent;
+                            }
+
+                            if (suppressParent == LibraryIncludeFlags.All)
+                            {
+                                return null;
+                            }
+                        }
 
                         var libraryDependency = new LibraryDependency()
                         {
                             LibraryRange = new LibraryRange(matchingCentralVersion.Name, matchingCentralVersion.VersionRange, LibraryDependencyTarget.Package),
                             ReferenceType = LibraryDependencyReferenceType.Transitive,
                             VersionCentrallyManaged = true,
-                            IncludeType = dependenciesIncludeFlags[matchingCentralVersion.Name]
+                            IncludeType = dependenciesIncludeFlags[matchingCentralVersion.Name],
+                            SuppressParent = suppressParent,
                         };
 
                         return libraryDependency;
-                    });
+                    })
+                    .Where(i => i != null);
 
                 if (centralEnforcedTransitiveDependencies.Any())
                 {
@@ -510,6 +542,28 @@ namespace NuGet.Commands
 
                     lockFile.CentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Returns a flattened list of all parent nodes for the specified node.
+        /// </summary>
+        /// <typeparam name="T">The type of the node.</typeparam>
+        /// <param name="graphNode">The <see cref="GraphNode{TItem}" /> to flatten the parent nodes of.</param>
+        /// <returns>A top down flattened list of parent nodes of the specied node.</returns>
+        private IEnumerable<GraphNode<T>> FlattenParentNodes<T>(GraphNode<T> graphNode)
+        {
+            foreach (GraphNode<T> item in graphNode.ParentNodes)
+            {
+                if (item.ParentNodes.Any())
+                {
+                    foreach (GraphNode<T> parentNode in FlattenParentNodes(item))
+                    {
+                        yield return parentNode;
+                    }
+                }
+
+                yield return item;
             }
         }
 
