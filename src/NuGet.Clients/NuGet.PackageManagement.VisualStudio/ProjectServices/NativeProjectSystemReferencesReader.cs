@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.VCProjectEngine;
@@ -54,10 +55,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (var reference in projectReferences)
             {
-                var vcReference = reference as VCReference;
+                var vcReference = reference as VCProjectReference;
                 if (vcReference.UseInBuild)
                 {
-                    var childProjectPath = vcReference.FullPath; // TODO: This returns the assembly path, but we really want the vcxproj path instead.
+                    var childProjectPath = (vcReference.ReferencedProject as Project).FileName; // TODO: This returns the assembly path, but we really want the vcxproj path instead.
 
                     var projectRestoreReference = new ProjectRestoreReference()
                     {
