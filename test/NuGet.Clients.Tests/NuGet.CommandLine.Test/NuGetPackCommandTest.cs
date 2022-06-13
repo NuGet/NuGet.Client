@@ -3205,6 +3205,9 @@ namespace Proj1
                 var dependency = dependencySet.Packages.First();
                 Assert.Equal("testPackage1", dependency.Id);
                 Assert.Equal("[1.1.0, )", dependency.VersionRange.ToString());
+
+                // Ensure that the dependency group has the same TFM as the project
+                Assert.Equal(FrameworkConstants.CommonFrameworks.Net472, dependencySet.TargetFramework);
             }
         }
 
@@ -3289,6 +3292,9 @@ namespace Proj1
                 var dependency = dependencySet.Packages.First();
                 Assert.Equal("testPackage1", dependency.Id);
                 Assert.Equal("[1.1.0, )", dependency.VersionRange.ToString());
+
+                // Ensure that the dependency group has the same TFM as the project
+                Assert.Equal(FrameworkConstants.CommonFrameworks.Net472, dependencySet.TargetFramework);
             }
         }
 
@@ -3398,6 +3404,9 @@ namespace Proj1
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
                 Assert.Equal(1, package.NuspecReader.GetDependencyGroups().Count());
                 var dependencySet = package.NuspecReader.GetDependencyGroups().First();
+
+                // Ensure that the dependency group has the same TFM as the project
+                Assert.Equal(FrameworkConstants.CommonFrameworks.Net472, dependencySet.TargetFramework);
 
                 // Verify that testPackage2 is added as dependency in addition to testPackage1.
                 // testPackage3 and testPackage4 are not added because they are already referenced by testPackage1 with the correct version range.
@@ -3510,6 +3519,9 @@ namespace Proj1
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
                 Assert.Equal(1, package.NuspecReader.GetDependencyGroups().Count());
                 var dependencySet = package.NuspecReader.GetDependencyGroups().First();
+
+                // Ensure that the dependency group has the same TFM as the project
+                Assert.Equal(FrameworkConstants.CommonFrameworks.Net472, dependencySet.TargetFramework);
 
                 // Verify that testPackage1 is added as dependency in addition to testPackage3.
                 // testPackage2 is not added because it is already referenced by testPackage3 with the correct version range.

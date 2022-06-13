@@ -983,12 +983,10 @@ namespace NuGet.CommandLine
             }
             else
             {
-                // TO FIX: when we persist the target framework into packages.config file,
-                // we need to pull that info into building the PackageDependencySet object
                 builder.DependencyGroups.Clear();
 
-                // REVIEW: IS NuGetFramework.AnyFramework correct?
-                builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, new HashSet<Packaging.Core.PackageDependency>(dependencies.Values)));
+                var targetFramework = TargetFramework ?? NuGetFramework.AnyFramework;
+                builder.DependencyGroups.Add(new PackageDependencyGroup(targetFramework, new HashSet<PackageDependency>(dependencies.Values)));
             }
         }
 
