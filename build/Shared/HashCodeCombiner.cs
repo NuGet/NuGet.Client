@@ -41,6 +41,7 @@ namespace NuGet.Shared
         }
 
         internal void AddObject<TValue>(TValue o, IEqualityComparer<TValue> comparer)
+            where TValue : class
         {
             CheckInitialized();
             if (o != null)
@@ -50,9 +51,22 @@ namespace NuGet.Shared
         }
 
         internal void AddObject<T>(T o)
+            where T : class
         {
             CheckInitialized();
             if (o != null)
+            {
+                AddHashCode(o.GetHashCode());
+            }
+        }
+
+        // Optimization: for value types, we can avoid boxing "o" by skipping the null check
+        internal void AddStruct<T>(T? o)
+            where T : struct
+        {
+            CheckInitialized();
+
+            if (o.HasValue)
             {
                 AddHashCode(o.GetHashCode());
             }

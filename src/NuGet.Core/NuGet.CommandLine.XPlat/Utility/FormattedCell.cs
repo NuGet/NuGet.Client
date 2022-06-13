@@ -28,7 +28,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             var combiner = new HashCodeCombiner();
 
             combiner.AddObject(StringComparer.Ordinal.GetHashCode(Value));
-            combiner.AddObject(ForegroundColor);
+            combiner.AddStruct(ForegroundColor);
 
             return combiner.CombinedHash;
         }

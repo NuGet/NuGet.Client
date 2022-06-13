@@ -107,7 +107,7 @@ namespace NuGet.Test
             {
                 var combiner = new NuGet.Shared.HashCodeCombiner();
                 combiner.AddObject(obj.PackageIdentity.GetHashCode());
-                combiner.AddObject(obj.NuGetProjectActionType);
+                combiner.AddStruct(obj.NuGetProjectActionType);
                 return combiner.CombinedHash;
             }
         }

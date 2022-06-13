@@ -82,7 +82,7 @@ namespace NuGet.Packaging
         {
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(Type);
+            combiner.AddStruct(Type);
             combiner.AddObject(License);
             combiner.AddObject(LicenseExpression);
             combiner.AddSequence(WarningsAndErrors);
