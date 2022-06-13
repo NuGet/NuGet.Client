@@ -13,15 +13,17 @@ steps:
     cd $BUILD_REPOSITORY_LOCALPATH
     export VSTEST_BUILD_TRACE=1
     echo "VSTEST_BUILD_TRACE : $VSTEST_BUILD_TRACE"
-    echo "./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --diag:log.txt"
-    ./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --diag:log.txt
+    echo "./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --blame-crash --blame-crash-dump-type diag"
+    ./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --blame-crash --blame-crash-dump-type diag
     echo "single test exitcode is $?"
 
+    cd ~/Library/Logs/DiagnosticReports
     pwd
     echo "==== ls ====="
     ls -l
+    cd $BUILD_REPOSITORY_LOCALPATH
     mkdir log
-    cp ./log*  ./log/*
+    cp ~/Library/Logs/DiagnosticReports/*  ./log/*
     echo "==== ls -l $BUILD_REPOSITORY_LOCALPATH/log ====="
     ls -l $BUILD_REPOSITORY_LOCALPATH/log
 
