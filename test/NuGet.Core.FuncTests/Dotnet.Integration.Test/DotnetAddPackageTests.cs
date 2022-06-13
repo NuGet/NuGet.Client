@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -649,15 +650,60 @@ namespace Dotnet.Integration.Test
             File.WriteAllText(Path.Combine(projectADirectory, "Directory.Packages.Props"), propsFile);
 
             //Act
-            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version}", ignoreExitCode: true);
+            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX}", ignoreExitCode: true);
 
             // Assert
-            // log the CPMEnabled flag to see if it is being recognized that this is a CPM project
-            result.Success.Should().BeTrue(because: result.AllOutput);
-            //Assert.Contains($"Installed {packageX} {version} from {packageSource2}", result.AllOutput);
+            Assert.Contains(@$"<ItemGroup>
+    <PackageVersion Include=""X"" Version=""1.0.0"" />
+  </ItemGroup", File.ReadAllText(Path.Combine(projectADirectory, "Directory.Packages.Props")));
+            Assert.DoesNotContain(@$"<ItemGroup> <PackageVersion Include=""X"" Version=""1.0.0"" /> </ItemGroup",
+                File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj")));
         }
 
-       
+        [Fact]
+        public async Task AddPkg_WhenProjectOnboardedToCPMAndPackagesExistInProps()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Set up solution, and project
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projectName = "projectA";
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+
+            const string version = "1.0.0";
+            const string packageX = "X";
+
+            var packageFrameworks = "net5.0";
+            var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX100);
+
+            var propsFile = @$"<Project>
+                                <PropertyGroup>
+                                <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                                </PropertyGroup>
+                                <ItemGroup>
+                                <PackageVersion Include=""Y"" Version=""1.0.0"" />
+                                </ItemGroup>
+                            </Project>
+                            ";
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
+            File.WriteAllText(Path.Combine(projectADirectory, "Directory.Packages.Props"), propsFile);
+
+            //Act
+            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX}", ignoreExitCode: true);
+
+            // Assert
+            Assert.Contains(@$"<PackageVersion Include=""X"" Version=""1.0.0"" />", File.ReadAllText(Path.Combine(projectADirectory, "Directory.Packages.Props")));
+            Assert.DoesNotContain(@$"Include=""X"" Version=""1.0.0""", File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj")));
+        }
     }
 }
 

@@ -22,6 +22,7 @@ namespace NuGet.CommandLine.XPlat
     internal class MSBuildAPIUtility
     {
         private const string PACKAGE_REFERENCE_TYPE_TAG = "PackageReference";
+        private const string PACKAGE_VERSION_TYPE_TAG = "PackageVersion";
         private const string VERSION_TAG = "Version";
         private const string FRAMEWORK_TAG = "TargetFramework";
         private const string FRAMEWORKS_TAG = "TargetFrameworks";
@@ -162,7 +163,9 @@ namespace NuGet.CommandLine.XPlat
         private ProjectRootElement GetDirectoryBuildPropsRootElement(Project project)
         {
             string directoryPackagesPropsPath = GetPropsPath(project);
-            Console.WriteLine("Directory build props path: " + directoryPackagesPropsPath);
+            //Console.WriteLine("Directory build props path: " + directoryPackagesPropsPath);
+            // TODO: check for security in XML file
+            //TODO: FirstOrDefault or LastOrDefault
             ProjectRootElement directoryBuildPropsRootElement = project.Imports.FirstOrDefault(i => i.ImportedProject.FullPath.Equals(directoryPackagesPropsPath)).ImportedProject;
             return directoryBuildPropsRootElement;
         }
@@ -173,8 +176,8 @@ namespace NuGet.CommandLine.XPlat
             ProjectRootElement directoryBuildPropsRootElement = GetDirectoryBuildPropsRootElement(project);
 
             // Get the ItemGroup to add a PackageVersion to or create a new one
-            var propsItemGroup = GetItemGroup(directoryBuildPropsRootElement.ItemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? directoryBuildPropsRootElement.AddItemGroup();
-            AddPackageReferenceIntoItemGroup(propsItemGroup, libraryDependency);
+            var propsItemGroup = GetItemGroup(directoryBuildPropsRootElement.ItemGroups, PACKAGE_VERSION_TYPE_TAG) ?? directoryBuildPropsRootElement.AddItemGroup();
+            AddPackageReferenceIntoPropsItemGroup(propsItemGroup, libraryDependency);
 
             // Save the updated props file
             directoryBuildPropsRootElement.Save();
@@ -187,23 +190,37 @@ namespace NuGet.CommandLine.XPlat
         {
             if (!existingPackageReferences.Any())
             {
-                if (libraryDependency.VersionCentrallyManaged)
-                {
-                    // Modifying the props file if project is onboarded to CPM.
-                    UpdatePropsFile(project, libraryDependency);
-                }
-
                 // Getting all the item groups in a given project
                 var itemGroups = GetItemGroups(project);
 
                 // Add packageReference to the project file only if it does not exist.
                 var itemGroup = GetItemGroup(itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
-                AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
+
+                // If onboarded to CPM props file must be updated. 
+                if (libraryDependency.VersionCentrallyManaged)
+                {
+                    // Modifying the props file if project is onboarded to CPM.
+                    UpdatePropsFile(project, libraryDependency);
+                    //Modify the project file.
+                    AddPackageReferenceIntoItemGroupCPM(itemGroup, libraryDependency);
+                }
+                else
+                {
+                    //Modify the project file.
+                    AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
+                }
             }
             else
             {
-                // If the package already has a reference then try to update the reference.
-                UpdatePackageReferenceItems(existingPackageReferences, libraryDependency);
+                if (libraryDependency.VersionCentrallyManaged)
+                {
+                    UpdatePackageReferenceItemsCPM(project, existingPackageReferences, libraryDependency);
+                }
+                else
+                {
+                    // If the package already has a reference then try to update the reference.
+                    UpdatePackageReferenceItems(existingPackageReferences, libraryDependency);
+                }
             }
 
             project.Save();
@@ -279,27 +296,42 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup,
+        private void UpdatePackageReferenceItemsCPM(Project project, IEnumerable<ProjectItem> packageReferencesItems,
             LibraryDependency libraryDependency)
         {
-            // Add package name as package reference to the project file.
-            var item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
+            ProjectItem packageVersion = project.Items.LastOrDefault(i => i.ItemType == "PackageVersion" && i.EvaluatedInclude.Equals(id));
 
-            // If the project is not onboarded to CPM, add the version to the project file. Else only add the package name as indicated by the line above.
-            if (!libraryDependency.VersionCentrallyManaged)
+            ProjectItemElement packageVersionItemElement = project.GetItemProvenance(packageVersion).LastOrDefault()?.ItemElement;
+            if (packageVersionItemElement == null)
             {
-                var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
-                    libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
-
-                item.AddMetadata(VERSION_TAG, packageVersion, expressAsAttribute: true);
-
-                Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.Info_AddPkgAdded,
-                    libraryDependency.Name,
-                    packageVersion,
-                    itemGroup.ContainingProject.FullPath));
+                throw new Exception("Failed to find existing package reference");
             }
+            // Get the Version attribute
+            ProjectMetadataElement versionAttribute = packageVersionItemElement.Metadata.FirstOrDefault(i => i.Name.Equals("Version"));
+            if (versionAttribute != null)
+            {
+                // Set the Version
+                versionAttribute.Value = version;
+            }
+            else
+            {
+                // Add the Version attribute
+                packageVersionItemElement.AddMetadata("Version", version, expressAsAttribute: true);
+            }
+            packageVersionItemElement.ContainingProject.Save();
 
+        }
+
+        private string AddVersionMetadata(LibraryDependency libraryDependency, ProjectItemElement item)
+        {
+            var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
+                    libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
+            item.AddMetadata(VERSION_TAG, packageVersion, expressAsAttribute: true);
+            return packageVersion;
+        }
+
+        private void AddExtraMetadata(LibraryDependency libraryDependency, ProjectItemElement item)
+        {
             if (libraryDependency.IncludeType != LibraryIncludeFlags.All)
             {
                 var includeFlags = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libraryDependency.IncludeType));
@@ -311,7 +343,53 @@ namespace NuGet.CommandLine.XPlat
                 var suppressParent = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libraryDependency.SuppressParent));
                 item.AddMetadata(PrivateAssets, suppressParent, expressAsAttribute: false);
             }
+        }
 
+        //TODO: figure out the issue with logging in the below 3 methods
+        private void AddPackageReferenceIntoPropsItemGroup(ProjectItemGroupElement itemGroup,
+            LibraryDependency libraryDependency)
+        {
+            var item = itemGroup.AddItem(PACKAGE_VERSION_TYPE_TAG, libraryDependency.Name);
+            var packageVersion = AddVersionMetadata(libraryDependency, item);
+
+            /*Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+            Strings.Info_AddPkgAdded,
+            packageVersion,
+            libraryDependency.Name,
+            itemGroup.ContainingProject.FullPath));*/
+
+            AddExtraMetadata(libraryDependency, item);
+        }
+
+        private void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup,
+            LibraryDependency libraryDependency)
+        {
+            // Add both package reference information and version metadata
+            var item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
+            var packageVersion = AddVersionMetadata(libraryDependency, item);
+
+            /*Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+            Strings.Info_AddPkgAdded,
+            libraryDependency.Name,
+            itemGroup.ContainingProject.FullPath));*/
+
+            AddExtraMetadata(libraryDependency, item);
+        }
+
+        private void AddPackageReferenceIntoItemGroupCPM(ProjectItemGroupElement itemGroup,
+            LibraryDependency libraryDependency)
+        {
+            // Only add the package reference information
+            ProjectItemElement item;
+            item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
+
+            /*Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+            Strings.Info_AddPkgAdded,
+            libraryDependency.Name,
+            packageVersion,
+            itemGroup.ContainingProject.FullPath));*/
+
+            AddExtraMetadata(libraryDependency, item);
         }
 
         private static void ValidateNoImportedItemsAreUpdated(IEnumerable<ProjectItem> packageReferencesItems,
