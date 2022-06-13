@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NuGet.Packaging;
 
@@ -295,17 +296,22 @@ namespace NuGet.ContentModel
             //E.g. if path is "lib/net472/A.B.C.dll", the prefix will be "lib/net472/A.B.C."
             string assemblyPrefix = assemblyPath.Substring(0, assemblyPath.LastIndexOf('.') + 1);
 
-            if (_assemblyRelatedExtensions.TryGetValue(assemblyPrefix, out var relatedProperty))
+            if (_assemblyRelatedExtensions.TryGetValue(assemblyPrefix, out string relatedProperty))
             {
                 return relatedProperty;
             }
 
             List<string> relatedFileExtensionList = null;
-            foreach (var asset in assets)
+            foreach (Asset asset in assets)
             {
                 if (asset.Path is not null &&
-                    asset.Path != assemblyPath &&
-                    asset.Path.StartsWith(assemblyPrefix, StringComparison.Ordinal))
+                    Path.GetExtension(asset.Path) != string.Empty &&
+                    //Assembly properties are files with extensions ".dll", ".winmd", ".exe", see ManagedCodeConventions.
+                    !Path.GetExtension(asset.Path).Equals(".dll", StringComparison.OrdinalIgnoreCase) &&
+                    !Path.GetExtension(asset.Path).Equals(".exe", StringComparison.OrdinalIgnoreCase) &&
+                    !Path.GetExtension(asset.Path).Equals(".winmd", StringComparison.OrdinalIgnoreCase) &&
+                    !asset.Path.Equals(assemblyPath, StringComparison.OrdinalIgnoreCase) &&
+                    asset.Path.StartsWith(assemblyPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     if (relatedFileExtensionList is null)
                     {

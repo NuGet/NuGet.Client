@@ -106,18 +106,12 @@
           "ref/netcore50/System.Numerics.dll": {},
           "ref/netcore50/System.Runtime.Serialization.dll": {},
           "ref/netcore50/System.ServiceModel.Web.dll": {},
-          "ref/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "ref/netcore50/System.ServiceModel.dll": {},
           "ref/netcore50/System.Windows.dll": {},
           "ref/netcore50/System.Xml.Linq.dll": {},
           "ref/netcore50/System.Xml.Serialization.dll": {},
-          "ref/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "ref/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          },
+          "ref/netcore50/System.Xml.dll": {},
+          "ref/netcore50/System.dll": {},
           "ref/netcore50/mscorlib.dll": {}
         },
         "runtime": {
@@ -127,18 +121,12 @@
           "lib/netcore50/System.Numerics.dll": {},
           "lib/netcore50/System.Runtime.Serialization.dll": {},
           "lib/netcore50/System.ServiceModel.Web.dll": {},
-          "lib/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "lib/netcore50/System.ServiceModel.dll": {},
           "lib/netcore50/System.Windows.dll": {},
           "lib/netcore50/System.Xml.Linq.dll": {},
           "lib/netcore50/System.Xml.Serialization.dll": {},
-          "lib/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "lib/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          }
+          "lib/netcore50/System.Xml.dll": {},
+          "lib/netcore50/System.dll": {}
         },
         "runtimeTargets": {
           "runtimes/aot/lib/netcore50/System.ComponentModel.DataAnnotations.dll": {
@@ -2170,18 +2158,12 @@
           "ref/netcore50/System.Numerics.dll": {},
           "ref/netcore50/System.Runtime.Serialization.dll": {},
           "ref/netcore50/System.ServiceModel.Web.dll": {},
-          "ref/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "ref/netcore50/System.ServiceModel.dll": {},
           "ref/netcore50/System.Windows.dll": {},
           "ref/netcore50/System.Xml.Linq.dll": {},
           "ref/netcore50/System.Xml.Serialization.dll": {},
-          "ref/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "ref/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          },
+          "ref/netcore50/System.Xml.dll": {},
+          "ref/netcore50/System.dll": {},
           "ref/netcore50/mscorlib.dll": {}
         },
         "runtime": {
@@ -2191,18 +2173,12 @@
           "lib/netcore50/System.Numerics.dll": {},
           "lib/netcore50/System.Runtime.Serialization.dll": {},
           "lib/netcore50/System.ServiceModel.Web.dll": {},
-          "lib/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "lib/netcore50/System.ServiceModel.dll": {},
           "lib/netcore50/System.Windows.dll": {},
           "lib/netcore50/System.Xml.Linq.dll": {},
           "lib/netcore50/System.Xml.Serialization.dll": {},
-          "lib/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "lib/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          }
+          "lib/netcore50/System.Xml.dll": {},
+          "lib/netcore50/System.dll": {}
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
@@ -4097,18 +4073,12 @@
           "ref/netcore50/System.Numerics.dll": {},
           "ref/netcore50/System.Runtime.Serialization.dll": {},
           "ref/netcore50/System.ServiceModel.Web.dll": {},
-          "ref/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "ref/netcore50/System.ServiceModel.dll": {},
           "ref/netcore50/System.Windows.dll": {},
           "ref/netcore50/System.Xml.Linq.dll": {},
           "ref/netcore50/System.Xml.Serialization.dll": {},
-          "ref/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "ref/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          },
+          "ref/netcore50/System.Xml.dll": {},
+          "ref/netcore50/System.dll": {},
           "ref/netcore50/mscorlib.dll": {}
         },
         "runtime": {
@@ -4118,18 +4088,12 @@
           "runtimes/aot/lib/netcore50/System.Numerics.dll": {},
           "runtimes/aot/lib/netcore50/System.Runtime.Serialization.dll": {},
           "runtimes/aot/lib/netcore50/System.ServiceModel.Web.dll": {},
-          "runtimes/aot/lib/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "runtimes/aot/lib/netcore50/System.ServiceModel.dll": {},
           "runtimes/aot/lib/netcore50/System.Windows.dll": {},
           "runtimes/aot/lib/netcore50/System.Xml.Linq.dll": {},
           "runtimes/aot/lib/netcore50/System.Xml.Serialization.dll": {},
-          "runtimes/aot/lib/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "runtimes/aot/lib/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          },
+          "runtimes/aot/lib/netcore50/System.Xml.dll": {},
+          "runtimes/aot/lib/netcore50/System.dll": {},
           "runtimes/aot/lib/netcore50/mscorlib.dll": {}
         }
       },
@@ -5985,18 +5949,12 @@
           "ref/netcore50/System.Numerics.dll": {},
           "ref/netcore50/System.Runtime.Serialization.dll": {},
           "ref/netcore50/System.ServiceModel.Web.dll": {},
-          "ref/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "ref/netcore50/System.ServiceModel.dll": {},
           "ref/netcore50/System.Windows.dll": {},
           "ref/netcore50/System.Xml.Linq.dll": {},
           "ref/netcore50/System.Xml.Serialization.dll": {},
-          "ref/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "ref/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          },
+          "ref/netcore50/System.Xml.dll": {},
+          "ref/netcore50/System.dll": {},
           "ref/netcore50/mscorlib.dll": {}
         },
         "runtime": {
@@ -6006,18 +5964,12 @@
           "lib/netcore50/System.Numerics.dll": {},
           "lib/netcore50/System.Runtime.Serialization.dll": {},
           "lib/netcore50/System.ServiceModel.Web.dll": {},
-          "lib/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "lib/netcore50/System.ServiceModel.dll": {},
           "lib/netcore50/System.Windows.dll": {},
           "lib/netcore50/System.Xml.Linq.dll": {},
           "lib/netcore50/System.Xml.Serialization.dll": {},
-          "lib/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "lib/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          }
+          "lib/netcore50/System.Xml.dll": {},
+          "lib/netcore50/System.dll": {}
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
@@ -7919,18 +7871,12 @@
           "ref/netcore50/System.Numerics.dll": {},
           "ref/netcore50/System.Runtime.Serialization.dll": {},
           "ref/netcore50/System.ServiceModel.Web.dll": {},
-          "ref/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "ref/netcore50/System.ServiceModel.dll": {},
           "ref/netcore50/System.Windows.dll": {},
           "ref/netcore50/System.Xml.Linq.dll": {},
           "ref/netcore50/System.Xml.Serialization.dll": {},
-          "ref/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "ref/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          },
+          "ref/netcore50/System.Xml.dll": {},
+          "ref/netcore50/System.dll": {},
           "ref/netcore50/mscorlib.dll": {}
         },
         "runtime": {
@@ -7940,18 +7886,12 @@
           "runtimes/aot/lib/netcore50/System.Numerics.dll": {},
           "runtimes/aot/lib/netcore50/System.Runtime.Serialization.dll": {},
           "runtimes/aot/lib/netcore50/System.ServiceModel.Web.dll": {},
-          "runtimes/aot/lib/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "runtimes/aot/lib/netcore50/System.ServiceModel.dll": {},
           "runtimes/aot/lib/netcore50/System.Windows.dll": {},
           "runtimes/aot/lib/netcore50/System.Xml.Linq.dll": {},
           "runtimes/aot/lib/netcore50/System.Xml.Serialization.dll": {},
-          "runtimes/aot/lib/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "runtimes/aot/lib/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          },
+          "runtimes/aot/lib/netcore50/System.Xml.dll": {},
+          "runtimes/aot/lib/netcore50/System.dll": {},
           "runtimes/aot/lib/netcore50/mscorlib.dll": {}
         }
       },
@@ -9807,18 +9747,12 @@
           "ref/netcore50/System.Numerics.dll": {},
           "ref/netcore50/System.Runtime.Serialization.dll": {},
           "ref/netcore50/System.ServiceModel.Web.dll": {},
-          "ref/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "ref/netcore50/System.ServiceModel.dll": {},
           "ref/netcore50/System.Windows.dll": {},
           "ref/netcore50/System.Xml.Linq.dll": {},
           "ref/netcore50/System.Xml.Serialization.dll": {},
-          "ref/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "ref/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          },
+          "ref/netcore50/System.Xml.dll": {},
+          "ref/netcore50/System.dll": {},
           "ref/netcore50/mscorlib.dll": {}
         },
         "runtime": {
@@ -9828,18 +9762,12 @@
           "lib/netcore50/System.Numerics.dll": {},
           "lib/netcore50/System.Runtime.Serialization.dll": {},
           "lib/netcore50/System.ServiceModel.Web.dll": {},
-          "lib/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "lib/netcore50/System.ServiceModel.dll": {},
           "lib/netcore50/System.Windows.dll": {},
           "lib/netcore50/System.Xml.Linq.dll": {},
           "lib/netcore50/System.Xml.Serialization.dll": {},
-          "lib/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "lib/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          }
+          "lib/netcore50/System.Xml.dll": {},
+          "lib/netcore50/System.dll": {}
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
@@ -11741,18 +11669,12 @@
           "ref/netcore50/System.Numerics.dll": {},
           "ref/netcore50/System.Runtime.Serialization.dll": {},
           "ref/netcore50/System.ServiceModel.Web.dll": {},
-          "ref/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "ref/netcore50/System.ServiceModel.dll": {},
           "ref/netcore50/System.Windows.dll": {},
           "ref/netcore50/System.Xml.Linq.dll": {},
           "ref/netcore50/System.Xml.Serialization.dll": {},
-          "ref/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "ref/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          },
+          "ref/netcore50/System.Xml.dll": {},
+          "ref/netcore50/System.dll": {},
           "ref/netcore50/mscorlib.dll": {}
         },
         "runtime": {
@@ -11762,18 +11684,12 @@
           "runtimes/aot/lib/netcore50/System.Numerics.dll": {},
           "runtimes/aot/lib/netcore50/System.Runtime.Serialization.dll": {},
           "runtimes/aot/lib/netcore50/System.ServiceModel.Web.dll": {},
-          "runtimes/aot/lib/netcore50/System.ServiceModel.dll": {
-            "related": ".Web.dll"
-          },
+          "runtimes/aot/lib/netcore50/System.ServiceModel.dll": {},
           "runtimes/aot/lib/netcore50/System.Windows.dll": {},
           "runtimes/aot/lib/netcore50/System.Xml.Linq.dll": {},
           "runtimes/aot/lib/netcore50/System.Xml.Serialization.dll": {},
-          "runtimes/aot/lib/netcore50/System.Xml.dll": {
-            "related": ".Linq.dll;.Serialization.dll"
-          },
-          "runtimes/aot/lib/netcore50/System.dll": {
-            "related": ".ComponentModel.DataAnnotations.dll;.Core.dll;.Net.dll;.Numerics.dll;.Runtime.Serialization.dll;.ServiceModel.dll;.ServiceModel.Web.dll;.Windows.dll;.Xml.dll;.Xml.Linq.dll;.Xml.Serialization.dll"
-          },
+          "runtimes/aot/lib/netcore50/System.Xml.dll": {},
+          "runtimes/aot/lib/netcore50/System.dll": {},
           "runtimes/aot/lib/netcore50/mscorlib.dll": {}
         }
       },

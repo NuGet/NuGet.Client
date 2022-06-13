@@ -2,13 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
@@ -80,6 +76,74 @@ namespace NuGet.Commands.Test
                 {
                     expectedRelatedProperty = string.Join(";", relatedExtensionList);
                 }
+
+                // Compile, "related" property is applied.
+                AssertRelatedProperty(compileAssemblies, $"lib/net5.0/{assemblyName}{assemblyExtension}", expectedRelatedProperty);
+
+                // Runtime, "related" property is applied.
+                AssertRelatedProperty(runtimeAssemblies, $"lib/net5.0/{assemblyName}{assemblyExtension}", expectedRelatedProperty);
+            }
+        }
+
+        [Theory]
+        [InlineData(".dll", "A", new[] { "A.B.dll", "A.B.C.dll"}, null)]
+        [InlineData(".exe", "A", new[] { "A.dll", "A.B.dll", "A.B.exe" }, null)]
+        [InlineData(".dll", "A", new string[] { "A.exe", "A.B.EXE", "A.B.C.DLL", "A.B.C.dll","A.B.winmd" }, null)]
+        public async Task RelatedProperty_TopLevelPackageWithAssemblyExtensions_RelatedPropertyAddedCorrectly(
+            string assemblyExtension,
+            string assemblyName,
+            string[] assetFileList,
+            string expectedRelatedProperty)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var framework = "net5.0";
+                // A -> packaegX
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    "A",
+                    pathContext.SolutionRoot,
+                    framework);
+
+                var packageX = new SimpleTestPackageContext("packageX", "1.0.0");
+                packageX.Files.Clear();
+
+                packageX.AddFile($"lib/net5.0/{assemblyName}{assemblyExtension}");
+                foreach (string assetFile in assetFileList)
+                {
+                    packageX.AddFile($"lib/net5.0/{assetFile}");
+                }
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX);
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(pathContext.PackageSource));
+                projectA.Sources = sources;
+                projectA.FallbackFolders = new List<string>();
+                projectA.FallbackFolders.Add(pathContext.FallbackFolder);
+                projectA.GlobalPackagesFolder = pathContext.UserPackagesFolder;
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(projectA.PackageSpec, projectA.Sources, pathContext.UserPackagesFolder, logger)
+                {
+                    LockFilePath = projectA.AssetsFileOutputPath
+                };
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Asert
+                Assert.True(result.Success);
+                var assetsFile = projectA.AssetsFile;
+                Assert.NotNull(assetsFile);
+
+                var targets = assetsFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var lib = targets.Libraries.Single();
+                var compileAssemblies = lib.CompileTimeAssemblies;
+                var runtimeAssemblies = lib.RuntimeAssemblies;
 
                 // Compile, "related" property is applied.
                 AssertRelatedProperty(compileAssemblies, $"lib/net5.0/{assemblyName}{assemblyExtension}", expectedRelatedProperty);
