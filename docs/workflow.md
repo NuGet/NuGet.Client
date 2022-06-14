@@ -58,7 +58,7 @@ The recommended pattern for release branches is slightly different. We should pr
 ### Solution and project folder structure and naming
 
 The NuGet.Client repo currently has only one solution file named `NuGet.sln`. We do not want/need to have more than one solution file.
-If deemed necessary by the team, we can consider solution filters at a future point.
+We have some Solution Filters (.slnf files), currently for projects specific to working with NuGet's Command line, VS, or UnitTests directly, and can consider more based on team and community feedback.
 
 - Every project in the NuGet.Client repo should be [PackageReference-based](https://docs.microsoft.com/en-us/nuget/consume-packages/package-references-in-project-files) based and if possible (read this as not .NET Framework WPF), an [SDK-based](https://docs.microsoft.com/en-us/visualstudio/msbuild/how-to-use-project-sdk) one.
 - The production source code is under the `src` folder.
