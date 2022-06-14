@@ -489,7 +489,7 @@ namespace NuGet.Commands
                 IEnumerable<LibraryDependency> centralEnforcedTransitiveDependencies = targetGraph
                     .Graphs
                     .SelectMany(i => i.InnerNodes)
-                    .Where(node => node.Item.IsCentralTransitive && targetFrameworkInformation.CentralPackageVersions.ContainsKey(node.Item.Key.Name))
+                    .Where(node => node?.Item != null && node.Disposition == Disposition.Accepted && node.Item.IsCentralTransitive && targetFrameworkInformation.CentralPackageVersions?.ContainsKey(node.Item.Key.Name) == true)
                     .Select((node) =>
                     {
                         CentralPackageVersion matchingCentralVersion = targetFrameworkInformation.CentralPackageVersions[node.Item.Key.Name];
