@@ -513,6 +513,7 @@ namespace NuGet.Commands
                                 suppressParent |= parentDependency.SuppressParent;
                             }
 
+                            // If all assets are suppressed then the dependency should not be added
                             if (suppressParent == LibraryIncludeFlags.All)
                             {
                                 return null;
@@ -551,7 +552,7 @@ namespace NuGet.Commands
         /// <typeparam name="T">The type of the node.</typeparam>
         /// <param name="graphNode">The <see cref="GraphNode{TItem}" /> to flatten the parent nodes of.</param>
         /// <returns>A top down flattened list of parent nodes of the specied node.</returns>
-        private IEnumerable<GraphNode<T>> FlattenParentNodes<T>(GraphNode<T> graphNode)
+        private static IEnumerable<GraphNode<T>> FlattenParentNodes<T>(GraphNode<T> graphNode)
         {
             foreach (GraphNode<T> item in graphNode.ParentNodes)
             {
