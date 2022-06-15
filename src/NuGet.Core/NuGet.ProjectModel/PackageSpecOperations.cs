@@ -152,8 +152,7 @@ namespace NuGet.ProjectModel
             PackageSpec spec,
             IList<LibraryDependency> list,
             string packageId,
-            VersionRange range,
-            bool CPMEnabled)
+            VersionRange range)
         {
 
             var dependencies = list.Where(e => StringComparer.OrdinalIgnoreCase.Equals(e.Name, packageId)).ToList();
@@ -167,14 +166,7 @@ namespace NuGet.ProjectModel
             }
             else
             {
-                var dependency = new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange(packageId, range, LibraryDependencyTarget.Package)
-                };
-
-                dependency.VersionCentrallyManaged = true; // TODO: only update this when CPM is actually enabled
-
-                list.Add(dependency);
+                AddDependency(list, packageId, range, spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false);
             }
 
         }
