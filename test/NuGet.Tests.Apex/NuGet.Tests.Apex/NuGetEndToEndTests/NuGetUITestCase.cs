@@ -60,7 +60,7 @@ namespace NuGet.Tests.Apex
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
-            // Act
+            // Act installing a package into one project from UI
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
