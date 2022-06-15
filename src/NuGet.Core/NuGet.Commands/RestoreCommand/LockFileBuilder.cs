@@ -469,7 +469,7 @@ namespace NuGet.Commands
 
         private void AddCentralTransitiveDependencyGroupsForPackageReference(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
         {
-            if (project.RestoreMetadata?.CentralPackageVersionsEnabled == false)
+            if (project.RestoreMetadata == null || !project.RestoreMetadata.CentralPackageVersionsEnabled)
             {
                 return;
             }
