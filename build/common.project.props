@@ -11,8 +11,8 @@
   <!-- Common -->
   <PropertyGroup>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-    <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
-    <NETFXTargetFramework>net472</NETFXTargetFramework>
+    <NETFXTargetFrameworkVersion></NETFXTargetFrameworkVersion>
+    <NETFXTargetFramework></NETFXTargetFramework>
     <NETCoreTargetFramework>netcoreapp3.1</NETCoreTargetFramework>
     <NETCoreTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</NETCoreTargetFramework>
     <NETCoreTestTargetFramework>net6.0</NETCoreTestTargetFramework>
