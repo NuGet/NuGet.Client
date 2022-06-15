@@ -59,7 +59,7 @@ namespace NuGet.LibraryModel
         {
             var hashCode = new HashCodeCombiner();
             hashCode.AddObject(ComparisonUtility.FrameworkReferenceNameComparer.GetHashCode(Name));
-            hashCode.AddObject(PrivateAssets);
+            hashCode.AddStruct(PrivateAssets);
             return hashCode.CombinedHash;
         }
     }

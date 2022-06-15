@@ -129,39 +129,41 @@ namespace NuGet.ProjectModel
         {
             var hashCode = new HashCodeCombiner();
 
-            hashCode.AddObject(ProjectStyle);
+            hashCode.AddStruct(ProjectStyle);
+
+            StringComparer osStringComparer = PathUtility.GetStringComparerBasedOnOS();
             if (ProjectPath != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectPath));
+                hashCode.AddObject(osStringComparer.GetHashCode(ProjectPath));
             }
             if (ProjectJsonPath != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectJsonPath));
+                hashCode.AddObject(osStringComparer.GetHashCode(ProjectJsonPath));
             }
             if (OutputPath != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(OutputPath));
+                hashCode.AddObject(osStringComparer.GetHashCode(OutputPath));
             }
             if (ProjectName != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectName));
+                hashCode.AddObject(osStringComparer.GetHashCode(ProjectName));
             }
             if (ProjectUniqueName != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(ProjectUniqueName));
+                hashCode.AddObject(osStringComparer.GetHashCode(ProjectUniqueName));
             }
             hashCode.AddSequence(Sources.OrderBy(e => e.Source, StringComparer.OrdinalIgnoreCase));
             if (PackagesPath != null)
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(PackagesPath));
+                hashCode.AddObject(osStringComparer.GetHashCode(PackagesPath));
             }
-            foreach (var reference in ConfigFilePaths.OrderBy(s => s, PathUtility.GetStringComparerBasedOnOS()))
+            foreach (var reference in ConfigFilePaths.OrderBy(s => s, osStringComparer))
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(reference));
+                hashCode.AddObject(osStringComparer.GetHashCode(reference));
             }
-            foreach (var reference in FallbackFolders.OrderBy(s => s, PathUtility.GetStringComparerBasedOnOS()))
+            foreach (var reference in FallbackFolders.OrderBy(s => s, osStringComparer))
             {
-                hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(reference));
+                hashCode.AddObject(osStringComparer.GetHashCode(reference));
             }
             hashCode.AddSequence(TargetFrameworks.OrderBy(dep => dep.TargetAlias, StringComparer.OrdinalIgnoreCase));
             foreach (var reference in OriginalTargetFrameworks.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
@@ -199,16 +201,17 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
+            StringComparer osStringComparer = PathUtility.GetStringComparerBasedOnOS();
             return ProjectStyle == other.ProjectStyle &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectPath, other.ProjectPath) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectJsonPath, other.ProjectJsonPath) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(OutputPath, other.OutputPath) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectName, other.ProjectName) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectUniqueName, other.ProjectUniqueName) &&
+                   osStringComparer.Equals(ProjectPath, other.ProjectPath) &&
+                   osStringComparer.Equals(ProjectJsonPath, other.ProjectJsonPath) &&
+                   osStringComparer.Equals(OutputPath, other.OutputPath) &&
+                   osStringComparer.Equals(ProjectName, other.ProjectName) &&
+                   osStringComparer.Equals(ProjectUniqueName, other.ProjectUniqueName) &&
                    Sources.OrderedEquals(other.Sources.Distinct(), source => source.Source, StringComparer.OrdinalIgnoreCase) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(PackagesPath, other.PackagesPath) &&
-                   ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, filePath => filePath, PathUtility.GetStringComparerBasedOnOS(), PathUtility.GetStringComparerBasedOnOS()) &&
-                   FallbackFolders.OrderedEquals(other.FallbackFolders, fallbackFolder => fallbackFolder, PathUtility.GetStringComparerBasedOnOS(), PathUtility.GetStringComparerBasedOnOS()) &&
+                   osStringComparer.Equals(PackagesPath, other.PackagesPath) &&
+                   ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, filePath => filePath, osStringComparer, osStringComparer) &&
+                   FallbackFolders.OrderedEquals(other.FallbackFolders, fallbackFolder => fallbackFolder, osStringComparer, osStringComparer) &&
                    EqualityUtility.OrderedEquals(TargetFrameworks, other.TargetFrameworks, dep => dep.TargetAlias, StringComparer.OrdinalIgnoreCase) &&
                    OriginalTargetFrameworks.OrderedEquals(other.OriginalTargetFrameworks, fw => fw, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase) &&
                    CrossTargeting == other.CrossTargeting &&

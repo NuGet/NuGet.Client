@@ -34,9 +34,9 @@ namespace NuGet.ProjectModel
 
             combiner.AddObject(ProjectPath);
             combiner.AddStringIgnoreCase(ProjectUniqueName);
-            combiner.AddObject(IncludeAssets);
-            combiner.AddObject(ExcludeAssets);
-            combiner.AddObject(PrivateAssets);
+            combiner.AddStruct(IncludeAssets);
+            combiner.AddStruct(ExcludeAssets);
+            combiner.AddStruct(PrivateAssets);
 
             return combiner.CombinedHash;
         }

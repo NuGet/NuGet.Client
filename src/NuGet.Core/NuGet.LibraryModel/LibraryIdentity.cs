@@ -58,7 +58,7 @@ namespace NuGet.LibraryModel
 
             combiner.AddStringIgnoreCase(Name);
             combiner.AddObject(Version);
-            combiner.AddObject(Type);
+            combiner.AddStruct(Type);
 
             return combiner.CombinedHash;
         }
