@@ -26,5 +26,11 @@ steps:
     echo "./cli/dotnet build ./test/NuGet.Core.Tests/NuGet.Common.Test/NuGet.Common.Test.csproj"
     ./cli/dotnet build ./test/NuGet.Core.Tests/NuGet.Common.Test/NuGet.Common.Test.csproj
     echo "./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll"
-    ./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll
+    ./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --diag:$(Build.ArtifactStagingDirectory)/logs/log.txt
     echo "single test exitcode is $?"
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/logs'
+    ArtifactName: 'logs'
+    publishLocation: 'Container'
