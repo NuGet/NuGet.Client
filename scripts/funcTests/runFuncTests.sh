@@ -35,19 +35,6 @@ curl -o cli/dotnet-install.sh -L https://dot.net/v1/dotnet-install.sh
 # Run install.sh
 chmod +x cli/dotnet-install.sh
 
-# Get recommended version for bootstrapping testing version
-
-echo "cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 3.1 -nopath"
-cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 3.1 -nopath
-
-echo "cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 5.0 -nopath"
-cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 5.0 -nopath
-
-if (( $? )); then
-	echo "The .NET CLI Install failed!!"
-	exit 1
-fi
-
 # Disable .NET CLI Install Lookup
 DOTNET_MULTILEVEL_LOOKUP=0
 
@@ -93,6 +80,32 @@ done
 
 # Display .NET CLI info
 $DOTNET --info
+if (( $? )); then
+	echo "DOTNET --info failed!!"
+	exit 1
+fi
+
+# Get recommended version for bootstrapping testing version
+
+echo "cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 5.0 -nopath"
+cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 5.0 -nopath
+
+echo "cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 3.1 -nopath"
+cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 3.1 -nopath
+
+
+
+if (( $? )); then
+	echo "The .NET CLI Install failed!!"
+	exit 1
+fi
+
+# Display .NET CLI info
+$DOTNET --info
+if (( $? )); then
+	echo "DOTNET --info failed!!"
+	exit 1
+fi
 
 echo "initial dotnet cli install finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
