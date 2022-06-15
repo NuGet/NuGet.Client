@@ -45,8 +45,6 @@ namespace NuGet.ProjectModel
             PackageDependency dependency,
             IEnumerable<NuGetFramework> frameworksToAdd)
         {
-            var CPMEnabled = spec.RestoreMetadata.CentralPackageVersionsEnabled;
-
             var lists = GetDependencyLists(
                 spec,
                 includeGenericDependencies: false,
@@ -152,8 +150,7 @@ namespace NuGet.ProjectModel
             PackageSpec spec,
             IList<LibraryDependency> list,
             string packageId,
-            VersionRange range,
-            bool CPMEnabled)
+            VersionRange range)
         {
 
             var dependencies = list.Where(e => StringComparer.OrdinalIgnoreCase.Equals(e.Name, packageId)).ToList();
