@@ -4,28 +4,18 @@ steps:
   continueOnError: "false"
   inputs:
     scriptPath: "scripts/funcTests/runFuncTests2.sh"
-    args: '5.0'
+    args: '6.0.3xx'
     disableAutoCwd: "true"
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - script: |
     cd $BUILD_REPOSITORY_LOCALPATH
-    echo "$BUILD_REPOSITORY_LOCALPATH/cli/dotnet test $BUILD_REPOSITORY_LOCALPATH/test/NuGet.Core.Tests/NuGet.Common.Test/bin/Debug/netcoreapp3.1/NuGet.Common.Test.dll --verbosity  detailed"
-    ./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --blame-crash-collect-always
+    export VSTEST_BUILD_TRACE=1
+    echo "VSTEST_BUILD_TRACE : $VSTEST_BUILD_TRACE"
+    echo "./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --blame-crash --blame-crash-dump-type diag"
+    ./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --blame-crash --blame-crash-dump-type diag
     echo "single test exitcode is $?"
-    cd /var/log
-    echo "==== ls ====="
-    ls -l
-    echo "==== ls -l system.log* ====="
-    ls -l system.log*
-    echo "==== tail system.log ====="
-    tail system.log
-    cd $BUILD_REPOSITORY_LOCALPATH
-    mkdir log
-    cp /var/log/system.log*  $BUILD_REPOSITORY_LOCALPATH/log
-    echo "==== ls -l $BUILD_REPOSITORY_LOCALPATH/log ====="
-    ls -l $BUILD_REPOSITORY_LOCALPATH/log
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish log"
@@ -44,3 +34,4 @@ steps:
     mergeTestResults: "true"
     testRunTitle: "NuGet.Client Tests On Mac"
   condition: "succeededOrFailed()"
+

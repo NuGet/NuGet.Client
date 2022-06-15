@@ -131,8 +131,8 @@ then
 fi
 
 # restore packages
-echo "dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/02.Restore.binlog"
-dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/02.Restore.binlog
+echo "dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=17.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/02.Restore.binlog"
+dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=17.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/02.Restore.binlog
 
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
@@ -142,8 +142,8 @@ fi
 echo "Restore finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
 # Unit tests
-echo "dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/03.CoreUnitTests.binlog"
-dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/03.CoreUnitTests.binlog
+echo "dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=17.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/03.CoreUnitTests.binlog"
+dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=17.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/03.CoreUnitTests.binlog
 
 if [ $? -ne 0 ]; then
 	echo "CoreUnitTests failed!!"

@@ -1,4 +1,11 @@
 steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET Core sdk'
+  inputs:
+    packageType: sdk
+    version: 6.x
+    installationPath: $(Agent.TempDirectory)/dotnet
+
 - task: ShellScript@2
   displayName: "Run Tests (stop on error)"
   continueOnError: "false"
@@ -16,16 +23,6 @@ steps:
     echo "./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --blame-crash --blame-crash-dump-type diag"
     ./cli/dotnet test ./test/NuGet.Core.Tests/NuGet.Common.Test/bin/release/netcoreapp3.1/NuGet.Common.Test.dll --blame-crash --blame-crash-dump-type diag
     echo "single test exitcode is $?"
-
-    cd ~/Library/Logs/DiagnosticReports
-    pwd
-    echo "==== ls ====="
-    ls -l
-    cd $BUILD_REPOSITORY_LOCALPATH
-    mkdir log
-    cp ~/Library/Logs/DiagnosticReports/*  ./log/*
-    echo "==== ls -l $BUILD_REPOSITORY_LOCALPATH/log ====="
-    ls -l $BUILD_REPOSITORY_LOCALPATH/log
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish log"
