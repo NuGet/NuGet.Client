@@ -272,6 +272,7 @@ namespace NuGet.Commands
                 seen.Add(id, nodeProps);
                 return true;
             }
+
             if (!nodeProps.IsSubSetOf(visitedProps))
             {
                 // Find the intersection of properties between these nodes,
@@ -627,17 +628,17 @@ namespace NuGet.Commands
             // If a node is a project then it will hold these properties
             public NodeWarningProperties NodeWarningProperties { get; }
 
-            public DependencyNode(string id, bool isProject, NodeWarningProperties nodeWarningProperties)
-            {
-                Id = id ?? throw new ArgumentNullException(nameof(id));
-                NodeWarningProperties = nodeWarningProperties ?? throw new ArgumentNullException(nameof(nodeWarningProperties));
-                IsProject = isProject;
-            }
-
             public DependencyNode(string id, bool isProject, HashSet<NuGetLogCode> projectWideNoWarn, Dictionary<string, HashSet<NuGetLogCode>> packageSpecificNoWarn)
             {
                 Id = id ?? throw new ArgumentNullException(nameof(id));
                 NodeWarningProperties = NodeWarningProperties.Create(projectWideNoWarn, packageSpecificNoWarn);
+                IsProject = isProject;
+            }
+
+            public DependencyNode(string id, bool isProject, NodeWarningProperties nodeWarningProperties)
+            {
+                Id = id ?? throw new ArgumentNullException(nameof(id));
+                NodeWarningProperties = nodeWarningProperties ?? throw new ArgumentNullException(nameof(nodeWarningProperties));
                 IsProject = isProject;
             }
 
@@ -767,8 +768,8 @@ namespace NuGet.Commands
                     return this;
                 }
 
-                var thisPackages = PackageSpecific;
-                var otherPackages = other.PackageSpecific;
+                Dictionary<string, HashSet<NuGetLogCode>> thisPackages = PackageSpecific;
+                Dictionary<string, HashSet<NuGetLogCode>> otherPackages = other.PackageSpecific;
 
                 // null is empty and cannot intersect
                 Dictionary<string, HashSet<NuGetLogCode>> packages = null;
@@ -776,11 +777,11 @@ namespace NuGet.Commands
                 {
                     packages = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
 
-                    foreach (var pair in thisPackages)
+                    foreach (KeyValuePair<string, HashSet<NuGetLogCode>> pair in thisPackages)
                     {
                         if (otherPackages.TryGetValue(pair.Key, out var otherCodes))
                         {
-                            var intersect = Intersect(pair.Value, otherCodes);
+                            HashSet<NuGetLogCode> intersect = Intersect(pair.Value, otherCodes);
                             if (intersect != null)
                             {
                                 packages.Add(pair.Key, intersect);
@@ -794,7 +795,7 @@ namespace NuGet.Commands
                     }
                 }
 
-                var projectWide = Intersect(ProjectWide, other.ProjectWide);
+                HashSet<NuGetLogCode> projectWide = Intersect(ProjectWide, other.ProjectWide);
                 return Create(projectWide, packages);
             }
 
@@ -816,8 +817,8 @@ namespace NuGet.Commands
 
                 if (IsSubSetOfWithNullCheck(ProjectWide, other.ProjectWide))
                 {
-                    var package = PackageSpecific;
-                    var otherPackage = other.PackageSpecific;
+                    Dictionary<string, HashSet<NuGetLogCode>> package = PackageSpecific;
+                    Dictionary<string, HashSet<NuGetLogCode>> otherPackage = other.PackageSpecific;
 
                     if (otherPackage == null)
                     {
@@ -826,7 +827,7 @@ namespace NuGet.Commands
 
                     // To be a subset this set of package specific warnings must contain
                     // every id and code found in other. A single miss will fail the check.
-                    foreach (var pair in otherPackage)
+                    foreach (KeyValuePair<string, HashSet<NuGetLogCode>> pair in otherPackage)
                     {
                         if (pair.Value == null || pair.Value.Count == 0)
                         {
@@ -875,8 +876,8 @@ namespace NuGet.Commands
             /// <returns>Returns a NodeWarningProperties combining this class's and the other class's node warning properties.</returns>
             internal NodeWarningProperties Merge(NodeWarningProperties other)
             {
-                var mergedProjectWideNoWarn = MergeCodes(ProjectWide, other?.ProjectWide);
-                var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(PackageSpecific, other?.PackageSpecific);
+                HashSet<NuGetLogCode> mergedProjectWideNoWarn = MergeCodes(ProjectWide, other?.ProjectWide);
+                Dictionary<string, HashSet<NuGetLogCode>> mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(PackageSpecific, other?.PackageSpecific);
 
                 return Create(mergedProjectWideNoWarn, mergedPackageSpecificNoWarn);
             }

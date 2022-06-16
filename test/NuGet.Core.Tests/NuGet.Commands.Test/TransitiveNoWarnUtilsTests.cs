@@ -19,7 +19,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var projectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603 };
-            var pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+            TransitiveNoWarnUtils.NodeWarningProperties pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 projectWideNoWarn,
                 null);
 
@@ -40,7 +40,7 @@ namespace NuGet.Commands.Test
             var framework = NuGetFramework.Parse("net461");
             var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1605 };
 
-            var pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+            TransitiveNoWarnUtils.NodeWarningProperties pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 new Dictionary<string, HashSet<NuGetLogCode>>
                 {
@@ -67,7 +67,7 @@ namespace NuGet.Commands.Test
             var packageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1107 };
             var otherPackageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1701 };
 
-            var pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+            TransitiveNoWarnUtils.NodeWarningProperties pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 projectWideNoWarnSet,
                 new Dictionary<string, HashSet<NuGetLogCode>>
                 {
