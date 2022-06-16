@@ -617,6 +617,7 @@ static NuGet.Common.UriUtility.CreateSourceUri(string source, System.UriKind kin
 static NuGet.Common.UriUtility.GetAbsolutePath(string rootDirectory, string path) -> string
 static NuGet.Common.UriUtility.GetAbsolutePathFromFile(string sourceFile, string path) -> string
 static NuGet.Common.UriUtility.GetLocalPath(string localOrUriPath) -> string
+static NuGet.Common.UriUtility.IsNuGetOrg(string source) -> bool
 static NuGet.Common.UriUtility.TryCreateSourceUri(string source, System.UriKind kind) -> System.Uri
 static NuGet.Common.UriUtility.UrlEncodeOdataParameter(string value) -> string
 static NuGet.Common.XmlUtility.Load(string filePath) -> System.Xml.Linq.XDocument
