@@ -251,9 +251,14 @@ namespace NuGet.ProjectModel.Test
         public void Test_WritePackageDependencyWithLegacyString(string version, string expectedVersion)
         {
             var package = new PackageDependency("a", VersionRange.Parse(version));
-            var dependency = JsonUtility.WritePackageDependencyWithLegacyString(package);
 
-            Assert.Equal(dependency.Value, expectedVersion);
+            using var writer = new JTokenWriter();
+
+            JsonUtility.WritePackageDependencyWithLegacyString(writer, package);
+
+            JToken actual = ((JProperty)writer.Token).Value;
+
+            Assert.Equal(expectedVersion, actual);
         }
 
         [Theory]
@@ -265,9 +270,14 @@ namespace NuGet.ProjectModel.Test
         public void Test_WritePackageDependency(string version, string expectedVersion)
         {
             var package = new PackageDependency("a", VersionRange.Parse(version));
-            var dependency = JsonUtility.WritePackageDependency(package);
 
-            Assert.Equal(dependency.Value, expectedVersion);
+            using var writer = new JTokenWriter();
+
+            JsonUtility.WritePackageDependency(writer, package);
+
+            JToken actual = ((JProperty)writer.Token).Value;
+
+            Assert.Equal(expectedVersion, actual);
         }
 
         [Fact]
