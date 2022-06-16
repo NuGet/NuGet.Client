@@ -381,12 +381,12 @@ namespace NuGet.CommandLine.XPlat
                 // Set the VersionOverride attribute for the first time if it does not exist, meaning that the package's version has not been updated before.
                 if (versionOverrideAttribute == null)
                 {
-                    packageReferenceItem.SetMetadataValue(VERSION_OVERRIDE_TAG, packageVersion);
+                    packageReferenceItem.AddMetadata(VERSION_OVERRIDE_TAG, packageVersion, expressAsAttribute: true);
                 }
                 // Update the version in the VersionOverride attribute if it already exists, meaning that the package's version is being updated. 
                 else
                 {
-                    packageReferenceItem.AddMetadata(VERSION_OVERRIDE_TAG, packageVersion, expressAsAttribute: true);
+                    packageReferenceItem.SetMetadataValue(VERSION_OVERRIDE_TAG, packageVersion);
                 }
 
                 UpdateExtraMetadata(libraryDependency, packageReferenceItem);
