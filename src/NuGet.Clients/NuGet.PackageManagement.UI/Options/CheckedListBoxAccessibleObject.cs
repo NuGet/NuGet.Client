@@ -37,8 +37,8 @@ namespace NuGet.Options
                 if (packageSource.IsHttp && !packageSource.IsHttps)
                 {
                     var sourceMessage = string.Concat(
-                        packageSource.Source,
-                        "Warning: Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.");
+                        "Warning: Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."
+                        packageSource.Source);
                     return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, sourceMessage);
                 }
 
