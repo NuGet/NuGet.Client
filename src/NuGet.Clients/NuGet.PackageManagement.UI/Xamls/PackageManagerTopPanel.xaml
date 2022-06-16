@@ -17,6 +17,7 @@
 
       <CollectionViewSource x:Key="cvsPackageSources">
         <CollectionViewSource.SortDescriptions>
+          <scm:SortDescription PropertyName="PriorityOrder" Direction="Ascending" />
           <scm:SortDescription PropertyName="SourceName" Direction="Ascending" />
         </CollectionViewSource.SortDescriptions>
       </CollectionViewSource>
