@@ -65,6 +65,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var cvs = new CollectionViewSource();
             cvs.SortDescriptions.Add(new SortDescription(nameof(PackageSourceMoniker.PriorityOrder), ListSortDirection.Ascending));
             cvs.SortDescriptions.Add(new SortDescription(nameof(PackageSourceMoniker.SourceName), ListSortDirection.Ascending));
+            cvs.Culture = new System.Globalization.CultureInfo("en-US");
             cvs.Source = result;
 
             // Act
