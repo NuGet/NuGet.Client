@@ -87,7 +87,7 @@ namespace NuGet.PackageManagement.Telemetry
                                     httpsV3++;
                                 }
 
-                                if (TelemetryUtility.IsNuGetOrg(source.Source))
+                                if (UriUtility.IsNuGetOrg(source.Source))
                                 {
                                     nugetOrg |= HttpStyle.YesV3;
                                 }
@@ -102,7 +102,7 @@ namespace NuGet.PackageManagement.Telemetry
                                     httpsV2++;
                                 }
 
-                                if (TelemetryUtility.IsNuGetOrg(source.Source))
+                                if (UriUtility.IsNuGetOrg(source.Source))
                                 {
                                     if (source.Source.IndexOf(
                                         "api/v2/curated-feeds/microsoftdotnet",
