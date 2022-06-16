@@ -176,7 +176,7 @@ namespace NuGet.Commands
                     if (nodeIsProject)
                     {
                         // Merge the node's no warn properties with the one in the path.
-                        var nodeWarningProperties = nodeLookUp.NodeWarningProperties;
+                        NodeWarningProperties nodeWarningProperties = nodeLookUp.NodeWarningProperties;
                         AddDependenciesToQueue(nodeDependencies,
                             queue,
                             nodeWarningProperties.Merge(node.NodeWarningProperties));
