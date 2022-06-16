@@ -510,11 +510,7 @@ namespace NuGet.Packaging.Signing
                 // Hash until the end of the reader
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Length);
 
-#if NET45
-                hashAlgorithm.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
-#else
                 hashAlgorithm.TransformFinalBlock(Array.Empty<byte>(), inputOffset: 0, inputCount: 0);
-#endif
 
                 return CompareHash(expectedHash, hashAlgorithm.Hash);
             }
@@ -649,11 +645,7 @@ namespace NuGet.Packaging.Signing
                 // Hash until the end of the reader
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, reader.BaseStream.Length);
 
-#if NET45
-                hashFunc.Update(new byte[0], offset: 0, count: 0);
-#else
                 hashFunc.Update(Array.Empty<byte>(), offset: 0, count: 0);
-#endif
 
                 return hashFunc.GetHash();
             }

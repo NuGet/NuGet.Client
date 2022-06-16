@@ -77,11 +77,7 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-#if NET45
-            return new ReadOnlyCollection<CertificateHashAllowListEntry>(repositoryAllowedCertificates.AsList<CertificateHashAllowListEntry>());
-#else
             return repositoryAllowedCertificates;
-#endif
         }
     }
 }

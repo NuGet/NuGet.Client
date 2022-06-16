@@ -151,7 +151,7 @@ namespace NuGet.LibraryModel
 
             combiner.AddStringIgnoreCase(Name);
             combiner.AddObject(VersionRange);
-            combiner.AddObject(TypeConstraint);
+            combiner.AddStruct(TypeConstraint);
 
             return combiner.CombinedHash;
         }

@@ -2806,11 +2806,29 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid characters in one of the following path segments: &apos;{0}&apos;.
+        /// </summary>
+        public static string Error_InvalidCharactersInPathSegment {
+            get {
+                return ResourceManager.GetString("Error_InvalidCharactersInPathSegment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid MSBuild version specified: &apos;{0}&apos;.
         /// </summary>
         public static string Error_InvalidMsbuildVersion {
             get {
                 return ResourceManager.GetString("Error_InvalidMsbuildVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid solution directory: &apos;{0}&apos;.
+        /// </summary>
+        public static string Error_InvalidSolutionDirectory {
+            get {
+                return ResourceManager.GetString("Error_InvalidSolutionDirectory", resourceCulture);
             }
         }
         

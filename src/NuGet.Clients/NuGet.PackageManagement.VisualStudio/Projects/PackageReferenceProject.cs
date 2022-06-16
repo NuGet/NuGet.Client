@@ -34,19 +34,19 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <typeparam name="U">Type of the collection elements for Installed and Transitive packages</typeparam>
     public abstract class PackageReferenceProject<T, U> : BuildIntegratedNuGetProject, IPackageReferenceProject where T : ICollection<U>, new()
     {
-        internal static readonly Comparer<PackageReference> PackageReferenceMergeComparer = Comparer<PackageReference>.Create((a, b) => a?.PackageIdentity?.CompareTo(b.PackageIdentity) ?? 1);
-
-        private protected readonly Dictionary<string, TransitiveEntry> TransitiveOriginsCache = new();
+        private static readonly NuGetFrameworkSorter FrameworkSorter = new();
 
         private readonly protected string _projectName;
         private readonly protected string _projectUniqueName;
         private readonly protected string _projectFullPath;
 
         // Cache
+        private protected Dictionary<string, TransitiveEntry> TransitiveOriginsCache { get; set; }
         protected T InstalledPackages { get; set; }
         protected T TransitivePackages { get; set; }
 
-        private readonly object _lockObj = new object();
+        private readonly object _installedAndTransitivePackagesLock = new object();
+        private readonly object _transitiveOriginsLock = new object();
 
         private protected DateTime _lastTimeAssetsModified;
         private protected WeakReference<PackageSpec> _lastPackageSpec;
@@ -134,22 +134,20 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else
                 {
-                    // Don't mutate cache for threadsafety, instead we works on copy then replace cache when done.
-                    lock (_lockObj)
+                    // Make a copy of the caches to prevent concurrency issues.
+                    lock (_installedAndTransitivePackagesLock)
                     {
                         (installedPackages, transitivePackages) = GetInstalledAndTransitivePackagesCacheCopy();
                     }
                 }
             }
 
-            var frameworkSorter = new NuGetFrameworkSorter();
-
             // get installed packages
             List<PackageReference> calculatedInstalledPackages = packageSpec
                 .TargetFrameworks
                 .SelectMany(f => ResolvedInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, installedPackages))
                 .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
+                .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First())
                 .ToList();
 
             // get transitive packages
@@ -157,20 +155,39 @@ namespace NuGet.PackageManagement.VisualStudio
                 .TargetFrameworks
                 .SelectMany(f => ResolvedTransitivePackagesList(f.FrameworkName, targetsList, installedPackages, transitivePackages))
                 .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First());
+                .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First());
 
             CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
             if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {
-                // Get Transitive Origins
+                // Compute Transitive Origins
+                Dictionary<string, TransitiveEntry> transitiveOrigins;
+                if (IsInstalledAndTransitiveComputationNeeded || TransitiveOriginsCache == null)
+                {
+                    transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedInstalledPackages, targetsList, token) : new Dictionary<string, TransitiveEntry>();
+                }
+                else
+                {
+                    lock (_transitiveOriginsLock)
+                    {
+                        // Make a copy of the cache to prevent concurrency issues.
+                        transitiveOrigins = new Dictionary<string, TransitiveEntry>(TransitiveOriginsCache);
+                    }
+                }
+
+                // 4. Return cached result for specific transitive dependency
                 transitivePackagesWithOrigins = calculatedTransitivePackages
                     .Select(packageRef =>
                     {
-                        (PackageReference pr, TransitiveEntry transitiveEntry) tupl = (packageRef, GetTransitivePackageOrigin(packageRef, calculatedInstalledPackages, targetsList, token));
-                        return tupl;
-                    })
-                    .Select(tuple => MergeTransitiveOrigin(tuple.pr, tuple.transitiveEntry));
+                        transitiveOrigins.TryGetValue(packageRef.PackageIdentity.Id, out TransitiveEntry cacheEntry);
+                        return MergeTransitiveOrigin(packageRef, cacheEntry);
+                    });
+
+                lock (_transitiveOriginsLock)
+                {
+                    TransitiveOriginsCache = transitiveOrigins;
+                }
             }
             else
             {
@@ -183,7 +200,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IsInstalledAndTransitiveComputationNeeded = false;
 
             // Refresh cache
-            lock (_lockObj)
+            lock (_installedAndTransitivePackagesLock)
             {
                 InstalledPackages = installedPackages;
                 TransitivePackages = transitivePackages;
@@ -245,42 +262,36 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Get All Installed packages that transitively install a given transitive package in this project
         /// </summary>
-        /// <param name="transitivePackage">Identity of given transtive package</param>
+        /// <param name="installedPackages">The list of installed packages</param>
+        /// <param name="targetsList">The list of targets</param>
         /// <param name="ct">Cancellation Token</param>
         /// <returns>A dictionary, indexed by Framework/Runtime-ID with all top (installed)
-        /// packages that depends on given transitive package, or <c>null</c> if none found</returns>
+        /// packages that depends on given transitive package</returns>
         /// <remarks>Computes all transitive origins for each Framework/Runtime-ID combiation. Runtime-ID can be <c>null</c>.
         /// Transitive origins are calculated using a Depth First Search algorithm on all direct dependencies exhaustively</remarks>
-        internal TransitiveEntry GetTransitivePackageOrigin(PackageReference transitivePackage, List<PackageReference> installedPackages, IReadOnlyList<LockFileTarget> targetsList, CancellationToken ct)
+        internal static Dictionary<string, TransitiveEntry> ComputeTransitivePackageOrigins(List<PackageReference> installedPackages, IReadOnlyList<LockFileTarget> targetsList, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
-            if (IsInstalledAndTransitiveComputationNeeded)
+
+            Dictionary<string, TransitiveEntry> transitiveOriginsCache = new();
+
+            // Find all Transitive origins and update cache
+            var memoryVisited = new HashSet<PackageIdentity>();
+
+            // For each target framework graph (Framework, RID)-pair:
+            foreach (LockFileTarget targetFxGraph in targetsList)
             {
-                // Assets file has changed. Recompute Transitive Origins
-                TransitiveOriginsCache.Clear();
+                var key = new FrameworkRuntimePair(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
 
-                // Otherwise, find all Transitive origin and update cache
-                var memoryVisited = new HashSet<PackageIdentity>();
-
-                // 3. For each target framework graph (Framework, RID)-pair:
-                foreach (LockFileTarget targetFxGraph in targetsList)
+                foreach (var directPkg in installedPackages) // 3.1 For each direct dependency
                 {
-                    var key = new FrameworkRuntimePair(targetFxGraph.TargetFramework, targetFxGraph.RuntimeIdentifier);
-
-                    foreach (var directPkg in installedPackages) // 3.1 For each direct dependency
-                    {
-                        memoryVisited.Clear();
-                        // 3.1.1 Do DFS to mark directPkg as a transitive origin over all transitive dependencies found
-                        MarkTransitiveOrigin(directPkg, directPkg, targetFxGraph, memoryVisited, key, ct);
-                    }
+                    memoryVisited.Clear();
+                    // Do DFS to mark directPkg as a transitive origin over all transitive dependencies found
+                    MarkTransitiveOrigin(transitiveOriginsCache, directPkg, directPkg, targetFxGraph, memoryVisited, key, ct);
                 }
             }
-            // Otherwise, assets file has not changed. Look at Transitive Origins Cache
-            TransitiveEntry cacheEntry;
-            TransitiveOriginsCache.TryGetValue(transitivePackage.PackageIdentity.Id, out cacheEntry);
 
-            // 4. Return cached result for specific transitive dependency
-            return cacheEntry;
+            return transitiveOriginsCache;
         }
 
         /// <summary>
@@ -343,7 +354,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="graph">Package dependency graph, from assets file</param>
         /// <param name="visited">Dictionary to remember visited nodes</param>
         /// <param name="fxRidEntry">Framework/Runtime-ID associated with current <paramref name="graph"/></param>
-        private void MarkTransitiveOrigin(PackageReference top, PackageReference current, LockFileTarget graph, HashSet<PackageIdentity> visited, FrameworkRuntimePair fxRidEntry, CancellationToken token)
+        private static void MarkTransitiveOrigin(Dictionary<string, TransitiveEntry> transitiveOriginsCache, PackageReference top, PackageReference current, LockFileTarget graph, HashSet<PackageIdentity> visited, FrameworkRuntimePair fxRidEntry, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -368,7 +379,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // Lookup Transitive Origins Cache
                 TransitiveEntry cachedEntry;
-                if (!TransitiveOriginsCache.TryGetValue(current.PackageIdentity.Id, out cachedEntry))
+                if (!transitiveOriginsCache.TryGetValue(current.PackageIdentity.Id, out cachedEntry))
                 {
                     cachedEntry = new Dictionary<FrameworkRuntimePair, IList<PackageReference>>
                     {
@@ -387,7 +398,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 // Upsert Transitive Origins Cache
-                TransitiveOriginsCache[current.PackageIdentity.Id] = cachedEntry;
+                transitiveOriginsCache[current.PackageIdentity.Id] = cachedEntry;
 
                 foreach (PackageDependency dep in node.Dependencies.ToList()) // Casting to list to prevent backing allocations
                 {
@@ -402,7 +413,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     if (!visited.Contains(pkgChild.PackageIdentity))
                     {
-                        MarkTransitiveOrigin(top, pkgChild, graph, visited, fxRidEntry, token);
+                        MarkTransitiveOrigin(transitiveOriginsCache, top, pkgChild, graph, visited, fxRidEntry, token);
                     }
                 }
             }
@@ -410,7 +421,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)
         {
-            var transitiveOrigins = new SortedSet<PackageReference>(PackageReferenceMergeComparer);
+            var transitiveOrigins = new SortedSet<PackageReference>(GetPackageReferenceUtility.PackageReferenceMergeComparer);
 
             transitiveEntry?.Keys?.ForEach(key => transitiveOrigins.AddRange(transitiveEntry[key]));
 

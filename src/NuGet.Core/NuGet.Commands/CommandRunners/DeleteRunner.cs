@@ -39,7 +39,7 @@ namespace NuGet.Commands
             await packageUpdateResource.Delete(
                 packageId,
                 packageVersion,
-                endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source, defaultApiKey: null, isSymbolApiKey: false),
+                endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source),
                 desc => nonInteractive || confirmFunc(desc),
                 noServiceEndpoint,
                 logger);

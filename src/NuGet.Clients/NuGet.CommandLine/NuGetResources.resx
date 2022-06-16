@@ -406,6 +406,12 @@
     <value>[Y] Yes  [A] Yes to All  [N] No  [L] No to All ?</value>
     <comment>Please do not localize the letters inside the [] brackets.</comment>
   </data>
+  <data name="Error_InvalidCharactersInPathSegment" xml:space="preserve">
+    <value>Invalid characters in one of the following path segments: '{0}'</value>
+  </data>
+  <data name="Error_InvalidSolutionDirectory" xml:space="preserve">
+    <value>Invalid solution directory: '{0}'</value>
+  </data>
   <data name="Error_MultipleSolutions" xml:space="preserve">
     <value>This folder contains more than one solution file.</value>
   </data>

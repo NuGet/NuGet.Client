@@ -404,7 +404,7 @@ namespace NuGet.Versioning
         {
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(FloatBehavior);
+            combiner.AddStruct(FloatBehavior);
             combiner.AddObject(MinVersion);
 
             return combiner.CombinedHash;

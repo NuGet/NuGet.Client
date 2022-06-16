@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'NuGet.sln'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -6,6 +6,7 @@
     <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
     <TestProjectType>functional</TestProjectType>
     <Description>Functional tests for nuget in dotnet CLI scenarios, using the NuGet.CommandLine.XPlat assembly.</Description>
+    <UseParallelXunit>true</UseParallelXunit>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,9 +27,6 @@
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.targets">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

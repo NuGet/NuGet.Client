@@ -34,7 +34,7 @@ namespace NuGet.ProjectModel.ProjectLockFile
             combiner.AddObject(LockFileDependencyIdVersionComparer.Default.GetHashCode(obj));
             combiner.AddObject(obj.RequestedVersion);
             combiner.AddSequence(obj.Dependencies);
-            combiner.AddObject(obj.Type);
+            combiner.AddStruct(obj.Type);
             return combiner.CombinedHash;
         }
     }

@@ -10,20 +10,12 @@ namespace NuGet.Packaging.Signing.Utility
     {
         internal static T PtrToStructure<T>(IntPtr pointer)
         {
-#if NET45
-            return (T)Marshal.PtrToStructure(pointer, typeof(T));
-#else
             return Marshal.PtrToStructure<T>(pointer);
-#endif
         }
 
         internal static int SizeOf<T>()
         {
-#if NET45
-            return Marshal.SizeOf(typeof(T));
-#else
             return Marshal.SizeOf<T>();
-#endif
         }
     }
 }
