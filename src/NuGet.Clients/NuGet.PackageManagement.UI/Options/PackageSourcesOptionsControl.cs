@@ -24,7 +24,10 @@ using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using GelUtilities = Microsoft.Internal.VisualStudio.PlatformUI.Utilities;
 using Task = System.Threading.Tasks.Task;
+using Microsoft.VisualStudio.Imaging.Interop;
+using Microsoft.VisualStudio.Imaging;
 
 namespace NuGet.Options
 {
@@ -47,6 +50,34 @@ namespace NuGet.Options
         private INuGetSourcesService _nugetSourcesService; // Store proxy object in case the dialog is up and we lose connection we wont grab the local proxy and try to save to that
 #pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
 
+        private static IVsImageService2 ImageService
+        {
+            get
+            {
+                return (IVsImageService2)Package.GetGlobalService(typeof(SVsImageService));
+            }
+        }
+
+        public static Image WarningIcon
+        {
+            get
+            {
+                ImageAttributes attributes = new ImageAttributes
+                {
+                    StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
+                    ImageType = (uint)_UIImageType.IT_Bitmap,
+                    Format = (uint)_UIDataFormat.DF_WinForms,
+                    LogicalWidth = 16,
+                    LogicalHeight = 16,
+                    Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
+                };
+
+                IVsUIObject uIObj = ImageService.GetImage(KnownMonikers.StatusWarning, attributes);
+
+                return (Image)GelUtilities.GetObjectData(uIObj);
+            }
+        }
+
         public PackageSourcesOptionsControl(IAsyncServiceProvider asyncServiceProvider)
         {
             InitializeComponent();
@@ -56,6 +87,8 @@ namespace NuGet.Options
             SetupEventHandlers();
 
             UpdateDPI();
+
+            HttpWarningIcon.Image = WarningIcon;
         }
 
         private void UpdateDPI()

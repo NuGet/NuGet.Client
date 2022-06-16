@@ -130,13 +130,13 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="HeaderLabel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 0</value>
+    <value>6, 0</value>
   </data>
   <data name="HeaderLabel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 0, 2, 0</value>
+    <value>6, 0, 4, 0</value>
   </data>
   <data name="HeaderLabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 30</value>
+    <value>184, 60</value>
   </data>
   <data name="HeaderLabel.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -163,13 +163,13 @@
     <value>173, 17</value>
   </metadata>
   <data name="CopyPackageSourceStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>102, 22</value>
+    <value>143, 38</value>
   </data>
   <data name="CopyPackageSourceStripMenuItem.Text" xml:space="preserve">
     <value>Copy</value>
   </data>
   <data name="PackageSourcesContextMenu.Size" type="System.Drawing.Size, System.Drawing">
-    <value>103, 26</value>
+    <value>144, 42</value>
   </data>
   <data name="&gt;&gt;PackageSourcesContextMenu.Name" xml:space="preserve">
     <value>PackageSourcesContextMenu</value>
@@ -200,7 +200,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAACe
-        CwAAAk1TRnQBSQFMAgEBBAEAAYABAQGAAQEBEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
+        CwAAAk1TRnQBSQFMAgEBBAEAAZgBAQGYAQEBEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
         AwABIAMAAQEBAAEgBgABIP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8AogADIAEuAwsBDgQB
         MAADGAEhAyYBOBAAAy8BSQEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/Ay8BSSwAAyYBOANd
         Ad8DXQHfAyYBODQAAzoBYgM6AWIcAANNAZMBBwEgAaEB/wNdAcwDDgESKAADPAFmAkEBQgFzFAADLwFJ
@@ -213,7 +213,7 @@
         AwIBAwNOAZYBBwEgAaEB/wEHASABoQH/AQcBIAGhAf8DUAGdBAEMAAMQARUCWQFcAcYCWgFrAfIDHQEp
         HAADLwFJAS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8DLwFJLAADKgFAAzwB/wM8Af8DKgFA
         JAADOgFiA0AB/QM8Af8DPAH/AzwB/wM8Af8DPAH/AzwB/wNAAf0DOgFiFAADRgF9AQcBIAGhAf8BBwEg
-        AaEB/wEHASABoQH/A0kBhggAAxwBJwJdAWIB3AE3AVABgAH+AzQBUwwAAy8BSQMvAUkDLwFJAy8BSQMv
+        AaEB/wEHASABoQH/A0kBhggAAxwBJwJdAWIB3AE6AVMBgAH+AzQBUwwAAy8BSQMvAUkDLwFJAy8BSQMv
         AUkDRgF9AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8DRgF9Ay8BSQMvAUkDLwFJAy8BSQMv
         AUkMAAM6AWIIAAMqAUADPAH/AzwB/wMqAUAIAAM6AWIYAANAAf0DPAH/A0AB/QNQAZ8DPAH/AzwB/wNQ
         AZ8DQAH9AzwB/wNAAf0YAAM7AWQBIQEmAV8B+wEHASABoQH/AQcBIAGhAf8CPwFAAW4DKgE/Al4BagHt
@@ -229,16 +229,16 @@
         ATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/
         AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/DAADQAH9AzwB/wNA
         Af0DUAGfAzwB/wM8Af8DUAGfA0AB/QM8Af8DQAH9GAADOgFiCAADKgFAAzwB/wM8Af8DKgFACAADOgFi
-        IAADPwFsATcBUAGAAf4BBwEgAaEB/wEHASABoQH/Ak0BfQH6AyoBPxQAAS4BigEyAf8BLgGKATIB/wEu
+        IAADPwFsAToBUwGAAf4BBwEgAaEB/wEHASABoQH/Ak0BfQH6AyoBPxQAAS4BigEyAf8BLgGKATIB/wEu
         AYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEy
         Af8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8MAAM6AWIDQAH9
-        AzwB/wM8Af8DPAH/AzwB/wM8Af8DPAH/A0AB/QM6AWIkAAMqAUADPAH/AzwB/wMqAUAoAAM/AWwBNwFQ
+        AzwB/wM8Af8DPAH/AzwB/wM8Af8DPAH/A0AB/QM6AWIkAAMqAUADPAH/AzwB/wMqAUAoAAM/AWwBOgFT
         AYAB/gEHASABoQH/Al0BZwHqAmEBagHmAQcBIAGhAf8CYQFsAesDGAEhEAADLwFJAy8BSQMvAUkDLwFJ
         Ay8BSQNGAX0BLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wNGAX0DLwFJAy8BSQMvAUkDLwFJ
         Ay8BSRAAAzoBYgNAAf0DPAH/AzwB/wM8Af8DPAH/A0AB/QM6AWIoAAMqAUADPAH/AzwB/wMqAUAkAAM/
-        AWwBNwFQAYAB/gEHASABoQH/ATcBUAGAAf4DMQFNAxMBGgJZAVwBxgEHASABoQH/A14B0gMKAQ0gAAMv
+        AWwBOgFTAYAB/gEHASABoQH/AToBUwGAAf4DMQFNAxMBGgJZAVwBxgEHASABoQH/A14B0gMKAQ0gAAMv
         AUkBLgGKATIB/wEuAYoBMgH/AS4BigEyAf8BLgGKATIB/wMvAUkoAAM6AWIDQAH9AzwB/wM8Af8DQAH9
-        AzoBYiwAAyoBQAM8Af8DPAH/AyoBQCAAAzYBWQE3AVABgAH+AQcBIAGhAf8BBwEgAaEB/wNOAZUIAAMF
+        AzoBYiwAAyoBQAM8Af8DPAH/AyoBQCAAAzYBWQE6AVMBgAH+AQcBIAGhAf8BBwEgAaEB/wNOAZUIAAMF
         AQYCTgFPAZcBBwEgAaEB/wJVAVcBsQQCHAADLwFJAS4BigEyAf8BLgGKATIB/wEuAYoBMgH/AS4BigEy
         Af8DLwFJLAADOgFiA0AB/QNAAf0DOgFiMAADKgFAAzwB/wM8Af8DKgFAIAACUgFUAagBBwEgAaEB/wEH
         ASABoQH/Al8BYwHVAwcBCRAAAzoBYgJRAW8B9wNJAYYcAAMvAUkBLgGKATIB/wEuAYoBMgH/AS4BigEy
@@ -256,13 +256,13 @@
     <value>NoControl</value>
   </data>
   <data name="removeButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>453, 0</value>
+    <value>906, 0</value>
   </data>
   <data name="removeButton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 3, 0</value>
+    <value>0, 0, 6, 0</value>
   </data>
   <data name="removeButton.Size" type="System.Drawing.Size, System.Drawing">
-    <value>30, 30</value>
+    <value>60, 60</value>
   </data>
   <data name="removeButton.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -298,16 +298,16 @@
     <value>NoControl</value>
   </data>
   <data name="updateButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>369, 258</value>
+    <value>833, 516</value>
   </data>
   <data name="updateButton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 0, 2</value>
+    <value>4, 4, 0, 4</value>
   </data>
   <data name="updateButton.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>11, 0, 11, 0</value>
+    <value>22, 0, 22, 0</value>
   </data>
   <data name="updateButton.Size" type="System.Drawing.Size, System.Drawing">
-    <value>117, 34</value>
+    <value>139, 34</value>
   </data>
   <data name="updateButton.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -346,16 +346,16 @@
     <value>NoControl</value>
   </data>
   <data name="BrowseButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>317, 258</value>
+    <value>773, 516</value>
   </data>
   <data name="BrowseButton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
+    <value>4, 4, 4, 4</value>
   </data>
   <data name="BrowseButton.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 0, 2, 0</value>
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="BrowseButton.Size" type="System.Drawing.Size, System.Drawing">
-    <value>48, 34</value>
+    <value>52, 34</value>
   </data>
   <data name="BrowseButton.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
@@ -382,10 +382,10 @@
     <value>NoControl</value>
   </data>
   <data name="NewPackageSourceLabel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 258</value>
+    <value>4, 516</value>
   </data>
   <data name="NewPackageSourceLabel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
+    <value>4, 4, 4, 4</value>
   </data>
   <data name="NewPackageSourceLabel.Size" type="System.Drawing.Size, System.Drawing">
     <value>86, 25</value>
@@ -412,16 +412,16 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="NewPackageSource.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 2</value>
+    <value>4, 4</value>
   </data>
   <data name="NewPackageSource.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
+    <value>4, 4, 4, 4</value>
   </data>
   <data name="NewPackageSource.MaxLength" type="System.Int32, mscorlib">
     <value>1000</value>
   </data>
   <data name="NewPackageSource.Size" type="System.Drawing.Size, System.Drawing">
-    <value>221, 31</value>
+    <value>667, 31</value>
   </data>
   <data name="NewPackageSource.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -448,10 +448,10 @@
     <value>NoControl</value>
   </data>
   <data name="NewPackageNameLabel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 226</value>
+    <value>4, 480</value>
   </data>
   <data name="NewPackageNameLabel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 0, 2, 0</value>
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="NewPackageNameLabel.Size" type="System.Drawing.Size, System.Drawing">
     <value>74, 25</value>
@@ -478,13 +478,13 @@
     <value>Left, Right</value>
   </data>
   <data name="NewPackageName.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 223</value>
+    <value>98, 477</value>
   </data>
   <data name="NewPackageName.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
+    <value>4, 4, 4, 4</value>
   </data>
   <data name="NewPackageName.Size" type="System.Drawing.Size, System.Drawing">
-    <value>221, 31</value>
+    <value>667, 31</value>
   </data>
   <data name="NewPackageName.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -535,13 +535,13 @@
     <value>NoControl</value>
   </data>
   <data name="addButton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>420, 0</value>
+    <value>840, 0</value>
   </data>
   <data name="addButton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 3, 0</value>
+    <value>0, 0, 6, 0</value>
   </data>
   <data name="addButton.Size" type="System.Drawing.Size, System.Drawing">
-    <value>30, 30</value>
+    <value>60, 60</value>
   </data>
   <data name="addButton.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -565,13 +565,13 @@
     <value>0, 0</value>
   </data>
   <data name="tableLayoutPanel2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 4</value>
+    <value>0, 0, 0, 8</value>
   </data>
   <data name="tableLayoutPanel2.RowCount" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
   <data name="tableLayoutPanel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>486, 30</value>
+    <value>972, 60</value>
   </data>
   <data name="tableLayoutPanel2.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -589,7 +589,7 @@
     <value>0</value>
   </data>
   <data name="tableLayoutPanel2.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="HeaderLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="addButton" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="removeButton" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,100,Absolute,33,Absolute,33,Absolute,20,Absolute,20" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="HeaderLabel" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="addButton" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="removeButton" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,100,Absolute,66,Absolute,66,Absolute,40,Absolute,40" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="PackageSourcesListBox.AccessibleName" xml:space="preserve">
     <value>Package sources</value>
@@ -601,13 +601,13 @@
     <value>False</value>
   </data>
   <data name="PackageSourcesListBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 34</value>
+    <value>6, 68</value>
   </data>
   <data name="PackageSourcesListBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 0, 0, 3</value>
+    <value>6, 0, 0, 6</value>
   </data>
   <data name="PackageSourcesListBox.Size" type="System.Drawing.Size, System.Drawing">
-    <value>483, 74</value>
+    <value>966, 206</value>
   </data>
   <data name="PackageSourcesListBox.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -631,7 +631,7 @@
     <value>NoControl</value>
   </data>
   <data name="MachineWideSourcesLabel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 111</value>
+    <value>0, 280</value>
   </data>
   <data name="MachineWideSourcesLabel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
@@ -670,13 +670,13 @@
     <value>False</value>
   </data>
   <data name="MachineWidePackageSourcesListBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 139</value>
+    <value>6, 311</value>
   </data>
   <data name="MachineWidePackageSourcesListBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 3, 0, 12</value>
+    <value>6, 6, 0, 24</value>
   </data>
   <data name="MachineWidePackageSourcesListBox.Size" type="System.Drawing.Size, System.Drawing">
-    <value>483, 70</value>
+    <value>966, 138</value>
   </data>
   <data name="MachineWidePackageSourcesListBox.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -715,10 +715,13 @@
     <value>NoControl</value>
   </data>
   <data name="HttpWarning.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 0</value>
+    <value>38, 0</value>
+  </data>
+  <data name="HttpWarning.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>6, 0, 6, 0</value>
   </data>
   <data name="HttpWarning.Size" type="System.Drawing.Size, System.Drawing">
-    <value>197, 150</value>
+    <value>619, 50</value>
   </data>
   <data name="HttpWarning.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -760,7 +763,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="HttpWarningIcon.Size" type="System.Drawing.Size, System.Drawing">
-    <value>16, 16</value>
+    <value>32, 32</value>
   </data>
   <data name="HttpWarningIcon.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -781,13 +784,16 @@
     <value>1</value>
   </data>
   <data name="tableLayoutPanel4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 38</value>
+    <value>6, 45</value>
+  </data>
+  <data name="tableLayoutPanel4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>6, 6, 6, 6</value>
   </data>
   <data name="tableLayoutPanel4.RowCount" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
   <data name="tableLayoutPanel4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>219, 150</value>
+    <value>663, 50</value>
   </data>
   <data name="tableLayoutPanel4.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -808,7 +814,7 @@
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="HttpWarning" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="HttpWarningIcon" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Percent,100" /&gt;&lt;Rows Styles="AutoSize,0" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="tableLayoutPanel3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>90, 256</value>
+    <value>94, 512</value>
   </data>
   <data name="tableLayoutPanel3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
@@ -817,7 +823,7 @@
     <value>2</value>
   </data>
   <data name="tableLayoutPanel3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>225, 60</value>
+    <value>675, 120</value>
   </data>
   <data name="tableLayoutPanel3.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -844,13 +850,13 @@
     <value>0, 0</value>
   </data>
   <data name="tableLayoutPanel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
+    <value>4, 4, 4, 4</value>
   </data>
   <data name="tableLayoutPanel1.RowCount" type="System.Int32, mscorlib">
     <value>6</value>
   </data>
   <data name="tableLayoutPanel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>486, 316</value>
+    <value>972, 632</value>
   </data>
   <data name="tableLayoutPanel1.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -868,7 +874,7 @@
     <value>1</value>
   </data>
   <data name="tableLayoutPanel1.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="tableLayoutPanel2" Row="0" RowSpan="1" Column="0" ColumnSpan="4" /&gt;&lt;Control Name="PackageSourcesListBox" Row="1" RowSpan="1" Column="0" ColumnSpan="4" /&gt;&lt;Control Name="MachineWideSourcesLabel" Row="2" RowSpan="1" Column="0" ColumnSpan="4" /&gt;&lt;Control Name="MachineWidePackageSourcesListBox" Row="3" RowSpan="1" Column="0" ColumnSpan="4" /&gt;&lt;Control Name="NewPackageNameLabel" Row="4" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="NewPackageSourceLabel" Row="5" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="tableLayoutPanel3" Row="5" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="BrowseButton" Row="5" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="updateButton" Row="5" RowSpan="1" Column="3" ColumnSpan="1" /&gt;&lt;Control Name="NewPackageName" Row="4" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Percent,100,AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="Absolute,34,Percent,100,AutoSize,0,AutoSize,0,AutoSize,0,Absolute,60,Absolute,20" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="tableLayoutPanel2" Row="0" RowSpan="1" Column="0" ColumnSpan="4" /&gt;&lt;Control Name="PackageSourcesListBox" Row="1" RowSpan="1" Column="0" ColumnSpan="4" /&gt;&lt;Control Name="MachineWideSourcesLabel" Row="2" RowSpan="1" Column="0" ColumnSpan="4" /&gt;&lt;Control Name="MachineWidePackageSourcesListBox" Row="3" RowSpan="1" Column="0" ColumnSpan="4" /&gt;&lt;Control Name="NewPackageNameLabel" Row="4" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="NewPackageSourceLabel" Row="5" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="tableLayoutPanel3" Row="5" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="BrowseButton" Row="5" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="updateButton" Row="5" RowSpan="1" Column="3" ColumnSpan="1" /&gt;&lt;Control Name="NewPackageName" Row="4" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Percent,100,AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="Absolute,68,Percent,100,AutoSize,0,AutoSize,0,AutoSize,0,Absolute,120,Absolute,40" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <metadata name="images32px.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>544, 17</value>
@@ -878,7 +884,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAADq
-        DwAAAk1TRnQBSQFMAgEBBAEAAYABAQGAAQEBIAEAASABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        DwAAAk1TRnQBSQFMAgEBBAEAAZgBAQGYAQEBIAEAASABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABgAMAAUADAAEBAQABCAYAASAYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -956,7 +962,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABS
-        GgAAAk1TRnQBSQFMAgEBBAEAAYABAQGAAQEBQAEAAUABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        GgAAAk1TRnQBSQFMAgEBBAEAAZgBAQGYAQEBQAEAAUABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         BAABAQIAAYADAAEBAQABCAYAAYAYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -1078,10 +1084,13 @@
     <value>42</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>96, 96</value>
+    <value>192, 192</value>
+  </data>
+  <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>6, 6, 6, 6</value>
   </data>
   <data name="$this.Size" type="System.Drawing.Size, System.Drawing">
-    <value>486, 316</value>
+    <value>972, 632</value>
   </data>
   <data name="&gt;&gt;CopyPackageSourceStripMenuItem.Name" xml:space="preserve">
     <value>CopyPackageSourceStripMenuItem</value>

@@ -222,7 +222,6 @@ namespace NuGet.Options
             // 
             resources.ApplyResources(this.HttpWarningIcon, "HttpWarningIcon");
             this.HttpWarningIcon.AccessibleRole = System.Windows.Forms.AccessibleRole.Alert;
-            this.HttpWarningIcon.Image = global::NuGet.PackageManagement.UI.Resources.StatusWarning;
             this.HttpWarningIcon.Name = "HttpWarningIcon";
             this.HttpWarningIcon.TabStop = false;
             // 

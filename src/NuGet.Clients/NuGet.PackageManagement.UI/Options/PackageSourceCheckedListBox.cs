@@ -19,6 +19,33 @@ namespace NuGet.Options
     internal class PackageSourceCheckedListBox : CheckedListBox
     {
         public Size CheckBoxSize { get; set; }
+        private static IVsImageService2 ImageService
+        {
+            get
+            {
+                return (IVsImageService2)Microsoft.VisualStudio.Shell.Package.GetGlobalService(typeof(SVsImageService));
+            }
+        }
+
+        public static Icon WarningIcon
+        {
+            get
+            {
+                ImageAttributes attributes = new ImageAttributes
+                {
+                    StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
+                    ImageType = (uint)_UIImageType.IT_Icon,
+                    Format = (uint)_UIDataFormat.DF_WinForms,
+                    LogicalWidth = 16,
+                    LogicalHeight = 16,
+                    Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
+                };
+
+                IVsUIObject uIObj = ImageService.GetImage(KnownMonikers.StatusWarning, attributes);
+
+                return (Icon)GelUtilities.GetObjectData(uIObj);
+            }
+        }
 
         public override int ItemHeight
         {
@@ -91,22 +118,7 @@ namespace NuGet.Options
                         // draw each package source as
                         //
                         // [checkbox] Name
-                        //            Source (italics)
-
-                        ImageAttributes attributes = new ImageAttributes
-                        {
-                            StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
-                            ImageType = (uint)_UIImageType.IT_Icon,
-                            Format = (uint)_UIDataFormat.DF_WinForms,
-                            LogicalWidth = 16,
-                            LogicalHeight = 16,
-                            Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
-                        };
-
-                        IVsImageService2 vsImageService = (IVsImageService2)Microsoft.VisualStudio.Shell.Package.GetGlobalService(typeof(SVsImageService));
-                        IVsUIObject uIObj = vsImageService.GetImage(KnownMonikers.StatusWarning, attributes);
-
-                        Icon warningIcon = (Icon)GelUtilities.GetObjectData(uIObj);
+                        //            WarningIcon Source (italics)
 
                         var textWidth = e.Bounds.Width - checkBoxSize.Width - edgeMargin - textMargin;
 
@@ -130,9 +142,9 @@ namespace NuGet.Options
                             warningBounds = new Rectangle(
                                 nameBounds.Left,
                                 nameBounds.Bottom,
-                                warningIcon.Width,
-                                warningIcon.Height);
-                            graphics.DrawIcon(warningIcon, warningBounds);
+                                WarningIcon.Width,
+                                WarningIcon.Height);
+                            graphics.DrawIcon(WarningIcon, warningBounds);
                         }
 
                         var sourceBounds = new Rectangle(

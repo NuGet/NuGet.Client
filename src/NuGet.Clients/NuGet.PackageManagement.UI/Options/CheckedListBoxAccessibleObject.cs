@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Windows.Forms;
+using NuGet.Configuration;
 using NuGet.VisualStudio.Internal.Contracts;
 using static System.Windows.Forms.Control;
 
@@ -31,7 +32,16 @@ namespace NuGet.Options
         {
             if (index >= 0 && index < CheckedListBox.Items.Count)
             {
-                var packageSource = (PackageSourceContextInfo)CheckedListBox.Items[index];
+                var item = (PackageSourceContextInfo)CheckedListBox.Items[index];
+                PackageSource packageSource = new PackageSource(item.Source, item.Name);
+                if (packageSource.IsHttp && !packageSource.IsHttps)
+                {
+                    var sourceMessage = string.Concat(
+                        packageSource.Source,
+                        "Warning: Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.");
+                    return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, sourceMessage);
+                }
+
                 return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, packageSource.Source);
             }
             else
