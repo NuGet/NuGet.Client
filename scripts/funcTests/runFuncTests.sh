@@ -91,7 +91,7 @@ if (( $? )); then
 	exit 1
 fi
 
-# Get recommended version for bootstrapping testing version
+# Install .NET 5 runtimes and .NETCoreapp3.1 runtimes
 
 echo "cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 5.0 -nopath"
 cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 5.0 -nopath
