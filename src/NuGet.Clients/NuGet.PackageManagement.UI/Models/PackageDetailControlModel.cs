@@ -136,7 +136,7 @@ namespace NuGet.PackageManagement.UI
                 .FirstOrDefault();
 
             // installVersion is null if the package is not installed
-            var installedVersion = installedDependency?.VersionRange?.MinVersion;
+            var installedVersion = installedDependency?.VersionRange;
 
             List<(NuGetVersion version, bool isDeprecated)> allVersions = _allPackageVersions?.OrderByDescending(v => v.version).ToList();
 
@@ -166,29 +166,23 @@ namespace NuGet.PackageManagement.UI
             var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.version.IsPrerelease);
             var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.version.IsPrerelease);
 
-            // Add installed version
-            if (_nugetProjects.Any() && installedDependency != null && installedDependency.VersionRange != null)
+            // Add installed version if the project is PackageReference
+            if (_nugetProjects.Any() && installedDependency != null && installedDependency.VersionRange != null && _nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
             {
-                if (_nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
-                {
-                    VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, true);
-                    NuGetVersion bestVersion = installedVersionRange.FindBestMatch(allVersionsAllowed.Select(v => v.version));
-                    var deprecationInfo = allVersionsAllowed.FirstOrDefault(v => v.version == bestVersion).isDeprecated;
-                    DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null, isDeprecated: deprecationInfo);
+                VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, true);
+                NuGetVersion bestVersion = installedVersionRange.FindBestMatch(allVersionsAllowed.Select(v => v.version));
+                var deprecationInfo = allVersionsAllowed.FirstOrDefault(v => v.version == bestVersion).isDeprecated;
+                DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null, isDeprecated: deprecationInfo);
 
-                    _versions.Add(displayVersion);
-                }
-                else
-                {
-                    DisplayVersion displayVersion = new DisplayVersion(installedDependency.VersionRange, additionalInfo: null);
-                    _versions.Add(displayVersion);
-                }
+                _versions.Add(displayVersion);
             }
 
+            var isInstalledFloatingOrRange = installedVersion != null && installedVersion.IsFloating || (installedVersion?.OriginalString != null &&
+                (installedVersion.OriginalString.StartsWith("(", StringComparison.OrdinalIgnoreCase) || installedVersion.OriginalString.StartsWith("[", StringComparison.OrdinalIgnoreCase)));
             // Add latest prerelease if neeeded
             if (latestPrerelease.version != null
                 && (latestStableVersion.version == null || latestPrerelease.version > latestStableVersion.version) &&
-                !latestPrerelease.version.Equals(installedVersion))
+                (isInstalledFloatingOrRange || !latestPrerelease.version.Equals(installedVersion?.MinVersion)))
             {
                 VersionRange latestPrereleaseVersionRange = VersionRange.Parse(latestPrerelease.version.ToString(), allowFloating: false);
                 _versions.Add(new DisplayVersion(latestPrereleaseVersionRange, latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated));
@@ -196,7 +190,7 @@ namespace NuGet.PackageManagement.UI
 
             // Add latest stable if needed
             if (latestStableVersion.version != null &&
-                !latestStableVersion.version.Equals(installedVersion))
+                (isInstalledFloatingOrRange || !latestStableVersion.version.Equals(InstalledVersion)))
             {
                 VersionRange latestStableVersionRange = VersionRange.Parse(latestStableVersion.version.ToString(), allowFloating: false);
                 _versions.Add(new DisplayVersion(latestStableVersionRange, latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
@@ -214,7 +208,7 @@ namespace NuGet.PackageManagement.UI
             // first add all the available versions to be updated
             foreach (var version in allVersionsAllowed)
             {
-                var installed = version.version.Equals(installedVersion);
+                var installed = version.version.Equals(InstalledVersion);
                 var autoReferenced = false;
 
                 if (installed && _projectVersionConstraints.Any(e => e.IsAutoReferenced && e.VersionRange?.Satisfies(version.version) == true))
@@ -223,11 +217,8 @@ namespace NuGet.PackageManagement.UI
                     autoReferenced = true;
                 }
 
-                if (!installed)
-                {
-                    VersionRange versionRange = VersionRange.Parse(version.version.ToString(), allowFloating: false);
-                    _versions.Add(new DisplayVersion(versionRange, version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
-                }
+                VersionRange versionRange = VersionRange.Parse(version.version.ToString(), allowFloating: false);
+                _versions.Add(new DisplayVersion(versionRange, version.version, additionalInfo: null, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
             }
 
             // Disable controls if this is an auto referenced package.

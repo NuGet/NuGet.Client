@@ -8,6 +8,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
@@ -202,21 +204,65 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 () => vm);
 
             // Assert
-            var expectedAdditionalInfo = string.Empty;
-
             // Remove any added `null` separators, and any Additional Info entries (eg, "Latest Prerelease", "Latest Stable").
             List<DisplayVersion> actualVersions = _testInstance.Versions
-                .Where(v => v != null && v.AdditionalInfo == expectedAdditionalInfo).ToList();
+                .Where(v => v != null && v.AdditionalInfo == null).ToList();
 
             var expectedVersions = new List<DisplayVersion>() {
-                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01265"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01256"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01249"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01248"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.0"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01211"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01191"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01187"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01265"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01256"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01249"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01248"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.0"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01211"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01191"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01187"), additionalInfo: null),
+            };
+
+            Assert.Equal(expectedVersions, actualVersions);
+        }
+
+        [Fact]
+        public async Task SetCurrentPackageAsync_WhenFloatingVersions()
+        {
+            // Arrange
+            NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
+
+            var testVersions = new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("3.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("2.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("1.0.0-beta")),
+                new VersionInfoContextInfo(new NuGetVersion("0.0.1")),
+            };
+
+            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(testVersions);
+
+            var vm = new PackageItemViewModel(searchService.Object)
+            {
+                Id = "package",
+                InstalledVersion = installedVersion,
+                Version = installedVersion,
+            };
+
+            // Act
+
+            await _testInstance.SetCurrentPackageAsync(
+                vm,
+                ItemFilter.All,
+                () => vm);
+
+            // Assert
+            // Remove any added `null` separators, and any Additional Info entries (eg, "Latest Prerelease", "Latest Stable").
+            List<DisplayVersion> actualVersions = _testInstance.Versions
+                .Where(v => v != null && v.AdditionalInfo == null).ToList();
+
+            var expectedVersions = new List<DisplayVersion>() {
+                new DisplayVersion(version: new NuGetVersion("3.0.0"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.0.0"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("1.0.0-beta"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("0.0.1"), additionalInfo: null),
             };
 
             Assert.Equal(expectedVersions, actualVersions);
@@ -320,12 +366,141 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.True(wasVersionsListCleared, "Versions list was not cleared.");
         }
 
+
+        private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsNotLatest(string allowedVersions, string installedVersion)
+        {
+            return new ItemsChangeObservableCollection<DisplayVersion>() {
+                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), null),
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), "Latest stable"),
+                null,
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("2.0.0"), new NuGetVersion("2.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.1.0"), new NuGetVersion("1.1.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0"), new NuGetVersion("1.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0-beta"), new NuGetVersion("1.0.0-beta"), null),
+                new DisplayVersion(VersionRange.Parse("0.0.1"), new NuGetVersion("0.0.1"), null),
+            };
+        }
+
+        private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsLatest(string allowedVersions, string installedVersion)
+        {
+            return new ItemsChangeObservableCollection<DisplayVersion>() {
+                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), null),
+                null,
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("2.0.0"), new NuGetVersion("2.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.1.0"), new NuGetVersion("1.1.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0"), new NuGetVersion("1.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0-beta"), new NuGetVersion("1.0.0-beta"), null),
+                new DisplayVersion(VersionRange.Parse("0.0.1"), new NuGetVersion("0.0.1"), null),
+            };
+        }
+
+        private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsNotLatest_IncludePrerelease(string allowedVersions, string installedVersion)
+        {
+            return new ItemsChangeObservableCollection<DisplayVersion>() {
+                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), null),
+                new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), "Latest prerelease"),
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), "Latest stable"),
+                null,
+                new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), null),
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("2.0.0"), new NuGetVersion("2.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.1.0"), new NuGetVersion("1.1.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0"), new NuGetVersion("1.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0-beta"), new NuGetVersion("1.0.0-beta"), null),
+                new DisplayVersion(VersionRange.Parse("0.0.1"), new NuGetVersion("0.0.1"), null),
+            };
+        }
+
+        private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsLatestPrerelease_IncludePrerelease(string allowedVersions, string installedVersion)
+        {
+            return new ItemsChangeObservableCollection<DisplayVersion>() {
+                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), null),
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), "Latest stable"),
+                null,
+                new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), null),
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("2.0.0"), new NuGetVersion("2.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.1.0"), new NuGetVersion("1.1.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0"), new NuGetVersion("1.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0-beta"), new NuGetVersion("1.0.0-beta"), null),
+                new DisplayVersion(VersionRange.Parse("0.0.1"), new NuGetVersion("0.0.1"), null),
+            };
+        }
+
+        private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsLatestStable_IncludePrerelease(string allowedVersions, string installedVersion)
+        {
+            return new ItemsChangeObservableCollection<DisplayVersion>() {
+                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), null),
+                new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), "Latest prerelease"),
+                null,
+                new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), null),
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("2.0.0"), new NuGetVersion("2.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.1.0"), new NuGetVersion("1.1.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0"), new NuGetVersion("1.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0-beta"), new NuGetVersion("1.0.0-beta"), null),
+                new DisplayVersion(VersionRange.Parse("0.0.1"), new NuGetVersion("0.0.1"), null),
+            };
+        }
+
+        private List<VersionInfoContextInfo> ExpectedVersionsList()
+        {
+            return new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("3.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("2.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("1.0.0-beta")),
+                new VersionInfoContextInfo(new NuGetVersion("1.1.0")),
+                new VersionInfoContextInfo(new NuGetVersion("1.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("0.0.1")),
+            };
+        }
+
+        private List<VersionInfoContextInfo> ExpectedVersionsList_IncludePrerelease()
+        {
+            return new List<VersionInfoContextInfo>() {
+                new VersionInfoContextInfo(new NuGetVersion("3.0.1-beta")),
+                new VersionInfoContextInfo(new NuGetVersion("3.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("2.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("1.0.0-beta")),
+                new VersionInfoContextInfo(new NuGetVersion("1.1.0")),
+                new VersionInfoContextInfo(new NuGetVersion("1.0.0")),
+                new VersionInfoContextInfo(new NuGetVersion("0.0.1")),
+            };
+        }
+
+        public static IEnumerable<object[]> FloatingVersions_TestCases()
+        {
+            yield return new object[] { "3.*", "3.0.0", false, false };
+            yield return new object[] { "[2.9,)", "3.0.0", false, false };
+            yield return new object[] { "*", "3.0.0", false, false };
+            yield return new object[] { "2.*", "2.0.0", false, false };
+            yield return new object[] { "(1.*,)", "1.1.0", false, false };
+            yield return new object[] { "(1.1*,)", "2.0.0", false, false };
+            yield return new object[] { "[2.*,)", "2.0.0", false, false };
+            yield return new object[] { "3.*", "3.0.0", false, true };
+            yield return new object[] { "[2.9,)", "3.0.0", false, true };
+            yield return new object[] { "*", "3.0.0", false, true };
+            yield return new object[] { "2.*", "2.0.0", false, true };
+            yield return new object[] { "(1.*,)", "1.1.0", false, true };
+            yield return new object[] { "(1.1*,)", "2.0.0", false, true };
+            yield return new object[] { "[2.*,)", "2.0.0", false, true };
+            yield return new object[] { "2.0", "2.0.0", false, true };
+            yield return new object[] { "2.0.0", "2.0.0", false, true };
+            yield return new object[] { "2", "2.0.0", false, true };
+            yield return new object[] { "3.0", "3.0.0", false, true };
+            yield return new object[] { "3.0.0", "3.0.0", false, true };
+            yield return new object[] { "3", "3.0.0", false, true };
+        }
+
         [Theory]
-        [InlineData("*", "2.10.0")]
-        [InlineData("1.*", "2.10.0")]
-        [InlineData("(0.1,3.4)", "2.10.0")]
-        [InlineData("2.10.0", "2.10.0")]
-        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion)
+        [MemberData(nameof(FloatingVersions_TestCases))]
+        [InlineData("3.0", "3.0.0", true, false)]
+        [InlineData("3.0.0", "3.0.0", true, false)]
+        [InlineData("3", "3.0.0", true, false)]
+        [InlineData("3.0.1-beta", "3.0.1-beta", true, true)]
+        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -356,8 +531,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(projectManagerService.Object);
 #pragma warning restore ISB001 // Dispose of proxies
 
+            // Setup project
             var project = new Mock<IProjectContextInfo>();
-
             project.SetupGet(p => p.ProjectKind).Returns(NuGetProjectKind.PackageReference);
             project.SetupGet(p => p.ProjectStyle).Returns(ProjectModel.ProjectStyle.PackageReference);
             project.SetupGet(p => p.ProjectId).Returns("ProjectId");
@@ -368,10 +543,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 projects: new[] { project.Object });
 
             // Arrange
-            var testVersions = new List<VersionInfoContextInfo>() {
-                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
-                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
-            };
+            var testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
 
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
@@ -381,10 +553,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var vm = new PackageItemViewModel(searchService.Object)
             {
                 Id = "Contoso.A",
-                Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
-                InstalledVersion = NuGetVersion.Parse(installedVersion),
+                Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("test_source") },
+                InstalledVersion = packageIdentity.Version,
                 AllowedVersions = VersionRange.Parse(allowedVersions),
-                Version = NuGetVersion.Parse(installedVersion),
+                Version = packageIdentity.Version,
             };
 
             await model.SetCurrentPackageAsync(
@@ -397,24 +569,50 @@ namespace NuGet.PackageManagement.UI.Test.Models
             NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
             var displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
 
+            ItemsChangeObservableCollection<DisplayVersion> assertVersions;
+            if (includePrerelease)
+            {
+                NuGetVersion version;
+                NuGetVersion.TryParse(allowedVersions, out version);
+                if (version != null && version.Version.Equals(new NuGetVersion("3.0.0").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestStable_IncludePrerelease(allowedVersions, installedVersion);
+                }
+                else if (version != null && version.Version.Equals(new NuGetVersion("3.0.1-beta").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestPrerelease_IncludePrerelease(allowedVersions, installedVersion);
+                }
+                else
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsNotLatest_IncludePrerelease(allowedVersions, installedVersion);
+                }
+            }
+            else
+            {
+                assertVersions = isLatest ? VersionsList_WhenInstalledVersion_IsLatest(allowedVersions, installedVersion)
+                : VersionsList_WhenInstalledVersion_IsNotLatest(allowedVersions, installedVersion);
+            }
             Assert.Equal(model.SelectedVersion.ToString(), allowedVersions);
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
+            Assert.Equal(model.Versions, assertVersions);
         }
 
         [Theory]
-        [InlineData("*", "2.10.0")]
-        [InlineData("1.*", "2.10.0")]
-        [InlineData("(0.1,3.4)", "2.10.0")]
-        [InlineData("2.10.0", "2.10.0")]
-        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion)
+        [MemberData(nameof(FloatingVersions_TestCases))]
+
+        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
+            // Assert
+            // Updates Tab wont show package if it is latest
+            Assert.Equal(isLatest, false);
+
             // Arange project
-            var mockServiceBroker = new Mock<IServiceBroker>();
-            var mockSearchService = new Mock<INuGetSearchService>();
+            Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
+            Mock<INuGetSearchService> mockSearchService = new Mock<INuGetSearchService>();
 
-            var packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
+            PackageIdentity packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
 
-            var installedPackages = new PackageReferenceContextInfo[]
+            PackageReferenceContextInfo[] installedPackages = new PackageReferenceContextInfo[]
             {
                 PackageReferenceContextInfo.Create(
                     new PackageReference(
@@ -426,7 +624,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                         allowedVersions: VersionRange.Parse(allowedVersions)))
             };
 
-            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            Mock<INuGetProjectManagerService> projectManagerService = new Mock<INuGetProjectManagerService>();
             projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
                     It.IsAny<IReadOnlyCollection<string>>(),
                     It.IsAny<CancellationToken>()))
@@ -437,35 +635,33 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(projectManagerService.Object);
 #pragma warning restore ISB001 // Dispose of proxies
 
-            var project = new Mock<IProjectContextInfo>();
+            Mock<IProjectContextInfo> project = new Mock<IProjectContextInfo>();
 
             project.SetupGet(p => p.ProjectKind).Returns(NuGetProjectKind.PackageReference);
             project.SetupGet(p => p.ProjectStyle).Returns(ProjectModel.ProjectStyle.PackageReference);
             project.SetupGet(p => p.ProjectId).Returns("ProjectId");
 
-            var model = new PackageDetailControlModel(
+            PackageDetailControlModel model = new PackageDetailControlModel(
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object });
 
             // Arrange
-            var testVersions = new List<VersionInfoContextInfo>() {
-                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
-                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
-            };
+            List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
 
-            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            Mock<IReconnectingNuGetSearchService> searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
 
             // Act
-            var vm = new PackageItemViewModel(searchService.Object)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object)
             {
                 Id = "Contoso.A",
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
-                InstalledVersion = NuGetVersion.Parse(installedVersion),
+                InstalledVersion = packageIdentity.Version,
                 AllowedVersions = VersionRange.Parse(allowedVersions),
-                Version = NuGetVersion.Parse(installedVersion),
+                IncludePrerelease = includePrerelease,
+                Version = packageIdentity.Version,
             };
 
             await model.SetCurrentPackageAsync(
@@ -476,26 +672,56 @@ namespace NuGet.PackageManagement.UI.Test.Models
             // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
             NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
-            var displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
+            DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
 
-            Assert.Equal(model.SelectedVersion.Version.ToString(), "2.10.1-dev-01248");
+            ItemsChangeObservableCollection<DisplayVersion> assertVersions;
+            string expectedAditionalInfo = null;
+            if (includePrerelease)
+            {
+                NuGetVersion version;
+                NuGetVersion.TryParse(allowedVersions, out version);
+                if (version != null && version.Version.Equals(new NuGetVersion("3.0.0").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestStable_IncludePrerelease(allowedVersions, installedVersion);
+                }
+                else if (version != null && version.Version.Equals(new NuGetVersion("3.0.1-beta").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestPrerelease_IncludePrerelease(allowedVersions, installedVersion);
+                }
+                else
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsNotLatest_IncludePrerelease(allowedVersions, installedVersion);
+                }
+                expectedAditionalInfo = "Latest prerelease";
+            }
+            else
+            {
+                assertVersions = VersionsList_WhenInstalledVersion_IsNotLatest(allowedVersions, installedVersion);
+                expectedAditionalInfo = "Latest stable";
+            }
+
+            Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
+            Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
+            Assert.Equal(model.Versions, assertVersions);
         }
 
         [Theory]
-        [InlineData("*", "2.10.0")]
-        [InlineData("1.*", "2.10.0")]
-        [InlineData("(0.1,3.4)", "2.10.0")]
-        [InlineData("2.10.0", "2.10.0")]
-        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion)
+        [MemberData(nameof(FloatingVersions_TestCases))]
+        // Browse Tab cases
+        [InlineData("3.0", "3.0.0", true, false)]
+        [InlineData("3.0.0", "3.0.0", true, false)]
+        [InlineData("3", "3.0.0", true, false)]
+        [InlineData("3.0.1-beta", "3.0.1-beta", true, true)]
+        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
-            var mockServiceBroker = new Mock<IServiceBroker>();
-            var mockSearchService = new Mock<INuGetSearchService>();
+            Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
+            Mock<INuGetSearchService> mockSearchService = new Mock<INuGetSearchService>();
 
-            var packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
+            PackageIdentity packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
 
-            var installedPackages = new PackageReferenceContextInfo[]
+            PackageReferenceContextInfo[] installedPackages = new PackageReferenceContextInfo[]
             {
                 PackageReferenceContextInfo.Create(
                     new PackageReference(
@@ -507,7 +733,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                         allowedVersions: VersionRange.Parse(allowedVersions)))
             };
 
-            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            Mock<INuGetProjectManagerService> projectManagerService = new Mock<INuGetProjectManagerService>();
             projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
                     It.IsAny<IReadOnlyCollection<string>>(),
                     It.IsAny<CancellationToken>()))
@@ -518,34 +744,32 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(projectManagerService.Object);
 #pragma warning restore ISB001 // Dispose of proxies
 
-            var project = new Mock<IProjectContextInfo>();
+            Mock<IProjectContextInfo> project = new Mock<IProjectContextInfo>();
 
             project.SetupGet(p => p.ProjectKind).Returns(NuGetProjectKind.PackageReference);
             project.SetupGet(p => p.ProjectStyle).Returns(ProjectModel.ProjectStyle.PackageReference);
             project.SetupGet(p => p.ProjectId).Returns("ProjectId");
 
-            var model = new PackageDetailControlModel(
+            PackageDetailControlModel model = new PackageDetailControlModel(
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object });
 
             // Arrange
-            var testVersions = new List<VersionInfoContextInfo>() {
-                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
-                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
-            };
+            List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
 
-            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            Mock<IReconnectingNuGetSearchService> searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
 
             // Act
-            var vm = new PackageItemViewModel(searchService.Object)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object)
             {
                 Id = "Contoso.A",
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
                 InstalledVersion = NuGetVersion.Parse(installedVersion),
                 AllowedVersions = VersionRange.Parse(allowedVersions),
+                IncludePrerelease = includePrerelease,
                 Version = NuGetVersion.Parse(installedVersion),
             };
 
@@ -557,18 +781,133 @@ namespace NuGet.PackageManagement.UI.Test.Models
             // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
             NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
-            var displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
+            DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
 
-            Assert.Equal(model.SelectedVersion.Version.ToString(), "2.10.1-dev-01248");
+            ItemsChangeObservableCollection<DisplayVersion> assertVersions;
+            string expectedAditionalInfo = null;
+            if (includePrerelease)
+            {
+                NuGetVersion version;
+                NuGetVersion.TryParse(allowedVersions, out version);
+                if (version != null && version.Version.Equals(new NuGetVersion("3.0.0").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestStable_IncludePrerelease(allowedVersions, installedVersion);
+                }
+                else if (version != null && version.Version.Equals(new NuGetVersion("3.0.1-beta").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestPrerelease_IncludePrerelease(allowedVersions, installedVersion);
+                }
+                else
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsNotLatest_IncludePrerelease(allowedVersions, installedVersion);
+                }
+                expectedAditionalInfo = isLatest ? null : "Latest prerelease";
+            }
+            else
+            {
+                assertVersions = isLatest ? VersionsList_WhenInstalledVersion_IsLatest(allowedVersions, installedVersion) : VersionsList_WhenInstalledVersion_IsNotLatest(allowedVersions, installedVersion);
+                expectedAditionalInfo = isLatest ? null : "Latest stable";
+            }
+
+            Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
+            Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
+            Assert.Equal(model.Versions, assertVersions);
+        }
+
+        private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsLatest_NonPackageReferenceProject()
+        {
+            return new ItemsChangeObservableCollection<DisplayVersion>() {
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("2.0.0"), new NuGetVersion("2.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.1.0"), new NuGetVersion("1.1.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0"), new NuGetVersion("1.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0-beta"), new NuGetVersion("1.0.0-beta"), null),
+                new DisplayVersion(VersionRange.Parse("0.0.1"), new NuGetVersion("0.0.1"), null),
+            };
+        }
+
+        private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsNotLatest_NonPackageReferenceProject()
+        {
+            return new ItemsChangeObservableCollection<DisplayVersion>() {
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), "Latest stable"),
+                null,
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("2.0.0"), new NuGetVersion("2.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.1.0"), new NuGetVersion("1.1.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0"), new NuGetVersion("1.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0-beta"), new NuGetVersion("1.0.0-beta"), null),
+                new DisplayVersion(VersionRange.Parse("0.0.1"), new NuGetVersion("0.0.1"), null),
+            };
+        }
+
+        private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsNotLatest_IncludePrerelease_NonPackageReferenceProject()
+        {
+            return new ItemsChangeObservableCollection<DisplayVersion>() {
+                new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), "Latest prerelease"),
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), "Latest stable"),
+                null,
+                new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), null),
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("2.0.0"), new NuGetVersion("2.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.1.0"), new NuGetVersion("1.1.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0"), new NuGetVersion("1.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0-beta"), new NuGetVersion("1.0.0-beta"), null),
+                new DisplayVersion(VersionRange.Parse("0.0.1"), new NuGetVersion("0.0.1"), null),
+            };
+        }
+
+        private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsLatestPrerelease_IncludePrerelease_NonPackageReferenceProject()
+        {
+            return new ItemsChangeObservableCollection<DisplayVersion>() {
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), "Latest stable"),
+                null,
+                new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), null),
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("2.0.0"), new NuGetVersion("2.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.1.0"), new NuGetVersion("1.1.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0"), new NuGetVersion("1.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0-beta"), new NuGetVersion("1.0.0-beta"), null),
+                new DisplayVersion(VersionRange.Parse("0.0.1"), new NuGetVersion("0.0.1"), null),
+            };
+        }
+
+        private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsLatestStable_IncludePrerelease_NonPackageReferenceProject()
+        {
+            return new ItemsChangeObservableCollection<DisplayVersion>() {
+                new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), "Latest prerelease"),
+                null,
+                new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), null),
+                new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("2.0.0"), new NuGetVersion("2.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.1.0"), new NuGetVersion("1.1.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0"), new NuGetVersion("1.0.0"), null),
+                new DisplayVersion(VersionRange.Parse("1.0.0-beta"), new NuGetVersion("1.0.0-beta"), null),
+                new DisplayVersion(VersionRange.Parse("0.0.1"), new NuGetVersion("0.0.1"), null),
+            };
+        }
+
+        public static IEnumerable<object[]> FloatingVersions_TestCases_NonPackageReferenceProject()
+        {
+            yield return new object[] { NuGetProjectKind.PackagesConfig, ProjectModel.ProjectStyle.PackagesConfig, null, "3.0.0", true, false };
+            yield return new object[] { NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.Unknown, "(0.1,3.4)", "3.0.0", true, false };
+            yield return new object[] { NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "(0.1,3.4)", "3.0.0", true, false };
+            yield return new object[] { NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "*", "3.0.0", true, false };
+            yield return new object[] { NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "2.*", "2.0.0", false, false };
+            yield return new object[] { NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.Unknown, "[0.0.1,3.4)", "0.0.1", false, true };
+            yield return new object[] { NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[1.0.0-beta,)", "1.0.0-beta", false, true };
+            yield return new object[] { NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "[1.0.0,)", "1.0.0", false, true };
+            yield return new object[] { NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "[1.1.0,)", "1.1.0", false, true };
+            yield return new object[] { NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0.0,)", "3.0.0", false, true };
         }
 
         [Theory]
-        [InlineData(NuGetProjectKind.PackagesConfig, ProjectModel.ProjectStyle.PackagesConfig, null, "2.10.0")]
-        [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.Unknown, "(0.1,3.4)", "2.10.0")]
-        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "(0.1,3.4)", "2.10.0")]
-        [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "*", "2.10.0")]
-        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
+        [MemberData(nameof(FloatingVersions_TestCases_NonPackageReferenceProject))]
+        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0.1-beta,)", "3.0.1-beta", true, true)]
+        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3,)", "3", true, false)]
+        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0,)", "3.0", true, false)]
+        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0.0,)", "3.0.0", true, false)]
+        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -611,10 +950,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 projects: new[] { project.Object });
 
             // Arrange
-            var testVersions = new List<VersionInfoContextInfo>() {
-                new VersionInfoContextInfo(new NuGetVersion("2.10.1-dev-01248")),
-                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
-            };
+            var testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
 
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
@@ -626,7 +962,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 Id = "Contoso.A",
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
                 InstalledVersion = NuGetVersion.Parse(installedVersion),
-                AllowedVersions = allowedVersions != null ? VersionRange.Parse(allowedVersions) : null,
                 Version = NuGetVersion.Parse(installedVersion),
             };
 
@@ -635,17 +970,44 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 ItemFilter.Installed,
                 () => vm);
 
+            ItemsChangeObservableCollection<DisplayVersion> assertVersions;
+            if (includePrerelease)
+            {
+                NuGetVersion version;
+                NuGetVersion.TryParse(installedVersion, out version);
+                if (version != null && version.Version.Equals(new NuGetVersion("3.0.0").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestStable_IncludePrerelease_NonPackageReferenceProject();
+                }
+                else if (version != null && version.Version.Equals(new NuGetVersion("3.0.1-beta").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestPrerelease_IncludePrerelease_NonPackageReferenceProject();
+                }
+                else
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsNotLatest_IncludePrerelease_NonPackageReferenceProject();
+                }
+            }
+            else
+            {
+                assertVersions = isLatest ? VersionsList_WhenInstalledVersion_IsLatest_NonPackageReferenceProject()
+                : VersionsList_WhenInstalledVersion_IsNotLatest_NonPackageReferenceProject();
+            }
+
             // Assert
             Assert.NotEqual(model.SelectedVersion.ToString(), allowedVersions);
-            Assert.Equal(model.SelectedVersion.Version.ToString(), installedVersion);
+            Assert.Equal(model.SelectedVersion.Version, NuGetVersion.Parse(installedVersion));
+            Assert.Equal(model.SelectedVersion.AdditionalInfo, null); // Always show the installed version
+            Assert.Equal(model.Versions, assertVersions);
         }
 
         [Theory]
-        [InlineData(NuGetProjectKind.PackagesConfig, ProjectModel.ProjectStyle.PackagesConfig, null, "2.10.0")]
-        [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.Unknown, "(0.1,3.4)", "2.10.0")]
-        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "(0.1,3.4)", "2.10.0")]
-        [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "*", "2.10.0")]
-        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
+        [MemberData(nameof(FloatingVersions_TestCases_NonPackageReferenceProject))]
+        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0.1-beta,)", "3.0.1-beta", true, true)]
+        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3,)", "3", true, false)]
+        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0,)", "3.0", true, false)]
+        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0.0,)", "3.0.0", true, false)]
+        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -688,10 +1050,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 projects: new[] { project.Object });
 
             // Arrange
-            var testVersions = new List<VersionInfoContextInfo>() {
-                new VersionInfoContextInfo(new NuGetVersion("2.10.1")),
-                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
-            };
+            var testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
 
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
@@ -702,28 +1061,53 @@ namespace NuGet.PackageManagement.UI.Test.Models
             {
                 Id = "Contoso.A",
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
-                InstalledVersion = NuGetVersion.Parse(installedVersion),
+                InstalledVersion = packageIdentity.Version,
                 AllowedVersions = allowedVersions != null ? VersionRange.Parse(allowedVersions) : null,
-                Version = NuGetVersion.Parse(installedVersion),
+                Version = packageIdentity.Version,
             };
 
             await model.SetCurrentPackageAsync(
                 vm,
                 ItemFilter.All,
                 () => vm);
+
+            ItemsChangeObservableCollection<DisplayVersion> assertVersions;
+            string expectedAditionalInfo = null;
+            if (includePrerelease)
+            {
+                NuGetVersion version;
+                NuGetVersion.TryParse(installedVersion, out version);
+                if (version != null && version.Version.Equals(new NuGetVersion("3.0.0").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestStable_IncludePrerelease_NonPackageReferenceProject();
+                }
+                else if (version != null && version.Version.Equals(new NuGetVersion("3.0.1-beta").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestPrerelease_IncludePrerelease_NonPackageReferenceProject();
+                }
+                else
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsNotLatest_IncludePrerelease_NonPackageReferenceProject();
+                }
+                expectedAditionalInfo = isLatest ? null : "Latest prerelease";
+            }
+            else
+            {
+                assertVersions = isLatest ? VersionsList_WhenInstalledVersion_IsLatest_NonPackageReferenceProject() : VersionsList_WhenInstalledVersion_IsNotLatest_NonPackageReferenceProject();
+                expectedAditionalInfo = isLatest ? null : "Latest stable";
+            }
 
             // Assert
             Assert.NotEqual(model.SelectedVersion.ToString(), allowedVersions);
             // Browse Tab should display latest available version
-            Assert.Equal(model.SelectedVersion.Version.ToString(), "2.10.1");
+            Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
+            Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
+            Assert.Equal(model.Versions, assertVersions);
         }
 
         [Theory]
-        [InlineData(NuGetProjectKind.PackagesConfig, ProjectModel.ProjectStyle.PackagesConfig, null, "2.10.0")]
-        [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.Unknown, "(0.1,3.4)", "2.10.0")]
-        [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "(0.1,3.4)", "2.10.0")]
-        [InlineData(NuGetProjectKind.Unknown, ProjectModel.ProjectStyle.DotnetCliTool, "*", "2.10.0")]
-        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion)
+        [MemberData(nameof(FloatingVersions_TestCases_NonPackageReferenceProject))]
+        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
             var mockServiceBroker = new Mock<IServiceBroker>();
@@ -766,10 +1150,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 projects: new[] { project.Object });
 
             // Arrange
-            var testVersions = new List<VersionInfoContextInfo>() {
-                new VersionInfoContextInfo(new NuGetVersion("2.10.1")),
-                new VersionInfoContextInfo(new NuGetVersion("2.10.0")),
-            };
+            List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
 
             var searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
@@ -790,10 +1171,38 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 ItemFilter.UpdatesAvailable,
                 () => vm);
 
+            ItemsChangeObservableCollection<DisplayVersion> assertVersions;
+            string expectedAditionalInfo = null;
+            if (includePrerelease)
+            {
+                NuGetVersion version;
+                NuGetVersion.TryParse(installedVersion, out version);
+                if (version != null && version.Version.Equals(new NuGetVersion("3.0.0").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestStable_IncludePrerelease_NonPackageReferenceProject();
+                }
+                else if (version != null && version.Version.Equals(new NuGetVersion("3.0.1-beta").Version))
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsLatestPrerelease_IncludePrerelease_NonPackageReferenceProject();
+                }
+                else
+                {
+                    assertVersions = VersionsList_WhenInstalledVersion_IsNotLatest_IncludePrerelease_NonPackageReferenceProject();
+                }
+                expectedAditionalInfo = isLatest ? null : "Latest prerelease";
+            }
+            else
+            {
+                assertVersions = isLatest ? VersionsList_WhenInstalledVersion_IsLatest_NonPackageReferenceProject() : VersionsList_WhenInstalledVersion_IsNotLatest_NonPackageReferenceProject();
+                expectedAditionalInfo = isLatest ? null : "Latest stable";
+            }
+
             // Assert
             Assert.NotEqual(model.SelectedVersion.ToString(), allowedVersions);
-            // Updates Tab should display latest available version
-            Assert.Equal(model.SelectedVersion.Version.ToString(), "2.10.1");
+            // Browse Tab should display latest available version
+            Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
+            Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
+            Assert.Equal(model.Versions, assertVersions);
         }
 
         public Task<object> GetServiceAsync(Type serviceType)
