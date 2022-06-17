@@ -201,14 +201,18 @@ Function Install-DotnetCLI {
             $arch = "x86";
         }
 
-        # The channel needs to be two-part version in A.B format, according to https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script#options.
-        # The '-Quality validated' means the build have gone through CTI testing and other validation.
-        Trace-Log "$DotNetInstall -Channel $($cli.Channel) -Quality validated -InstallDir $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
+        # The channel option:
+        # Daily links are those from daily builds
+        # Signed have been post-build signed (in the case of 6.0+, pre-6.0 is signed even in daily builds)
+        # Validated have gone through CTI testing and other validation
+        # Preview are released bits that are preview versions
+        # GA are released servicing and GA builds
+        Trace-Log "$DotNetInstall -Channel $($cli.Channel) -Quality signed -InstallDir $($cli.Root) -Version $($cli.Version) -Architecture $arch -NoPath"
 
         # dotnet-install might make http requests that fail, but it handles those errors internally
         # However, Invoke-BuildStep checks if any error happened, ever. Hence we need to run dotnet-install
         # in a different process, to avoid treating their handled errors as build errors.
-        & powershell $DotNetInstall -Channel $cli.Channel -Quality validated -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
+        & powershell $DotNetInstall -Channel $cli.Channel -Quality signed -InstallDir $cli.Root -Version $cli.Version -Architecture $arch -NoPath
         if ($LASTEXITCODE -ne 0)
         {
             throw "dotnet-install.ps1 exited with non-zero exit code"
