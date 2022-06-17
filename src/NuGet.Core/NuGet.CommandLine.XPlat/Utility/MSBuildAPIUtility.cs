@@ -25,7 +25,6 @@ namespace NuGet.CommandLine.XPlat
         private const string PACKAGE_REFERENCE_TYPE_TAG = "PackageReference";
         private const string PACKAGE_VERSION_TYPE_TAG = "PackageVersion";
         private const string VERSION_TAG = "Version";
-        private const string VERSION_OVERRIDE_TAG = "VersionOverride";
         private const string FRAMEWORK_TAG = "TargetFramework";
         private const string FRAMEWORKS_TAG = "TargetFrameworks";
         private const string RESTORE_STYLE_TAG = "RestoreProjectStyle";
@@ -168,16 +167,33 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<ProjectItem> existingPackageReferences,
             string framework = null)
         {
-            if (!existingPackageReferences.Any())
+            // Getting all the item groups in a given project
+            var itemGroups = GetItemGroups(project);
+
+            // Add packageReference to the project file only if it does not exist.
+            var itemGroup = GetItemGroup(itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
+
+            if (!libraryDependency.VersionCentrallyManaged)
             {
-                // Getting all the item groups in a given project
-                var itemGroups = GetItemGroups(project);
+                if (!existingPackageReferences.Any())
+                {
+                    //Modify the project file.
+                    AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
+                }
+                else
+                {
+                    // If the package already has a reference then try to update the reference.
+                    UpdatePackageReferenceItems(existingPackageReferences, libraryDependency);
+                }
+            }
+            else
+            {
+                // Get package version if it already exists in the props file. Returns null if there is no matching package version.
+                ProjectItem packageVersion = project.Items.LastOrDefault(i => i.ItemType == "PackageVersion" && i.EvaluatedInclude.Equals(libraryDependency.Name));
+                // Determine where the <PackageVersion /> item is declared.
+                ProjectItemElement packageVersionItemElement = project.GetItemProvenance(packageVersion).LastOrDefault()?.ItemElement;
 
-                // Add packageReference to the project file only if it does not exist.
-                var itemGroup = GetItemGroup(itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
-
-                // If onboarded to CPM props file must be updated. 
-                if (libraryDependency.VersionCentrallyManaged)
+                if (packageVersion == null)
                 {
                     // Modifying the props file if project is onboarded to CPM.
                     AddPackageVersionIntoItemGroupCPM(project, libraryDependency);
@@ -186,20 +202,14 @@ namespace NuGet.CommandLine.XPlat
                 }
                 else
                 {
-                    //Modify the project file.
-                    AddPackageReferenceIntoItemGroup(itemGroup, libraryDependency);
-                }
-            }
-            else
-            {
-                if (libraryDependency.VersionCentrallyManaged)
-                {
-                    UpdatePackageReferenceItemsWithVersionOverride(existingPackageReferences, libraryDependency);
-                }
-                else
-                {
-                    // If the package already has a reference then try to update the reference.
-                    UpdatePackageReferenceItems(existingPackageReferences, libraryDependency);
+                    // Update the package reference in the project file with the updated version in the VersionOverride attribute.
+                    ProjectItem packageReference = project.Items.LastOrDefault(i => i.ItemType == "PackageReference" && i.EvaluatedInclude.Equals(libraryDependency.Name));
+
+                    var version = libraryDependency.LibraryRange.VersionRange.OriginalString ??
+                    libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
+                    packageReference.SetMetadataValue("VersionOverride", version);
+
+                    //UpdatePackageReferenceItemsWithVersionOverride(project, libraryDependency, packageVersion);
                 }
             }
 
@@ -277,8 +287,7 @@ namespace NuGet.CommandLine.XPlat
             LibraryDependency libraryDependency)
         {
             // Only add the package reference information using the PACKAGE_REFERENCE_TYPE_TAG.
-            ProjectItemElement item;
-            item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
+            ProjectItemElement item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
             string packageVersion = "No package version added";
 
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
@@ -424,45 +433,31 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        /// <summary>
-        /// For projects onboarded to CPM, update package reference items with the version override attribute.
-        /// </summary>
-        /// <param name="packageReferencesItems">Exsiting package reference items.</param>
-        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
-        private void UpdatePackageReferenceItemsWithVersionOverride(IEnumerable<ProjectItem> packageReferencesItems,
-           LibraryDependency libraryDependency)
+        /*
+        private void UpdatePackageReferenceItemsWithVersionOverride(Project project, LibraryDependency libraryDependency, ProjectItem packageVersion)
         {
-            // We validate that the operation does not update any imported items
-            // If it does then we throw a user friendly exception without making any changes
-            ValidateNoImportedItemsAreUpdated(packageReferencesItems, libraryDependency, UPDATE_OPERATION);
+            
 
-            foreach (var packageReferenceItem in packageReferencesItems)
+            // Get the VersionOverride attribute
+            ProjectMetadataElement versionOverrideAttribute = packageVersionItemElement.Metadata.FirstOrDefault(i => i.Name.Equals("VersionOverride"));
+
+            // Get the version that it needs to be updated to.
+            var version = libraryDependency.LibraryRange.VersionRange.OriginalString ??
+            libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
+
+            if (versionOverrideAttribute != null)
             {
-                var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
-                    libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
-
-                ProjectMetadata versionOverrideAttribute = packageReferenceItem.Metadata.FirstOrDefault(i => i.Name.Equals("VersionOverride"));
-
-                // Set the VersionOverride attribute for the first time if it does not exist, meaning that the package's version has not been updated before.
-                if (versionOverrideAttribute == null)
-                {
-                    packageReferenceItem.AddMetadata(VERSION_OVERRIDE_TAG, packageVersion, expressAsAttribute: true);
-                }
-                // Update the version in the VersionOverride attribute if it already exists, meaning that the package's version is being updated. 
-                else
-                {
-                    packageReferenceItem.SetMetadataValue(VERSION_OVERRIDE_TAG, packageVersion);
-                }
-
-                UpdateExtraMetadata(libraryDependency, packageReferenceItem);
-
-                Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.Info_AddPkgUpdated,
-                    libraryDependency.Name,
-                    packageVersion,
-                    packageReferenceItem.Xml.ContainingProject.FullPath));
+                // Update the VersionOverride attribute.
+                versionOverrideAttribute.Value = version;
             }
+            else
+            {
+                // Add the VersionOverride attribute for the first time.
+                packageVersionItemElement.AddMetadata("VersionOverride", version, expressAsAttribute: true);
+            }
+            packageVersionItemElement.ContainingProject.Save();
         }
+        */
 
         /// <summary>
         /// Validate that no imported items in the project are updated with the package version.
