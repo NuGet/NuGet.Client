@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,29 +51,94 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         // This test assumes running on english locale
         [Theory]
         [InlineData(new[] { "Aim", "C", "B" }, new[] { "All", "Aim", "B", "C" })]
-        [InlineData(new[] { "Air" }, new[] { "Air" })]
         [InlineData(new[] { "Air", "Aim" }, new[] { "All", "Aim", "Air" })]
-        public async Task PopulateListAsync_SimulatingSortingInTopPanel_AggregateSourceAlwaysFirstAsync(string[] sources, string[] expectedOrder)
+        [InlineData(new[] { "Ask", "Beta", "Arm", "All" }, new[] { "All", "All", "Arm", "Ask", "Beta" })]
+        public async Task PopulateListAsync_SimulatingSortingInTopPanel_AggregateSourceAlwaysFirstAsync(string[] sourceNames, string[] expectedSourceNamesOrder)
         {
             // Arrange
-            PackageSourceContextInfo[] sourcesContextInfo = sources
+            PackageSourceContextInfo[] sourcesContextInfo = sourceNames
                 .Select(pkgSrc => new PackageSourceContextInfo(pkgSrc, pkgSrc, isEnabled: true))
                 .ToArray();
 
+            // Act
             IReadOnlyCollection<PackageSourceMoniker> result = await PackageSourceMoniker.PopulateListAsync(sourcesContextInfo, CancellationToken.None);
 
             // Simulates collectionViewSource found at PackageManagerTopPanel.xaml
             var cvs = new CollectionViewSource();
             cvs.SortDescriptions.Add(new SortDescription(nameof(PackageSourceMoniker.PriorityOrder), ListSortDirection.Ascending));
             cvs.SortDescriptions.Add(new SortDescription(nameof(PackageSourceMoniker.SourceName), ListSortDirection.Ascending));
-            cvs.Culture = new System.Globalization.CultureInfo("en-US");
+            cvs.Culture = new CultureInfo("en-US");
             cvs.Source = result;
 
-            // Act
-            IEnumerable<string> resultsSorted = cvs.View.Cast<PackageSourceMoniker>().Select(x => x.SourceName);
+            IEnumerable<PackageSourceMoniker> pkgSourcesSorted = cvs.View.Cast<PackageSourceMoniker>();
+            IEnumerable<string> sourceNamesSorted = pkgSourcesSorted.Select(x => x.SourceName);
 
             // Assert
-            Assert.Equal(expectedOrder, resultsSorted);
+            Assert.Equal(expectedSourceNamesOrder, sourceNamesSorted);
+            Assert.True(pkgSourcesSorted.First().IsAggregateSource); // First package source is an Aggreage Source
+            Assert.All(pkgSourcesSorted.Except(new[] { pkgSourcesSorted.First() }), pkgSrc => Assert.False(pkgSrc.IsAggregateSource)); // others are not aggregate sources
+        }
+
+        [Fact]
+        public async Task PopulateListAsync_OnlyOneSource_NotAnAggregateSourceAsync()
+        {
+            // Arrange
+            var sourcesContextInfo = new[]
+            {
+                new PackageSourceContextInfo("Air", "Air", isEnabled: true),
+            };
+
+            // Act
+            IReadOnlyCollection<PackageSourceMoniker> results = await PackageSourceMoniker.PopulateListAsync(sourcesContextInfo, CancellationToken.None);
+
+            // Assert
+            Assert.False(results.First().IsAggregateSource);
+        }
+
+        [Fact]
+        public async Task PopulateListAsync_SimulatingFrenchLocale_AggregateSourceFistAsync()
+        {
+            // Arrange
+            // Input from https://docs.microsoft.com/globalization/locale/sorting-and-string-comparison#how-do-i-verify-that-sorting-works-correctly-in-my-code
+            var input = new[] { "ñú", "cote", "coté", "côté", "ñandú", "côte", "número", "Namibia" };
+            var expectedOrder = new[] { "cote", "côte", "coté", "côté", "Namibia", "ñandú", "ñú", "número" };
+            var inputCulture = new CultureInfo("fr-FR");
+
+            PackageSourceContextInfo[] sourcesContextInfo = input
+                .Select(pkgSrc => new PackageSourceContextInfo(pkgSrc, pkgSrc, isEnabled: true))
+                .ToArray();
+
+            var currentCulture = Strings.Culture;
+            try
+            {
+                Strings.Culture = inputCulture;
+                // Act
+                IReadOnlyCollection<PackageSourceMoniker> results = await PackageSourceMoniker.PopulateListAsync(sourcesContextInfo, CancellationToken.None);
+
+                // Simulates collectionViewSource found at PackageManagerTopPanel.xaml
+                var cvs = new CollectionViewSource();
+                cvs.SortDescriptions.Add(new SortDescription(nameof(PackageSourceMoniker.PriorityOrder), ListSortDirection.Ascending));
+                cvs.SortDescriptions.Add(new SortDescription(nameof(PackageSourceMoniker.SourceName), ListSortDirection.Ascending));
+                cvs.Culture = inputCulture;
+                cvs.Source = results;
+
+                IEnumerable<PackageSourceMoniker> pkgSourcesSorted = cvs.View.Cast<PackageSourceMoniker>();
+                IEnumerable<PackageSourceMoniker> pkgSourcesWithoutFirst = pkgSourcesSorted.Except(new[] { pkgSourcesSorted.First() });
+                IEnumerable<string> sourceNamesSorted = pkgSourcesWithoutFirst.Select(x => x.SourceName);
+
+                // Assert
+                Assert.Equal(expectedOrder, sourceNamesSorted);
+                Assert.True(pkgSourcesSorted.First().IsAggregateSource); // First package source is an Aggreage Source
+                Assert.All(pkgSourcesWithoutFirst, pkgSrc => Assert.False(pkgSrc.IsAggregateSource)); // others are not aggregate sources
+            }
+            catch
+            {
+                throw; // Report any errors to test runner
+            }
+            finally
+            {
+                Strings.Culture = currentCulture; // Set culture back to its original state
+            }
         }
     }
 }
