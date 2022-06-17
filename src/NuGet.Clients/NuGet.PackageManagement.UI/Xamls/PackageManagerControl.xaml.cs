@@ -913,7 +913,7 @@ namespace NuGet.PackageManagement.UI
             if (loadContext.IsSolution == false
                 && _topPanel.Filter == ItemFilter.All
                 && searchText == string.Empty
-                && SelectedSource.PackageSources.Any(item => TelemetryUtility.IsNuGetOrg(item.Source)))
+                && SelectedSource.PackageSources.Any(item => UriUtility.IsNuGetOrg(item.Source)))
             {
                 _recommendPackages = true;
             }

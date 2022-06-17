@@ -8,12 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DataAI.NuGetRecommender.Contracts;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
-using NuGet.VisualStudio.Telemetry;
+using AsyncLazyNuGetRecommender = Microsoft.VisualStudio.Threading.AsyncLazy<Microsoft.DataAI.NuGetRecommender.Contracts.IVsNuGetPackageRecommender>;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public (string modelVersion, string vsixVersion) VersionInfo { get; set; } = (modelVersion: (string)null, vsixVersion: (string)null);
 
-        private readonly AsyncLazy<IVsNuGetPackageRecommender> _nuGetRecommender;
+        private readonly AsyncLazyNuGetRecommender _nuGetRecommender;
 
         private IVsNuGetPackageRecommender NuGetRecommender { get; set; }
 
@@ -64,14 +64,14 @@ namespace NuGet.PackageManagement.VisualStudio
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             // The recommender package feed should only created when one of the sources is nuget.org.
-            if (sourceRepositories.Any(item => TelemetryUtility.IsNuGetOrg(item.PackageSource.Source)))
+            if (sourceRepositories.Any(item => UriUtility.IsNuGetOrg(item.PackageSource.Source)))
             {
-                _sourceRepository = sourceRepositories.First(item => TelemetryUtility.IsNuGetOrg(item.PackageSource.Source));
+                _sourceRepository = sourceRepositories.First(item => UriUtility.IsNuGetOrg(item.PackageSource.Source));
 
                 _installedPackages = installedPackages.Select(item => item.Id).ToList();
                 _transitivePackages = transitivePackages.Select(item => item.Id).ToList();
 
-                _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
+                _nuGetRecommender = new AsyncLazyNuGetRecommender(
                     async () =>
                     {
                         return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsNuGetRecommenderService, IVsNuGetPackageRecommender>();

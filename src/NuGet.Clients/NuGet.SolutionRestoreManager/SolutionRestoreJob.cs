@@ -328,7 +328,7 @@ namespace NuGet.SolutionRestoreManager
                     if (packageSource.IsHttp)
                     {
                         NumHTTPFeeds++;
-                        hasNuGetOrg |= TelemetryUtility.IsNuGetOrg(packageSource.Source);
+                        hasNuGetOrg |= UriUtility.IsNuGetOrg(packageSource.Source);
                     }
                     else
                     {
