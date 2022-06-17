@@ -2010,12 +2010,14 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
-        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar()
+        [Theory]
+        [InlineData("TRUE")]
+        [InlineData("True")]
+        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
+            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
 
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
             using (var packageStream = File.OpenRead(test))
