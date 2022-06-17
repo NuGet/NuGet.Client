@@ -156,6 +156,13 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        /// <summary>
+        /// Add package version/package reference to the solution/project based on if the project has been onboarded to CPM or not.
+        /// </summary>
+        /// <param name="project">Project that needs to be modified.</param>
+        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
+        /// <param name="existingPackageReferences">Package references that already exist in the project.</param>
+        /// <param name="framework">Target Framework for which the package reference should be added.</param>
         private void AddPackageReference(Project project,
             LibraryDependency libraryDependency,
             IEnumerable<ProjectItem> existingPackageReferences,
@@ -199,6 +206,11 @@ namespace NuGet.CommandLine.XPlat
             project.Save();
         }
 
+        /// <summary>
+        /// Add package name and version using PackageVersion tag for projects onboarded to CPM.
+        /// </summary>
+        /// <param name="project">Project that needs to be modified.</param>
+        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         private void AddPackageVersionIntoItemGroupCPM(Project project, LibraryDependency libraryDependency)
         {
             // If onboarded to CPM get the directoryBuildPropsRootElement.
@@ -212,6 +224,11 @@ namespace NuGet.CommandLine.XPlat
             directoryBuildPropsRootElement.Save();
         }
 
+        /// <summary>
+        /// Add package name and version into the props file.
+        /// </summary>
+        /// <param name="itemGroup">Item group that needs to be modified in the props file.</param>
+        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         private void AddPackageVersionIntoPropsItemGroup(ProjectItemGroupElement itemGroup,
             LibraryDependency libraryDependency)
         {
@@ -229,6 +246,11 @@ namespace NuGet.CommandLine.XPlat
             AddExtraMetadata(libraryDependency, item);
         }
 
+        /// <summary>
+        /// Add package name and version into item group.
+        /// </summary>
+        /// <param name="itemGroup">Item group to add to.</param>
+        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         private void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup,
             LibraryDependency libraryDependency)
         {
@@ -246,6 +268,11 @@ namespace NuGet.CommandLine.XPlat
             AddExtraMetadata(libraryDependency, item);
         }
 
+        /// <summary>
+        /// Add only the package name into the project file for projects onboarded to CPM.
+        /// </summary>
+        /// <param name="itemGroup">Item group to add to.</param>
+        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         private void AddPackageReferenceIntoItemGroupCPM(ProjectItemGroupElement itemGroup,
             LibraryDependency libraryDependency)
         {
@@ -263,6 +290,11 @@ namespace NuGet.CommandLine.XPlat
             AddExtraMetadata(libraryDependency, item);
         }
 
+        /// <summary>
+        /// Add other metadata based on certain flags.
+        /// </summary>
+        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
+        /// <param name="item">Item to add the metadata to.</param>
         private void AddExtraMetadata(LibraryDependency libraryDependency, ProjectItemElement item)
         {
             if (libraryDependency.IncludeType != LibraryIncludeFlags.All)
@@ -278,6 +310,11 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        /// <summary>
+        /// Get the Directory build props root element for projects onboarded to CPM.
+        /// </summary>
+        /// <param name="project">Project that needs to be modified.</param>
+        /// <returns></returns>
         private ProjectRootElement GetDirectoryBuildPropsRootElement(Project project)
         {
             // Get the Directory.Packages.props path.
@@ -286,6 +323,11 @@ namespace NuGet.CommandLine.XPlat
             return directoryBuildPropsRootElement;
         }
 
+        /// <summary>
+        /// Get all the item groups in a given project.
+        /// </summary>
+        /// <param name="project">A specified project.</param>
+        /// <returns></returns>
         private static IEnumerable<ProjectItemGroupElement> GetItemGroups(Project project)
         {
             return project
@@ -311,6 +353,12 @@ namespace NuGet.CommandLine.XPlat
             return itemGroup;
         }
 
+        /// <summary>
+        /// Creating an item group in a project.
+        /// </summary>
+        /// <param name="project">Project where the item group should be created.</param>
+        /// <param name="framework">Target Framework for which the package reference should be added.</param>
+        /// <returns></returns>
         private static ProjectItemGroupElement CreateItemGroup(Project project, string framework = null)
         {
             // Create a new item group and add a condition if given
@@ -322,6 +370,13 @@ namespace NuGet.CommandLine.XPlat
             return itemGroup;
         }
 
+        /// <summary>
+        /// Adding version metadata to a given project item element.
+        /// </summary>
+        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
+        /// <param name="item">The item that the version metadata should be added to.</param>
+        /// <param name="versionAttribute">Boolean that expresses if the version attribute already exists or not.</param>
+        /// <returns></returns>
         private string AddVersionMetadata(LibraryDependency libraryDependency, ProjectItemElement item, ProjectMetadataElement versionAttribute)
         {
             var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
@@ -340,6 +395,11 @@ namespace NuGet.CommandLine.XPlat
             return packageVersion;
         }
 
+        /// <summary>
+        /// Update package references for a project that is not onboarded to CPM.
+        /// </summary>
+        /// <param name="packageReferencesItems">Existing package references.</param>
+        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         private void UpdatePackageReferenceItems(IEnumerable<ProjectItem> packageReferencesItems,
            LibraryDependency libraryDependency)
         {
@@ -364,6 +424,11 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        /// <summary>
+        /// For projects onboarded to CPM, update package reference items with the version override attribute.
+        /// </summary>
+        /// <param name="packageReferencesItems">Exsiting package reference items.</param>
+        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         private void UpdatePackageReferenceItemsWithVersionOverride(IEnumerable<ProjectItem> packageReferencesItems,
            LibraryDependency libraryDependency)
         {
@@ -399,6 +464,13 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        /// <summary>
+        /// Validate that no imported items in the project are updated with the package version.
+        /// </summary>
+        /// <param name="packageReferencesItems">Existing package reference items.</param>
+        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
+        /// <param name="operationType">Operation types such as if a package reference is being updated.</param>
+        /// <exception cref="InvalidOperationException"></exception>
         private static void ValidateNoImportedItemsAreUpdated(IEnumerable<ProjectItem> packageReferencesItems,
             LibraryDependency libraryDependency,
             string operationType)
@@ -428,6 +500,11 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        /// <summary>
+        /// Update other metadata for items based on certain flags.
+        /// </summary>
+        /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
+        /// <param name="packageReferenceItem">Item to be modified.</param>
         private void UpdateExtraMetadata(LibraryDependency libraryDependency, ProjectItem packageReferenceItem)
         {
             if (libraryDependency.IncludeType != LibraryIncludeFlags.All)
