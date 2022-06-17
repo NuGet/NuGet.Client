@@ -503,12 +503,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public async void WhenPackageStyleIsPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
-            var mockServiceBroker = new Mock<IServiceBroker>();
-            var mockSearchService = new Mock<INuGetSearchService>();
+            Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
+            Mock<INuGetSearchService> mockSearchService = new Mock<INuGetSearchService>();
 
-            var packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
+            PackageIdentity packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
 
-            var installedPackages = new PackageReferenceContextInfo[]
+            PackageReferenceContextInfo[] installedPackages = new PackageReferenceContextInfo[]
             {
                 PackageReferenceContextInfo.Create(
                     new PackageReference(
@@ -520,7 +520,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                         allowedVersions: VersionRange.Parse(allowedVersions)))
             };
 
-            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            Mock<INuGetProjectManagerService> projectManagerService = new Mock<INuGetProjectManagerService>();
             projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
                     It.IsAny<IReadOnlyCollection<string>>(),
                     It.IsAny<CancellationToken>()))
@@ -532,25 +532,25 @@ namespace NuGet.PackageManagement.UI.Test.Models
 #pragma warning restore ISB001 // Dispose of proxies
 
             // Setup project
-            var project = new Mock<IProjectContextInfo>();
+            Mock<IProjectContextInfo> project = new Mock<IProjectContextInfo>();
             project.SetupGet(p => p.ProjectKind).Returns(NuGetProjectKind.PackageReference);
             project.SetupGet(p => p.ProjectStyle).Returns(ProjectModel.ProjectStyle.PackageReference);
             project.SetupGet(p => p.ProjectId).Returns("ProjectId");
 
-            var model = new PackageDetailControlModel(
+            PackageDetailControlModel model = new PackageDetailControlModel(
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object });
 
             // Arrange
-            var testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
+            List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
 
-            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            Mock<IReconnectingNuGetSearchService> searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
 
             // Act
-            var vm = new PackageItemViewModel(searchService.Object)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object)
             {
                 Id = "Contoso.A",
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("test_source") },
@@ -567,7 +567,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
             NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
-            var displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
+            DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
 
             ItemsChangeObservableCollection<DisplayVersion> assertVersions;
             if (includePrerelease)
@@ -592,6 +592,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 assertVersions = isLatest ? VersionsList_WhenInstalledVersion_IsLatest(allowedVersions, installedVersion)
                 : VersionsList_WhenInstalledVersion_IsNotLatest(allowedVersions, installedVersion);
             }
+
             Assert.Equal(model.SelectedVersion.ToString(), allowedVersions);
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
             Assert.Equal(model.Versions, assertVersions);
@@ -910,12 +911,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
-            var mockServiceBroker = new Mock<IServiceBroker>();
-            var mockSearchService = new Mock<INuGetSearchService>();
+            Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
+            Mock<INuGetSearchService> mockSearchService = new Mock<INuGetSearchService>();
 
-            var packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
+            PackageIdentity packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
 
-            var installedPackages = new PackageReferenceContextInfo[]
+            PackageReferenceContextInfo[] installedPackages = new PackageReferenceContextInfo[]
             {
                 PackageReferenceContextInfo.Create(
                     new PackageReference(
@@ -927,7 +928,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                         allowedVersions: allowedVersions != null ? VersionRange.Parse(allowedVersions) : null))
             };
 
-            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            Mock<INuGetProjectManagerService> projectManagerService = new Mock<INuGetProjectManagerService>();
             projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
                     It.IsAny<IReadOnlyCollection<string>>(),
                     It.IsAny<CancellationToken>()))
@@ -938,26 +939,26 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(projectManagerService.Object);
 #pragma warning restore ISB001 // Dispose of proxies
 
-            var project = new Mock<IProjectContextInfo>();
+            Mock<IProjectContextInfo> project = new Mock<IProjectContextInfo>();
 
             project.SetupGet(p => p.ProjectKind).Returns(projectKind);
             project.SetupGet(p => p.ProjectStyle).Returns(projectStyle);
             project.SetupGet(p => p.ProjectId).Returns("ProjectId");
 
-            var model = new PackageDetailControlModel(
+            PackageDetailControlModel model = new PackageDetailControlModel(
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object });
 
             // Arrange
-            var testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
+            List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
 
-            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            Mock<IReconnectingNuGetSearchService> searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
 
             // Act
-            var vm = new PackageItemViewModel(searchService.Object)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object)
             {
                 Id = "Contoso.A",
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
@@ -1010,12 +1011,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
-            var mockServiceBroker = new Mock<IServiceBroker>();
-            var mockSearchService = new Mock<INuGetSearchService>();
+            Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
+            Mock<INuGetSearchService> mockSearchService = new Mock<INuGetSearchService>();
 
-            var packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
+            PackageIdentity packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
 
-            var installedPackages = new PackageReferenceContextInfo[]
+            PackageReferenceContextInfo[] installedPackages = new PackageReferenceContextInfo[]
             {
                 PackageReferenceContextInfo.Create(
                     new PackageReference(
@@ -1027,7 +1028,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                         allowedVersions: allowedVersions != null ? VersionRange.Parse(allowedVersions) : null))
             };
 
-            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            Mock<INuGetProjectManagerService> projectManagerService = new Mock<INuGetProjectManagerService>();
             projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
                     It.IsAny<IReadOnlyCollection<string>>(),
                     It.IsAny<CancellationToken>()))
@@ -1038,26 +1039,26 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(projectManagerService.Object);
 #pragma warning restore ISB001 // Dispose of proxies
 
-            var project = new Mock<IProjectContextInfo>();
+            Mock<IProjectContextInfo> project = new Mock<IProjectContextInfo>();
 
             project.SetupGet(p => p.ProjectKind).Returns(projectKind);
             project.SetupGet(p => p.ProjectStyle).Returns(projectStyle);
             project.SetupGet(p => p.ProjectId).Returns("ProjectId");
 
-            var model = new PackageDetailControlModel(
+            PackageDetailControlModel model = new PackageDetailControlModel(
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object });
 
             // Arrange
-            var testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
+            List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
 
-            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            Mock<IReconnectingNuGetSearchService> searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
 
             // Act
-            var vm = new PackageItemViewModel(searchService.Object)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object)
             {
                 Id = "Contoso.A",
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
@@ -1110,12 +1111,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
-            var mockServiceBroker = new Mock<IServiceBroker>();
-            var mockSearchService = new Mock<INuGetSearchService>();
+            Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
+            Mock<INuGetSearchService> mockSearchService = new Mock<INuGetSearchService>();
 
-            var packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
+            PackageIdentity packageIdentity = new PackageIdentity("Contoso.A", NuGetVersion.Parse(installedVersion));
 
-            var installedPackages = new PackageReferenceContextInfo[]
+            PackageReferenceContextInfo[] installedPackages = new PackageReferenceContextInfo[]
             {
                 PackageReferenceContextInfo.Create(
                     new PackageReference(
@@ -1127,7 +1128,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                         allowedVersions: allowedVersions != null ? VersionRange.Parse(allowedVersions) : null))
             };
 
-            var projectManagerService = new Mock<INuGetProjectManagerService>();
+            Mock<INuGetProjectManagerService> projectManagerService = new Mock<INuGetProjectManagerService>();
             projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
                     It.IsAny<IReadOnlyCollection<string>>(),
                     It.IsAny<CancellationToken>()))
@@ -1138,13 +1139,13 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .ReturnsAsync(projectManagerService.Object);
 #pragma warning restore ISB001 // Dispose of proxies
 
-            var project = new Mock<IProjectContextInfo>();
+            Mock<IProjectContextInfo> project = new Mock<IProjectContextInfo>();
 
             project.SetupGet(p => p.ProjectKind).Returns(projectKind);
             project.SetupGet(p => p.ProjectStyle).Returns(projectStyle);
             project.SetupGet(p => p.ProjectId).Returns("ProjectId");
 
-            var model = new PackageDetailControlModel(
+            PackageDetailControlModel model = new PackageDetailControlModel(
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object });
@@ -1152,12 +1153,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
             // Arrange
             List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
 
-            var searchService = new Mock<IReconnectingNuGetSearchService>();
+            Mock<IReconnectingNuGetSearchService> searchService = new Mock<IReconnectingNuGetSearchService>();
             searchService.Setup(ss => ss.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testVersions);
 
             // Act
-            var vm = new PackageItemViewModel(searchService.Object)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object)
             {
                 Id = "Contoso.A",
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
@@ -1199,7 +1200,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             // Assert
             Assert.NotEqual(model.SelectedVersion.ToString(), allowedVersions);
-            // Browse Tab should display latest available version
+            // Updates Tab should display latest available version
             Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
             Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
             Assert.Equal(model.Versions, assertVersions);
