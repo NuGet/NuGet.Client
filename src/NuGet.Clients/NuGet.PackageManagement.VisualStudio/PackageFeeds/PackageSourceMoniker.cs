@@ -116,11 +116,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToList();
 
             var packageSourceMonikers = new List<PackageSourceMoniker>();
-            packageSourceMonikers.AddRange(enabledSources.Select(s => new PackageSourceMoniker(s.Name, new[] { s }, priorityOrder: 1)));
             if (enabledSources.Count > 1) // If more than 1, add 'All'
             {
                 packageSourceMonikers.Add(new PackageSourceMoniker(Strings.AggregateSourceName, enabledSources, priorityOrder: uint.MinValue));
             }
+
+            packageSourceMonikers.AddRange(enabledSources.Select(s => new PackageSourceMoniker(s.Name, new[] { s }, priorityOrder: 1)));
 
             return new ValueTask<IReadOnlyCollection<PackageSourceMoniker>>(packageSourceMonikers);
         }
