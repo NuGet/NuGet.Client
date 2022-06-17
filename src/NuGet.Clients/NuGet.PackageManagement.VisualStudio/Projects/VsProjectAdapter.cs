@@ -46,54 +46,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return Path.Combine(await GetProjectDirectoryAsync(), msbuildProjectExtensionsPath);
         }
 
-        public string RestorePackagesPath
-        {
-            get
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                var restorePackagesPath = BuildProperties.GetPropertyValue(ProjectBuildProperties.RestorePackagesPath);
-
-                if (string.IsNullOrWhiteSpace(restorePackagesPath))
-                {
-                    return null;
-                }
-
-                return restorePackagesPath;
-            }
-        }
-
-        public string RestoreSources
-        {
-            get
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                var restoreSources = BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreSources);
-
-                if (string.IsNullOrWhiteSpace(restoreSources))
-                {
-                    return null;
-                }
-
-                return restoreSources;
-            }
-        }
-
-        public string RestoreFallbackFolders
-        {
-            get
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                var restoreFallbackFolders = BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreFallbackFolders);
-
-                if (string.IsNullOrWhiteSpace(restoreFallbackFolders))
-                {
-                    return null;
-                }
-
-                return restoreFallbackFolders;
-            }
-        }
-
         public IProjectBuildProperties BuildProperties { get; private set; }
 
         public string CustomUniqueName => ProjectNames.CustomUniqueName;
@@ -118,24 +70,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public async Task<bool> IsSupportedAsync()
         {
             return await EnvDTEProjectUtility.IsSupportedAsync(Project);
-        }
-
-        public string PackageTargetFallback
-        {
-            get
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                return BuildProperties.GetPropertyValue(ProjectBuildProperties.PackageTargetFallback);
-            }
-        }
-
-        public string AssetTargetFallback
-        {
-            get
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                return BuildProperties.GetPropertyValue(ProjectBuildProperties.AssetTargetFallback);
-            }
         }
 
         public EnvDTE.Project Project => _dteProject.Value;
@@ -183,16 +117,6 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public IVsHierarchy VsHierarchy => _vsHierarchyItem.VsHierarchy;
-
-        public string RestoreAdditionalProjectSources => BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreAdditionalProjectSources);
-
-        public string RestoreAdditionalProjectFallbackFolders => BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreAdditionalProjectFallbackFolders);
-
-        public string NoWarn => BuildProperties.GetPropertyValue(ProjectBuildProperties.NoWarn);
-
-        public string WarningsAsErrors => BuildProperties.GetPropertyValue(ProjectBuildProperties.WarningsAsErrors);
-
-        public string TreatWarningsAsErrors => BuildProperties.GetPropertyValue(ProjectBuildProperties.TreatWarningsAsErrors);
 
         #endregion Properties
 
@@ -317,23 +241,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return NuGetFramework.UnsupportedFramework;
-        }
-
-        public Task<string> GetRestorePackagesWithLockFileAsync()
-        {
-            return GetPropertyValueAsync(ProjectBuildProperties.RestorePackagesWithLockFile);
-        }
-
-        public Task<string> GetNuGetLockFilePathAsync()
-        {
-            return GetPropertyValueAsync(ProjectBuildProperties.NuGetLockFilePath);
-        }
-
-        public async Task<bool> IsRestoreLockedAsync()
-        {
-            var value = await GetPropertyValueAsync(ProjectBuildProperties.RestoreLockedMode);
-
-            return MSBuildStringUtility.IsTrue(value);
         }
 
         public Task<string> GetPropertyValueAsync(string propertyName)

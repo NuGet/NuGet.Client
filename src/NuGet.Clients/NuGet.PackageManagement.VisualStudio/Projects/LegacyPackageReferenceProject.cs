@@ -122,37 +122,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return (new[] { packageSpec }, null);
         }
 
-        private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
-        {
-            string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally);
-
-            return MSBuildStringUtility.IsTrue(value);
-        }
-
-        private async Task<bool> IsCentralPackageVersionOverrideDisabledAsync()
-        {
-            string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.CentralPackageVersionOverrideEnabled);
-
-            return value.EqualsFalse();
-        }
-
-        private async Task<bool> IsCentralPackageTransitivePinningEnabledAsync()
-        {
-            string value = await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.CentralPackageTransitivePinningEnabled);
-
-            return MSBuildStringUtility.IsTrue(value);
-        }
-
-        private async Task<string> GetSpecifiedAssemblyNameAsync()
-        {
-            return await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.AssemblyName);
-        }
-
-        private async Task<string> GetSpecifiedPackageIdAsync()
-        {
-            return await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.PackageId);
-        }
-
         private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
         {
             IEnumerable<(string PackageId, string Version)> packageVersions =
@@ -280,13 +249,25 @@ namespace NuGet.PackageManagement.VisualStudio
             return msbuildProjectExtensionsPath;
         }
 
+        private static string GetPropertySafe(IProjectBuildProperties projectBuildProperties, string propertyName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var value = projectBuildProperties.GetPropertyValue(propertyName);
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+            return value;
+        }
+
         private string GetPackagesPath(ISettings settings)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var packagePath = _vsProjectAdapter.RestorePackagesPath;
+            var packagePath = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestorePackagesPath);
 
-            if (string.IsNullOrEmpty(packagePath))
+            if (string.IsNullOrWhiteSpace(packagePath))
             {
                 return SettingsUtility.GetGlobalPackagesFolder(settings);
             }
@@ -298,7 +279,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var sources = MSBuildStringUtility.Split(_vsProjectAdapter.RestoreSources).AsEnumerable();
+            var sources = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreSources)).AsEnumerable();
 
             if (ShouldReadFromSettings(sources))
             {
@@ -310,7 +291,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Add additional sources
-            sources = sources.Concat(MSBuildStringUtility.Split(_vsProjectAdapter.RestoreAdditionalProjectSources));
+            sources = sources.Concat(MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreAdditionalProjectSources)));
 
             return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(ProjectFullPath, e))).ToList();
         }
@@ -319,7 +300,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var fallbackFolders = MSBuildStringUtility.Split(_vsProjectAdapter.RestoreFallbackFolders).AsEnumerable();
+            var fallbackFolders = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreFallbackFolders)).AsEnumerable();
 
             if (ShouldReadFromSettings(fallbackFolders))
             {
@@ -331,7 +312,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Add additional fallback folders
-            fallbackFolders = fallbackFolders.Concat(MSBuildStringUtility.Split(_vsProjectAdapter.RestoreAdditionalProjectFallbackFolders));
+            fallbackFolders = fallbackFolders.Concat(MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreAdditionalProjectFallbackFolders)));
 
             return fallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectFullPath, e)).ToList();
         }
@@ -355,7 +336,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectReferences = await ProjectServices
                 .ReferencesReader
-                .GetProjectReferencesAsync(Common.NullLogger.Instance, CancellationToken.None);
+                .GetProjectReferencesAsync(NullLogger.Instance, CancellationToken.None);
 
             var targetFramework = await _vsProjectAdapter.GetTargetFrameworkAsync();
 
@@ -364,11 +345,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 .GetPackageReferencesAsync(targetFramework, CancellationToken.None))
                 .ToList();
 
-            var packageTargetFallback = MSBuildStringUtility.Split(_vsProjectAdapter.PackageTargetFallback)
+            var packageTargetFallback = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.PackageTargetFallback))
                 .Select(NuGetFramework.Parse)
                 .ToList();
 
-            var assetTargetFallback = MSBuildStringUtility.Split(_vsProjectAdapter.AssetTargetFallback)
+            var assetTargetFallback = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.AssetTargetFallback))
                 .Select(NuGetFramework.Parse)
                 .ToList();
 
@@ -378,7 +359,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 Dependencies = packageReferences,
             };
 
-            bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
+            bool isCpvmEnabled = MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.ManagePackageVersionsCentrally));
             if (isCpvmEnabled)
             {
                 // Add the central version information and merge the information to the package reference dependencies
@@ -399,7 +380,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectName = ProjectName ?? ProjectUniqueName;
 
-            string specifiedPackageId = await GetSpecifiedPackageIdAsync();
+            string specifiedPackageId = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.PackageId);
 
             if (!string.IsNullOrWhiteSpace(specifiedPackageId))
             {
@@ -407,7 +388,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                string specifiedAssemblyName = await GetSpecifiedAssemblyNameAsync();
+                string specifiedAssemblyName = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.AssemblyName);
 
                 if (!string.IsNullOrWhiteSpace(specifiedAssemblyName))
                 {
@@ -445,16 +426,16 @@ namespace NuGet.PackageManagement.VisualStudio
                     FallbackFolders = GetFallbackFolders(settings),
                     ConfigFilePaths = GetConfigFilePaths(settings),
                     ProjectWideWarningProperties = WarningProperties.GetWarningProperties(
-                        treatWarningsAsErrors: _vsProjectAdapter.TreatWarningsAsErrors,
-                        noWarn: _vsProjectAdapter.NoWarn,
-                        warningsAsErrors: _vsProjectAdapter.WarningsAsErrors),
+                        treatWarningsAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.TreatWarningsAsErrors),
+                        noWarn: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.NoWarn),
+                        warningsAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.WarningsAsErrors)),
                     RestoreLockProperties = new RestoreLockProperties(
-                        await _vsProjectAdapter.GetRestorePackagesWithLockFileAsync(),
-                        await _vsProjectAdapter.GetNuGetLockFilePathAsync(),
-                        await _vsProjectAdapter.IsRestoreLockedAsync()),
+                        GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestorePackagesWithLockFile),
+                        GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.NuGetLockFilePath),
+                        MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreLockedMode))),
                     CentralPackageVersionsEnabled = isCpvmEnabled,
-                    CentralPackageVersionOverrideDisabled = await IsCentralPackageVersionOverrideDisabledAsync(),
-                    CentralPackageTransitivePinningEnabled = await IsCentralPackageTransitivePinningEnabledAsync(),
+                    CentralPackageVersionOverrideDisabled = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageVersionOverrideEnabled).EqualsFalse(),
+                    CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageTransitivePinningEnabled)),
                 }
             };
         }
