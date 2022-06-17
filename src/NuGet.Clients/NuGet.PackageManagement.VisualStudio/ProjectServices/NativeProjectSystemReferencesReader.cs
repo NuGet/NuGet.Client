@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
@@ -18,7 +19,8 @@ using NuGet.VisualStudio;
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// Reference reader implementation for the core project system in the integrated development environment (IDE).
+    /// Reference reader implementation for the native project system. C++ does implement CPS,
+    /// but some of those APIs sometimes lead to a lot more work than expected.
     /// </summary>
     internal class NativeProjectSystemReferencesReader
         : IProjectSystemReferencesReader
@@ -52,23 +54,52 @@ namespace NuGet.PackageManagement.VisualStudio
             var vcProject = await _vcProject.GetValueAsync();
             var references = vcProject.VCReferences as VCReferences;
             var projectReferences = references.GetReferencesOfType((uint)vcRefType.VCRT_PROJECT);
+            bool hasMissingReferences = false;
 
             foreach (var reference in projectReferences)
             {
-                var vcReference = reference as VCProjectReference;
-                if (vcReference.UseInBuild)
+                try
                 {
-                    var childProjectPath = (vcReference.ReferencedProject as Project).FileName; // TODO: This returns the assembly path, but we really want the vcxproj path instead.
-
-                    var projectRestoreReference = new ProjectRestoreReference()
+                    var vcReference = reference as VCProjectReference;
+                    if (vcReference.UseInBuild)
                     {
-                        ProjectPath = childProjectPath,
-                        ProjectUniqueName = childProjectPath
-                    };
+                        if (vcReference.ReferencedProject != null)
+                        {
+                            var referencedProject = vcReference.ReferencedProject as Project;
+                            var childProjectPath = referencedProject.FileName;
+                            var projectRestoreReference = new ProjectRestoreReference()
+                            {
+                                ProjectPath = childProjectPath,
+                                ProjectUniqueName = childProjectPath
+                            };
 
-                    results.Add(projectRestoreReference);
+                            results.Add(projectRestoreReference);
+                        }
+                        else
+                        {
+                            hasMissingReferences = true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    hasMissingReferences = true;
+
+                    logger.LogDebug(ex.ToString());
                 }
             }
+
+            if (hasMissingReferences)
+            {
+                // Log a generic message once per project if any items could not be resolved.
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UnresolvedItemDuringProjectClosureWalk,
+                    _vsProjectAdapter.UniqueName);
+
+                logger.LogVerbose(message);
+            }
+
             return results;
         }
 
