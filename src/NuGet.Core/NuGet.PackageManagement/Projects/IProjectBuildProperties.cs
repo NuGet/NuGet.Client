@@ -13,9 +13,11 @@ namespace NuGet.ProjectManagement
     {
         /// <summary>
         /// Returns a property value.
+        /// Must be called on the UI thread.
         /// </summary>
         /// <param name="propertyName">A property name</param>
         /// <returns>Property value or <code>null</code> if not found.</returns>
+        /// <remarks>Often times when retrieving properties we are already on the UI thread. In those cases, prefer calling this method over the async one to avoid the extra state machine allocations.</remarks>
         string GetPropertyValue(string propertyName);
 
         /// <summary>
@@ -23,6 +25,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         /// <param name="propertyName">A property name</param>
         /// <returns>Property value or <code>null</code> if not found.</returns>
+        /// <remarks>Often times when retrieving properties we are already on the UI thread. In those cases, prefer calling the synchronous version instead to avoid the extra state machine allocations.</remarks>
         Task<string> GetPropertyValueAsync(string propertyName);
     }
 }

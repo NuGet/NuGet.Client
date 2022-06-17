@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 
@@ -35,23 +36,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public string GetPropertyValue(string propertyName)
         {
-            return _threadingService.JoinableTaskFactory.Run(() => GetPropertyValueAsync(propertyName));
-        }
-
-        public async Task<string> GetPropertyValueAsync(string propertyName)
-        {
+            ThreadHelper.ThrowIfNotOnUIThread();
             Assumes.NotNullOrEmpty(propertyName);
-
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             if (_propertyStorage != null)
             {
-                string output = null;
                 var result = _propertyStorage.GetPropertyValue(
                     pszPropName: propertyName,
                     pszConfigName: null,
                     storage: (uint)_PersistStorageType.PST_PROJECT_FILE,
-                    pbstrPropValue: out output);
+                    pbstrPropValue: out string output);
 
                 if (result == VSConstants.S_OK && !string.IsNullOrWhiteSpace(output))
                 {
@@ -70,6 +63,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return null;
+        }
+
+        public async Task<string> GetPropertyValueAsync(string propertyName)
+        {
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+            return GetPropertyValue(propertyName);
         }
     }
 }
