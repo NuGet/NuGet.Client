@@ -172,7 +172,7 @@ namespace NuGet.PackageManagement.UI
                 VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, true);
                 NuGetVersion bestVersion = installedVersionRange.FindBestMatch(allVersionsAllowed.Select(v => v.version));
                 var deprecationInfo = allVersionsAllowed.FirstOrDefault(v => v.version == bestVersion).isDeprecated;
-                DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null, isDeprecated: deprecationInfo);
+                DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: string.Empty, isDeprecated: deprecationInfo);
 
                 _versions.Add(displayVersion);
             }
@@ -195,9 +195,6 @@ namespace NuGet.PackageManagement.UI
                 VersionRange latestStableVersionRange = VersionRange.Parse(latestStableVersion.version.ToString(), allowFloating: false);
                 _versions.Add(new DisplayVersion(latestStableVersionRange, latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
             }
-
-            // Only the current installed version is displayed, we update the separator so its not removed from the list when filtering.
-            IsBeforeNullSeparator = _versions.Count == 1;
 
             // add a separator
             if (_versions.Count > 0)
@@ -234,8 +231,6 @@ namespace NuGet.PackageManagement.UI
             return Task.CompletedTask;
         }
 
-        private bool IsBeforeNullSeparator { get; set; }
-
         private bool VersionsFilter(object o)
         {
             var version = o as DisplayVersion;
@@ -247,17 +242,8 @@ namespace NuGet.PackageManagement.UI
                 return true;
             }
 
-            // Handle of *, that this will show all versions other than the installed version, the suggested version and the null separator
-            if (UserInput.Equals("*", StringComparison.OrdinalIgnoreCase))
-            {
-                if (version == null) IsBeforeNullSeparator = true;
-
-                return IsBeforeNullSeparator && version != null;
-            }
-            else if (IsBeforeNullSeparator)
-            {
-                IsBeforeNullSeparator = false;
-            }
+            // Filter out the installed version
+            if (version != null && version.AdditionalInfo == string.Empty) return false;
 
             // If the user typed a version range, show only the versions that are in the range
             if ((UserInput.StartsWith("(", StringComparison.OrdinalIgnoreCase) || UserInput.StartsWith("[", StringComparison.OrdinalIgnoreCase)) &&

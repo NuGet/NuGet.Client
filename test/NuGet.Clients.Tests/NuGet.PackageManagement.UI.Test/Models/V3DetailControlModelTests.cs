@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using Lucene.Net.Util;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
@@ -370,7 +371,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsNotLatest(string allowedVersions, string installedVersion)
         {
             return new ItemsChangeObservableCollection<DisplayVersion>() {
-                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), null),
+                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), string.Empty),
                 new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), "Latest stable"),
                 null,
                 new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
@@ -385,7 +386,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsLatest(string allowedVersions, string installedVersion)
         {
             return new ItemsChangeObservableCollection<DisplayVersion>() {
-                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), null),
+                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), string.Empty),
                 null,
                 new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), null),
                 new DisplayVersion(VersionRange.Parse("2.0.0"), new NuGetVersion("2.0.0"), null),
@@ -399,7 +400,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsNotLatest_IncludePrerelease(string allowedVersions, string installedVersion)
         {
             return new ItemsChangeObservableCollection<DisplayVersion>() {
-                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), null),
+                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), string.Empty),
                 new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), "Latest prerelease"),
                 new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), "Latest stable"),
                 null,
@@ -416,7 +417,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsLatestPrerelease_IncludePrerelease(string allowedVersions, string installedVersion)
         {
             return new ItemsChangeObservableCollection<DisplayVersion>() {
-                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), null),
+                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), string.Empty),
                 new DisplayVersion(VersionRange.Parse("3.0.0"), new NuGetVersion("3.0.0"), "Latest stable"),
                 null,
                 new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), null),
@@ -432,7 +433,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsLatestStable_IncludePrerelease(string allowedVersions, string installedVersion)
         {
             return new ItemsChangeObservableCollection<DisplayVersion>() {
-                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), null),
+                new DisplayVersion(VersionRange.Parse(allowedVersions), new NuGetVersion(installedVersion), string.Empty),
                 new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), "Latest prerelease"),
                 null,
                 new DisplayVersion(VersionRange.Parse("3.0.1-beta"), new NuGetVersion("3.0.1-beta"), null),
@@ -567,7 +568,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
             NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
-            DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
+            DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: string.Empty);
 
             ItemsChangeObservableCollection<DisplayVersion> assertVersions;
             if (includePrerelease)
@@ -590,11 +591,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
             else
             {
                 assertVersions = isLatest ? VersionsList_WhenInstalledVersion_IsLatest(allowedVersions, installedVersion)
-                : VersionsList_WhenInstalledVersion_IsNotLatest(allowedVersions, installedVersion);
+                                    : VersionsList_WhenInstalledVersion_IsNotLatest(allowedVersions, installedVersion);
             }
 
             Assert.Equal(model.SelectedVersion.ToString(), allowedVersions);
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
+            Assert.Equal(model.SelectedVersion, displayVersion);
             Assert.Equal(model.Versions, assertVersions);
         }
 
@@ -673,32 +675,41 @@ namespace NuGet.PackageManagement.UI.Test.Models
             // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
             NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
-            DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
+            DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: string.Empty);
 
             ItemsChangeObservableCollection<DisplayVersion> assertVersions;
             string expectedAditionalInfo = null;
+            NuGetVersion version;
+            NuGetVersion.TryParse(allowedVersions, out version);
             if (includePrerelease)
             {
-                NuGetVersion version;
-                NuGetVersion.TryParse(allowedVersions, out version);
                 if (version != null && version.Version.Equals(new NuGetVersion("3.0.0").Version))
                 {
                     assertVersions = VersionsList_WhenInstalledVersion_IsLatestStable_IncludePrerelease(allowedVersions, installedVersion);
+                    expectedAditionalInfo = "Latest prerelease";
                 }
                 else if (version != null && version.Version.Equals(new NuGetVersion("3.0.1-beta").Version))
                 {
                     assertVersions = VersionsList_WhenInstalledVersion_IsLatestPrerelease_IncludePrerelease(allowedVersions, installedVersion);
+                    expectedAditionalInfo = string.Empty;
                 }
                 else
                 {
                     assertVersions = VersionsList_WhenInstalledVersion_IsNotLatest_IncludePrerelease(allowedVersions, installedVersion);
+                    expectedAditionalInfo = "Latest prerelease";
                 }
-                expectedAditionalInfo = "Latest prerelease";
             }
             else
             {
                 assertVersions = VersionsList_WhenInstalledVersion_IsNotLatest(allowedVersions, installedVersion);
-                expectedAditionalInfo = "Latest stable";
+                if (isLatest)
+                {
+                    expectedAditionalInfo = (version != null && version.ToString().Equals(new NuGetVersion("3.0.0").ToString())) ? string.Empty : null;
+                }
+                else
+                {
+                    expectedAditionalInfo = "Latest stable";
+                }
             }
 
             Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
@@ -782,32 +793,41 @@ namespace NuGet.PackageManagement.UI.Test.Models
             // Assert
             VersionRange installedVersionRange = VersionRange.Parse(allowedVersions, true);
             NuGetVersion bestVersion = installedVersionRange.FindBestMatch(testVersions.Select(t => t.Version));
-            DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: null);
+            DisplayVersion displayVersion = new DisplayVersion(installedVersionRange, bestVersion, additionalInfo: string.Empty);
 
             ItemsChangeObservableCollection<DisplayVersion> assertVersions;
             string expectedAditionalInfo = null;
+            NuGetVersion version;
+            NuGetVersion.TryParse(allowedVersions, out version);
             if (includePrerelease)
             {
-                NuGetVersion version;
-                NuGetVersion.TryParse(allowedVersions, out version);
                 if (version != null && version.Version.Equals(new NuGetVersion("3.0.0").Version))
                 {
                     assertVersions = VersionsList_WhenInstalledVersion_IsLatestStable_IncludePrerelease(allowedVersions, installedVersion);
+                    expectedAditionalInfo = "Latest prerelease";
                 }
                 else if (version != null && version.Version.Equals(new NuGetVersion("3.0.1-beta").Version))
                 {
                     assertVersions = VersionsList_WhenInstalledVersion_IsLatestPrerelease_IncludePrerelease(allowedVersions, installedVersion);
+                    expectedAditionalInfo = string.Empty;
                 }
                 else
                 {
                     assertVersions = VersionsList_WhenInstalledVersion_IsNotLatest_IncludePrerelease(allowedVersions, installedVersion);
+                    expectedAditionalInfo = "Latest prerelease";
                 }
-                expectedAditionalInfo = isLatest ? null : "Latest prerelease";
             }
             else
             {
                 assertVersions = isLatest ? VersionsList_WhenInstalledVersion_IsLatest(allowedVersions, installedVersion) : VersionsList_WhenInstalledVersion_IsNotLatest(allowedVersions, installedVersion);
-                expectedAditionalInfo = isLatest ? null : "Latest stable";
+                if (isLatest)
+                {
+                    expectedAditionalInfo = (version != null && version.ToString().Equals(new NuGetVersion("3.0.0").ToString())) ? string.Empty : null;
+                }
+                else
+                {
+                    expectedAditionalInfo = "Latest stable";
+                }
             }
 
             Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
@@ -1338,21 +1358,19 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 () => vm);
 
             // Assert
-            var expectedAdditionalInfo = string.Empty;
-
             // Remove any added `null` separators, and any Additional Info entries (eg, "Latest Prerelease", "Latest Stable").
             List<DisplayVersion> actualVersions = _testInstance.Versions
-                .Where(v => v != null && v.AdditionalInfo == expectedAdditionalInfo).ToList();
+                .Where(v => v != null && v.AdditionalInfo == null).ToList();
 
             var expectedVersions = new List<DisplayVersion>() {
-                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01265"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01256"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01249"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01248"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.0"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01211"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01191"), additionalInfo: expectedAdditionalInfo),
-                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01187"), additionalInfo: expectedAdditionalInfo),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01265"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01256"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01249"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.1-dev-01248"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.0"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01211"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01191"), additionalInfo: null),
+                new DisplayVersion(version: new NuGetVersion("2.10.0-dev-01187"), additionalInfo: null),
             };
 
             Assert.Equal(expectedVersions, actualVersions);
