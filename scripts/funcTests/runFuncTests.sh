@@ -69,7 +69,7 @@ do
 	fi
 	unset IFS
 
-    # The channel option:
+    # The quality option:
     # Daily links are those from daily builds
     # Signed have been post-build signed (in the case of 6.0+, pre-6.0 is signed even in daily builds)
     # Validated have gone through CTI testing and other validation
@@ -98,8 +98,6 @@ cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 5.0 -nopath
 
 echo "cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 3.1 -nopath"
 cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 3.1 -nopath
-
-
 
 if (( $? )); then
 	echo "The .NET CLI Install failed!!"

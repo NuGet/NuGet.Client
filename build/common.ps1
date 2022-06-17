@@ -201,7 +201,7 @@ Function Install-DotnetCLI {
             $arch = "x86";
         }
 
-        # The channel option:
+        # The Quality option:
         # Daily links are those from daily builds
         # Signed have been post-build signed (in the case of 6.0+, pre-6.0 is signed even in daily builds)
         # Validated have gone through CTI testing and other validation
@@ -224,6 +224,10 @@ Function Install-DotnetCLI {
 
         # Display build info
         & $DotNetExe --info
+        if ($LASTEXITCODE -ne 0)
+        {
+            throw "dotnet --info exited with non-zero exit code"
+        }
     }
 
     # Install the 2.x runtime because our tests target netcoreapp2x
@@ -239,6 +243,10 @@ Function Install-DotnetCLI {
 
     # Display build info
     & $DotNetExe --info
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "dotnet --info exited with non-zero exit code"
+    }
 }
 
 Function Get-LatestVisualStudioRoot {
