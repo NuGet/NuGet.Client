@@ -96,7 +96,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task PopulateListAsync_SimulatingFrenchLocale_AggregateSourceFistAsync()
+        public async Task PopulateListAsync_SimulatingFrenchLocale_AggregateSourceFirstAsync()
         {
             // Arrange
             // Input from https://docs.microsoft.com/globalization/locale/sorting-and-string-comparison#how-do-i-verify-that-sorting-works-correctly-in-my-code
@@ -108,7 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .Select(pkgSrc => new PackageSourceContextInfo(pkgSrc, pkgSrc, isEnabled: true))
                 .ToArray();
 
-            var currentCulture = Strings.Culture;
+            CultureInfo currentCulture = Strings.Culture;
             try
             {
                 Strings.Culture = inputCulture;
@@ -137,7 +137,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
             finally
             {
-                Strings.Culture = currentCulture; // Set culture back to its original state
+                Strings.Culture = currentCulture; // Set it back to its original state
             }
         }
     }
