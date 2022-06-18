@@ -1726,9 +1726,9 @@ public class B
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net48", "proj1.dll"),
-                        Path.Combine("lib", "net48", "proj3.dll"),
-                        Path.Combine("lib", "net48", "proj7.dll")
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj3.dll"),
+                        Path.Combine("lib", "net40", "proj7.dll")
                     },
                     files);
 
@@ -1949,9 +1949,9 @@ public class B
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net48", "proj1.dll"),
-                        Path.Combine("lib", "net48", "proj3.dll"),
-                        Path.Combine("lib", "net48", "proj7.dll")
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj3.dll"),
+                        Path.Combine("lib", "net40", "proj7.dll")
                     },
                     files);
 
@@ -2937,7 +2937,7 @@ namespace Proj2
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net48", "proj2.dll")
+                        Path.Combine("lib", "net40", "proj2.dll")
                     },
                     files);
             }
@@ -3612,7 +3612,7 @@ namespace Proj1
     </dependencies>
   </metadata>
   <files>
-    <file src=""release_out\"" target=""lib\net48"" />
+    <file src=""release_out\"" target=""lib\net40"" />
   </files>
 </package>");
                 var r = CommandRunner.Run(
@@ -3752,8 +3752,8 @@ namespace Proj2
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net48", "proj1.dll"),
-                        Path.Combine("lib", "net48", "proj2.dll")
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj2.dll")
                     },
                     files);
             }
@@ -4001,8 +4001,8 @@ namespace Proj2
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net48", "proj1.dll"),
-                        Path.Combine("lib", "net48", "proj2.dll")
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj2.dll")
                     },
                     files);
             }
