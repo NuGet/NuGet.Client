@@ -12,7 +12,6 @@ using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Shared;
 
-
 namespace NuGet.Commands
 {
     public static class TransitiveNoWarnUtils
@@ -74,7 +73,7 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Traverses a Dependency grpah starting from the parent project in BF style.
+        /// Traverses a Dependency graph starting from the parent project in BF style.
         /// </summary>
         /// <param name="targetGraph">Parent project restore target graph.</param>
         /// <param name="parentProjectName">File path of the parent project.</param>
@@ -138,7 +137,7 @@ namespace NuGet.Commands
                 var lookUpNode = new LookUpNode()
                 {
                     Dependencies = dependencyGraphItem.Data.Dependencies,
-                    NodeWarningProperties = new NodeWarningProperties(nodeProjectWideNoWarn, nodePackageSpecificNoWarn)
+                    NodeWarningProperties = NodeWarningProperties.Create(nodeProjectWideNoWarn, nodePackageSpecificNoWarn)
                 };
 
                 dependencyMapping[dependencyGraphItem.Key.Name] = lookUpNode;
@@ -148,16 +147,13 @@ namespace NuGet.Commands
             var parentDependencies = dependencyMapping[parentProjectName];
 
             // Seed the queue with the parent project's direct dependencies
+            var parentNoWarn = NodeWarningProperties.Create(parentProjectWideNoWarn, parentPackageSpecificNoWarn);
             AddDependenciesToQueue(parentDependencies.Dependencies,
                 queue,
-                parentProjectWideNoWarn,
-                parentPackageSpecificNoWarn);
+                parentNoWarn);
 
             // Add the parent project to the seen set to prevent adding it back to the queue
-            AddToSeen(seen, new DependencyNode(id: parentProjectName,
-                isProject: true,
-                projectWideNoWarn: parentProjectWideNoWarn,
-                packageSpecificNoWarn: parentPackageSpecificNoWarn));
+            AddToSeen(seen, new DependencyNode(id: parentProjectName, isProject: true, parentNoWarn));
 
             // start taking one node from the queue and get all of it's dependencies
             while (queue.Count > 0)
@@ -173,34 +169,23 @@ namespace NuGet.Commands
                     var nodeIsProject = node.IsProject;
 
                     var nodeDependencies = nodeLookUp.Dependencies;
-                    var nodeWarningProperties = nodeLookUp.NodeWarningProperties;
-
-                    var nodeProjectWideNoWarn = nodeWarningProperties.ProjectWide;
-                    var nodePackageSpecificNoWarn = nodeWarningProperties.PackageSpecific;
                     var pathWarningProperties = node.NodeWarningProperties;
-                    var pathProjectWideNoWarn = pathWarningProperties.ProjectWide;
-                    var pathPackageSpecificNoWarn = pathWarningProperties.PackageSpecific;
 
                     // If the node is a project then we need to extract the warning properties and 
                     // add those to the warning properties of the current path.
                     if (nodeIsProject)
                     {
-                        // Merge the node's project wide no warn to the one in the path.
-                        var mergedProjectWideNoWarn = MergeCodes(pathProjectWideNoWarn, nodeProjectWideNoWarn);
-
-                        // Merge the node's package specific no warn to the one in the path.
-                        var mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(pathPackageSpecificNoWarn, nodePackageSpecificNoWarn);
-
+                        // Merge the node's no warn properties with the one in the path.
+                        NodeWarningProperties nodeWarningProperties = nodeLookUp.NodeWarningProperties;
                         AddDependenciesToQueue(nodeDependencies,
                             queue,
-                            mergedProjectWideNoWarn,
-                            mergedPackageSpecificNoWarn);
+                            nodeWarningProperties.Merge(node.NodeWarningProperties));
 
                     }
                     else if (parentPackageDependencies.Contains(nodeId))
                     {
                         // Evaluate the current path for package properties
-                        var packageNoWarnFromPath = ExtractPathNoWarnProperties(pathWarningProperties, nodeId);
+                        var packageNoWarnFromPath = pathWarningProperties.ExtractPathNoWarnProperties(nodeId);
                         if (packageNoWarn.TryGetValue(nodeId, out var noWarnCodes))
                         {
                             // We have seen atleast one path which contained a NoWarn for the package
@@ -230,8 +215,7 @@ namespace NuGet.Commands
 
                         AddDependenciesToQueue(nodeDependencies,
                             queue,
-                            pathWarningProperties.ProjectWide,
-                            pathWarningProperties.PackageSpecific);
+                            pathWarningProperties);
                     }
                 }
             }
@@ -285,9 +269,10 @@ namespace NuGet.Commands
             if (!seen.TryGetValue(id, out var visitedProps))
             {
                 // New id
-                seen.Add(id, node.NodeWarningProperties);
+                seen.Add(id, nodeProps);
                 return true;
             }
+
             if (!nodeProps.IsSubSetOf(visitedProps))
             {
                 // Find the intersection of properties between these nodes,
@@ -303,8 +288,7 @@ namespace NuGet.Commands
 
         private static void AddDependenciesToQueue(IEnumerable<LibraryDependency> dependencies,
             Queue<DependencyNode> queue,
-            HashSet<NuGetLogCode> projectWideNoWarn,
-            Dictionary<string, HashSet<NuGetLogCode>> packageSpecificNoWarn)
+            NodeWarningProperties nodeWarningProperties)
         {
             // Add all the project's dependencies to the Queue with the merged WarningPropertiesCollection
             foreach (var dependency in dependencies)
@@ -312,8 +296,7 @@ namespace NuGet.Commands
                 var queueNode = new DependencyNode(
                     dependency.Name,
                     IsProject(dependency.LibraryRange.TypeConstraint),
-                    projectWideNoWarn,
-                    packageSpecificNoWarn);
+                    nodeWarningProperties);
 
                 // Add the metadata from the parent project here.
                 queue.Enqueue(queueNode);
@@ -335,20 +318,7 @@ namespace NuGet.Commands
             NodeWarningProperties nodeWarningProperties,
             string libraryId)
         {
-            var result = new HashSet<NuGetLogCode>();
-            if (nodeWarningProperties?.ProjectWide?.Count > 0)
-            {
-                result.UnionWith(nodeWarningProperties.ProjectWide);
-            }
-
-            if (nodeWarningProperties?.PackageSpecific?.Count > 0 &&
-                nodeWarningProperties.PackageSpecific.TryGetValue(libraryId, out var codes) &&
-                codes?.Count > 0)
-            {
-                result.UnionWith(codes);
-            }
-
-            return result;
+            return nodeWarningProperties.ExtractPathNoWarnProperties(libraryId);
         }
 
         /// <summary>
@@ -661,7 +631,7 @@ namespace NuGet.Commands
             public DependencyNode(string id, bool isProject, HashSet<NuGetLogCode> projectWideNoWarn, Dictionary<string, HashSet<NuGetLogCode>> packageSpecificNoWarn)
             {
                 Id = id ?? throw new ArgumentNullException(nameof(id));
-                NodeWarningProperties = new NodeWarningProperties(projectWideNoWarn, packageSpecificNoWarn);
+                NodeWarningProperties = NodeWarningProperties.Create(projectWideNoWarn, packageSpecificNoWarn);
                 IsProject = isProject;
             }
 
@@ -720,23 +690,26 @@ namespace NuGet.Commands
 
             // If a node is a project then it will hold these properties
             public NodeWarningProperties NodeWarningProperties { get; set; }
-
         }
 
-
         /// <summary>
-        /// A class to hold minimal version of project wide nowarn and package specific no warn for a project.
+        /// An immutable class to hold minimal version of project wide nowarn and package specific no warn for a project.
         /// </summary>
         public class NodeWarningProperties : IEquatable<NodeWarningProperties>
         {
+            // Empty NodeWarningProperties singleton - to avoid allocation for most-common case
+            internal static readonly NodeWarningProperties Empty = new NodeWarningProperties(null, null);
+
             // ProjectWide NoWarn properties
+            // Note: this set should not be modified by callers.  In the future, this should be converted to a private readonly instance variable
             public HashSet<NuGetLogCode> ProjectWide { get; }
 
             // PackageSpecific NoWarn
             // We do not use framework here as DependencyNode is created per parent project framework.
+            // Note: this dictionary should not be modified by callers.  In the future, this should be converted to a private readonly instance variable
             public Dictionary<string, HashSet<NuGetLogCode>> PackageSpecific { get; }
 
-
+            // Note: internal callers should use the Create function instead so the null/null case re-uses the Empty singleton
             public NodeWarningProperties(
                 HashSet<NuGetLogCode> projectWide,
                 Dictionary<string, HashSet<NuGetLogCode>> packageSpecific)
@@ -760,7 +733,6 @@ namespace NuGet.Commands
                 return Equals(obj as NodeWarningProperties);
             }
 
-
             public bool Equals(NodeWarningProperties other)
             {
                 if (other == null)
@@ -777,43 +749,54 @@ namespace NuGet.Commands
                     EqualityUtility.DictionaryEquals(PackageSpecific, other.PackageSpecific, (s, o) => EqualityUtility.SetEqualsWithNullCheck(s, o));
             }
 
+            /// <summary>
+            /// Obtain the intersection of this node and the other node
+            /// This method will return the intersection of the warning properties from both sets, not modifying either object.
+            /// </summary>
+            /// <remarks>Null is considered an empty set, which has an empty intersection with anything else.</remarks>
+            /// <param name="other">other node to intersect with</param>
+            /// <returns>intersection between this node and other node</returns>
             public NodeWarningProperties GetIntersect(NodeWarningProperties other)
             {
-                if (other == null || ReferenceEquals(this, other))
+                if (other == null)
                 {
-                    return new NodeWarningProperties(ProjectWide, PackageSpecific);
+                    return null;
                 }
 
-                var thisPackages = PackageSpecific;
-                var otherPackages = other.PackageSpecific;
-                var projectWide = Intersect(ProjectWide, other.ProjectWide);
+                if (ReferenceEquals(this, other))
+                {
+                    return this;
+                }
+
+                Dictionary<string, HashSet<NuGetLogCode>> thisPackages = PackageSpecific;
+                Dictionary<string, HashSet<NuGetLogCode>> otherPackages = other.PackageSpecific;
+
+                // null is empty and cannot intersect
                 Dictionary<string, HashSet<NuGetLogCode>> packages = null;
-
-                if (thisPackages != null && otherPackages == null)
-                {
-                    packages = thisPackages;
-                }
-                else if (thisPackages == null && otherPackages != null)
-                {
-                    packages = otherPackages;
-                }
-                else if (thisPackages != null && otherPackages != null)
+                if (thisPackages != null && otherPackages != null)
                 {
                     packages = new Dictionary<string, HashSet<NuGetLogCode>>(StringComparer.OrdinalIgnoreCase);
 
-                    var allKeys = thisPackages.Keys.Concat(otherPackages.Keys)
-                        .Distinct(StringComparer.OrdinalIgnoreCase);
-
-                    foreach (var key in allKeys)
+                    foreach (KeyValuePair<string, HashSet<NuGetLogCode>> pair in thisPackages)
                     {
-                        thisPackages.TryGetValue(key, out var thisCodes);
-                        otherPackages.TryGetValue(key, out var otherCodes);
+                        if (otherPackages.TryGetValue(pair.Key, out var otherCodes))
+                        {
+                            HashSet<NuGetLogCode> intersect = Intersect(pair.Value, otherCodes);
+                            if (intersect != null)
+                            {
+                                packages.Add(pair.Key, intersect);
+                            }
+                        }
+                    }
 
-                        packages.Add(key, Intersect(thisCodes, otherCodes));
+                    if (packages.Count == 0)
+                    {
+                        packages = null;
                     }
                 }
 
-                return new NodeWarningProperties(projectWide, packages);
+                HashSet<NuGetLogCode> projectWide = Intersect(ProjectWide, other.ProjectWide);
+                return Create(projectWide, packages);
             }
 
             /// <summary>
@@ -834,8 +817,8 @@ namespace NuGet.Commands
 
                 if (IsSubSetOfWithNullCheck(ProjectWide, other.ProjectWide))
                 {
-                    var package = PackageSpecific;
-                    var otherPackage = other.PackageSpecific;
+                    Dictionary<string, HashSet<NuGetLogCode>> package = PackageSpecific;
+                    Dictionary<string, HashSet<NuGetLogCode>> otherPackage = other.PackageSpecific;
 
                     if (otherPackage == null)
                     {
@@ -844,7 +827,7 @@ namespace NuGet.Commands
 
                     // To be a subset this set of package specific warnings must contain
                     // every id and code found in other. A single miss will fail the check.
-                    foreach (var pair in otherPackage)
+                    foreach (KeyValuePair<string, HashSet<NuGetLogCode>> pair in otherPackage)
                     {
                         if (pair.Value == null || pair.Value.Count == 0)
                         {
@@ -871,6 +854,56 @@ namespace NuGet.Commands
                 }
 
                 return false;
+            }
+
+            internal static NodeWarningProperties Create(
+                HashSet<NuGetLogCode> projectWide,
+                Dictionary<string, HashSet<NuGetLogCode>> packageSpecific)
+            {
+                if (projectWide == null && packageSpecific == null)
+                {
+                    return Empty;
+                }
+
+                return new NodeWarningProperties(projectWide, packageSpecific);
+            }
+
+            /// <summary>
+            /// Merge this NodeWarningProperties object with the provided one.
+            /// This method will return a combination of the warning properties from both sets, not modifying either object.
+            /// </summary>
+            /// <param name="other">Object to merge with.</param>
+            /// <returns>Returns a NodeWarningProperties combining this class's and the other class's node warning properties.</returns>
+            internal NodeWarningProperties Merge(NodeWarningProperties other)
+            {
+                HashSet<NuGetLogCode> mergedProjectWideNoWarn = MergeCodes(ProjectWide, other?.ProjectWide);
+                Dictionary<string, HashSet<NuGetLogCode>> mergedPackageSpecificNoWarn = MergePackageSpecificNoWarn(PackageSpecific, other?.PackageSpecific);
+
+                return Create(mergedProjectWideNoWarn, mergedPackageSpecificNoWarn);
+            }
+
+            /// <summary>
+            /// Extracts the no warn codes for a libraryId from the warning properties at the node in the graph.
+            /// </summary>
+            /// <param name="libraryId">libraryId for which the no warn codes have to be extracted.</param>
+            /// <returns>HashSet of NuGetLogCodes containing the no warn codes for the libraryId.</returns>
+            internal HashSet<NuGetLogCode> ExtractPathNoWarnProperties(
+                string libraryId)
+            {
+                var result = new HashSet<NuGetLogCode>();
+                if (ProjectWide?.Count > 0)
+                {
+                    result.UnionWith(ProjectWide);
+                }
+
+                if (PackageSpecific?.Count > 0 &&
+                    PackageSpecific.TryGetValue(libraryId, out var codes) &&
+                    codes?.Count > 0)
+                {
+                    result.UnionWith(codes);
+                }
+
+                return result;
             }
 
             private static bool IsSubSetOfWithNullCheck(HashSet<NuGetLogCode> parent, HashSet<NuGetLogCode> other)
@@ -902,18 +935,23 @@ namespace NuGet.Commands
                     return first;
                 }
 
-                if (first == null)
+                // null is empty and cannot intersect
+                if (first == null || first.Count == 0)
                 {
-                    return second;
+                    return null;
                 }
 
-                if (second == null)
+                if (second == null || second.Count == 0)
                 {
-                    return first;
+                    return null;
                 }
 
                 var result = new HashSet<NuGetLogCode>(first);
                 result.IntersectWith(second);
+                if (result.Count == 0)
+                {
+                    return null;
+                }
 
                 return result;
             }
