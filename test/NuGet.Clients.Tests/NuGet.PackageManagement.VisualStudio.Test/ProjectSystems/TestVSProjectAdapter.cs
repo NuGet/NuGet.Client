@@ -51,6 +51,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _projectPackageVersions = projectPackageVersions;
             _isCentralPackageVersionOverrideEnabled = isCentralPackageVersionOverrideEnabled;
             _CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
+
+            Mock.Get(BuildProperties)
+                .SetupGet(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.ManagePackageVersionsCentrally))))
+                .Returns(_isCPVMEnabled.ToString());
+
+            Mock.Get(BuildProperties)
+                .SetupGet(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.CentralPackageVersionOverrideEnabled))))
+                .Returns(_isCentralPackageVersionOverrideEnabled ?? string.Empty);
+
+            Mock.Get(BuildProperties)
+                .SetupGet(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.CentralPackageTransitivePinningEnabled))))
+                .Returns(_CentralPackageTransitivePinningEnabled ?? string.Empty);
         }
 
         public string AssetTargetFallback
@@ -233,24 +245,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
 
             return Enumerable.Empty<(string ItemId, string[] ItemMetadata)>();
-        }
-
-        public Task<string> GetPropertyValueAsync(string propertyName)
-        {
-            switch (propertyName)
-            {
-                case ProjectBuildProperties.ManagePackageVersionsCentrally:
-                    return Task.FromResult(_isCPVMEnabled.ToString());
-
-                case ProjectBuildProperties.CentralPackageVersionOverrideEnabled:
-                    return Task.FromResult(_isCentralPackageVersionOverrideEnabled ?? string.Empty);
-
-                case ProjectBuildProperties.CentralPackageTransitivePinningEnabled:
-                    return Task.FromResult(_CentralPackageTransitivePinningEnabled ?? string.Empty);
-
-                default:
-                    return Task.FromResult(string.Empty);
-            }
         }
 
         public Task<bool> IsCapabilityMatchAsync(string capabilityExpression)
