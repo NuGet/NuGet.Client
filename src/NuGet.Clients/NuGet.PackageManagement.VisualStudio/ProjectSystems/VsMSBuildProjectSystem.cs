@@ -470,7 +470,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public virtual dynamic GetPropertyValue(string propertyName)
         {
-            return VsProjectAdapter.BuildProperties.GetPropertyValue(propertyName);
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                return VsProjectAdapter.BuildProperties.GetPropertyValue(propertyName);
+
+            });
         }
 
         public virtual bool IsSupportedFile(string path)

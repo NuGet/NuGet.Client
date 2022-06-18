@@ -932,7 +932,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetPackageSpecAsync_TransitiveDependencyPinning_CanBeEnabled(string transitiveDependencyPinning, bool expected)
         {
             // Arrange
-
             var projectNames = new ProjectNames(
                         fullName: "projectName",
                         uniqueName: "projectName",

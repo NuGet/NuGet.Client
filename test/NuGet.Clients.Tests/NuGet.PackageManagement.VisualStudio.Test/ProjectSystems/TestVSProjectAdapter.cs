@@ -53,15 +53,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
 
             Mock.Get(BuildProperties)
-                .SetupGet(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.ManagePackageVersionsCentrally))))
+                .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.ManagePackageVersionsCentrally))))
                 .Returns(_isCPVMEnabled.ToString());
 
             Mock.Get(BuildProperties)
-                .SetupGet(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.CentralPackageVersionOverrideEnabled))))
+                .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.CentralPackageVersionOverrideEnabled))))
                 .Returns(_isCentralPackageVersionOverrideEnabled ?? string.Empty);
 
             Mock.Get(BuildProperties)
-                .SetupGet(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.CentralPackageTransitivePinningEnabled))))
+                .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.CentralPackageTransitivePinningEnabled))))
                 .Returns(_CentralPackageTransitivePinningEnabled ?? string.Empty);
         }
 
