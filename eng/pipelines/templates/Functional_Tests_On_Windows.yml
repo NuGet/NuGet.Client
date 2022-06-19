@@ -1,13 +1,5 @@
 steps:
 - task: PowerShell@1
-  displayName: "Set MSBuildEnableWorkloadResolver to false"
-  # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-          Write-Host "##vso[task.setvariable variable=MSBuildEnableWorkloadResolver]false"
-
-- task: PowerShell@1
   displayName: "Print Environment Variables"
   inputs:
     scriptType: "inlineScript"

@@ -1,12 +1,4 @@
 steps:
-- task: Bash@3
-  displayName: "Set MSBuildEnableWorkloadResolver to false"
-  # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-  inputs:
-    targetType: "inline"
-    script: |
-          echo "##vso[task.setvariable variable=MSBuildEnableWorkloadResolver]false"
-
 - task: UseDotNet@2
   displayName: 'Use .NET Core sdk'
   inputs:
