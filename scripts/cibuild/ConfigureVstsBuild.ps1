@@ -105,7 +105,7 @@ Function Get-LocBranchExists {
     )
 
     Write-Host "Looking for branch '$branchName' in NuGet.Build.Localization"
-    $lsRemoteOpts = 'ls-remote', 'origin', "refs/heads/$branchName", '--exit-code'
+    $lsRemoteOpts = 'ls-remote', '--exit-code', 'origin', "refs/heads/$branchName"
     $branchExists = & git -C $NuGetLocalization $lsRemoteOpts
     return $LASTEXITCODE -eq 0
 }
@@ -133,8 +133,8 @@ if (Get-LocBranchExists $BranchName)
 }
 else
 {
-    if ($currentNuGetBranch -like "*-MSRC") {
-        $currentNuGetBranch = $currentNuGetBranch -replace "-MSRC$", ""
+    if ($BranchName -like "*-MSRC") {
+        $currentNuGetBranch = $BranchName -replace "-MSRC$", ""
         if (Get-LocBranchExists $currentNuGetBranch) {
             $NuGetLocalizationRepoBranch = $currentNuGetBranch
         }
@@ -150,7 +150,7 @@ else
 Write-Host "NuGet.Build.Localization Branch: $NuGetLocalizationRepoBranch"
 
 # update submodule NuGet.Build.Localization
-$updateOpts = 'switch', "origin/$NuGetLocalizationRepoBranch", "-q"
+$updateOpts = 'switch', '-d', "origin/$NuGetLocalizationRepoBranch", "-q"
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
 & git -C $NuGetLocalization $updateOpts 2>&1 | Write-Host
 # Get the commit of the localization repository that will be used for this build.
