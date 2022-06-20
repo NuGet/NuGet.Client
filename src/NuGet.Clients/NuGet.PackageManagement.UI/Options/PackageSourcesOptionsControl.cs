@@ -697,7 +697,7 @@ namespace NuGet.Options
 
         private void NewPackageSource_TextChanged(object sender, EventArgs e)
         {
-            var source = new PackageSource(NewPackageSource.Text.Trim());
+            var source = new PackageSource(NewPackageSource.Text.Trim(), NewPackageName.Text.Trim());
 
             // Warn if the source is http, support for this will be removed
             if (source.IsHttp && !source.IsHttps)
