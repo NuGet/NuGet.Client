@@ -118,7 +118,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var packageSourceMonikers = new List<PackageSourceMoniker>();
             if (enabledSources.Count > 1) // If more than 1, add 'All'
             {
-                packageSourceMonikers.Add(new PackageSourceMoniker(Strings.AggregateSourceName, enabledSources, priorityOrder: uint.MinValue));
+                packageSourceMonikers.Add(new PackageSourceMoniker(Strings.AggregateSourceName, enabledSources, priorityOrder: 0));
             }
 
             packageSourceMonikers.AddRange(enabledSources.Select(s => new PackageSourceMoniker(s.Name, new[] { s }, priorityOrder: 1)));
