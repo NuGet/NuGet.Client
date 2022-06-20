@@ -20,7 +20,7 @@ The name of the branch being built
 The commit hash being built
 
 .PARAMETER BuildNumber
-The build number of the current build (example: "6.2.1.1234")
+The build number of the current build
 #>
 
 param
@@ -34,7 +34,7 @@ param
     [Parameter(Mandatory=$true)]
     [string]$CommitHash,
     [Parameter(Mandatory=$true)]
-    [string]$BuildNumber
+    [int]$BuildNumber
 )
 
 Function Get-Version {
@@ -59,7 +59,7 @@ Function Update-VsixVersion {
     param(
         [string]$releaseProductVersion,
         [string]$manifestName,
-        [int]$revisionNumber,
+        [int]$buildNumber,
         [string]$repositoryPath
     )
     $vsixManifest = Join-Path "$repositoryPath\src\NuGet.Clients\NuGet.VisualStudio.Client" $manifestName
@@ -72,7 +72,7 @@ Function Update-VsixVersion {
     # Reading the current version from the manifest
     $oldVersion = $root.Metadata.Identity.Version
     # Evaluate the new version
-    $newVersion = Get-Version $releaseProductVersion $revisionNumber
+    $newVersion = Get-Version $releaseProductVersion $buildNumber
     Write-Host "Updating the VSIX version [$oldVersion] => [$newVersion]"
     Write-Host "##vso[task.setvariable variable=VsixBuildNumber;]$newVersion"
     # setting the revision to the new version
@@ -99,16 +99,16 @@ Function Set-RtmLabel {
     Write-Host "##vso[task.setvariable variable=RtmLabel;]$label"
 }
 
-Function Initialize-LocalizationSubmodule {
+Function Get-LocBranchExists {
     param(
         [Parameter(Mandatory = $true)]
         [string]$branchName
     )
 
-    Write-Host "Switching to branch '$branchName' in NuGet.Build.Localization"
-    $opts = 'checkout', "origin/$branchName", '-q'
-    & git -C $NuGetLocalization $opts
-    return $LASTEXITCODE -eq 0
+    Write-Host "Looking for branch '$branchName' in NuGet.Build.Localization"
+    $lsRemoteOpts = 'ls-remote', 'origin', "refs/heads/$branchName"
+    $branchExists = & git -C $NuGetLocalization $lsRemoteOpts
+    return $branchExists
 }
 
 $isRTMBuild = [boolean]::Parse($BuildRTM)
@@ -127,18 +127,33 @@ $Submodules = Join-Path $RepositoryPath submodules -Resolve
 # NuGet.Build.Localization repository set-up
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
 
+# Check if there is a localization branch associated with this branch repo
+if (Get-LocBranchExists $BranchName)
+{
+    $NuGetLocalizationRepoBranch = $BranchName
+}
+else
+{
+    if ($currentNuGetBranch -like "*-MSRC") {
+        $currentNuGetBranch = $currentNuGetBranch -replace "-MSRC$", ""
+        if (Get-LocBranchExists $currentNuGetBranch) {
+            $NuGetLocalizationRepoBranch = $currentNuGetBranch
+        }
+        else
+        {
+            $NuGetLocalizationRepoBranch = "dev"
+        }
+    }
+    else {
+        $NuGetLocalizationRepoBranch = 'dev'
+    }
+}
+Write-Host "NuGet.Build.Localization Branch: $NuGetLocalizationRepoBranch"
+
 # update submodule NuGet.Build.Localization
-$successful = Initialize-LocalizationSubmodule $BranchName
-
-if (-not $successful -and $BranchName -like "*-MSRC") {
-    $currentBranchName = $branchName -replace "-MSRC$", ""
-    $successful = Initialize-LocalizationSubmodule $currentBranchName
-}
-
-if (-not $successful) {
-    Initialize-LocalizationSubmodule "dev" | Out-Null
-}
-
+$updateOpts = 'switch', "origin/$NuGetLocalizationRepoBranch", "-q"
+Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
+& git -C $NuGetLocalization $updateOpts 2>&1 | Write-Host
 # Get the commit of the localization repository that will be used for this build.
 $LocalizationRepoCommitHash = & git -C $NuGetLocalization log --pretty=format:'%H' -n 1
 
@@ -182,7 +197,5 @@ else
         Write-Error "Failed to get product version."
         exit 1
     }
-
-    $parsedVersion = [System.Version]::Parse($BuildNumber)
-    Update-VsixVersion -manifestName source.extension.vsixmanifest -ReleaseProductVersion $productVersion -revisionNumber $($parsedVersion.Revision) -RepositoryPath $RepositoryPath
+    Update-VsixVersion -manifestName source.extension.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $BuildNumber -RepositoryPath $RepositoryPath
 }
