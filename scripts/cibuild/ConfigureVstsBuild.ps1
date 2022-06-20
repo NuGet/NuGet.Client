@@ -34,22 +34,22 @@ param
     [Parameter(Mandatory=$true)]
     [string]$CommitHash,
     [Parameter(Mandatory=$true)]
-    [int]$BuildNumber
+    [string]$BuildNumber
 )
 
 Function Get-Version {
     param(
-        [string]$productVersion,
-        [string]$build
+        [string]$buildNumber
     )
-        Write-Host "Evaluating the new VSIX Version : ProductVersion $productVersion, build $build"
+        Write-Host "Evaluating the new VSIX Version : $buildNumber"
         # The major version is NuGetMajorVersion + 11, to match VS's number.
         # The new minor version is: 4.0.0 => 40000, 4.11.5 => 41105.
         # This assumes we only get to NuGet major/minor/patch 99 at worst, otherwise the logic breaks.
         # The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
-        $versionParts = $productVersion -split '\.'
-        $major = $($versionParts[0] / 1) + 11
-        $finalVersion = "$major.0.$((-join ($versionParts | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"
+        $parsedVersion = [System.Version]::Parse($buildNumber)
+        $major = $parsedVersion.Major + 11
+        $patchVersion = $parsedVersion.Major * 10000 + $parsedVersion.Minor * 100 + $parsedVersion.Build
+        $finalVersion = "$major.0.$patchVersion.$($parsedVersion.Revision)"
 
         Write-Host "The new VSIX Version is: $finalVersion"
         return $finalVersion
@@ -57,9 +57,8 @@ Function Get-Version {
 
 Function Update-VsixVersion {
     param(
-        [string]$releaseProductVersion,
+        [string]$buildNumber,
         [string]$manifestName,
-        [int]$buildNumber,
         [string]$repositoryPath
     )
     $vsixManifest = Join-Path "$repositoryPath\src\NuGet.Clients\NuGet.VisualStudio.Client" $manifestName
@@ -72,7 +71,7 @@ Function Update-VsixVersion {
     # Reading the current version from the manifest
     $oldVersion = $root.Metadata.Identity.Version
     # Evaluate the new version
-    $newVersion = Get-Version $releaseProductVersion $buildNumber
+    $newVersion = Get-Version $buildNumber
     Write-Host "Updating the VSIX version [$oldVersion] => [$newVersion]"
     Write-Host "##vso[task.setvariable variable=VsixBuildNumber;]$newVersion"
     # setting the revision to the new version
@@ -106,9 +105,9 @@ Function Get-LocBranchExists {
     )
 
     Write-Host "Looking for branch '$branchName' in NuGet.Build.Localization"
-    $lsRemoteOpts = 'ls-remote', 'origin', "refs/heads/$branchName"
+    $lsRemoteOpts = 'ls-remote', 'origin', "refs/heads/$branchName", '--exit-code'
     $branchExists = & git -C $NuGetLocalization $lsRemoteOpts
-    return $branchExists
+    return $LASTEXITCODE -eq 0
 }
 
 $isRTMBuild = [boolean]::Parse($BuildRTM)
@@ -191,11 +190,5 @@ else
     New-Item $localBuildInfoJsonFilePath -Force | Out-Null
     $jsonRepresentation | ConvertTo-Json | Set-Content $localBuildInfoJsonFilePath
 
-    $productVersion = & dotnet msbuild $RepositoryPath\build\config.props /v:m /nologo /t:GetSemanticVersion
-    if (-not $?)
-    {
-        Write-Error "Failed to get product version."
-        exit 1
-    }
-    Update-VsixVersion -manifestName source.extension.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $BuildNumber -RepositoryPath $RepositoryPath
+    Update-VsixVersion -manifestName source.extension.vsixmanifest -buildNumber $BuildNumber -RepositoryPath $RepositoryPath
 }
