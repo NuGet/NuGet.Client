@@ -160,7 +160,7 @@ namespace Dotnet.Integration.Test
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib");
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib");
 
-                msbuildFixture.RunDotnet(testDirectory.Path, $"new solution -n {solutionName}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"new sln -n {solutionName}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
@@ -216,7 +216,7 @@ namespace Dotnet.Integration.Test
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib");
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib");
 
-                msbuildFixture.RunDotnet(testDirectory.Path, $"new solution -n {solutionName}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"new sln -n {solutionName}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
@@ -581,7 +581,7 @@ namespace Dotnet.Integration.Test
                     };
 
                     package.Files.Clear();
-                    package.AddFile($"lib/net45/a.dll");
+                    package.AddFile($"lib/net472/a.dll");
 
                     await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                          pathContext.PackageSource,
@@ -592,7 +592,7 @@ namespace Dotnet.Integration.Test
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net45");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net472");
 
                     var attributes = new Dictionary<string, string>();
 
@@ -632,7 +632,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net472, dependencyGroups[0].TargetFramework);
                     var packagesB = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packagesB.Count);
                     Assert.Equal("x", packagesB[0].Id);
@@ -754,7 +754,7 @@ namespace Dotnet.Integration.Test
                 // Base Package
                 var basePackageProjectContent = @"<Project Sdk='Microsoft.NET.Sdk'>
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <PackageOutputPath>$(MSBuildThisFileDirectory)..\pkgs</PackageOutputPath>
   </PropertyGroup>
   <ItemGroup>
@@ -782,7 +782,7 @@ namespace Dotnet.Integration.Test
 
                 var topProjectContent = @"<Project Sdk='Microsoft.NET.Sdk'>
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include='BasePackage' Version='1.0.0' />
@@ -3297,7 +3297,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib -f netstandard2.0");
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, rederence2Folder), referencedProject2, "classlib -f netstandard2.0");
 
-                msbuildFixture.RunDotnet(testDirectory.Path, $"new solution -n {solutionName}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"new sln -n {solutionName}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
@@ -5767,7 +5767,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Version>1.2.3</Version>
   </PropertyGroup>
 
@@ -5809,7 +5809,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Version>1.2.3</Version>
   </PropertyGroup>
   <ItemGroup>
@@ -5879,7 +5879,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Version>1.2.3</Version>
   </PropertyGroup>
 
@@ -5924,7 +5924,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net5.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>NU5104</NoWarn>
@@ -6145,7 +6145,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net48</TargetFrameworks>
+    <TargetFrameworks>net6.0;net48</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>NU5104</NoWarn>
