@@ -89,6 +89,7 @@ namespace NuGet.Options
             UpdateDPI();
 
             HttpWarningIcon.Image = WarningIcon;
+            HttpWarning.Text = Resources.Warning_NewHTTPSource_VSOptions;
         }
 
         private void UpdateDPI()
