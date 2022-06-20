@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -9,7 +10,7 @@ namespace NuGet.PackageManagement.UI
     {
         public IEnumerable<AccessiblePackageIdentity> Deleted { get; }
 
-        public IEnumerable<AccessiblePackageIdentity> Added { get; }
+        public IEnumerable<(AccessiblePackageIdentity accessiblePackageIdentity, VersionRange versionRange)> Added { get; }
 
         public IEnumerable<UpdatePreviewResult> Updated { get; }
 
@@ -17,7 +18,7 @@ namespace NuGet.PackageManagement.UI
 
         public PreviewResult(
             string projectName,
-            IEnumerable<AccessiblePackageIdentity> added,
+            IEnumerable<(AccessiblePackageIdentity accessiblePackageIdentity, VersionRange versionRange)> added,
             IEnumerable<AccessiblePackageIdentity> deleted,
             IEnumerable<UpdatePreviewResult> updated)
         {

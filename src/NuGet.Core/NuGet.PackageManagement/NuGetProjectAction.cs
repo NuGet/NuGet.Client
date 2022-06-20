@@ -88,5 +88,10 @@ namespace NuGet.PackageManagement
         {
             return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Uninstall, project, null);
         }
+
+        public static NuGetProjectAction CreateUninstallProjectAction(PackageIdentity packageIdentity, NuGetProject project, VersionRange versionRange)
+        {
+            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Uninstall, project, null, versionRange: versionRange);
+        }
     }
 }

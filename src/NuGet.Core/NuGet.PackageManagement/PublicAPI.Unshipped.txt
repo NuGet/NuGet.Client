@@ -5,4 +5,6 @@ NuGet.PackageManagement.NuGetProjectAction.NuGetProjectAction(NuGet.Packaging.Co
 NuGet.PackageManagement.NuGetProjectAction.VersionRange.get -> NuGet.Versioning.VersionRange
 NuGet.PackageManagement.PackageProjectEventArgs.PackageProjectEventArgs(string id, string name, string projectPath) -> void
 NuGet.PackageManagement.PackageProjectEventArgs.ProjectPath.get -> string
+static NuGet.PackageManagement.BuildIntegratedRestoreUtility.GetAddedPackagesWithVersionRange(NuGet.ProjectModel.LockFile originalLockFile, NuGet.ProjectModel.LockFile updatedLockFile) -> System.Collections.Generic.IReadOnlyList<(NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.Versioning.VersionRange versionRange)>
 static NuGet.PackageManagement.NuGetProjectAction.CreateInstallProjectAction(NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.Protocol.Core.Types.SourceRepository sourceRepository, NuGet.ProjectManagement.NuGetProject project, NuGet.Versioning.VersionRange versionRange) -> NuGet.PackageManagement.NuGetProjectAction
+static NuGet.PackageManagement.NuGetProjectAction.CreateUninstallProjectAction(NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.ProjectManagement.NuGetProject project, NuGet.Versioning.VersionRange versionRange) -> NuGet.PackageManagement.NuGetProjectAction

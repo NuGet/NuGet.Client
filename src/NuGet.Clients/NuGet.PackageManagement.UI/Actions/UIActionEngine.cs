@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO.Packaging;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
@@ -282,10 +284,10 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private static Tuple<string, string> CreatePackageTuple(IPackageReferenceContextInfo pkg)
+        private static (string packageId, string packageVersion, VersionRange packageVersionRange) CreatePackageTuple(IPackageReferenceContextInfo pkg)
         {
             PackageIdentity package = pkg.Identity;
-            return Tuple.Create(package.Id, package.Version == null ? string.Empty : package.Version.ToNormalizedString());
+            return (package.Id, package.Version == null ? string.Empty : package.Version.ToNormalizedString(), pkg.AllowedVersions);
         }
 
         private async Task PerformActionImplAsync(
@@ -305,10 +307,10 @@ namespace NuGet.PackageManagement.UI
             var acceptedLicense = true;
 
             List<string> removedPackages = null;
-            var existingPackages = new HashSet<Tuple<string, string>>();
-            List<Tuple<string, string>> addedPackages = null;
-            List<Tuple<string, string>> updatedPackagesOld = null;
-            List<Tuple<string, string>> updatedPackagesNew = null;
+            var existingPackages = new HashSet<(string, string, VersionRange)>();
+            List<(string, string, VersionRange)> addedPackages = null;
+            List<(string, string, VersionRange)> updatedPackagesOld = null;
+            List<(string, string, VersionRange)> updatedPackagesNew = null;
             bool? packageToInstallWasTransitive = null;
 
             // Enable granular level telemetry events for nuget ui operation
@@ -381,7 +383,7 @@ namespace NuGet.PackageManagement.UI
 
                     if (operationType == NuGetOperationType.Uninstall)
                     {
-                        // removed packages don't have version info
+                        // for removed packages don't show version
                         removedPackages = results.SelectMany(result => result.Deleted)
                             .Select(package => package.Id)
                             .Distinct()
@@ -392,18 +394,18 @@ namespace NuGet.PackageManagement.UI
                     {
                         // log rich info about added packages
                         addedPackages = results.SelectMany(result => result.Added)
-                            .Select(package => new Tuple<string, string>(package.Id, (package.Version == null ? "" : package.Version.ToNormalizedString())))
+                            .Select(package => (package.accessiblePackageIdentity.Id, (package.accessiblePackageIdentity.Version == null ? "" : package.accessiblePackageIdentity.Version.ToNormalizedString()), package.versionRange))
                             .Distinct()
                             .ToList();
                         var addCount = addedPackages.Count;
 
                         //updated packages can have an old and a new id.
                         updatedPackagesOld = results.SelectMany(result => result.Updated)
-                            .Select(package => new Tuple<string, string>(package.Old.Id, (package.Old.Version == null ? "" : package.Old.Version.ToNormalizedString())))
+                            .Select(package => (package.Old.Id, (package.Old.Version == null ? "" : package.Old.Version.ToNormalizedString()), package.OldVersionRange))
                             .Distinct()
                             .ToList();
                         updatedPackagesNew = results.SelectMany(result => result.Updated)
-                            .Select(package => new Tuple<string, string>(package.New.Id, (package.New.Version == null ? "" : package.New.Version.ToNormalizedString())))
+                            .Select(package => (package.New.Id, (package.New.Version == null ? "" : package.New.Version.ToNormalizedString()), package.NewVersionRange))
                             .Distinct()
                             .ToList();
                         var updateCount = updatedPackagesNew.Count;
@@ -575,22 +577,23 @@ namespace NuGet.PackageManagement.UI
             (string modelVersion, string vsixVersion)? recommenderVersion,
             int topLevelVulnerablePackagesCount,
             List<int> topLevelVulnerablePackagesMaxSeverities,
-            HashSet<Tuple<string, string>> existingPackages,
-            List<Tuple<string, string>> addedPackages,
+            HashSet<(string, string, VersionRange)> existingPackages,
+            List<(string, string, VersionRange)> addedPackages,
             List<string> removedPackages,
-            List<Tuple<string, string>> updatedPackagesOld,
-            List<Tuple<string, string>> updatedPackagesNew,
+            List<(string, string, VersionRange)> updatedPackagesOld,
+            List<(string, string, VersionRange)> updatedPackagesNew,
             IReadOnlyCollection<string> targetFrameworks)
         {
-            static TelemetryEvent ToTelemetryPackage(Tuple<string, string> package)
+            static TelemetryEvent ToTelemetryPackage((string, string, VersionRange) package)
             {
                 var subEvent = new TelemetryEvent(eventName: null);
                 subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(package.Item1));
                 subEvent["version"] = package.Item2;
+                subEvent["versionRange"] = package.Item3;
                 return subEvent;
             }
 
-            static List<TelemetryEvent> ToTelemetryPackageList(List<Tuple<string, string>> packages)
+            static List<TelemetryEvent> ToTelemetryPackageList(List<(string, string, VersionRange)> packages)
             {
                 var list = new List<TelemetryEvent>(packages.Count);
                 list.AddRange(packages.Select(ToTelemetryPackage));
@@ -612,7 +615,7 @@ namespace NuGet.PackageManagement.UI
             if (userAction != null)
             {
                 // userAction.Version can be null for deleted packages.
-                actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(new Tuple<string, string>(userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty));
+                actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage((userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty, userAction.VersionRange));
                 actionTelemetryEvent["SelectedIndex"] = selectedIndex;
                 actionTelemetryEvent["RecommendedCount"] = recommendedCount;
                 actionTelemetryEvent["RecommendPackages"] = recommendPackages;
@@ -651,6 +654,25 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent.ComplexData["AddedPackages"] = packages;
             }
 
+            // log count of installed packages that are floating version
+            if (addedPackages?.Count > 0)
+            {
+                var packages = new List<TelemetryEvent>();
+
+                foreach (var package in addedPackages)
+                {
+                    if (package.Item3.IsFloating ||
+                        package.Item3.OriginalString.StartsWith("(", StringComparison.OrdinalIgnoreCase) ||
+                        package.Item3.OriginalString.StartsWith("[", StringComparison.OrdinalIgnoreCase))
+                    {
+                        packages.Add(ToTelemetryPackage(package));
+                    }
+                }
+
+                actionTelemetryEvent.ComplexData["AddedFloatingPackages"] = packages;
+                actionTelemetryEvent.ComplexData["AddedFloatingPackagesCount"] = packages.Count;
+            }
+
             if (removedPackages?.Count > 0)
             {
                 var packages = new List<TelemetryPiiProperty>();
@@ -667,6 +689,24 @@ namespace NuGet.PackageManagement.UI
             if (updatedPackagesNew?.Count > 0)
             {
                 actionTelemetryEvent.ComplexData["UpdatedPackagesNew"] = ToTelemetryPackageList(updatedPackagesNew);
+
+                var countPackagesAreFloating = 0;
+                var countPackagesWhereFloating = 0;
+                foreach (var updatedpackageNew in updatedPackagesNew)
+                {
+                    var updatedPackageOld = updatedPackagesOld.Where(package => package.Item1.Equals(updatedpackageNew.Item1, StringComparison.OrdinalIgnoreCase));
+                    if (updatedpackageNew.Item3.IsFloating && !updatedPackageOld.First().Item3.IsFloating)
+                    {
+                        countPackagesAreFloating = countPackagesAreFloating + 1;
+                    }
+                    else if (!updatedpackageNew.Item3.IsFloating && updatedPackageOld.First().Item3.IsFloating)
+                    {
+                        countPackagesWhereFloating = countPackagesWhereFloating + 1;
+                    }
+                }
+
+                actionTelemetryEvent.ComplexData["UpdatedFloatingPackagesToFixedVersion"] = countPackagesWhereFloating;
+                actionTelemetryEvent.ComplexData["UpdateFixedVersionPackagesToFloatingVersion"] = countPackagesAreFloating;
             }
 
             if (updatedPackagesOld?.Count > 0)
@@ -748,9 +788,9 @@ namespace NuGet.PackageManagement.UI
 
             foreach (PreviewResult result in results)
             {
-                foreach (AccessiblePackageIdentity pkg in result.Added)
+                foreach ((AccessiblePackageIdentity accessiblePackageIdentity, VersionRange versionRange) pkg in result.Added)
                 {
-                    licenseCheck.Add(pkg);
+                    licenseCheck.Add(pkg.accessiblePackageIdentity);
                 }
 
                 foreach (UpdatePreviewResult pkg in result.Updated)
@@ -883,6 +923,7 @@ namespace NuGet.PackageManagement.UI
                                 projectAction.ProjectId,
                                 implicitAction.PackageIdentity,
                                 implicitAction.ProjectActionType,
+                                implicitAction.VersionRange,
                                 implicitActions: null));
                     }
                 }
@@ -894,8 +935,8 @@ namespace NuGet.PackageManagement.UI
             // Group actions by operation
             foreach (IGrouping<string, ProjectAction> actions in actionsByProject)
             {
-                var installed = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
-                var uninstalled = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
+                var installed = new Dictionary<string, Tuple<PackageIdentity, VersionRange>>(StringComparer.OrdinalIgnoreCase);
+                var uninstalled = new Dictionary<string, Tuple<PackageIdentity, VersionRange>>(StringComparer.OrdinalIgnoreCase);
                 var packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (ProjectAction action in actions)
@@ -907,15 +948,15 @@ namespace NuGet.PackageManagement.UI
 
                     if (action.ProjectActionType == NuGetProjectActionType.Install)
                     {
-                        installed[packageIdentity.Id] = packageIdentity;
+                        installed[packageIdentity.Id] = new Tuple<PackageIdentity, VersionRange>(packageIdentity, action.VersionRange);
                     }
                     else
                     {
-                        uninstalled[packageIdentity.Id] = packageIdentity;
+                        uninstalled[packageIdentity.Id] = new Tuple<PackageIdentity, VersionRange>(packageIdentity, action.VersionRange);
                     }
                 }
 
-                var added = new List<AccessiblePackageIdentity>();
+                var added = new List<(AccessiblePackageIdentity accessiblePackageIdentity, VersionRange versionRange)>();
                 var deleted = new List<AccessiblePackageIdentity>();
                 var updated = new List<UpdatePreviewResult>();
 
@@ -927,18 +968,18 @@ namespace NuGet.PackageManagement.UI
                     if (isInstalled && isUninstalled)
                     {
                         // the package is updated
-                        updated.Add(new UpdatePreviewResult(uninstalled[packageId], installed[packageId]));
+                        updated.Add(new UpdatePreviewResult(uninstalled[packageId].Item1, installed[packageId].Item1, uninstalled[packageId].Item2, installed[packageId].Item2));
                         installed.Remove(packageId);
                     }
                     else if (isInstalled && !isUninstalled)
                     {
                         // the package is added
-                        added.Add(new AccessiblePackageIdentity(installed[packageId]));
+                        added.Add((new AccessiblePackageIdentity(installed[packageId].Item1), installed[packageId].Item2));
                     }
                     else if (!isInstalled && isUninstalled)
                     {
                         // the package is deleted
-                        deleted.Add(new AccessiblePackageIdentity(uninstalled[packageId]));
+                        deleted.Add(new AccessiblePackageIdentity(uninstalled[packageId].Item1));
                     }
                 }
 

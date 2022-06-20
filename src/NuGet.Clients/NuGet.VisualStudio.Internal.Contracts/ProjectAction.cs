@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
@@ -15,12 +16,14 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public PackageIdentity PackageIdentity { get; }
         public NuGetProjectActionType ProjectActionType { get; }
         public string ProjectId { get; }
+        public VersionRange VersionRange { get; }
 
         public ProjectAction(
             string id,
             string projectId,
             PackageIdentity packageIdentity,
             NuGetProjectActionType projectActionType,
+            VersionRange? versionRange,
             IReadOnlyList<ImplicitProjectAction>? implicitActions)
         {
             if (string.IsNullOrEmpty(id))
@@ -37,7 +40,18 @@ namespace NuGet.VisualStudio.Internal.Contracts
             ProjectId = projectId;
             PackageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
             ProjectActionType = projectActionType;
+            VersionRange = versionRange ?? VersionRange.Parse(packageIdentity.Version.ToString());
             ImplicitActions = implicitActions ?? Array.Empty<ImplicitProjectAction>();
+        }
+
+        public ProjectAction(
+            string id,
+            string projectId,
+            PackageIdentity packageIdentity,
+            NuGetProjectActionType projectActionType,
+            IReadOnlyList<ImplicitProjectAction>? implicitActions)
+            : this(id, projectId, packageIdentity, projectActionType, null, implicitActions)
+        {
         }
 
         public bool Equals(ProjectAction? other)

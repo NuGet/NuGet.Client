@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -100,6 +101,77 @@ namespace NuGet.PackageManagement
             var results = updatedPackages
                 .Except(originalPackages, PackageIdentity.Comparer)
                 .ToList();
+
+            return results;
+        }
+
+        /// <summary>
+        /// Find all packages added to <paramref name="updatedLockFile"/>.
+        /// </summary>
+        public static IReadOnlyList<(PackageIdentity packageIdentity, VersionRange versionRange)> GetAddedPackagesWithVersionRange(
+            LockFile originalLockFile,
+            LockFile updatedLockFile)
+        {
+            IEnumerable<PackageIdentity> updatedPackages;
+            IEnumerable<(PackageIdentity packageIdentity, VersionRange versionRange)> updatedPackagesWithVersionRange;
+            if (updatedLockFile != null)
+            {
+                updatedPackages = updatedLockFile
+                    .Targets
+                    .SelectMany(target => target.Libraries)
+                    .Where(library => library.Type == LibraryType.Package)
+                    .Select(library => new PackageIdentity(library.Name, library.Version));
+
+                var updatedPackagesVersionRange = updatedLockFile
+                    .PackageSpec
+                    .TargetFrameworks
+                    .SelectMany(target => target.Dependencies)
+                    .Select(dependency => dependency.LibraryRange);
+
+                updatedPackagesWithVersionRange = (from packageIdentity in updatedPackages
+                                                   join libraryRange in updatedPackagesVersionRange
+                                                   on packageIdentity.Id equals libraryRange.Name
+                                                   into grouping
+                                                   from libraryRange in grouping.DefaultIfEmpty()
+                                                   select (packageIdentity, libraryRange?.VersionRange));
+            }
+            else
+            {
+                updatedPackages = Enumerable.Empty<PackageIdentity>();
+                updatedPackagesWithVersionRange = Enumerable.Empty<(PackageIdentity, VersionRange)>();
+
+            }
+
+            IEnumerable<PackageIdentity> originalPackages;
+            IEnumerable<(PackageIdentity, VersionRange)> originalPackagesWithVersionRange;
+            if (originalLockFile != null)
+            {
+                originalPackages = originalLockFile
+                    .Targets
+                    .SelectMany(target => target.Libraries)
+                    .Where(library => library.Type == LibraryType.Package)
+                    .Select(library => new PackageIdentity(library.Name, library.Version));
+
+                var originalPackagesVersionRange = originalLockFile
+                    .PackageSpec
+                    .TargetFrameworks
+                    .SelectMany(target => target.Dependencies)
+                    .Select(dependency => dependency.LibraryRange);
+
+                originalPackagesWithVersionRange = (from packageIdentity in originalPackages
+                                                    join libraryRange in originalPackagesVersionRange
+                                                    on packageIdentity.Id equals libraryRange.Name
+                                                    into grouping
+                                                    from libraryRange in grouping.DefaultIfEmpty()
+                                                    select (packageIdentity, libraryRange?.VersionRange));
+            }
+            else
+            {
+                originalPackages = Enumerable.Empty<PackageIdentity>();
+                originalPackagesWithVersionRange = Enumerable.Empty<(PackageIdentity, VersionRange)>();
+            }
+
+            var results = updatedPackagesWithVersionRange.Except(originalPackagesWithVersionRange).ToList();
 
             return results;
         }

@@ -4,6 +4,7 @@
 using System;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
@@ -12,11 +13,13 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public string Id { get; }
         public PackageIdentity PackageIdentity { get; }
         public NuGetProjectActionType ProjectActionType { get; }
+        public VersionRange VersionRange { get; }
 
         public ImplicitProjectAction(
             string id,
             PackageIdentity packageIdentity,
-            NuGetProjectActionType projectActionType)
+            NuGetProjectActionType projectActionType,
+            VersionRange? versionRange)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -25,7 +28,16 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             Id = id;
             PackageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
+            VersionRange = versionRange ?? VersionRange.Parse(packageIdentity.Version.ToString());
             ProjectActionType = projectActionType;
+        }
+
+        public ImplicitProjectAction(
+            string id,
+            PackageIdentity packageIdentity,
+            NuGetProjectActionType projectActionType)
+            : this(id, packageIdentity, projectActionType, versionRange: null)
+        {
         }
 
         public bool Equals(ImplicitProjectAction? other)
