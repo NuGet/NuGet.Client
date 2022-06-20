@@ -1842,7 +1842,7 @@ namespace NuGet.DependencyResolver.Tests
 
         /// <summary>
         /// A 1.0 -> D 1.0 (Central transitive)
-        ///       -> B 1.0 -> D 3.0 (Central transitive - should be ignored)
+        ///       -> B 1.0 -> D 3.0 (Central transitive - should be ignored because it is not at root)
         ///                -> C 1.0 -> D 2.0
         /// </summary>
         [Fact]
