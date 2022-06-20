@@ -316,7 +316,7 @@ namespace NuGet.CommandLine.XPlat
         /// Get the Directory build props root element for projects onboarded to CPM.
         /// </summary>
         /// <param name="project">Project that needs to be modified.</param>
-        /// <returns></returns>
+        /// <returns>The directory build props root element.</returns>
         private ProjectRootElement GetDirectoryBuildPropsRootElement(Project project)
         {
             // Get the Directory.Packages.props path.
@@ -360,7 +360,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="project">Project where the item group should be created.</param>
         /// <param name="framework">Target Framework for which the package reference should be added.</param>
-        /// <returns></returns>
+        /// <returns>An Item Group.</returns>
         private static ProjectItemGroupElement CreateItemGroup(Project project, string framework = null)
         {
             // Create a new item group and add a condition if given
@@ -378,7 +378,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         /// <param name="item">The item that the version metadata should be added to.</param>
         /// <param name="versionAttribute">Boolean that expresses if the version attribute already exists or not.</param>
-        /// <returns></returns>
+        /// <returns>The package version that is added in the metadata.</returns>
         private string AddVersionMetadata(LibraryDependency libraryDependency, ProjectItemElement item, ProjectMetadataElement versionAttribute)
         {
             var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
