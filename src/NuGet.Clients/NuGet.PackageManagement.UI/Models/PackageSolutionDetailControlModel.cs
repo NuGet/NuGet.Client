@@ -241,7 +241,7 @@ namespace NuGet.PackageManagement.UI
             // first add all the available versions to be updated
             foreach (var version in allVersionsAllowed)
             {
-                _versions.Add(new DisplayVersion(version.version, string.Empty, isDeprecated: version.isDeprecated));
+                _versions.Add(new DisplayVersion(version.version, null, isDeprecated: version.isDeprecated));
             }
 
             ProjectVersionConstraint[] selectedProjects = (await GetConstraintsForSelectedProjectsAsync(cancellationToken)).ToArray();
