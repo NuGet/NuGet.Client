@@ -64,9 +64,18 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsProjectSystem = vsProjectSystem;
             _threadingService = threadingService;
 
-            ReferencesReader = vsProjectSystem is CpsProjectSystem ?
-                new CpsProjectSystemReferenceReader(vsProjectAdapter, _threadingService) :
-                new VsCoreProjectSystemReferenceReader(vsProjectAdapter, _threadingService);
+            if (vsProjectSystem is NativeProjectSystem)
+            {
+                ReferencesReader = new NativeProjectSystemReferencesReader(vsProjectAdapter, _threadingService);
+            }
+            else if (vsProjectSystem is CpsProjectSystem)
+            {
+                ReferencesReader = new CpsProjectSystemReferenceReader(vsProjectAdapter, _threadingService);
+            }
+            else
+            {
+                ReferencesReader = new VsCoreProjectSystemReferenceReader(vsProjectAdapter, _threadingService);
+            }
             ScriptService = new VsProjectScriptHostService(vsProjectAdapter, scriptExecutor);
         }
     }
