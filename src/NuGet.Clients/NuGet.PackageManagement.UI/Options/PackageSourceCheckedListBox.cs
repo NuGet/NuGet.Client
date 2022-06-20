@@ -19,17 +19,12 @@ namespace NuGet.Options
     internal class PackageSourceCheckedListBox : CheckedListBox
     {
         public Size CheckBoxSize { get; set; }
-        private static IVsImageService2 ImageService
-        {
-            get
-            {
-                return (IVsImageService2)Microsoft.VisualStudio.Shell.Package.GetGlobalService(typeof(SVsImageService));
-            }
-        }
 
-        public static Icon WarningIcon
+        private static Icon WarningIcon { get; set; }
+
+        private Icon GetWarningIcon()
         {
-            get
+            if (WarningIcon == null)
             {
                 ImageAttributes attributes = new ImageAttributes
                 {
@@ -41,10 +36,13 @@ namespace NuGet.Options
                     Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
                 };
 
-                IVsUIObject uIObj = ImageService.GetImage(KnownMonikers.StatusWarning, attributes);
+                IVsImageService2 imageService = (IVsImageService2)Microsoft.VisualStudio.Shell.Package.GetGlobalService(typeof(SVsImageService));
+                IVsUIObject uIObj = imageService.GetImage(KnownMonikers.StatusWarning, attributes);
 
-                return (Icon)GelUtilities.GetObjectData(uIObj);
+                WarningIcon = (Icon)GelUtilities.GetObjectData(uIObj);
             }
+
+            return WarningIcon;
         }
 
         public override int ItemHeight
@@ -139,12 +137,14 @@ namespace NuGet.Options
 
                         if (isSourceHttp)
                         {
+                            var warningIcon = GetWarningIcon();
+
                             warningBounds = new Rectangle(
                                 nameBounds.Left,
                                 nameBounds.Bottom,
-                                WarningIcon.Width,
-                                WarningIcon.Height);
-                            graphics.DrawIcon(WarningIcon, warningBounds);
+                                warningIcon.Width,
+                                warningIcon.Height);
+                            graphics.DrawIcon(warningIcon, warningBounds);
                         }
 
                         var sourceBounds = new Rectangle(

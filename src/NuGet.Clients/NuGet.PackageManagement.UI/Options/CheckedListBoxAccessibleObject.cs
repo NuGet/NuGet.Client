@@ -3,6 +3,7 @@
 
 using System.Windows.Forms;
 using NuGet.Configuration;
+using NuGet.PackageManagement.UI;
 using NuGet.VisualStudio.Internal.Contracts;
 using static System.Windows.Forms.Control;
 
@@ -37,7 +38,7 @@ namespace NuGet.Options
                 if (packageSource.IsHttp && !packageSource.IsHttps)
                 {
                     var sourceMessage = string.Concat(
-                        "Warning: Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.",
+                        Resources.Warning_HTTPSource,
                         packageSource.Source);
                     return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, sourceMessage);
                 }
