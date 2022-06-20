@@ -8,7 +8,6 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using EnvDTE;
-using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.VisualStudio.Shell.Interop;
 using Moq;
 using NuGet.Frameworks;
@@ -63,14 +62,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Mock.Get(BuildProperties)
                 .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.CentralPackageTransitivePinningEnabled))))
                 .Returns(_CentralPackageTransitivePinningEnabled ?? string.Empty);
-        }
 
-        public string AssetTargetFallback
-        {
-            get
-            {
-                return null;
-            }
+            Mock.Get(BuildProperties)
+                .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.NuGetLockFilePath))))
+                .Returns(_nuGetLockFilePath);
+
+            Mock.Get(BuildProperties)
+                .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RestorePackagesWithLockFile))))
+                .Returns(_restorePackagesWithLockFile);
+
+            Mock.Get(BuildProperties)
+                .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RestoreLockedMode))))
+                .Returns(_restoreLockedMode.ToString());
         }
 
         public async Task<string> GetMSBuildProjectExtensionsPathAsync()
@@ -90,22 +93,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         public Task<bool> IsSupportedAsync() => Task.FromResult(true);
 
-        public string NoWarn
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public string PackageTargetFallback
-        {
-            get
-            {
-                return null;
-            }
-        }
-
         public Project Project { get; } = Mock.Of<Project>();
 
         public string ProjectId
@@ -122,54 +109,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         public ProjectNames ProjectNames { get; private set; }
 
-        public string RestoreAdditionalProjectFallbackFolders
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public string RestoreAdditionalProjectSources
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public string RestoreFallbackFolders
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public string RestorePackagesPath
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public string RestoreSources
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public string TreatWarningsAsErrors
-        {
-            get
-            {
-                return null;
-            }
-        }
-
         public string UniqueName => ProjectNames.UniqueName;
 
         public string Version
@@ -182,20 +121,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         public IVsHierarchy VsHierarchy { get; } = Mock.Of<IVsHierarchy>();
 
-        public string WarningsAsErrors
-        {
-            get
-            {
-                return null;
-            }
-        }
-
         public Task<FrameworkName> GetDotNetFrameworkNameAsync()
         {
             return Task.FromResult(new FrameworkName(_targetFrameworkString));
         }
-
-        public Task<string> GetNuGetLockFilePathAsync() => Task.FromResult<string>(_nuGetLockFilePath);
 
         public Task<string[]> GetProjectTypeGuidsAsync()
         {
@@ -205,11 +134,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public Task<IEnumerable<string>> GetReferencedProjectsAsync()
         {
             return Task.FromResult(Enumerable.Empty<string>());
-        }
-
-        public Task<string> GetRestorePackagesWithLockFileAsync()
-        {
-            return Task.FromResult<string>(_restorePackagesWithLockFile);
         }
 
         public Task<IEnumerable<RuntimeDescription>> GetRuntimeIdentifiersAsync()
@@ -225,11 +149,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public Task<NuGetFramework> GetTargetFrameworkAsync()
         {
             return Task.FromResult(NuGetFramework.Parse(_targetFrameworkString));
-        }
-
-        public Task<bool> IsRestoreLockedAsync()
-        {
-            return Task.FromResult(_restoreLockedMode);
         }
 
         public Task<IEnumerable<(string PackageId, string Version)>> GetPackageVersionInformationAsync()
