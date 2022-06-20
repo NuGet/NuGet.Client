@@ -202,6 +202,7 @@ namespace NuGet.CommandLine.XPlat
                 }
                 else
                 {
+                    // MOdify the project file with version override.
                     UpdatePackageReferenceItemsWithVersionOverride(project, libraryDependency);
                 }
             }
@@ -281,7 +282,7 @@ namespace NuGet.CommandLine.XPlat
         {
             // Only add the package reference information using the PACKAGE_REFERENCE_TYPE_TAG.
             ProjectItemElement item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
-            string packageVersion = "No package version added";
+            string packageVersion = "No package version added because this project is onboarded to CPM";
 
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
             Strings.Info_AddPkgAdded,
@@ -321,6 +322,7 @@ namespace NuGet.CommandLine.XPlat
         {
             // Get the Directory.Packages.props path.
             string directoryPackagesPropsPath = project.GetPropertyValue("DirectoryPackagesPropsPath");
+            Logger.LogInformation("Modifying the Directory.Packages.props file at: " + directoryPackagesPropsPath);
             ProjectRootElement directoryBuildPropsRootElement = project.Imports.FirstOrDefault(i => i.ImportedProject.FullPath.Equals(directoryPackagesPropsPath)).ImportedProject;
             return directoryBuildPropsRootElement;
         }
@@ -433,6 +435,8 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         private void UpdatePackageReferenceItemsWithVersionOverride(Project project, LibraryDependency libraryDependency)
         {
+            Logger.LogInformation("Updating the package reference item's VersionOverride attribute with updated version in this project: " + project.DirectoryPath);
+
             ProjectItem packageReference;
             ProjectItemElement packageReferenceItemElement;
 
