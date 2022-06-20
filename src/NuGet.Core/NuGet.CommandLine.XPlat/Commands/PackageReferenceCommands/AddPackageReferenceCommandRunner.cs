@@ -277,7 +277,7 @@ namespace NuGet.CommandLine.XPlat
             var packagesPath = project.RestoreMetadata.PackagesPath;
 
             // get if the project is onboarded to CPM
-            var CPMEnabled = project.RestoreMetadata.CentralPackageVersionsEnabled;
+            var isCentralPackageManagementEnabled = project.RestoreMetadata.CentralPackageVersionsEnabled;
 
             if (!string.IsNullOrEmpty(packageReferenceArgs.PackageDirectory))
             {
@@ -317,7 +317,7 @@ namespace NuGet.CommandLine.XPlat
                     if (dependency != null)
                     {
                         dependency.LibraryRange.VersionRange = version;
-                        dependency.VersionCentrallyManaged = CPMEnabled;
+                        dependency.VersionCentrallyManaged = isCentralPackageManagementEnabled;
                         return dependency;
                     }
                 }
@@ -329,7 +329,7 @@ namespace NuGet.CommandLine.XPlat
                     name: packageReferenceArgs.PackageId,
                     versionRange: version,
                     typeConstraint: LibraryDependencyTarget.Package),
-                VersionCentrallyManaged = CPMEnabled
+                VersionCentrallyManaged = isCentralPackageManagementEnabled
             };
         }
 
