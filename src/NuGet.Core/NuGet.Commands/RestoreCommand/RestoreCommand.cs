@@ -138,11 +138,6 @@ namespace NuGet.Commands
 
                 if (isCpvmEnabled)
                 {
-                    _logger.LogMinimal(string.Format(
-                          CultureInfo.CurrentCulture,
-                          Strings.CentralPackageVersionManagementInPreview,
-                          _request.Project.FilePath));
-
                     var isCentralPackageTransitivePinningEnabled = _request.Project.RestoreMetadata?.CentralPackageTransitivePinningEnabled ?? false;
                     telemetry.TelemetryEvent[IsCentralPackageTransitivePinningEnabled] = isCentralPackageTransitivePinningEnabled;
                 }

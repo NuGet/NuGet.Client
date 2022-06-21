@@ -79,15 +79,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project {0} is using CentralPackageVersionManagement, a NuGet preview feature..
-        /// </summary>
-        internal static string CentralPackageVersionManagementInPreview {
-            get {
-                return ResourceManager.GetString("CentralPackageVersionManagementInPreview", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {0}File path: {1}.
         /// </summary>
         internal static string ClientCertificatesFileCertFilePath {
