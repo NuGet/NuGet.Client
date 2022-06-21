@@ -504,7 +504,7 @@ EndGlobal";
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_ValueCaseSensitive_OptInEnvVar_Succeed()
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_ValueCaseInSensitive_OptInEnvVar_Fails()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
@@ -579,9 +579,8 @@ EndGlobal";
                         }
                     );
 
-                result.AllOutput.Should().NotContain($"error NU3004");
-                result.Success.Should().BeTrue();
-                result.ExitCode.Should().Be(0);
+                result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
+                result.Success.Should().BeFalse(because: "error text should be displayed as restore failed");
             }
         }
 

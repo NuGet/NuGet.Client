@@ -527,7 +527,7 @@ namespace NuGet.Packaging
                 // Not opt-out option, only opt-in feature.
                 if (!string.IsNullOrEmpty(signVerifyEnvVariable))
                 {
-                    if (signVerifyEnvVariable.Equals(bool.TrueString.ToUpperInvariant(), StringComparison.Ordinal))
+                    if (signVerifyEnvVariable.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
