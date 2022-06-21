@@ -23,8 +23,8 @@ namespace NuGet.VisualStudio.Telemetry
 {
     public static class TelemetryUtility
     {
-        private static int FaultEventCount = 0;
-        public static int TotalFaultEvents => FaultEventCount;
+        private static long FaultEventCount = 0;
+        public static long TotalFaultEvents => FaultEventCount;
 
         public static async Task PostFaultAsync(Exception e, string callerClassName, [CallerMemberName] string callerMemberName = null, IDictionary<string, object> extraProperties = null)
         {
@@ -35,6 +35,8 @@ namespace NuGet.VisualStudio.Telemetry
 
             var caller = $"{callerClassName}.{callerMemberName}";
             var description = $"{e.GetType().Name} - {e.Message}";
+
+            Interlocked.Increment(ref FaultEventCount);
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -49,7 +51,6 @@ namespace NuGet.VisualStudio.Telemetry
             }
 
             TelemetryService.DefaultSession.PostEvent(fault);
-            Interlocked.Increment(ref FaultEventCount);
 
             if (await IsShellAvailable.GetValueAsync())
             {

@@ -27,7 +27,6 @@ using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Common.Telemetry;
-using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using NuGetConsole;
@@ -189,7 +188,7 @@ namespace NuGetVSExtension
 
             await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
 
-            VsShellUtilities.ShutdownToken.Register(InstanceCloseEvent.OnShutdown);
+            VsShellUtilities.ShutdownToken.Register(InstanceCloseTelemetryEmitter.OnShutdown);
 
             var componentModel = await this.GetFreeThreadedServiceAsync<SComponentModel, IComponentModel>();
             Assumes.Present(componentModel);

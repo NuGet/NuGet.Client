@@ -4,6 +4,7 @@
 using System;
 using NuGet.Common;
 using NuGet.VisualStudio.Common.Telemetry.PowerShell;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Common.Telemetry
 {
@@ -57,7 +58,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
             NuGetPowerShellUsage.SolutionOpenEvent += NuGetPowerShellUsage_SolutionOpenHandler;
             NuGetPowerShellUsage.SolutionCloseEvent += NuGetPowerShellUsage_SolutionCloseHandler;
 
-            InstanceCloseEvent.AddEventsOnShutdown += NuGetPowerShellUsage_VSInstanseCloseHandler;
+            InstanceCloseTelemetryEmitter.AddEventsOnShutdown += NuGetPowerShellUsage_VSInstanseCloseHandler;
         }
 
         private void NuGetPowerShellUsage_PMCLoadEventHandler(bool isPMC)
@@ -267,7 +268,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
             NuGetPowerShellUsage.SolutionOpenEvent -= NuGetPowerShellUsage_SolutionOpenHandler;
             NuGetPowerShellUsage.SolutionCloseEvent -= NuGetPowerShellUsage_SolutionCloseHandler;
 
-            InstanceCloseEvent.AddEventsOnShutdown -= NuGetPowerShellUsage_VSInstanseCloseHandler;
+            InstanceCloseTelemetryEmitter.AddEventsOnShutdown -= NuGetPowerShellUsage_VSInstanseCloseHandler;
         }
 
         internal class SolutionData

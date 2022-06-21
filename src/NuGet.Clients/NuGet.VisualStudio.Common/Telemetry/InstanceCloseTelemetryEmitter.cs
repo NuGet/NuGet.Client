@@ -2,23 +2,28 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Common;
-using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio.Common.Telemetry.PowerShell
+namespace NuGet.VisualStudio.Telemetry
 {
-    public static class InstanceCloseEvent
+    public static class InstanceCloseTelemetryEmitter
     {
         private const string EventName = "InstanceClose";
 
         public static void OnShutdown()
         {
+            var telemetryEvent = CreateTelemetryEvent();
+            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+        }
+
+        internal static TelemetryEvent CreateTelemetryEvent()
+        {
             var telemetryEvent = new TelemetryEvent(EventName);
 
             AddEventsOnShutdown?.Invoke(null, telemetryEvent);
 
-            telemetryEvent["faults.total"] = TelemetryUtility.TotalFaultEvents;
+            telemetryEvent["faults.sessioncount"] = TelemetryUtility.TotalFaultEvents;
 
-            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+            return telemetryEvent;
         }
 
         public static event System.EventHandler<TelemetryEvent> AddEventsOnShutdown;
