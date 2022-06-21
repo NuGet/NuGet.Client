@@ -127,19 +127,19 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
+        [InlineData("", "net48", null)]
         [InlineData("", "net46", null)]
-        [InlineData("", "net451", null)]
-        [InlineData("--framework net451 --framework net46", "net46", null)]
-        [InlineData("--framework net451 --framework net46", "net451", null)]
-        [InlineData("--framework net451", "net451", "net46")]
-        [InlineData("--framework net46", "net46", "net451")]
+        [InlineData("--framework net46 --framework net48", "net48", null)]
+        [InlineData("--framework net46 --framework net48", "net46", null)]
+        [InlineData("--framework net46", "net46", "net48")]
+        [InlineData("--framework net48", "net48", "net46")]
         public async Task DotnetListPackage_FrameworkSpecific_Success(string args, string shouldInclude, string shouldntInclude)
         {
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46;net451");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46;net48");
 
-                var packageX = XPlatTestUtils.CreatePackage(frameworkString: "net46;net451");
+                var packageX = XPlatTestUtils.CreatePackage(frameworkString: "net46;net48");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(

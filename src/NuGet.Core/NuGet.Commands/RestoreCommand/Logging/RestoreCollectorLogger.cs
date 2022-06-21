@@ -244,23 +244,22 @@ namespace NuGet.Commands
 
         private static IRestoreLogMessage ToRestoreLogMessage(ILogMessage message)
         {
-            if (message is IRestoreLogMessage)
+            if (message is IRestoreLogMessage restoreLogMessage)
             {
-                return message as IRestoreLogMessage;
+                return restoreLogMessage;
             }
-            else if (message is SignatureLog)
+
+            if (message is SignatureLog signatureLog)
             {
-                return (message as SignatureLog).AsRestoreLogMessage();
+                return signatureLog.AsRestoreLogMessage();
             }
-            else
+
+            return new RestoreLogMessage(message.Level, message.Code, message.Message)
             {
-                return new RestoreLogMessage(message.Level, message.Code, message.Message)
-                {
-                    Time = message.Time,
-                    WarningLevel = message.WarningLevel,
-                    ProjectPath = message.ProjectPath
-                };
-            }
+                Time = message.Time,
+                WarningLevel = message.WarningLevel,
+                ProjectPath = message.ProjectPath
+            };
         }
     }
 }

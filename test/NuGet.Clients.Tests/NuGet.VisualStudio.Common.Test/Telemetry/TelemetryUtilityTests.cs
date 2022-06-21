@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
@@ -85,7 +86,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var source = new PackageSource(sourceUrl);
 
             // Act
-            var actual = TelemetryUtility.IsNuGetOrg(source.Source);
+            var actual = UriUtility.IsNuGetOrg(source.Source);
 
             // Assert
             Assert.Equal(expected, actual);

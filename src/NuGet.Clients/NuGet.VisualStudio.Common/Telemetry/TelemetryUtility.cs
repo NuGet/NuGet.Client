@@ -77,39 +77,6 @@ namespace NuGet.VisualStudio.Telemetry
         }
 
         /// <summary>
-        /// True if the source is HTTP and has a *.nuget.org or nuget.org host.
-        /// </summary>
-        public static bool IsNuGetOrg(string source)
-        {
-            if (string.IsNullOrWhiteSpace(source))
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            bool isHttp = source.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                          source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
-
-            if (!isHttp)
-            {
-                return false;
-            }
-
-            var uri = UriUtility.TryCreateSourceUri(source, UriKind.Absolute);
-            if (uri == null)
-            {
-                return false;
-            }
-
-            if (StringComparer.OrdinalIgnoreCase.Equals(uri.Host, "nuget.org")
-                || uri.Host.EndsWith(".nuget.org", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// True if the source is an Azure Artifacts (DevOps) feed
         /// </summary>
         public static bool IsAzureArtifacts(PackageSource source)

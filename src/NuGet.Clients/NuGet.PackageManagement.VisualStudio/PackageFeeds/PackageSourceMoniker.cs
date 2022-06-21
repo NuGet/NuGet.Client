@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly string _stringRepresentation;
         private readonly string _tooltip;
 
-        public PackageSourceMoniker(string sourceName, IEnumerable<PackageSourceContextInfo> packageSources)
+        public PackageSourceMoniker(string sourceName, IEnumerable<PackageSourceContextInfo> packageSources, uint priorityOrder)
         {
             SourceName = sourceName;
 
@@ -37,6 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _tooltip = PackageSources.Count() == 1
                 ? GetTooltip(PackageSources.First())
                 : string.Join("; ", PackageSourceNames);
+            PriorityOrder = priorityOrder;
         }
 
         public IReadOnlyCollection<PackageSourceContextInfo> PackageSources { get; }
@@ -46,6 +47,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public string SourceName { get; }
 
         public bool IsAggregateSource => PackageSources.Count > 1;
+
+        public uint PriorityOrder { get; }
 
         public override string ToString() => _stringRepresentation;
 
@@ -106,6 +109,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static ValueTask<IReadOnlyCollection<PackageSourceMoniker>> PopulateListAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             List<PackageSourceContextInfo> enabledSources = packageSources
                 .Where(source => source.IsEnabled)
                 .ToList();
@@ -113,10 +118,10 @@ namespace NuGet.PackageManagement.VisualStudio
             var packageSourceMonikers = new List<PackageSourceMoniker>();
             if (enabledSources.Count > 1) // If more than 1, add 'All'
             {
-                packageSourceMonikers.Add(new PackageSourceMoniker(Strings.AggregateSourceName, enabledSources));
+                packageSourceMonikers.Add(new PackageSourceMoniker(Strings.AggregateSourceName, enabledSources, priorityOrder: 0));
             }
 
-            packageSourceMonikers.AddRange(enabledSources.Select(s => new PackageSourceMoniker(s.Name, new[] { s })));
+            packageSourceMonikers.AddRange(enabledSources.Select(s => new PackageSourceMoniker(s.Name, new[] { s }, priorityOrder: 1)));
 
             return new ValueTask<IReadOnlyCollection<PackageSourceMoniker>>(packageSourceMonikers);
         }

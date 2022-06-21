@@ -25,42 +25,18 @@ namespace NuGet.Test.Utility
         internal static string CliDirSource { get; private set; }
         internal static string SdkDirSource { get; private set; }
 
-        // For non fullframework code path, we could dynamically determine which SDK version to copy by checking the TFM of TestDotnetCLiUtility.dll and the dotnet.dll,
-        // so there is no need to pass sdkVersion or sdkTfm.
-        // But for fullframework code path, the test project dll could not be used to dynamically determine which SDK version to copy,
-        // so we need to specify the sdkVersion and sdkTfm in order to patch the right version of SDK.
-        public static TestDirectory CopyAndPatchLatestDotnetCli(string sdkVersion = null, string sdkTfm = null)
+#if !IS_DESKTOP
+        // For non fullframework code path, we could dynamically determine which SDK version to copy by checking the TFM of test project assembly and the dotnet.dll.
+        public static TestDirectory CopyAndPatchLatestDotnetCli(string testAssemblyPath)
         {
-
             CliDirSource = Path.GetDirectoryName(TestFileSystemUtility.GetDotnetCli());
             SdkDirSource = Path.Combine(CliDirSource, "sdk" + Path.DirectorySeparatorChar);
 
-            if (sdkVersion == null)
-            {
-#if !IS_DESKTOP
-                // Dynamically determine which SDK version to copy
-                SdkVersion = GetSdkToTest();
-#endif
-            }
-            else
-            {
-                // Use specified sdkVersion
-                SdkVersion = GetSdkToTest(sdkVersion);
-            }
+            // Dynamically determine which SDK version to copy
+            SdkVersion = GetSdkToTestByAssemblyPath(testAssemblyPath);
 
-
-            if (sdkTfm == null)
-            {
-#if !IS_DESKTOP
-                // Dynamically determine the TFM of the dotnet.dll
-                SdkTfm = AssemblyReader.GetTargetFramework(Path.Combine(SdkDirSource, SdkVersion, "dotnet.dll"));
-#endif
-            }
-            else
-            {
-                // Use specified sdkVersion
-                SdkTfm = NuGetFramework.Parse(sdkTfm);
-            }
+            // Dynamically determine the TFM of the dotnet.dll
+            SdkTfm = AssemblyReader.GetTargetFramework(Path.Combine(SdkDirSource, SdkVersion, "dotnet.dll"));
 
             var cliDirDestination = TestDirectory.Create();
             CopyLatestCliToTestDirectory(cliDirDestination);
@@ -68,6 +44,27 @@ namespace NuGet.Test.Utility
 
             return cliDirDestination;
         }
+#else
+        // For fullframework code path, the test project dll could not be used to dynamically determine which SDK version to copy,
+        // so we need to specify the sdkVersion and sdkTfm in order to patch the right version of SDK.
+        public static TestDirectory CopyAndPatchLatestDotnetCli(string sdkVersion, string sdkTfm)
+        {
+            CliDirSource = Path.GetDirectoryName(TestFileSystemUtility.GetDotnetCli());
+            SdkDirSource = Path.Combine(CliDirSource, "sdk" + Path.DirectorySeparatorChar);
+
+            // Use specified sdkVersion
+            SdkVersion = GetSdkToTestByVersion(sdkVersion);
+
+            // Use specified sdkTfm
+            SdkTfm = NuGetFramework.Parse(sdkTfm);
+
+            var cliDirDestination = TestDirectory.Create();
+            CopyLatestCliToTestDirectory(cliDirDestination);
+            UpdateCliWithLatestNuGetAssemblies(cliDirDestination);
+
+            return cliDirDestination;
+        }
+#endif
 
         private static void CopyLatestCliToTestDirectory(string destinationDir)
         {
@@ -108,11 +105,11 @@ namespace NuGet.Test.Utility
         }
 
 #if !IS_DESKTOP
-        // Dynamically determine which SDK version to copy by checking the TFM of TestDotnetCLiUtility.dll and the dotnet.dll.
-        private static string GetSdkToTest()
+        // Dynamically determine which SDK version to copy by checking the TFM of test project assembly and the dotnet.dll.
+        private static string GetSdkToTestByAssemblyPath(string testAssemblyPath)
         {
             // The TFM we're testing
-            var testTfm = AssemblyReader.GetTargetFramework(typeof(TestDotnetCLiUtility).Assembly.Location);
+            var testTfm = AssemblyReader.GetTargetFramework(testAssemblyPath);
 
             var selectedVersion =
                 Directory.EnumerateDirectories(SdkDirSource) // get all directories in sdk folder
@@ -143,9 +140,9 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
 
             return selectedVersion;
         }
-#endif
+#else
         // Use specified sdkVersion(could be just a major version) to determine which SDK version to copy.
-        private static string GetSdkToTest(string sdkVersion)
+        private static string GetSdkToTestByVersion(string sdkVersion)
         {
             var selectedVersion =
                 Directory.EnumerateDirectories(SdkDirSource) // get all directories in sdk folder
@@ -175,7 +172,7 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
 
             return selectedVersion;
         }
-
+#endif
         private static void UpdateCliWithLatestNuGetAssemblies(string cliDirectory)
         {
             var artifactsDirectory = TestFileSystemUtility.GetArtifactsDirectoryInRepo();

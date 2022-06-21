@@ -28,6 +28,7 @@
     <Compile Include="Feeds\SourceRepositoryCreator.cs" />
     <Compile Include="Feeds\SourceRepositoryExtensionsTests.cs" />
     <Compile Include="CpsPackageReferenceProjectTests.cs" />
+    <Compile Include="PackageFeeds\PackageSourceMonikerTests.cs" />
     <Compile Include="Projects\FrameworkInstalledPackagesTests.cs" />
     <Compile Include="MockedVS.cs" />
     <Compile Include="ProjectFactories.cs" />
