@@ -9,6 +9,7 @@ using Moq;
 using NuGet.Commands.Test;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
@@ -73,7 +74,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         internal static IVsProjectAdapter CreateProjectAdapter(string fullPath)
         {
-            var projectAdapter = CreateProjectAdapter();
+            var projectBuildProperties = new Mock<IProjectBuildProperties>();
+            return CreateProjectAdapter(fullPath, projectBuildProperties);
+        }
+
+        internal static IVsProjectAdapter CreateProjectAdapter(string fullPath, Mock<IProjectBuildProperties> projectBuildProperties)
+        {
+            var projectAdapter = CreateProjectAdapter(projectBuildProperties);
+
             projectAdapter
                 .Setup(x => x.FullProjectPath)
                 .Returns(Path.Combine(fullPath, "foo.csproj"));
@@ -90,7 +98,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return projectAdapter.Object;
         }
 
-        internal static Mock<IVsProjectAdapter> CreateProjectAdapter()
+        internal static Mock<IVsProjectAdapter> CreateProjectAdapter(Mock<IProjectBuildProperties> projectBuildProperties)
         {
             var projectAdapter = new Mock<IVsProjectAdapter>();
 
@@ -109,6 +117,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             projectAdapter
                 .Setup(x => x.Version)
                 .Returns("1.0.0");
+
+            projectAdapter
+                .Setup(x => x.BuildProperties)
+                .Returns(projectBuildProperties.Object);
 
             return projectAdapter;
         }

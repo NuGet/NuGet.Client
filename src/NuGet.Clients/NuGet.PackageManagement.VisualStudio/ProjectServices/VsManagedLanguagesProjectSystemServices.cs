@@ -338,7 +338,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
         {
-            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
+            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
         }
 
         private class ProjectReference

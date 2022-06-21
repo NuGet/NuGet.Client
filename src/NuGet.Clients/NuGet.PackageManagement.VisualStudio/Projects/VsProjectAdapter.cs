@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<string> GetMSBuildProjectExtensionsPathAsync()
         {
-            var msbuildProjectExtensionsPath = BuildProperties.GetPropertyValue(ProjectBuildProperties.MSBuildProjectExtensionsPath);
+            var msbuildProjectExtensionsPath = await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.MSBuildProjectExtensionsPath);
 
             if (string.IsNullOrEmpty(msbuildProjectExtensionsPath))
             {
@@ -44,51 +44,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return Path.Combine(await GetProjectDirectoryAsync(), msbuildProjectExtensionsPath);
-        }
-
-        public string RestorePackagesPath
-        {
-            get
-            {
-                var restorePackagesPath = BuildProperties.GetPropertyValue(ProjectBuildProperties.RestorePackagesPath);
-
-                if (string.IsNullOrWhiteSpace(restorePackagesPath))
-                {
-                    return null;
-                }
-
-                return restorePackagesPath;
-            }
-        }
-
-        public string RestoreSources
-        {
-            get
-            {
-                var restoreSources = BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreSources);
-
-                if (string.IsNullOrWhiteSpace(restoreSources))
-                {
-                    return null;
-                }
-
-                return restoreSources;
-            }
-        }
-
-        public string RestoreFallbackFolders
-        {
-            get
-            {
-                var restoreFallbackFolders = BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreFallbackFolders);
-
-                if (string.IsNullOrWhiteSpace(restoreFallbackFolders))
-                {
-                    return null;
-                }
-
-                return restoreFallbackFolders;
-            }
         }
 
         public IProjectBuildProperties BuildProperties { get; private set; }
@@ -115,22 +70,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public async Task<bool> IsSupportedAsync()
         {
             return await EnvDTEProjectUtility.IsSupportedAsync(Project);
-        }
-
-        public string PackageTargetFallback
-        {
-            get
-            {
-                return BuildProperties.GetPropertyValue(ProjectBuildProperties.PackageTargetFallback);
-            }
-        }
-
-        public string AssetTargetFallback
-        {
-            get
-            {
-                return BuildProperties.GetPropertyValue(ProjectBuildProperties.AssetTargetFallback);
-            }
         }
 
         public EnvDTE.Project Project => _dteProject.Value;
@@ -178,16 +117,6 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public IVsHierarchy VsHierarchy => _vsHierarchyItem.VsHierarchy;
-
-        public string RestoreAdditionalProjectSources => BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreAdditionalProjectSources);
-
-        public string RestoreAdditionalProjectFallbackFolders => BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreAdditionalProjectFallbackFolders);
-
-        public string NoWarn => BuildProperties.GetPropertyValue(ProjectBuildProperties.NoWarn);
-
-        public string WarningsAsErrors => BuildProperties.GetPropertyValue(ProjectBuildProperties.WarningsAsErrors);
-
-        public string TreatWarningsAsErrors => BuildProperties.GetPropertyValue(ProjectBuildProperties.TreatWarningsAsErrors);
 
         #endregion Properties
 
@@ -257,9 +186,9 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var unparsedRuntimeIdentifer = await BuildProperties.GetPropertyValueAsync(
+            var unparsedRuntimeIdentifer = BuildProperties.GetPropertyValue(
                 ProjectBuildProperties.RuntimeIdentifier);
-            var unparsedRuntimeIdentifers = await BuildProperties.GetPropertyValueAsync(
+            var unparsedRuntimeIdentifers = BuildProperties.GetPropertyValue(
                 ProjectBuildProperties.RuntimeIdentifiers);
 
             var runtimes = Enumerable.Empty<string>();
@@ -287,7 +216,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var unparsedRuntimeSupports = await BuildProperties.GetPropertyValueAsync(
+            var unparsedRuntimeSupports = BuildProperties.GetPropertyValue(
                 ProjectBuildProperties.RuntimeSupports);
 
             if (unparsedRuntimeSupports == null)
@@ -314,33 +243,14 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetFramework.UnsupportedFramework;
         }
 
-        public Task<string> GetRestorePackagesWithLockFileAsync()
-        {
-            return GetPropertyValueAsync(ProjectBuildProperties.RestorePackagesWithLockFile);
-        }
-
-        public Task<string> GetNuGetLockFilePathAsync()
-        {
-            return GetPropertyValueAsync(ProjectBuildProperties.NuGetLockFilePath);
-        }
-
-        public async Task<bool> IsRestoreLockedAsync()
-        {
-            var value = await GetPropertyValueAsync(ProjectBuildProperties.RestoreLockedMode);
-
-            return MSBuildStringUtility.IsTrue(value);
-        }
-
-        public async Task<string> GetPropertyValueAsync(string propertyName)
+        public Task<string> GetPropertyValueAsync(string propertyName)
         {
             if (propertyName == null)
             {
                 throw new ArgumentNullException(nameof(propertyName));
             }
 
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            return await BuildProperties.GetPropertyValueAsync(propertyName);
+            return BuildProperties.GetPropertyValueAsync(propertyName);
         }
 
         public async Task<IEnumerable<(string ItemId, string[] ItemMetadata)>> GetBuildItemInformationAsync(string itemName, params string[] metadataNames)
@@ -373,13 +283,13 @@ namespace NuGet.PackageManagement.VisualStudio
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var projectPath = FullName;
-            var platformIdentifier = await BuildProperties.GetPropertyValueAsync(
+            var platformIdentifier = BuildProperties.GetPropertyValue(
                 ProjectBuildProperties.TargetPlatformIdentifier);
-            var platformVersion = await BuildProperties.GetPropertyValueAsync(
+            var platformVersion = BuildProperties.GetPropertyValue(
                 ProjectBuildProperties.TargetPlatformVersion);
-            var platformMinVersion = await BuildProperties.GetPropertyValueAsync(
+            var platformMinVersion = BuildProperties.GetPropertyValue(
                 ProjectBuildProperties.TargetPlatformMinVersion);
-            var targetFrameworkMoniker = await BuildProperties.GetPropertyValueAsync(
+            var targetFrameworkMoniker = BuildProperties.GetPropertyValue(
                 ProjectBuildProperties.TargetFrameworkMoniker);
 
             // Projects supporting TargetFramework and TargetFrameworks are detected before
