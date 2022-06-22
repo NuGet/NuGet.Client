@@ -47,6 +47,42 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void GetPackageSourceMappingItems_WithOneConfig_WithDuplicateKeys_ReturnsCorrectPatterns()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff2"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            packageSourceMappingItems.Should().HaveCount(2);
+
+            var nugetOrgSourceItem = packageSourceMappingItems.First();
+            nugetOrgSourceItem.Key.Should().Be("nuget.org");
+            nugetOrgSourceItem.Patterns.Should().HaveCount(1);
+            nugetOrgSourceItem.Patterns.First().Pattern.Should().Be("stuff");
+
+            nugetOrgSourceItem = packageSourceMappingItems.Last();
+            nugetOrgSourceItem.Key.Should().Be("nuget.org");
+            nugetOrgSourceItem.Patterns.Should().HaveCount(1);
+            nugetOrgSourceItem.Patterns.First().Pattern.Should().Be("stuff2");
+        }
+
+        [Fact]
         public void GetPackageSourceMappingItems_WithMultipleConfigs_ReturnsClosestPatterns()
         {
             // Arrange
