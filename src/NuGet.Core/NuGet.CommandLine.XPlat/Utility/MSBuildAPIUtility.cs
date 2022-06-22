@@ -190,8 +190,6 @@ namespace NuGet.CommandLine.XPlat
             {
                 // Get package version if it already exists in the props file. Returns null if there is no matching package version.
                 ProjectItem packageVersion = project.Items.LastOrDefault(i => i.ItemType == "PackageVersion" && i.EvaluatedInclude.Equals(libraryDependency.Name));
-                // Determine where the <PackageVersion /> item is declared.
-                ProjectItemElement packageVersionItemElement = project.GetItemProvenance(packageVersion).LastOrDefault()?.ItemElement;
 
                 if (packageVersion == null)
                 {
@@ -260,8 +258,7 @@ namespace NuGet.CommandLine.XPlat
         {
             // Add both package reference information and version metadata using the PACKAGE_REFERENCE_TYPE_TAG.
             var item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
-            ProjectMetadataElement versionAttribute = null;
-            var packageVersion = AddVersionMetadata(libraryDependency, item, versionAttribute);
+            var packageVersion = AddVersionMetadata(libraryDependency, item);
 
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
             Strings.Info_AddPkgAdded,
@@ -379,12 +376,13 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
         /// <param name="item">The item that the version metadata should be added to.</param>
-        /// <param name="versionAttribute">Boolean that expresses if the version attribute already exists or not.</param>
         /// <returns>The package version that is added in the metadata.</returns>
-        private string AddVersionMetadata(LibraryDependency libraryDependency, ProjectItemElement item, ProjectMetadataElement versionAttribute)
+        private string AddVersionMetadata(LibraryDependency libraryDependency, ProjectItemElement item)
         {
             var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
                     libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
+
+            ProjectMetadataElement versionAttribute = item.Metadata.FirstOrDefault(i => i.Name.Equals("Version"));
 
             // If version attribute does not exist at all, add it.
             if (versionAttribute == null)
