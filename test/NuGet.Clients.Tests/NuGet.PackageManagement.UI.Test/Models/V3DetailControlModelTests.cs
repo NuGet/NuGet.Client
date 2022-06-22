@@ -598,6 +598,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
             Assert.Equal(model.SelectedVersion, displayVersion);
             Assert.Equal(model.Versions, assertVersions);
+            Assert.Equal(model.IsInstallorUpdateButtonEnabled, false);
         }
 
         [Theory]
@@ -716,6 +717,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
             Assert.Equal(model.Versions, assertVersions);
+            Assert.Equal(model.IsInstallorUpdateButtonEnabled, true);
         }
 
         [Theory]
@@ -830,10 +832,14 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 }
             }
 
+            // Some InstalledVersion resolve to the LatestVersion but are different in version range
+            var shouldButtonBeEnabled = isLatest ? !model.SelectedVersion?.Range?.OriginalString.Equals(model.InstalledVersionRange?.OriginalString) : true;
+
             Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
             Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
             Assert.Equal(model.Versions, assertVersions);
+            Assert.Equal(model.IsInstallorUpdateButtonEnabled, shouldButtonBeEnabled);
         }
 
         private ItemsChangeObservableCollection<DisplayVersion> VersionsList_WhenInstalledVersion_IsLatest_NonPackageReferenceProject()
@@ -1020,6 +1026,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.SelectedVersion.Version, NuGetVersion.Parse(installedVersion));
             Assert.Equal(model.SelectedVersion.AdditionalInfo, null); // Always show the installed version
             Assert.Equal(model.Versions, assertVersions);
+            Assert.Equal(model.IsInstallorUpdateButtonEnabled, false);
         }
 
         [Theory]
@@ -1124,6 +1131,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
             Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
             Assert.Equal(model.Versions, assertVersions);
+            Assert.Equal(model.IsInstallorUpdateButtonEnabled, !isLatest);
         }
 
         [Theory]
@@ -1224,6 +1232,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
             Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
             Assert.Equal(model.Versions, assertVersions);
+            Assert.Equal(model.IsInstallorUpdateButtonEnabled, !isLatest);
         }
 
         public Task<object> GetServiceAsync(Type serviceType)
