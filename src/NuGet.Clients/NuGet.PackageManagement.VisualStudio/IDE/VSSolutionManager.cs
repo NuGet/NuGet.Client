@@ -675,19 +675,17 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     try
                     {
-                        var dte = await _dte.GetValueAsync();
-
-                        foreach (var project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
+                        foreach (var hierarchy in await EnvDTESolutionUtility.GetAllProjectsAsync(await _asyncVSSolution.GetValueAsync()))
                         {
                             try
                             {
-                                var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(project);
+                                var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
                                 await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
                             }
                             catch (Exception e)
                             {
                                 // Ignore failed projects.
-                                _logger.LogWarning($"The project {project.Name} failed to initialize as a NuGet project.");
+                                _logger.LogWarning($"The project {VsHierarchyUtility.GetProjectPath(hierarchy)} failed to initialize as a NuGet project.");
                                 _logger.LogError(e.ToString());
                             }
 
@@ -695,10 +693,6 @@ namespace NuGet.PackageManagement.VisualStudio
                             _cacheInitialized = true;
                         }
 
-                        foreach (var project in await EnvDTESolutionUtility.GetAllProjectsAsync(await _asyncVSSolution.GetValueAsync()))
-                        {
-
-                        }
                         await SetDefaultProjectNameAsync();
                     }
                     catch

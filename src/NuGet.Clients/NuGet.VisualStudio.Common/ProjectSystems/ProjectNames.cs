@@ -185,7 +185,7 @@ namespace NuGet.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ErrorHandler.ThrowOnFailure(vsSolution2.GetProjectOfUniqueName(fullPath, out IVsHierarchy project));
+            ErrorHandler.ThrowOnFailure(vsSolution2.GetProjectOfUniqueName(fullPath, out IVsHierarchy project)); // TODO NK - We have the hierarchy here.
             ErrorHandler.ThrowOnFailure(vsSolution2.GetGuidOfProject(project, out Guid guid));
             ErrorHandler.ThrowOnFailure(vsSolution2.GetUniqueNameOfProject(project, out string uniqueName));
             ErrorHandler.ThrowOnFailure(project.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_Name, out object projectNameObject));
