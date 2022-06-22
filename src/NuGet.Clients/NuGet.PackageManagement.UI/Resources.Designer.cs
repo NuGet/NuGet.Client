@@ -2340,6 +2340,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Warning: Non-HTTPS access will be removed in a future version. Consider migrating to an &apos;HTTPS&apos; source..
+        /// </summary>
+        public static string Warning_HTTPSource {
+            get {
+                return ResourceManager.GetString("Warning_HTTPSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Non-HTTPS access will be removed in a future version. Consider migrating to an &apos;HTTPS&apos; source..
+        /// </summary>
+        public static string Warning_NewHTTPSource_VSOptions {
+            get {
+                return ResourceManager.GetString("Warning_NewHTTPSource_VSOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to These options are not applicable to projects managing their dependencies through project.json or PackageReference.
         /// </summary>
         public static string Warning_ProjectJson {
