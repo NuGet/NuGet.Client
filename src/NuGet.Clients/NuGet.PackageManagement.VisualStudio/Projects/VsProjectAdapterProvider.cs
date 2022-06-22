@@ -76,5 +76,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 vsBuildProperties,
                 _threadingService);
         }
+
+        public Task<IVsProjectAdapter> CreateAdapterForFullyLoadedProjectAsync(IVsHierarchy hierarchy)
+        {
+            // TODO NK - Create a hierarchy equivalent of the DTE.
+            throw new NotImplementedException();
+        }
     }
 }

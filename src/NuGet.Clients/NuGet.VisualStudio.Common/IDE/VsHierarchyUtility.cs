@@ -28,6 +28,36 @@ namespace NuGet.VisualStudio
             return projectPath;
         }
 
+        public static bool IsSupportedByGuid(IVsHierarchy hierarchy)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var guids = GetProjectTypeGuids(hierarchy);
+
+            foreach (var guid in guids)
+            {
+                if (ProjectType.IsUnsupported(guid))
+                {
+                    return false;
+                }
+                if (ProjectType.IsSupported(guid))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool IsNuGetSupported(IVsHierarchy hierarchy)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (IsProjectCapabilityCompliant(hierarchy))
+            {
+                return true;
+            }
+            return IsSupportedByGuid(hierarchy) && HasUnsupportedProjectCapability(hierarchy);
+        }
+
         public static bool IsSupported(IVsHierarchy hierarchy, string projectTypeGuid)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

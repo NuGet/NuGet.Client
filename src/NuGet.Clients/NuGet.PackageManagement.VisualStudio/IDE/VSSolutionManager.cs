@@ -695,6 +695,10 @@ namespace NuGet.PackageManagement.VisualStudio
                             _cacheInitialized = true;
                         }
 
+                        foreach (var project in await EnvDTESolutionUtility.GetAllProjectsAsync(await _asyncVSSolution.GetValueAsync()))
+                        {
+
+                        }
                         await SetDefaultProjectNameAsync();
                     }
                     catch

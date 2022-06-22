@@ -5,12 +5,63 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public static class EnvDTESolutionUtility
     {
+        public static async Task<IEnumerable<IVsHierarchy>> GetAllProjectsAsync(IVsSolution vsSolution)
+        {
+            Assumes.NotNull(vsSolution);
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (!IsSolutionOpenFromVSSolution(vsSolution))
+            {
+                return Enumerable.Empty<IVsHierarchy>();
+            }
+
+            var compatibleProjectHierarchies = new List<IVsHierarchy>();
+
+            var hr = vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_ALLPROJECTS, Guid.Empty, out IEnumHierarchies ppenum);
+            // EPF_LOADEDINSOLUTION instead maybe?
+            ErrorHandler.ThrowOnFailure(hr);
+
+            IVsHierarchy[] hierarchies = new IVsHierarchy[1];
+            while ((ppenum.Next((uint)hierarchies.Length, hierarchies, out uint fetched) == VSConstants.S_OK) && (fetched == (uint)hierarchies.Length))
+            {
+                var hierarchy = hierarchies[0];
+                if (VsHierarchyUtility.IsNuGetSupported(hierarchy))
+                {
+                    compatibleProjectHierarchies.Add(hierarchy);
+                }
+            }
+
+            return compatibleProjectHierarchies;
+        }
+
+        private static object GetVSSolutionProperty(IVsSolution vsSolution, int propId)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            object value;
+            var hr = vsSolution.GetProperty(propId, out value);
+
+            ErrorHandler.ThrowOnFailure(hr);
+
+            return value;
+        }
+
+        private static bool IsSolutionOpenFromVSSolution(IVsSolution vsSolution)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            return (bool)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_IsSolutionOpen);
+        }
+
         public static async Task<IEnumerable<EnvDTE.Project>> GetAllEnvDTEProjectsAsync(EnvDTE.DTE dte)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -29,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     envDTEProjects.Push(envDTEProject);
                 }
-            }
+            } // Can we check this using a hierarchy?
 
             var resultantEnvDTEProjects = new List<EnvDTE.Project>();
             while (envDTEProjects.Any())
@@ -39,11 +90,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
                 {
                     resultantEnvDTEProjects.Add(envDTEProject);
-                }
-                else if (EnvDTEProjectUtility.IsExplicitlyUnsupported(envDTEProject))
-                {
-                    // do not drill down further if this project is explicitly unsupported, e.g. LightSwitch projects
-                    continue;
                 }
 
                 EnvDTE.ProjectItems envDTEProjectItems = null;
