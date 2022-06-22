@@ -37,15 +37,14 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public VsProjectBuildProperties(
-            IVsHierarchy vsHierarchy,
-            Func<IVsHierarchy, EnvDTE.Project> loadDteProject,
+            Lazy<Project> project,
             IVsBuildPropertyStorage propertyStorage,
             IVsProjectThreadingService threadingService)
         {
-            Assumes.Present(loadDteProject);
+            Assumes.Present(project);
             Assumes.Present(threadingService);
 
-            _dteProject = new Lazy<EnvDTE.Project>(() => loadDteProject(vsHierarchy));
+            _dteProject = project;
             _propertyStorage = propertyStorage;
             _threadingService = threadingService;
         }

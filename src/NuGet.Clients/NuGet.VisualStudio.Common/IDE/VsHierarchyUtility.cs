@@ -34,7 +34,7 @@ namespace NuGet.VisualStudio
 
             var guids = GetProjectTypeGuids(hierarchy);
 
-            foreach (var guid in guids)
+            foreach (var guid in guids) // How do we handle this? Can we have multiple guids here?
             {
                 if (ProjectType.IsUnsupported(guid))
                 {
@@ -55,19 +55,7 @@ namespace NuGet.VisualStudio
             {
                 return true;
             }
-            return IsSupportedByGuid(hierarchy) && HasUnsupportedProjectCapability(hierarchy);
-        }
-
-        public static bool IsSupported(IVsHierarchy hierarchy, string projectTypeGuid)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (IsProjectCapabilityCompliant(hierarchy))
-            {
-                return true;
-            }
-
-            return !string.IsNullOrEmpty(projectTypeGuid) && ProjectType.IsSupported(projectTypeGuid) && !HasUnsupportedProjectCapability(hierarchy);
+            return IsSupportedByGuid(hierarchy) && !HasUnsupportedProjectCapability(hierarchy);
         }
 
         /// <summary>Check if this project appears to support NuGet.</summary>

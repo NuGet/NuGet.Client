@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(vsSolution);
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (!IsSolutionOpenFromVSSolution(vsSolution))
+            if (!IsSolutionOpen(vsSolution))
             {
                 return Enumerable.Empty<IVsHierarchy>();
             }
@@ -44,6 +44,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return compatibleProjectHierarchies;
         }
 
+        private static bool IsSolutionOpen(IVsSolution vsSolution)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            return (bool)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_IsSolutionOpen);
+        }
+
         private static object GetVSSolutionProperty(IVsSolution vsSolution, int propId)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -54,12 +60,6 @@ namespace NuGet.PackageManagement.VisualStudio
             ErrorHandler.ThrowOnFailure(hr);
 
             return value;
-        }
-
-        private static bool IsSolutionOpenFromVSSolution(IVsSolution vsSolution)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            return (bool)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_IsSolutionOpen);
         }
 
         public static async Task<IEnumerable<EnvDTE.Project>> GetAllEnvDTEProjectsAsync(EnvDTE.DTE dte)
