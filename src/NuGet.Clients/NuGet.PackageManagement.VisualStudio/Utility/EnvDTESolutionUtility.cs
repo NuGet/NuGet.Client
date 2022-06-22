@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     envDTEProjects.Push(envDTEProject);
                 }
-            } // Can we check this using a hierarchy?
+            }
 
             var resultantEnvDTEProjects = new List<EnvDTE.Project>();
             while (envDTEProjects.Any())
@@ -90,6 +90,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
                 {
                     resultantEnvDTEProjects.Add(envDTEProject);
+                }
+                else if (EnvDTEProjectUtility.IsExplicitlyUnsupported(envDTEProject))
+                {
+                    // do not drill down further if this project is explicitly unsupported, e.g. LightSwitch projects
+                    continue;
                 }
 
                 EnvDTE.ProjectItems envDTEProjectItems = null;

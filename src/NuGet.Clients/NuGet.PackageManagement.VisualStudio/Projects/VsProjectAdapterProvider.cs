@@ -72,7 +72,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 vsHierarchyItem,
                 projectNames,
                 fullProjectPath,
-                dteProject.Kind,
                 loadDteProject,
                 vsBuildProperties,
                 _threadingService);
@@ -97,15 +96,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 hierarchy, loadDteProject, buildStorageProperty, _threadingService);
 
             var fullProjectPath = VsHierarchyUtility.GetProjectPath(hierarchy);
-
-            //hierarchy.GetProperty(0, (int)__VSHPROPID.VSHPROPID_TypeGuid, out object kind);
             var projectNames = await ProjectNames.FromIVsSolution2(fullProjectPath, vsSolution, CancellationToken.None);
 
             return new VsProjectAdapter(
                 vsHierarchyItem,
                 projectNames,
                 fullProjectPath,
-                string.Empty,
                 loadDteProject,
                 vsBuildProperties,
                 _threadingService);

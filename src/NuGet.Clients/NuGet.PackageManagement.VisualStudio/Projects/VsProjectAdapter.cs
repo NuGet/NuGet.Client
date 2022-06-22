@@ -28,7 +28,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly VsHierarchyItem _vsHierarchyItem;
         private readonly Lazy<EnvDTE.Project> _dteProject;
         private readonly IVsProjectThreadingService _threadingService;
-        private readonly string _projectTypeGuid;
 
         #endregion Private members
 
@@ -126,7 +125,6 @@ namespace NuGet.PackageManagement.VisualStudio
             VsHierarchyItem vsHierarchyItem,
             ProjectNames projectNames,
             string fullProjectPath,
-            string projectTypeGuid,
             Func<IVsHierarchy, EnvDTE.Project> loadDteProject,
             IProjectBuildProperties buildProperties,
             IVsProjectThreadingService threadingService)
@@ -136,8 +134,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsHierarchyItem = vsHierarchyItem;
             _dteProject = new Lazy<EnvDTE.Project>(() => loadDteProject(_vsHierarchyItem.VsHierarchy));
             _threadingService = threadingService;
-            _projectTypeGuid = projectTypeGuid;
-
             FullProjectPath = fullProjectPath;
             ProjectNames = projectNames;
             BuildProperties = buildProperties;
