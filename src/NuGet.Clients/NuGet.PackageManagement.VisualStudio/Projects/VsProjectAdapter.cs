@@ -142,9 +142,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region Getters
 
-        public Task<string[]> GetProjectTypeGuidsAsync()
+        public async Task<string[]> GetProjectTypeGuidsAsync()
         {
-            return Project.GetProjectTypeGuidsAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            return VsHierarchyUtility.GetProjectTypeGuids(VsHierarchy, Project.Kind);
         }
 
         public async Task<FrameworkName> GetDotNetFrameworkNameAsync()

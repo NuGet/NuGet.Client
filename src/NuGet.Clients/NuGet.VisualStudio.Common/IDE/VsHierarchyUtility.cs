@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            project.GetCanonicalName(VSConstants.VSITEMID_ROOT, out string projectPath);
+            project.GetCanonicalName((uint)VSConstants.VSITEMID.Root, out string projectPath); // Here we are getting a directory instead of a path. Why? How can we get the project?
             return projectPath;
         }
 
