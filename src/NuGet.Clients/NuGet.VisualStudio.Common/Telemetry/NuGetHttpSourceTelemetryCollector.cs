@@ -6,6 +6,7 @@ using System.Threading;
 using NuGet.Common;
 using NuGet.Protocol;
 using NuGet.VisualStudio.Common.Telemetry.PowerShell;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Common.Telemetry
 {
@@ -27,7 +28,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
             HttpSourceUsage.HttpSourceHitCacheEvent += HttpSourceUsage_HttpSourceHitCacheEventHandler;
             HttpSourceUsage.HttpSourceMissCacheEvent += HttpSourceUsage_HttpSourceMissCacheEventHandler;
 
-            InstanceCloseEvent.AddEventsOnShutdown += NuGetSourceTelemetry_VSInstanseCloseHandler;
+            InstanceCloseTelemetryEmitter.AddEventsOnShutdown += NuGetSourceTelemetry_VSInstanseCloseHandler;
         }
 
         private void HttpSourceUsage_HttpSourceHitCacheEventHandler()
@@ -54,7 +55,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
             HttpSourceUsage.HttpSourceHitCacheEvent -= HttpSourceUsage_HttpSourceHitCacheEventHandler;
             HttpSourceUsage.HttpSourceMissCacheEvent -= HttpSourceUsage_HttpSourceMissCacheEventHandler;
 
-            InstanceCloseEvent.AddEventsOnShutdown -= NuGetSourceTelemetry_VSInstanseCloseHandler;
+            InstanceCloseTelemetryEmitter.AddEventsOnShutdown -= NuGetSourceTelemetry_VSInstanseCloseHandler;
         }
 
         internal class InstanceData
