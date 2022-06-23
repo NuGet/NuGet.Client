@@ -22,25 +22,25 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToArray();
         }
 
-        public static IEnumerable<IGrouping<string, NuGetVersion>> GroupById(this IEnumerable<PackageIdentity> packages)
+        public static IEnumerable<IGrouping<string, T>> GroupById<T>(this IEnumerable<T> packages) where T : PackageIdentity
         {
             return packages
-                .GroupBy(p => p.Id, p => p.Version, StringComparer.OrdinalIgnoreCase);
+                .GroupBy(p => p.Id, p => p, StringComparer.OrdinalIgnoreCase);
         }
 
-        public static PackageIdentity[] GetLatest(this IEnumerable<PackageIdentity> packages)
+        public static T[] GetLatest<T>(this IEnumerable<T> packages) where T : PackageIdentity
         {
             return packages
                 .GroupById()
-                .Select(g => new PackageIdentity(g.Key, g.MaxOrDefault()))
+                .Select(g => g.OrderByDescending(x => x.Version).FirstOrDefault())
                 .ToArray();
         }
 
-        public static PackageIdentity[] GetEarliest(this IEnumerable<PackageIdentity> packages)
+        public static T[] GetEarliest<T>(this IEnumerable<T> packages) where T : PackageIdentity
         {
             return packages
                 .GroupById()
-                .Select(g => new PackageIdentity(g.Key, g.MinOrDefault()))
+                .Select(g => g.OrderBy(x => x.Version).FirstOrDefault())
                 .ToArray();
         }
 
