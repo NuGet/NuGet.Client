@@ -324,6 +324,7 @@ namespace NuGet.ContentModel
             // If no related files found.
             if (relatedFileExtensionList is null || !relatedFileExtensionList.Any())
             {
+                _assemblyRelatedExtensions.TryAdd(assemblyPrefix, null);
                 return null;
             }
             else
