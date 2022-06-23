@@ -99,7 +99,7 @@ namespace NuGet.Protocol
                                 cacheResult.CacheFile,
                                 cacheResult.Stream);
 
-                            HttpSourceUsage.RaiseHttpSourceHitCacheEvent();
+                            HttpCacheUsage.RaiseHttpCacheHitEvent();
 
                             return await processAsync(httpSourceResult);
                         }
@@ -116,7 +116,7 @@ namespace NuGet.Protocol
                     }
                     else
                     {
-                        HttpSourceUsage.RaiseHttpSourceMissCacheEvent(cacheResult.MaxAge == TimeSpan.Zero, isExpired);
+                        HttpCacheUsage.RaiseHttpMissCacheEvent(cacheResult.MaxAge == TimeSpan.Zero, isExpired);
                     }
 
                     Func<HttpRequestMessage> requestFactory = () =>
@@ -251,7 +251,7 @@ namespace NuGet.Protocol
                     response.EnsureSuccessStatusCode();
 
                     var networkStream = await response.Content.ReadAsStreamAsync();
-                    HttpSourceUsage.RaiseHttpSourceHitCacheEvent();
+                    HttpCacheUsage.RaiseHttpCacheHitEvent();
                     return await processAsync(networkStream);
                 },
                 cacheContext,

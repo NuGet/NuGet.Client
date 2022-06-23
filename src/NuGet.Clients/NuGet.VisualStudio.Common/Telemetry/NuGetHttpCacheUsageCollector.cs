@@ -5,43 +5,41 @@ using System;
 using System.Threading;
 using NuGet.Common;
 using NuGet.Protocol;
-using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Common.Telemetry
 {
-    public sealed class NuGetHttpSourceTelemetryCollector : IDisposable
+    public sealed class NuGetHttpCacheUsageCollector : IDisposable
     {
-        // PMC, PMUI powershell telemetry consts
+        // Http cache hit/miss telemetry consts
         public const string HitCount = nameof(HitCount);
         public const string MissCount = nameof(MissCount);
-        public const string CacheByPassCount = nameof(CacheByPassCount);
+        public const string CacheBypassCount = nameof(CacheBypassCount);
         public const string ExpiredCacheCount = nameof(ExpiredCacheCount);
-        public const string HttpSource = "HttpSource.";
+        public const string HttpCache = "HttpCache.";
 
         private readonly InstanceData _vsInstanceData;
         private object _lock = new object();
 
-        public NuGetHttpSourceTelemetryCollector()
+        public NuGetHttpCacheUsageCollector()
         {
             _vsInstanceData = new InstanceData();
-            HttpSourceUsage.HttpSourceHitCacheEvent += HttpSourceUsage_HttpSourceHitCacheEventHandler;
-            HttpSourceUsage.HttpSourceMissCacheEvent += HttpSourceUsage_HttpSourceMissCacheEventHandler;
-
-            InstanceCloseTelemetryEmitter.AddEventsOnShutdown += NuGetSourceTelemetry_VSInstanseCloseHandler;
+            HttpCacheUsage.HttpCacheHitEvent += HttpCacheUsage_CacheHitEventHandler;
+            HttpCacheUsage.HttpCacheMissEvent += HttpCacheUsage_CacheMissEventHandler;
+            InstanceCloseTelemetryEmitter.AddEventsOnShutdown += HttpCacheUsage_VSInstanceCloseHandler;
         }
 
-        private void HttpSourceUsage_HttpSourceHitCacheEventHandler()
+        private void HttpCacheUsage_CacheHitEventHandler()
         {
             _vsInstanceData.IncrementCacheHitCount();
         }
 
-        private void HttpSourceUsage_HttpSourceMissCacheEventHandler(bool cacheByPass, bool isExpired)
+        private void HttpCacheUsage_CacheMissEventHandler(bool cacheByPass, bool isExpired)
         {
             _vsInstanceData.IncrementCacheMissCount(cacheByPass, isExpired);
         }
 
-        private void NuGetSourceTelemetry_VSInstanseCloseHandler(object sender, TelemetryEvent telemetryEvent)
+        private void HttpCacheUsage_VSInstanceCloseHandler(object sender, TelemetryEvent telemetryEvent)
         {
             lock (_lock)
             {
@@ -52,10 +50,9 @@ namespace NuGet.VisualStudio.Common.Telemetry
 
         public void Dispose()
         {
-            HttpSourceUsage.HttpSourceHitCacheEvent -= HttpSourceUsage_HttpSourceHitCacheEventHandler;
-            HttpSourceUsage.HttpSourceMissCacheEvent -= HttpSourceUsage_HttpSourceMissCacheEventHandler;
-
-            InstanceCloseTelemetryEmitter.AddEventsOnShutdown -= NuGetSourceTelemetry_VSInstanseCloseHandler;
+            HttpCacheUsage.HttpCacheHitEvent -= HttpCacheUsage_CacheHitEventHandler;
+            HttpCacheUsage.HttpCacheMissEvent -= HttpCacheUsage_CacheMissEventHandler;
+            InstanceCloseTelemetryEmitter.AddEventsOnShutdown -= HttpCacheUsage_VSInstanceCloseHandler;
         }
 
         internal class InstanceData
@@ -66,18 +63,11 @@ namespace NuGet.VisualStudio.Common.Telemetry
             private int _missCount = 0;
             internal int MissCount => _missCount;
 
-            private int _cacheByPassCount = 0;
-            internal int CacheByPassCount => _cacheByPassCount;
+            private int _cacheBypassCount = 0;
+            internal int CacheBypassCount => _cacheBypassCount;
 
             private int _expiredCacheCount = 0;
             internal int ExpiredCacheCount => _expiredCacheCount;
-
-            internal InstanceData()
-            {
-                _hitCount = 0;
-                _missCount = 0;
-                _cacheByPassCount = 0;
-            }
 
             internal void IncrementCacheHitCount()
             {
@@ -90,7 +80,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
 
                 if (cacheByPass)
                 {
-                    Interlocked.Increment(ref _cacheByPassCount);
+                    Interlocked.Increment(ref _cacheBypassCount);
                 }
 
                 if (isExpired)
@@ -101,10 +91,10 @@ namespace NuGet.VisualStudio.Common.Telemetry
 
             internal void AddProperties(TelemetryEvent telemetryEvent)
             {
-                telemetryEvent[HttpSource + NuGetHttpSourceTelemetryCollector.HitCount] = HitCount;
-                telemetryEvent[HttpSource + NuGetHttpSourceTelemetryCollector.MissCount] = MissCount;
-                telemetryEvent[HttpSource + NuGetHttpSourceTelemetryCollector.CacheByPassCount] = CacheByPassCount;
-                telemetryEvent[HttpSource + NuGetHttpSourceTelemetryCollector.ExpiredCacheCount] = ExpiredCacheCount;
+                telemetryEvent[HttpCache + NuGetHttpCacheUsageCollector.HitCount] = HitCount;
+                telemetryEvent[HttpCache + NuGetHttpCacheUsageCollector.MissCount] = MissCount;
+                telemetryEvent[HttpCache + NuGetHttpCacheUsageCollector.CacheBypassCount] = CacheBypassCount;
+                telemetryEvent[HttpCache + NuGetHttpCacheUsageCollector.ExpiredCacheCount] = ExpiredCacheCount;
             }
         }
     }
