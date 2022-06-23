@@ -15,10 +15,10 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class EnvDTESolutionUtility
     {
-        public static async Task<IEnumerable<IVsHierarchy>> GetAllProjectsAsync(IVsSolution vsSolution)
+        public static IEnumerable<IVsHierarchy> GetAllProjects(IVsSolution vsSolution)
         {
             Assumes.NotNull(vsSolution);
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             if (!IsSolutionOpen(vsSolution))
             {
@@ -27,8 +27,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var compatibleProjectHierarchies = new List<IVsHierarchy>();
 
-            var hr = vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_ALLPROJECTS, Guid.Empty, out IEnumHierarchies ppenum);
-            // EPF_LOADEDINSOLUTION instead maybe?
+            var hr = vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out IEnumHierarchies ppenum);
+            // EPF_LOADEDINSOLUTION instead maybe? EPF_ALLPROJECTS
             ErrorHandler.ThrowOnFailure(hr);
 
             IVsHierarchy[] hierarchies = new IVsHierarchy[1];

@@ -23,7 +23,6 @@ namespace NuGet.VisualStudio
         public static string GetProjectPath(IVsHierarchy project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
             project.GetCanonicalName((uint)VSConstants.VSITEMID.Root, out string projectPath); // Here we are getting a directory instead of a path. Why? How can we get the project?
             return projectPath;
         }

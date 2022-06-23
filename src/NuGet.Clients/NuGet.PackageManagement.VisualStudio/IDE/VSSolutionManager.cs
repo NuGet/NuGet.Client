@@ -675,7 +675,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     try
                     {
-                        foreach (var hierarchy in await EnvDTESolutionUtility.GetAllProjectsAsync(await _asyncVSSolution.GetValueAsync()))
+                        foreach (var hierarchy in EnvDTESolutionUtility.GetAllProjects(await _asyncVSSolution.GetValueAsync()))
                         {
                             try
                             {
