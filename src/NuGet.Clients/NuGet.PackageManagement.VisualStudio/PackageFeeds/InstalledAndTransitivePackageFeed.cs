@@ -28,11 +28,14 @@ namespace NuGet.PackageManagement.VisualStudio
             var searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Remove transitive packages from project references
-            IEnumerable<PackageCollectionItem> pkgsWithOrigins = _transitivePackages
-                .Where(t => t.PackageReferences.Any(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()));
+            PackageCollectionItem[] installedFeedItems = _installedPackages.GetLatest();
 
-            IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(_installedPackages, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            // Remove transitive packages from project references
+            PackageCollectionItem[] pkgsWithOrigins = _transitivePackages
+                .Where(t => t.PackageReferences.Any(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()))
+                .GetLatest();
+
+            IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(installedFeedItems, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
             IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(pkgsWithOrigins, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
             IPackageSearchMetadata[] items = installedItems.Concat(transitiveItems).ToArray();
 
