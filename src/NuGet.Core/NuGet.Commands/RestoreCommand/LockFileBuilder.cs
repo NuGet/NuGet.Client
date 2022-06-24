@@ -526,7 +526,7 @@ namespace NuGet.Commands
                 if (centralPackageTransitivePinningEnabled)
                 {
                     // Centrally pinned dependencies are not directly declared but the PrivateAssets from the top-level dependency that pulled it in should apply to it also
-                    foreach (GraphNode<RemoteResolveResult> parentNode in FlattenParentNodes(node))
+                    foreach (GraphNode<RemoteResolveResult> parentNode in EnumerateParentNodes(node))
                     {
                         LibraryDependency parentDependency = targetFrameworkInformation.Dependencies.FirstOrDefault(i => i.Name.Equals(parentNode.Item.Key.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -558,21 +558,32 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Returns a flattened list of all parent nodes for the specified node.
+        /// Enumerates all parent nodes of the specified node.
         /// </summary>
         /// <typeparam name="T">The type of the node.</typeparam>
-        /// <param name="graphNode">The <see cref="GraphNode{TItem}" /> to flatten the parent nodes of.</param>
-        /// <returns>A top down flattened list of parent nodes of the specied node.</returns>
-        private static IEnumerable<GraphNode<T>> FlattenParentNodes<T>(GraphNode<T> graphNode)
+        /// <param name="graphNode">The <see cref="GraphNode{TItem}" /> to enumerate the parent nodes of.</param>
+        /// <returns>An <see cref="IEnumerable{T}" /> containing a top down list of parent nodes of the specied node.</returns>
+        private static IEnumerable<GraphNode<T>> EnumerateParentNodes<T>(GraphNode<T> graphNode)
         {
             foreach (GraphNode<T> item in graphNode.ParentNodes)
             {
                 if (item.ParentNodes.Any())
                 {
-                    foreach (GraphNode<T> parentNode in FlattenParentNodes(item))
+                    // Transitive pinned nodes have ParentNodes set
+                    foreach (GraphNode<T> parentNode in EnumerateParentNodes(item))
                     {
                         yield return parentNode;
                     }
+                }
+                else if (item.OuterNode != null)
+                {
+                    // Normal transitive nodes use OuterNode to track their parent
+                    foreach (GraphNode<T> outerNode in EnumerateParentNodes(item.OuterNode))
+                    {
+                        yield return outerNode;
+                    }
+
+                    yield return item.OuterNode;
                 }
 
                 yield return item;
