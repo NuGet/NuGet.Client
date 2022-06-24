@@ -421,6 +421,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)
         {
+            // TODO: filter by framework: exclude transitive origins by results
             var transitiveOrigins = new SortedSet<PackageReference>(GetPackageReferenceUtility.PackageReferenceMergeComparer);
 
             transitiveEntry?.Keys?.ForEach(key => transitiveOrigins.AddRange(transitiveEntry[key]));
