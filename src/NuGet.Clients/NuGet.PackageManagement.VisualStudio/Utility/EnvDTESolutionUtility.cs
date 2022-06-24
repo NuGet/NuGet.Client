@@ -5,63 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public static class EnvDTESolutionUtility
     {
-        public static IEnumerable<IVsHierarchy> GetAllProjects(IVsSolution vsSolution)
-        {
-            Assumes.NotNull(vsSolution);
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (!IsSolutionOpen(vsSolution))
-            {
-                return Enumerable.Empty<IVsHierarchy>();
-            }
-
-            var compatibleProjectHierarchies = new List<IVsHierarchy>();
-
-            var hr = vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out IEnumHierarchies ppenum);
-            // EPF_LOADEDINSOLUTION instead maybe? EPF_ALLPROJECTS
-            ErrorHandler.ThrowOnFailure(hr);
-
-            IVsHierarchy[] hierarchies = new IVsHierarchy[1];
-            while ((ppenum.Next((uint)hierarchies.Length, hierarchies, out uint fetched) == VSConstants.S_OK) && (fetched == (uint)hierarchies.Length))
-            {
-                var hierarchy = hierarchies[0];
-                if (VsHierarchyUtility.IsNuGetSupported(hierarchy))
-                {
-                    compatibleProjectHierarchies.Add(hierarchy);
-                }
-            }
-
-            return compatibleProjectHierarchies;
-        }
-
-        private static bool IsSolutionOpen(IVsSolution vsSolution)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            return (bool)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_IsSolutionOpen);
-        }
-
-        private static object GetVSSolutionProperty(IVsSolution vsSolution, int propId)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            object value;
-            var hr = vsSolution.GetProperty(propId, out value);
-
-            ErrorHandler.ThrowOnFailure(hr);
-
-            return value;
-        }
-
         public static async Task<IEnumerable<EnvDTE.Project>> GetAllEnvDTEProjectsAsync(EnvDTE.DTE dte)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

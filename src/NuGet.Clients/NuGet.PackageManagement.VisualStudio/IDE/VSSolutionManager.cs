@@ -465,12 +465,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static object GetVSSolutionProperty(IVsSolution vsSolution, int propId)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            object value;
-            var hr = vsSolution.GetProperty(propId, out value);
-
-            ErrorHandler.ThrowOnFailure(hr);
-
+            ErrorHandler.ThrowOnFailure(vsSolution.GetProperty(propId, out object value));
             return value;
         }
 
@@ -675,7 +670,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     try
                     {
-                        foreach (var hierarchy in EnvDTESolutionUtility.GetAllProjects(await _asyncVSSolution.GetValueAsync()))
+                        foreach (var hierarchy in VsHierarchyUtility.GetAllLoadedProjects(await _asyncVSSolution.GetValueAsync()))
                         {
                             try
                             {

@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Creates a project adapter for fully loaded project represented by IVsHierarchy object.
         /// </summary>
-        /// <param name="hierarchy">Input project object</param>
+        /// <param name="hierarchy">Input hierarchy object</param>
         /// <returns>New instance of project adapter encapsulating hierarchy project.</returns>
         Task<IVsProjectAdapter> CreateAdapterForFullyLoadedProjectAsync(IVsHierarchy hierarchy);
 

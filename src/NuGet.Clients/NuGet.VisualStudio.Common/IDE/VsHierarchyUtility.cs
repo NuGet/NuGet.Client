@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
@@ -34,7 +35,7 @@ namespace NuGet.VisualStudio
 
             var guids = GetProjectTypeGuids(hierarchy);
 
-            foreach (var guid in guids) // How do we handle this? Can we have multiple guids here?
+            foreach (var guid in guids) // TODO NK - How are we supposed to handle the multiple guid scenario?
             {
                 if (ProjectType.IsUnsupported(guid))
                 {
@@ -171,6 +172,47 @@ namespace NuGet.VisualStudio
                     await CollapseProjectHierarchyItemsAsync(project, expandedNodes);
                 }
             }
+        }
+
+        public static List<IVsHierarchy> GetAllLoadedProjects(IVsSolution vsSolution)
+        {
+            Assumes.NotNull(vsSolution);
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (!IsSolutionOpen(vsSolution))
+            {
+                return new List<IVsHierarchy>();
+            }
+
+            var compatibleProjectHierarchies = new List<IVsHierarchy>();
+
+            var hr = vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out IEnumHierarchies ppenum);
+            ErrorHandler.ThrowOnFailure(hr);
+
+            IVsHierarchy[] hierarchies = new IVsHierarchy[1];
+            while ((ppenum.Next((uint)hierarchies.Length, hierarchies, out uint fetched) == VSConstants.S_OK) && (fetched == (uint)hierarchies.Length))
+            {
+                var hierarchy = hierarchies[0];
+                if (IsNuGetSupported(hierarchy))
+                {
+                    compatibleProjectHierarchies.Add(hierarchy);
+                }
+            }
+
+            return compatibleProjectHierarchies;
+        }
+
+        private static bool IsSolutionOpen(IVsSolution vsSolution)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            return (bool)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_IsSolutionOpen);
+        }
+
+        private static object GetVSSolutionProperty(IVsSolution vsSolution, int propId)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            ErrorHandler.ThrowOnFailure(vsSolution.GetProperty(propId, out object value));
+            return value;
         }
 
         private static async Task<ICollection<VsHierarchyItem>> GetExpandedProjectHierarchyItemsAsync(EnvDTE.Project project)
