@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using NuGet.Common;
-using NuGet.Protocol;
+using NuGet.Protocol.Events;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Common.Telemetry
@@ -24,8 +24,8 @@ namespace NuGet.VisualStudio.Common.Telemetry
         public NuGetHttpCacheUsageCollector()
         {
             _vsInstanceData = new InstanceData();
-            HttpCacheUsage.HttpCacheHitEvent += HttpCacheUsage_CacheHitEventHandler;
-            HttpCacheUsage.HttpCacheMissEvent += HttpCacheUsage_CacheMissEventHandler;
+            ProtocolDiagnostics.HttpCacheHitEvent += HttpCacheUsage_CacheHitEventHandler;
+            ProtocolDiagnostics.HttpCacheMissEvent += HttpCacheUsage_CacheMissEventHandler;
             InstanceCloseTelemetryEmitter.AddEventsOnShutdown += HttpCacheUsage_VSInstanceCloseHandler;
         }
 
@@ -50,8 +50,8 @@ namespace NuGet.VisualStudio.Common.Telemetry
 
         public void Dispose()
         {
-            HttpCacheUsage.HttpCacheHitEvent -= HttpCacheUsage_CacheHitEventHandler;
-            HttpCacheUsage.HttpCacheMissEvent -= HttpCacheUsage_CacheMissEventHandler;
+            ProtocolDiagnostics.HttpCacheHitEvent -= HttpCacheUsage_CacheHitEventHandler;
+            ProtocolDiagnostics.HttpCacheMissEvent -= HttpCacheUsage_CacheMissEventHandler;
             InstanceCloseTelemetryEmitter.AddEventsOnShutdown -= HttpCacheUsage_VSInstanceCloseHandler;
         }
 

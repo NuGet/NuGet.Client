@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Events;
 
 namespace NuGet.Protocol
 {
@@ -99,7 +100,7 @@ namespace NuGet.Protocol
                                 cacheResult.CacheFile,
                                 cacheResult.Stream);
 
-                            HttpCacheUsage.RaiseHttpCacheHitEvent();
+                            ProtocolDiagnostics.RaiseHttpCacheHitEvent();
 
                             return await processAsync(httpSourceResult);
                         }
@@ -116,7 +117,7 @@ namespace NuGet.Protocol
                     }
                     else
                     {
-                        HttpCacheUsage.RaiseHttpMissCacheEvent(cacheResult.MaxAge == TimeSpan.Zero, isExpired);
+                        ProtocolDiagnostics.RaiseHttpMissCacheEvent(cacheResult.MaxAge == TimeSpan.Zero, isExpired);
                     }
 
                     Func<HttpRequestMessage> requestFactory = () =>
@@ -251,7 +252,7 @@ namespace NuGet.Protocol
                     response.EnsureSuccessStatusCode();
 
                     var networkStream = await response.Content.ReadAsStreamAsync();
-                    HttpCacheUsage.RaiseHttpCacheHitEvent();
+                    ProtocolDiagnostics.RaiseHttpCacheHitEvent();
                     return await processAsync(networkStream);
                 },
                 cacheContext,
