@@ -22,6 +22,9 @@ namespace NuGet.ContentModel
 
         public void Load(IEnumerable<string> paths)
         {
+            // Cache for assembly and it's related file extensions.
+            _assemblyRelatedExtensions = new ConcurrentDictionary<string, string>();
+
             // Read already loaded assets
             _assets = new List<Asset>();
 
@@ -46,8 +49,6 @@ namespace NuGet.ContentModel
                     }
                 }
             }
-
-            _assemblyRelatedExtensions = new ConcurrentDictionary<string, string>();
         }
 
         public IEnumerable<ContentItem> FindItems(PatternSet definition)
