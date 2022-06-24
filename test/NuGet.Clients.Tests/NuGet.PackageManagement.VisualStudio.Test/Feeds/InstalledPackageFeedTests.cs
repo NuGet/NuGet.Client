@@ -145,6 +145,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             result.Should().BeInAscendingOrder(idComparer);
         }
 
+        [Fact]
+        public void PerformLookup_EmptyElements_ReturnsEmpty()
+        {
+            var token = new FeedSearchContinuationToken()
+            {
+                SearchString = "",
+            };
+
+            PackageIdentity[] result = InstalledPackageFeed.PerformLookup(Enumerable.Empty<PackageIdentity>(), token);
+
+            Assert.Empty(result);
+        }
+
         [Theory]
         [InlineData("", 5)]
         [InlineData("one", 1)]
