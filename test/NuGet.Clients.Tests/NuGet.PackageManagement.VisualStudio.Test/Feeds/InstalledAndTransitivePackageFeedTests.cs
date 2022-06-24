@@ -185,34 +185,25 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData(new string[] {}, new[] {"pkg1", "pkg2", "pkg3"}, "", 0, 3)]
-        [InlineData(new[] {"Gamma", "Beta", "Alfa", "Delta"}, new string[] {}, "", 4, 0)]
-        [InlineData(new[] {"Gamma", "Beta", "Alfa", "Delta"}, new[] {"pkg1", "pkg2", "pkg3"}, "", 4, 3)]
-        [InlineData(new[] {"Gamma", "Beta", "Alfa", "Delta"}, new[] {"pkg1", "pkg2", "pkg3"}, "g", 1, 3)]
-        [InlineData(new[] {"Gamma", "Beta", "Alfa", "Delta"}, new[] {"pkg1", "pkg2", "pkg3"}, "#@", 0, 0)]
-        [InlineData(new[] {"Gamma", "Beta", "Alfa", "Delta"}, new[] {"pkg1", "pkg2", "pkg3"}, "alFA", 1, 0)]
-        [InlineData(new[] {"Gamma", "Beta", "Alfa", "Delta"}, new[] {"pkg1", "pkg2", "pkg3"}, "pkg1", 0, 1)]
-        [InlineData(new[] {"Beta", "Alfa", "Delta", "Gamma"}, new[] {"pkg2", "pkg3", "pkg1"}, "ta", 2, 0)]
-        [InlineData(new[] {"Beta", "Alfa", "Delta", "Gamma"}, new[] {"pkg3", "pkg2", "pkg1"}, "g", 1, 3)]
-        [InlineData(new[] {"q", "z", "hi"}, new[] { "t" }, "z", 1, 0)]
-        [InlineData(new[] { "apples", "cantaloupes", "dragonfruit" }, new[] { "bananas", "entawak", "grapes" }, "a", 3, 3)]
-        [InlineData(new[] { "dragonfruit", "cantaloupes", "apples" }, new[] { "entawak", "bananas", "grapes" }, "e", 2, 2)]
-        public async Task SearchAsync_WithInstalledAndTransitivePackages_AlwaysInstalledPackagesFirstThenTransitivePackagesAsync(string[] installedPkgs, string[] transitivePkgs, string query, int expectedInstalledCount, int expectedTransitiveCount)
+        [InlineData(new string[] { }, new[] { "pkg1", "pkg2", "pkg3" }, "transitive", "", 0, 3)] // Corner case
+        [InlineData(new[] { "Gamma", "Beta", "Alfa", "Delta" }, new string[] { }, "Gamma", "", 4, 0)]
+        [InlineData(new[] { "Gamma", "Beta", "Alfa", "Delta" }, new[] { "pkg1", "pkg2", "pkg3" }, "Gamma", "", 4, 3)]
+        [InlineData(new[] { "Gamma", "Beta", "Alfa", "Delta" }, new[] { "pkg1", "pkg2", "pkg3" }, "Gamma", "g", 1, 3)]
+        [InlineData(new[] { "Gamma", "Beta", "Alfa", "Delta" }, new[] { "pkg1", "pkg2", "pkg3" }, "Gamma", "#@", 0, 0)]
+        [InlineData(new[] { "Gamma", "Beta", "Alfa", "Delta" }, new[] { "pkg1", "pkg2", "pkg3" }, "Gamma", "alFA", 1, 0)]
+        [InlineData(new[] { "Gamma", "Beta", "Alfa", "Delta" }, new[] { "pkg1", "pkg2", "pkg3" }, "Gamma", "pkg1", 0, 1)]
+        [InlineData(new[] { "Beta", "Alfa", "Delta", "Gamma" }, new[] { "pkg2", "pkg3", "pkg1" }, "Beta", "ta", 2, 0)]
+        [InlineData(new[] { "Beta", "Alfa", "Delta", "Gamma" }, new[] { "pkg3", "pkg2", "pkg1" }, "Beta", "g", 1, 3)]
+        [InlineData(new[] { "q", "z", "hi" }, new[] { "t" }, "q", "z", 1, 0)]
+        [InlineData(new[] { "apples", "cantaloupes", "dragonfruit" }, new[] { "bananas", "entawak", "grapes" }, "apples", "a", 3, 3)]
+        [InlineData(new[] { "dragonfruit", "cantaloupes", "apples" }, new[] { "entawak", "bananas", "grapes" }, "dragonfruit", "e", 2, 2)]
+        public async Task SearchAsync_WithInstalledAndTransitivePackages_AlwaysInstalledPackagesFirstThenTransitivePackagesAsync(string[] installedPkgs, string[] transitivePkgs, string transitiveOriginId, string query, int expectedInstalledCount, int expectedTransitiveCount)
         {
             // Arrange
             var installedCollection = installedPkgs
                 .Select(p => new PackageCollectionItem(p, new NuGetVersion("0.0.1"), installedReferences: null));
             var transitiveCollection = transitivePkgs
-                .Select(p => new PackageCollectionItem(p, new NuGetVersion("1.0.0"), installedReferences: new[]
-                    {
-                        new TransitivePackageReferenceContextInfo(new PackageIdentity(p, new NuGetVersion("1.0.0")), NuGetFramework.AnyFramework)
-                        {
-                            TransitiveOrigins = new[]
-                            {
-                                new PackageReferenceContextInfo(new PackageIdentity("pkgOrigin", new NuGetVersion("1.1.1")), NuGetFramework.AnyFramework)
-                            }
-                        }
-                    }));
+                .Select(p => new PackageCollectionItem(p, new NuGetVersion("1.0.0"), installedReferences: GenerateTransitiveData(p, transitiveOriginId)));
             var _target = new InstalledAndTransitivePackageFeed(installedCollection, transitiveCollection, _packageMetadataProvider);
 
             // Act
@@ -288,14 +279,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             SearchResult<IPackageSearchMetadata> result = await feed.SearchAsync("", new SearchFilter(includePrerelease: true), CancellationToken.None);
 
             // Assert
-            // PM UI does not support multi-targeting
-            // Return latest version found
+            // PM UI does not support multi-targeting. Return latest version found
             Assert.Collection(result,
                 // Installed package
                 e => Assert.Equal(new PackageIdentity("packageA", new NuGetVersion("3.0.0")), e.Identity),
                 // Return latest transitive package
-                e => Assert.Equal(new PackageIdentity("transitivePackageA", new NuGetVersion("0.0.3")), e.Identity)
-            );
+                e => Assert.Equal(new PackageIdentity("transitivePackageA", new NuGetVersion("0.0.1")), e.Identity));
 
             IEnumerable<IPackageSearchMetadata> transitivePackagesResult = result.Where(r => r is TransitivePackageSearchMetadata).ToArray();
             IEnumerable<string> installedPackagesResult = result.Where(r => r is not TransitivePackageSearchMetadata).Select(pkg => pkg.Identity.Id).ToArray();
@@ -310,6 +299,42 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // All transitive origins package ID's must be found in the installed packages ID's
                 Assert.All(tpsm.TransitiveOrigins, transitiveOrigin => Assert.Contains(transitiveOrigin.Id, installedPackagesResult));
             });
+        }
+
+        [Fact]
+        public void SelectTransitiveLatestPackage_EmptyInstalledPackages_ReturnsEmpty()
+        {
+            // Arrange
+            var coll = new PackageCollectionItem[]
+            {
+                new PackageCollectionItem("packageA", new NuGetVersion("1.0.0"), installedReferences: null),
+                new PackageCollectionItem("packageA", new NuGetVersion("2.0.0"), installedReferences: null),
+            };
+
+            // Act
+            var result = InstalledAndTransitivePackageFeed.SelectTransitiveLatestPackage(coll.GroupById().First(), installedPkgs: Enumerable.Empty<PackageCollectionItem>());
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        private static TransitivePackageReferenceContextInfo[] GenerateTransitiveData(string packageId, string transitiveOriginId)
+        {
+            if (!string.IsNullOrEmpty(packageId) && !string.IsNullOrEmpty(transitiveOriginId))
+            {
+                return new[]
+                {
+                    new TransitivePackageReferenceContextInfo(new PackageIdentity(packageId, new NuGetVersion("1.0.0")), NuGetFramework.AnyFramework)
+                    {
+                        TransitiveOrigins = new[]
+                        {
+                            new PackageReferenceContextInfo(new PackageIdentity(transitiveOriginId, new NuGetVersion("0.0.1")), NuGetFramework.AnyFramework)
+                        }
+                    }
+                };
+            }
+
+            return Array.Empty<TransitivePackageReferenceContextInfo>();
         }
     }
 }
