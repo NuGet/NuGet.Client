@@ -34,7 +34,13 @@ namespace NuGet.Protocol
             return EncodingUtility.ToHex(hash, HashLength) + (addIdentifiableCharacters ? "$" + trailing : string.Empty);
         }
 
-        public static (Stream, bool isExpired) ReadCacheFile(TimeSpan maxAge, string cacheFile)
+        public static Stream ReadCacheFile(TimeSpan maxAge, string cacheFile)
+        {
+            (Stream stream, bool _) = ReadCacheFileWithExpireCheck(maxAge, cacheFile);
+            return stream;
+        }
+
+        internal static (Stream, bool isExpired) ReadCacheFileWithExpireCheck(TimeSpan maxAge, string cacheFile)
         {
             var fileInfo = new FileInfo(cacheFile);
 

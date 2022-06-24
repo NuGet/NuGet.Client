@@ -62,14 +62,14 @@ namespace Test.Utility
             return base.GetAsync(request, processAsync, log, token);
         }
 
-        protected override (Stream, bool isExpired) TryReadCacheFile(TimeSpan maxAge, string cacheFile)
+        protected override Stream TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
         {
             if (DisableCaching)
             {
-                return (null, false);
+                return null;
             }
 
-            (Stream result, _) = base.TryReadCacheFile(maxAge, cacheFile);
+            var result = base.TryReadCacheFile(uri, maxAge, cacheFile);
 
             if (result == null)
             {
@@ -80,15 +80,12 @@ namespace Test.Utility
                 CacheHits++;
             }
 
-            bool isExpired = true;
-
             if (result != null)
             {
                 result = StreamWrapper(result);
-                isExpired = false;
             }
 
-            return (result, isExpired);
+            return result;
         }
     }
 }

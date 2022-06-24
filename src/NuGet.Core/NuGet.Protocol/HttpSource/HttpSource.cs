@@ -82,7 +82,7 @@ namespace NuGet.Protocol
                 action: async lockedToken =>
                 {
                     bool isExpired;
-                    (cacheResult.Stream, isExpired) = TryReadCacheFile(cacheResult.MaxAge, cacheResult.CacheFile);
+                    (cacheResult.Stream, isExpired) = TryReadCacheFileWithExpireCheck(cacheResult.MaxAge, cacheResult.CacheFile);
 
                     if (cacheResult.Stream != null)
                     {
@@ -416,9 +416,15 @@ namespace NuGet.Protocol
             set { _httpCacheDirectory = value; }
         }
 
-        protected virtual (Stream, bool isExpired) TryReadCacheFile(TimeSpan maxAge, string cacheFile)
+        protected virtual Stream TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
         {
+            // Do not need the uri here
             return CachingUtility.ReadCacheFile(maxAge, cacheFile);
+        }
+
+        internal (Stream, bool isExpired) TryReadCacheFileWithExpireCheck(TimeSpan maxAge, string cacheFile)
+        {
+            return CachingUtility.ReadCacheFileWithExpireCheck(maxAge, cacheFile);
         }
 
         public static HttpSource Create(SourceRepository source)

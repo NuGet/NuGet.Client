@@ -1,10 +1,8 @@
 NuGet.Protocol.Core.Types.FatalProtocolException.FatalProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Protocol.Core.Types.NuGetProtocolException.NuGetProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Protocol.Core.Types.RetriableProtocolException.RetriableProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
+NuGet.Protocol.InvalidCacheProtocolException.InvalidCacheProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Protocol.Events.ProtocolDiagnostics.HttpCacheHitEventHandler
 NuGet.Protocol.Events.ProtocolDiagnostics.HttpCacheMissEventHandler
-NuGet.Protocol.InvalidCacheProtocolException.InvalidCacheProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
-static NuGet.Protocol.CachingUtility.ReadCacheFile(System.TimeSpan maxAge, string cacheFile) -> (System.IO.Stream, bool isExpired)
 static NuGet.Protocol.Events.ProtocolDiagnostics.HttpCacheHitEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.HttpCacheHitEventHandler
 static NuGet.Protocol.Events.ProtocolDiagnostics.HttpCacheMissEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.HttpCacheMissEventHandler
-virtual NuGet.Protocol.HttpSource.TryReadCacheFile(System.TimeSpan maxAge, string cacheFile) -> (System.IO.Stream, bool isExpired)
