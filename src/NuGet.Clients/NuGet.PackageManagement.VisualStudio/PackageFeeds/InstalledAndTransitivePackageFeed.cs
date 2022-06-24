@@ -22,6 +22,33 @@ namespace NuGet.PackageManagement.VisualStudio
             _transitivePackages = transitivePackages ?? throw new ArgumentNullException(nameof(transitivePackages));
         }
 
+        internal static PackageCollectionItem SelectTransitiveLatestPackage(IGrouping<string, PackageCollectionItem> groupedPackagesById, IEnumerable<PackageCollectionItem> installedPkgs)
+        {
+            if (groupedPackagesById == null)
+            {
+                throw new ArgumentNullException(nameof(groupedPackagesById));
+            }
+
+            if (installedPkgs == null)
+            {
+                throw new ArgumentNullException(nameof(installedPkgs));
+            }
+
+            IEnumerable<PackageCollectionItem> matchedOrigins = groupedPackagesById
+                .Where(x => x.PackageReferences
+                    .Cast<ITransitivePackageReferenceContextInfo>()
+                    .Any(trPr => trPr.TransitiveOrigins.Any(trOrigin => installedPkgs.Contains(trOrigin.Identity))));
+
+            if (matchedOrigins.Any())
+            {
+                // Return the latest transitive package with installed versions
+                return matchedOrigins.OrderByDescending(x => x.Version).First();
+            }
+
+            // Otherwise, fallback on what's availble
+            return groupedPackagesById.OrderByDescending(x => x.Version).First();
+        }
+
         /// <inheritdoc cref="IPackageFeed.ContinueSearchAsync(ContinuationToken, CancellationToken)" />
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
@@ -29,14 +56,23 @@ namespace NuGet.PackageManagement.VisualStudio
             cancellationToken.ThrowIfCancellationRequested();
 
             PackageCollectionItem[] installedFeedItems = _installedPackages.GetLatest();
+            PackageCollectionItem[] matchesInstalled = PerformLookup(installedFeedItems, searchToken);
 
             // Remove transitive packages from project references
-            PackageCollectionItem[] pkgsWithOrigins = _transitivePackages
-                .Where(t => t.PackageReferences.Any(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()))
-                .GetLatest();
+            IEnumerable<PackageCollectionItem> pkgsWithOrigins = _transitivePackages
+                .Where(t => t.PackageReferences.Any(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()));
 
-            IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(installedFeedItems, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
-            IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(pkgsWithOrigins, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            // Search all transitive packages, then group by package ID later
+            PackageCollectionItem[] matchesTransitive = PerformLookup(pkgsWithOrigins, searchToken);
+
+            // Select latest version with matching transitive origin with installed packages
+            // or fallback to latest version available
+            IEnumerable<PackageCollectionItem> transitivePackagesApplicable = matchesTransitive
+                .GroupById()
+                .Select(group => SelectTransitiveLatestPackage(group, matchesInstalled));
+
+            IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(matchesInstalled, searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(transitivePackagesApplicable.ToArray(), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
             IPackageSearchMetadata[] items = installedItems.Concat(transitiveItems).ToArray();
 
             return CreateResult(items);
