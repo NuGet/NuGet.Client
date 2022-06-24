@@ -38,19 +38,19 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithTrustedCertificate_SucceedsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.DefaultCertificate;
 
-                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
+                    GetDefaultArgs(packageFilePath, storeCertificate),
                     ignoreExitCode: true);
 
                 // Assert
@@ -63,19 +63,22 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithTrustedCertificateWithRelativePath_SucceedsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
                 var packageFileName = "PackageA.1.0.0.nupkg";
+                IX509StoreCertificate storeCertificate = _signFixture.DefaultCertificate;
 
-                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign .{Path.DirectorySeparatorChar}{packageFileName} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
+                    $"nuget sign .{Path.DirectorySeparatorChar}{packageFileName} " +
+                    $"--certificate-fingerprint {storeCertificate.Certificate.Thumbprint} " +
+                    $"--certificate-store-name {storeCertificate.StoreName} " +
+                    $"--certificate-store-location {storeCertificate.StoreLocation}",
                     ignoreExitCode: true);
 
                 // Assert
@@ -88,19 +91,19 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithInvalidEku_FailsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.CertificateWithInvalidEku;
 
-                TrustedTestCert<TestCertificate> invalidEkuCert = _signFixture.TrustedTestCertificateWithInvalidEku;
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {invalidEkuCert.Source.Cert.Thumbprint} --certificate-store-name {invalidEkuCert.StoreName} --certificate-store-location {invalidEkuCert.StoreLocation}",
+                    GetDefaultArgs(packageFilePath, storeCertificate),
                     ignoreExitCode: true);
 
                 // Assert
@@ -114,19 +117,19 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithExpiredCertificate_FailsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.ExpiredCertificate;
 
-                TrustedTestCert<TestCertificate> expiredCert = _signFixture.TrustedTestCertificateExpired;
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {expiredCert.Source.Cert.Thumbprint} --certificate-store-name {expiredCert.StoreName} --certificate-store-location {expiredCert.StoreLocation}",
+                    GetDefaultArgs(packageFilePath, storeCertificate),
                     ignoreExitCode: true);
 
                 // Assert
@@ -140,19 +143,19 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithNotYetValidCertificate_FailsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.NotYetValidCertificate;
 
-                TrustedTestCert<TestCertificate> notYetValidCert = _signFixture.TrustedTestCertificateNotYetValid;
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {notYetValidCert.Source.Cert.Thumbprint} --certificate-store-name {notYetValidCert.StoreName} --certificate-store-location {notYetValidCert.StoreLocation}",
+                    GetDefaultArgs(packageFilePath, storeCertificate),
                     ignoreExitCode: true);
 
                 // Assert
@@ -166,20 +169,21 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithTimestamping_SucceedsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                TimestampService timestampService = await _signFixture.GetDefaultTrustedTimestampServiceAsync();
+                IX509StoreCertificate storeCertificate = _signFixture.DefaultCertificate;
 
-                var timestampService = await _signFixture.GetDefaultTrustedTimestampServiceAsync();
-                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --timestamper {timestampService.Url.OriginalString}",
+                    GetDefaultArgs(packageFilePath, storeCertificate) +
+                    $" --timestamper {timestampService.Url.OriginalString}",
                     ignoreExitCode: true);
 
                 // Assert
@@ -192,19 +196,19 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithRevokedLeafCertChain_FailsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.RevokedCertificate;
 
-                TrustedTestCert<TestCertificate> revokedCert = _signFixture.RevokedTestCertificateWithChain;
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {revokedCert.Source.Cert.Thumbprint} --certificate-store-name {revokedCert.StoreName} --certificate-store-location {revokedCert.StoreLocation}",
+                    GetDefaultArgs(packageFilePath, storeCertificate),
                     ignoreExitCode: true);
 
                 // Assert
@@ -218,19 +222,19 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithUnknownRevocationCertChain_SucceedsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.RevocationUnknownCertificate;
 
-                TrustedTestCert<TestCertificate> revocationUnknownCert = _signFixture.RevocationUnknownTestCertificateWithChain;
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {revocationUnknownCert.Source.Cert.Thumbprint} --certificate-store-name {revocationUnknownCert.StoreName} --certificate-store-location {revocationUnknownCert.StoreLocation}",
+                    GetDefaultArgs(packageFilePath, storeCertificate),
                     ignoreExitCode: true);
 
                 // Assert
@@ -245,25 +249,26 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithOutputDirectory_SucceedsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string outputDir = Path.Combine(pathContext.WorkingDirectory, "Output");
+                IX509StoreCertificate storeCertificate = _signFixture.DefaultCertificate;
 
-                var outputDir = Path.Combine(pathContext.WorkingDirectory, "Output");
                 Directory.CreateDirectory(outputDir);
 
-                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --output {outputDir}",
+                    GetDefaultArgs(packageFilePath, storeCertificate) +
+                    $" --output {outputDir}",
                     ignoreExitCode: true);
 
-                var signedPackagePath = Path.Combine(outputDir, "PackageA.1.0.0.nupkg");
+                string signedPackagePath = Path.Combine(outputDir, "PackageA.1.0.0.nupkg");
 
                 // Assert
                 result.Success.Should().BeTrue(because: result.AllOutput);
@@ -276,24 +281,25 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_ResignPackageWithoutOverwrite_FailsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.DefaultCertificate;
+                string args = GetDefaultArgs(packageFilePath, storeCertificate);
 
-                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
-                //Act
+                // Act
                 CommandRunnerResult firstResult = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
+                    args,
                     ignoreExitCode: true);
 
                 CommandRunnerResult secondResult = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
+                    args,
                     ignoreExitCode: true);
 
                 // Assert
@@ -308,24 +314,25 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_ResignPackageWithOverwrite_SuccessAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.DefaultCertificate;
+                string args = GetDefaultArgs(packageFilePath, storeCertificate);
 
-                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
-                //Act
+                // Act
                 CommandRunnerResult firstResult = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation}",
+                    args,
                     ignoreExitCode: true);
 
                 CommandRunnerResult secondResult = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --overwrite",
+                    args + " --overwrite",
                     ignoreExitCode: true);
 
                 // Assert
@@ -340,19 +347,19 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithOverwrite_SuccessAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.DefaultCertificate;
 
-                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {trustedCert.Source.Cert.Thumbprint} --certificate-store-name {trustedCert.StoreName} --certificate-store-location {trustedCert.StoreLocation} --overwrite",
+                    GetDefaultArgs(packageFilePath, storeCertificate) + " --overwrite",
                     ignoreExitCode: true);
 
                 // Assert
@@ -365,25 +372,27 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithPfxFile_SuccessAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.DefaultCertificate;
 
-                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+                string pfxPath = Path.Combine(pathContext.WorkingDirectory, Guid.NewGuid().ToString());
+                string password = Guid.NewGuid().ToString();
+                byte[] pfxBytes = storeCertificate.Certificate.Export(X509ContentType.Pfx, password);
 
-                var pfxPath = Path.Combine(pathContext.WorkingDirectory, Guid.NewGuid().ToString());
-                var password = Guid.NewGuid().ToString();
-                var pfxBytes = trustedCert.Source.Cert.Export(X509ContentType.Pfx, password);
                 File.WriteAllBytes(pfxPath, pfxBytes);
 
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-path {pfxPath} --certificate-password {password}",
+                    $"nuget sign {packageFilePath} " +
+                    $"--certificate-path {pfxPath} " +
+                    $"--certificate-password {password}",
                     ignoreExitCode: true);
 
                 // Assert
@@ -396,26 +405,28 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithPfxFileOfRelativePath_SuccessAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.DefaultCertificate;
 
-                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
+                string pfxName = Guid.NewGuid().ToString() + ".pfx";
+                string pfxPath = Path.Combine(pathContext.PackageSource, pfxName);
+                string password = Guid.NewGuid().ToString();
+                byte[] pfxBytes = storeCertificate.Certificate.Export(X509ContentType.Pfx, password);
 
-                var pfxName = Guid.NewGuid().ToString() + ".pfx";
-                var pfxPath = Path.Combine(pathContext.PackageSource, pfxName);
-                var password = Guid.NewGuid().ToString();
-                var pfxBytes = trustedCert.Source.Cert.Export(X509ContentType.Pfx, password);
                 File.WriteAllBytes(pfxPath, pfxBytes);
 
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-path .{Path.DirectorySeparatorChar}{pfxName} --certificate-password {password}",
+                    $"nuget sign {packageFilePath} " +
+                    $"--certificate-path .{Path.DirectorySeparatorChar}{pfxName} " +
+                    $"--certificate-password {password}",
                     ignoreExitCode: true);
 
                 // Assert
@@ -428,22 +439,21 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithPfxFileWithoutPasswordAndWithNonInteractive_FailsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.DefaultCertificate;
+                string pfxPath = Path.Combine(pathContext.WorkingDirectory, Guid.NewGuid().ToString());
+                string password = Guid.NewGuid().ToString();
+                byte[] pfxBytes = storeCertificate.Certificate.Export(X509ContentType.Pfx, password);
 
-                TrustedTestCert<TestCertificate> trustedCert = _signFixture.TrustedTestCertificateChain.Leaf;
-                var pfxPath = Path.Combine(pathContext.WorkingDirectory, Guid.NewGuid().ToString());
-
-                var password = Guid.NewGuid().ToString();
-                var pfxBytes = trustedCert.Source.Cert.Export(X509ContentType.Pfx, password);
                 File.WriteAllBytes(pfxPath, pfxBytes);
 
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
                     $"nuget sign {packageFilePath} --certificate-path {pfxPath}",
@@ -518,6 +528,14 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(resultingFile, originalFile);
                 }
             }
+        }
+
+        private static string GetDefaultArgs(string packageFilePath, IX509StoreCertificate storeCertificate)
+        {
+            return $"nuget sign {packageFilePath} " +
+                $"--certificate-fingerprint {storeCertificate.Certificate.Thumbprint} " +
+                $"--certificate-store-name {storeCertificate.StoreName} " +
+                $"--certificate-store-location {storeCertificate.StoreLocation}";
         }
     }
 }
