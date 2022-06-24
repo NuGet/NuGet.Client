@@ -291,7 +291,7 @@ namespace NuGet.ContentModel
             return itemsList;
         }
 
-        private string GetRelatedFileExtensionProperty(string assemblyPath, IEnumerable<Asset> assets)
+        internal string GetRelatedFileExtensionProperty(string assemblyPath, IEnumerable<Asset> assets)
         {
             //E.g. if path is "lib/net472/A.B.C.dll", the prefix will be "lib/net472/A.B.C."
             string assemblyPrefix = assemblyPath.Substring(0, assemblyPath.LastIndexOf('.') + 1);
@@ -304,20 +304,23 @@ namespace NuGet.ContentModel
             List<string> relatedFileExtensionList = null;
             foreach (Asset asset in assets)
             {
-                if (asset.Path is not null &&
-                    Path.GetExtension(asset.Path) != string.Empty &&
-                    //Assembly properties are files with extensions ".dll", ".winmd", ".exe", see ManagedCodeConventions.
-                    !Path.GetExtension(asset.Path).Equals(".dll", StringComparison.OrdinalIgnoreCase) &&
-                    !Path.GetExtension(asset.Path).Equals(".exe", StringComparison.OrdinalIgnoreCase) &&
-                    !Path.GetExtension(asset.Path).Equals(".winmd", StringComparison.OrdinalIgnoreCase) &&
-                    !asset.Path.Equals(assemblyPath, StringComparison.OrdinalIgnoreCase) &&
-                    asset.Path.StartsWith(assemblyPrefix, StringComparison.OrdinalIgnoreCase))
+                if (asset.Path is not null)
                 {
-                    if (relatedFileExtensionList is null)
+                    string extension = Path.GetExtension(asset.Path);
+                    if (extension != string.Empty &&
+                        //Assembly properties are files with extensions ".dll", ".winmd", ".exe", see ManagedCodeConventions.
+                        !extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) &&
+                        !extension.Equals(".exe", StringComparison.OrdinalIgnoreCase) &&
+                        !extension.Equals(".winmd", StringComparison.OrdinalIgnoreCase) &&
+                        !asset.Path.Equals(assemblyPath, StringComparison.OrdinalIgnoreCase) &&
+                        asset.Path.StartsWith(assemblyPrefix, StringComparison.OrdinalIgnoreCase))
                     {
-                        relatedFileExtensionList = new List<string>();
+                        if (relatedFileExtensionList is null)
+                        {
+                            relatedFileExtensionList = new List<string>();
+                        }
+                        relatedFileExtensionList.Add(asset.Path.Substring(assemblyPrefix.Length - 1));
                     }
-                    relatedFileExtensionList.Add(asset.Path.Substring(assemblyPrefix.Length - 1));
                 }
             }
 
