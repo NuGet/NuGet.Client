@@ -52,11 +52,13 @@ namespace NuGet.PackageManagement.UI.Test
                     new ImplicitProjectAction(
                         id: Guid.NewGuid().ToString(),
                         packageIdentityA1,
-                        NuGetProjectActionType.Uninstall),
+                        NuGetProjectActionType.Uninstall,
+                        VersionRange.Parse("*")),
                     new ImplicitProjectAction(
                         id: Guid.NewGuid().ToString(),
                         packageIdentityB1,
-                        NuGetProjectActionType.Uninstall)
+                        NuGetProjectActionType.Uninstall,
+                        VersionRange.Parse("*"))
                 });
             var installAction = new ProjectAction(
                 id: Guid.NewGuid().ToString(),
@@ -88,13 +90,21 @@ namespace NuGet.PackageManagement.UI.Test
 
             Assert.False(updatedResult.Old.GetType().IsSubclassOf(typeof(PackageIdentity)));
             Assert.False(updatedResult.New.GetType().IsSubclassOf(typeof(PackageIdentity)));
+            Assert.False(updatedResult.OldVersionRange.GetType().IsSubclassOf(typeof(VersionRange)));
+            Assert.False(updatedResult.NewVersionRange.GetType().IsSubclassOf(typeof(VersionRange)));
             Assert.Equal("a.1.0.0 -> a.2.0.0", updatedResult.ToString());
+            Assert.Equal("*", updatedResult.OldVersionRange.OriginalString);
+            Assert.Equal("2.0.0", updatedResult.NewVersionRange.OriginalString);
 
             updatedResult = updatedResults[1];
 
             Assert.False(updatedResult.Old.GetType().IsSubclassOf(typeof(PackageIdentity)));
             Assert.False(updatedResult.New.GetType().IsSubclassOf(typeof(PackageIdentity)));
+            Assert.False(updatedResult.OldVersionRange.GetType().IsSubclassOf(typeof(VersionRange)));
+            Assert.False(updatedResult.NewVersionRange.GetType().IsSubclassOf(typeof(VersionRange)));
             Assert.Equal("b.3.0.0 -> b.4.0.0", updatedResult.ToString());
+            Assert.Equal("*", updatedResult.OldVersionRange.OriginalString);
+            Assert.Equal("4.0.0", updatedResult.NewVersionRange.OriginalString);
         }
 
         [Fact]
@@ -130,7 +140,7 @@ namespace NuGet.PackageManagement.UI.Test
                 CancellationToken.None);
 
             Assert.Equal(1, previewResults.Count);
-            AccessiblePackageIdentity[] addedResults = previewResults[0].Added.ToArray();
+            AccessiblePackageIdentity[] addedResults = previewResults[0].Added.Select(ar => ar.accessiblePackageIdentity).ToArray();
 
             Assert.Equal(3, addedResults.Length);
 

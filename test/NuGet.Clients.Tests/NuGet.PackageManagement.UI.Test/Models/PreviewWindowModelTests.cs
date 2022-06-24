@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Text;
 using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI
@@ -15,11 +16,11 @@ namespace NuGet.PackageManagement.UI
         {
             const string ProjectName = "ProjectA";
 
-            var added = new List<AccessiblePackageIdentity>();
+            var added = new List<(AccessiblePackageIdentity accessiblePackageIdentity, VersionRange versionRange)>();
             var deleted = new List<AccessiblePackageIdentity>();
             var updated = new List<UpdatePreviewResult>();
 
-            added.Add(new AccessiblePackageIdentity(new PackageIdentity("PkgA", new Versioning.NuGetVersion("1.2.3"))));
+            added.Add((new AccessiblePackageIdentity(new PackageIdentity("PkgA", new Versioning.NuGetVersion("1.2.3"))), VersionRange.Parse("1.2.3")));
             deleted.Add(new AccessiblePackageIdentity(new PackageIdentity("PkgB", new Versioning.NuGetVersion("3.2.1"))));
             updated.Add(new UpdatePreviewResult(
                 new PackageIdentity("PkgC", new Versioning.NuGetVersion("1.0.0")),
@@ -53,10 +54,10 @@ namespace NuGet.PackageManagement.UI
             sb.AppendLine();
             sb.AppendLine(Resources.Label_InstalledPackages);
             sb.AppendLine();
-
-            foreach (AccessiblePackageIdentity packageIdentity in added)
+            foreach ((AccessiblePackageIdentity packageIdentity, VersionRange versionRange) in added)
             {
-                sb.AppendLine(packageIdentity.ToString());
+                var stringLine = string.Concat("(", packageIdentity.ToString(), ", ", versionRange.ToString(), ")");
+                sb.AppendLine(stringLine);
             }
 
             sb.AppendLine();

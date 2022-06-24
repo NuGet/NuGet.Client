@@ -577,19 +577,19 @@ namespace NuGet.PackageManagement.UI
             (string modelVersion, string vsixVersion)? recommenderVersion,
             int topLevelVulnerablePackagesCount,
             List<int> topLevelVulnerablePackagesMaxSeverities,
-            HashSet<(string, string, VersionRange)> existingPackages,
-            List<(string, string, VersionRange)> addedPackages,
+            HashSet<(string packageId, string packageVersion, VersionRange packageVersionRange)> existingPackages,
+            List<(string packageId, string packageVersion, VersionRange packageVersionRange)> addedPackages,
             List<string> removedPackages,
-            List<(string, string, VersionRange)> updatedPackagesOld,
-            List<(string, string, VersionRange)> updatedPackagesNew,
+            List<(string packageId, string packageVersion, VersionRange packageVersionRange)> updatedPackagesOld,
+            List<(string packageId, string packageVersion, VersionRange packageVersionRange)> updatedPackagesNew,
             IReadOnlyCollection<string> targetFrameworks)
         {
-            static TelemetryEvent ToTelemetryPackage((string, string, VersionRange) package)
+            static TelemetryEvent ToTelemetryPackage((string packageId, string packageVersion, VersionRange packageVersionRange) package)
             {
                 var subEvent = new TelemetryEvent(eventName: null);
-                subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(package.Item1));
-                subEvent["version"] = package.Item2;
-                subEvent["versionRange"] = package.Item3;
+                subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(package.packageId));
+                subEvent["version"] = package.packageVersion;
+                subEvent["versionRange"] = package.packageVersionRange?.OriginalString ?? string.Empty;
                 return subEvent;
             }
 
@@ -661,16 +661,13 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (var package in addedPackages)
                 {
-                    if (package.Item3.IsFloating ||
-                        package.Item3.OriginalString.StartsWith("(", StringComparison.OrdinalIgnoreCase) ||
-                        package.Item3.OriginalString.StartsWith("[", StringComparison.OrdinalIgnoreCase))
+                    if (package.packageVersionRange.IsFloating || IsOriginalStringACustomRange(package.packageVersionRange.OriginalString))
                     {
                         packages.Add(ToTelemetryPackage(package));
                     }
                 }
 
-                actionTelemetryEvent.ComplexData["AddedFloatingPackages"] = packages;
-                actionTelemetryEvent.ComplexData["AddedFloatingPackagesCount"] = packages.Count;
+                actionTelemetryEvent.ComplexData["InstalledIsFloatingVersionCount"] = packages.Count;
             }
 
             if (removedPackages?.Count > 0)
@@ -690,23 +687,32 @@ namespace NuGet.PackageManagement.UI
             {
                 actionTelemetryEvent.ComplexData["UpdatedPackagesNew"] = ToTelemetryPackageList(updatedPackagesNew);
 
-                var countPackagesAreFloating = 0;
-                var countPackagesWhereFloating = 0;
+                var updatedIsFloatingVersionWasFixedVersionCount = 0;
+                var updatedIsNotFloatingVersionWasFloatingVersionCount = 0;
+                var updatedIsFloatingVersionCount = 0;
                 foreach (var updatedpackageNew in updatedPackagesNew)
                 {
-                    var updatedPackageOld = updatedPackagesOld.Where(package => package.Item1.Equals(updatedpackageNew.Item1, StringComparison.OrdinalIgnoreCase));
-                    if (updatedpackageNew.Item3.IsFloating && !updatedPackageOld.First().Item3.IsFloating)
+                    var updatedPackageOld = updatedPackagesOld.Where(package => package.packageId.Equals(updatedpackageNew.packageId, StringComparison.OrdinalIgnoreCase)).First();
+                    if ((updatedpackageNew.packageVersionRange.IsFloating || IsOriginalStringACustomRange(updatedpackageNew.packageVersionRange.OriginalString)) &&
+                        (!updatedPackageOld.packageVersionRange.IsFloating || !IsOriginalStringACustomRange(updatedPackageOld.packageVersionRange.OriginalString)))
                     {
-                        countPackagesAreFloating = countPackagesAreFloating + 1;
+                        updatedIsFloatingVersionWasFixedVersionCount = updatedIsFloatingVersionWasFixedVersionCount + 1;
                     }
-                    else if (!updatedpackageNew.Item3.IsFloating && updatedPackageOld.First().Item3.IsFloating)
+                    else if ((!updatedpackageNew.packageVersionRange.IsFloating || !IsOriginalStringACustomRange(updatedpackageNew.packageVersionRange.OriginalString)) &&
+                        (updatedPackageOld.packageVersionRange.IsFloating || IsOriginalStringACustomRange(updatedPackageOld.packageVersionRange.OriginalString)))
                     {
-                        countPackagesWhereFloating = countPackagesWhereFloating + 1;
+                        updatedIsNotFloatingVersionWasFloatingVersionCount = updatedIsNotFloatingVersionWasFloatingVersionCount + 1;
+                    }
+                    else if ((updatedpackageNew.packageVersionRange.IsFloating || IsOriginalStringACustomRange(updatedpackageNew.packageVersionRange.OriginalString)) &&
+                        (updatedPackageOld.packageVersionRange.IsFloating || IsOriginalStringACustomRange(updatedPackageOld.packageVersionRange.OriginalString)))
+                    {
+                        updatedIsFloatingVersionCount = updatedIsFloatingVersionCount + 1;
                     }
                 }
 
-                actionTelemetryEvent.ComplexData["UpdatedFloatingPackagesToFixedVersion"] = countPackagesWhereFloating;
-                actionTelemetryEvent.ComplexData["UpdateFixedVersionPackagesToFloatingVersion"] = countPackagesAreFloating;
+                actionTelemetryEvent.ComplexData["UpdatedIsNotFloatingVersionWasFloatingVersionCount"] = updatedIsNotFloatingVersionWasFloatingVersionCount;
+                actionTelemetryEvent.ComplexData["UpdatedIsFloatingVersionWasFixedVersionCount"] = updatedIsFloatingVersionWasFixedVersionCount;
+                actionTelemetryEvent.ComplexData["UpdatedIsFloatingVersionCount"] = updatedIsFloatingVersionCount;
             }
 
             if (updatedPackagesOld?.Count > 0)
@@ -719,6 +725,11 @@ namespace NuGet.PackageManagement.UI
             {
                 actionTelemetryEvent["TargetFrameworks"] = string.Join(";", targetFrameworks);
             }
+        }
+
+        private static bool IsOriginalStringACustomRange(string originalString)
+        {
+            return originalString.StartsWith("(", StringComparison.OrdinalIgnoreCase) || originalString.StartsWith("[", StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task<bool> CheckPackageManagementFormatAsync(
