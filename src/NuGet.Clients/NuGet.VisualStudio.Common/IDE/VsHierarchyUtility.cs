@@ -11,7 +11,6 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.VisualStudio.Common;
 using Task = System.Threading.Tasks.Task;
 using TaskExpandedNodes = System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<NuGet.VisualStudio.VsHierarchyItem>>>;
 
@@ -35,16 +34,16 @@ namespace NuGet.VisualStudio
 
             var guids = GetProjectTypeGuids(hierarchy);
 
-            foreach (var guid in guids) // TODO NK - How are we supposed to handle the multiple guid scenario?
+            if (guids != null)
             {
-                if (ProjectType.IsUnsupported(guid))
+                foreach (var guid in guids) // A project is supported only if all guids are supported.
                 {
-                    return false;
+                    if (ProjectType.IsUnsupported(guid) || !ProjectType.IsSupported(guid))
+                    {
+                        return false;
+                    }
                 }
-                if (ProjectType.IsSupported(guid))
-                {
-                    return true;
-                }
+                return true;
             }
             return false;
         }
@@ -155,7 +154,7 @@ namespace NuGet.VisualStudio
 
         public static async Task CollapseAllNodesAsync(IDictionary<string, ISet<VsHierarchyItem>> ignoreNodes)
         {
-            Verify.ArgumentIsNotNull(ignoreNodes, nameof(ignoreNodes));
+            Common.Verify.ArgumentIsNotNull(ignoreNodes, nameof(ignoreNodes));
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

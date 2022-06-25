@@ -58,8 +58,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly NuGetProjectFactory _projectSystemFactory;
         private readonly ICredentialServiceProvider _credentialServiceProvider;
         private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
-        private readonly Common.ILogger _logger;
+        private readonly ILogger _logger;
         private readonly Lazy<ISettings> _settings;
+        private readonly INuGetFeatureFlagService _featureFlagService;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<DTE> _dte;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution> _asyncVSSolution;
 
@@ -133,6 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
             [Import("VisualStudioActivityLogger")]
             Common.ILogger logger,
             Lazy<ISettings> settings,
+            INuGetFeatureFlagService featureFlagService,
             JoinableTaskContext joinableTaskContext)
             : this(AsyncServiceProvider.GlobalProvider,
                    projectSystemCache,
@@ -141,6 +143,7 @@ namespace NuGet.PackageManagement.VisualStudio
                    vsProjectAdapterProvider,
                    logger,
                    settings,
+                   featureFlagService,
                    joinableTaskContext)
         { }
 
@@ -153,6 +156,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapterProvider vsProjectAdapterProvider,
             ILogger logger,
             Lazy<ISettings> settings,
+            INuGetFeatureFlagService featureFlagService,
             JoinableTaskContext joinableTaskContext)
         {
             Assumes.Present(asyncServiceProvider);
@@ -162,6 +166,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(vsProjectAdapterProvider);
             Assumes.Present(logger);
             Assumes.Present(settings);
+            Assumes.Present(featureFlagService);
             Assumes.Present(joinableTaskContext);
 
             _asyncServiceProvider = asyncServiceProvider;
@@ -171,6 +176,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsProjectAdapterProvider = vsProjectAdapterProvider;
             _logger = logger;
             _settings = settings;
+            _featureFlagService = featureFlagService;
             _initLock = new NuGetLockService(joinableTaskContext);
             _dte = new(() => asyncServiceProvider.GetDTEAsync(), NuGetUIThreadHelper.JoinableTaskFactory);
             _asyncVSSolution = new(() => asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>(), NuGetUIThreadHelper.JoinableTaskFactory);
@@ -666,26 +672,51 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                if (!_cacheInitialized && await IsSolutionOpenAsync())
+                IVsSolution ivsSolution = await _asyncVSSolution.GetValueAsync();
+                if (!_cacheInitialized && IsSolutionOpenFromVSSolution(ivsSolution))
                 {
                     try
                     {
-                        foreach (var hierarchy in VsHierarchyUtility.GetAllLoadedProjects(await _asyncVSSolution.GetValueAsync()))
+                        if (await _featureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.NuGetSolutionCacheInitilization))
                         {
-                            try
+                            foreach (var hierarchy in VsHierarchyUtility.GetAllLoadedProjects(ivsSolution))
                             {
-                                var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
-                                await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
-                            }
-                            catch (Exception e)
-                            {
-                                // Ignore failed projects.
-                                _logger.LogWarning($"The project {VsHierarchyUtility.GetProjectPath(hierarchy)} failed to initialize as a NuGet project.");
-                                _logger.LogError(e.ToString());
-                            }
+                                try
+                                {
+                                    var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
+                                    await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                                }
+                                catch (Exception e)
+                                {
+                                    // Ignore failed projects.
+                                    _logger.LogWarning($"The project {VsHierarchyUtility.GetProjectPath(hierarchy)} failed to initialize as a NuGet project.");
+                                    _logger.LogError(e.ToString());
+                                }
 
-                            // Consider that the cache is initialized only when there are any projects to add.
-                            _cacheInitialized = true;
+                                // Consider that the cache is initialized only when there are any projects to add.
+                                _cacheInitialized = true;
+                            }
+                        }
+                        {
+                            var dte = await _dte.GetValueAsync();
+
+                            foreach (var project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
+                            {
+                                try
+                                {
+                                    var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(project);
+                                    await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                                }
+                                catch (Exception e)
+                                {
+                                    // Ignore failed projects.
+                                    _logger.LogWarning($"The project {project.Name} failed to initialize as a NuGet project.");
+                                    _logger.LogError(e.ToString());
+                                }
+
+                                // Consider that the cache is initialized only when there are any projects to add.
+                                _cacheInitialized = true;
+                            }
                         }
 
                         await SetDefaultProjectNameAsync();
