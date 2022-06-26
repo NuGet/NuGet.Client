@@ -357,6 +357,26 @@ namespace NuGet.Commands.Test
             return GetPackageSpecWithProjectNameAndSpec(projectName, rootPath, spec);
         }
 
+        public static PackageSpec GetPackageSpecWithFloatingVersion(string projectName, string rootPath, string framework, string dependencyName, string dependencyVersion, bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "", bool asAssetTargetFallback = true)
+        {
+            var actualAssetTargetFallback = GetFallbackString(useAssetTargetFallback, assetTargetFallbackFrameworks, asAssetTargetFallback);
+
+            const string referenceSpec = @"
+                {
+                    ""frameworks"": {
+                        ""TARGET_FRAMEWORK"": {
+                            ""dependencies"": {
+                                ""DEPENDENCY_NAME"" : ""DEPENDENCY_VERSION""
+                            }
+                            ASSET_TARGET_FALLBACK
+                        }
+                    }
+                }";
+
+            var spec = referenceSpec.Replace("TARGET_FRAMEWORK", framework).Replace("DEPENDENCY_NAME", dependencyName).Replace("ASSET_TARGET_FALLBACK", actualAssetTargetFallback).Replace("DEPENDENCY_VERSION", dependencyVersion);
+            return GetPackageSpecWithProjectNameAndSpec(projectName, rootPath, spec);
+        }
+
         private static string GetFallbackString(bool useAssetTargetFallback, string assetTargetFallbackFrameworks, bool asAssetTargetFallback = true)
         {
             const string assetTargetFallback = @",

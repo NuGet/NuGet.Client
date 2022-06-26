@@ -118,6 +118,21 @@ namespace NuGet.Commands
             return ExecuteAsync(CancellationToken.None);
         }
 
+        private bool IsOriginalStringVersionRangeOrFloating(VersionRange versionRange)
+        {
+            if (versionRange.IsFloating)
+            {
+                return true;
+            }
+
+            if (versionRange?.OriginalString != null)
+            {
+                return versionRange.OriginalString.StartsWith("(", StringComparison.OrdinalIgnoreCase) || versionRange.OriginalString.StartsWith("[", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
         public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
             using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
@@ -132,9 +147,7 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent[LocalSourcesCount] = _request.DependencyProviders.RemoteProviders.Count - httpSourcesCount;
                 telemetry.TelemetryEvent[FallbackFoldersCount] = _request.DependencyProviders.FallbackPackageFolders.Count;
                 telemetry.TelemetryEvent[ProjectHasFloatingVersions] = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies)
-                    .Where(d => d.LibraryRange.VersionRange.IsFloating ||
-                    (d.LibraryRange.VersionRange.OriginalString != null && (d.LibraryRange.VersionRange.OriginalString.StartsWith("(", StringComparison.OrdinalIgnoreCase) ||
-                    d.LibraryRange.VersionRange.OriginalString.StartsWith("[", StringComparison.OrdinalIgnoreCase)))).Any();
+                    .Where(d => d.LibraryRange?.VersionRange != null && IsOriginalStringVersionRangeOrFloating(d.LibraryRange.VersionRange)).Any();
 
                 _operationId = telemetry.OperationId;
 

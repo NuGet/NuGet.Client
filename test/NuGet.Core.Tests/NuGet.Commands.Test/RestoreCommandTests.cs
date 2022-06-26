@@ -2304,7 +2304,7 @@ namespace NuGet.Commands.Test
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(28);
+            projectInformationEvent.Count.Should().Be(29);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
@@ -2333,6 +2333,83 @@ namespace NuGet.Commands.Test
             projectInformationEvent["HttpSourcesCount"].Should().Be(0);
             projectInformationEvent["LocalSourcesCount"].Should().Be(1);
             projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
+            projectInformationEvent["ProjectHasFloatingVersions"].Should().Be(false);
+        }
+
+        [Theory]
+        [InlineData("1.*")]
+        [InlineData("[1.0.0,)")]
+        public async Task ExecuteAsync_WithSingleFloatingPackage_PopulatesCorrectTelemetry(string dependencyVersion)
+        {
+            // Arrange
+            using var context = new SourceCacheContext();
+            using var pathContext = new SimpleTestPathContext();
+            var projectName = "TestProject";
+            var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpecWithFloatingVersion(projectName, pathContext.SolutionRoot, "net472", "a", dependencyVersion);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("a", "1.0.0"));
+            var logger = new TestLogger();
+
+            var request = new TestRestoreRequest(packageSpec, new PackageSource[] { new PackageSource(pathContext.PackageSource) }, pathContext.UserPackagesFolder, logger)
+            {
+                LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                ProjectStyle = ProjectStyle.PackageReference,
+            };
+
+            // Set-up telemetry service - Important to set-up the service *after* the package source creation call as that emits telemetry!
+            var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+            var _telemetryService = new Mock<INuGetTelemetryService>(MockBehavior.Loose);
+            _telemetryService
+                .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+
+            TelemetryActivity.NuGetTelemetryService = _telemetryService.Object;
+
+            var restoreCommand = new RestoreCommand(request);
+            RestoreResult result = await restoreCommand.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            IEnumerable<string> telEventNames = telemetryEvents.Select(e => e.Name);
+            telemetryEvents.Should().HaveCountLessOrEqualTo(3);
+            telEventNames.Should().Contain("ProjectRestoreInformation");
+
+            var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
+
+            projectInformationEvent.Count.Should().Be(29);
+            projectInformationEvent["RestoreSuccess"].Should().Be(true);
+            projectInformationEvent["NoOpResult"].Should().Be(false);
+            projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
+            projectInformationEvent["NoOpCacheFileEvaluationResult"].Should().Be(false);
+            projectInformationEvent["IsLockFileEnabled"].Should().Be(false);
+            projectInformationEvent["IsLockFileValidForRestore"].Should().Be(false);
+            projectInformationEvent["LockFileEvaluationResult"].Should().Be(true);
+            projectInformationEvent["NoOpDuration"].Should().NotBeNull();
+            projectInformationEvent["TotalUniquePackagesCount"].Should().Be(1);
+            projectInformationEvent["NewPackagesInstalledCount"].Should().Be(1);
+            projectInformationEvent["EvaluateLockFileDuration"].Should().NotBeNull();
+            projectInformationEvent["CreateRestoreTargetGraphDuration"].Should().NotBeNull();
+            projectInformationEvent["GenerateRestoreGraphDuration"].Should().NotBeNull();
+            projectInformationEvent["CreateRestoreResultDuration"].Should().NotBeNull();
+            projectInformationEvent["WalkFrameworkDependencyDuration"].Should().NotBeNull();
+            projectInformationEvent["GenerateAssetsFileDuration"].Should().NotBeNull();
+            projectInformationEvent["ValidateRestoreGraphsDuration"].Should().NotBeNull();
+            projectInformationEvent["EvaluateDownloadDependenciesDuration"].Should().NotBeNull();
+            projectInformationEvent["NoOpCacheFileEvaluateDuration"].Should().NotBeNull();
+            projectInformationEvent["StartTime"].Should().NotBeNull();
+            projectInformationEvent["EndTime"].Should().NotBeNull();
+            projectInformationEvent["OperationId"].Should().NotBeNull();
+            projectInformationEvent["Duration"].Should().NotBeNull();
+            projectInformationEvent["PackageSourceMapping.IsMappingEnabled"].Should().Be(false);
+            projectInformationEvent["SourcesCount"].Should().Be(1);
+            projectInformationEvent["HttpSourcesCount"].Should().Be(0);
+            projectInformationEvent["LocalSourcesCount"].Should().Be(1);
+            projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
+            projectInformationEvent["ProjectHasFloatingVersions"].Should().Be(true);
         }
 
         [Fact]
@@ -2388,7 +2465,7 @@ namespace NuGet.Commands.Test
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(20);
+            projectInformationEvent.Count.Should().Be(21);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(true);
             projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
@@ -2409,6 +2486,7 @@ namespace NuGet.Commands.Test
             projectInformationEvent["HttpSourcesCount"].Should().Be(0);
             projectInformationEvent["LocalSourcesCount"].Should().Be(1);
             projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
+            projectInformationEvent["ProjectHasFloatingVersions"].Should().Be(false);
         }
 
         [Fact]
@@ -2466,7 +2544,7 @@ namespace NuGet.Commands.Test
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(28);
+            projectInformationEvent.Count.Should().Be(29);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
