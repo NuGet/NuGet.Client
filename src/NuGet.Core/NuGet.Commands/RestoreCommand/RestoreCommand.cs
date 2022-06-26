@@ -133,8 +133,8 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent[FallbackFoldersCount] = _request.DependencyProviders.FallbackPackageFolders.Count;
                 telemetry.TelemetryEvent[ProjectHasFloatingVersions] = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies)
                     .Where(d => d.LibraryRange.VersionRange.IsFloating ||
-                    d.LibraryRange.VersionRange.OriginalString.StartsWith("(", StringComparison.OrdinalIgnoreCase) ||
-                    d.LibraryRange.VersionRange.OriginalString.StartsWith("[", StringComparison.OrdinalIgnoreCase)).Any();
+                    (d.LibraryRange.VersionRange.OriginalString != null && (d.LibraryRange.VersionRange.OriginalString.StartsWith("(", StringComparison.OrdinalIgnoreCase) ||
+                    d.LibraryRange.VersionRange.OriginalString.StartsWith("[", StringComparison.OrdinalIgnoreCase)))).Any();
 
                 _operationId = telemetry.OperationId;
 
