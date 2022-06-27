@@ -76,34 +76,17 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
-        [Fact]
-        public void GetSpecDependencies_WithAssetTargetFallback_ReturnsCorrectDependencies()
+        [Theory]
+        [InlineData(null, 1)]
+        [InlineData("true", 0)]
+        public void GetSpecDependencies_WithAssetTargetFallback_AndDependencyResolutionVariableSpecified_ReturnsCorrectDependencies(string assetTargetFallbackEnvironmentVariableValue, int dependencyCount)
         {
             // Arrange
             var net60Framework = FrameworkConstants.CommonFrameworks.Net60;
             var net472Framework = FrameworkConstants.CommonFrameworks.Net472;
             var packageSpec = ProjectTestHelpers.GetPackageSpec(rootPath: "C:\\", projectName: "A", framework: net472Framework.GetShortFolderName(), dependencyName: "x");
 
-            var dependencyProvider = new PackageSpecReferenceDependencyProvider(new List<ExternalProjectReference>(), NullLogger.Instance);
-            var assetTargetFallback = new AssetTargetFallbackFramework(net60Framework, new List<NuGetFramework> { net472Framework });
-            // Act
-
-            var dependencies = dependencyProvider.GetSpecDependencies(packageSpec, assetTargetFallback);
-
-            // Assert
-            dependencies.Should().HaveCount(1);
-            dependencies[0].Name.Should().Be("x");
-        }
-
-        [Fact]
-        public void GetSpecDependencies_WithAssetTargetFallback_AndDependencyResolutionDisabled_ReturnsCorrectDependencies()
-        {
-            // Arrange
-            var net60Framework = FrameworkConstants.CommonFrameworks.Net60;
-            var net472Framework = FrameworkConstants.CommonFrameworks.Net472;
-            var packageSpec = ProjectTestHelpers.GetPackageSpec(rootPath: "C:\\", projectName: "A", framework: net472Framework.GetShortFolderName(), dependencyName: "x");
-
-            var envVarWrapper = new TestEnvironmentVariableReader(new Dictionary<string, string> { { "NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION", "true" } });
+            var envVarWrapper = new TestEnvironmentVariableReader(new Dictionary<string, string> { { "NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION", assetTargetFallbackEnvironmentVariableValue } });
             var dependencyProvider = new PackageSpecReferenceDependencyProvider(new List<ExternalProjectReference>(), NullLogger.Instance, envVarWrapper);
             var assetTargetFallback = new AssetTargetFallbackFramework(net60Framework, new List<NuGetFramework> { net472Framework });
             // Act
@@ -111,7 +94,12 @@ namespace NuGet.ProjectModel.Test
             var dependencies = dependencyProvider.GetSpecDependencies(packageSpec, assetTargetFallback);
 
             // Assert
-            dependencies.Should().HaveCount(0);
+            dependencies.Should().HaveCount(dependencyCount);
+
+            if (dependencyCount > 0)
+            {
+                dependencies[0].Name.Should().Be("x");
+            }
         }
 
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, bool cpvmEnabled)
