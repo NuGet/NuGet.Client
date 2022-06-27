@@ -55,6 +55,7 @@ namespace NuGet.Configuration.Test
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSourceMapping>
+        <clear/>
         <packageSource key=""dotnet"">
             <package pattern=""stuff"" />
         </packageSource>
