@@ -23,7 +23,7 @@ namespace NuGet.VisualStudio
         public static string GetProjectPath(IVsHierarchy project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var format = project as IPersistFileFormat;
+            var format = (IPersistFileFormat)project;
             format.GetCurFile(out string projectPath, out uint _);
             return projectPath;
         }
