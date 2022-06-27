@@ -40,7 +40,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             ProjectId = projectId;
             PackageIdentity = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
             ProjectActionType = projectActionType;
-            VersionRange = versionRange ?? VersionRange.Parse(packageIdentity.Version.ToString());
+            VersionRange = versionRange ?? (packageIdentity.Version != null ? VersionRange.Parse(packageIdentity.Version.ToString()) : VersionRange.All);
             ImplicitActions = implicitActions ?? Array.Empty<ImplicitProjectAction>();
         }
 
