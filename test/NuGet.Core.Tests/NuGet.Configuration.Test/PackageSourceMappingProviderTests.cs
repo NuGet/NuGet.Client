@@ -55,11 +55,20 @@ namespace NuGet.Configuration.Test
             SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSourceMapping>
-        <packageSource key=""nuget.org"">
+        <packageSource key=""dotnet"">
             <package pattern=""stuff"" />
         </packageSource>
+        <packageSource key=""dotnet"">
+            <package pattern=""stuff1"" />
+        </packageSource>
         <packageSource key=""nuget.org"">
-            <package pattern=""stuff2"" />
+            <package pattern=""stuf2"" />
+        </packageSource>
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff3"" />
+        </packageSource>
+        <packageSource key=""source"">
+            <package pattern=""stuff4"" />
         </packageSource>
     </packageSourceMapping>
 </configuration>");
@@ -67,7 +76,7 @@ namespace NuGet.Configuration.Test
             // Act & Assert
             var exception = Assert.Throws<NuGetConfigurationException>(
                 () => Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 }));
-            Assert.Equal("Package source 'nuget.org' has already been defined previously.", exception.Message);
+            Assert.Equal("PackageSourceMapping is enabled, there are multiple package sources associated with the same key(s): dotnet, nuget.org", exception.Message);
         }
 
         [Fact]
