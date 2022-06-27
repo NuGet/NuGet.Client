@@ -199,12 +199,9 @@ namespace NuGet.ProjectModel
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
 
                 // FrameworkReducer.GetNearest does not consider ATF since it is used for more than just compat
-                if (!_useLegacyAssetTargetFallbackBehavior)
+                if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework atfFramework)
                 {
-                    if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework atfFramework)
-                    {
-                        targetFrameworkInfo = packageSpec.GetTargetFramework(atfFramework.AsFallbackFramework());
-                    }
+                    targetFrameworkInfo = packageSpec.GetTargetFramework(atfFramework.AsFallbackFramework());
                 }
 
                 if (targetFrameworkInfo.FrameworkName == null && targetFramework is DualCompatibilityFramework mcfFramework)
@@ -337,7 +334,7 @@ namespace NuGet.ProjectModel
             return dependencies;
         }
 
-        internal static List<LibraryDependency> GetSpecDependencies(
+        internal List<LibraryDependency> GetSpecDependencies(
             PackageSpec packageSpec,
             NuGetFramework targetFramework)
         {
@@ -349,12 +346,14 @@ namespace NuGet.ProjectModel
                 dependencies.AddRange(packageSpec.Dependencies);
 
                 // Add framework specific dependencies
-                // Disable?
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
 
-                if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework atfFramework)
+                if (!_useLegacyAssetTargetFallbackBehavior)
                 {
-                    targetFrameworkInfo = packageSpec.GetTargetFramework(atfFramework.AsFallbackFramework());
+                    if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework atfFramework)
+                    {
+                        targetFrameworkInfo = packageSpec.GetTargetFramework(atfFramework.AsFallbackFramework());
+                    }
                 }
 
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
