@@ -101,7 +101,7 @@ namespace NuGet.Configuration
         {
             var children = new List<T>();
             IEnumerable<T> descendants;
-            if (xElement.Name.LocalName.Equals("packageSourceMapping", StringComparison.OrdinalIgnoreCase))
+            if (xElement.Name.LocalName.Equals(ConfigurationConstants.PackageSourceMapping, StringComparison.OrdinalIgnoreCase))
             {
                 descendants = xElement.Elements().Select(d => Parse(d, origin)).OfType<T>();
                 var duplicates = descendants.ToLookup(d => d.Attributes["key"], d => d, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1).ToList();
