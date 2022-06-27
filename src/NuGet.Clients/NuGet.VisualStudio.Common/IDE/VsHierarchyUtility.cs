@@ -31,21 +31,13 @@ namespace NuGet.VisualStudio
         public static bool IsSupportedByGuid(IVsHierarchy hierarchy)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            var guids = GetProjectTypeGuids(hierarchy);
-
-            if (guids != null)
+            ErrorHandler.ThrowOnFailure(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid));
+            var guid = pguid.ToString("B");
+            if (ProjectType.IsUnsupported(guid) || !ProjectType.IsSupported(guid))
             {
-                foreach (var guid in guids) // A project is supported only if all guids are supported.
-                {
-                    if (ProjectType.IsUnsupported(guid) || !ProjectType.IsSupported(guid))
-                    {
-                        return false;
-                    }
-                }
-                return true;
+                return false;
             }
-            return false;
+            return true;
         }
 
         public static bool IsNuGetSupported(IVsHierarchy hierarchy)
