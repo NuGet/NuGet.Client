@@ -22,8 +22,8 @@ namespace Dotnet.Integration.Test
     [Collection(DotnetIntegrationCollection.Name)]
     public class DotnetRestoreTests
     {
-        private const string OptInPackageVerification = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
-        private const string OptInPackageVerificationTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
+        private const string SignatureVerificationEnvironmentVariable = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
+        private const string SignatureVerificationEnvironmentVariableTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
 
         private MsbuildIntegrationTestFixture _msbuildFixture;
 
@@ -268,7 +268,7 @@ EndGlobal";
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_SucceedAsync()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
@@ -340,14 +340,15 @@ EndGlobal";
             }
         }
 
-        [Fact]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_True_Fails()
+        [Theory]
+        [InlineData("TRUE")]
+        [InlineData("true")]
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_WithEnvVarTrue_Fails(string envVarValue)
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 //Arrange
-                var envVarName = OptInPackageVerification;
-                var envVarValue = "TRUE";
+                var envVarName = SignatureVerificationEnvironmentVariable;
                 //Setup packages and feed
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -421,13 +422,13 @@ EndGlobal";
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_OptInEnvVar_NameCaseSensitive_Succeed()
+        [PlatformFact(Platform.Darwin)]
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_WithEnvVarNameCaseSensitive_Succeed()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 //Arrange
-                var envVarName = OptInPackageVerificationTypo;
+                var envVarName = SignatureVerificationEnvironmentVariableTypo;
                 var envVarValue = "xyz";
                 //Setup packages and feed
                 var packageX = new SimpleTestPackageContext()
@@ -504,12 +505,12 @@ EndGlobal";
         }
 
         [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_ValueCaseInSensitive_OptInEnvVar_Fails()
+        public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_WithEnvVarValueCaseInsensitive_Fails()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 //Arrange
-                var envVarName = OptInPackageVerification;
+                var envVarName = SignatureVerificationEnvironmentVariable;
                 var envVarValue = "true";
                 //Setup packages and feed
                 var packageX = new SimpleTestPackageContext()

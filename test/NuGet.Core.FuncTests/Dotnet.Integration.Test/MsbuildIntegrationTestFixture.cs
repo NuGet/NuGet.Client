@@ -7,17 +7,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
-using NuGet.Frameworks;
 using NuGet.Packaging.Core;
-using NuGet.Protocol;
 using NuGet.Test.Utility;
-using NuGet.Versioning;
-using NuGet.XPlat.FuncTest;
 using Xunit;
 
 namespace Dotnet.Integration.Test
@@ -29,6 +23,7 @@ namespace Dotnet.Integration.Test
         internal readonly string TestDotnetCli;
         internal readonly string MsBuildSdksPath;
         internal string SdkVersion { get; private set; }
+        internal DirectoryInfo SdkDirectory { get; }
         private readonly Dictionary<string, string> _processEnvVars = new Dictionary<string, string>();
 
         public MsbuildIntegrationTestFixture()
@@ -42,6 +37,7 @@ namespace Dotnet.Integration.Test
                             .Where(d => !string.Equals(Path.GetFileName(d), "NuGetFallbackFolder", StringComparison.OrdinalIgnoreCase))
                             .Single();
 
+            SdkDirectory = new DirectoryInfo(sdkPath);
             MsBuildSdksPath = Path.Combine(sdkPath, "Sdks");
 
             _templateDirectory = new SimpleTestPathContext();
