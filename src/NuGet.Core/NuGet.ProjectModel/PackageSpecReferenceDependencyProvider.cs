@@ -27,9 +27,21 @@ namespace NuGet.ProjectModel
 
         private readonly ILogger _logger;
 
+        private readonly bool _useLegacyAssetTargetFallbackBehavior;
+
         public PackageSpecReferenceDependencyProvider(
             IEnumerable<ExternalProjectReference> externalProjects,
-            ILogger logger)
+            ILogger logger) :
+            this(externalProjects,
+                logger,
+                environmentVariableReader: EnvironmentVariableWrapper.Instance)
+        {
+        }
+
+        internal PackageSpecReferenceDependencyProvider(
+            IEnumerable<ExternalProjectReference> externalProjects,
+            ILogger logger,
+            IEnvironmentVariableReader environmentVariableReader)
         {
             if (externalProjects == null)
             {
@@ -68,6 +80,7 @@ namespace NuGet.ProjectModel
                     _externalProjectsByUniqueName.Add(project.UniqueName, project);
                 }
             }
+            _useLegacyAssetTargetFallbackBehavior = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION"));
         }
 
         public bool SupportsType(LibraryDependencyTarget libraryType)
@@ -155,7 +168,7 @@ namespace NuGet.ProjectModel
             return library;
         }
 
-        private static void AddLibraryProperties(Library library, PackageSpec packageSpec, NuGetFramework targetFramework)
+        private void AddLibraryProperties(Library library, PackageSpec packageSpec, NuGetFramework targetFramework)
         {
             var projectStyle = packageSpec.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
@@ -186,9 +199,12 @@ namespace NuGet.ProjectModel
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
 
                 // FrameworkReducer.GetNearest does not consider ATF since it is used for more than just compat
-                if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework atfFramework)
+                if (!_useLegacyAssetTargetFallbackBehavior)
                 {
-                    targetFrameworkInfo = packageSpec.GetTargetFramework(atfFramework.AsFallbackFramework());
+                    if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework atfFramework)
+                    {
+                        targetFrameworkInfo = packageSpec.GetTargetFramework(atfFramework.AsFallbackFramework());
+                    }
                 }
 
                 if (targetFrameworkInfo.FrameworkName == null && targetFramework is DualCompatibilityFramework mcfFramework)
@@ -219,10 +235,13 @@ namespace NuGet.ProjectModel
             // Get the nearest framework
             var referencesForFramework = packageSpec.GetRestoreMetadataFramework(targetFramework);
 
-            if (referencesForFramework.FrameworkName == null &&
-                  targetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
+            if (!_useLegacyAssetTargetFallbackBehavior)
             {
-                referencesForFramework = packageSpec.GetRestoreMetadataFramework(assetTargetFallbackFramework.AsFallbackFramework());
+                if (referencesForFramework.FrameworkName == null &&
+                      targetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
+                {
+                    referencesForFramework = packageSpec.GetRestoreMetadataFramework(assetTargetFallbackFramework.AsFallbackFramework());
+                }
             }
 
             // Ensure that this project is compatible
@@ -330,6 +349,7 @@ namespace NuGet.ProjectModel
                 dependencies.AddRange(packageSpec.Dependencies);
 
                 // Add framework specific dependencies
+                // Disable?
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
 
                 if (targetFrameworkInfo.FrameworkName == null && targetFramework is AssetTargetFallbackFramework atfFramework)

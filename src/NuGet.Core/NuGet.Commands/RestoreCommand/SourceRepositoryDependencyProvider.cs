@@ -34,6 +34,7 @@ namespace NuGet.Commands
         private bool _ignoreFailedSources;
         private bool _ignoreWarning;
         private bool _isFallbackFolderSource;
+        private bool _useLegacyAssetTargetFallbackBehavior;
 
         private readonly ConcurrentDictionary<LibraryRangeCacheKey, AsyncLazy<LibraryDependencyInfo>> _dependencyInfoCache
             = new ConcurrentDictionary<LibraryRangeCacheKey, AsyncLazy<LibraryDependencyInfo>>();
@@ -92,7 +93,27 @@ namespace NuGet.Commands
         bool ignoreFailedSources,
         bool ignoreWarning,
         LocalPackageFileCache fileCache,
-        bool isFallbackFolderSource)
+        bool isFallbackFolderSource) :
+            this(sourceRepository,
+                logger,
+                cacheContext,
+                ignoreFailedSources,
+                ignoreWarning,
+                fileCache,
+                isFallbackFolderSource,
+                environmentVariableReader: EnvironmentVariableWrapper.Instance)
+        {
+        }
+
+        internal SourceRepositoryDependencyProvider(
+        SourceRepository sourceRepository,
+        ILogger logger,
+        SourceCacheContext cacheContext,
+        bool ignoreFailedSources,
+        bool ignoreWarning,
+        LocalPackageFileCache fileCache,
+        bool isFallbackFolderSource,
+        IEnvironmentVariableReader environmentVariableReader)
         {
             _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -101,6 +122,7 @@ namespace NuGet.Commands
             _ignoreWarning = ignoreWarning;
             _packageFileCache = fileCache;
             _isFallbackFolderSource = isFallbackFolderSource;
+            _useLegacyAssetTargetFallbackBehavior = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable(Environment.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION")));
         }
 
         /// <summary>
@@ -293,6 +315,7 @@ namespace NuGet.Commands
 
             AsyncLazy<LibraryDependencyInfo> result = null;
 
+            // Therre's caching here which happens based on a bunch of stuff.
             var action = new AsyncLazy<LibraryDependencyInfo>(async () =>
                 await GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken));
 
@@ -470,7 +493,7 @@ namespace NuGet.Commands
             return null;
         }
 
-        private static IEnumerable<LibraryDependency> GetDependencies(
+        private IEnumerable<LibraryDependency> GetDependencies(
             FindPackageByIdDependencyInfo packageInfo,
             NuGetFramework targetFramework)
         {
@@ -488,13 +511,17 @@ namespace NuGet.Commands
                 dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups, dualCompatibilityFramework.SecondaryFramework, item => item.TargetFramework);
             }
 
-            // FrameworkReducer.GetNearest does not consider ATF since it is used for more than just compat
-            if (dependencyGroup == null &&
-                targetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
+            if (!_useLegacyAssetTargetFallbackBehavior)
             {
-                dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
-                    assetTargetFallbackFramework.AsFallbackFramework(),
-                    item => item.TargetFramework);
+                // FrameworkReducer.GetNearest does not consider ATF since it is used for more than just compat
+
+                if (dependencyGroup == null &&
+                    targetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
+                {
+                    dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
+                        assetTargetFallbackFramework.AsFallbackFramework(),
+                        item => item.TargetFramework);
+                }
             }
 
             if (dependencyGroup != null)
