@@ -104,9 +104,9 @@ namespace NuGet.Configuration
             if (xElement.Name.LocalName.Equals("packageSourceMapping", StringComparison.OrdinalIgnoreCase))
             {
                 descendants = xElement.Elements().Select(d => Parse(d, origin)).OfType<T>();
-                if (descendants.Count() > 1)
+                if (descendants.Count() != descendants.Distinct().Count())
                 {
-                    throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_DuplicatePackageSource, descendants.First().Attributes["Key"]));
+                    throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_DuplicatePackageSource, descendants.First().Attributes.TryGetValue("Key", out string key)));
                 }
             }
             else
