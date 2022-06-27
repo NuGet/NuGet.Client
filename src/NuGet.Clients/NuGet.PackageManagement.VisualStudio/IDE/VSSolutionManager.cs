@@ -697,6 +697,7 @@ namespace NuGet.PackageManagement.VisualStudio
                                 _cacheInitialized = true;
                             }
                         }
+                        else
                         {
                             var dte = await _dte.GetValueAsync();
 

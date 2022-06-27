@@ -173,15 +173,16 @@ namespace NuGet.VisualStudio
             }
         }
 
+        /// <summary>
+        /// Gets all the hierarchies of all the NuGet compatible projects
+        /// </summary>
+        /// <param name="vsSolution">The VS Solution instance. Must not be <see cref="null"/>. </param>
+        /// <returns>Hierarchies of the NuGet compatible projects</returns>
+        /// <remarks>This method assumes the solution is open.</remarks>
         public static List<IVsHierarchy> GetAllLoadedProjects(IVsSolution vsSolution)
         {
             Assumes.NotNull(vsSolution);
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (!IsSolutionOpen(vsSolution))
-            {
-                return new List<IVsHierarchy>();
-            }
 
             var compatibleProjectHierarchies = new List<IVsHierarchy>();
 
@@ -199,19 +200,6 @@ namespace NuGet.VisualStudio
             }
 
             return compatibleProjectHierarchies;
-        }
-
-        private static bool IsSolutionOpen(IVsSolution vsSolution)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            return (bool)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_IsSolutionOpen);
-        }
-
-        private static object GetVSSolutionProperty(IVsSolution vsSolution, int propId)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            ErrorHandler.ThrowOnFailure(vsSolution.GetProperty(propId, out object value));
-            return value;
         }
 
         private static async Task<ICollection<VsHierarchyItem>> GetExpandedProjectHierarchyItemsAsync(EnvDTE.Project project)
