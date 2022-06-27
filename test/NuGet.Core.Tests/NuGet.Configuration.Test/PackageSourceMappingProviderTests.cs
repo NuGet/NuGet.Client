@@ -47,7 +47,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void GetPackageSourceMappingItems_WithOneConfig_WithDuplicateKeys_ReturnsCorrectPatterns()
+        public void GetPackageSourceMappingItems_WithOneConfig_WithDuplicateKeys_Throws()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -64,22 +64,10 @@ namespace NuGet.Configuration.Test
     </packageSourceMapping>
 </configuration>");
 
-            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
-
             // Act & Assert
-            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
-            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
-            packageSourceMappingItems.Should().HaveCount(2);
-
-            var nugetOrgSourceItem = packageSourceMappingItems.First();
-            nugetOrgSourceItem.Key.Should().Be("nuget.org");
-            nugetOrgSourceItem.Patterns.Should().HaveCount(1);
-            nugetOrgSourceItem.Patterns.First().Pattern.Should().Be("stuff");
-
-            nugetOrgSourceItem = packageSourceMappingItems.Last();
-            nugetOrgSourceItem.Key.Should().Be("nuget.org");
-            nugetOrgSourceItem.Patterns.Should().HaveCount(1);
-            nugetOrgSourceItem.Patterns.First().Pattern.Should().Be("stuff2");
+            var exception = Assert.Throws<NuGetConfigurationException>(
+                () => Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 }));
+            Assert.Equal("Package source 'nuget.org' has already been defined previously.", exception.Message);
         }
 
         [Fact]

@@ -299,4 +299,8 @@
   <data name="Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly" xml:space="preserve">
     <value>Argument cannot be null, empty, or whitespace only.</value>
   </data>
+  <data name="Error_DuplicatePackageSource" xml:space="preserve">
+    <value>Package source '{0}' has already been defined previously.</value>
+    <comment>0 - package source</comment>
+  </data>
 </root>
