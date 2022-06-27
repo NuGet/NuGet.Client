@@ -122,7 +122,7 @@ namespace NuGet.Commands
             _ignoreWarning = ignoreWarning;
             _packageFileCache = fileCache;
             _isFallbackFolderSource = isFallbackFolderSource;
-            _useLegacyAssetTargetFallbackBehavior = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable(Environment.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION")));
+            _useLegacyAssetTargetFallbackBehavior = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION"));
         }
 
         /// <summary>
