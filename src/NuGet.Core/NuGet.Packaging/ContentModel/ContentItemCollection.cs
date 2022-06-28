@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NuGet.Packaging;
 
@@ -11,6 +13,7 @@ namespace NuGet.ContentModel
     public class ContentItemCollection
     {
         private List<Asset> _assets;
+        private ConcurrentDictionary<string, string> _assemblyRelatedExtensions;
 
         /// <summary>
         /// True if lib/contract exists
@@ -19,6 +22,9 @@ namespace NuGet.ContentModel
 
         public void Load(IEnumerable<string> paths)
         {
+            // Cache for assembly and it's related file extensions.
+            _assemblyRelatedExtensions = new ConcurrentDictionary<string, string>();
+
             // Read already loaded assets
             _assets = new List<Asset>();
 
@@ -268,6 +274,15 @@ namespace NuGet.ContentModel
                     var contentItem = pathPattern.Match(path, definition.PropertyDefinitions);
                     if (contentItem != null)
                     {
+                        //If the item is assembly, populate the "related files extentions property".
+                        if (contentItem.Properties.ContainsKey("assembly"))
+                        {
+                            string relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(contentItem.Path, assets);
+                            if (relatedFileExtensionsProperty is not null)
+                            {
+                                contentItem.Properties.Add("related", relatedFileExtensionsProperty);
+                            }
+                        }
                         itemsList.Add(contentItem);
                         break;
                     }
@@ -275,6 +290,56 @@ namespace NuGet.ContentModel
             }
 
             return itemsList;
+        }
+
+        internal string GetRelatedFileExtensionProperty(string assemblyPath, IEnumerable<Asset> assets)
+        {
+            //E.g. if path is "lib/net472/A.B.C.dll", the prefix will be "lib/net472/A.B.C."
+            string assemblyPrefix = assemblyPath.Substring(0, assemblyPath.LastIndexOf('.') + 1);
+
+            if (_assemblyRelatedExtensions.TryGetValue(assemblyPrefix, out string relatedProperty))
+            {
+                return relatedProperty;
+            }
+
+            List<string> relatedFileExtensionList = null;
+            foreach (Asset asset in assets)
+            {
+                if (asset.Path is not null)
+                {
+                    string extension = Path.GetExtension(asset.Path);
+                    if (extension != string.Empty &&
+                        //Assembly properties are files with extensions ".dll", ".winmd", ".exe", see ManagedCodeConventions.
+                        !extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) &&
+                        !extension.Equals(".exe", StringComparison.OrdinalIgnoreCase) &&
+                        !extension.Equals(".winmd", StringComparison.OrdinalIgnoreCase) &&
+                        !asset.Path.Equals(assemblyPath, StringComparison.OrdinalIgnoreCase) &&
+                        //The prefix should match exactly (case sensitive), as file names are case sensitive on certain OSes.
+                        //E.g. for lib/net472/A.B.C.dll and lib/net472/a.b.c.xml, if we generate related property '.xml', the related file path is not predicatble on case sensitive OSes.
+                        asset.Path.StartsWith(assemblyPrefix, StringComparison.Ordinal))
+                    {
+                        if (relatedFileExtensionList is null)
+                        {
+                            relatedFileExtensionList = new List<string>();
+                        }
+                        relatedFileExtensionList.Add(asset.Path.Substring(assemblyPrefix.Length - 1));
+                    }
+                }
+            }
+
+            // If no related files found.
+            if (relatedFileExtensionList is null || !relatedFileExtensionList.Any())
+            {
+                _assemblyRelatedExtensions.TryAdd(assemblyPrefix, null);
+                return null;
+            }
+            else
+            {
+                relatedFileExtensionList.Sort();
+                string relatedFileExtensionsProperty = string.Join(";", relatedFileExtensionList);
+                _assemblyRelatedExtensions.TryAdd(assemblyPrefix, relatedFileExtensionsProperty);
+                return relatedFileExtensionsProperty;
+            }
         }
 
         /// <summary>

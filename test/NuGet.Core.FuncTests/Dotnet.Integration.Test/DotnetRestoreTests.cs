@@ -1752,7 +1752,7 @@ EndGlobal";
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageContext);
 
                 var directoryPackagesPropsContent =
-                    @"<Project>                    
+                    @"<Project>
                         <ItemGroup>
                             <PackageVersion Include=""X"" Version=""[1.0.0]"" />
                             <PackageVersion Include=""X"" Version=""[2.0.0]"" />
@@ -2307,7 +2307,7 @@ EndGlobal";
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageContext);
 
                 var directoryPackagesPropsContent =
-                    @"<Project>                    
+                    @"<Project>
                         <ItemGroup>
                             <PackageVersion Include=""X"" Version=""[1.0.0]"" />
                             <PackageVersion Include=""X"" Version=""[2.0.0]"" />
@@ -2391,6 +2391,96 @@ EndGlobal";
                 result.AllOutput.Should().Contain("warning NU1504");
                 result.AllOutput.Contains("X [1.0.0], X [2.0.0]");
             }
+        }
+
+        [Fact]
+        public async Task WhenPackageReferrenceHasRelatedFiles_RelatedPropertyIsApplied_Success()
+        {
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+
+            // Set up solution, and project
+            // projectA -> projectB -> packageX -> packageY
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var framework = "net5.0";
+            var projectA = SimpleTestProjectContext.CreateNETCore(
+               "projectA",
+               pathContext.SolutionRoot,
+               framework);
+
+            var projectB = SimpleTestProjectContext.CreateNETCore(
+               "projectB",
+               pathContext.SolutionRoot,
+               framework);
+
+            projectB.Properties.Add("Configuration", "Debug");
+
+            projectA.AddProjectToAllFrameworks(projectB);
+
+            var packageX = new SimpleTestPackageContext("packageX", "1.0.0");
+            packageX.Files.Clear();
+            packageX.AddFile($"lib/net5.0/X.dll");
+            packageX.AddFile($"lib/net5.0/X.xml");
+
+            var packageY = new SimpleTestPackageContext("packageY", "1.0.0");
+            packageY.Files.Clear();
+            // Compile
+            packageY.AddFile("ref/net5.0/Y.dll");
+            packageY.AddFile("ref/net5.0/Y.xml");
+            // Runtime
+            packageY.AddFile("lib/net5.0/Y.dll");
+            packageY.AddFile("lib/net5.0/Y.pdb");
+            packageY.AddFile("lib/net5.0/Y.xml");
+            // Embed
+            packageY.AddFile("embed/net5.0/Y.dll");
+            packageY.AddFile("embed/net5.0/Y.pdb");
+
+            packageX.Dependencies.Add(packageY);
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX, packageY);
+            projectB.AddPackageToAllFrameworks(packageX);
+
+            solution.Projects.Add(projectA);
+            solution.Projects.Add(projectB);
+            solution.Create(pathContext.SolutionRoot);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+            //Act
+            var result = _msbuildFixture.RunDotnet(pathContext.WorkingDirectory, $"restore {projectA.ProjectPath} -v n", ignoreExitCode: true);
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+
+            var assetsFile = projectA.AssetsFile;
+            Assert.NotNull(assetsFile);
+            var targets = assetsFile.GetTarget(framework, null);
+
+            // packageX (top-level package reference): "related" property is applied correctly for Compile & Runtime
+            var packageXLib = targets.Libraries.Single(x => x.Name.Equals("packageX"));
+            var packageXCompile = packageXLib.CompileTimeAssemblies;
+            AssertRelatedProperty(packageXCompile, $"lib/net5.0/X.dll", ".xml");
+            var packageXRuntime = packageXLib.RuntimeAssemblies;
+            AssertRelatedProperty(packageXRuntime, $"lib/net5.0/X.dll", ".xml");
+
+            // packageY (transitive package reference): "related" property is applied for Compile, Runtime and Embeded.
+            var packageYLib = targets.Libraries.Single(x => x.Name.Equals("packageY"));
+            var packageYCompile = packageYLib.CompileTimeAssemblies;
+            AssertRelatedProperty(packageYCompile, $"ref/net5.0/Y.dll", ".xml");
+            var packageYRuntime = packageYLib.RuntimeAssemblies;
+            AssertRelatedProperty(packageYRuntime, $"lib/net5.0/Y.dll", ".pdb;.xml");
+            var packageYEmbed = packageYLib.EmbedAssemblies;
+            AssertRelatedProperty(packageYEmbed, $"embed/net5.0/Y.dll", ".pdb");
+
+            // projectB (project reference): "related" property is NOT applied for Compile or Runtime.
+            var projectBLib = targets.Libraries.Single(x => x.Name.Equals("projectB"));
+            var projectBCompile = projectBLib.CompileTimeAssemblies;
+            AssertRelatedProperty(projectBCompile, $"bin/placeholder/projectB.dll", null);
+            var projectBRuntime = projectBLib.RuntimeAssemblies;
+            AssertRelatedProperty(projectBRuntime, $"bin/placeholder/projectB.dll", null);
+
         }
 
         private static SimpleTestPackageContext CreateNetstandardCompatiblePackage(string id, string version)
@@ -2602,6 +2692,19 @@ EndGlobal";
             var targetsFilePath = Path.Combine(pathContext.SolutionRoot, "obj", "a.csproj.nuget.g.props");
             var allTargets = File.ReadAllText(targetsFilePath);
             allTargets.Should().Contain(condition);
+        }
+
+        private void AssertRelatedProperty(IList<LockFileItem> items, string path, string related)
+        {
+            var item = items.Single(i => i.Path.Equals(path));
+            if (related == null)
+            {
+                Assert.False(item.Properties.ContainsKey("related"));
+            }
+            else
+            {
+                Assert.Equal(related, item.Properties["related"]);
+            }
         }
     }
 }
