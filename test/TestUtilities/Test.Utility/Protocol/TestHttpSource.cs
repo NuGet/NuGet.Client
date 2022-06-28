@@ -46,8 +46,7 @@ namespace Test.Utility
         public Action<HttpSourceCachedRequest> HttpSourceCachedRequestInspector { get; set; }
 
         public bool DisableCaching { get; set; } = true;
-        public int CacheHits { get; private set; }
-        public int CacheMisses { get; private set; }
+
         private readonly bool _throwOperationCancelledException;
 
         public override Task<T> GetAsync<T>(HttpSourceCachedRequest request, Func<HttpSourceResult, Task<T>> processAsync, ILogger log, CancellationToken token)
@@ -70,15 +69,6 @@ namespace Test.Utility
             }
 
             var result = base.TryReadCacheFile(uri, maxAge, cacheFile);
-
-            if (result == null)
-            {
-                CacheMisses++;
-            }
-            else
-            {
-                CacheHits++;
-            }
 
             if (result != null)
             {

@@ -299,8 +299,6 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(tc.ExpectedContent, actualContentA);
                 Assert.Equal(tc.ExpectedContent, actualContentB);
                 Assert.Equal(0, tc.RequestCount);
-                Assert.Equal(1, tc.HttpSource.CacheHits);
-                Assert.Equal(0, tc.HttpSource.CacheMisses);
             }
         }
 
