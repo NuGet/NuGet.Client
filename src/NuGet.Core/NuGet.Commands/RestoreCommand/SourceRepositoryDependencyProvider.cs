@@ -87,13 +87,13 @@ namespace NuGet.Commands
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
         public SourceRepositoryDependencyProvider(
-        SourceRepository sourceRepository,
-        ILogger logger,
-        SourceCacheContext cacheContext,
-        bool ignoreFailedSources,
-        bool ignoreWarning,
-        LocalPackageFileCache fileCache,
-        bool isFallbackFolderSource) :
+            SourceRepository sourceRepository,
+            ILogger logger,
+            SourceCacheContext cacheContext,
+            bool ignoreFailedSources,
+            bool ignoreWarning,
+            LocalPackageFileCache fileCache,
+            bool isFallbackFolderSource) :
             this(sourceRepository,
                 logger,
                 cacheContext,
@@ -106,14 +106,14 @@ namespace NuGet.Commands
         }
 
         internal SourceRepositoryDependencyProvider(
-        SourceRepository sourceRepository,
-        ILogger logger,
-        SourceCacheContext cacheContext,
-        bool ignoreFailedSources,
-        bool ignoreWarning,
-        LocalPackageFileCache fileCache,
-        bool isFallbackFolderSource,
-        IEnvironmentVariableReader environmentVariableReader)
+            SourceRepository sourceRepository,
+            ILogger logger,
+            SourceCacheContext cacheContext,
+            bool ignoreFailedSources,
+            bool ignoreWarning,
+            LocalPackageFileCache fileCache,
+            bool isFallbackFolderSource,
+            IEnvironmentVariableReader environmentVariableReader)
         {
             _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
