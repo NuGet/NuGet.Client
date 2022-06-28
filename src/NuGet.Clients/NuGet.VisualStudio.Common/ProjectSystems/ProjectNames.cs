@@ -179,13 +179,11 @@ namespace NuGet.VisualStudio
         /// <param name="vsSolution2">Instance of <see cref="IVsSolution2"/></param>
         /// <param name="cancellationToken">The cancellation token to cancel operation</param>
         /// <returns></returns>
-        public static async Task<ProjectNames> FromIVsSolution2(string fullPath, IVsSolution2 vsSolution2, CancellationToken cancellationToken)
+        public static async Task<ProjectNames> FromIVsSolution2(string fullPath, IVsSolution2 vsSolution2, IVsHierarchy project, CancellationToken cancellationToken)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
-
-            ErrorHandler.ThrowOnFailure(vsSolution2.GetProjectOfUniqueName(fullPath, out IVsHierarchy project));
             ErrorHandler.ThrowOnFailure(vsSolution2.GetGuidOfProject(project, out Guid guid));
             ErrorHandler.ThrowOnFailure(vsSolution2.GetUniqueNameOfProject(project, out string uniqueName));
             ErrorHandler.ThrowOnFailure(project.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_Name, out object projectNameObject));
@@ -200,6 +198,13 @@ namespace NuGet.VisualStudio
                 projectId: guid.ToString());
 
             return projectNames;
+        }
+
+        public static async Task<ProjectNames> FromIVsSolution2(string fullPath, IVsSolution2 vsSolution2, CancellationToken cancellationToken)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            ErrorHandler.ThrowOnFailure(vsSolution2.GetProjectOfUniqueName(fullPath, out IVsHierarchy project));
+            return await FromIVsSolution2(fullPath, vsSolution2, project, cancellationToken);
         }
 
         private static string GetCustomUniqueName(IVsHierarchy project)
