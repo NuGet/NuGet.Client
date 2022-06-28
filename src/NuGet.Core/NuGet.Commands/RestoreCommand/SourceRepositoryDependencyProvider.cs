@@ -315,7 +315,6 @@ namespace NuGet.Commands
 
             AsyncLazy<LibraryDependencyInfo> result = null;
 
-            // Therre's caching here which happens based on a bunch of stuff.
             var action = new AsyncLazy<LibraryDependencyInfo>(async () =>
                 await GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken));
 

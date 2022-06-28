@@ -808,11 +808,6 @@ namespace NuGet.Commands.Test
             source.SetupGet(s => s.PackageSource)
                 .Returns(new PackageSource("http://test/index.json"));
 
-            var libraryRange = new LibraryRange(
-                "x",
-                new VersionRange(new NuGetVersion(1, 0, 0, "beta")),
-                LibraryDependencyTarget.Package);
-
             var provider = new SourceRepositoryDependencyProvider(
                 source.Object,
                 testLogger,
@@ -874,11 +869,6 @@ namespace NuGet.Commands.Test
                 .ReturnsAsync(findResource.Object);
             source.SetupGet(s => s.PackageSource)
                 .Returns(new PackageSource("http://test/index.json"));
-
-            var libraryRange = new LibraryRange(
-                "x",
-                new VersionRange(new NuGetVersion(1, 0, 0, "beta")),
-                LibraryDependencyTarget.Package);
 
             var provider = new SourceRepositoryDependencyProvider(
                 source.Object,
