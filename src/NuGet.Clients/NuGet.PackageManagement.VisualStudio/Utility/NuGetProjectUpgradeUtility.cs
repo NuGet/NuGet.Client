@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -75,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 envDTEProject = vsmsBuildNuGetProjectSystem.VsProjectAdapter.Project;
             }
 
-            if (!await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject)) // Is this already called?
+            if (!await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
             {
                 return false;
             }

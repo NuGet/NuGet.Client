@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.Telemetry
                 projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
                 string projectId = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
                 NuGetProjectType projectType = GetProjectType(nuGetProject);
-                bool isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject); // Is this expensive? - 10ms because of the packages.config check.
+                bool isUpgradable = await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject);
                 string fullPath = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
 
                 returnValue = new ProjectTelemetryEvent(

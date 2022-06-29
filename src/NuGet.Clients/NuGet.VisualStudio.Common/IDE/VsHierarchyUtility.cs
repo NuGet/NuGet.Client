@@ -72,8 +72,7 @@ namespace NuGet.VisualStudio
         }
 
         /// <summary>
-        /// Gets the project type guids from the hierarchy if possible.
-        /// If the guids cannot be obtained, a null is returned.
+        /// Gets the project type guids from the hierarchy.
         /// </summary>
         /// <param name="hierarchy">hierarchy to use</param>
         /// <returns>The project type guids of all the types in the hierarchy.</returns>

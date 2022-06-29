@@ -417,7 +417,7 @@ namespace NuGet.VisualStudio
             return types.Contains(VsProjectTypes.WebSiteProjectTypeGuid, StringComparer.OrdinalIgnoreCase) ||
                    types.Contains(VsProjectTypes.WebApplicationProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
         }
-        PackagesFolderPathUtility
+
         public static bool IsWebSite(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
