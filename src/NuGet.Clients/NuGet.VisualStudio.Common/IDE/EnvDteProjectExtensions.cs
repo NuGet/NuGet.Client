@@ -49,7 +49,12 @@ namespace NuGet.VisualStudio
 
             // Get the vs hierarchy as an IVsAggregatableProject to get the project type guids
             IVsHierarchy hierarchy = await ToVsHierarchyAsync(project);
-            string[] projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuids(hierarchy, project.Kind);
+            var projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuidsFromHierarchy(hierarchy);
+
+            if (projectTypeGuids == null)
+            {
+                projectTypeGuids = new string[] { project.Kind };
+            }
 
             return projectTypeGuids;
         }

@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            return Path.Combine(await GetProjectDirectoryAsync(), msbuildProjectExtensionsPath);
+            return Path.Combine(ProjectDirectory, msbuildProjectExtensionsPath);
         }
 
         public IProjectBuildProperties BuildProperties { get; private set; }
@@ -50,24 +50,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public string FullName => ProjectNames.FullName;
 
-        public async Task<string> GetProjectDirectoryAsync()
-        {
-            return await Project.GetFullPathAsync();
-        }
+        public string ProjectDirectory { get; private set; }
 
         public string FullProjectPath { get; private set; }
 
-        public bool IsDeferred
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         public async Task<bool> IsSupportedAsync()
         {
-            return await EnvDTEProjectUtility.IsSupportedAsync(Project);
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            return VsHierarchyUtility.IsNuGetSupported(VsHierarchy);
         }
 
         public EnvDTE.Project Project => _dteProject.Value;
@@ -136,6 +126,7 @@ namespace NuGet.PackageManagement.VisualStudio
             FullProjectPath = fullProjectPath;
             ProjectNames = projectNames;
             BuildProperties = buildProperties;
+            ProjectDirectory = Path.GetDirectoryName(FullProjectPath);
         }
 
         #endregion Constructors
@@ -145,8 +136,13 @@ namespace NuGet.PackageManagement.VisualStudio
         public async Task<string[]> GetProjectTypeGuidsAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuidsFromHierarchy(VsHierarchy);
 
-            return VsHierarchyUtility.GetProjectTypeGuids(VsHierarchy, Project.Kind);
+            if (projectTypeGuids == null)
+            {
+                projectTypeGuids = new string[] { Project.Kind };
+            }
+            return projectTypeGuids;
         }
 
         public async Task<FrameworkName> GetDotNetFrameworkNameAsync()

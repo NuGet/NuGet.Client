@@ -34,9 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
-        private readonly Lazy<VSProject4> _asVSProject4;
-
-        private VSProject4 AsVSProject4 => _asVSProject4.Value;
+        private readonly VSProject4 _vsProject4;
 
         public bool SupportsPackageReferences => true;
 
@@ -73,20 +71,17 @@ namespace NuGet.PackageManagement.VisualStudio
         public VsManagedLanguagesProjectSystemServices(
             IVsProjectAdapter vsProjectAdapter,
             IVsProjectThreadingService threadingService,
+            VSProject4 vsProject4,
             bool nominatesOnSolutionLoad,
             Lazy<IScriptExecutor> scriptExecutor)
         {
             Assumes.Present(vsProjectAdapter);
             Assumes.Present(threadingService);
+            Assumes.Present(vsProject4);
 
             _vsProjectAdapter = vsProjectAdapter;
             _threadingService = threadingService;
-
-            _asVSProject4 = new Lazy<VSProject4>(() =>
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                return vsProjectAdapter.Project.Object as VSProject4;
-            });
+            _vsProject4 = vsProject4;
 
             ScriptService = new VsProjectScriptHostService(vsProjectAdapter, scriptExecutor);
 
@@ -100,7 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var installedPackages = AsVSProject4.PackageReferences?.InstalledPackages;
+            var installedPackages = _vsProject4.PackageReferences?.InstalledPackages;
 
             if (installedPackages == null)
             {
@@ -114,7 +109,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Where(r => !string.IsNullOrEmpty(r))
                 .Select(installedPackage =>
                 {
-                    if (AsVSProject4.PackageReferences.TryGetReference(
+                    if (_vsProject4.PackageReferences.TryGetReference(
                         installedPackage,
                         ReferenceMetadata,
                         out var version,
@@ -142,13 +137,13 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (AsVSProject4.References == null)
+            if (_vsProject4.References == null)
             {
                 return Array.Empty<ProjectRestoreReference>();
             }
 
             var references = new List<ProjectRestoreReference>();
-            foreach (Reference6 r in AsVSProject4.References.Cast<Reference6>())
+            foreach (Reference6 r in _vsProject4.References.Cast<Reference6>())
             {
                 if (r.SourceProject != null && await EnvDTEProjectUtility.IsSupportedAsync(r.SourceProject))
                 {
@@ -320,7 +315,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // - specify a metadata element name with a value => add/replace that metadata item on the package reference
             // - specify a metadata element name with no value => remove that metadata item from the project reference
             // - don't specify a particular metadata name => if it exists on the package reference, don't change it (e.g. for user defined metadata)
-            AsVSProject4.PackageReferences.AddOrUpdate(
+            _vsProject4.PackageReferences.AddOrUpdate(
                 packageName,
                 packageVersion.OriginalString ?? packageVersion.ToShortString(),
                 metadataElements,
@@ -333,7 +328,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            AsVSProject4.PackageReferences.Remove(packageName);
+            _vsProject4.PackageReferences.Remove(packageName);
         }
 
         private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()

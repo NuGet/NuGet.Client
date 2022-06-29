@@ -71,7 +71,13 @@ namespace NuGet.VisualStudio
             return hierarchy.IsCapabilityMatch(ProjectCapabilities.SharedAssetsProject);
         }
 
-        public static string[] GetProjectTypeGuids(IVsHierarchy hierarchy, string defaultType = "")
+        /// <summary>
+        /// Gets the project type guids from the hierarchy if possible.
+        /// If the guids cannot be obtained, a null is returned.
+        /// </summary>
+        /// <param name="hierarchy">hierarchy to use</param>
+        /// <returns>The project type guids of all the types in the hierarchy.</returns>
+        public static string[] GetProjectTypeGuidsFromHierarchy(IVsHierarchy hierarchy)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -84,13 +90,7 @@ namespace NuGet.VisualStudio
 
                 return projectTypeGuids.Split(';');
             }
-
-            if (!string.IsNullOrEmpty(defaultType))
-            {
-                return new[] { defaultType };
-            }
-
-            return Array.Empty<string>();
+            return null;
         }
 
         /// <summary>

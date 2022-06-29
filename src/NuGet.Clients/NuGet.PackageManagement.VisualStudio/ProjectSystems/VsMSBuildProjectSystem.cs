@@ -60,8 +60,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private string _projectFullPath;
-
         /// <summary>
         /// This does not contain the filename, just the path to the directory where the project file exists
         /// </summary>
@@ -69,15 +67,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (string.IsNullOrEmpty(_projectFullPath))
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        _projectFullPath = await VsProjectAdapter.GetProjectDirectoryAsync();
-                    });
-                }
-
-                return _projectFullPath;
+                return VsProjectAdapter.ProjectDirectory;
             }
         }
 
@@ -112,11 +102,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (string.IsNullOrEmpty(_projectName))
                 {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        _projectName = VsProjectAdapter.ProjectName;
-                    });
+                    _projectName = VsProjectAdapter.ProjectName;
                 }
                 return _projectName;
             }

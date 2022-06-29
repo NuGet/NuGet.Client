@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 envDTEProject = vsmsBuildNuGetProjectSystem.VsProjectAdapter.Project;
             }
 
-            if (!await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
+            if (!await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject)) // Is this already called?
             {
                 return false;
             }
