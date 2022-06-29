@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -21,7 +19,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.Utility;
 using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using PathUtility = NuGet.Common.PathUtility;
 using Task = System.Threading.Tasks.Task;
@@ -63,13 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// This does not contain the filename, just the path to the directory where the project file exists
         /// </summary>
-        public string ProjectFullPath
-        {
-            get
-            {
-                return VsProjectAdapter.ProjectDirectory;
-            }
-        }
+        public string ProjectFullPath => VsProjectAdapter.ProjectDirectory;
 
         private string _projectFileFullPath;
 
@@ -94,19 +85,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private string _projectName;
-
-        public virtual string ProjectName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_projectName))
-                {
-                    _projectName = VsProjectAdapter.ProjectName;
-                }
-                return _projectName;
-            }
-        }
+        public virtual string ProjectName => VsProjectAdapter.ProjectName;
 
         private string _projectCustomUniqueName;
 
