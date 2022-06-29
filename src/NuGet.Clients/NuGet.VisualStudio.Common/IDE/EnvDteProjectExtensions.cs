@@ -49,14 +49,7 @@ namespace NuGet.VisualStudio
 
             // Get the vs hierarchy as an IVsAggregatableProject to get the project type guids
             IVsHierarchy hierarchy = await ToVsHierarchyAsync(project);
-            var projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuidsFromHierarchy(hierarchy);
-
-            if (projectTypeGuids == null)
-            {
-                projectTypeGuids = new string[] { project.Kind };
-            }
-
-            return projectTypeGuids;
+            return VsHierarchyUtility.GetProjectTypeGuidsFromHierarchy(hierarchy);
         }
 
         #region Constants
@@ -424,7 +417,7 @@ namespace NuGet.VisualStudio
             return types.Contains(VsProjectTypes.WebSiteProjectTypeGuid, StringComparer.OrdinalIgnoreCase) ||
                    types.Contains(VsProjectTypes.WebApplicationProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
         }
-
+        PackagesFolderPathUtility
         public static bool IsWebSite(this EnvDTE.Project envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

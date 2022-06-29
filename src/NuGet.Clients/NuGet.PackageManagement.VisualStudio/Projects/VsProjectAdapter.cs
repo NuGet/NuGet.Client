@@ -136,13 +136,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async Task<string[]> GetProjectTypeGuidsAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            var projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuidsFromHierarchy(VsHierarchy);
-
-            if (projectTypeGuids == null)
-            {
-                projectTypeGuids = new string[] { Project.Kind };
-            }
-            return projectTypeGuids;
+            return VsHierarchyUtility.GetProjectTypeGuidsFromHierarchy(VsHierarchy);
         }
 
         public async Task<FrameworkName> GetDotNetFrameworkNameAsync()

@@ -90,7 +90,9 @@ namespace NuGet.VisualStudio
 
                 return projectTypeGuids.Split(';');
             }
-            return null;
+
+            ErrorHandler.ThrowOnFailure(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid));
+            return new string[] { pguid.ToString("B") };
         }
 
         /// <summary>
