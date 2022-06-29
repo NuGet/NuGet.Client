@@ -709,7 +709,7 @@ namespace Dotnet.Integration.Test
             var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
 
             //Act
-            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX}", ignoreExitCode: true);
+            var result = _fixture.RunDotnet(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version1}", ignoreExitCode: true);
 
             // Assert
             Assert.True(result.Success, result.Output);
@@ -730,8 +730,7 @@ namespace Dotnet.Integration.Test
             var projectNameA = "projectA";
             var projectA = XPlatTestUtils.CreateProject(projectNameA, pathContext, "net5.0");
 
-            const string version1 = "1.0.0";
-            const string version2 = "2.0.0";
+            const string version = "2.0.0";
             const string packageX = "X";
 
             var packageFrameworks = "net5.0";
