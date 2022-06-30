@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             return packages
                 .GroupById()
-                .Select(g => g.OrderByDescending(x => x.Version).FirstOrDefault())
+                .Select(g => g.OrderByDescending(x => x.Version).First())
                 .ToArray();
         }
 
@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             return packages
                 .GroupById()
-                .Select(g => g.OrderBy(x => x.Version).FirstOrDefault())
+                .Select(g => g.OrderBy(x => x.Version).First())
                 .ToArray();
         }
 

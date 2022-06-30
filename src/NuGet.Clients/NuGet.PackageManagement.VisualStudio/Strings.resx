@@ -285,4 +285,8 @@
   <data name="Exception_InvalidContinuationToken" xml:space="preserve">
     <value>Invalid token</value>
   </data>
+  <data name="InvalidCollectionElementType" xml:space="preserve">
+    <value>All PackageReference elements contained in a PackageCollectionItem object from a transitive package must implement ITransitivePackageReferenceContextInfo interface and TransitiveOrigins collection must not be empty</value>
+    <comment>Don't localize 'PackageReference', 'PackageCollectionItem', 'ITransitivePackageReferenceContextInfo', 'TransitiveOrigins'</comment>
+  </data>
 </root>

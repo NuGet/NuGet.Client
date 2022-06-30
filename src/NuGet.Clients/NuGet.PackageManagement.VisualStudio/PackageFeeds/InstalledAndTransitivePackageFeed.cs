@@ -22,33 +22,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _transitivePackages = transitivePackages ?? throw new ArgumentNullException(nameof(transitivePackages));
         }
 
-        internal static PackageCollectionItem SelectTransitiveLatestPackage(IGrouping<string, PackageCollectionItem> groupedPackagesById, IEnumerable<PackageCollectionItem> installedPkgs)
-        {
-            if (groupedPackagesById == null)
-            {
-                throw new ArgumentNullException(nameof(groupedPackagesById));
-            }
-
-            if (installedPkgs == null)
-            {
-                throw new ArgumentNullException(nameof(installedPkgs));
-            }
-
-            IEnumerable<PackageCollectionItem> matchedOrigins = groupedPackagesById
-                .Where(x => x.PackageReferences
-                    .Cast<ITransitivePackageReferenceContextInfo>()
-                    .Any(trPr => trPr.TransitiveOrigins.Any(trOrigin => installedPkgs.Contains(trOrigin.Identity))));
-
-            if (matchedOrigins.Any())
-            {
-                // Return the latest transitive package with installed versions
-                return matchedOrigins.OrderByDescending(x => x.Version).First();
-            }
-
-            // Otherwise, fallback on what's availble
-            return groupedPackagesById.OrderByDescending(x => x.Version).First();
-        }
-
         /// <inheritdoc cref="IPackageFeed.ContinueSearchAsync(ContinuationToken, CancellationToken)" />
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
@@ -59,20 +32,23 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageCollectionItem[] matchesInstalled = PerformLookup(installedFeedItems, searchToken);
 
             // Remove transitive packages from project references
-            IEnumerable<PackageCollectionItem> pkgsWithOrigins = _transitivePackages
-                .Where(t => t.PackageReferences.Any(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()));
+            IEnumerable<PackageCollectionItem> transitivePkgsWithOrigins = _transitivePackages
+                .Where(transitivePkg => transitivePkg
+                    .PackageReferences
+                    .All(pkgRef => pkgRef is ITransitivePackageReferenceContextInfo trPkgRef && trPkgRef.TransitiveOrigins.Any()));
 
-            // Search all transitive packages, then group by package ID later
-            PackageCollectionItem[] matchesTransitive = PerformLookup(pkgsWithOrigins, searchToken);
-
-            // Select latest version with matching transitive origin with installed packages
-            // or fallback to latest version available
-            IEnumerable<PackageCollectionItem> transitivePackagesApplicable = matchesTransitive
+            // First, Search all transitive packages
+            // If we first group transitive packages by Id, then, lookup, transitive package origins could not match Installed package version
+            PackageCollectionItem[] matchesTransitive = PerformLookupCore(transitivePkgsWithOrigins, searchToken)
+                // Then, group by package ID
                 .GroupById()
-                .Select(group => SelectTransitiveLatestPackage(group, matchesInstalled));
+                // Select latest version with matching transitive origin within installed packages collection
+                // or fallback to latest transitive package version available if its transitive origins are not found
+                .Select(group => GetLatestApplicableTransitivePackageVersion(group, matchesInstalled))
+                .ToArray();
 
             IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(matchesInstalled, searchToken.SearchFilter.IncludePrerelease, cancellationToken);
-            IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(transitivePackagesApplicable.ToArray(), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(matchesTransitive, searchToken.SearchFilter.IncludePrerelease, cancellationToken);
             IPackageSearchMetadata[] items = installedItems.Concat(transitiveItems).ToArray();
 
             return CreateResult(items);
@@ -101,6 +77,40 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return await base.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+        }
+
+        internal static PackageCollectionItem GetLatestApplicableTransitivePackageVersion(IGrouping<string, PackageCollectionItem> groupedPackagesById, IEnumerable<PackageCollectionItem> installedPkgs)
+        {
+            if (groupedPackagesById == null || !groupedPackagesById.Any())
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(groupedPackagesById));
+            }
+            if (installedPkgs == null)
+            {
+                throw new ArgumentNullException(nameof(installedPkgs));
+            }
+            if (groupedPackagesById
+                    .Any(group => !group.PackageReferences.Any() // PackageReferences is empty
+                        || group.PackageReferences.Any(pkgRef =>
+                            pkgRef is not ITransitivePackageReferenceContextInfo tr // it is not a transitive package
+                            || !tr.TransitiveOrigins.Any()))) // No transitive origin for a transitive package
+            {
+                throw new ArgumentException(Strings.InvalidCollectionElementType, nameof(groupedPackagesById));
+            }
+
+            IEnumerable<PackageCollectionItem> matchedOrigins = groupedPackagesById
+                .Where(group => group.PackageReferences
+                    .Cast<ITransitivePackageReferenceContextInfo>()
+                    .Any(trPkgRef => trPkgRef.TransitiveOrigins.Any(trOrigin => installedPkgs.Contains(trOrigin.Identity))));
+
+            if (matchedOrigins.Any())
+            {
+                // Return the latest transitive package with installed versions
+                return matchedOrigins.OrderByDescending(pkgCollection => pkgCollection.Version).First();
+            }
+
+            // Otherwise, fallback on what's available
+            return groupedPackagesById.OrderByDescending(pkgCollection => pkgCollection.Version).First();
         }
     }
 }
