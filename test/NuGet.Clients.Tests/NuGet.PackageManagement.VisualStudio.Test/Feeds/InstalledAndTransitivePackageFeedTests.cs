@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var feed = new InstalledAndTransitivePackageFeed(installedPackages, transitivePackages, _packageMetadataProvider);
 
             // Act
-            SearchResult<IPackageSearchMetadata> result = await feed.SearchAsync("", new SearchFilter(includePrerelease: false), CancellationToken.None);
+            SearchResult<IPackageSearchMetadata> result = await feed.SearchAsync(string.Empty, new SearchFilter(includePrerelease: false), CancellationToken.None);
 
             // Asert
             Assert.Equal(1, result.Items.Count);
