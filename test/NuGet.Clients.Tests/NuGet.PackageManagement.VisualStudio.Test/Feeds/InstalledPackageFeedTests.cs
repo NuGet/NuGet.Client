@@ -26,14 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // dependencies and data
             _metadataResource = Mock.Of<PackageMetadataResource>();
 
-            var provider = Mock.Of<INuGetResourceProvider>();
-            Mock.Get(provider)
-                .Setup(x => x.TryCreate(It.IsAny<SourceRepository>(), It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(Tuple.Create(true, (INuGetResource)_metadataResource)));
-            Mock.Get(provider)
-                .Setup(x => x.ResourceType)
-                .Returns(typeof(PackageMetadataResource));
-
+            INuGetResourceProvider provider = FeedTestUtils.CreateTestResourceProvider(_metadataResource);
             var logger = new TestLogger();
             var packageSource = new Configuration.PackageSource("http://fake-source");
             var source = new SourceRepository(packageSource, new[] { provider });
@@ -148,13 +141,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public void PerformLookup_EmptyElements_ReturnsEmpty()
         {
-            var token = new FeedSearchContinuationToken()
-            {
-                SearchString = "",
-            };
+            // Arrange
+            FeedSearchContinuationToken token = FeedTestUtils.CreateInitialToken();
 
+            // Act
             PackageIdentity[] result = InstalledPackageFeed.PerformLookup(Enumerable.Empty<PackageIdentity>(), token);
 
+            // Assert
             Assert.Empty(result);
         }
 
