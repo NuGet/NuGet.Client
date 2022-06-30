@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
     [CollectionDefinition(Name)]
-    public sealed class SigningTestsCollection : ICollectionFixture<CertificatesFixture>
+    public sealed class SigningTestsCollection
+        : ICollectionFixture<CertificatesFixture>, ICollectionFixture<X509TrustTestFixture>
     {
         internal const string Name = "Signing tests collection";
 

@@ -4,13 +4,12 @@
 using Test.Utility.Signing;
 using Xunit;
 
-namespace NuGet.CommandLine.FuncTest.Commands
+namespace NuGet.Commands.FuncTest
 {
     [CollectionDefinition(Name)]
-    public class SignCommandTestCollection
-        : ICollectionFixture<SignCommandTestFixture>, ICollectionFixture<X509TrustTestFixture>
+    public sealed class TestCollection : ICollectionFixture<X509TrustTestFixture>
     {
-        public const string Name = "Sign Command Test Collection";
+        internal const string Name = "NuGet Commands Tests";
 
         // This class has no code, and is never created. Its purpose is simply
         // to be the place to apply [CollectionDefinition] and all the

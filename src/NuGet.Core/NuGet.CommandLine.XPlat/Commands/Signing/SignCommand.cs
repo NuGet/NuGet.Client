@@ -129,6 +129,8 @@ namespace NuGet.CommandLine.XPlat
 
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
 
+                    X509TrustStore.InitializeForDotNetSdk(args.Logger);
+
                     ISignCommandRunner runner = getCommandRunner();
                     int result = await runner.ExecuteCommandAsync(args);
                     return result;

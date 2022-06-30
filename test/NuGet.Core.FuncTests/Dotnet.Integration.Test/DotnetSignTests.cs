@@ -32,6 +32,8 @@ namespace Dotnet.Integration.Test
         {
             _msbuildFixture = buildFixture;
             _signFixture = signFixture;
+
+            _signFixture.SetFallbackCertificateBundle(buildFixture.SdkDirectory);
         }
 
         [Fact]
@@ -469,20 +471,20 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithUntrustedSelfIssuedCertificateInCertificateStore_SuccessAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                IX509StoreCertificate storeCertificate = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore;
 
-                X509Certificate2 untrustedSelfIssuedCert = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore;
-
-                //Act
+                // Act
                 CommandRunnerResult result = _msbuildFixture.RunDotnet(
                     pathContext.PackageSource,
-                    $"nuget sign {packageFilePath} --certificate-fingerprint {untrustedSelfIssuedCert.Thumbprint}",
+                    $"nuget sign {packageFilePath} " +
+                    $"--certificate-fingerprint {storeCertificate.Certificate.Thumbprint}",
                     ignoreExitCode: true);
 
                 // Assert
@@ -496,27 +498,29 @@ namespace Dotnet.Integration.Test
         public async Task DotnetSign_SignPackageWithUnsuportedTimestampHashAlgorithm_FailsAsync()
         {
             // Arrange
-            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext("PackageA", "1.0.0"));
 
-                var packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
-                var originalFile = File.ReadAllBytes(packageFilePath);
+                string packageFilePath = Path.Combine(pathContext.PackageSource, "PackageA.1.0.0.nupkg");
+                byte[] originalFile = File.ReadAllBytes(packageFilePath);
 
                 ISigningTestServer testServer = await _signFixture.GetSigningTestServerAsync();
                 CertificateAuthority certificateAuthority = await _signFixture.GetDefaultTrustedCertificateAuthorityAsync();
                 var options = new TimestampServiceOptions() { SignatureHashAlgorithm = new Oid(Oids.Sha1) };
                 TimestampService timestampService = TimestampService.Create(certificateAuthority, options);
+                IX509StoreCertificate storeCertificate = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore;
 
                 using (testServer.RegisterResponder(timestampService))
-                using (var UntrustedSelfIssuedCert = _signFixture.UntrustedSelfIssuedCertificateInCertificateStore)
                 {
-                    //Act
+                    // Act
                     CommandRunnerResult result = _msbuildFixture.RunDotnet(
                         pathContext.PackageSource,
-                        $"nuget sign {packageFilePath} --certificate-fingerprint {UntrustedSelfIssuedCert.Thumbprint} --timestamper {timestampService.Url}",
+                        $"nuget sign {packageFilePath} " +
+                        $"--certificate-fingerprint {storeCertificate.Certificate.Thumbprint} " +
+                        $"--timestamper {timestampService.Url}",
                         ignoreExitCode: true);
 
                     // Assert
@@ -524,7 +528,7 @@ namespace Dotnet.Integration.Test
                     result.AllOutput.Should().Contain(_timestampUnsupportedDigestAlgorithmCode);
                     Assert.Contains("The timestamp signature has an unsupported digest algorithm (SHA1). The following algorithms are supported: SHA256, SHA384, SHA512.", result.AllOutput);
 
-                    var resultingFile = File.ReadAllBytes(packageFilePath);
+                    byte[] resultingFile = File.ReadAllBytes(packageFilePath);
                     Assert.Equal(resultingFile, originalFile);
                 }
             }

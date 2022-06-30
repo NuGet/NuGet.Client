@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
@@ -266,6 +265,12 @@ namespace NuGet.CommandLine.XPlat
                 };
 
                 setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
+
+                // Add is the only action which does certificate chain building.
+                if (trustedSignersArgs.Action == TrustedSignersAction.Add)
+                {
+                    X509TrustStore.InitializeForDotNetSdk(logger);
+                }
 
 #pragma warning disable CS0618 // Type or member is obsolete
                 var sourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
