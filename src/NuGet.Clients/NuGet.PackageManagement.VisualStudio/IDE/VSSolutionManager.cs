@@ -351,7 +351,14 @@ namespace NuGet.PackageManagement.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var vsSolution = await _asyncVSSolution.GetValueAsync();
-            return IsSolutionOpenFromVSSolution(vsSolution);
+            if (!IsSolutionOpenFromVSSolution(vsSolution))
+            {
+                // During new solution creation, NuGet runs as part of the VSTemplateWizard,
+                // the VSSolution might not recognize the solution as open, while the DTE does.
+                var dte = await _dte.GetValueAsync();
+                return IsSolutionOpenFromDTE(dte);
+            }
+            return true;
         }
 
         public async Task<bool> IsSolutionAvailableAsync()
@@ -427,12 +434,55 @@ namespace NuGet.PackageManagement.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var vsSolution = await _asyncVSSolution.GetValueAsync();
 
-            if (!IsSolutionOpenFromVSSolution(vsSolution))
+            if (IsSolutionOpenFromVSSolution(vsSolution))
+            {
+                return (string)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_SolutionDirectory);
+            }
+            else
+            {
+                // During new solution creation, NuGet runs as part of the VSTemplateWizard,
+                // the VSSolution might not recognize the solution as open, while the DTE does.
+                var dte = await _dte.GetValueAsync();
+                if (IsSolutionOpenFromDTE(dte))
+                {
+                    return GetSolutionDirectoryFromDte(dte);
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsSolutionOpenFromDTE(DTE dte)
+        {
+            return dte != null &&
+                    dte.Solution != null &&
+                    dte.Solution.IsOpen;
+        }
+
+        private string GetSolutionDirectoryFromDte(DTE dte)
+        {
+            // Use .Properties.Item("Path") instead of .FullName because .FullName might not be
+            // available if the solution is just being created
+            string solutionFilePath;
+
+            var property = dte.Solution.Properties.Item("Path");
+            if (property == null)
+            {
+                return null;
+            }
+            try
+            {
+                // When using a temporary solution, (such as by saying File -> New File), querying this value throws.
+                // Since we wouldn't be able to do manage any packages at this point, we return null. Consumers of this property typically
+                // use a String.IsNullOrEmpty check either way, so it's alright.
+                solutionFilePath = (string)property.Value;
+            }
+            catch (COMException)
             {
                 return null;
             }
 
-            return (string)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_SolutionDirectory);
+            return Path.GetDirectoryName(solutionFilePath);
         }
 
         private static bool IsSolutionOpenFromVSSolution(IVsSolution vsSolution)
