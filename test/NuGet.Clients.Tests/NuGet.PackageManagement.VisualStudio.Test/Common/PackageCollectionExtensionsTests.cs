@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class PackageCollectionExtensionsTests
     {
-        public static IEnumerable<PackageCollectionItem> PackageTestData = new[]
+        public static IEnumerable<PackageCollectionItem> PackageCollectionItemTestData = new[]
         {
             new PackageCollectionItem("packageA", NuGetVersion.Parse("1.0.0"), new PackageReferenceContextInfo[]
             {
@@ -27,29 +27,42 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             new PackageCollectionItem("packageC", NuGetVersion.Parse("2.0.0"), new PackageReferenceContextInfo[0]),
         };
 
-        public static IEnumerable<PackageIdentity> PackageIdentityData = new[]
+        public static IEnumerable<PackageIdentity> PackageIdentityTestData = new[]
         {
             new PackageIdentity("packageA", new NuGetVersion("1.0.0")),
             new PackageIdentity("packageA", new NuGetVersion("3.0.0")),
             new PackageIdentity("packageC", new NuGetVersion("2.0.0")),
         };
 
-        public static IEnumerable<object[]> GetData()
+        public static IEnumerable<object[]> GetTestData()
         {
             yield return new object[]
             {
-                PackageTestData, typeof(PackageCollectionItem)
+                PackageCollectionItemTestData, typeof(PackageCollectionItem)
             };
 
             yield return new object[]
             {
-                PackageIdentityData, typeof(PackageIdentity)
+                PackageIdentityTestData, typeof(PackageIdentity)
+            };
+        }
+
+        public static IEnumerable<object[]> GetEmptyTestData()
+        {
+            yield return new object[]
+            {
+                Enumerable.Empty<PackageIdentity>()
+            };
+
+            yield return new object[]
+            {
+                Enumerable.Empty<PackageCollectionItem>()
             };
         }
 
         [Theory]
-        [MemberData(nameof(GetData))]
-        public void GetEarliest_ReturnsFirstOfSameTypeAsInput<T>(IEnumerable<T> inputData, Type expectedType) where T : PackageIdentity
+        [MemberData(nameof(GetTestData))]
+        public void GetEarliest_CollectionWithAllElementsOfSameType_ReturnsFirstOfSameTypeAsInput<T>(IEnumerable<T> inputData, Type expectedType) where T : PackageIdentity
         {
             // Act
             T[] earliestPackages = inputData.GetEarliest();
@@ -59,21 +72,42 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 e =>
                 {
                     Assert.IsType(expectedType, e);
-                    Assert.Equal(e.Id, "packageA");
-                    Assert.Equal(e.Version.ToNormalizedString(), "1.0.0");
+                    Assert.Equal("packageA", e.Id);
+                    Assert.Equal("1.0.0", e.Version.ToNormalizedString());
                 },
                 e =>
                 {
                     Assert.IsType(expectedType, e);
-                    Assert.Equal(e.Id, "packageC");
-                    Assert.Equal(e.Version.ToNormalizedString(), "2.0.0");
+                    Assert.Equal("packageC", e.Id);
+                    Assert.Equal("2.0.0", e.Version.ToNormalizedString());
                 }
             );
         }
 
+        [Fact]
+        public void GetEarliest_NullData_Throws()
+        {
+            // Arrange
+            IEnumerable<PackageIdentity> input = null;
+
+            // Act and Assert
+            Assert.Throws<ArgumentNullException>(() => input.GetEarliest());
+        }
+
         [Theory]
-        [MemberData(nameof(GetData))]
-        public void GetLatest_ReturnstLastOfSameTypeAsInput<T>(IEnumerable<T> inputData, Type expectedType) where T : PackageIdentity
+        [MemberData(nameof(GetEmptyTestData))]
+        public void GetEarliest_EmptyCollection_ReturnsEmptyCollection<T>(IEnumerable<T> inputData) where T : PackageIdentity
+        {
+            // Act
+            T[] result = inputData.GetEarliest();
+
+            // Assert
+            Assert.Empty(result);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetTestData))]
+        public void GetLatest_CollectionWithAllElementsOfSameType_ReturnstLastOfSameTypeAsInput<T>(IEnumerable<T> inputData, Type expectedType) where T : PackageIdentity
         {
             // Act
             T[] latestPackages = inputData.GetLatest();
@@ -83,21 +117,31 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 e =>
                 {
                     Assert.IsType(expectedType, e);
-                    Assert.Equal(e.Id, "packageA");
-                    Assert.Equal(e.Version.ToNormalizedString(), "3.0.0");
+                    Assert.Equal("packageA", e.Id);
+                    Assert.Equal("3.0.0", e.Version.ToNormalizedString());
                 },
                 e =>
                 {
                     Assert.IsType(expectedType, e);
-                    Assert.Equal(e.Id, "packageC");
-                    Assert.Equal(e.Version.ToNormalizedString(), "2.0.0");
+                    Assert.Equal("packageC", e.Id);
+                    Assert.Equal("2.0.0", e.Version.ToNormalizedString());
                 }
             );
         }
 
+        [Fact]
+        public void GetLatest_NullData_Throws()
+        {
+            // Arrange
+            IEnumerable<PackageIdentity> input = null;
+
+            // Act and Assert
+            Assert.Throws<ArgumentNullException>(() => input.GetLatest());
+        }
+
         [Theory]
-        [MemberData(nameof(GetData))]
-        public void GroupById_ReturnsGroup<T>(IEnumerable<T> inputData, Type expectedType) where T : PackageIdentity
+        [MemberData(nameof(GetTestData))]
+        public void GroupById_CollectionWithAllElementsOfSameType_ReturnsGroupOfSameTypeAsInput<T>(IEnumerable<T> inputData, Type expectedType) where T : PackageIdentity
         {
             // Act
             IEnumerable<IGrouping<string, T>> grouped = inputData.GroupById();
@@ -114,6 +158,27 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(1, group.Count());
                     Assert.All<object>(group, groupElem => Assert.IsType(expectedType, groupElem));
                 });
+        }
+
+        [Theory]
+        [MemberData(nameof(GetEmptyTestData))]
+        public void GroupById_EmptyData_ReturnsEmptyCollection<T>(IEnumerable<T> inputData) where T : PackageIdentity
+        {
+            // Act
+            IEnumerable<IGrouping<string, T>> grouped = inputData.GroupById();
+
+            // Assert
+            Assert.Empty(grouped);
+        }
+
+        [Fact]
+        public void GroupById_NullData_Throws()
+        {
+            // Arrange
+            IEnumerable<PackageIdentity> input = null;
+
+            // Act and Assert
+            Assert.Throws<ArgumentNullException>(() => input.GroupById());
         }
     }
 }
