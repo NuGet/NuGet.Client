@@ -262,15 +262,13 @@ namespace NuGet.CommandLine.XPlat
             // Add both package reference information and version metadata using the PACKAGE_VERSION_TYPE_TAG.
             var item = itemGroup.AddItem(PACKAGE_VERSION_TYPE_TAG, libraryDependency.Name);
             var packageVersion = AddVersionMetadata(libraryDependency, item);
-
+            AddExtraMetadataToProjectItemElement(libraryDependency, item);
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
             Strings.Info_AddPkgAdded,
             libraryDependency.Name,
             packageVersion,
             itemGroup.ContainingProject.FullPath
             ));
-
-            AddExtraMetadataToProjectItemElement(libraryDependency, item);
         }
 
         /// <summary>
@@ -284,10 +282,8 @@ namespace NuGet.CommandLine.XPlat
             // Add both package reference information and version metadata using the PACKAGE_REFERENCE_TYPE_TAG.
             var item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
             var packageVersion = AddVersionMetadata(libraryDependency, item);
-
-            Logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Info_AddPkgAdded, libraryDependency.Name, packageVersion, itemGroup.ContainingProject.FullPath));
-
             AddExtraMetadataToProjectItemElement(libraryDependency, item);
+            Logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Info_AddPkgAdded, libraryDependency.Name, packageVersion, itemGroup.ContainingProject.FullPath));
         }
 
         /// <summary>
@@ -301,10 +297,8 @@ namespace NuGet.CommandLine.XPlat
         {
             // Only add the package reference information using the PACKAGE_REFERENCE_TYPE_TAG.
             ProjectItemElement item = itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, libraryDependency.Name);
-
-            Logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Info_AddPkgCPM, libraryDependency.Name, project.GetPropertyValue(DirectoryPackagesPropsPathPropertyName), itemGroup.ContainingProject.FullPath));
-
             AddExtraMetadataToProjectItemElement(libraryDependency, item);
+            Logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Info_AddPkgCPM, libraryDependency.Name, project.GetPropertyValue(DirectoryPackagesPropsPathPropertyName), itemGroup.ContainingProject.FullPath));
         }
 
         /// <summary>
