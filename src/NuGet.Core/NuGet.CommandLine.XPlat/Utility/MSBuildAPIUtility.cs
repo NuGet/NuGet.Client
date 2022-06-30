@@ -194,11 +194,14 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
+                if (!existingPackageReferences.Any())
+                {
+                    //Add <PackageReference/> to the project file.
+                    AddPackageReferenceIntoItemGroupCPM(project, itemGroup, libraryDependency);
+                }
+
                 // Get package version if it already exists in the props file. Returns null if there is no matching package version.
                 ProjectItem packageVersionInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_VERSION_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name));
-
-                //Add <PackageReference/> to the project file.
-                AddPackageReferenceIntoItemGroupCPM(project, itemGroup, libraryDependency);
 
                 // If no <PackageVersion /> exists in the Directory.Packages.props file.
                 if (packageVersionInProps == null)
@@ -263,11 +266,7 @@ namespace NuGet.CommandLine.XPlat
             var item = itemGroup.AddItem(PACKAGE_VERSION_TYPE_TAG, libraryDependency.Name);
             var packageVersion = AddVersionMetadata(libraryDependency, item);
             AddExtraMetadataToProjectItemElement(libraryDependency, item);
-            Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-            Strings.Info_AddPkgAdded,
-            libraryDependency.Name,
-            packageVersion,
-            itemGroup.ContainingProject.FullPath
+            Logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Info_AddPkgAdded, libraryDependency.Name, packageVersion, itemGroup.ContainingProject.FullPath
             ));
         }
 
