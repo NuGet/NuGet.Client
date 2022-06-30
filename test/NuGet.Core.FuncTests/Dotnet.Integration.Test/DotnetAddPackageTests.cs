@@ -615,14 +615,13 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkgWithNoVersion_WhenProjectOnboardedToCPMAndNoPackagesExistInProps()
+        public async Task AddPkg_WithCPM_WhenPackageVersionDoesNotExistAndVersionCLIArgNotPassed_Success()
         {
             using var pathContext = new SimpleTestPathContext();
 
             // Set up solution, and project
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var projectName = "projectA";
-            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+            var projectA = XPlatTestUtils.CreateProject("projectA", pathContext, "net5.0");
 
             const string version1 = "1.0.0";
             const string version2 = "2.0.0";
@@ -635,10 +634,7 @@ namespace Dotnet.Integration.Test
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
-                    packageX100);
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
+                    packageX100,
                     packageX200);
 
             var propsFile = @$"<Project>
@@ -668,14 +664,13 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkgWithVersion_WhenProjectOnboardedToCPMAndNoPackagesExistInProps()
+        public async Task AddPkg_WithCPM_WhenPackageVersionDoesNotExistAndVersionCLIArgPassed_Success() 
         {
             using var pathContext = new SimpleTestPathContext();
 
             // Set up solution, and project
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var projectName = "projectA";
-            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+            var projectA = XPlatTestUtils.CreateProject("projectA", pathContext, "net5.0");
 
             const string version1 = "1.0.0";
             const string version2 = "2.0.0";
@@ -688,10 +683,7 @@ namespace Dotnet.Integration.Test
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
-                    packageX100);
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
+                    packageX100,
                     packageX200);
 
             var propsFile = @$"<Project>
@@ -721,14 +713,13 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkgWithNoVersion_WhenProjectOnboardedToCPMAndPackageVersionExistsInProps()
+        public async Task AddPkg_WithCPM_WhenPackageVersionExistsAndVersionCLIArgNotPassed_Success() 
         {
             using var pathContext = new SimpleTestPathContext();
 
             // Set up solution and project
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var projectNameA = "projectA";
-            var projectA = XPlatTestUtils.CreateProject(projectNameA, pathContext, "net5.0");
+            var projectA = XPlatTestUtils.CreateProject("projectA", pathContext, "net5.0");
 
             const string version = "2.0.0";
             const string packageX = "X";
@@ -772,14 +763,13 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkgWithVersion_WhenProjectOnboardedToCPMAndPackageVersionExistsInProps()
+        public async Task AddPkg_WithCPM_WhenPackageVersionExistsAndVersionCLIArgPassed_Success()
         {
             using var pathContext = new SimpleTestPathContext();
 
             // Set up solution
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var projectNameA = "projectA";
-            var projectA = XPlatTestUtils.CreateProject(projectNameA, pathContext, "net5.0");
+            var projectA = XPlatTestUtils.CreateProject("projectA", pathContext, "net5.0");
 
             const string version = "2.0.0";
             const string packageX = "X";
@@ -828,8 +818,7 @@ namespace Dotnet.Integration.Test
 
             // Set up solution
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var projectNameA = "projectA";
-            var projectA = XPlatTestUtils.CreateProject(projectNameA, pathContext, "net5.0");
+            var projectA = XPlatTestUtils.CreateProject("projectA", pathContext, "net5.0");
 
             const string version = "1.0.0";
             const string packageX = "X";
