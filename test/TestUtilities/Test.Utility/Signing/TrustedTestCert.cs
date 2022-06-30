@@ -96,6 +96,8 @@ namespace Test.Utility.Signing
 
                 TrustedCert.Dispose();
 
+                GC.SuppressFinalize(this);
+
                 _isDisposed = true;
             }
         }

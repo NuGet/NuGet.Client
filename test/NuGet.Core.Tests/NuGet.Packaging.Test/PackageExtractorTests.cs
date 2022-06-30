@@ -29,6 +29,7 @@ namespace NuGet.Packaging.Test
 {
     using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
 
+    [Collection(SigningTestsCollection.Name)]
     public class PackageExtractorTests
     {
         private static ClientPolicyContext _defaultContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, NullLogger.Instance);
@@ -39,8 +40,8 @@ namespace NuGet.Packaging.Test
         private const string _noMatchInRepoAllowList = "This package was not repository signed with a certificate listed by this repository.";
         private const string _notSignedPackageRepo = "This repository indicated that all its packages are repository signed; however, this package is unsigned.";
         private const string _notSignedPackageRequire = "signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.";
-        private const string OptInPackageVerification = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
-        private const string OptInPackageVerificationTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
+        private const string SignatureVerificationEnvironmentVariable = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
+        private const string SignatureVerificationEnvironmentVariableTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
         private const string UntrustedChainCertError = "The author primary signature's signing certificate is not trusted by the trust provider.";
 
         [Fact]
@@ -1786,7 +1787,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_SuccessAsync()
         {
             var extractionContext = new PackageExtractionContext(
@@ -1821,11 +1822,11 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_Error()
+        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_WithEnvVar_Error()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns("TRUE");
 
             var extractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
@@ -1871,11 +1872,11 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_OptInEnvVar_Name_CaseSensitive_Success()
+        [PlatformFact(Platform.Darwin)]
+        public async Task ExtractPackageAsync_UnsignedPackage_WhenRepositorySaysAllPackagesSigned_WithEnvVarNameCaseSensitive_Success()
         {
             // Arrange
-            string envVarName = OptInPackageVerificationTypo;
+            string envVarName = SignatureVerificationEnvironmentVariableTypo;
             var extractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
                 PackageExtractionBehavior.XmlDocFileSaveMode,
@@ -1960,7 +1961,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task ExtractPackageAsync_UnsignedPackage_RequireMode_SuccessAsync()
         {
             var extractionContext = new PackageExtractionContext(
@@ -1996,11 +1997,11 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsync_UnsignedPackage_RequireMode_OptInEnvVar_Error()
+        public async Task ExtractPackageAsync_UnsignedPackage_RequireMode_WithEnvVar_Error()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns("TRUE");
 
             var extractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv2,
@@ -2048,7 +2049,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task ExtractPackageAsync_RequireMode_EmptyRepoAllowList_SuccessAsync()
         {
             using (var dir = TestDirectory.Create())
@@ -2152,7 +2153,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_SuccessAsync()
         {
             using (var dir = TestDirectory.Create())
@@ -2195,11 +2196,11 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_OptInEnvVar_Error()
+        public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_WithEnvVar_Error()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns("TRUE");
 
             using (var dir = TestDirectory.Create())
             using (TrustedTestCert<TestCertificate> repoCertificate = SigningTestUtility.GenerateTrustedTestCertificate())
@@ -2300,7 +2301,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformTheory(Platform.Linux, Platform.Darwin)]
+        [PlatformTheory(Platform.Darwin)]
         [MemberData(nameof(KnownClientPoliciesList))]
         public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertNotFromRepositoryAllowList_SuccessAsync(ClientPolicyContext clientPolicy)
         {
@@ -2401,11 +2402,11 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsWithoutSigningWarningsOrErrors_OptInEnvVar()
+        public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsWithoutSigningWarningsOrErrors_WithEnvVar()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns("TRUE");
 
             using (var dir = TestDirectory.Create())
             using (var repoCertificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false))
@@ -2456,7 +2457,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task ExtractPackageAsync_WithAllowUntrusted_SucceedsNoWarning()
         {
             // Arrange
@@ -2564,7 +2565,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_SuccessAsync()
         {
             // Arrange
@@ -2615,11 +2616,11 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_OptInEnvVar_Errors()
+        public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_PackageArchiveReader_WhenUnsignedPackagesDisallowed_WithEnvVar_Errors()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns("TRUE");
             var signedPackageVerifier = new Mock<IPackageSignatureVerifier>(MockBehavior.Strict);
 
             signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
@@ -3321,7 +3322,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task InstallFromSourceAsyncByPackageDownloader_InvalidSignPackageWithUnzip_SuccessAsync()
         {
             // Arrange
@@ -3592,7 +3593,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task InstallFromSourceAsyncByStream_InvalidSignPackageWithUnzip_SuccessAsync()
         {
             // Arrange
@@ -3742,7 +3743,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip_SuccessAsync()
         {
             // Arrange
@@ -3795,11 +3796,11 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip_OptInEnvVar_Throws()
+        public async Task ExtractPackageAsyncByStream_InvalidSignPackageWithUnzip_WithOptInEnvVar_Throws()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns("TRUE");
 
             using (var root = TestDirectory.Create())
             {
@@ -3989,7 +3990,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip_SucceedAsync()
         {
             // Arrange
@@ -4038,11 +4039,11 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip_OptInEnvVar_Throws()
+        public async Task ExtractPackageAsyncByPackageReader_InvalidSignPackageWithUnzip_WithEnvVar_Throws()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns("TRUE");
 
             using (var root = TestDirectory.Create())
             {
@@ -4181,7 +4182,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip_SuccessAsync()
         {
             // Arrange
@@ -4234,11 +4235,11 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip_OptInEnvVar_Throws()
+        public async Task ExtractPackageAsyncByPackageReaderAndStream_InvalidSignPackageWithUnzip_WithEnvVar_Throws()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns("TRUE");
 
             using (var root = TestDirectory.Create())
             {
@@ -4332,7 +4333,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        [PlatformFact(Platform.Darwin)]
         public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_DonotVerifyAsync()
         {
             // Arrange
@@ -4383,11 +4384,11 @@ namespace NuGet.Packaging.Test
         }
 
         [CIOnlyFact]
-        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_OptInEnvVar_DoVerify()
+        public async Task VerifyPackageSignatureAsync_PassesCommonSettingsWhenNoRepoSignatureInfo_WithEnvVar_DoVerify()
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns("TRUE");
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns("TRUE");
 
             using (var root = TestDirectory.Create())
             {
@@ -4508,7 +4509,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformTheory(Platform.Linux, Platform.Darwin)]
+        [PlatformTheory(Platform.Darwin)]
         [MemberData(nameof(KnownClientPoliciesList))]
         public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultSettings_DonotVerifyAsync(ClientPolicyContext clientPolicyContext)
         {
@@ -4653,7 +4654,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformTheory(Platform.Linux, Platform.Darwin)]
+        [PlatformTheory(Platform.Darwin)]
         [MemberData(nameof(KnownClientPoliciesList))]
         public async Task VerifyPackageSignatureAsync_PassesModifiedSettingsWhenRepoSignatureInfo_DefaultVerifyCommandSettings_DonotVerifyAsync(ClientPolicyContext clientPolicyContext)
         {

@@ -23,8 +23,8 @@ namespace Dotnet.Integration.Test
         //setting up a short cert chain then it's easier to make it invalid.
         private const int _shortCertChainLength = 2;
 
-        private TrustedTestCert<X509Certificate2> _trustedTimestampRoot;
-        private TrustedTestCert<X509Certificate2> _untrustedSelfIssuedCertificateInCertificateStore;
+        private X509StoreCertificate _trustedTimestampRoot;
+        private X509StoreCertificate _untrustedSelfIssuedCertificateInCertificateStore;
         private List<X509StoreCertificate> _defaultCertificateChain;
         private List<X509StoreCertificate> _invalidEkuCertificateChain;
         private List<X509StoreCertificate> _expiredCertificateChain;
@@ -41,6 +41,7 @@ namespace Dotnet.Integration.Test
         private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
         private readonly DisposableList<IDisposable> _responders;
+        private FileInfo _fallbackCertificateBundle;
 
         public IX509StoreCertificate DefaultCertificate
         {
@@ -57,12 +58,9 @@ namespace Dotnet.Integration.Test
                     {
                         StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
 
-                        _defaultCertificateChain.Add(
-                            new X509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, new X509Certificate2(chain[0])));
-                        _defaultCertificateChain.Add(
-                            new X509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, new X509Certificate2(chain[1])));
-                        _defaultCertificateChain.Add(
-                            new X509StoreCertificate(rootStoreLocation, StoreName.Root, new X509Certificate2(chain[2])));
+                        _defaultCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _defaultCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[1]));
+                        _defaultCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[2]));
                     }
 
                     SetUpCrlDistributionPoint();
@@ -89,12 +87,9 @@ namespace Dotnet.Integration.Test
                     { 
                         StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
 
-                        _invalidEkuCertificateChain.Add(
-                            new X509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, new X509Certificate2(chain[0])));
-                        _invalidEkuCertificateChain.Add(
-                            new X509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, new X509Certificate2(chain[1])));
-                        _invalidEkuCertificateChain.Add(
-                            new X509StoreCertificate(rootStoreLocation, StoreName.Root, new X509Certificate2(chain[2])));
+                        _invalidEkuCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _invalidEkuCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[1]));
+                        _invalidEkuCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[2]));
                     }
 
                     SetUpCrlDistributionPoint();
@@ -125,12 +120,9 @@ namespace Dotnet.Integration.Test
                     {
                         StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
 
-                        _expiredCertificateChain.Add(
-                            new X509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, new X509Certificate2(chain[0])));
-                        _expiredCertificateChain.Add(
-                            new X509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, new X509Certificate2(chain[1])));
-                        _expiredCertificateChain.Add(
-                            new X509StoreCertificate(rootStoreLocation, StoreName.Root, new X509Certificate2(chain[2])));
+                        _expiredCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _expiredCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[1]));
+                        _expiredCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[2]));
                     }
 
                     SetUpCrlDistributionPoint();
@@ -161,12 +153,9 @@ namespace Dotnet.Integration.Test
                     {
                         StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
 
-                        _notYetValidCertificateChain.Add(
-                            new X509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, new X509Certificate2(chain[0])));
-                        _notYetValidCertificateChain.Add(
-                            new X509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, new X509Certificate2(chain[1])));
-                        _notYetValidCertificateChain.Add(
-                            new X509StoreCertificate(rootStoreLocation, StoreName.Root, new X509Certificate2(chain[2])));
+                        _notYetValidCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _notYetValidCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[1]));
+                        _notYetValidCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[2]));
                     }
 
                     SetUpCrlDistributionPoint();
@@ -192,10 +181,8 @@ namespace Dotnet.Integration.Test
                     {
                         StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
 
-                        _revokedCertificateChain.Add(
-                            new X509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, new X509Certificate2(chain[0])));
-                        _revokedCertificateChain.Add(
-                            new X509StoreCertificate(rootStoreLocation, StoreName.Root, new X509Certificate2(chain[1])));
+                        _revokedCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _revokedCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[1]));
                     }
 
                     SetUpCrlDistributionPoint();
@@ -221,10 +208,8 @@ namespace Dotnet.Integration.Test
                     {
                         StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
 
-                        _revocationUnknownCertificateChain.Add(
-                            new X509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, new X509Certificate2(chain[0])));
-                        _revocationUnknownCertificateChain.Add(
-                            new X509StoreCertificate(rootStoreLocation, StoreName.Root, new X509Certificate2(chain[1])));
+                        _revocationUnknownCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _revocationUnknownCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[1]));
                     }
 
                     SetUpCrlDistributionPoint();
@@ -234,21 +219,22 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        public X509Certificate2 UntrustedSelfIssuedCertificateInCertificateStore
+        public IX509StoreCertificate UntrustedSelfIssuedCertificateInCertificateStore
         {
             get
             {
-                if (_untrustedSelfIssuedCertificateInCertificateStore == null)
+                if (_untrustedSelfIssuedCertificateInCertificateStore is null)
                 {
                     X509Certificate2 certificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false);
 
-                    _untrustedSelfIssuedCertificateInCertificateStore = TrustedTestCert.Create(
-                        certificate,
+                    _untrustedSelfIssuedCertificateInCertificateStore = new X509StoreCertificate(
+                        StoreLocation.CurrentUser,
                         StoreName.My,
-                        StoreLocation.CurrentUser);
+                        certificate,
+                        _fallbackCertificateBundle);
                 }
 
-                return new X509Certificate2(_untrustedSelfIssuedCertificateInCertificateStore.Source);
+                return _untrustedSelfIssuedCertificateInCertificateStore;
             }
         }
 
@@ -421,10 +407,11 @@ namespace Dotnet.Integration.Test
             var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
             StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
-            _trustedTimestampRoot = TrustedTestCert.Create(
-                rootCertificate,
+            _trustedTimestampRoot = new X509StoreCertificate(
+                storeLocation,
                 StoreName.Root,
-                storeLocation);
+                rootCertificate,
+                _fallbackCertificateBundle);
 
             var ca = intermediateCa;
 
@@ -448,6 +435,30 @@ namespace Dotnet.Integration.Test
             _responders.Add(testServer.RegisterResponder(timestampService));
 
             return timestampService;
+        }
+
+        internal void SetFallbackCertificateBundle(DirectoryInfo sdkDirectory)
+        {
+            ArgumentNullException.ThrowIfNull(sdkDirectory, nameof(sdkDirectory));
+
+            _fallbackCertificateBundle = new FileInfo(
+                Path.Combine(
+                    sdkDirectory.FullName,
+                    FallbackCertificateBundleX509ChainFactory.SubdirectoryName,
+                    FallbackCertificateBundleX509ChainFactory.FileName));
+        }
+
+        private X509StoreCertificate CreateX509StoreCertificate(
+            StoreLocation storeLocation,
+            StoreName storeName,
+            X509Certificate2 certificate)
+        {
+            // Clone the source certificate because the source certificate will be disposed.
+            return new X509StoreCertificate(
+                storeLocation,
+                storeName,
+                new X509Certificate2(certificate),
+                _fallbackCertificateBundle);
         }
     }
 }

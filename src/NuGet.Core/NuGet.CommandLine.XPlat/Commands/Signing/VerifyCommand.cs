@@ -9,6 +9,7 @@ using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Packaging.Signing;
 using static NuGet.Commands.VerifyArgs;
 
 namespace NuGet.CommandLine.XPlat
@@ -63,6 +64,8 @@ namespace NuGet.CommandLine.XPlat
                     args.Logger = getLogger();
                     args.Settings = XPlatUtility.ProcessConfigFile(configFile.Value());
                     setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
+
+                    X509TrustStore.InitializeForDotNetSdk(args.Logger);
 
                     var runner = getCommandRunner();
                     var verifyTask = runner.ExecuteCommandAsync(args);
