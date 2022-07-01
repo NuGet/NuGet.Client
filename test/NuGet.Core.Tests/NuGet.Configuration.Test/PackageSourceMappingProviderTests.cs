@@ -401,7 +401,7 @@ namespace NuGet.Configuration.Test
         <packageSource key=""nuget.org"">
             <package pattern=""stuff"" />
         </packageSource>
-        <packageSource key=""tempSource"">
+        <packageSource key=""localSource"">
             <package pattern=""added"" />
         </packageSource>
     </packageSourceMapping>
