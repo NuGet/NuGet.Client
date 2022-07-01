@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio;
@@ -358,6 +359,33 @@ namespace NuGet.VisualStudio
             }
         }
 
+        private string GetSolutionDirectoryFromDte(DTE dte)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            // Use .Properties.Item("Path") instead of .FullName because .FullName might not be
+            // available if the solution is just being created
+            string solutionFilePath;
+
+            var property = dte.Solution.Properties.Item("Path");
+            if (property == null)
+            {
+                return null;
+            }
+            try
+            {
+                // When using a temporary solution, (such as by saying File -> New File), querying this value throws.
+                // Since we wouldn't be able to do manage any packages at this point, we return null. Consumers of this property typically
+                // use a String.IsNullOrEmpty check either way, so it's alright.
+                solutionFilePath = (string)property.Value;
+            }
+            catch (COMException)
+            {
+                return null;
+            }
+
+            return Path.GetDirectoryName(solutionFilePath);
+        }
+
         private void AddTemplateParameters(Dictionary<string, string> replacementsDictionary)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -372,8 +400,8 @@ namespace NuGet.VisualStudio
                 if (_dte.Solution != null
                     && _dte.Solution.IsOpen)
                 {
-                    //solutionRepositoryPath = RepositorySettings.Value.RepositoryPath;
-                    solutionRepositoryPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager, _settings);
+                    var solutionDirectory = GetSolutionDirectoryFromDte(_dte);
+                    solutionRepositoryPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, _settings);
                 }
                 else
                 {
