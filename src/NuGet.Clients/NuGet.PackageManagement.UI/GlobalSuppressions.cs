@@ -7,6 +7,8 @@
 // a specific target and scoped to a namespace, type, member, etc.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.VisualStudio.Package;
+using NuGet.Options;
 
 [assembly: SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.PackageManagement.UI.PackageLoadContext.GetInstalledPackagesAsync~System.Threading.Tasks.Task{NuGet.PackageManagement.VisualStudio.PackageCollection}")]
 [assembly: SuppressMessage("Build", "CA2213:'PackageSourcesOptionsControl' contains field '_machineWidepackageSources' that is of IDisposable type 'BindingSource', but it is never disposed. Change the Dispose method on 'PackageSourcesOptionsControl' to call Close or Dispose on this field.", Justification = "'_machineWidepackageSources' field is disposed in 'PackageSourcesOptionsControl_Disposed' event handler", Scope = "member", Target = "~F:NuGet.Options.PackageSourcesOptionsControl._machineWidepackageSources")]
