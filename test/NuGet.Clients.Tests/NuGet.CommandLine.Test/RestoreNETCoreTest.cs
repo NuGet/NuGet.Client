@@ -9236,8 +9236,8 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packageX100NullVersion);
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .AddPackageVersion("x", "1.0.0")
-                    .AddPackageVersion("y", "1.0.0");
+                    .SetPackageVersion("x", "1.0.0")
+                    .SetPackageVersion("y", "1.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
@@ -9255,7 +9255,7 @@ namespace NuGet.CommandLine.Test
                 r = Util.RestoreSolution(pathContext);
 
                 // Update the cpvm
-                cpvmFile.UpdatePackageVersion("x", "2.0.0");
+                cpvmFile.SetPackageVersion("x", "2.0.0");
                 cpvmFile.Save();
 
                 // Expect exit code 1 on this restore
@@ -9321,8 +9321,8 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packageX100NullVersion);
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .AddPackageVersion("x", "1.0.0")
-                    .AddPackageVersion("y", "1.0.0");
+                    .SetPackageVersion("x", "1.0.0")
+                    .SetPackageVersion("y", "1.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
@@ -9337,7 +9337,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 // Update the transitive dependency in cpvm
-                cpvmFile.UpdatePackageVersion("y", "2.0.0");
+                cpvmFile.SetPackageVersion("y", "2.0.0");
                 cpvmFile.Save();
 
                 // Expect exit code 1 on this restore
@@ -9396,8 +9396,8 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packageX100NullVersion);
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .AddPackageVersion("x", "1.0.0")
-                    .AddPackageVersion("y", "1.0.0");
+                    .SetPackageVersion("x", "1.0.0")
+                    .SetPackageVersion("y", "1.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
@@ -9470,8 +9470,8 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packageX100NullVersion);
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .AddPackageVersion("x", "1.0.0")
-                    .AddPackageVersion("y", "1.0.0");
+                    .SetPackageVersion("x", "1.0.0")
+                    .SetPackageVersion("y", "1.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
@@ -9544,7 +9544,7 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packageX100NullVersion);
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .AddPackageVersion("x", "1.0.0");
+                    .SetPackageVersion("x", "1.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
@@ -9559,7 +9559,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 // Update the cpvm
-                cpvmFile.AddPackageVersion("y", "1.0.0");
+                cpvmFile.SetPackageVersion("y", "1.0.0");
                 cpvmFile.Save();
 
                 // Expect exit code 1 on this restore
@@ -9626,8 +9626,8 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packageX100NullVersion);
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .AddPackageVersion("x", "1.0.0")
-                    .AddPackageVersion("y", "1.0.0");
+                    .SetPackageVersion("x", "1.0.0")
+                    .SetPackageVersion("y", "1.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
@@ -9642,7 +9642,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 // Add new package version the cpvm
-                cpvmFile.AddPackageVersion("random", "1.0.0");
+                cpvmFile.SetPackageVersion("random", "1.0.0");
                 cpvmFile.Save();
 
                 // the addition should not impact this restore
@@ -9742,8 +9742,8 @@ namespace NuGet.CommandLine.Test
                 projectC.AddPackageToAllFrameworks(packageX);
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .AddPackageVersion("x", "1.0.0")
-                    .AddPackageVersion("y", "2.0.0");
+                    .SetPackageVersion("x", "1.0.0")
+                    .SetPackageVersion("y", "2.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.Projects.Add(projectB);
@@ -9924,19 +9924,19 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packagesForProject.ToArray());
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .AddPackageVersion("B", version100)
-                    .AddPackageVersion("F", version100)
-                    .AddPackageVersion("G", version100)
-                    .AddPackageVersion("E", version300)
-                    .AddPackageVersion("D", version200)
-                    .AddPackageVersion("M", version200)
-                    .AddPackageVersion("P", version300)
-                    .AddPackageVersion("Z", version300)
-                    .AddPackageVersion("T", version300)
-                    .AddPackageVersion("X", version100)
-                    .AddPackageVersion("U", version100)
-                    .AddPackageVersion("R", version300)
-                    .AddPackageVersion("S", version300);
+                    .SetPackageVersion("B", version100)
+                    .SetPackageVersion("F", version100)
+                    .SetPackageVersion("G", version100)
+                    .SetPackageVersion("E", version300)
+                    .SetPackageVersion("D", version200)
+                    .SetPackageVersion("M", version200)
+                    .SetPackageVersion("P", version300)
+                    .SetPackageVersion("Z", version300)
+                    .SetPackageVersion("T", version300)
+                    .SetPackageVersion("X", version100)
+                    .SetPackageVersion("U", version100)
+                    .SetPackageVersion("R", version300)
+                    .SetPackageVersion("S", version300);
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
@@ -10103,8 +10103,8 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packagesForProject.ToArray());
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .AddPackageVersion("B", "1.0.0")
-                    .AddPackageVersion("C", "2.0.0");
+                    .SetPackageVersion("B", "1.0.0")
+                    .SetPackageVersion("C", "2.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
@@ -10184,8 +10184,8 @@ namespace NuGet.CommandLine.Test
                 });
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .AddPackageVersion("A", "1.0.0")
-                    .AddPackageVersion("B", "1.0.0");
+                    .SetPackageVersion("A", "1.0.0")
+                    .SetPackageVersion("B", "1.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
@@ -10266,8 +10266,8 @@ namespace NuGet.CommandLine.Test
                 });
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .AddPackageVersion("A", "1.0.0")
-                    .AddPackageVersion("B", "1.0.0");
+                    .SetPackageVersion("A", "1.0.0")
+                    .SetPackageVersion("B", "1.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
