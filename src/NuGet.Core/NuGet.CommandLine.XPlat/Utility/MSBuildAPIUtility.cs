@@ -234,7 +234,7 @@ namespace NuGet.CommandLine.XPlat
 
             // Get the ItemGroup to add a PackageVersion to or create a new one.
             var propsItemGroup = GetItemGroup(directoryBuildPropsRootElement.ItemGroups, PACKAGE_VERSION_TYPE_TAG) ?? directoryBuildPropsRootElement.AddItemGroup();
-            AddPackageVersionIntoPropsItemGroup(project, propsItemGroup, libraryDependency);
+            AddPackageVersionIntoPropsItemGroup(propsItemGroup, libraryDependency);
 
             // Save the updated props file.
             directoryBuildPropsRootElement.Save();
@@ -245,7 +245,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="project">Project that needs to be modified.</param>
         /// <returns>The directory build props root element.</returns>
-        private ProjectRootElement GetDirectoryBuildPropsRootElement(Project project)
+        internal ProjectRootElement GetDirectoryBuildPropsRootElement(Project project)
         {
             // Get the Directory.Packages.props path.
             string directoryPackagesPropsPath = project.GetPropertyValue(DirectoryPackagesPropsPathPropertyName);
@@ -256,10 +256,9 @@ namespace NuGet.CommandLine.XPlat
         /// <summary>
         /// Add package name and version into the props file.
         /// </summary>
-        /// <param name="project">Project that is being modified.</param>
         /// <param name="itemGroup">Item group that needs to be modified in the props file.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
-        private void AddPackageVersionIntoPropsItemGroup(Project project, ProjectItemGroupElement itemGroup,
+        private void AddPackageVersionIntoPropsItemGroup(ProjectItemGroupElement itemGroup,
             LibraryDependency libraryDependency)
         {
             // Add both package reference information and version metadata using the PACKAGE_VERSION_TYPE_TAG.
