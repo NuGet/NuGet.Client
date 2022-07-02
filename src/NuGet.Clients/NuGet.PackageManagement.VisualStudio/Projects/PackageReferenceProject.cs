@@ -422,8 +422,13 @@ namespace NuGet.PackageManagement.VisualStudio
         internal static TransitivePackageReference MergeTransitiveOrigin(PackageReference currentPackage, TransitiveEntry transitiveEntry)
         {
             var transitiveOrigins = new SortedSet<PackageReference>(GetPackageReferenceUtility.PackageReferenceMergeComparer);
-
-            transitiveEntry?.Keys?.ForEach(key => transitiveOrigins.AddRange(transitiveEntry[key]));
+            transitiveEntry?.Keys?.ForEach(key =>
+            {
+                if (currentPackage.TargetFramework == null || key.Framework == currentPackage.TargetFramework)
+                {
+                    transitiveOrigins.AddRange(transitiveEntry[key]);
+                }
+            });
 
             List<PackageReference> merged = transitiveOrigins
                 .GroupBy(tr => tr.PackageIdentity.Id)
