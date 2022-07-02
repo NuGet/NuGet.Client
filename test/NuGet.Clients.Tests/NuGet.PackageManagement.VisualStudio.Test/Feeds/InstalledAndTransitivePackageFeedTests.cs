@@ -228,12 +228,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Assert
             // PM UI does not support multi-targeting. Return latest version found
             Assert.Collection(result,
-                // Returns all Installed packages
+                // Returns all Installed packages, latest version
                 e => Assert.Equal(new PackageIdentity("packageA", new NuGetVersion("1.0.0")), e.Identity),
                 e => Assert.Equal(new PackageIdentity("packageB", new NuGetVersion("2.0.0")), e.Identity),
                 e => Assert.Equal(new PackageIdentity("packageC", new NuGetVersion("3.0.0")), e.Identity),
-                // Returns latest applicable transitive package
-                e => Assert.Equal(new PackageIdentity("transitivePackageC", new NuGetVersion("0.0.1")), e.Identity));
+                // Returns latest transitive package version
+                e => Assert.Equal(new PackageIdentity("transitivePackageC", new NuGetVersion("0.0.2")), e.Identity));
 
             IEnumerable<IPackageSearchMetadata> transitivePackagesResult = result.Where(r => r is TransitivePackageSearchMetadata).ToArray();
             IEnumerable<string> installedPackagesResult = result.Where(r => r is not TransitivePackageSearchMetadata).Select(pkg => pkg.Identity.Id).ToArray();
@@ -248,88 +248,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // All transitive origins package ID's must be found in the installed packages ID's
                 Assert.All(tpsm.TransitiveOrigins, transitiveOrigin => Assert.Contains(transitiveOrigin.Id, installedPackagesResult));
             });
-        }
-
-        [Fact]
-        public void GetLatestApplicableTransitivePackageVersion_EmptyInstalledPackages_ReturnsLatest()
-        {
-            // Arrange
-            var transitivePkgCollection = new PackageCollectionItem[]
-            {
-                GenerateTransitivePackageCollectionItem("packageA", "1.0.0", "topAA", "0.0.1", "net6.0"),
-                GenerateTransitivePackageCollectionItem("packageA", "2.0.0", "topAA", "0.0.1", "net6.0"), // latest version
-            };
-
-            // Act
-            PackageCollectionItem result = InstalledAndTransitivePackageFeed.GetLatestApplicableTransitivePackageVersion(transitivePkgCollection.GroupById().First(), installedPkgs: Enumerable.Empty<PackageCollectionItem>());
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(result.Version, transitivePkgCollection[1].Version);
-        }
-
-        [Fact]
-        public void GetLatestApplicableTransitivePackageVersion_NoMatchingTransitiveOrigins_ReturnsLatest()
-        {
-            // Arrange
-            var transitivePkgCollection = new PackageCollectionItem[]
-            {
-                GenerateTransitivePackageCollectionItem("packageA", "1.0.0", "topAA", "0.0.1", "net6.0"),
-                GenerateTransitivePackageCollectionItem("packageA", "2.0.0", "topAA", "0.0.1", "net6.0"), // latest version
-            };
-
-            var installedPackages = new PackageCollectionItem[]
-            {
-                GeneratePackageCollectionItem("topA", "1.0.0", "net6.0"),
-                GeneratePackageCollectionItem("topB", "2.0.0", "net6.0"),
-            };
-
-            // Act
-            PackageCollectionItem result = InstalledAndTransitivePackageFeed.GetLatestApplicableTransitivePackageVersion(transitivePkgCollection.GroupById().First(), installedPkgs: installedPackages);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(result.Id, transitivePkgCollection[1].Id);
-            Assert.Equal(result.Version, transitivePkgCollection[1].Version);
-        }
-
-        [Fact]
-        public void GetLatestApplicableTransitivePackageVersion_WithEmptyTransitiveOrigins_Throws()
-        {
-            // Arrange
-            var transitivePkgs = new PackageCollectionItem[]
-            {
-                GenerateTransitivePackageCollectionItem("packageA", "1.0.0", transitiveOriginId: null, transitiveOriginVersion: null, "net6.0"),
-            };
-
-            // Act and Assert
-            Assert.Throws<ArgumentException>(() => InstalledAndTransitivePackageFeed.GetLatestApplicableTransitivePackageVersion(transitivePkgs.GroupById().First(), installedPkgs: Enumerable.Empty<PackageCollectionItem>()));
-        }
-
-        [Fact]
-        public void GetLatestApplicableTransitivePackageVersion_NotATransitivePackage_Throws()
-        {
-            // Arrange
-            var transitivePkgs = new PackageCollectionItem[]
-            {
-                GeneratePackageCollectionItem("packageA", "1.0.0", "net6.0"),
-            };
-
-            // Act and Assert
-            Assert.Throws<ArgumentException>(() => InstalledAndTransitivePackageFeed.GetLatestApplicableTransitivePackageVersion(transitivePkgs.GroupById().First(), installedPkgs: Enumerable.Empty<PackageCollectionItem>()));
-        }
-
-        [Fact]
-        public void GetLatestApplicableTransitivePackageVersion_NoPackageReferences_Throws()
-        {
-            // Arrange
-            var transitivePkgs = new PackageCollectionItem[]
-            {
-                new PackageCollectionItem("id", NuGetVersion.Parse("1.0"), installedReferences: null)
-            };
-
-            // Act and Assert
-            Assert.Throws<ArgumentException>(() => InstalledAndTransitivePackageFeed.GetLatestApplicableTransitivePackageVersion(transitivePkgs.GroupById().First(), installedPkgs: Enumerable.Empty<PackageCollectionItem>()));
         }
 
         private static TransitivePackageReferenceContextInfo[] GenerateTransitivePRContextInfo(string packageId, string version, string transitiveOriginId, string transitiveOriginVersion, string framework)

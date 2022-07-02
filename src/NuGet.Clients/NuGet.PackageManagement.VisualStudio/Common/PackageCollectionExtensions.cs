@@ -30,10 +30,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static T[] GetLatest<T>(this IEnumerable<T> packages) where T : PackageIdentity
         {
+            return packages.GetLatestCore().ToArray();
+        }
+
+        public static IEnumerable<T> GetLatestCore<T>(this IEnumerable<T> packages) where T : PackageIdentity
+        {
             return packages
-                .GroupById()
-                .Select(g => g.OrderByDescending(x => x.Version).First())
-                .ToArray();
+                 .GroupById()
+                 .Select(g => g.OrderByDescending(x => x.Version).First());
         }
 
         public static T[] GetEarliest<T>(this IEnumerable<T> packages) where T : PackageIdentity

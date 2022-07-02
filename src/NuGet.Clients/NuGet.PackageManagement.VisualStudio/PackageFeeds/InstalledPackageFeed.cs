@@ -64,15 +64,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal static T[] PerformLookup<T>(IEnumerable<T> items, FeedSearchContinuationToken token) where T : PackageIdentity
         {
-            return PerformLookupCore(items, token).ToArray();
-        }
-
-        internal static IEnumerable<T> PerformLookupCore<T>(IEnumerable<T> items, FeedSearchContinuationToken token) where T : PackageIdentity
-        {
             return items
                 .Where(p => p.Id.IndexOf(token.SearchString, StringComparison.OrdinalIgnoreCase) != -1)
                 .OrderBy(p => p.Id)
-                .Skip(token.StartIndex);
+                .Skip(token.StartIndex).ToArray();
         }
 
         internal static SearchResult<IPackageSearchMetadata> CreateResult(IPackageSearchMetadata[] items)

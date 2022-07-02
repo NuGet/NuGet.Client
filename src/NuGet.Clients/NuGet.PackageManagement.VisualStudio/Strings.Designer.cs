@@ -322,15 +322,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to All PackageReference elements contained in a PackageCollectionItem object from a transitive package must implement ITransitivePackageReferenceContextInfo interface and TransitiveOrigins collection must not be empty.
-        /// </summary>
-        public static string InvalidCollectionElementType {
-            get {
-                return ResourceManager.GetString("InvalidCollectionElementType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The {0} MSBuild property could not be found for project &apos;{1}&apos;..
         /// </summary>
         public static string MSBuildPropertyNotFound {
