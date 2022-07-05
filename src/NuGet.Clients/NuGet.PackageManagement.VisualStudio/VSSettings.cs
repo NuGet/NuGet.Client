@@ -57,16 +57,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool ResetSolutionSettingsIfNeeded()
         {
-            string root;
+            string root, solutionDirectory;
             if (SolutionManager == null
                 || !SolutionManager.IsSolutionOpen
-                || string.IsNullOrEmpty(SolutionManager.SolutionDirectory))
+                || string.IsNullOrEmpty(solutionDirectory = SolutionManager.SolutionDirectory))
             {
                 root = null;
             }
             else
             {
-                root = Path.Combine(SolutionManager.SolutionDirectory, NuGetSolutionSettingsFolder);
+                root = Path.Combine(solutionDirectory, NuGetSolutionSettingsFolder);
             }
 
             // This is a performance optimization.
