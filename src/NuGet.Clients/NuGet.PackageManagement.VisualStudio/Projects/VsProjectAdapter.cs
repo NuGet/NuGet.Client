@@ -114,6 +114,7 @@ namespace NuGet.PackageManagement.VisualStudio
             VsHierarchyItem vsHierarchyItem,
             ProjectNames projectNames,
             string fullProjectPath,
+            string projectDirectory,
             Func<IVsHierarchy, EnvDTE.Project> loadDteProject,
             IProjectBuildProperties buildProperties,
             IVsProjectThreadingService threadingService)
@@ -126,7 +127,25 @@ namespace NuGet.PackageManagement.VisualStudio
             FullProjectPath = fullProjectPath;
             ProjectNames = projectNames;
             BuildProperties = buildProperties;
-            ProjectDirectory = Path.GetDirectoryName(FullProjectPath);
+            ProjectDirectory = projectDirectory;
+        }
+
+        public VsProjectAdapter(
+            VsHierarchyItem vsHierarchyItem,
+            ProjectNames projectNames,
+            string fullProjectPath,
+            Func<IVsHierarchy, EnvDTE.Project> loadDteProject,
+            IProjectBuildProperties buildProperties,
+            IVsProjectThreadingService threadingService)
+            : this(
+                  vsHierarchyItem,
+                  projectNames,
+                  fullProjectPath,
+                  Path.GetDirectoryName(fullProjectPath),
+                  loadDteProject,
+                  buildProperties,
+                  threadingService)
+        {
         }
 
         #endregion Constructors

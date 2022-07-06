@@ -62,49 +62,15 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public string ProjectFullPath => VsProjectAdapter.ProjectDirectory;
 
-        private string _projectFileFullPath;
-
         /// <summary>
         /// This contains the directory and the file name of the project file.
         /// </summary>
-        public string ProjectFileFullPath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_projectFileFullPath))
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                        _projectFileFullPath = VsProjectAdapter.FullProjectPath;
-                    });
-                }
-
-                return _projectFileFullPath;
-            }
-        }
+        public string ProjectFileFullPath => VsProjectAdapter.FullProjectPath;
 
         public virtual string ProjectName => VsProjectAdapter.ProjectName;
 
-        private string _projectCustomUniqueName;
 
-        public virtual string ProjectUniqueName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_projectCustomUniqueName))
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                        {
-                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                            _projectCustomUniqueName = VsProjectAdapter.CustomUniqueName;
-                        });
-                }
-
-                return _projectCustomUniqueName;
-            }
-        }
+        public virtual string ProjectUniqueName => VsProjectAdapter.CustomUniqueName;
 
         public NuGetFramework TargetFramework
         {
