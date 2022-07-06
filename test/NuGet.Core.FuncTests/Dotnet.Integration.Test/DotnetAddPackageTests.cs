@@ -812,7 +812,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPackageVersionToCorrectItemGroupInPropsFile_Success()
+        public async Task AddPkg_WithCPM_WhenMultipleItemGroupsExist_Success()
         {
             using var pathContext = new SimpleTestPathContext();
 
