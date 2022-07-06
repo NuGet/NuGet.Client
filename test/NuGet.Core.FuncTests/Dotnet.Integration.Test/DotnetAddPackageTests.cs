@@ -659,7 +659,7 @@ namespace Dotnet.Integration.Test
             Assert.Contains(@$"<ItemGroup>
     <PackageVersion Include=""X"" Version=""2.0.0"" />
   </ItemGroup", File.ReadAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props")));
-            Assert.DoesNotContain(@$"<ItemGroup> <PackageVersion Include=""X"" Version=""2.0.0"" /> </ItemGroup",
+            Assert.DoesNotContain(@$"<ItemGroup> <PackageReference Include=""X"" Version=""2.0.0"" /> </ItemGroup",
                 File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj")));
         }
 
@@ -713,7 +713,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async Task AddPkg_WithCPM_WhenPackageVersionExistsAndVersionCLIArgNotPassed_Success() 
+        public async Task AddPkg_WithCPM_WhenPackageVersionExistsAndVersionCLIArgNotPassed_NoOp() 
         {
             using var pathContext = new SimpleTestPathContext();
 
