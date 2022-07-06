@@ -21,6 +21,8 @@ namespace NuGet.Test.Utility
 
         private readonly Dictionary<string, string> _packageVersions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
+        private readonly Dictionary<string, string> _globalPackageReferences = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
         private readonly FileInfo _path;
 
         private CentralPackageVersionsManagementFile(string directoryPath, bool managePackageVersionsCentrally)
@@ -69,13 +71,14 @@ namespace NuGet.Test.Utility
         /// </summary>
         public void Save()
         {
-            XDocument cpvm = new XDocument(
+            XDocument directoryPackagesPropsXml = new XDocument(
                 new XElement("Project",
                     new XElement("PropertyGroup",
                         new XElement(ProjectBuildProperties.ManagePackageVersionsCentrally, new XText(_managePackageVersionsCentrally.ToString()))),
-                    new XElement("ItemGroup", _packageVersions.Select(i => new XElement("PackageVersion", new XAttribute("Include", i.Key), new XAttribute("Version", i.Value))))));
+                    new XElement("ItemGroup", _packageVersions.Select(i => new XElement("PackageVersion", new XAttribute("Include", i.Key), new XAttribute("Version", i.Value)))),
+                    new XElement("ItemGroup", _globalPackageReferences.Select(i => new XElement("GlobalPackageReference", new XAttribute("Include", i.Key), new XAttribute("Version", i.Value))))));
 
-            cpvm.Save(_path.FullName);
+            directoryPackagesPropsXml.Save(_path.FullName);
 
             IsDirty = false;
         }
@@ -89,6 +92,15 @@ namespace NuGet.Test.Utility
         public CentralPackageVersionsManagementFile SetPackageVersion(string packageId, string packageVersion)
         {
             _packageVersions[packageId] = packageVersion;
+
+            IsDirty = true;
+
+            return this;
+        }
+
+        public CentralPackageVersionsManagementFile SetGlobalPackageReference(string packageId, string packageVersion)
+        {
+            _globalPackageReferences[packageId] = packageVersion;
 
             IsDirty = true;
 

@@ -10133,6 +10133,123 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_CPVMProject_WithGlobalPackageReferences_Succeeds()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var packagesForSource = new List<SimpleTestPackageContext>();
+
+                SimpleTestProjectContext projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, FrameworkConstants.CommonFrameworks.NetCoreApp20);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   new[]
+                   {
+                       new SimpleTestPackageContext()
+                        {
+                            Id = "PackageA",
+                            Version = "1.0.0"
+                        },
+                        new SimpleTestPackageContext()
+                        {
+                            Id = "ToolPackageA",
+                            Version = "1.0.0"
+                        }
+                   });
+
+                projectA.AddPackageToAllFrameworks(new[]
+                {
+                    new SimpleTestPackageContext()
+                    {
+                        Id = "PackageA",
+                        Version = null,
+                    }
+                });
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .SetPackageVersion("PackageA", "1.0.0")
+                    .SetGlobalPackageReference("ToolPackageA", "1.0.0");
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                CommandRunnerResult result = Util.RestoreSolution(pathContext);
+
+                // Assert
+                result.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+
+                LockFile assetsFile = new LockFileFormat().Read(projectA.AssetsFileOutputPath);
+
+                LibraryDependency packageADependency = assetsFile.PackageSpec.TargetFrameworks.SingleOrDefault().Dependencies.Single(i => i.Name == "PackageA");
+                LibraryDependency toolPackageADependency = assetsFile.PackageSpec.TargetFrameworks.SingleOrDefault().Dependencies.Single(i => i.Name == "ToolPackageA");
+
+                packageADependency.IncludeType.Should().Be(LibraryIncludeFlags.All);
+                packageADependency.SuppressParent.Should().Be(LibraryIncludeFlagUtils.DefaultSuppressParent);
+
+                toolPackageADependency.IncludeType.Should().Be(LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.Build | LibraryIncludeFlags.BuildTransitive);
+                toolPackageADependency.SuppressParent.Should().Be(LibraryIncludeFlags.All);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_CPVMProject_WithGloballPackageReferencesButCentralPackageManagementDisabled_GlobalPackageReferencesAreIgnored()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var packagesForSource = new List<SimpleTestPackageContext>();
+
+                SimpleTestProjectContext projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, FrameworkConstants.CommonFrameworks.NetCoreApp20);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   new[]
+                   {
+                       new SimpleTestPackageContext()
+                        {
+                            Id = "PackageA",
+                            Version = "1.0.0"
+                        }
+                   });
+
+                projectA.AddPackageToAllFrameworks(new[]
+                {
+                    new SimpleTestPackageContext()
+                    {
+                        Id = "PackageA",
+                        Version = "1.0.0",
+                    }
+                });
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot, managePackageVersionsCentrally: false)
+                    .SetPackageVersion("PackageA", "1.0.0")
+                    .SetGlobalPackageReference("ToolPackageA", "1.0.0");
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                CommandRunnerResult result = Util.RestoreSolution(pathContext);
+
+                // Assert
+                result.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+
+                LockFile assetsFile = new LockFileFormat().Read(projectA.AssetsFileOutputPath);
+
+                LibraryDependency packageADependency = assetsFile.PackageSpec.TargetFrameworks.SingleOrDefault().Dependencies.Should().ContainSingle().Subject;
+
+                packageADependency.IncludeType.Should().Be(LibraryIncludeFlags.All);
+                packageADependency.SuppressParent.Should().Be(LibraryIncludeFlagUtils.DefaultSuppressParent);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_CPVMProject_WithVersionOverride_Succeeds()
         {
             // Arrange
