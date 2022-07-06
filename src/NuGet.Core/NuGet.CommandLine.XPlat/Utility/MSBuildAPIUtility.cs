@@ -258,7 +258,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="itemGroup">Item group that needs to be modified in the props file.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
-        private void AddPackageVersionIntoPropsItemGroup(ProjectItemGroupElement itemGroup,
+        internal void AddPackageVersionIntoPropsItemGroup(ProjectItemGroupElement itemGroup,
             LibraryDependency libraryDependency)
         {
             // Add both package reference information and version metadata using the PACKAGE_VERSION_TYPE_TAG.
@@ -290,7 +290,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="project">Project to be modified.</param>
         /// <param name="itemGroup">Item group to add to.</param>
         /// <param name="libraryDependency">Package Dependency of the package to be added.</param>
-        private void AddPackageReferenceIntoItemGroupCPM(Project project, ProjectItemGroupElement itemGroup,
+        internal void AddPackageReferenceIntoItemGroupCPM(Project project, ProjectItemGroupElement itemGroup,
             LibraryDependency libraryDependency)
         {
             // Only add the package reference information using the PACKAGE_REFERENCE_TYPE_TAG.
@@ -324,7 +324,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="project">A specified project.</param>
         /// <returns></returns>
-        private static IEnumerable<ProjectItemGroupElement> GetItemGroups(Project project)
+        internal IEnumerable<ProjectItemGroupElement> GetItemGroups(Project project)
         {
             return project
                 .Items
@@ -339,7 +339,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="itemGroups">List of all item groups in the project</param>
         /// <param name="itemType">An item type tag that must be in the item group. It if PackageReference in this case.</param>
         /// <returns>An ItemGroup, which could be null.</returns>
-        private static ProjectItemGroupElement GetItemGroup(IEnumerable<ProjectItemGroupElement> itemGroups,
+        internal ProjectItemGroupElement GetItemGroup(IEnumerable<ProjectItemGroupElement> itemGroups,
             string itemType)
         {
             var itemGroup = itemGroups?
@@ -355,7 +355,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="project">Project where the item group should be created.</param>
         /// <param name="framework">Target Framework for which the package reference should be added.</param>
         /// <returns>An Item Group.</returns>
-        private static ProjectItemGroupElement CreateItemGroup(Project project, string framework = null)
+        internal ProjectItemGroupElement CreateItemGroup(Project project, string framework = null)
         {
             // Create a new item group and add a condition if given
             var itemGroup = project.Xml.AddItemGroup();
@@ -427,7 +427,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="project"></param>
         /// <param name="packageVersion"><PackageVersion /> item with a matching package ID.</param>
         /// <param name="versionCLIArgument">Version that is passed in as a CLI argument.</param>
-        private static void UpdatePackageVersion(Project project, ProjectItem packageVersion, string versionCLIArgument)
+        internal void UpdatePackageVersion(Project project, ProjectItem packageVersion, string versionCLIArgument)
         {
             // Determine where the <PackageVersion /> item is decalred
             ProjectItemElement packageVersionItemElement = project.GetItemProvenance(packageVersion).LastOrDefault()?.ItemElement;
