@@ -67,7 +67,8 @@ namespace NuGet.PackageManagement.VisualStudio
             return items
                 .Where(p => p.Id.IndexOf(token.SearchString, StringComparison.OrdinalIgnoreCase) != -1)
                 .OrderBy(p => p.Id)
-                .Skip(token.StartIndex).ToArray();
+                .Skip(token.StartIndex)
+                .ToArray();
         }
 
         internal static SearchResult<IPackageSearchMetadata> CreateResult(IPackageSearchMetadata[] items)
