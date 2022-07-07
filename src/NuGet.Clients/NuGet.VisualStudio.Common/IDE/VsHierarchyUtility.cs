@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem;
@@ -129,11 +130,11 @@ namespace NuGet.VisualStudio
             // this operation needs to execute on UI thread
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = await ServiceLocator.GetInstanceAsync<EnvDTE.DTE>();
+            var dte = await ServiceLocator.GetGlobalServiceAsync<SDTE, DTE>();
             var projects = dte.Solution.Projects;
 
             var results = new Dictionary<string, ISet<VsHierarchyItem>>(StringComparer.OrdinalIgnoreCase);
-            foreach (var project in projects.Cast<EnvDTE.Project>())
+            foreach (var project in projects.Cast<Project>())
             {
                 var expandedNodes =
                     await GetExpandedProjectHierarchyItemsAsync(project);
@@ -150,10 +151,10 @@ namespace NuGet.VisualStudio
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = await ServiceLocator.GetInstanceAsync<EnvDTE.DTE>();
+            var dte = await ServiceLocator.GetGlobalServiceAsync<SDTE, DTE>();
             var projects = dte.Solution.Projects;
 
-            foreach (var project in projects.Cast<EnvDTE.Project>())
+            foreach (var project in projects.Cast<Project>())
             {
                 ISet<VsHierarchyItem> expandedNodes;
                 if (ignoreNodes.TryGetValue(project.GetUniqueName(), out expandedNodes)
