@@ -34,14 +34,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             new PackageIdentity("packageC", new NuGetVersion("2.0.0")),
         };
 
-        public static IEnumerable<object[]> GetPackageCollectionItemTestData()
-        {
-            yield return new object[]
-            {
-                PackageCollectionItemTestData, typeof(PackageCollectionItem)
-            };
-        }
-
         public static IEnumerable<object[]> GetTestData()
         {
             yield return new object[]
@@ -70,10 +62,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         [Theory]
         [MemberData(nameof(GetTestData))]
-        public void GetEarliest_CollectionWithAllElementsOfSameType_ReturnsFirstOfSameTypeAsInput<T>(IEnumerable<T> inputData, Type expectedType) where T : PackageIdentity
+        public void GetEarliest_CollectionWithAllElementsOfSameType_ReturnsFirstOfSameTypeAsInput(IEnumerable<PackageIdentity> inputData, Type expectedType)
         {
             // Act
-            PackageIdentity[] earliestPackages = inputData.GetEarliest();
+            IEnumerable<PackageIdentity> earliestPackages = inputData.GetEarliest();
 
             // Assert
             Assert.Collection(earliestPackages,
@@ -104,21 +96,21 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         [Theory]
         [MemberData(nameof(GetEmptyTestData))]
-        public void GetEarliest_EmptyCollection_ReturnsEmptyCollection<T>(IEnumerable<T> inputData) where T : PackageIdentity
+        public void GetEarliest_EmptyCollection_ReturnsEmptyCollection(IEnumerable<PackageIdentity> inputData)
         {
             // Act
-            PackageIdentity[] result = inputData.GetEarliest();
+            IEnumerable<PackageIdentity> result = inputData.GetEarliest();
 
             // Assert
             Assert.Empty(result);
         }
 
         [Theory]
-        [MemberData(nameof(GetPackageCollectionItemTestData))]
-        public void GetLatest_CollectionWithAllElementsOfSameType_ReturnstLastOfSameTypeAsInput(IEnumerable<PackageCollectionItem> inputData, Type expectedType)
+        [MemberData(nameof(GetTestData))]
+        public void GetLatest_CollectionWithAllElementsOfSameType_ReturnstLastOfSameTypeAsInput(IEnumerable<PackageIdentity> inputData, Type expectedType)
         {
             // Act
-            IEnumerable<PackageCollectionItem> latestPackages = inputData.GetLatest();
+            IEnumerable<PackageIdentity> latestPackages = inputData.GetLatest();
 
             // Assert
             Assert.Collection(latestPackages,
