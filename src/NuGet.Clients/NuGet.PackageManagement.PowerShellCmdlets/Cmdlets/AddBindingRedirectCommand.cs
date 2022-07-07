@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 
@@ -15,11 +16,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [OutputType(typeof(AssemblyBinding))]
     public class AddBindingRedirectCommand : NuGetPowerShellBaseCommand
     {
-        private readonly IVsFrameworkMultiTargeting _frameworkMultiTargeting;
+        private readonly AsyncLazy<IVsFrameworkMultiTargeting> _frameworkMultiTargeting;
 
         public AddBindingRedirectCommand()
         {
-            _frameworkMultiTargeting = ServiceLocator.GetGlobalService<SVsFrameworkMultiTargeting, IVsFrameworkMultiTargeting>();
+            _frameworkMultiTargeting = new AsyncLazy<IVsFrameworkMultiTargeting>(
+                () => ServiceLocator.GetGlobalServiceAsync<SVsFrameworkMultiTargeting, IVsFrameworkMultiTargeting>(),
+                NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         [Parameter(Position = 0, ValueFromPipelineByPropertyName = true)]
@@ -70,10 +73,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     try
                     {
+                        var frameworkMultiTargeting = await _frameworkMultiTargeting.GetValueAsync();
                         foreach (var project in projects)
                         {
                             var projectAssembliesCache = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-                            var redirects = await RuntimeHelpers.AddBindingRedirectsAsync(VsSolutionManager, project, domain, projectAssembliesCache, _frameworkMultiTargeting, this);
+                            var redirects = await RuntimeHelpers.AddBindingRedirectsAsync(VsSolutionManager, project, domain, projectAssembliesCache, frameworkMultiTargeting, this);
 
                             // Print out what we did
                             WriteObject(redirects, enumerateCollection: true);

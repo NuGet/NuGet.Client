@@ -165,7 +165,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
             Brushes.LoadVsBrushes(experimentationService);
 
-            _dte = await _asyncServiceProvider.GetServiceAsync<SDTE, DTE>();
+            _dte = await _asyncServiceProvider.GetDTEAsync();
             Assumes.Present(_dte);
 
             _dteEvents = _dte.Events.DTEEvents;

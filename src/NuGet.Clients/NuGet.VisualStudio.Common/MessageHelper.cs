@@ -14,7 +14,7 @@ namespace NuGet.VisualStudio
         public static void ShowWarningMessage(string message, string title)
         {
             VsShellUtilities.ShowMessageBox(
-                ServiceLocator.GetServiceProvider(),
+                GetServiceProvider(),
                 message,
                 title,
                 OLEMSGICON.OLEMSGICON_WARNING,
@@ -25,7 +25,7 @@ namespace NuGet.VisualStudio
         public static void ShowInfoMessage(string message, string title)
         {
             VsShellUtilities.ShowMessageBox(
-                ServiceLocator.GetServiceProvider(),
+                GetServiceProvider(),
                 message,
                 title,
                 OLEMSGICON.OLEMSGICON_INFO,
@@ -41,7 +41,7 @@ namespace NuGet.VisualStudio
         public static void ShowErrorMessage(string message, string title)
         {
             VsShellUtilities.ShowMessageBox(
-                ServiceLocator.GetServiceProvider(),
+                GetServiceProvider(),
                 message,
                 title,
                 OLEMSGICON.OLEMSGICON_CRITICAL,
@@ -52,7 +52,7 @@ namespace NuGet.VisualStudio
         public static bool? ShowQueryMessage(string message, string title, bool showCancelButton)
         {
             int result = VsShellUtilities.ShowMessageBox(
-                ServiceLocator.GetServiceProvider(),
+                GetServiceProvider(),
                 message,
                 title,
                 OLEMSGICON.OLEMSGICON_QUERY,
@@ -77,6 +77,11 @@ namespace NuGet.VisualStudio
             errorListProvider.Tasks.Add(errorTask);
             errorListProvider.BringToFront();
             errorListProvider.ForceShowErrors();
+        }
+
+        private static IServiceProvider GetServiceProvider()
+        {
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetServiceProviderAsync());
         }
 
         internal static class NativeMethods

@@ -12,7 +12,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <summary>
     /// This class is used by functional tests to change NuGet user settings.
     /// </summary>
-    public static class SettingsHelper
+    public static class SettingsHelper // move this?
     {
         /// <summary>
         /// Sets a NuGet user settings property.

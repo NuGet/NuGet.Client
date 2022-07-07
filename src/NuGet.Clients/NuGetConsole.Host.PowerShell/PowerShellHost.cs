@@ -115,8 +115,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _deleteOnRestartManager = new Lazy<IDeleteOnRestartManager>(() => componentModel.GetService<IDeleteOnRestartManager>());
             _scriptExecutor = new Lazy<IScriptExecutor>(() => componentModel.GetService<IScriptExecutor>());
             _restoreProgressReporter = new Lazy<IRestoreProgressReporter>(() => componentModel.GetService<IRestoreProgressReporter>());
-
-            _dte = new Lazy<DTE>(() => ServiceLocator.GetInstance<DTE>());
+            _dte = new Lazy<DTE>(() => NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceAsync<SDTE, DTE>()));
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
                 () => componentModel.GetService<ISourceControlManagerProvider>());
             _commonOperations = new Lazy<ICommonOperations>(() => componentModel.GetService<ICommonOperations>());
@@ -134,7 +133,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     // get the UI context cookie for the debugging mode
-                    var vsMonitorSelection = ServiceLocator.GetGlobalService<IVsMonitorSelection, IVsMonitorSelection>();
+                    var vsMonitorSelection = await ServiceLocator.GetGlobalServiceAsync<IVsMonitorSelection, IVsMonitorSelection>();
 
                     var guidCmdUI = VSConstants.UICONTEXT.SolutionExists_guid;
                     vsMonitorSelection.GetCmdUIContextCookie(
