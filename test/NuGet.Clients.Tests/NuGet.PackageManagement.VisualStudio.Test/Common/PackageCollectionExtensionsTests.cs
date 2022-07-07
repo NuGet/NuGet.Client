@@ -34,6 +34,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             new PackageIdentity("packageC", new NuGetVersion("2.0.0")),
         };
 
+        public static IEnumerable<object[]> GetPackageCollectionItemTestData()
+        {
+            yield return new object[]
+            {
+                PackageCollectionItemTestData, typeof(PackageCollectionItem)
+            };
+        }
+
         public static IEnumerable<object[]> GetTestData()
         {
             yield return new object[]
@@ -65,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void GetEarliest_CollectionWithAllElementsOfSameType_ReturnsFirstOfSameTypeAsInput<T>(IEnumerable<T> inputData, Type expectedType) where T : PackageIdentity
         {
             // Act
-            T[] earliestPackages = inputData.GetEarliest();
+            PackageIdentity[] earliestPackages = inputData.GetEarliest();
 
             // Assert
             Assert.Collection(earliestPackages,
@@ -99,18 +107,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void GetEarliest_EmptyCollection_ReturnsEmptyCollection<T>(IEnumerable<T> inputData) where T : PackageIdentity
         {
             // Act
-            T[] result = inputData.GetEarliest();
+            PackageIdentity[] result = inputData.GetEarliest();
 
             // Assert
             Assert.Empty(result);
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData))]
-        public void GetLatest_CollectionWithAllElementsOfSameType_ReturnstLastOfSameTypeAsInput<T>(IEnumerable<T> inputData, Type expectedType) where T : PackageIdentity
+        [MemberData(nameof(GetPackageCollectionItemTestData))]
+        public void GetLatest_CollectionWithAllElementsOfSameType_ReturnstLastOfSameTypeAsInput(IEnumerable<PackageCollectionItem> inputData, Type expectedType)
         {
             // Act
-            T[] latestPackages = inputData.GetLatest();
+            IEnumerable<PackageCollectionItem> latestPackages = inputData.GetLatest();
 
             // Assert
             Assert.Collection(latestPackages,
@@ -133,7 +141,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void GetLatest_NullData_Throws()
         {
             // Arrange
-            IEnumerable<PackageIdentity> input = null;
+            IEnumerable<PackageCollectionItem> input = null;
 
             // Act and Assert
             Assert.Throws<ArgumentNullException>(() => input.GetLatest());
