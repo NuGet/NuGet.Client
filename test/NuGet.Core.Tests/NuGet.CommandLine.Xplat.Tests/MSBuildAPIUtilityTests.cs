@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Linq;
+using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Locator;
@@ -116,8 +117,8 @@ namespace NuGet.CommandLine.Xplat.Tests
             project.Save();
 
             // Assert
-            Assert.Contains(@$"<PackageReference Include=""X"" />", File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj")));
-            Assert.DoesNotContain(@$"<Version = ""1.0.0"" />", File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj")));
+            ProjectItem packageReference = project.Xml.Items.LastOrDefault(i => i.ItemType == "PackageReference" && i.EvaluatedInclude.Equals("X"));
+            Assert.True(packageReference != null, packageReference.ItemType);
         }
 
         [Fact]
