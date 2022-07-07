@@ -394,7 +394,9 @@ namespace NuGet.PackageManagement.UI
                     {
                         // log rich info about added packages
                         addedPackages = results.SelectMany(result => result.Added)
-                            .Select(package => (package.accessiblePackageIdentity.Id, (package.accessiblePackageIdentity.Version == null ? "" : package.accessiblePackageIdentity.Version.ToNormalizedString()), package.versionRange))
+                            .Select(package => (package.Id,
+                                                package.Version == null ? "" : package.Version.ToNormalizedString(),
+                                                package.Id.Equals(userAction.PackageId, StringComparison.OrdinalIgnoreCase) ? userAction.VersionRange : VersionRange.Parse(package.Version == null ? "" : package.Version.ToNormalizedString())))
                             .Distinct()
                             .ToList();
                         var addCount = addedPackages.Count;
@@ -799,9 +801,9 @@ namespace NuGet.PackageManagement.UI
 
             foreach (PreviewResult result in results)
             {
-                foreach ((AccessiblePackageIdentity accessiblePackageIdentity, VersionRange versionRange) pkg in result.Added)
+                foreach (AccessiblePackageIdentity pkg in result.Added)
                 {
-                    licenseCheck.Add(pkg.accessiblePackageIdentity);
+                    licenseCheck.Add(pkg);
                 }
 
                 foreach (UpdatePreviewResult pkg in result.Updated)
@@ -967,7 +969,7 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                var added = new List<(AccessiblePackageIdentity accessiblePackageIdentity, VersionRange versionRange)>();
+                var added = new List<AccessiblePackageIdentity>();
                 var deleted = new List<AccessiblePackageIdentity>();
                 var updated = new List<UpdatePreviewResult>();
 
@@ -985,7 +987,7 @@ namespace NuGet.PackageManagement.UI
                     else if (isInstalled && !isUninstalled)
                     {
                         // the package is added
-                        added.Add((new AccessiblePackageIdentity(installed[packageId].Item1), installed[packageId].Item2));
+                        added.Add(new AccessiblePackageIdentity(installed[packageId].Item1));
                     }
                     else if (!isInstalled && isUninstalled)
                     {

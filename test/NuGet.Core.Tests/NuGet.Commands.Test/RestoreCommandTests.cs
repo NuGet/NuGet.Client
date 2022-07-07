@@ -2346,7 +2346,7 @@ namespace NuGet.Commands.Test
             using var pathContext = new SimpleTestPathContext();
             var projectName = "TestProject";
             var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpecWithFloatingVersion(projectName, pathContext.SolutionRoot, "net472", "a", dependencyVersion);
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a", dependencyVersion);
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,

@@ -357,7 +357,7 @@ namespace NuGet.Commands.Test
             return GetPackageSpecWithProjectNameAndSpec(projectName, rootPath, spec);
         }
 
-        public static PackageSpec GetPackageSpecWithFloatingVersion(string projectName, string rootPath, string framework, string dependencyName, string dependencyVersion, bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "", bool asAssetTargetFallback = true)
+        public static PackageSpec GetPackageSpec(string projectName, string rootPath, string framework, string dependencyName, string dependencyVersion, bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "", bool asAssetTargetFallback = true)
         {
             var actualAssetTargetFallback = GetFallbackString(useAssetTargetFallback, assetTargetFallbackFrameworks, asAssetTargetFallback);
 

@@ -112,17 +112,17 @@ namespace NuGet.PackageManagement
 
             if (RestoreResult.Success)
             {
-                var added = BuildIntegratedRestoreUtility.GetAddedPackagesWithVersionRange(OriginalLockFile, RestoreResult.LockFile);
-                var removed = BuildIntegratedRestoreUtility.GetAddedPackagesWithVersionRange(RestoreResult.LockFile, OriginalLockFile);
+                var added = BuildIntegratedRestoreUtility.GetAddedPackages(OriginalLockFile, RestoreResult.LockFile);
+                var removed = BuildIntegratedRestoreUtility.GetAddedPackages(RestoreResult.LockFile, OriginalLockFile);
 
                 foreach (var package in removed)
                 {
-                    actions.Add(CreateUninstallProjectAction(package.packageIdentity, Project, package.versionRange));
+                    actions.Add(CreateUninstallProjectAction(package, Project));
                 }
 
                 foreach (var package in added)
                 {
-                    actions.Add(CreateInstallProjectAction(package.packageIdentity, sourceRepository: null, project: Project, versionRange: package.versionRange));
+                    actions.Add(CreateInstallProjectAction(package, sourceRepository: null, project: Project));
                 }
             }
 
