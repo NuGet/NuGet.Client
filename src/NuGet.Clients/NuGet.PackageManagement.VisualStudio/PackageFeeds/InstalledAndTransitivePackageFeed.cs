@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Remove transitive packages from project references. Those transitive packages does not have Transitive Origins
+            // Remove transitive packages from project references. Those transitive packages don't have Transitive Origins
             IEnumerable<PackageCollectionItem> transitivePkgsWithOrigins = _transitivePackages
                 .Where(t => t.PackageReferences.All(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()));
 
