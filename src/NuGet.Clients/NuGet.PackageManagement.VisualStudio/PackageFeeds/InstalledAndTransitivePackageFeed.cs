@@ -28,17 +28,12 @@ namespace NuGet.PackageManagement.VisualStudio
             var searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
-            PackageCollectionItem[] matchesInstalled = PerformLookup(_installedPackages.GetLatestCore(), searchToken);
-
-            // Remove transitive packages from project references
+            // Remove transitive packages from project references. Those transitive packages does not have Transitive Origins
             IEnumerable<PackageCollectionItem> transitivePkgsWithOrigins = _transitivePackages
-                .Where(transitivePkg => transitivePkg
-                    .PackageReferences
-                    .All(pkgRef => pkgRef is ITransitivePackageReferenceContextInfo trPkgRef && trPkgRef.TransitiveOrigins.Any()));
-            PackageCollectionItem[] matchesTransitive = PerformLookup(transitivePkgsWithOrigins.GetLatestCore(), searchToken);
+                .Where(t => t.PackageReferences.All(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()));
 
-            IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(matchesInstalled, searchToken.SearchFilter.IncludePrerelease, cancellationToken);
-            IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(matchesTransitive, searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(_installedPackages.GetLatestCore(), searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(transitivePkgsWithOrigins.GetLatestCore(), searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
             IPackageSearchMetadata[] items = installedItems.Concat(transitiveItems).ToArray();
 
             return CreateResult(items);
