@@ -74,7 +74,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Gets the project type guids from the hierarchy.
         /// </summary>
-        /// <param name="hierarchy">hierarchy to use</param>
+        /// <param name="hierarchy">hierarchy for a project</param>
         /// <returns>The project type guids of all the types in the hierarchy.</returns>
         public static string[] GetProjectTypeGuidsFromHierarchy(IVsHierarchy hierarchy)
         {
