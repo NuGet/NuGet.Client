@@ -28,19 +28,18 @@ namespace NuGet.PackageManagement.VisualStudio
                 .GroupBy(p => p.Id, p => p, StringComparer.OrdinalIgnoreCase);
         }
 
-        public static IEnumerable<PackageCollectionItem> GetLatest(this IEnumerable<PackageCollectionItem> packages)
+        public static IEnumerable<PackageIdentity> GetLatest(this IEnumerable<PackageIdentity> packages)
         {
             return packages
                  .GroupById()
                  .Select(g => g.OrderByDescending(x => x.Version).First());
         }
 
-        public static PackageIdentity[] GetEarliest(this IEnumerable<PackageIdentity> packages)
+        public static IEnumerable<PackageIdentity> GetEarliest(this IEnumerable<PackageIdentity> packages)
         {
             return packages
                 .GroupById()
-                .Select(g => g.OrderBy(x => x.Version).First())
-                .ToArray();
+                .Select(g => g.OrderBy(x => x.Version).First());
         }
 
         /// <summary>
