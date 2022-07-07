@@ -49,7 +49,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             Justification = "We can't dispose it if we want to return it.")]
         private static Tuple<RunspaceDispatcher, NuGetPSHost> CreateRunspace(IConsole console, string hostName)
         {
-            DTE2 dte = ServiceLocator.GetGlobalService<DTE, DTE2>();
+            DTE2 dte = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceAsync<DTE, DTE2>());
 
             InitialSessionState initialSessionState = InitialSessionState.CreateDefault();
             initialSessionState.Variables.Add(

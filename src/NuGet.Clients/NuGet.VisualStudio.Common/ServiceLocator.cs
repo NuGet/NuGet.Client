@@ -25,11 +25,6 @@ namespace NuGet.VisualStudio
 
         private static IAsyncServiceProvider PackageServiceProvider;
 
-        public static TInterface GetGlobalService<TService, TInterface>() where TInterface : class
-        {
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetGlobalServiceAsync<TService, TInterface>);
-        }
-
         public static async Task<TInterface> GetGlobalServiceAsync<TService, TInterface>() where TInterface : class
         {
             if (PackageServiceProvider != null)
@@ -85,11 +80,6 @@ namespace NuGet.VisualStudio
         public static TService GetComponentModelService<TService>() where TService : class
         {
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetComponentModelServiceAsync<TService>);
-        }
-
-        public static async Task<IComponentModel> GetComponentModelAsync()
-        {
-            return await GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
         }
 
         public static async Task<IServiceProvider> GetServiceProviderAsync()

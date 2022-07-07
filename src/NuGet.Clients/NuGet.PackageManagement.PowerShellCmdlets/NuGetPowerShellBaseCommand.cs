@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using EnvDTE;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
@@ -71,7 +72,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected NuGetPowerShellBaseCommand()
         {
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>());
             _sourceRepositoryProvider = componentModel.GetService<ISourceRepositoryProvider>();
             ConfigSettings = componentModel.GetService<ISettings>();
             VsSolutionManager = componentModel.GetService<IVsSolutionManager>();
