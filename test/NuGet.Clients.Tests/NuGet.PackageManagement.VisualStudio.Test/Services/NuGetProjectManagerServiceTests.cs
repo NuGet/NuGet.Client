@@ -1018,13 +1018,21 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(false)]
         private async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsWithCpsPackageReferenceProjectAndMultitargeting_SucceedsAsync(bool useSameVersions)
         {
+            // useSameVersion = true
             // net5.0:
-            // packageX_3.0.0 -> packageD_(0.1.1 or 0.1.2)
+            // packageX_3.0.0 -> packageD_0.1.1
             // packageA_2.0.0 -> packageB_1.0.0 -> packageC_0.0.1
             //                                  -> packageD_0.1.1
-            //
             // net472:
-            // packageX(3.0.0 or 4.0.0) -> packageD(0.1.1 or 0.1.2)
+            // packageX_3.0.0 -> packageD_0.1.1
+
+            // useSameVersion = false
+            // net5.0:
+            // packageX_3.0.0 -> packageD_0.1.2
+            // packageA_2.0.0 -> packageB_1.0.0 -> packageC_0.0.1
+            //                                  -> packageD_0.1.1
+            // net472:
+            // packageX_4.0.0 -> packageD_0.1.2
 
             string projectName = Guid.NewGuid().ToString();
             string projectId = projectName;
@@ -1150,8 +1158,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             else
             {
                 Assert.Collection(topPackagesD,
-                    x => AssertElement(x, "packageA", "2.0.0"),
-                    x => AssertElement(x, "packageX", "4.0.0")); // multitargeting brings this version
+                    x => AssertElement(x, "packageA", "2.0.0", "net5.0"),
+                    x => AssertElement(x, "packageX", "3.0.0", "net5.0")); // multitargeting brings this version
             }
         }
 
@@ -1572,10 +1580,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(2, folders.Count);
         }
 
-        private void AssertElement(IPackageReferenceContextInfo pkg, string id, string version)
+        private void AssertElement(IPackageReferenceContextInfo pkg, string id, string version, string framework = null)
         {
             Assert.Equal(id, pkg.Identity.Id);
             Assert.Equal(NuGetVersion.Parse(version), pkg.Identity.Version);
+            if (!string.IsNullOrEmpty(framework))
+            {
+                Assert.Equal(NuGetFramework.Parse(framework), pkg.Framework);
+            }
         }
 
         private static void AddPackageDependency(ProjectSystemCache projectSystemCache, ProjectNames projectNames, PackageSpec packageSpec, SimpleTestPackageContext package)
@@ -1669,6 +1681,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // packageA_2.0.0 -> packageB_1.0.0 -> packageC_0.0.1
             //                                  -> packageD_0.1.1
             // case useSameversions = false
+            // packageX_4.0.0 -> packageD_0.1.2
             // packageX_3.0.0 -> packageD_0.1.2
             // packageA_2.0.0 -> packageB_1.0.0 -> packageC_0.0.1
             //                                  -> packageD_0.1.1
