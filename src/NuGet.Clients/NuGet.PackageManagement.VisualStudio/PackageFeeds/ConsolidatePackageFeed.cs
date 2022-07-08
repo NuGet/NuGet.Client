@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var packagesNeedingConsolidation = _installedPackages
                 .GroupById()
                 .Where(g => g.Count() > 1)
-                .Select(g => new PackageIdentity(g.Key, g.Max()))
+                .Select(g => new PackageIdentity(g.Key, g.Max().Version))
                 .ToArray();
 
             var packages = packagesNeedingConsolidation
