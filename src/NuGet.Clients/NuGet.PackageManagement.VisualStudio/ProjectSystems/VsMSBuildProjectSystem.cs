@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -21,7 +19,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.Utility;
 using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using PathUtility = NuGet.Common.PathUtility;
 using Task = System.Threading.Tasks.Task;
@@ -60,86 +57,20 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private string _projectFullPath;
-
         /// <summary>
         /// This does not contain the filename, just the path to the directory where the project file exists
         /// </summary>
-        public string ProjectFullPath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_projectFullPath))
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        _projectFullPath = await VsProjectAdapter.GetProjectDirectoryAsync();
-                    });
-                }
-
-                return _projectFullPath;
-            }
-        }
-
-        private string _projectFileFullPath;
+        public string ProjectFullPath => VsProjectAdapter.ProjectDirectory;
 
         /// <summary>
         /// This contains the directory and the file name of the project file.
         /// </summary>
-        public string ProjectFileFullPath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_projectFileFullPath))
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+        public string ProjectFileFullPath => VsProjectAdapter.FullProjectPath;
 
-                        _projectFileFullPath = VsProjectAdapter.FullProjectPath;
-                    });
-                }
+        public virtual string ProjectName => VsProjectAdapter.ProjectName;
 
-                return _projectFileFullPath;
-            }
-        }
 
-        private string _projectName;
-
-        public virtual string ProjectName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_projectName))
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        _projectName = VsProjectAdapter.ProjectName;
-                    });
-                }
-                return _projectName;
-            }
-        }
-
-        private string _projectCustomUniqueName;
-
-        public virtual string ProjectUniqueName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_projectCustomUniqueName))
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                        {
-                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                            _projectCustomUniqueName = VsProjectAdapter.CustomUniqueName;
-                        });
-                }
-
-                return _projectCustomUniqueName;
-            }
-        }
+        public virtual string ProjectUniqueName => VsProjectAdapter.CustomUniqueName;
 
         public NuGetFramework TargetFramework
         {

@@ -85,7 +85,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<string> GetCacheFilePathAsync()
         {
-            return NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: await GetMSBuildProjectExtensionsPathAsync());
+            return GetCacheFilePath(await GetMSBuildProjectExtensionsPathAsync());
+        }
+
+        private static string GetCacheFilePath(string msbuildProjectExtensionsPath)
+        {
+            return NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: msbuildProjectExtensionsPath);
         }
 
         protected override async Task<string> GetAssetsFilePathAsync(bool shouldThrow)
@@ -180,7 +185,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            EnvDTEProjectUtility.EnsureCheckedOutIfExists(_vsProjectAdapter.Project, await _vsProjectAdapter.GetProjectDirectoryAsync(), filePath);
+            EnvDTEProjectUtility.EnsureCheckedOutIfExists(_vsProjectAdapter.Project, _vsProjectAdapter.ProjectDirectory, filePath);
 
             var isFileExistsInProject = await EnvDTEProjectUtility.ContainsFileAsync(_vsProjectAdapter.Project, filePath);
 
@@ -195,7 +200,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var folderPath = Path.GetDirectoryName(filePath);
             var fullPath = filePath;
 
-            string projectDirectory = await _vsProjectAdapter.GetProjectDirectoryAsync();
+            string projectDirectory = _vsProjectAdapter.ProjectDirectory;
             if (filePath.Contains(projectDirectory))
             {
                 // folderPath should always be relative to ProjectDirectory so if filePath already contains
@@ -240,7 +245,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     throw new InvalidDataException(string.Format(
                         Strings.MSBuildPropertyNotFound,
                         ProjectBuildProperties.MSBuildProjectExtensionsPath,
-                        await _vsProjectAdapter.GetProjectDirectoryAsync()));
+                        _vsProjectAdapter.ProjectDirectory));
                 }
 
                 return null;
@@ -396,6 +401,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
+            var msbuildProjectExtensionsPath = await GetMSBuildProjectExtensionsPathAsync();
             return new PackageSpec(tfis)
             {
                 Name = projectName,
@@ -405,7 +411,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
                     ProjectStyle = ProjectStyle.PackageReference,
-                    OutputPath = await GetMSBuildProjectExtensionsPathAsync(),
+                    OutputPath = msbuildProjectExtensionsPath,
                     ProjectPath = ProjectFullPath,
                     ProjectName = projectName,
                     ProjectUniqueName = ProjectFullPath,
@@ -420,7 +426,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
                     },
                     SkipContentFileWrite = true,
-                    CacheFilePath = await GetCacheFilePathAsync(),
+                    CacheFilePath = GetCacheFilePath(msbuildProjectExtensionsPath),
                     PackagesPath = GetPackagesPath(settings),
                     Sources = GetSources(settings),
                     FallbackFolders = GetFallbackFolders(settings),

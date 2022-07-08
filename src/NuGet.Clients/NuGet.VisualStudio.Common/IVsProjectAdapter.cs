@@ -41,7 +41,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Full path to a parent directory containing project file.
         /// </summary>
-        Task<string> GetProjectDirectoryAsync();
+        string ProjectDirectory { get; }
 
         string ProjectName { get; }
 

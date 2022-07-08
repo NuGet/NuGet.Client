@@ -67,6 +67,19 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectNames = await ProjectNames.FromDTEProjectAsync(dteProject, vsSolution);
             var fullProjectPath = dteProject.GetFullProjectPath();
+            if (fullProjectPath == null && dteProject.IsWebSite())
+            {
+                var projectDirectory = await dteProject.GetFullPathAsync();
+
+                return new VsProjectAdapter(
+                    vsHierarchyItem,
+                    projectNames,
+                    fullProjectPath,
+                    projectDirectory,
+                    loadDteProject,
+                    vsBuildProperties,
+                    _threadingService);
+            }
 
             return new VsProjectAdapter(
                 vsHierarchyItem,
