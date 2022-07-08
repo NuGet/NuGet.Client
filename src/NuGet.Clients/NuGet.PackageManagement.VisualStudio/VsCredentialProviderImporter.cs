@@ -112,7 +112,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void Initialize()
         {
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>());
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetComponentModelAsync());
             // ensure we satisfy our imports
             componentModel?.DefaultCompositionService.SatisfyImportsOnce(this);
         }

@@ -72,7 +72,7 @@ namespace NuGet.VisualStudio
         /// </remarks>
         public static async Task<TService> GetComponentModelServiceAsync<TService>() where TService : class
         {
-            IComponentModel componentModel = await GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
+            IComponentModel componentModel = await GetComponentModelAsync();
             return componentModel?.GetService<TService>();
         }
 
@@ -80,6 +80,11 @@ namespace NuGet.VisualStudio
         public static TService GetComponentModelService<TService>() where TService : class
         {
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetComponentModelServiceAsync<TService>);
+        }
+
+        public static async Task<IComponentModel> GetComponentModelAsync()
+        {
+            return await GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
         }
 
         public static async Task<IServiceProvider> GetServiceProviderAsync()

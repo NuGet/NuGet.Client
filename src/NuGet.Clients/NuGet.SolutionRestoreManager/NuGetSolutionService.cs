@@ -34,7 +34,7 @@ namespace NuGet.SolutionRestoreManager
 
         private async Task InitializeAsync()
         {
-            var componentModel = await ServiceLocator.GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
+            var componentModel = await ServiceLocator.GetComponentModelAsync();
             // ensure we satisfy our imports
             componentModel?.DefaultCompositionService.SatisfyImportsOnce(this);
         }

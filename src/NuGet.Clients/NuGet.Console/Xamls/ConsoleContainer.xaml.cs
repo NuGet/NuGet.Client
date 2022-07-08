@@ -49,7 +49,7 @@ namespace NuGetConsole
 
                             Assumes.NotNull(_solutionManager);
 
-                            IComponentModel componentModel = await ServiceLocator.GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
+                            IComponentModel componentModel = await ServiceLocator.GetComponentModelAsync();
                             var productUpdateService = componentModel.GetService<IProductUpdateService>();
                             var packageRestoreManager = componentModel.GetService<IPackageRestoreManager>();
                             var deleteOnRestartManager = componentModel.GetService<IDeleteOnRestartManager>();

@@ -30,7 +30,7 @@ namespace NuGet.Options
         public GeneralOptionControl()
         {
             InitializeComponent();
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>());
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetComponentModelAsync());
             _settings = componentModel.GetService<ISettings>();
             _outputConsoleLogger = componentModel.GetService<INuGetUILogger>();
             _localsCommandRunner = new LocalsCommandRunner();

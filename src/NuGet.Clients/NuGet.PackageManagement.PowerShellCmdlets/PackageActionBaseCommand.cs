@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public PackageActionBaseCommand()
         {
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>());
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetComponentModelAsync());
             _deleteOnRestartManager = componentModel.GetService<IDeleteOnRestartManager>();
             _lockService = componentModel.GetService<INuGetLockService>();
         }

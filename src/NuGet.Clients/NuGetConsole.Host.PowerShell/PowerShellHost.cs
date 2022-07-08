@@ -109,7 +109,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _runspaceManager = runspaceManager;
 
             // TODO: Take these as ctor arguments
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>());
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetComponentModelAsync());
             _sourceRepositoryProvider = componentModel.GetService<ISourceRepositoryProvider>();
             _solutionManager = new Lazy<IVsSolutionManager>(() => componentModel.GetService<IVsSolutionManager>());
             _settings = new Lazy<ISettings>(() => componentModel.GetService<ISettings>());
