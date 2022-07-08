@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected NuGetPowerShellBaseCommand()
         {
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetComponentModelAsync());
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             _sourceRepositoryProvider = componentModel.GetService<ISourceRepositoryProvider>();
             ConfigSettings = componentModel.GetService<ISettings>();
             VsSolutionManager = componentModel.GetService<IVsSolutionManager>();

@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
@@ -30,7 +29,7 @@ namespace NuGet.Options
         public GeneralOptionControl()
         {
             InitializeComponent();
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetComponentModelAsync());
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             _settings = componentModel.GetService<ISettings>();
             _outputConsoleLogger = componentModel.GetService<INuGetUILogger>();
             _localsCommandRunner = new LocalsCommandRunner();

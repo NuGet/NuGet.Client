@@ -676,6 +676,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     try
                     {
+                        var itemsFactory = await ServiceLocator.GetGlobalServiceAsync<IVsEnumHierarchyItemsFactory, IVsEnumHierarchyItemsFactory>();
+
                         if (await _featureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.NuGetSolutionCacheInitilization))
                         {
                             foreach (var hierarchy in VsHierarchyUtility.GetAllLoadedProjects(ivsSolution))

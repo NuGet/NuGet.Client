@@ -10,7 +10,6 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Text;
 using System.Threading;
-using Microsoft.VisualStudio.ComponentModelHost;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
@@ -30,7 +29,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public PackageActionBaseCommand()
         {
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetComponentModelAsync());
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             _deleteOnRestartManager = componentModel.GetService<IDeleteOnRestartManager>();
             _lockService = componentModel.GetService<INuGetLockService>();
         }

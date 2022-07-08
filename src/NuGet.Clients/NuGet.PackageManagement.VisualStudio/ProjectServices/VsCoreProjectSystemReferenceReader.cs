@@ -173,7 +173,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<IList<string>> GetExcludedProjectsAsync(Common.ILogger logger)
         {
-            var itemsFactory = await ServiceLocator.GetGlobalServiceAsync<IVsEnumHierarchyItemsFactory, IVsEnumHierarchyItemsFactory>(); // Check if this one works.
+            var itemsFactory = await ServiceLocator.GetGlobalServiceAsync<IVsEnumHierarchyItemsFactory, IVsEnumHierarchyItemsFactory>();
 
             // Verify ReferenceOutputAssembly
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
