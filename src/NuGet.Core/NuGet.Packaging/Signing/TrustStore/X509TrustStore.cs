@@ -71,7 +71,7 @@ namespace NuGet.Packaging.Signing
                 if (SystemCertificateBundleX509ChainFactory.TryCreate(
                     out SystemCertificateBundleX509ChainFactory systemBundleFactory))
                 {
-                    logger.LogVerbose(
+                    logger.LogInformation(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.ChainBuilding_UsingSystemCertificateBundle,
@@ -84,7 +84,7 @@ namespace NuGet.Packaging.Signing
                     out FallbackCertificateBundleX509ChainFactory fallbackBundleFactory,
                     fallbackCertificateBundleFile?.FullName))
                 {
-                    logger.LogVerbose(
+                    logger.LogInformation(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.ChainBuilding_UsingFallbackCertificateBundle,
@@ -93,7 +93,7 @@ namespace NuGet.Packaging.Signing
                     return fallbackBundleFactory;
                 }
 
-                logger.LogVerbose(Strings.ChainBuilding_UsingNoCertificateBundle);
+                logger.LogInformation(Strings.ChainBuilding_UsingNoCertificateBundle);
 
                 return new NoCertificateBundleX509ChainFactory();
             }
@@ -104,7 +104,7 @@ namespace NuGet.Packaging.Signing
                     out FallbackCertificateBundleX509ChainFactory fallbackBundleFactory,
                     fallbackCertificateBundleFile?.FullName))
                 {
-                    logger.LogVerbose(
+                    logger.LogInformation(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.ChainBuilding_UsingFallbackCertificateBundle,
@@ -113,7 +113,7 @@ namespace NuGet.Packaging.Signing
                     return fallbackBundleFactory;
                 }
 
-                logger.LogVerbose(Strings.ChainBuilding_UsingNoCertificateBundle);
+                logger.LogInformation(Strings.ChainBuilding_UsingNoCertificateBundle);
 
                 return new NoCertificateBundleX509ChainFactory();
             }
@@ -125,7 +125,7 @@ namespace NuGet.Packaging.Signing
         // Non-private for testing purposes only
         internal static IX509ChainFactory CreateX509ChainFactory(ILogger logger)
         {
-            logger.LogVerbose(Strings.ChainBuilding_UsingDefaultTrustStore);
+            logger.LogInformation(Strings.ChainBuilding_UsingDefaultTrustStore);
 
             return new DotNetDefaultTrustStoreX509ChainFactory();
         }
