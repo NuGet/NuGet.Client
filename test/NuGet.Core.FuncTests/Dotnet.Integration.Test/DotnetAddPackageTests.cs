@@ -757,9 +757,11 @@ namespace Dotnet.Integration.Test
             // Checking that the PackageVersion is not updated.
             Assert.Contains(@$"<PackageVersion Include=""X"" Version=""1.0.0"" />", File.ReadAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props")));
 
+            var projectFileFromDisk = File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj"));
+
             // Checking that version metadata is not added to the project files.
-            Assert.Contains(@$"Include=""X""", File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj")));
-            Assert.DoesNotContain(@$"Include=""X"" Version=""1.0.0""", File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj")));
+            Assert.Contains(@$"Include=""X""", projectFileFromDisk);
+            Assert.DoesNotContain(@$"Include=""X"" Version=""1.0.0""", projectFileFromDisk);
         }
 
         [Fact]
@@ -805,10 +807,12 @@ namespace Dotnet.Integration.Test
             Assert.True(result.Success, result.Output);
             Assert.Contains(@$"<PackageVersion Include=""X"" Version=""2.0.0"" />", File.ReadAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props")));
 
+            var projectFileFromDisk = File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj"));
+
             // Checking that version metadata is not added to the project files.
             Assert.Contains(@$"Include=""X""", File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj")));
-            Assert.DoesNotContain(@$"Include=""X"" Version=""1.0.0""", File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj")));
-            Assert.DoesNotContain(@$"Include=""X"" Version=""2.0.0""", File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj")));
+            Assert.DoesNotContain(@$"Include=""X"" Version=""1.0.0""", projectFileFromDisk);
+            Assert.DoesNotContain(@$"Include=""X"" Version=""2.0.0""", projectFileFromDisk);
         }
 
         [Fact]
@@ -855,15 +859,17 @@ namespace Dotnet.Integration.Test
             // Assert
             Assert.True(result.Success, result.Output);
 
+            var propsFileFromDisk = File.ReadAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props"));
+
             Assert.Contains(@$"<ItemGroup>
     <PackageVersion Include=""X"" Version=""1.0.0"" />
     <PackageVersion Include=""Y"" Version=""1.0.0"" />
-  </ItemGroup>", File.ReadAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props")));
+  </ItemGroup>", propsFileFromDisk);
 
             Assert.DoesNotContain($@"< ItemGroup >
     < Content Include = ""SomeFile"" />
     <PackageVersion Include=""X"" Version=""1.0.0"" />
-  </ ItemGroup >", File.ReadAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props")));
+  </ ItemGroup >", propsFileFromDisk);
         }
     }
 }
