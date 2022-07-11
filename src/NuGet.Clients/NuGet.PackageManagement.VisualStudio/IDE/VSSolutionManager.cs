@@ -401,7 +401,10 @@ namespace NuGet.PackageManagement.VisualStudio
             if (await _featureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.NuGetSolutionCacheInitilization))
             {
                 var ivsSolution = await _asyncVSSolution.GetValueAsync();
-                return VsHierarchyUtility.AreAnyLoadedProjectsNuGetCompatible(ivsSolution);
+                if (IsSolutionOpenFromVSSolution(ivsSolution))
+                {
+                    return VsHierarchyUtility.AreAnyLoadedProjectsNuGetCompatible(ivsSolution);
+                }
             }
             else
             {
