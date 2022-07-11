@@ -60,19 +60,7 @@ namespace NuGet.Configuration
             _settings.SaveToDisk();
         }
 
-        public void SavePackageSourceMappings(IReadOnlyList<PackageSourceMappingSourceItem> mappings)
-        {
-            if (mappings == null)
-            {
-                throw new ArgumentNullException(nameof(mappings));
-            }
-#pragma warning disable CS0618 // Type or member is obsolete
-            SavePackageSourcesMappings(mappings, PackageSourceUpdateOptions.Default);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
-        [Obsolete("https://github.com/NuGet/Home/issues/10098")]
-        public void SavePackageSourcesMappings(IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems, PackageSourceUpdateOptions sourceUpdateSettings)
+        public void SavePackageSourceMappings(IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems)
         {
             if (packageSourceMappingsSourceItems == null)
             {
