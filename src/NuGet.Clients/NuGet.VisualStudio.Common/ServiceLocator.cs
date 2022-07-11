@@ -25,6 +25,12 @@ namespace NuGet.VisualStudio
 
         private static IAsyncServiceProvider PackageServiceProvider;
 
+        /// <summary>
+        /// Fetches a service from the service provider through the <see cref="ServiceExtensions.GetServiceAsync{TService, TInterface}(IAsyncServiceProvider, bool)"/> extension method.
+        /// </summary>
+        /// <typeparam name="TService">Service type</typeparam>
+        /// <typeparam name="TInterface">Service interface</typeparam>
+        /// <returns>The service if available, null otherwise.</returns>
         public static async Task<TInterface> GetGlobalServiceAsync<TService, TInterface>() where TInterface : class
         {
             if (PackageServiceProvider != null)
@@ -45,6 +51,12 @@ namespace NuGet.VisualStudio
             return Package.GetGlobalService(typeof(TService)) as TInterface;
         }
 
+        /// <summary>
+        /// Fetches a service from the service provider in a free threaded fashion (ie. no UI thread transitions).
+        /// </summary>
+        /// <typeparam name="TService">Service type</typeparam>
+        /// <typeparam name="TInterface">Service interface</typeparam>
+        /// <returns>The service if available, null otherwise.</returns>
         public static async Task<TInterface> GetGlobalServiceFreeThreadedAsync<TService, TInterface>() where TInterface : class
         {
             if (PackageServiceProvider != null)
