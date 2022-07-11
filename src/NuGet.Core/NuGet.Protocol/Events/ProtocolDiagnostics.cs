@@ -17,13 +17,9 @@ namespace NuGet.Protocol.Events
 
         public static event ProtocolDiagnosticsNupkgCopiedEventHandler NupkgCopiedEvent;
 
-        public delegate void HttpCacheHitEventHandler();
+        public delegate void ProtocolDiagnosticHttpCacheEventHandler(ProtocolDiagnosticHttpCacheEvent hcEvent);
 
-        public static event HttpCacheHitEventHandler HttpCacheHitEvent;
-
-        public delegate void HttpCacheMissEventHandler(bool cacheByPass, bool isExpired);
-
-        public static event HttpCacheMissEventHandler HttpCacheMissEvent;
+        public static event ProtocolDiagnosticHttpCacheEventHandler HttpCacheEvent;
 
         internal static void RaiseEvent(ProtocolDiagnosticHttpEvent pdEvent)
         {
@@ -40,14 +36,9 @@ namespace NuGet.Protocol.Events
             NupkgCopiedEvent?.Invoke(ncEvent);
         }
 
-        internal static void RaiseHttpCacheHitEvent()
+        internal static void RaiseEvent(ProtocolDiagnosticHttpCacheEvent hcEvent)
         {
-            HttpCacheHitEvent?.Invoke();
-        }
-
-        internal static void RaiseHttpMissCacheEvent(bool cacheBypass, bool isExpired)
-        {
-            HttpCacheMissEvent?.Invoke(cacheBypass, isExpired);
+            HttpCacheEvent?.Invoke(hcEvent);
         }
     }
 }

@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using NuGet.Shared;
+using NuGet.Common;
 
 namespace NuGet.Protocol
 {
@@ -36,11 +38,11 @@ namespace NuGet.Protocol
 
         public static Stream ReadCacheFile(TimeSpan maxAge, string cacheFile)
         {
-            (Stream stream, bool _) = ReadCacheFileWithExpireCheck(maxAge, cacheFile);
+            (Stream stream, bool _, string _) = ReadCacheFileWithExpireCheck(maxAge, cacheFile, verifyExpired: false);
             return stream;
         }
 
-        internal static (Stream, bool isExpired) ReadCacheFileWithExpireCheck(TimeSpan maxAge, string cacheFile)
+        internal static (Stream stream, bool isExpired, string cacheFileHash) ReadCacheFileWithExpireCheck(TimeSpan maxAge, string cacheFile, bool verifyExpired)
         {
             var fileInfo = new FileInfo(cacheFile);
 
@@ -56,13 +58,16 @@ namespace NuGet.Protocol
                         FileShare.Read | FileShare.Delete,
                         BufferSize);
 
-                    return (stream, false);
+                    // Cache file valid 
+                    return (stream, false, verifyExpired ? GetFileHash(fileInfo.FullName, "SHA512") : string.Empty);
                 }
 
-                return (null, true);
+                // Cache file expired, we don't calculate hash if cache is still valid
+                return (null, true, null);
             }
 
-            return (null, false);
+            // Requested file not found
+            return (null, false, null);
         }
 
         public static bool IsFileAlreadyOpen(string filePath)
@@ -107,6 +112,30 @@ namespace NuGet.Protocol
                 .Replace("__", "_")
                 .Replace("__", "_");
 #endif
+        }
+
+        internal static string GetFileHash(string filePath, string hashAlgorithm)
+        {
+            if (string.IsNullOrEmpty(hashAlgorithm))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.StringCannotBeNullOrEmpty, nameof(hashAlgorithm)),
+                    nameof(hashAlgorithm));
+            }
+
+            using (var stream = File.OpenRead(filePath))
+            {
+                try
+                {
+                    var bytes = new CryptoHashProvider(hashAlgorithm).CalculateHash(stream);
+                    var packageHash = Convert.ToBase64String(bytes);
+                    return packageHash;
+                }
+                catch (Exception)
+                {
+                    return string.Empty;
+                }
+            }
         }
     }
 }

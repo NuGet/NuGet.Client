@@ -97,7 +97,6 @@ namespace NuGetVSExtension
         private bool _powerConsoleCommandExecuting;
         private bool _initialized;
         private NuGetPowerShellUsageCollector _nuGetPowerShellUsageCollector;
-        private NuGetHttpCacheUsageCollector _nuGetHttpCacheUsageCollector;
 
         public NuGetPackage()
         {
@@ -153,7 +152,6 @@ namespace NuGetVSExtension
             NuGetVSTelemetryService.Initialize();
 
             _nuGetPowerShellUsageCollector = new NuGetPowerShellUsageCollector();
-            _nuGetHttpCacheUsageCollector = new NuGetHttpCacheUsageCollector();
 
             await base.InitializeAsync(cancellationToken, progress);
 
@@ -1315,7 +1313,6 @@ namespace NuGetVSExtension
                 {
                     _mcs?.Dispose();
                     _nuGetPowerShellUsageCollector?.Dispose();
-                    _nuGetHttpCacheUsageCollector?.Dispose();
                     _semaphore.Dispose();
                     ProjectRetargetingHandler?.Dispose();
                     ProjectUpgradeHandler?.Dispose();

@@ -64,6 +64,7 @@ namespace NuGet.VisualStudio.Telemetry
             ProtocolDiagnostics.HttpEvent += ProtocolDiagnostics_HttpEvent;
             ProtocolDiagnostics.ResourceEvent += ProtocolDiagnostics_ResourceEvent;
             ProtocolDiagnostics.NupkgCopiedEvent += ProtocolDiagnostics_NupkgCopiedEvent;
+            ProtocolDiagnostics.HttpCacheEvent += ProtocolDiagnostics_HttpCacheEvent;
             _parentId = parentId;
             _actionName = GetActionName(action);
         }
@@ -188,11 +189,61 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
+        private void ProtocolDiagnostics_HttpCacheEvent(ProtocolDiagnosticHttpCacheEvent hcEvent)
+        {
+            AddHttpCacheData(hcEvent, _data);
+        }
+
+        internal static void AddHttpCacheData(ProtocolDiagnosticHttpCacheEvent hcEvent, IReadOnlyDictionary<string, Data> allData)
+        {
+            if (!allData.TryGetValue(hcEvent.Source, out Data data))
+            {
+                return;
+            }
+
+            lock (data._lock)
+            {
+                if (hcEvent.CacheHit)
+                {
+                    data.Http.CacheHitCount++;
+                }
+                else
+                {
+                    data.Http.CacheMissCount++;
+                }
+
+                if (hcEvent.CacheBypass)
+                {
+                    data.Http.CacheBypassCount++;
+                }
+
+                if (hcEvent.ExpiredCache)
+                {
+                    data.Http.CacheExpiredCount++;
+                }
+
+                if (hcEvent.CacheFileHashMatch)
+                {
+                    data.Http.CacheContentNotChanged++;
+                }
+                else
+                {
+                    data.Http.CacheContentChanged++;
+                }
+
+                if (hcEvent.CacheHit && hcEvent.ExpiredCache && hcEvent.CacheFileHashMatch)
+                {
+                    data.Http.CacheRedownloadCount++;
+                }
+            }
+        }
+
         public void Dispose()
         {
             ProtocolDiagnostics.HttpEvent -= ProtocolDiagnostics_HttpEvent;
             ProtocolDiagnostics.ResourceEvent -= ProtocolDiagnostics_ResourceEvent;
             ProtocolDiagnostics.NupkgCopiedEvent -= ProtocolDiagnostics_NupkgCopiedEvent;
+            ProtocolDiagnostics.HttpCacheEvent -= ProtocolDiagnostics_HttpCacheEvent;
         }
 
         public async Task SendTelemetryAsync()
@@ -282,6 +333,13 @@ namespace NuGet.VisualStudio.Telemetry
             telemetry[PropertyNames.Http.Failed] = data.Failed;
             telemetry[PropertyNames.Http.Bytes] = data.TotalBytes;
             telemetry[PropertyNames.Http.Duration.Total] = data.TotalDuration.TotalMilliseconds;
+            telemetry[PropertyNames.Http.Cache.CacheHitCount] = data.CacheHitCount;
+            telemetry[PropertyNames.Http.Cache.CacheMissCount] = data.CacheMissCount;
+            telemetry[PropertyNames.Http.Cache.CacheBypassCount] = data.CacheBypassCount;
+            telemetry[PropertyNames.Http.Cache.CacheExpiredCount] = data.CacheExpiredCount;
+            telemetry[PropertyNames.Http.Cache.CacheContentChanged] = data.CacheContentChanged;
+            telemetry[PropertyNames.Http.Cache.CacheContentNotChanged] = data.CacheContentNotChanged;
+            telemetry[PropertyNames.Http.Cache.CacheRedownloadCount] = data.CacheRedownloadCount;
 
             if (data.HeaderDuration != null)
             {
@@ -419,6 +477,14 @@ namespace NuGet.VisualStudio.Telemetry
             public int Retries;
             public int Cancelled;
             public int Failed;
+            public int CacheHitCount;
+            public int CacheMissCount;
+            public int CacheBypassCount;
+            public int CacheExpiredCount;
+            public int CacheContentChanged;
+            public int CacheContentNotChanged;
+            // Downloaded exact same file after timestamp expired.
+            public int CacheRedownloadCount;
 
             public HttpData()
             {
@@ -469,6 +535,17 @@ namespace NuGet.VisualStudio.Telemetry
                 {
                     internal const string Total = "http.duration.total";
                     internal const string Header = "http.duration.header";
+                }
+
+                internal static class Cache
+                {
+                    internal const string CacheHitCount = "http.cache.hitcount";
+                    internal const string CacheMissCount = "http.cache.missCount";
+                    internal const string CacheBypassCount = "http.cache.bypasscount";
+                    internal const string CacheExpiredCount = "http.cache.expiredcount";
+                    internal const string CacheContentChanged = "http.cache.contentchanged";
+                    internal const string CacheContentNotChanged = "http.cache.contentnotchanged";
+                    internal const string CacheRedownloadCount = "http.cache.redownloadcount";
                 }
             }
 
