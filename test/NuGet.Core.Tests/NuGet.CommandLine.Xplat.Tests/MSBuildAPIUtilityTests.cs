@@ -21,10 +21,11 @@ namespace NuGet.CommandLine.Xplat.Tests
         {
             MSBuildLocator.RegisterDefaults();
         }
-
-        [Fact]
+        
+        [PlatformFact(Platform.Windows)]
         public void GetDirectoryBuildPropsRootElementWhenItExists_Success()
         {
+            // Arrange
             var testDirectory = TestDirectory.Create();
 
             var projectCollection = new ProjectCollection(
@@ -59,18 +60,19 @@ namespace NuGet.CommandLine.Xplat.Tests
 	</PropertyGroup>
 </Project>";
             File.WriteAllText(Path.Combine(testDirectory, "projectA.csproj"), projectContent);
-
             var project = Project.FromFile(Path.Combine(testDirectory, "projectA.csproj"), projectOptions);
 
+            // Act
             var result = new MSBuildAPIUtility(logger: new TestLogger()).GetDirectoryBuildPropsRootElement(project);
 
+            // Assert
             Assert.Equal(Path.Combine(testDirectory, "Directory.Packages.props"), result.FullPath);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void AddPackageReferenceIntoProjectFileWhenItemGroupDoesNotExist_Success()
         {
-            // Set up
+            // Arrange
             var testDirectory = TestDirectory.Create();
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
@@ -89,7 +91,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ProjectCollection = projectCollection
             };
 
-            // Set up project file
+            // Arrange project file
             string projectContent =
 @$"<Project Sdk=""Microsoft.NET.Sdk"">
 <PropertyGroup>                   
@@ -116,14 +118,15 @@ namespace NuGet.CommandLine.Xplat.Tests
             project.Save();
 
             // Assert
-            Assert.Contains(@$"<PackageReference Include=""X"" />", File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj")));
-            Assert.DoesNotContain(@$"<Version = ""1.0.0"" />", File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj")));
+            string updatedProjectFile = File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj"));
+            Assert.Contains(@$"<PackageReference Include=""X"" />", updatedProjectFile);
+            Assert.DoesNotContain(@$"<Version = ""1.0.0"" />", updatedProjectFile);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void AddPackageReferenceIntoProjectFileWhenItemGroupDoesExist_Success()
         {
-            // Set up
+            // Arrange
             var testDirectory = TestDirectory.Create();
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
@@ -142,7 +145,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ProjectCollection = projectCollection
             };
 
-            // Set up project file
+            // Arrange project file
             string projectContent =
 @$"<Project Sdk=""Microsoft.NET.Sdk"">
 <PropertyGroup>                   
@@ -174,14 +177,15 @@ namespace NuGet.CommandLine.Xplat.Tests
             project.Save();
 
             // Assert
-            Assert.Contains(@$"<PackageReference Include=""X"" />", File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj")));
-            Assert.DoesNotContain(@$"<Version = ""1.0.0"" />", File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj")));
+            string updatedProjectFile = File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj"));
+            Assert.Contains(@$"<PackageReference Include=""X"" />", updatedProjectFile);
+            Assert.DoesNotContain(@$"<Version = ""1.0.0"" />", updatedProjectFile);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void AddPackageVersionIntoPropsFileWhenItemGroupDoesNotExist_Success()
         {
-            // Set up
+            // Arrange
             var testDirectory = TestDirectory.Create();
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
@@ -200,7 +204,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ProjectCollection = projectCollection
             };
 
-            // Set up Directory.Packages.props file
+            // Arrange Directory.Packages.props file
             var propsFile =
 @$"<Project>
     <PropertyGroup>
@@ -209,7 +213,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 </Project>";
             File.WriteAllText(Path.Combine(testDirectory, "Directory.Packages.props"), propsFile);
 
-            // Set up project file
+            // Arrange project file
             string projectContent =
 @$"<Project Sdk=""Microsoft.NET.Sdk"">    
 	<PropertyGroup>                   
@@ -243,10 +247,10 @@ namespace NuGet.CommandLine.Xplat.Tests
   </ItemGroup>", File.ReadAllText(Path.Combine(testDirectory, "Directory.Packages.props")));
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void AddPackageVersionIntoPropsFileWhenItemGroupExists_Success()
         {
-            // Set up
+            // Arrange
             var testDirectory = TestDirectory.Create();
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
@@ -265,7 +269,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ProjectCollection = projectCollection
             };
 
-            // Set up Directory.Packages.props file
+            // Arrange Directory.Packages.props file
             var propsFile =
 @$"<Project>
     <PropertyGroup>
@@ -277,7 +281,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 </Project>";
             File.WriteAllText(Path.Combine(testDirectory, "Directory.Packages.props"), propsFile);
 
-            // Set up project file
+            // Arrange project file
             string projectContent =
 @$"<Project Sdk=""Microsoft.NET.Sdk"">    
 	<PropertyGroup>                   
@@ -312,10 +316,10 @@ namespace NuGet.CommandLine.Xplat.Tests
             Assert.Contains(@$"<PackageVersion Include=""Y"" Version=""1.0.0"" />", File.ReadAllText(Path.Combine(testDirectory, "Directory.Packages.props")));
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void UpdatePackageVersionInPropsFileWhenItExists_Success()
         {
-            // Set up
+            // Arrange
             var testDirectory = TestDirectory.Create();
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
@@ -334,7 +338,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ProjectCollection = projectCollection
             };
 
-            // Set up Directory.Packages.props file
+            // Arrange Directory.Packages.props file
             var propsFile =
 @$"<Project>
     <PropertyGroup>
@@ -346,7 +350,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 </Project>";
             File.WriteAllText(Path.Combine(testDirectory, "Directory.Packages.props"), propsFile);
 
-            // Set up project file
+            // Arrange project file
             string projectContent =
 @$"<Project Sdk=""Microsoft.NET.Sdk"">    
 	<PropertyGroup>                   
@@ -376,9 +380,9 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(projectContent, File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj")));
-            Assert.Contains(@$"<PackageVersion Include=""X"" Version=""2.0.0"" />", File.ReadAllText(Path.Combine(testDirectory, "Directory.Packages.props")));
-            Assert.DoesNotContain(@$"<PackageVersion Include=""X"" Version=""1.0.0"" />", File.ReadAllText(Path.Combine(testDirectory, "Directory.Packages.props")));
+            string updatedPropsFile = File.ReadAllText(Path.Combine(testDirectory, "Directory.Packages.props"));
+            Assert.Contains(@$"<PackageVersion Include=""X"" Version=""2.0.0"" />", updatedPropsFile);
+            Assert.DoesNotContain(@$"<PackageVersion Include=""X"" Version=""1.0.0"" />", updatedPropsFile);
         }
-
     }
 }
