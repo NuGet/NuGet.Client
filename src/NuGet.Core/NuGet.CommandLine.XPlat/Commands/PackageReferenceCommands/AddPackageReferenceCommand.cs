@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -101,6 +102,9 @@ namespace NuGet.CommandLine.XPlat
                         PackageId = id.Values[0]
                     };
                     var msBuild = new MSBuildAPIUtility(logger);
+
+                    X509TrustStore.InitializeForDotNetSdk(logger);
+
                     var addPackageRefCommandRunner = getCommandRunner();
                     return addPackageRefCommandRunner.ExecuteCommand(packageRefArgs, msBuild);
                 });

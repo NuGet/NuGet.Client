@@ -47,8 +47,8 @@ namespace NuGet.Packaging.FuncTest
 
             Assert.IsType<DotNetDefaultTrustStoreX509ChainFactory>(factory);
             Assert.Equal(1, _logger.Messages.Count);
-            Assert.Equal(1, _logger.VerboseMessages.Count);
-            Assert.True(_logger.VerboseMessages.TryDequeue(out string actualMessage));
+            Assert.Equal(1, _logger.InformationMessages.Count);
+            Assert.True(_logger.InformationMessages.TryDequeue(out string actualMessage));
             Assert.Equal(Strings.ChainBuilding_UsingDefaultTrustStore, actualMessage);
         }
     }

@@ -524,7 +524,7 @@ namespace NuGet.Packaging
                 // Please note: Linux/MAC case sensitive for env var name.
                 string signVerifyEnvVariable = _environmentVariableReader.GetEnvironmentVariable("DOTNET_NUGET_SIGNATURE_VERIFICATION");
 
-                bool canVerify = RuntimeEnvironmentHelper.IsLinux;
+                bool canVerify = false;
 
                 if (!string.IsNullOrEmpty(signVerifyEnvVariable))
                 {

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -612,6 +613,76 @@ namespace Dotnet.Integration.Test
             result.Success.Should().BeFalse(because: result.AllOutput);
             Assert.Contains($"Installed {packageX} {version} from {packageSource2}", result.AllOutput);
             Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})' for 'net5.0'", result.AllOutput);
+        }
+
+        [Fact]
+        public void AddPkg_WhenSourceIsSignedPackageWithExpiredCertificatesAndWithTimestamps_Success()
+        {
+            using (SimpleTestPathContext pathContext = new())
+            {
+                var projectName = "project";
+                var targetFrameworks = "net6.0";
+                SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
+
+                // This package is important because:
+                //    * it has no package dependencies and thus simplifies the test scenario
+                //    * it is a signed package and thus verifies signed package verification, if enabled
+                //    * the author- and repository-signing certificates have expired
+                //    * the author and repository timestamps may be untrusted on Linux/macOS if a valid certificate bundle isn't found
+                PackageIdentity package = new("NuGet.Versioning", new NuGetVersion("5.0.0"));
+                DirectoryInfo packageSourceDirectory = new(Path.Combine(pathContext.WorkingDirectory, "PackageSource"));
+                var packageFileName = $"{package.Id.ToLowerInvariant()}.{package.Version}.nupkg";
+
+                CopyResourceToDirectory(packageFileName, packageSourceDirectory);
+
+                string projectDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                string projectFilePath = Path.Combine(projectDirectory, $"{projectName}.csproj");
+
+                CommandRunnerResult result = _fixture.RunDotnet(
+                    projectDirectory,
+                    $"add {projectFilePath} package {package.Id} -s {packageSourceDirectory.FullName} -v {package.Version}",
+                    ignoreExitCode: true);
+
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    result.AllOutput.Should()
+                        .Contain(
+                            Strings.ChainBuilding_UsingDefaultTrustStore,
+                            because: result.AllOutput);
+                }
+                else
+                {
+                    result.AllOutput.Should()
+                        .ContainAny(
+                            new string[] {
+                                "X.509 certificate chain validation will use the fallback certificate bundle at ",
+                                "X.509 certificate chain validation will use the system certificate bundle at "
+                            },
+                            because: result.AllOutput);
+                }
+
+                LockFileTarget ridlessTarget = projectA.AssetsFile.Targets
+                    .Where(e => string.IsNullOrEmpty(e.RuntimeIdentifier))
+                    .Single();
+
+                ridlessTarget.Libraries.Should().Contain(e => e.Type == "package" && e.Name == package.Id);
+                ridlessTarget.Libraries.Should().Contain(e => e.Version.Equals(package.Version));
+            }
+        }
+
+        private void CopyResourceToDirectory(string resourceName, DirectoryInfo directory)
+        {
+            string fullResourceName = $"Dotnet.Integration.Test.compiler.resources.{resourceName}";
+            string destinationFilePath = Path.Combine(directory.FullName, resourceName);
+
+            directory.Create();
+
+            using (Stream stream = GetType().Assembly.GetManifestResourceStream(fullResourceName))
+            {
+                stream.CopyToFile(destinationFilePath);
+            }
         }
     }
 }
