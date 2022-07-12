@@ -684,6 +684,8 @@ namespace Dotnet.Integration.Test
                 stream.CopyToFile(destinationFilePath);
             }
         }
+
+        [Fact]
         public async Task AddPkg_WithCPM_WhenPackageVersionDoesNotExistAndVersionCLIArgNotPassed_Success()
         {
             using var pathContext = new SimpleTestPathContext();
