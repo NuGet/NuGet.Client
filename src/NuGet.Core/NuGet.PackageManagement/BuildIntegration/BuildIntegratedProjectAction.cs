@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Commands;
-using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
