@@ -396,15 +396,26 @@ namespace NuGet.PackageManagement.VisualStudio
             // the UI stop responding for right click on solution.
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            // first check with DTE, and if we find any supported project, then return immediately.
-            var dte = await _dte.GetValueAsync();
-
             var isSupported = false;
 
-            foreach (Project project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
+            if (await _featureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.NuGetSolutionCacheInitilization))
             {
-                isSupported = true;
-                break;
+                var ivsSolution = await _asyncVSSolution.GetValueAsync();
+                if (IsSolutionOpenFromVSSolution(ivsSolution))
+                {
+                    return VsHierarchyUtility.AreAnyLoadedProjectsNuGetCompatible(ivsSolution);
+                }
+            }
+            else
+            {
+                // first check with DTE, and if we find any supported project, then return immediately.
+                var dte = await _dte.GetValueAsync();
+
+                foreach (Project project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
+                {
+                    isSupported = true;
+                    break;
+                }
             }
 
             return isSupported;

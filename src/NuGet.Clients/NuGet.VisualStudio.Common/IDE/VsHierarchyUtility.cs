@@ -195,6 +195,26 @@ namespace NuGet.VisualStudio
             return compatibleProjectHierarchies;
         }
 
+        public static bool AreAnyLoadedProjectsNuGetCompatible(IVsSolution vsSolution)
+        {
+            Assumes.NotNull(vsSolution);
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var hr = vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out IEnumHierarchies ppenum);
+            ErrorHandler.ThrowOnFailure(hr);
+
+            IVsHierarchy[] hierarchies = new IVsHierarchy[1];
+            while ((ppenum.Next((uint)hierarchies.Length, hierarchies, out uint fetched) == VSConstants.S_OK) && (fetched == (uint)hierarchies.Length))
+            {
+                var hierarchy = hierarchies[0];
+                if (IsNuGetSupported(hierarchy))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private static async Task<ICollection<VsHierarchyItem>> GetExpandedProjectHierarchyItemsAsync(EnvDTE.Project project)
         {
             var projectHierarchyItem = await VsHierarchyItem.FromDteProjectAsync(project);
