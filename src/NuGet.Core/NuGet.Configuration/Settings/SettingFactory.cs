@@ -100,10 +100,10 @@ namespace NuGet.Configuration
         internal static IEnumerable<T> ParseChildren<T>(XElement xElement, SettingsFile origin, bool canBeCleared) where T : SettingElement
         {
             var children = new List<T>();
-            IEnumerable<T> descendants;
+            IEnumerable<T> descendants = xElement.Elements().Select(d => Parse(d, origin)).OfType<T>();
+
             if (xElement.Name.LocalName.Equals(ConfigurationConstants.PackageSourceMapping, StringComparison.OrdinalIgnoreCase))
             {
-                descendants = xElement.Elements().Select(d => Parse(d, origin)).OfType<T>();
                 var duplicatedPackageSource = descendants.Where(node => node.ElementName.Equals(ConfigurationConstants.PackageSourceAttribute, StringComparison.OrdinalIgnoreCase))
                                             .ToLookup(d => d.Attributes["key"], d => d, StringComparer.OrdinalIgnoreCase)
                                             .Where(g => g.Count() > 1)
@@ -111,12 +111,13 @@ namespace NuGet.Configuration
                 if (duplicatedPackageSource.Any())
                 {
                     var duplicatedKey = string.Join(", ", duplicatedPackageSource.Select(d => d.Key));
-                    throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_DuplicatePackageSource, duplicatedKey));
+                    var source = duplicatedPackageSource.Select(d => d.First().Origin.ConfigFilePath).First();
+                    throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_DuplicatePackageSource, duplicatedKey, source));
                 }
             }
             else
             {
-                descendants = xElement.Elements().Select(d => Parse(d, origin)).OfType<T>().Distinct();
+                descendants.Distinct();
             }
 
             foreach (var descendant in descendants)

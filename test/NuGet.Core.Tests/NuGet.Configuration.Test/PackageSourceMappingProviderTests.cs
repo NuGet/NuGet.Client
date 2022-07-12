@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -51,8 +52,8 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
-            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
-            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+            var configPath = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSourceMapping>
         <clear/>
@@ -76,8 +77,8 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var exception = Assert.Throws<NuGetConfigurationException>(
-                () => Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 }));
-            Assert.Equal("PackageSourceMapping is enabled, there are multiple package sources associated with the same key(s): dotnet, nuget.org", exception.Message);
+                () => Settings.LoadSettingsGivenConfigPaths(new string[] { configPath}));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, "PackageSourceMapping is enabled and there are multiple package sources associated with the same key(s): dotnet, nuget.org. Path: {0}", configPath), exception.Message);
         }
 
         [Fact]

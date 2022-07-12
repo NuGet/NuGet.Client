@@ -151,7 +151,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PackageSourceMapping is enabled, there are multiple package sources associated with the same key(s): {0}.
+        ///   Looks up a localized string similar to PackageSourceMapping is enabled and there are multiple package sources associated with the same key(s): {0}. Path: {1}.
         /// </summary>
         internal static string Error_DuplicatePackageSource {
             get {
