@@ -761,4 +761,8 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Invalid culture identifier in {0} environment variable. Value read is '{1}'</value>
     <comment>0 - Environment variable name, 1 - value set in environment variable</comment>
   </data>
+  <data name="Info_AddPkgCPM" xml:space="preserve">
+    <value>PackageReference for package '{0}' added to '{1}' and PackageVersion added to central package management file '{2}'.</value>
+    <comment>0 - The package ID. 1 - Directory.Packages.props file path. 2 - Project file path.</comment>
+  </data>
 </root>

@@ -529,6 +529,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PackageReference for package &apos;{0}&apos; added to &apos;{1}&apos; and PackageVersion added to central package management file &apos;{2}&apos;..
+        /// </summary>
+        internal static string Info_AddPkgCPM {
+            get {
+                return ResourceManager.GetString("Info_AddPkgCPM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PackageReference for package &apos;{0}&apos; version &apos;{1}&apos; updated in file &apos;{2}&apos;..
         /// </summary>
         internal static string Info_AddPkgUpdated {
