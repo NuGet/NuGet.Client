@@ -29,8 +29,8 @@ namespace Dotnet.Integration.Test
                     FallbackCertificateBundleX509ChainFactory.SubdirectoryName,
                     FallbackCertificateBundleX509ChainFactory.FileName));
 
-            _logger.LogInformation($"Expected fallback certificate bundle file path:  {_fallbackCertificateBundle.FullName}");
-            _logger.LogInformation($"Fallback certificate bundle file exists:  {_fallbackCertificateBundle.Exists}");
+            _logger.LogVerbose($"Expected fallback certificate bundle file path:  {_fallbackCertificateBundle.FullName}");
+            _logger.LogVerbose($"Fallback certificate bundle file exists:  {_fallbackCertificateBundle.Exists}");
         }
 
         [PlatformFact(Platform.Windows)]
@@ -44,8 +44,8 @@ namespace Dotnet.Integration.Test
 
             // 1 message from the API under test and 2 messages from this test class's constructor
             Assert.Equal(3, _logger.Messages.Count);
-            Assert.Equal(1, _logger.VerboseMessages.Count);
-            Assert.True(_logger.VerboseMessages.TryDequeue(out string actualMessage));
+            Assert.Equal(1, _logger.InformationMessages.Count);
+            Assert.True(_logger.InformationMessages.TryPeek(out string actualMessage));
             Assert.Equal(Strings.ChainBuilding_UsingDefaultTrustStore, actualMessage);
         }
 
@@ -75,8 +75,8 @@ namespace Dotnet.Integration.Test
 
             // 1 message from the API under test and 2 messages from this test class's constructor
             Assert.Equal(3, _logger.Messages.Count);
-            Assert.Equal(1, _logger.VerboseMessages.Count);
-            Assert.True(_logger.VerboseMessages.TryDequeue(out string actualMessage));
+            Assert.Equal(1, _logger.InformationMessages.Count);
+            Assert.True(_logger.InformationMessages.TryPeek(out string actualMessage));
 
             string expectedMessage;
 
@@ -114,8 +114,8 @@ namespace Dotnet.Integration.Test
 
             // 1 message from the API under test and 2 messages from this test class's constructor
             Assert.Equal(3, _logger.Messages.Count);
-            Assert.Equal(1, _logger.VerboseMessages.Count);
-            Assert.True(_logger.VerboseMessages.TryDequeue(out string actualMessage));
+            Assert.Equal(1, _logger.InformationMessages.Count);
+            Assert.True(_logger.InformationMessages.TryPeek(out string actualMessage));
             Assert.Equal(expectedMessage, actualMessage);
         }
 
