@@ -328,6 +328,18 @@
 
   <!--
     ============================================================
+    GetTargetFrameworks
+    ============================================================
+  -->
+  <Target Name="GetAllTargetFrameworks">
+      <MsBuild
+        Projects="@(AllRepoProjects)"
+        Targets="GetAllTargetFrameworks">
+    </MsBuild>
+  </Target>
+
+  <!--
+    ============================================================
     Get projects need to be packed
     ============================================================
   -->

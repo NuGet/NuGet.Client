@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFramework>$(NetStandardVersion)</TargetFramework>
+    <TargetFramework>$(NetCoreTargetFramework)</TargetFramework>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <PackProject Condition="!Exists('$(LocalizationRootDirectory)')">false</PackProject>
