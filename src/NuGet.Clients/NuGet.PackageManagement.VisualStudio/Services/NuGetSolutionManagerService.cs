@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            IComponentModel componentModel = await ServiceLocator.GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
+            IComponentModel componentModel = await ServiceLocator.GetComponentModelAsync();
 
             Assumes.NotNull(componentModel);
 

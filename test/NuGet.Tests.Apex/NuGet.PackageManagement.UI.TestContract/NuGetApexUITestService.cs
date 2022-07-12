@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.UI.TestContract
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var uiShell = ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>();
+                var uiShell = await ServiceLocator.GetGlobalServiceAsync<SVsUIShell, IVsUIShell>();
                 foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
                 {
                     object docView;

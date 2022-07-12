@@ -492,7 +492,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                        InitForBindingRedirects();
+                        await InitForBindingRedirectsAsync();
                         if (IsBindingRedirectSupported && VSSolutionManager != null)
                         {
                             await RuntimeHelpers.AddBindingRedirectsAsync(VSSolutionManager,
@@ -527,13 +527,13 @@ namespace NuGet.PackageManagement.VisualStudio
         private VSSolutionManager VSSolutionManager { get; set; }
         private IVsFrameworkMultiTargeting VSFrameworkMultiTargeting { get; set; }
 
-        private void InitForBindingRedirects()
+        private async Task InitForBindingRedirectsAsync()
         {
             if (!_bindingRedirectsRelatedInitialized)
             {
-                var solutionManager = ServiceLocator.GetComponentModelService<ISolutionManager>();
+                var solutionManager = await ServiceLocator.GetComponentModelServiceAsync<ISolutionManager>();
                 VSSolutionManager = (solutionManager != null) ? (solutionManager as VSSolutionManager) : null;
-                VSFrameworkMultiTargeting = ServiceLocator.GetGlobalService<SVsFrameworkMultiTargeting, IVsFrameworkMultiTargeting>();
+                VSFrameworkMultiTargeting = await ServiceLocator.GetGlobalServiceAsync<SVsFrameworkMultiTargeting, IVsFrameworkMultiTargeting>();
             }
         }
 

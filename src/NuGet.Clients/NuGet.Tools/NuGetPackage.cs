@@ -216,7 +216,7 @@ namespace NuGetVSExtension
 
                 Brushes.LoadVsBrushes(NuGetExperimentationService.Value);
 
-                _dte = await this.GetServiceAsync<SDTE, DTE>();
+                _dte = await this.GetDTEAsync();
                 Assumes.Present(_dte);
 
                 if (SolutionManager.Value.NuGetProjectContext == null)

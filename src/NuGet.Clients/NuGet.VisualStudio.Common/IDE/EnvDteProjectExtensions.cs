@@ -30,7 +30,7 @@ namespace NuGet.VisualStudio
             IVsHierarchy hierarchy;
 
             // Get the vs solution
-            var solution = await ServiceLocator.GetInstanceAsync<IVsSolution>();
+            var solution = await ServiceLocator.GetGlobalServiceAsync<SVsSolution, IVsSolution>();
             int hr = solution.GetProjectOfUniqueName(project.GetUniqueName(), out hierarchy);
 
             if (hr != VSConstants.S_OK)

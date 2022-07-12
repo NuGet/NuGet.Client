@@ -16,6 +16,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using EnvDTE;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
@@ -79,7 +81,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             PackageRestoreManager = componentModel.GetService<IPackageRestoreManager>();
             _deleteOnRestartManager = componentModel.GetService<IDeleteOnRestartManager>();
             _nuGetProgressReporter = componentModel.GetService<IRestoreProgressReporter>();
-            DTE = ServiceLocator.GetInstance<DTE>();
+            DTE = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceAsync<SDTE, DTE>());
 
             var logger = new LoggerAdapter(this);
             PackageExtractionContext = new PackageExtractionContext(
