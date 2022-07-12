@@ -140,7 +140,7 @@ namespace NuGet.PackageManagement.UI.Test
                 CancellationToken.None);
 
             Assert.Equal(1, previewResults.Count);
-            AccessiblePackageIdentity[] addedResults = previewResults[0].Added.Select(ar => ar.accessiblePackageIdentity).ToArray();
+            AccessiblePackageIdentity[] addedResults = previewResults[0].Added.ToArray();
 
             Assert.Equal(3, addedResults.Length);
 
