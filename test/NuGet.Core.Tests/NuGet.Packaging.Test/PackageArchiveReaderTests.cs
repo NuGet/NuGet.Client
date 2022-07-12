@@ -1976,23 +1976,19 @@ namespace NuGet.Packaging.Test
         }
 #endif
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
-        public void CanVerifySignedPackages_OnWindowsAndLinux_ReturnsValueBasedOnOperatingSystemAndFramework()
+        [Fact]
+        public void CanVerifySignedPackages_Always_ReturnsValueBasedOnOperatingSystemAndFramework()
         {
             // Arrange
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
             using (var packageArchiveReader = new PackageArchiveReader(test))
             {
+                bool expectedResult = CanVerifySignedPackages();
+
                 // Act
-                var result = packageArchiveReader.CanVerifySignedPackages(null);
-                // Assert
-#if IS_SIGNING_SUPPORTED
-                // Verify package signature when signing is supported
-                Assert.True(result);
-#else
-                // Cannot verify package signature when signing is not supported
-                Assert.False(result);
-#endif
+                bool actualResult = packageArchiveReader.CanVerifySignedPackages(null);
+
+                Assert.Equal(expectedResult, actualResult);
             }
         }
 
@@ -2008,23 +2004,6 @@ namespace NuGet.Packaging.Test
 
                 // Assert
                 Assert.False(result);
-            }
-        }
-
-        [Fact]
-        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_Fails()
-        {
-            // Arrange
-            using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
-            using (var packageArchiveReader = new PackageArchiveReader(test))
-            {
-                bool expectedResult = CanVerifySignedPackages();
-
-                // Act
-                bool actualResult = packageArchiveReader.CanVerifySignedPackages(null);
-
-                // Assert
-                Assert.Equal(expectedResult, actualResult);
             }
         }
 
@@ -2123,7 +2102,7 @@ namespace NuGet.Packaging.Test
 
         private static bool CanVerifySignedPackages()
         {
-            return (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsLinux) &&
+            return RuntimeEnvironmentHelper.IsWindows &&
 #if IS_SIGNING_SUPPORTED
                 true;
 #else
