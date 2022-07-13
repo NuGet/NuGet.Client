@@ -4,6 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:pmc="NuGet.PackageManagement.UI.PackageManagerControl"
              mc:Ignorable="d"
              DataContextChanged="SolutionView_DataContextChanged"
              d:DesignHeight="300" d:DesignWidth="500">

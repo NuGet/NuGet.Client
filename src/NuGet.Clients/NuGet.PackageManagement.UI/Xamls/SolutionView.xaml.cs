@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -14,6 +15,8 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.VisualStudio.PlatformUI;
+using NuGet.Options;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Resx = NuGet.PackageManagement.UI;
@@ -29,6 +32,10 @@ namespace NuGet.PackageManagement.UI
         public event EventHandler<EventArgs> InstallButtonClicked;
 
         public event EventHandler<EventArgs> UninstallButtonClicked;
+
+        private PackageSourceMoniker SelectedSource => Control.SelectedSource;
+
+        public PackageManagerControl Control { get; set; }
 
         // the list of columns that are sortable.
         private List<GridViewColumnHeader> _sortableColumns;
