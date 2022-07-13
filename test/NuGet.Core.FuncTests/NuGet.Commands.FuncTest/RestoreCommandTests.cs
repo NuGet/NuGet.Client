@@ -32,6 +32,7 @@ namespace NuGet.Commands.FuncTest
 
     using LocalPackageArchiveDownloader = Protocol.LocalPackageArchiveDownloader;
 
+    [Collection(TestCollection.Name)]
     public class RestoreCommandTests
     {
         [Theory]

@@ -15,6 +15,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -25,7 +26,6 @@ using System.Xml;
 using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
-using NuGet.Packaging.Signing;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Shared;
@@ -190,6 +190,8 @@ namespace NuGet.Build.Tasks
                 // OS description is set by default on Desktop
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet Desktop MSBuild Task"));
 #endif
+
+                X509TrustStore.InitializeForDotNetSdk(log);
 
                 var restoreSummaries = new List<RestoreSummary>();
                 var providerCache = new RestoreCommandProvidersCache();

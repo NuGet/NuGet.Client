@@ -22,8 +22,8 @@ namespace NuGet.Packaging.Test
 {
     public class PackageArchiveReaderTests
     {
-        private const string OptInPackageVerification = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
-        private const string OptInPackageVerificationTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
+        private const string SignatureVerificationEnvironmentVariable = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
+        private const string SignatureVerificationEnvironmentVariableTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
 
         [Fact]
         public void Constructor_WithStringPathParameter_DisposesInvalidStream()
@@ -1976,28 +1976,24 @@ namespace NuGet.Packaging.Test
         }
 #endif
 
-        [PlatformFact(Platform.Windows)]
-        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework()
+        [Fact]
+        public void CanVerifySignedPackages_Always_ReturnsValueBasedOnOperatingSystemAndFramework()
         {
             // Arrange
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
             using (var packageArchiveReader = new PackageArchiveReader(test))
             {
+                bool expectedResult = CanVerifySignedPackages();
+
                 // Act
-                var result = packageArchiveReader.CanVerifySignedPackages(null);
-                // Assert
-#if IS_SIGNING_SUPPORTED
-                // Verify package signature when signing is supported
-                Assert.True(result);
-#else
-                // Cannot verify package signature when signing is not supported
-                Assert.False(result);
-#endif
+                bool actualResult = packageArchiveReader.CanVerifySignedPackages(null);
+
+                Assert.Equal(expectedResult, actualResult);
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_Fails()
+        [PlatformFact(Platform.Darwin)]
+        public void CanVerifySignedPackages_OnMacOs_ReturnsValueBasedOnOperatingSystemAndFramework()
         {
             // Arrange
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
@@ -2005,6 +2001,7 @@ namespace NuGet.Packaging.Test
             {
                 // Act
                 bool result = packageArchiveReader.CanVerifySignedPackages(null);
+
                 // Assert
                 Assert.False(result);
             }
@@ -2013,18 +2010,18 @@ namespace NuGet.Packaging.Test
         [Theory]
         [InlineData("TRUE")]
         [InlineData("True")]
-        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar(string envVar)
+        public void CanVerifySignedPackages_WhenTrue_ReturnsValueBasedOnOperatingSystemAndFramework(string envVar)
         {
             // Arrange
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
-            environment.Setup(s => s.GetEnvironmentVariable(OptInPackageVerification)).Returns(envVar);
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns(envVar);
 
             using (var test = TestPackagesCore.GetPackageContentReaderTestPackage())
             using (var packageStream = File.OpenRead(test))
             using (var packageArchiveReader = new PackageArchiveReader(packageStream, environmentVariableReader: environment.Object))
             {
-                // Act
-                var result = packageArchiveReader.CanVerifySignedPackages(null);
+                bool result = packageArchiveReader.CanVerifySignedPackages(null);
+
                 // Assert
 #if IS_SIGNING_SUPPORTED
                 // Verify package signature when signing is supported
@@ -2036,11 +2033,56 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
-        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_OptInEnvVar_NameCaseSensitive_Fails()
+        [PlatformTheory(Platform.Linux, Platform.Darwin)]
+        [InlineData("FALSE")]
+        [InlineData("false")]
+        public void CanVerifySignedPackages_WhenFalseOnNonWindows_ReturnsValueBasedOnOperatingSystemAndFramework(string envVar)
         {
             // Arrange
-            string envVarName = OptInPackageVerificationTypo;
+            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns(envVar);
+
+            using (TestPackagesCore.TempFile test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (FileStream packageStream = File.OpenRead(test))
+            using (var packageArchiveReader = new PackageArchiveReader(packageStream, environmentVariableReader: environment.Object))
+            {
+                bool result = packageArchiveReader.CanVerifySignedPackages(null);
+
+                Assert.False(result);
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("FALSE")]
+        [InlineData("false")]
+        public void CanVerifySignedPackages_WhenFalseOnWindows_ReturnsValueBasedOnOperatingSystemAndFramework(string envVar)
+        {
+            // Arrange
+            var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+            environment.Setup(s => s.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns(envVar);
+
+            using (TestPackagesCore.TempFile test = TestPackagesCore.GetPackageContentReaderTestPackage())
+            using (FileStream packageStream = File.OpenRead(test))
+            using (var packageArchiveReader = new PackageArchiveReader(packageStream, environmentVariableReader: environment.Object))
+            {
+                // Act
+                bool result = packageArchiveReader.CanVerifySignedPackages(null);
+                // Assert
+#if IS_SIGNING_SUPPORTED
+                // Verify package signature when signing is supported
+                Assert.True(result);
+#else
+                // Cannot verify package signature when signing is not supported
+                Assert.False(result);
+#endif
+            }
+        }
+
+        [Fact]
+        public void CanVerifySignedPackages_ReturnsValueBasedOnOperatingSystemAndFramework_WithEnvVarNameCaseSensitive_Fails()
+        {
+            // Arrange
+            string envVarName = SignatureVerificationEnvironmentVariableTypo;
             string envVarValue = "true";
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Loose);
             environment.Setup(s => s.GetEnvironmentVariable(envVarName)).Returns(envVarValue);
@@ -2050,10 +2092,22 @@ namespace NuGet.Packaging.Test
             using (var packageArchiveReader = new PackageArchiveReader(packageStream, environmentVariableReader: environment.Object))
             {
                 // Act
-                bool result = packageArchiveReader.CanVerifySignedPackages(null);
+                bool expectedResult = CanVerifySignedPackages();
+                bool actualResult = packageArchiveReader.CanVerifySignedPackages(null);
+
                 // Assert
-                Assert.False(result);
+                Assert.Equal(expectedResult, actualResult);
             }
+        }
+
+        private static bool CanVerifySignedPackages()
+        {
+            return RuntimeEnvironmentHelper.IsWindows &&
+#if IS_SIGNING_SUPPORTED
+                true;
+#else
+                false;
+#endif
         }
 
         private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)

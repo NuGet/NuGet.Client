@@ -19,6 +19,7 @@ using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.Commands.FuncTest
 {
+    [Collection(TestCollection.Name)]
     public class RestoreCommand_PackagesLockFileTests
     {
         [Fact]

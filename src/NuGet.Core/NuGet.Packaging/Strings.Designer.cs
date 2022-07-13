@@ -169,6 +169,42 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to X.509 certificate chain validation will use the default trust store selected by .NET..
+        /// </summary>
+        internal static string ChainBuilding_UsingDefaultTrustStore {
+            get {
+                return ResourceManager.GetString("ChainBuilding_UsingDefaultTrustStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X.509 certificate chain validation will use the fallback certificate bundle at &apos;{0}&apos;..
+        /// </summary>
+        internal static string ChainBuilding_UsingFallbackCertificateBundle {
+            get {
+                return ResourceManager.GetString("ChainBuilding_UsingFallbackCertificateBundle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X.509 certificate chain validation will not have any trusted roots. Chain building will fail with an untrusted status..
+        /// </summary>
+        internal static string ChainBuilding_UsingNoCertificateBundle {
+            get {
+                return ResourceManager.GetString("ChainBuilding_UsingNoCertificateBundle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X.509 certificate chain validation will use the system certificate bundle at &apos;{0}&apos;..
+        /// </summary>
+        internal static string ChainBuilding_UsingSystemCertificateBundle {
+            get {
+                return ResourceManager.GetString("ChainBuilding_UsingSystemCertificateBundle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The commitment-type-indication attribute is invalid..
         /// </summary>
         internal static string CommitmentTypeIndicationAttributeInvalid {
