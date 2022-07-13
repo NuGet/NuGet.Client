@@ -12,6 +12,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -53,20 +54,44 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<IPackageSearchMetadata> GetPackageMetadataForIdentityAsync(PackageIdentity identity, CancellationToken cancellationToken)
         {
-            List<Task<IPackageSearchMetadata>> tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataForIdentityAsync(identity, cancellationToken)))
-                .ToList();
+            var getMetaDataOperationId = Guid.NewGuid();
 
-            return await GetPackageMetadataAsync(identity, tasks, cancellationToken);
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(_sourceRepositories, getMetaDataOperationId, PackageSourceTelemetry.TelemetryAction.GetMetaData))
+            {
+                List<Task<IPackageSearchMetadata>> tasks = _sourceRepositories
+                    .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataForIdentityAsync(identity, cancellationToken)))
+                    .ToList();
+
+                IPackageSearchMetadata packageSearchMetadata = await GetPackageMetadataAsync(identity, tasks, cancellationToken);
+
+                if (TelemetryActivity.NuGetTelemetryService != null)
+                {
+                    await packageSourceTelemetry.SendTelemetryAsync();
+                }
+
+                return packageSearchMetadata;
+            }
         }
 
         public async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
-            List<Task<IPackageSearchMetadata>> tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
-                .ToList();
+            var getMetaDataOperationId = Guid.NewGuid();
 
-            return await GetPackageMetadataAsync(identity, tasks, cancellationToken);
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(_sourceRepositories, getMetaDataOperationId, PackageSourceTelemetry.TelemetryAction.GetMetaData))
+            {
+                List<Task<IPackageSearchMetadata>> tasks = _sourceRepositories
+                    .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
+                    .ToList();
+
+                IPackageSearchMetadata packageSearchMetadata = await GetPackageMetadataAsync(identity, tasks, cancellationToken);
+
+                if (TelemetryActivity.NuGetTelemetryService != null)
+                {
+                    await packageSourceTelemetry.SendTelemetryAsync();
+                }
+
+                return packageSearchMetadata;
+            }
         }
 
         public async Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(
@@ -253,22 +278,32 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskSafeAsync(
-                    () => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
-                .ToList();
+            var getMetaDataOperationId = Guid.NewGuid();
 
-            if (_localRepository != null)
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(_sourceRepositories, getMetaDataOperationId, PackageSourceTelemetry.TelemetryAction.GetMetaData))
             {
-                tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
+                var tasks = _sourceRepositories
+                    .Select(r => GetMetadataTaskSafeAsync(
+                        () => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
+                    .ToList();
+
+                if (_localRepository != null)
+                {
+                    tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
+                }
+
+                var metadatas = (await Task.WhenAll(tasks))
+                    .Where(m => m != null);
+
+                if (TelemetryActivity.NuGetTelemetryService != null)
+                {
+                    await packageSourceTelemetry.SendTelemetryAsync();
+                }
+
+                return (await MergeVersionsAsync(identity, metadatas),
+                    await MergeDeprecationMetadataAsync(metadatas),
+                    MergeVulnerabilityMetadata(metadatas));
             }
-
-            var metadatas = (await Task.WhenAll(tasks))
-                .Where(m => m != null);
-
-            return (await MergeVersionsAsync(identity, metadatas),
-                await MergeDeprecationMetadataAsync(metadatas),
-                MergeVulnerabilityMetadata(metadatas));
         }
 
         internal async Task<T> GetMetadataTaskSafeAsync<T>(Func<Task<T>> getMetadataTask) where T : class
