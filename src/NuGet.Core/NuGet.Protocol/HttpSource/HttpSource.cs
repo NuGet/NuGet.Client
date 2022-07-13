@@ -81,9 +81,9 @@ namespace NuGet.Protocol
                 cacheResult.CacheFile,
                 action: async lockedToken =>
                 {
-                    bool isExpired;
+                    bool isExpired, cacheHit;
                     string cacheFileHash;
-                    (cacheResult.Stream, isExpired, cacheFileHash) = TryReadCacheFileWithExpireCheck(cacheResult.MaxAge, cacheResult.CacheFile);
+                    (cacheResult.Stream, isExpired, cacheHit, cacheFileHash) = TryReadCacheFileWithExpireCheck(cacheResult.MaxAge, cacheResult.CacheFile);
 
                     if (cacheResult.Stream != null)
                     {
@@ -101,7 +101,7 @@ namespace NuGet.Protocol
                                 cacheResult.CacheFile,
                                 cacheResult.Stream);
 
-                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(source: _sourceUri.AbsoluteUri, cacheHit: true, cacheBypass: cacheResult.MaxAge == TimeSpan.Zero, expiredCache: false, cacheFileHashMatch: true));
+                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(source: _sourceUri.AbsoluteUri, request: request.Uri, cacheHit: true, cacheBypass: false, expiredCache: false, cacheFileHashMatch: true));
 
                             return await processAsync(httpSourceResult);
                         }
@@ -168,7 +168,7 @@ namespace NuGet.Protocol
                                 lockedToken);
 
                             string newCacheFileHash = CachingUtility.GetFileHash(cacheResult.CacheFile, "SHA512");
-                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(source: _sourceUri.AbsoluteUri, cacheFileHash == string.Empty, cacheBypass: cacheResult.MaxAge == TimeSpan.Zero, expiredCache: isExpired, cacheFileHashMatch: cacheFileHash == newCacheFileHash));
+                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(source: _sourceUri.AbsoluteUri, request: request.Uri, cacheHit: cacheHit, cacheBypass: cacheResult.MaxAge == TimeSpan.Zero, expiredCache: isExpired, cacheFileHashMatch: cacheFileHash != null ? cacheFileHash == newCacheFileHash : false));
 
                             using (var httpSourceResult = new HttpSourceResult(
                                 HttpSourceResultStatus.OpenedFromDisk,
@@ -190,6 +190,7 @@ namespace NuGet.Protocol
                                 cacheFileName: null,
                                 stream: stream))
                             {
+                                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(source: _sourceUri.AbsoluteUri, request: request.Uri, cacheHit: cacheHit, cacheBypass: cacheResult.MaxAge == TimeSpan.Zero, expiredCache: isExpired, cacheFileHashMatch: false));
                                 return await processAsync(httpSourceResult);
                             }
                         }
@@ -422,9 +423,9 @@ namespace NuGet.Protocol
             return CachingUtility.ReadCacheFile(maxAge, cacheFile);
         }
 
-        internal (Stream, bool isExpired, string cacheFileHash) TryReadCacheFileWithExpireCheck(TimeSpan maxAge, string cacheFile)
+        internal (Stream, bool isExpired, bool cacheHit, string cacheFileHash) TryReadCacheFileWithExpireCheck(TimeSpan maxAge, string cacheFile)
         {
-            return CachingUtility.ReadCacheFileWithExpireCheck(maxAge, cacheFile, verifyExpired: true);
+            return CachingUtility.ReadCacheFileWithExpireCheck(maxAge, cacheFile, verifyHash: true);
         }
 
         public static HttpSource Create(SourceRepository source)

@@ -205,6 +205,8 @@ namespace NuGet.VisualStudio.Telemetry
 
             lock (data._lock)
             {
+                data.RequestUris.Add(hcEvent.Request);
+
                 if (hcEvent.CacheHit)
                 {
                     data.Http.CacheHitCount++;
@@ -228,12 +230,14 @@ namespace NuGet.VisualStudio.Telemetry
                 {
                     data.Http.CacheContentNotChanged++;
                 }
-                else
+                else if (hcEvent.ExpiredCache)
                 {
+                    // New content is different from expired content.
+                    // ExpiredCache is not true for cache miss or cache bypass.
                     data.Http.CacheContentChanged++;
                 }
 
-                if (hcEvent.CacheHit && hcEvent.ExpiredCache && hcEvent.CacheFileHashMatch)
+                if (hcEvent.CacheHit && hcEvent.ExpiredCache && hcEvent.CacheFileHashMatch == true)
                 {
                     data.Http.CacheRedownloadCount++;
                 }
@@ -457,6 +461,7 @@ namespace NuGet.VisualStudio.Telemetry
             internal object _lock;
             internal Dictionary<string, (int count, TimeSpan duration)> Resources { get; }
             internal HttpData Http { get; }
+            internal List<string> RequestUris { get; }
             internal int NupkgCount { get; set; }
             internal long NupkgSize { get; set; }
 
@@ -464,6 +469,7 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 _lock = new object();
                 Resources = new Dictionary<string, (int count, TimeSpan duration)>();
+                RequestUris = new List<string>();
                 Http = new HttpData();
             }
         }
