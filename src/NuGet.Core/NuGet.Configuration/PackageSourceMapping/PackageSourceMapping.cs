@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace NuGet.Configuration
 {
-    public class PackageSourceMapping
+    internal class PackageSourceMapping
     {
         /// <summary>
         /// Max allowed length for package Id.

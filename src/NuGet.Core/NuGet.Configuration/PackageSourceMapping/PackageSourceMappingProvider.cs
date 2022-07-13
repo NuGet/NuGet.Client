@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace NuGet.Configuration
 {
-    public class PackageSourceMappingProvider
+    internal class PackageSourceMappingProvider
     {
         private readonly ISettings _settings;
 
@@ -67,9 +67,9 @@ namespace NuGet.Configuration
             }
 
 
-            var existingSettingsLookup = GetPackageSourceMappingItems();
+            IReadOnlyList<PackageSourceMappingSourceItem> existingSettingsLookup = GetPackageSourceMappingItems();
 
-            foreach (var sourceMappingItem in packageSourceMappingsSourceItems)
+            foreach (PackageSourceMappingSourceItem sourceMappingItem in packageSourceMappingsSourceItems)
             {
                 if (existingSettingsLookup != null)
                 {
@@ -81,7 +81,7 @@ namespace NuGet.Configuration
             if (existingSettingsLookup != null)
             {
                 List<PackageSourceMappingSourceItem> removeMappings = new List<PackageSourceMappingSourceItem>();
-                foreach (var sourceItem in existingSettingsLookup)
+                foreach (PackageSourceMappingSourceItem sourceItem in existingSettingsLookup)
                 {
                     if (!packageSourceMappingsSourceItems.Contains(sourceItem))
                     {
