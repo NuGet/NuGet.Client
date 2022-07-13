@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -429,18 +428,18 @@ namespace NuGet.Configuration.Test
 </configuration>");
 
             PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
-            ObservableCollection<PackagePatternItem> testPackagePatternItems = new ObservableCollection<PackagePatternItem>();
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
             testPackagePatternItems.Add(testPackagePatternItem);
             PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
 
-            ObservableCollection<PackagePatternItem> packagePatternItems = new ObservableCollection<PackagePatternItem>();
+            List<PackagePatternItem> packagePatternItems = new List<PackagePatternItem>();
             for (int i = 0; i < 3; i++)
             {
                 PackagePatternItem tempPackagePatternItem = new PackagePatternItem(i.ToString());
                 packagePatternItems.Add(tempPackagePatternItem);
             }
             PackageSourceMappingSourceItem tempMapping = new PackageSourceMappingSourceItem("tempSource", packagePatternItems);
-            ObservableCollection<PackageSourceMappingSourceItem> tempMappings = new ObservableCollection<PackageSourceMappingSourceItem>();
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
             tempMappings.Add(testMappingItem);
             tempMappings.Add(tempMapping);
 
@@ -487,18 +486,18 @@ namespace NuGet.Configuration.Test
 </configuration>");
 
             PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
-            ObservableCollection<PackagePatternItem> testPackagePatternItems = new ObservableCollection<PackagePatternItem>();
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
             testPackagePatternItems.Add(testPackagePatternItem);
             PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
 
-            ObservableCollection<PackagePatternItem> packagePatternItems = new ObservableCollection<PackagePatternItem>();
+            List<PackagePatternItem> packagePatternItems = new List<PackagePatternItem>();
             for (int i = 0; i < 3; i++)
             {
                 PackagePatternItem tempPackagePatternItem = new PackagePatternItem(i.ToString());
                 packagePatternItems.Add(tempPackagePatternItem);
             }
             PackageSourceMappingSourceItem tempMapping = new PackageSourceMappingSourceItem("nuget.org", packagePatternItems);
-            ObservableCollection<PackageSourceMappingSourceItem> tempMappings = new ObservableCollection<PackageSourceMappingSourceItem>();
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
             tempMappings.Add(testMappingItem);
             tempMappings.Add(tempMapping);
 
@@ -542,11 +541,11 @@ namespace NuGet.Configuration.Test
 </configuration>");
 
             PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
-            ObservableCollection<PackagePatternItem> testPackagePatternItems = new ObservableCollection<PackagePatternItem>();
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
             testPackagePatternItems.Add(testPackagePatternItem);
             PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
             PackageSourceMappingSourceItem testMappingItem2 = new PackageSourceMappingSourceItem("nuget2.org", testPackagePatternItems);
-            ObservableCollection<PackageSourceMappingSourceItem> tempMappings = new ObservableCollection<PackageSourceMappingSourceItem>();
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
             tempMappings.Add(testMappingItem);
             tempMappings.Add(testMappingItem2);
 
@@ -592,11 +591,11 @@ namespace NuGet.Configuration.Test
 </configuration>");
 
             PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
-            ObservableCollection<PackagePatternItem> testPackagePatternItems = new ObservableCollection<PackagePatternItem>();
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
             testPackagePatternItems.Add(testPackagePatternItem);
             PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
             PackageSourceMappingSourceItem testMappingItem2 = new PackageSourceMappingSourceItem("nuget2.org", testPackagePatternItems);
-            ObservableCollection<PackageSourceMappingSourceItem> tempMappings = new ObservableCollection<PackageSourceMappingSourceItem>();
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
             tempMappings.Add(testMappingItem);
             tempMappings.Add(testMappingItem2);
 
@@ -607,7 +606,7 @@ namespace NuGet.Configuration.Test
             sourceMappingProvider.SavePackageSourceMappings(tempMappings);
 
             //Update
-            ObservableCollection<PackagePatternItem> packagePatternItems = new ObservableCollection<PackagePatternItem>();
+            List<PackagePatternItem> packagePatternItems = new List<PackagePatternItem>();
             for (int i = 0; i < 3; i++)
             {
                 PackagePatternItem tempPackagePatternItem = new PackagePatternItem(i.ToString());
@@ -618,7 +617,7 @@ namespace NuGet.Configuration.Test
 
             //Add
             PackagePatternItem packagePatternItemAdd = new PackagePatternItem("stuff");
-            ObservableCollection<PackagePatternItem> packagePatternItemsAdd = new ObservableCollection<PackagePatternItem>();
+            List<PackagePatternItem> packagePatternItemsAdd = new List<PackagePatternItem>();
             packagePatternItemsAdd.Add(packagePatternItemAdd);
             PackageSourceMappingSourceItem testMappingItemAdd = new PackageSourceMappingSourceItem("newSource", packagePatternItemsAdd);
 

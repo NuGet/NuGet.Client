@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace NuGet.Configuration
@@ -81,7 +80,7 @@ namespace NuGet.Configuration
             //Remove all old mappings not in new mappings
             if (existingSettingsLookup != null)
             {
-                ObservableCollection<PackageSourceMappingSourceItem> removeMappings = new ObservableCollection<PackageSourceMappingSourceItem>();
+                List<PackageSourceMappingSourceItem> removeMappings = new List<PackageSourceMappingSourceItem>();
                 foreach (var sourceItem in existingSettingsLookup)
                 {
                     if (!packageSourceMappingsSourceItems.Contains(sourceItem))
