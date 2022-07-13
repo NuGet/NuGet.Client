@@ -1010,7 +1010,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var package = allPackages.First(pkg => !results.Any(result => result.Identity.Equals(pkg)));
 
-                throw new InvalidOperationException(string.Format("Unable to find metadata of {0}", package));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "Unable to find metadata of {0}", package));
             }
 
             return results;

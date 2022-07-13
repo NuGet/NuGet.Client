@@ -279,7 +279,7 @@ namespace NuGet.PackageManagement.UI
                 var transitiveToolTipMessage = string.Empty;
                 if (packageLevel == PackageLevel.Transitive)
                 {
-                    transitiveToolTipMessage = string.Format(CultureInfo.CurrentUICulture, Resources.PackageVersionWithTransitiveOrigins, metadata.Identity.Version, string.Join(", ", metadata.TransitiveOrigins));
+                    transitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, metadata.Identity.Version, string.Join(", ", metadata.TransitiveOrigins));
                 }
 
                 var listItem = new PackageItemViewModel(_searchService)

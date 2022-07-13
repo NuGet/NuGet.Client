@@ -113,7 +113,7 @@ namespace NuGet.CommandLine
                 {
                     { "RestoreUseCustomAfterTargets", "true" },
                     { "RestoreGraphOutputPath", resultsPath },
-                    { "RestoreRecursive", recursive.ToString().ToLowerInvariant() },
+                    { "RestoreRecursive", recursive.ToString(CultureInfo.CurrentCulture).ToLowerInvariant() },
                     { "RestoreProjectFilterMode", "exclusionlist" }
                 };
 

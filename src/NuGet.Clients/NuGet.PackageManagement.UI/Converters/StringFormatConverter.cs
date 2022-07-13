@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             string formatString = values[0] as string;
-            var formattedString = string.Format(formatString, values.Skip(1).ToArray());
+            var formattedString = string.Format(CultureInfo.CurrentCulture, formatString, values.Skip(1).ToArray());
             return formattedString;
         }
 

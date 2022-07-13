@@ -306,7 +306,7 @@ namespace NuGet.CommandLine
                     }
 
                     var message =
-                        string.Format(LocalizedResourceManager.GetString(nameof(NuGetResources.FailedToLoadExtension)),
+                        string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString(nameof(NuGetResources.FailedToLoadExtension)),
                                       item);
 
                     console.WriteWarning(message);

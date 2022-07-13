@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return 0;
             }
-            return System.Convert.ToDouble(values[0]) - System.Convert.ToDouble(values[1]) - System.Convert.ToDouble(values[2]);
+            return System.Convert.ToDouble(values[0], CultureInfo.CurrentCulture) - System.Convert.ToDouble(values[1], CultureInfo.CurrentCulture) - System.Convert.ToDouble(values[2], CultureInfo.CurrentCulture);
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
