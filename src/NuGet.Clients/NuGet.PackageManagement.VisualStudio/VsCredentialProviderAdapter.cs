@@ -61,9 +61,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 nonInteractive: nonInteractive,
                 cancellationToken: VsShellUtilities.ShutdownToken);
 
-            // Since the above task will only cancel when VS is shutting down, we should abandon the task when our own cancellation token
-            // requests cancellation, so that scenarios like cancelled HTTP requests when PM UI is closed can free resources more quickly.
-            ICredentials credentials = await task.WithCancellation(cancellationToken);
+            // Since the above task will only cancel when VS is shutting down, we can abandon the task when our own cancellation token
+            // requests cancellation and we're not in interactive mode. This lets us free resources (like concurrent requests per host limits)
+            // more quickly.
+            // However, if the cred provider might have an open interactive dialog, we need to wait until we're sure that there's no more dialog.
+            // https://github.com/NuGet/NuGet.Client/blob/f5d7dc371d8a54a9fe0869698e5c4f29dcb7d981/src/NuGet.Core/NuGet.Credentials/CredentialService.cs#L97-L103
+            ICredentials credentials = nonInteractive
+                ? await task.WithCancellation(cancellationToken)
+                : await task;
 
             return credentials == null
                 ? new CredentialResponse(CredentialStatus.ProviderNotApplicable)
