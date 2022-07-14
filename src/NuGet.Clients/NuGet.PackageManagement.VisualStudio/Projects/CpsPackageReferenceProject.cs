@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -85,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (shouldThrow)
                 {
                     throw new ProjectNotNominatedException(
-                        string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+                        string.Format(CultureInfo.CurrentCulture, Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
                 }
                 else
                 {
@@ -133,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (!_projectSystemCache.TryGetProjectRestoreInfo(ProjectFullPath, out projectRestoreInfo, out additionalMessages))
             {
                 throw new ProjectNotNominatedException(
-                    string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+                    string.Format(CultureInfo.CurrentCulture, Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
             }
 
             // Apply ISettings when needed to the return values.
@@ -274,6 +275,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (conditionalService == null)
                 {
                     throw new InvalidOperationException(string.Format(
+                        CultureInfo.CurrentCulture,
                         Strings.UnableToGetCPSPackageInstallationService,
                         ProjectFullPath));
                 }
@@ -363,7 +365,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (spec == null)
             {
                 throw new ProjectNotNominatedException(
-                    string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+                    string.Format(CultureInfo.CurrentCulture, Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
             }
 
             return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath));

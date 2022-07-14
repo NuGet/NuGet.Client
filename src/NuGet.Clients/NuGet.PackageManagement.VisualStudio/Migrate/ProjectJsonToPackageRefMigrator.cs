@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (!File.Exists(projectJsonFilePath))
             {
-                throw new FileNotFoundException(string.Format(Strings.Error_FileNotExists, projectJsonFilePath));
+                throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FileNotExists, projectJsonFilePath));
             }
 
             var packageSpec = JsonPackageSpecReader.GetPackageSpec(
@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (packageSpec == null)
             {
                 throw new InvalidOperationException(
-                    string.Format(Strings.Error_InvalidJson, projectJsonFilePath));
+                    string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidJson, projectJsonFilePath));
             }
 
             await MigrateDependenciesAsync(project, packageSpec);

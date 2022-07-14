@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using Microsoft.Win32;
 using NuGet.Common;
@@ -121,7 +122,7 @@ namespace NuGet.VisualStudio
 
             if (!extensionManagerShim.TryGetExtensionInstallPath(extensionId, out installPath))
             {
-                var errorMessage = string.Format(VsResources.PreinstalledPackages_InvalidExtensionId, extensionId);
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_InvalidExtensionId, extensionId);
                 _errorHandler(errorMessage);
 
                 // The error is fatal, cannot continue
@@ -169,7 +170,7 @@ namespace NuGet.VisualStudio
 
             if (repositoryKey == null)
             {
-                var errorMessage = string.Format(VsResources.PreinstalledPackages_RegistryKeyError, _registryKeyRoot);
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_RegistryKeyError, _registryKeyRoot);
                 _errorHandler(errorMessage);
 
                 // The error is fatal, cannot continue
@@ -178,7 +179,7 @@ namespace NuGet.VisualStudio
 
             if (string.IsNullOrEmpty(repositoryValue))
             {
-                var errorMessage = string.Format(VsResources.PreinstalledPackages_InvalidRegistryValue, keyName, _registryKeyRoot);
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_InvalidRegistryValue, keyName, _registryKeyRoot);
                 _errorHandler(errorMessage);
 
                 // The error is fatal, cannot continue

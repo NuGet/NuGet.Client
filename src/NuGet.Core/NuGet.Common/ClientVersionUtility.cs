@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Reflection;
 
 namespace NuGet.Common
@@ -36,7 +37,7 @@ namespace NuGet.Common
                     var versionAttr = assembly.GetCustomAttribute<AssemblyVersionAttribute>();
                     if (versionAttr != null)
                     {
-                        version = versionAttr.Version.ToString();
+                        version = versionAttr.Version.ToString(CultureInfo.CurrentCulture);
                     }
                 }
 

@@ -104,7 +104,7 @@ namespace NuGet.CommandLine.XPlat
                             // No packages means that no package references at all were found in the current framework
                             if (!packages.Any())
                             {
-                                Console.WriteLine(string.Format(Strings.ListPkg_NoPackagesFoundForFrameworks, projectName));
+                                Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, projectName));
                             }
                             else
                             {
@@ -124,13 +124,13 @@ namespace NuGet.CommandLine.XPlat
                                     switch (listPackageArgs.ReportType)
                                     {
                                         case ReportType.Outdated:
-                                            Console.WriteLine(string.Format(Strings.ListPkg_NoUpdatesForProject, projectName));
+                                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoUpdatesForProject, projectName));
                                             break;
                                         case ReportType.Deprecated:
-                                            Console.WriteLine(string.Format(Strings.ListPkg_NoDeprecatedPackagesForProject, projectName));
+                                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoDeprecatedPackagesForProject, projectName));
                                             break;
                                         case ReportType.Vulnerable:
-                                            Console.WriteLine(string.Format(Strings.ListPkg_NoVulnerablePackagesForProject, projectName));
+                                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, projectName));
                                             break;
                                     }
                                 }
@@ -147,7 +147,7 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else
                     {
-                        Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingAssetsFile, assetsPath));
+                        Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingAssetsFile, assetsPath));
                     }
 
                     // Unload project

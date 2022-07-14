@@ -30,6 +30,7 @@ using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Shared;
 using static NuGet.Shared.XmlUtility;
+using System.Globalization;
 #endif
 
 namespace NuGet.Build.Tasks
@@ -205,8 +206,9 @@ namespace NuGet.Build.Tasks
                     if (restoreSummaries.Count < 1)
                     {
                         var message = string.Format(
-                               Strings.InstallCommandNothingToInstall,
-                               "packages.config"
+                            CultureInfo.CurrentCulture,
+                            Strings.InstallCommandNothingToInstall,
+                            "packages.config"
                         );
 
                         log.LogMinimal(message);
@@ -604,6 +606,7 @@ namespace NuGet.Build.Tasks
                     else
                     {
                         string message = string.Format(
+                            CultureInfo.CurrentCulture,
                             Strings.Warning_InvalidPackageSaveMode,
                             v);
 
@@ -632,9 +635,10 @@ namespace NuGet.Build.Tasks
                 catch (XmlException ex)
                 {
                     var message = string.Format(
-                       Strings.Error_PackagesConfigParseError,
-                       projectConfigFilePath,
-                       ex.Message);
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_PackagesConfigParseError,
+                        projectConfigFilePath,
+                        ex.Message);
 
                     throw new XmlException(message, ex);
                 }

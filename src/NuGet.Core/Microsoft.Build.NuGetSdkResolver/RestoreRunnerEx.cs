@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,9 +46,9 @@ namespace NuGet.Commands
                 IgnoreFailedSources = true,
             })
             {
-                var projectDirectory = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Guid.NewGuid().ToString("N"));
+                var projectDirectory = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Guid.NewGuid().ToString("N", CultureInfo.CurrentCulture));
 
-                var projectName = Guid.NewGuid().ToString("N");
+                var projectName = Guid.NewGuid().ToString("N", CultureInfo.CurrentCulture);
 
                 var projectFullPath = Path.Combine(projectDirectory, $"{projectName}.proj");
 

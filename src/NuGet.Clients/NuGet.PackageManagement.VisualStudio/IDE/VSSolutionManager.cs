@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -217,7 +218,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionEvents.ProjectRemoved += OnEnvDTEProjectRemoved;
             _solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
 
-            var vSStd97CmdIDGUID = VSConstants.GUID_VSStandardCommandSet97.ToString("B");
+            var vSStd97CmdIDGUID = VSConstants.GUID_VSStandardCommandSet97.ToString("B", CultureInfo.CurrentCulture);
             var solutionSaveID = (int)VSConstants.VSStd97CmdID.SaveSolution;
             var solutionSaveAsID = (int)VSConstants.VSStd97CmdID.SaveSolutionAs;
 

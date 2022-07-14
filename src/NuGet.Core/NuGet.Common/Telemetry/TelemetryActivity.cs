@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace NuGet.Common
 {
@@ -109,8 +110,8 @@ namespace NuGet.Common
                 if (NuGetTelemetryService != null && TelemetryEvent != null)
                 {
                     var endTime = DateTime.UtcNow;
-                    TelemetryEvent["StartTime"] = _startTime.ToString("O");
-                    TelemetryEvent["EndTime"] = endTime.ToString("O");
+                    TelemetryEvent["StartTime"] = _startTime.ToString("O", CultureInfo.CurrentCulture);
+                    TelemetryEvent["EndTime"] = endTime.ToString("O", CultureInfo.CurrentCulture);
                     TelemetryEvent["Duration"] = _stopwatch.Elapsed.TotalSeconds;
 
                     if (ParentId != Guid.Empty)

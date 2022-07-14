@@ -48,6 +48,7 @@ namespace NuGet.Resolver
                     if (_dependencyIds.ContainsKey(dependency.Id))
                     {
                         throw new InvalidOperationException(string.Format(
+                            CultureInfo.CurrentCulture,
                             Strings.DuplicateDependencyIdsError,
                             id,
                             version,
