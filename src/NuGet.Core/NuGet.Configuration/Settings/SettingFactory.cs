@@ -101,26 +101,29 @@ namespace NuGet.Configuration
         {
             var children = new List<T>();
             IEnumerable<T> descendants = xElement.Elements().Select(d => Parse(d, origin)).OfType<T>();
+            HashSet<T> distinctDescendants = new HashSet<T>();
+
+            List<T> duplicatedDescendants = new List<T>();
+
+            foreach (var item in descendants)
+            {
+                if (!distinctDescendants.Add(item))
+                {
+                    duplicatedDescendants.Add(item);
+                }
+            }
 
             if (xElement.Name.LocalName.Equals(ConfigurationConstants.PackageSourceMapping, StringComparison.OrdinalIgnoreCase))
             {
-                var duplicatedPackageSource = descendants.Where(node => node.ElementName.Equals(ConfigurationConstants.PackageSourceAttribute, StringComparison.OrdinalIgnoreCase))
-                                            .ToLookup(d => d.Attributes["key"], d => d, StringComparer.OrdinalIgnoreCase)
-                                            .Where(g => g.Count() > 1)
-                                            .ToList();
-                if (duplicatedPackageSource.Any())
+                if (duplicatedDescendants.Any())
                 {
-                    var duplicatedKey = string.Join(", ", duplicatedPackageSource.Select(d => d.Key));
-                    var source = duplicatedPackageSource.Select(d => d.First().Origin.ConfigFilePath).First();
+                    var duplicatedKey = string.Join(", ", duplicatedDescendants.Select(d => d.Attributes["key"]));
+                    var source = duplicatedDescendants.Select(d => d.Origin.ConfigFilePath).First();
                     throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_DuplicatePackageSource, duplicatedKey, source));
                 }
             }
-            else
-            {
-                descendants.Distinct();
-            }
 
-            foreach (var descendant in descendants)
+            foreach (var descendant in distinctDescendants)
             {
                 if (canBeCleared && descendant is ClearItem)
                 {

@@ -64,15 +64,7 @@ namespace NuGet.Configuration
 
             foreach (PackageSourceMappingSourceItem packageSourceNamespaceItem in packageSourceMappingProvider.GetPackageSourceMappingItems())
             {
-                if (patterns.ContainsKey(packageSourceNamespaceItem.Key))
-                {
-                    patterns[packageSourceNamespaceItem.Key] = patterns[packageSourceNamespaceItem.Key].Concat(
-                        new List<string>(packageSourceNamespaceItem.Patterns.Select(e => e.Pattern))).ToList();
-                }
-                else
-                {
-                    patterns.Add(packageSourceNamespaceItem.Key, new List<string>(packageSourceNamespaceItem.Patterns.Select(e => e.Pattern)));
-                }
+                patterns.Add(packageSourceNamespaceItem.Key, new List<string>(packageSourceNamespaceItem.Patterns.Select(e => e.Pattern)));
             }
 
             return new PackageSourceMapping(patterns);
