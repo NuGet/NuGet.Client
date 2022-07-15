@@ -2102,7 +2102,7 @@ namespace NuGet.Packaging.Test
 
         private static bool CanVerifySignedPackages()
         {
-            return RuntimeEnvironmentHelper.IsWindows &&
+            return (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsLinux) &&
 #if IS_SIGNING_SUPPORTED
                 true;
 #else
