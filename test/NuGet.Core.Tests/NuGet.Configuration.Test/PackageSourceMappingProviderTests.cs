@@ -412,7 +412,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SavePackageSourceMappingsTest_Add()
+        public void SavePackageSourceMappings_WithNewMappings_Add()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -470,7 +470,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SavePackageSourceMappingsTest_Update()
+        public void SavePackageSourceMappings_WithUpdatedMappings_Update()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -525,7 +525,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SavePackageSourceMappingsTest_Remove()
+        public void SavePackageSourceMappings_WithMappingsDeleted_Remove()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
@@ -575,7 +575,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SavePackageSourceMappingsTest_Remove_Update_Add()
+        public void SavePackageSourceMappings_WithMappingsAddedRemovedUpdated_AddRemoveUpdate()
         {
             // Arrange
             using var mockBaseDirectory = TestDirectory.Create();
