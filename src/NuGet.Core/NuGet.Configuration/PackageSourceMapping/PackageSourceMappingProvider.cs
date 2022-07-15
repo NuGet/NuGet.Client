@@ -68,10 +68,9 @@ namespace NuGet.Configuration
 
 
             IReadOnlyList<PackageSourceMappingSourceItem> existingSettingsLookup = GetPackageSourceMappingItems();
-
-            foreach (PackageSourceMappingSourceItem sourceMappingItem in packageSourceMappingsSourceItems)
+            if (existingSettingsLookup != null)
             {
-                if (existingSettingsLookup != null)
+                foreach (PackageSourceMappingSourceItem sourceMappingItem in packageSourceMappingsSourceItems)
                 {
                     AddOrUpdatePackageSourceMappingSourceItem(sourceMappingItem);
                 }
