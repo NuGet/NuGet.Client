@@ -25,7 +25,6 @@ namespace NuGet.VisualStudio
         internal string FlightEnvironmentVariable { get; }
 
         public static readonly ExperimentationConstants PackageManagerBackgroundColor = new("nuGetPackageManagerBackgroundColor", "NUGET_PACKAGE_MANAGER_BACKGROUND_COLOR");
-        public static readonly ExperimentationConstants PackageRecommender = new("nugetrecommendpkgs", "NUGET_RECOMMEND_PACKAGES");
         public static readonly ExperimentationConstants BulkRestoreCoordination = new("nugetBulkRestoreCoordination", "NUGET_BULK_RESTORE_COORDINATION");
         public static readonly ExperimentationConstants TransitiveDependenciesInPMUI = new("nugetTransitiveDependenciesInPMUI", "NUGET_TRANSITIVE_DEPENDENCIES_IN_PMUI");
     }
