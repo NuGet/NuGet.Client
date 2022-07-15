@@ -376,8 +376,11 @@ namespace NuGet.PackageManagement.VisualStudio
             AssetTargetFallbackUtility.ApplyFramework(projectTfi, packageTargetFallback, assetTargetFallback);
 
             // Build up runtime information.
-            var runtimes = GetRuntimeIdentifiers(_vsProjectAdapter.BuildProperties);
-            var supports = GetRuntimeSupports(_vsProjectAdapter.BuildProperties);
+
+            var runtimes = GetRuntimeIdentifiers(
+                GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeIdentifier),
+                GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeIdentifiers));
+            var supports = GetRuntimeSupports(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeSupports));
             var runtimeGraph = new RuntimeGraph(runtimes, supports);
 
             // In legacy CSProj, we only have one target framework per project
@@ -446,14 +449,8 @@ namespace NuGet.PackageManagement.VisualStudio
             };
         }
 
-        private static IEnumerable<RuntimeDescription> GetRuntimeIdentifiers(IProjectBuildProperties projectBuildProperties)
+        private static IEnumerable<RuntimeDescription> GetRuntimeIdentifiers(string unparsedRuntimeIdentifer, string unparsedRuntimeIdentifers)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            var unparsedRuntimeIdentifer = projectBuildProperties.GetPropertyValue(
-                ProjectBuildProperties.RuntimeIdentifier);
-            var unparsedRuntimeIdentifers = projectBuildProperties.GetPropertyValue(
-                ProjectBuildProperties.RuntimeIdentifiers);
-
             var runtimes = Enumerable.Empty<string>();
 
             if (unparsedRuntimeIdentifer != null)
@@ -475,12 +472,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(runtime => new RuntimeDescription(runtime));
         }
 
-        private static IEnumerable<CompatibilityProfile> GetRuntimeSupports(IProjectBuildProperties projectBuildProperties)
+        private static IEnumerable<CompatibilityProfile> GetRuntimeSupports(string unparsedRuntimeSupports)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            var unparsedRuntimeSupports = projectBuildProperties.GetPropertyValue(
-                ProjectBuildProperties.RuntimeSupports);
-
             if (unparsedRuntimeSupports == null)
             {
                 return Enumerable.Empty<CompatibilityProfile>();

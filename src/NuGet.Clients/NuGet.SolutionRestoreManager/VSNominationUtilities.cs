@@ -78,6 +78,8 @@ namespace NuGet.SolutionRestoreManager
                 .Select(rid => new RuntimeDescription(rid))
                 .ToList();
 
+            // Maybe unify these? 
+
             var supports = targetFrameworks
                 .Cast<IVsTargetFrameworkInfo>()
                 .Select(tfi => GetPropertyValueOrNull(tfi.Properties, ProjectBuildProperties.RuntimeSupports))

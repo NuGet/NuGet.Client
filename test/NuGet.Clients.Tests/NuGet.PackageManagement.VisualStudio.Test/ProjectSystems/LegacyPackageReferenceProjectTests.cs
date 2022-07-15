@@ -242,10 +242,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Mock.Get(projectAdapter)
                     .VerifyGet(x => x.ProjectName, Times.AtLeastOnce);
                 Mock.Get(projectAdapter)
-                    .Verify(x => x.GetRuntimeIdentifiersAsync(), Times.AtLeastOnce);
-                Mock.Get(projectAdapter)
-                    .Verify(x => x.GetRuntimeSupportsAsync(), Times.AtLeastOnce);
-                Mock.Get(projectAdapter)
                     .VerifyGet(x => x.FullProjectPath, Times.AtLeastOnce);
                 Mock.Get(projectAdapter)
                     .Verify(x => x.GetTargetFrameworkAsync(), Times.AtLeastOnce);

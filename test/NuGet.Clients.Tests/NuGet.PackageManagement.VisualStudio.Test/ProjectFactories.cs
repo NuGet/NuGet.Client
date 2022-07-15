@@ -107,14 +107,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .Returns("TestProject");
 
             projectAdapter
-                .Setup(x => x.GetRuntimeIdentifiersAsync())
-                .ReturnsAsync(Enumerable.Empty<RuntimeDescription>);
-
-            projectAdapter
-                .Setup(x => x.GetRuntimeSupportsAsync())
-                .ReturnsAsync(Enumerable.Empty<CompatibilityProfile>);
-
-            projectAdapter
                 .Setup(x => x.Version)
                 .Returns("1.0.0");
 
