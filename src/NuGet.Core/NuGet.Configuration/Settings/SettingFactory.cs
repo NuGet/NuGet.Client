@@ -97,11 +97,59 @@ namespace NuGet.Configuration
             return null;
         }
 
+        private class SettingElementComparer : IComparer<SettingElement>, IEqualityComparer<SettingElement>
+        {
+            public int Compare(SettingElement x, SettingElement y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return 0;
+                }
+
+                if (ReferenceEquals(x, null))
+                {
+                    return -1;
+                }
+
+                if (ReferenceEquals(y, null))
+                {
+                    return 1;
+                }
+
+                return StringComparer.OrdinalIgnoreCase.Compare(x.Attributes["key"], y.Attributes["key"]);
+            }
+
+            public bool Equals(SettingElement x, SettingElement y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
+                {
+                    return false;
+                }
+                return StringComparer.OrdinalIgnoreCase.Equals(x.Attributes["key"], y.Attributes["key"]);
+            }
+
+            public int GetHashCode(SettingElement obj)
+            {
+                if (ReferenceEquals(obj, null))
+                {
+                    return 0;
+                }
+                return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.ElementName + (obj.Attributes.ContainsKey("key") ? obj.Attributes["key"] : string.Empty));
+            }
+        }
+
         internal static IEnumerable<T> ParseChildren<T>(XElement xElement, SettingsFile origin, bool canBeCleared) where T : SettingElement
         {
             var children = new List<T>();
             IEnumerable<T> descendants = xElement.Elements().Select(d => Parse(d, origin)).OfType<T>();
-            HashSet<T> distinctDescendants = new HashSet<T>();
+            SettingElementComparer comparer = new SettingElementComparer();
+
+            HashSet<T> distinctDescendants = new HashSet<T>(comparer);
 
             List<T> duplicatedDescendants = new List<T>();
 
