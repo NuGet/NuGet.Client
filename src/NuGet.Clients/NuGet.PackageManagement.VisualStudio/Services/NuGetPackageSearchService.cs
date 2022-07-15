@@ -471,13 +471,21 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // if we get here, recommendPackages == true
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(sourceRepositories, uiLogger, TelemetryActivity.NuGetTelemetryService);
-                packageFeeds.recommenderFeed = new RecommenderPackageFeed(
-                    sourceRepositories,
-                    installedPackageCollection,
-                    transitivePackageCollection,
-                    targetFrameworks,
-                    metadataProvider,
-                    logger);
+                try
+                {
+                    packageFeeds.recommenderFeed = new RecommenderPackageFeed(
+                        sourceRepositories,
+                        installedPackageCollection,
+                        transitivePackageCollection,
+                        targetFrameworks,
+                        metadataProvider,
+                        logger);
+                }
+                catch (System.IO.FileNotFoundException)
+                {
+                    // This could happen if the user disables the recommender extension. Catching this
+                    // exception allows the package manager to continue without recommendations.
+                }
                 return packageFeeds;
             }
 
