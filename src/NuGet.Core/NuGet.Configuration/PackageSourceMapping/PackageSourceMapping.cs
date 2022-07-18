@@ -18,7 +18,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Source name to package patterns list.
         /// </summary>
-        public IReadOnlyDictionary<string, IReadOnlyList<string>> Patterns { get; }
+        internal IReadOnlyDictionary<string, IReadOnlyList<string>> Patterns { get; }
 
         private Lazy<SearchTree> SearchTree { get; }
 
