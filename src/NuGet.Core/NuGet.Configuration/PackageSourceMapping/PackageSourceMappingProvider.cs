@@ -66,31 +66,30 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(packageSourceMappingsSourceItems));
             }
 
-
             IReadOnlyList<PackageSourceMappingSourceItem> existingSettingsLookup = GetPackageSourceMappingItems();
-            if (existingSettingsLookup != null)
+            if (existingSettingsLookup == null)
             {
-                foreach (PackageSourceMappingSourceItem sourceMappingItem in packageSourceMappingsSourceItems)
+                return;
+            }
+            // Remove all old mappings not in new mappings
+            List<PackageSourceMappingSourceItem> removeMappings = new List<PackageSourceMappingSourceItem>();
+            foreach (PackageSourceMappingSourceItem sourceItem in existingSettingsLookup)
+            {
+                if (!packageSourceMappingsSourceItems.Contains(sourceItem))
                 {
-                    AddOrUpdatePackageSourceMappingSourceItem(sourceMappingItem);
+                    removeMappings.Add(sourceItem);
                 }
             }
 
-            //Remove all old mappings not in new mappings
-            if (existingSettingsLookup != null)
+            if (removeMappings != null && removeMappings.Count > 0)
             {
-                List<PackageSourceMappingSourceItem> removeMappings = new List<PackageSourceMappingSourceItem>();
-                foreach (PackageSourceMappingSourceItem sourceItem in existingSettingsLookup)
-                {
-                    if (!packageSourceMappingsSourceItems.Contains(sourceItem))
-                    {
-                        removeMappings.Add(sourceItem);
-                    }
-                }
-                if (removeMappings != null && removeMappings.Count > 0)
-                {
-                    Remove(removeMappings);
-                }
+                Remove(removeMappings);
+            }
+
+            //Adds or updates mappings
+            foreach (PackageSourceMappingSourceItem sourceMappingItem in packageSourceMappingsSourceItems)
+            {
+                AddOrUpdatePackageSourceMappingSourceItem(sourceMappingItem);
             }
         }
     }
