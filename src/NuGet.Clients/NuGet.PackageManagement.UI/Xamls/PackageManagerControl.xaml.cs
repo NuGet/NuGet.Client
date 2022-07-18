@@ -835,8 +835,6 @@ namespace NuGet.PackageManagement.UI
         internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCachedPackageMetadata, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            var sw = Stopwatch.StartNew();
-            ItemFilter filterToRender = _topPanel.Filter;
 
             var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
 
@@ -1272,7 +1270,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var getMetaDataOperationId = Guid.NewGuid();
                 var _sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(SelectedSource.PackageSources, CancellationToken.None);
-                using (var packageSourceTelemetry = new PackageSourceTelemetry(_sourceRepositories, getMetaDataOperationId, PackageSourceTelemetry.TelemetryAction.PMUI))
+                using (var packageSourceTelemetry = new PackageSourceTelemetry(_sourceRepositories, getMetaDataOperationId, PackageSourceTelemetry.TelemetryAction.PMUI, operationSource: source.ToString()))
                 {
                     await runner();
 
@@ -1281,6 +1279,7 @@ namespace NuGet.PackageManagement.UI
                         await packageSourceTelemetry.SendTelemetryAsync();
                     }
                 }
+
                 refreshStatus = RefreshOperationStatus.Success;
             }
             catch

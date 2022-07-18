@@ -252,7 +252,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var sourceRepository = new SourceRepository(new PackageSource("source"), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, sourceRepository, "parentId", "actionName", packageSourceMappingConfiguration: configuration);
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, sourceRepository, "parentId", "actionName", packageSourceMappingConfiguration: configuration, operationSource: null);
 
             // Assert
             Assert.Null(result);
@@ -290,7 +290,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var source = new SourceRepository(new PackageSource(NuGetConstants.V3FeedUrl), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, source, "parentId", "actionName", packageSourceMappingConfiguration: configuration);
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, source, "parentId", "actionName", packageSourceMappingConfiguration: configuration, operationSource: null);
 
             // Assert
             Assert.NotNull(result);

@@ -23,8 +23,10 @@ namespace NuGet.VisualStudio.Telemetry
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _resourceStringTable;
         private readonly string _actionName;
         private readonly PackageSourceMapping _packageSourceMappingConfiguration;
+        private readonly string _operationSource;
 
         internal const string EventName = "PackageSourceDiagnostics";
+        internal const string PmuiActionName = "PMUI";
 
         public enum TelemetryAction
         {
@@ -38,6 +40,12 @@ namespace NuGet.VisualStudio.Telemetry
             : this(sources, parentId, action)
         {
             _packageSourceMappingConfiguration = packageSourceMappingConfiguration;
+        }
+
+        public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action, string operationSource)
+            : this(sources, parentId, action)
+        {
+            _operationSource = operationSource;
         }
 
         public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action)
@@ -76,9 +84,9 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 case TelemetryAction.Restore:
                 case TelemetryAction.Search:
-                case TelemetryAction.PMUI:
                     return action.ToString();
-
+                case TelemetryAction.PMUI:
+                    return PmuiActionName;
                 default:
                     throw new ArgumentException("Unknown value of " + nameof(TelemetryAction), nameof(action));
             }
@@ -265,7 +273,7 @@ namespace NuGet.VisualStudio.Telemetry
                     sourceRepository = new SourceRepository(new PackageSource(source), Repository.Provider.GetCoreV3());
                 }
 
-                var telemetry = await ToTelemetryAsync(data, sourceRepository, parentId, _actionName, _packageSourceMappingConfiguration);
+                var telemetry = await ToTelemetryAsync(data, sourceRepository, parentId, _actionName, _packageSourceMappingConfiguration, _operationSource);
 
                 if (telemetry != null)
                 {
@@ -274,9 +282,9 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
-        internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName, PackageSourceMapping packageSourceMappingConfiguration)
+        internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName, PackageSourceMapping packageSourceMappingConfiguration, string operationSource)
         {
-            if (data.Resources.Count == 0 && actionName != TelemetryAction.PMUI.ToString())
+            if ((data.Resources.Count == 0 && actionName != PmuiActionName) || (actionName == PmuiActionName && data.Http.Requests == 0))
             {
                 return null;
             }
@@ -304,7 +312,7 @@ namespace NuGet.VisualStudio.Telemetry
 
                 if (data.Http.Requests > 0)
                 {
-                    AddHttpProperties(telemetry, data.Http);
+                    AddHttpProperties(telemetry, data.Http, actionName, operationSource);
                 }
             }
 
@@ -330,7 +338,7 @@ namespace NuGet.VisualStudio.Telemetry
             telemetry.ComplexData[PropertyNames.Resources.Details] = ToResourceDetailsTelemetry(resources);
         }
 
-        private static void AddHttpProperties(TelemetryEvent telemetry, HttpData data)
+        private static void AddHttpProperties(TelemetryEvent telemetry, HttpData data, string actionName, string operationSource)
         {
             telemetry[PropertyNames.Http.Requests] = data.Requests;
             telemetry[PropertyNames.Http.Successful] = data.Successful;
@@ -339,13 +347,22 @@ namespace NuGet.VisualStudio.Telemetry
             telemetry[PropertyNames.Http.Failed] = data.Failed;
             telemetry[PropertyNames.Http.Bytes] = data.TotalBytes;
             telemetry[PropertyNames.Http.Duration.Total] = data.TotalDuration.TotalMilliseconds;
-            telemetry[PropertyNames.Http.Cache.CacheHitCount] = data.CacheHitCount;
-            telemetry[PropertyNames.Http.Cache.CacheMissCount] = data.CacheMissCount;
-            telemetry[PropertyNames.Http.Cache.CacheBypassCount] = data.CacheBypassCount;
-            telemetry[PropertyNames.Http.Cache.CacheExpiredCount] = data.CacheExpiredCount;
-            telemetry[PropertyNames.Http.Cache.CacheContentChanged] = data.CacheContentChanged;
-            telemetry[PropertyNames.Http.Cache.CacheContentNotChanged] = data.CacheContentNotChanged;
-            telemetry[PropertyNames.Http.Cache.CacheRedownloadCount] = data.CacheRedownloadCount;
+
+            if (!string.IsNullOrEmpty(operationSource))
+            {
+                telemetry[PropertyNames.Http.OperationSource] = operationSource;
+            }
+
+            if (actionName == PmuiActionName)
+            {
+                telemetry[PropertyNames.Http.Cache.CacheHitCount] = data.CacheHitCount;
+                telemetry[PropertyNames.Http.Cache.CacheMissCount] = data.CacheMissCount;
+                telemetry[PropertyNames.Http.Cache.CacheBypassCount] = data.CacheBypassCount;
+                telemetry[PropertyNames.Http.Cache.CacheExpiredCount] = data.CacheExpiredCount;
+                telemetry[PropertyNames.Http.Cache.CacheContentChanged] = data.CacheContentChanged;
+                telemetry[PropertyNames.Http.Cache.CacheContentNotChanged] = data.CacheContentNotChanged;
+                telemetry[PropertyNames.Http.Cache.CacheRedownloadCount] = data.CacheRedownloadCount;
+            }
 
             if (data.HeaderDuration != null)
             {
@@ -538,6 +555,7 @@ namespace NuGet.VisualStudio.Telemetry
                 internal const string Failed = "http.failed";
                 internal const string Bytes = "http.bytes";
                 internal const string StatusCodes = "http.statuscodes";
+                internal const string OperationSource = "http.operationsource";
 
                 internal static class Duration
                 {
