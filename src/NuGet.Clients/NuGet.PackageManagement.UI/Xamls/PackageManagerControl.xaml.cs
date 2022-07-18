@@ -46,6 +46,7 @@ namespace NuGet.PackageManagement.UI
         private IVsWindowSearchHostFactory _windowSearchHostFactory;
         private INuGetUILogger _uiLogger;
         private readonly Guid _sessionGuid = Guid.NewGuid();
+        private ISharedServiceState _sharedServiceState;
         private Stopwatch _sinceLastRefresh;
         private CancellationTokenSource _refreshCts;
         // used to prevent starting new search when we update the package sources
@@ -175,6 +176,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
+            _sharedServiceState = await SharedServiceState.CreateAsync(CancellationToken.None);
         }
 
         public PackageRestoreBar RestoreBar { get; private set; }
@@ -1268,7 +1270,17 @@ namespace NuGet.PackageManagement.UI
             var refreshStatus = RefreshOperationStatus.NoOp;
             try
             {
-                await runner();
+                var getMetaDataOperationId = Guid.NewGuid();
+                var _sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(SelectedSource.PackageSources, CancellationToken.None);
+                using (var packageSourceTelemetry = new PackageSourceTelemetry(_sourceRepositories, getMetaDataOperationId, PackageSourceTelemetry.TelemetryAction.PMUI))
+                {
+                    await runner();
+
+                    if (TelemetryActivity.NuGetTelemetryService != null)
+                    {
+                        await packageSourceTelemetry.SendTelemetryAsync();
+                    }
+                }
                 refreshStatus = RefreshOperationStatus.Success;
             }
             catch

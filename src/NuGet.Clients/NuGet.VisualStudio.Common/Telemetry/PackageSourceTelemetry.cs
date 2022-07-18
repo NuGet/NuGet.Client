@@ -31,7 +31,7 @@ namespace NuGet.VisualStudio.Telemetry
             Unknown = 0,
             Restore,
             Search,
-            GetMetaData
+            PMUI
         }
 
         public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action, PackageSourceMapping packageSourceMappingConfiguration)
@@ -76,7 +76,7 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 case TelemetryAction.Restore:
                 case TelemetryAction.Search:
-                case TelemetryAction.GetMetaData:
+                case TelemetryAction.PMUI:
                     return action.ToString();
 
                 default:
@@ -276,7 +276,7 @@ namespace NuGet.VisualStudio.Telemetry
 
         internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName, PackageSourceMapping packageSourceMappingConfiguration)
         {
-            if (data.Resources.Count == 0 && actionName != TelemetryAction.GetMetaData.ToString())
+            if (data.Resources.Count == 0 && actionName != TelemetryAction.PMUI.ToString())
             {
                 return null;
             }
