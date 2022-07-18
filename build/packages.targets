@@ -101,8 +101,8 @@
         <PackageReference Update="Microsoft.TestPlatform.Portable" Version="17.1.0" />
         <PackageReference Update="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
         <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="17.1.0-preview-2-31918-026" />
-        <PackageReference Update="Microsoft.VisualStudio.Sdk.TestFramework" Version="17.0.4-alpha" />
-        <PackageReference Update="Moq" Version="4.16.1" />
+        <PackageReference Update="Microsoft.VisualStudio.Sdk.TestFramework" Version="17.2.7" />
+        <PackageReference Update="Moq" Version="4.18.1" />
         <PackageReference Update="NuGet.Core" Version="$(NuGetCoreV2Version)" />
         <PackageReference Update="Portable.BouncyCastle" Version="1.8.10" />
         <PackageReference Update="System.Collections" Version="$(SystemPackagesVersion)" />
