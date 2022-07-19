@@ -1,0 +1,87 @@
+# NuGet OptProf profiling pipeline
+
+trigger: none # Prevents this pipeline from triggering on check-ins
+
+resources:
+  pipelines:
+  - pipeline: ComponentBuildUnderTest
+    source: NuGet.Client-Official
+  - pipeline: DartLab
+    source: DartLab
+    branch: main
+  - pipeline: DartLab.OptProf
+    source: DartLab.OptProf
+    branch: main
+  repositories:
+  - repository: DartLabTemplates
+    type: git
+    name: DartLab.Templates
+    ref: refs/heads/main
+  - repository: DartLabOptProfTemplates
+    type: git
+    name: DartLab.OptProf
+    ref: refs/heads/main
+
+parameters:
+# Whether or not to delete the test machines after the run completes.
+- name: testMachineCleanUpStrategy
+  type: string
+  default: delete
+  values:
+  - delete
+  - stop
+
+stages:
+- template: \templates\stages\visual-studio\single-runsettings.yml@DartLabOptProfTemplates
+    ##### Required #####
+    runSettingsURI: $(Pipeline.Workspace)\ComponentBuildUnderTest\RunSettings\NuGet.OptProfV2.runsettings
+    visualStudioBootstrapperURI: $(VisualStudio.InstallationUnderTest.BootstrapperURL)
+    ##### Optional #####
+    name: OptProf_ProfilingWorkflow
+    displayName: OptProf Profiling Workflow
+    # NOTE: fix prefix when ready for production (remove 'TEST')
+    optOptimizationInputsDropName: TESTOptimizationInputs/DevDiv/NuGet-NuGet.Client-Trusted/$(resources.pipeline.${{parameters.cloudBuildResourceName}}.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
+    # Remove this parameter if you don't want LKG support
+    previousOptimizationInputsDropName: $(PreviousOptimizationInputsDropName)
+    testLabPoolName: VS-Platform
+    testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
+    ##### Step Hooks #####
+    preTestMachineConfigurationStepList:
+    - download: ComponentBuildUnderTest
+      artifact: MicroBuildOutputs
+      patterns: '**\BootstrapperInfo.json'
+      displayName: Download Bootstrapper Information
+    - task: PowerShell@2
+      displayName: Set 'VisualStudio.InstallationUnderTest.BootstrapperURL'
+      inputs:
+        filePath: $(DartLab.Path)\Scripts\VisualStudio\Bootstrapper\Get-BootstrapperURL.ps1
+        arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\BootstrapperInfo.json' -VSBranch '$(VisualStudio.InstallationUnderTest.BootstrapperBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
+    preDeployAndRunTestsStepList:
+    - download: VisualStudioBuildUnderTest
+    # Remove this step hook and it's task if you don't want LKG support
+    prePublishOptimizationInputsDropStepList:
+    # Set parameter for PreviousOptimizationInputsDropName 
+    - powershell: |
+        try {
+          $artifactName = 'OptProf'
+          $BuildID = $(resources.pipeline.VisualStudioBuildUnderTest.runID)
+          $artifact = Get-BuildArtifact -InstanceURL 'https://dev.azure.com/devdiv' -ProjectName 'DevDiv' -BuildID $BuildID -ArtifactName $artifactName -OAuthAccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force)
+          $containerName = $artifact.Resource.Data -Split '/' | Select-Object -Last 1
+          $fileName = Join-Path $containerName 'Metadata.json'
+          $jsonString = Read-BuildArtifactFile -InstanceURL 'https://dev.azure.com/devdiv' -ProjectName 'DevDiv' -BuildID $BuildID -ArtifactName $artifactName -FileName $fileName -OAuthAccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force)
+          $json = $jsonString | ConvertFrom-Json
+
+          Write-Host "The content of the metadata.json file was $json"
+
+          $dropname = $json.OptimizationData
+          $commitID = $json.CommitID
+          
+          Write-Host "PreviousOptimizationInputsDropName: $dropname"
+          Set-AzurePipelinesVariable 'PreviousOptimizationInputsDropName' $dropname    
+        }
+        catch {
+          Write-Host $_
+          Write-Error "Failed to set OptimizationInputsDropName pipeline variable"
+          throw
+        }
+      displayName: Set PreviousOptimizationInputsDropName
