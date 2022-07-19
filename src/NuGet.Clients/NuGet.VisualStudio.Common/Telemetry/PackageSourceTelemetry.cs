@@ -229,23 +229,37 @@ namespace NuGet.VisualStudio.Telemetry
                     data.Http.CacheBypassCount++;
                 }
 
-                if (hcEvent.ExpiredCache)
+                if (hcEvent.DirectDownload)
+                {
+                    data.Http.CacheDirectDownloadCount++;
+                }
+
+                if (hcEvent.IfModifiedHeaderSinceSent)
+                {
+                    data.Http.CacheIfModifiedHeaderSinceSent++;
+                }
+
+                if (hcEvent.ExpiredCache == true)
                 {
                     data.Http.CacheExpiredCount++;
                 }
 
-                if (hcEvent.CacheFileHashMatch)
+                if (hcEvent.CacheFileNotModified == true)
                 {
                     data.Http.CacheContentNotChanged++;
                 }
-                else if (hcEvent.ExpiredCache)
+                else if (hcEvent.CacheFileNotModified == false)
                 {
-                    // New content is different from expired content.
-                    // ExpiredCache is not true for cache miss or cache bypass.
+                    // New content is different from last time.
                     data.Http.CacheContentChanged++;
                 }
 
-                if (hcEvent.CacheHit && hcEvent.ExpiredCache && hcEvent.CacheFileHashMatch == true)
+                if (hcEvent.CacheFileReused)
+                {
+                    data.Http.CacheFileReuseCount++;
+                }
+
+                if (hcEvent.CacheHit && !hcEvent.CacheFileReused && hcEvent.ExpiredCache == true)
                 {
                     data.Http.CacheRedownloadCount++;
                 }
@@ -358,9 +372,12 @@ namespace NuGet.VisualStudio.Telemetry
                 telemetry[PropertyNames.Http.Cache.CacheHitCount] = data.CacheHitCount;
                 telemetry[PropertyNames.Http.Cache.CacheMissCount] = data.CacheMissCount;
                 telemetry[PropertyNames.Http.Cache.CacheBypassCount] = data.CacheBypassCount;
+                telemetry[PropertyNames.Http.Cache.CacheDirectDownloadCount] = data.CacheDirectDownloadCount;
+                telemetry[PropertyNames.Http.Cache.CacheIfModifiedSinceHeaderSent] = data.CacheIfModifiedHeaderSinceSent;
                 telemetry[PropertyNames.Http.Cache.CacheExpiredCount] = data.CacheExpiredCount;
                 telemetry[PropertyNames.Http.Cache.CacheContentChanged] = data.CacheContentChanged;
                 telemetry[PropertyNames.Http.Cache.CacheContentNotChanged] = data.CacheContentNotChanged;
+                telemetry[PropertyNames.Http.Cache.CacheFileReuseCount] = data.CacheFileReuseCount;
                 telemetry[PropertyNames.Http.Cache.CacheRedownloadCount] = data.CacheRedownloadCount;
             }
 
@@ -505,9 +522,12 @@ namespace NuGet.VisualStudio.Telemetry
             public int CacheHitCount;
             public int CacheMissCount;
             public int CacheBypassCount;
+            public int CacheDirectDownloadCount;
+            public int CacheIfModifiedHeaderSinceSent;
             public int CacheExpiredCount;
             public int CacheContentChanged;
             public int CacheContentNotChanged;
+            public int CacheFileReuseCount;
             // Downloaded exact same file after timestamp expired.
             public int CacheRedownloadCount;
 
@@ -565,13 +585,16 @@ namespace NuGet.VisualStudio.Telemetry
 
                 internal static class Cache
                 {
-                    internal const string CacheHitCount = "http.cache.hitcount";
+                    internal const string CacheHitCount = "http.cache.hitCount";
                     internal const string CacheMissCount = "http.cache.missCount";
-                    internal const string CacheBypassCount = "http.cache.bypasscount";
-                    internal const string CacheExpiredCount = "http.cache.expiredcount";
-                    internal const string CacheContentChanged = "http.cache.contentchanged";
-                    internal const string CacheContentNotChanged = "http.cache.contentnotchanged";
-                    internal const string CacheRedownloadCount = "http.cache.redownloadcount";
+                    internal const string CacheBypassCount = "http.cache.bypassCount";
+                    internal const string CacheDirectDownloadCount = "http.cache.directDownloadCount";
+                    internal const string CacheIfModifiedSinceHeaderSent = "http.cache.ifModifiedSinceHeaderSentCount";
+                    internal const string CacheExpiredCount = "http.cache.expiredCount";
+                    internal const string CacheContentChanged = "http.cache.contentChanged";
+                    internal const string CacheContentNotChanged = "http.cache.contentNotChanged";
+                    internal const string CacheFileReuseCount = "http.cache.reuseCount";
+                    internal const string CacheRedownloadCount = "http.cache.redownloadCount";
                 }
             }
 

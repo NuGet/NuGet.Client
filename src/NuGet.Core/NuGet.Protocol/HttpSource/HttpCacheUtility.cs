@@ -112,6 +112,12 @@ namespace NuGet.Protocol
                     result.CacheFile);
             }
 
+            SetCacheFileStream(result);
+        }
+
+        public static void SetCacheFileStream(
+            HttpCacheResult result)
+        {
             // Even the file deletion operation above succeeds but the file is not actually deleted,
             // we can still safely read it because it means that some other process just updated it
             // and we don't need to update it with the same content again.

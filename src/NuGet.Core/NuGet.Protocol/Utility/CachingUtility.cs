@@ -38,11 +38,11 @@ namespace NuGet.Protocol
 
         public static Stream ReadCacheFile(TimeSpan maxAge, string cacheFile)
         {
-            (Stream stream, bool _, bool _, string _) = ReadCacheFileWithExpireCheck(maxAge, cacheFile, verifyHash: false);
+            (Stream stream, DateTime _, bool _) = ReadCacheFileWithExpireCheck(maxAge, cacheFile);
             return stream;
         }
 
-        internal static (Stream stream, bool isExpired, bool cacheHit, string cacheFileHash) ReadCacheFileWithExpireCheck(TimeSpan maxAge, string cacheFile, bool verifyHash)
+        internal static (Stream stream, DateTime lastWriteTimeUtc, bool cacheHit) ReadCacheFileWithExpireCheck(TimeSpan maxAge, string cacheFile)
         {
             var fileInfo = new FileInfo(cacheFile);
 
@@ -59,15 +59,15 @@ namespace NuGet.Protocol
                         BufferSize);
 
                     // Cache file valid 
-                    return (stream: stream, isExpired: false, cacheHit: true, cacheFileHash: verifyHash ? GetFileHash(fileInfo.FullName, "SHA512") : null);
+                    return (stream: stream, lastWriteTimeUtc: fileInfo.LastWriteTimeUtc, cacheHit: true);
                 }
 
                 // Cache file expired, we don't calculate hash if cache is still valid
-                return (stream: null, isExpired: true, cacheHit: true, cacheFileHash: null);
+                return (stream: null, lastWriteTimeUtc: fileInfo.LastWriteTimeUtc, cacheHit: true);
             }
 
             // Requested file not found
-            return (stream: null, isExpired: false, cacheHit: false, cacheFileHash: null);
+            return (stream: null, lastWriteTimeUtc: DateTime.MinValue, cacheHit: false);
         }
 
         public static bool IsFileAlreadyOpen(string filePath)

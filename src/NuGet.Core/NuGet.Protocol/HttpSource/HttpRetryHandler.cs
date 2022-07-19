@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -169,6 +170,11 @@ namespace NuGet.Protocol
                             request.RequestTimeout,
                             timeoutMessage,
                             cancellationToken);
+
+                        if (response.StatusCode == HttpStatusCode.NotModified)
+                        {
+                            Console.WriteLine(response.Content);
+                        }
 
                         // Wrap the response stream so that the download can timeout.
                         if (response.Content != null)

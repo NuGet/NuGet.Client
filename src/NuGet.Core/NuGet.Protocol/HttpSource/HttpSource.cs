@@ -26,6 +26,7 @@ namespace NuGet.Protocol
         private readonly PackageSource _packageSource;
         private readonly IThrottle _throttle;
         private bool _disposed = false;
+        private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         // Only one thread may re-create the http client at a time.
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
@@ -81,9 +82,9 @@ namespace NuGet.Protocol
                 cacheResult.CacheFile,
                 action: async lockedToken =>
                 {
-                    bool isExpired, cacheHit;
-                    string cacheFileHash;
-                    (cacheResult.Stream, isExpired, cacheHit, cacheFileHash) = TryReadCacheFileWithExpireCheck(cacheResult.MaxAge, cacheResult.CacheFile);
+                    bool cacheHit;
+                    DateTime cacheFilelastWriteTimeUtc;
+                    (cacheResult.Stream, cacheFilelastWriteTimeUtc, cacheHit) = TryReadCacheFileWithExpireCheck(cacheResult.MaxAge, cacheResult.CacheFile);
 
                     if (cacheResult.Stream != null)
                     {
@@ -101,7 +102,16 @@ namespace NuGet.Protocol
                                 cacheResult.CacheFile,
                                 cacheResult.Stream);
 
-                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(source: _sourceUri.AbsoluteUri, request: request.Uri, cacheHit: true, cacheBypass: false, expiredCache: false, cacheFileHashMatch: true));
+                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(
+                                source: _sourceUri.AbsoluteUri,
+                                request: request.Uri,
+                                request.CacheContext.DirectDownload,
+                                ifModifiedSinceHeaderSent: false,
+                                cacheHit: true,
+                                cacheBypass: false,
+                                cacheFileReused: true,
+                                expiredCache: false,
+                                cacheFileNotModified: true));
 
                             return await processAsync(httpSourceResult);
                         }
@@ -117,9 +127,18 @@ namespace NuGet.Protocol
                         }
                     }
 
+                    // Enable Http IfModifiedSince for non direct download only for now, technically we can use cache file for direct download too since returned content would be same as one on disc.
+                    bool enableIfModifiedSinceRequest = cacheHit && !request.CacheContext.DirectDownload && EnsureFileLastWriteValid(cacheFilelastWriteTimeUtc);
+                    var cacheFileAge = DateTime.UtcNow.Subtract(cacheFilelastWriteTimeUtc);
+
                     Func<HttpRequestMessage> requestFactory = () =>
                     {
                         var requestMessage = HttpRequestMessageFactory.Create(HttpMethod.Get, request.Uri, log);
+
+                        if (enableIfModifiedSinceRequest)
+                        {
+                            requestMessage.Headers.IfModifiedSince = cacheFilelastWriteTimeUtc;
+                        }
 
                         foreach (var acceptHeaderValue in request.AcceptHeaderValues)
                         {
@@ -142,6 +161,11 @@ namespace NuGet.Protocol
 
                     using (var throttledResponse = await throttledResponseFactory())
                     {
+                        if (throttledResponse.Response.StatusCode == HttpStatusCode.NotModified)
+                        {
+                            Console.WriteLine(throttledResponse.Response.Content);
+                        }
+
                         if (request.IgnoreNotFounds && throttledResponse.Response.StatusCode == HttpStatusCode.NotFound)
                         {
                             var httpSourceResult = new HttpSourceResult(HttpSourceResultStatus.NotFound);
@@ -157,18 +181,44 @@ namespace NuGet.Protocol
                             return await processAsync(httpSourceResult);
                         }
 
-                        throttledResponse.Response.EnsureSuccessStatusCode();
-
                         if (!request.CacheContext.DirectDownload)
                         {
-                            await HttpCacheUtility.CreateCacheFileAsync(
+                            if (enableIfModifiedSinceRequest && throttledResponse.Response.StatusCode == HttpStatusCode.NotModified)
+                            {
+                                // Requested resource not modified since last time, let's keep it instead of replacing, IO operations are expensive.
+                                HttpCacheUtility.SetCacheFileStream(cacheResult);
+                                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(
+                                    source: _sourceUri.AbsoluteUri,
+                                    request: request.Uri,
+                                    request.CacheContext.DirectDownload,
+                                    ifModifiedSinceHeaderSent: enableIfModifiedSinceRequest,
+                                    cacheHit: cacheHit,
+                                    cacheBypass: cacheResult.MaxAge == TimeSpan.Zero,
+                                    cacheFileReused: true,
+                                    expiredCache: cacheFileAge < cacheResult.MaxAge,
+                                    cacheFileNotModified: true));
+                            }
+                            else
+                            {
+                                throttledResponse.Response.EnsureSuccessStatusCode();
+
+                                await HttpCacheUtility.CreateCacheFileAsync(
                                 cacheResult,
                                 throttledResponse.Response,
                                 request.EnsureValidContents,
                                 lockedToken);
 
-                            string newCacheFileHash = CachingUtility.GetFileHash(cacheResult.CacheFile, "SHA512");
-                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(source: _sourceUri.AbsoluteUri, request: request.Uri, cacheHit: cacheHit, cacheBypass: cacheResult.MaxAge == TimeSpan.Zero, expiredCache: isExpired, cacheFileHashMatch: cacheFileHash != null ? cacheFileHash == newCacheFileHash : false));
+                                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(
+                                    source: _sourceUri.AbsoluteUri,
+                                    request: request.Uri,
+                                    request.CacheContext.DirectDownload,
+                                    ifModifiedSinceHeaderSent: enableIfModifiedSinceRequest,
+                                    cacheHit: cacheHit,
+                                    cacheBypass: cacheResult.MaxAge == TimeSpan.Zero,
+                                    cacheFileReused: false,
+                                    expiredCache: cacheHit ? cacheFileAge < cacheResult.MaxAge : null,
+                                    cacheFileNotModified: cacheHit ? false : null));
+                            }
 
                             using (var httpSourceResult = new HttpSourceResult(
                                 HttpSourceResultStatus.OpenedFromDisk,
@@ -180,6 +230,8 @@ namespace NuGet.Protocol
                         }
                         else
                         {
+                            throttledResponse.Response.EnsureSuccessStatusCode();
+
                             // Note that we do not execute the content validator on the response stream when skipping
                             // the cache. We cannot seek on the network stream and it is not valuable to download the
                             // content twice just to validate the first time (considering that the second download could
@@ -190,7 +242,16 @@ namespace NuGet.Protocol
                                 cacheFileName: null,
                                 stream: stream))
                             {
-                                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(source: _sourceUri.AbsoluteUri, request: request.Uri, cacheHit: cacheHit, cacheBypass: cacheResult.MaxAge == TimeSpan.Zero, expiredCache: isExpired, cacheFileHashMatch: false));
+                                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpCacheEvent(
+                                    source: _sourceUri.AbsoluteUri,
+                                    request: request.Uri,
+                                    request.CacheContext.DirectDownload,
+                                    ifModifiedSinceHeaderSent: enableIfModifiedSinceRequest,
+                                    cacheHit: cacheHit,
+                                    cacheBypass: cacheResult.MaxAge == TimeSpan.Zero,
+                                    cacheFileReused: false,
+                                    expiredCache: cacheHit ? cacheFileAge < cacheResult.MaxAge : null,
+                                    cacheFileNotModified: null));
                                 return await processAsync(httpSourceResult);
                             }
                         }
@@ -381,6 +442,17 @@ namespace NuGet.Protocol
             }
         }
 
+        private bool EnsureFileLastWriteValid(DateTime fileLastWriteTimeUtc)
+        {
+            // Edge case
+            if (fileLastWriteTimeUtc > DateTime.UtcNow || fileLastWriteTimeUtc < ZipFormatMinDate)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private async Task<HttpClient> CreateHttpClientAsync()
         {
             var httpHandler = await _messageHandlerFactory();
@@ -423,9 +495,9 @@ namespace NuGet.Protocol
             return CachingUtility.ReadCacheFile(maxAge, cacheFile);
         }
 
-        internal (Stream, bool isExpired, bool cacheHit, string cacheFileHash) TryReadCacheFileWithExpireCheck(TimeSpan maxAge, string cacheFile)
+        internal (Stream, DateTime lastWriteTimeUtc, bool cacheHit) TryReadCacheFileWithExpireCheck(TimeSpan maxAge, string cacheFile)
         {
-            return CachingUtility.ReadCacheFileWithExpireCheck(maxAge, cacheFile, verifyHash: true);
+            return CachingUtility.ReadCacheFileWithExpireCheck(maxAge, cacheFile);
         }
 
         public static HttpSource Create(SourceRepository source)
