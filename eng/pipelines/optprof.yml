@@ -40,7 +40,7 @@ stages:
 - template: \templates\stages\visual-studio\single-runsettings.yml@DartLabOptProfTemplates
   parameters:
     ##### Required #####
-    runSettingsURI: $(Pipeline.Workspace)\ComponentBuildUnderTest\RunSettings\NuGet.OptProfV2.runsettings
+    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/DevDiv/NuGet-NuGet.Client-Trusted/$(resources.pipeline.ComponentBuildUnderTest.sourceBranch)/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings
     visualStudioBootstrapperURI: $(VisualStudio.InstallationUnderTest.BootstrapperURL)
     ##### Optional #####
     name: OptProf_ProfilingWorkflow
