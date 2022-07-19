@@ -41,7 +41,7 @@ stages:
     name: OptProf_ProfilingWorkflow
     displayName: OptProf Profiling Workflow
     # NOTE: fix prefix when ready for production (remove 'TEST')
-    optOptimizationInputsDropName: TESTOptimizationInputs/DevDiv/NuGet-NuGet.Client-Trusted/$(resources.pipeline.${{parameters.cloudBuildResourceName}}.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
+    optOptimizationInputsDropName: TESTOptimizationInputs/DevDiv/NuGet-NuGet.Client-Trusted/$(resources.pipeline.${{parameters.ComponentBuildUnderTest}}.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
     # Remove this parameter if you don't want LKG support
     previousOptimizationInputsDropName: $(PreviousOptimizationInputsDropName)
     testLabPoolName: VS-Platform
