@@ -23,6 +23,11 @@ resources:
     ref: refs/heads/main
 
 parameters:
+# The name of the Visual Studio branch the bootstrapper URL was built from
+- name: vsBranch
+  type: string
+  default: main
+
 # Whether or not to delete the test machines after the run completes.
 - name: testMachineCleanUpStrategy
   type: string
@@ -40,9 +45,6 @@ stages:
     ##### Optional #####
     name: OptProf_ProfilingWorkflow
     displayName: OptProf Profiling Workflow
-    variables:
-    - name: VSBranch
-      value: main
     # NOTE: fix prefix when ready for production (remove 'TEST')
     optOptimizationInputsDropName: TESTOptimizationInputs/DevDiv/NuGet-NuGet.Client-Trusted/$(resources.pipeline.ComponentBuildUnderTest.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
     # Remove this parameter if you don't want LKG support
@@ -59,7 +61,7 @@ stages:
       displayName: Set 'VisualStudio.InstallationUnderTest.BootstrapperURL'
       inputs:
         filePath: $(DartLab.Path)\Scripts\VisualStudio\Bootstrapper\Get-BootstrapperURL.ps1
-        arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\BootstrapperInfo.json' -VSBranch '$(VSBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
+        arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\BootstrapperInfo.json' -VSBranch '${{parameters.vsBranch}}' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
     preDeployAndRunTestsStepList:
     - download: VisualStudioBuildUnderTest
     # Remove this step hook and it's task if you don't want LKG support
