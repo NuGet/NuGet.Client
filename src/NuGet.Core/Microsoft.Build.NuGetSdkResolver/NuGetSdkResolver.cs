@@ -15,6 +15,7 @@ using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
+using NuGet.Packaging.Signing;
 using NuGet.Versioning;
 
 namespace Microsoft.Build.NuGetSdkResolver
@@ -145,6 +146,10 @@ namespace Microsoft.Build.NuGetSdkResolver
                     try
                     {
                         DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, nonInteractive: !context.Interactive);
+
+#if !NETFRAMEWORK
+                        X509TrustStore.InitializeForDotNetSdk(logger);
+#endif
 
                         // Asynchronously run the restore without a commit which find the package on configured feeds, download, and unzip it without generating any other files
                         // This must be run in its own task because legacy project system evaluates projects on the UI thread which can cause RunWithoutCommit() to deadlock
