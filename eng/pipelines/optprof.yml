@@ -33,6 +33,7 @@ parameters:
 
 stages:
 - template: \templates\stages\visual-studio\single-runsettings.yml@DartLabOptProfTemplates
+  parameters:
     ##### Required #####
     runSettingsURI: $(Pipeline.Workspace)\ComponentBuildUnderTest\RunSettings\NuGet.OptProfV2.runsettings
     visualStudioBootstrapperURI: $(VisualStudio.InstallationUnderTest.BootstrapperURL)
