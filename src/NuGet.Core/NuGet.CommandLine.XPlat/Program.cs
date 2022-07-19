@@ -68,7 +68,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             CommandLineApplication app = InitializeApp(args, log);
-            Command newCmd = InitializeSystemCommandLine(args, log);
+            Command newCmd = InitializeSystemCommandLineApp(args, log);
 
             // Remove the correct item in array for "package" commands. Only do this when "add package", "remove package", etc... are being run.
             if (app.Name == DotnetPackageAppName)
@@ -173,8 +173,9 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
-        private static Command InitializeSystemCommandLine(string[] args, CommandOutputLogger log)
+        private static Command InitializeSystemCommandLineApp(string[] args, CommandOutputLogger log)
         {
+            // TODO: Refactor
             // Many commands don't want prefixes output. Use this func instead of () => log to set the HidePrefix property first.
             Func<ILogger> getHidePrefixLogger = () =>
             {
