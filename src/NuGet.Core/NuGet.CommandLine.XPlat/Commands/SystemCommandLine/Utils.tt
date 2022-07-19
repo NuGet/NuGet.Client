@@ -220,7 +220,7 @@ public class OptionData
     {
         if (isFirst)
         {
-            return "";
+            return "  ";
         }
         return ", ";
     }
@@ -228,6 +228,11 @@ public class OptionData
     string Indent(int spaces)
     {
         return "".PadLeft(spaces);
+    }
+
+    string GenerateOptionNameVar(OptionData data)
+    {
+        return data.Name + "_" + data.BaseClass;
     }
 
     void GenerateAddOptionOrArgument(XElement parentNode, string commandVarName, int indent = 4)
@@ -241,14 +246,15 @@ public class OptionData
             }
 
             var data = new OptionData(option);
+            string optionNameVar =  GenerateOptionNameVar(data);
             if (data.BaseClass == "Argument")
             {
                 // Generate Argument
 #>
-<#= Indent(indent) #><#= commandVarName #>.AddArgument(new Argument<<#= data.DataType #>>(name: "<#= data.LongNameOrName #>", description: <#= data.Help #>)
+<#= Indent(indent) #>var <#= optionNameVar #> = new Argument<<#= data.DataType #>>(name: "<#= data.LongNameOrName #>", description: <#= data.Help #>)
 <#= Indent(indent) #>{
 <#= Indent(indent) #>    Arity = <#= data.OptionType #>,
-<#= Indent(indent) #>});
+<#= Indent(indent) #>};
 <#+
                 // End Generate argument
             }
@@ -258,22 +264,25 @@ public class OptionData
                 if (data.HasShortcut)
                 {
 #>
-<#= Indent(indent) #><#= commandVarName #>.AddOption(new Option<<#= data.DataType #>>(aliases: new[] { "<#= data.ShortcutName #>", "<#= data.FullName #>" }, description: <#= data.Help #>)
+<#= Indent(indent) #>var <#= optionNameVar #> = new Option<<#= data.DataType #>>(aliases: new[] { "<#= data.ShortcutName #>", "<#= data.FullName #>" }, description: <#= data.Help #>);
 <#+
                 }
                 else
                 {
 #>
-<#= Indent(indent) #><#= commandVarName #>.AddOption(new Option<<#= data.DataType #>>(name: "<#= data.FullName #>", description: <#= data.Help #>)
+<#= Indent(indent) #>var <#= optionNameVar #> = new Option<<#= data.DataType #>>(name: "<#= data.FullName #>", description: <#= data.Help #>)
 <#+
                 }
 #>
 <#= Indent(indent) #>{
 <#= Indent(indent) #>    Arity = <#= data.OptionType #>,
-<#= Indent(indent) #>});
+<#= Indent(indent) #>};
 <#+
                 // End Generate option
             }
+#>
+<#= Indent(indent) #><#= commandVarName #>.Add(<#= optionNameVar #>);
+<#+
         }
     }
 
@@ -291,17 +300,36 @@ public class OptionData
             }
             var data = new OptionData(option);
 #>
-<#= Indent(indent) #><#= getSeparator(isFirst) #><#= data.DataType #> <#= StringUtilities.GetParamName(data.Name) #>
+<#= Indent(indent) #><#= getSeparator(isFirst) #><#= StringUtilities.GetParamName(data.Name) #>
 <#+
             isFirst = false;
         }
+    }
+
+    string GenerateCommandHandlerFunctionArgs(XElement optionsNode)
+    {
+        var sb = new StringBuilder();
+        var paramEnumerator = optionsNode.Elements().GetEnumerator();
+        while (paramEnumerator.MoveNext())
+        {
+            XElement option = paramEnumerator.Current;
+            if (!isValidOption(option))
+            {
+                continue;
+            }
+            var data = new OptionData(option);
+
+            sb.Append($", {GenerateOptionNameVar(data)}");
+        }
+
+        return sb.ToString();
     }
 
     void GenerateCommandHandler(string commandNameVar, string verbNounPrefix, XElement noun, int indent = 4)
     {
 #>
 <#= Indent(indent) #>// Create handler delegate handler for <#= commandNameVar #>
-<#= Indent(indent) #><#= commandNameVar #>.Handler = CommandHandler.Create((
+<#= Indent(indent) #><#= commandNameVar #>.SetHandler((
 <#+
         GenerateHandlerArguments(noun, indent + 4);
 #>
@@ -347,7 +375,7 @@ public class OptionData
         } // end foreach of required arguments
 #>
 <#= Indent(indent) #>    <#= verbNounPrefix #>Runner.Run(args, getLogger);
-<#= Indent(indent) #>}); // End handler of <#= commandNameVar #>
+<#= Indent(indent) #>}<#= GenerateCommandHandlerFunctionArgs(noun) #>); // End handler of <#= commandNameVar #>
 <#+
     } // end method GenerateCommandHandler
 
@@ -398,12 +426,13 @@ public class OptionData
 
     bool GenerateSetCustomHandler(string commandVarName, XElement node, int indent = 4)
     {
+        // TODO: Test
         PushIndent(Indent(indent));
         string customHandler = node.Attribute(XName.Get("Handler", ""))?.Value;
         bool hasCustomHandler = !string.IsNullOrEmpty(customHandler);
         if (hasCustomHandler)
         {
-            WriteLine($"{commandVarName}.Handler = CommandHandler.Create<{GenerateTypeParams(node)}>({customHandler});");
+            WriteLine($"{commandVarName}.SetHandler({customHandler});");
         }
         PopIndent();
 

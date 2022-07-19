@@ -21,7 +21,6 @@
 
 using System;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
 using NuGet.Commands;
 using NuGet.Common;
 

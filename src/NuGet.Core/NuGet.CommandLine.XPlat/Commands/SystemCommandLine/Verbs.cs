@@ -8,7 +8,6 @@
 
 using System;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
 using NuGet.Commands;
 using NuGet.Common;
 
@@ -28,18 +27,20 @@ namespace NuGet.CommandLine.XPlat.Commands
             var SourceCmd = new Command(name: "source", description: Strings.ListSourceCommandDescription);
 
             // Options under sub-command: list source
-            SourceCmd.AddOption(new Option<string>(name: "--format", description: Strings.SourcesCommandFormatDescription)
+            var format_Option = new Option<string>(name: "--format", description: Strings.SourcesCommandFormatDescription)
             {
                 Arity = ArgumentArity.ZeroOrOne,
-            });
-            SourceCmd.AddOption(new Option<string>(name: "--configfile", description: Strings.Option_ConfigFile)
+            };
+            SourceCmd.Add(format_Option);
+            var configfile_Option = new Option<string>(name: "--configfile", description: Strings.Option_ConfigFile)
             {
                 Arity = ArgumentArity.ZeroOrOne,
-            });
+            };
+            SourceCmd.Add(configfile_Option);
             // Create handler delegate handler for SourceCmd
-            SourceCmd.Handler = CommandHandler.Create((
-                string format
-                , string configfile
+            SourceCmd.SetHandler((
+                  format
+                , configfile
             ) =>
             {
                 var args = new ListSourceArgs()
@@ -49,7 +50,7 @@ namespace NuGet.CommandLine.XPlat.Commands
                 }; // end of args assignment
 
                 ListSourceRunner.Run(args, getLogger);
-            }); // End handler of SourceCmd
+            }, format_Option, configfile_Option); // End handler of SourceCmd
 
             ListCmd.AddCommand(SourceCmd);
 
