@@ -44,6 +44,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>VerbArgs.tt</DependentUpon>
     </Compile>
+    <Compile Update="CommandArgs\SystemCommandLine\VerbArgs.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>VerbArgs.tt</DependentUpon>
+    </Compile>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -60,6 +65,10 @@
 
   <ItemGroup>
     <None Update="CommandArgs\VerbArgs.tt">
+      <LastGenOutput>VerbArgs.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="CommandArgs\SystemCommandLine\VerbArgs.tt">
       <LastGenOutput>VerbArgs.cs</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>

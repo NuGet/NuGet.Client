@@ -48,12 +48,6 @@ namespace NuGet.Commands
         public string Configfile { get; set; }
     }
 
-    public partial class ListSourceArgs
-    {
-        public string Format { get; set; }
-        public string Configfile { get; set; }
-    }
-
     public partial class ListClientCertArgs
     {
         public string Configfile { get; set; }

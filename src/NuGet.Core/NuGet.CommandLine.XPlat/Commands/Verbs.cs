@@ -228,30 +228,6 @@ namespace NuGet.CommandLine.XPlat
         {
             app.Command("list", ListCmd =>
             {
-                ListCmd.Command("source", SourceCmd =>
-                {
-                    CommandOption format = SourceCmd.Option(
-                        "--format",
-                        Strings.SourcesCommandFormatDescription,
-                        CommandOptionType.SingleValue);
-                    CommandOption configfile = SourceCmd.Option(
-                        "--configfile",
-                        Strings.Option_ConfigFile,
-                        CommandOptionType.SingleValue);
-                    SourceCmd.HelpOption("-h|--help");
-                    SourceCmd.Description = Strings.ListSourceCommandDescription;
-                    SourceCmd.OnExecute(() =>
-                    {
-                        var args = new ListSourceArgs()
-                        {
-                            Format = format.Value(),
-                            Configfile = configfile.Value(),
-                        };
-
-                        ListSourceRunner.Run(args, getLogger);
-                        return 0;
-                    });
-                });
                 ListCmd.Command("client-cert", ClientCertCmd =>
                 {
                     CommandOption configfile = ClientCertCmd.Option(
