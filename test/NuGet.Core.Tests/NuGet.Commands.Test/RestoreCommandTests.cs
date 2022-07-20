@@ -2338,7 +2338,6 @@ namespace NuGet.Commands.Test
 
         [Theory]
         [InlineData("1.*")]
-        [InlineData("[1.0.0,)")]
         public async Task ExecuteAsync_WithSingleFloatingPackage_PopulatesCorrectTelemetry(string dependencyVersion)
         {
             // Arrange
