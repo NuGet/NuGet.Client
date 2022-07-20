@@ -7,6 +7,7 @@ using System.Linq;
 using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 using Xunit;
 
 namespace Dotnet.Integration.Test
@@ -685,6 +686,18 @@ namespace Dotnet.Integration.Test
 
                 Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
             }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void List_WithoutNoun_ShowsHelp()
+        {
+            // Arrange & Act
+            CommandRunnerResult result = _fixture.RunDotnet(Environment.CurrentDirectory, "nuget list", ignoreExitCode: true);
+
+            // Assert
+            Assert.Equal(0, result.ExitCode);
+            Assert.Contains("source", result.Output);
+            Assert.Contains("client-cert", result.Output);
         }
 
         [PlatformFact(Platform.Windows)]
