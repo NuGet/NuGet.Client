@@ -4,9 +4,8 @@
 using System.CommandLine;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.CommandLine.XPlat;
-using Xunit;
-using Test.Utility;
 using NuGet.Test.Utility;
+using Xunit;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
