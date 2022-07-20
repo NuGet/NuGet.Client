@@ -34,6 +34,10 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public bool DirectDownload { get; set; }
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+        public bool EnableIfModifiedSinceHeader { get; set; }
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
         /// <summary>
         /// Package version lists or packages from the server older than this date will be fetched from the server.
         /// </summary>

@@ -11,6 +11,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public static class ExperimentUtility
     {
         public static AsyncLazy<bool> IsTransitiveOriginExpEnabled { get; private set; }
+        public static AsyncLazy<bool> IsIfModifiedSinceEnabled { get; private set; }
 
         static ExperimentUtility()
         {
@@ -21,6 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
         internal static void ResetAsyncValues()
         {
             IsTransitiveOriginExpEnabled = new(() => IsExperimentEnabledAsync(ExperimentationConstants.TransitiveDependenciesInPMUI), NuGetUIThreadHelper.JoinableTaskFactory);
+            IsIfModifiedSinceEnabled = new(() => IsExperimentEnabledAsync(ExperimentationConstants.IfModifiedSinceHeader), NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         internal static async Task<bool> IsExperimentEnabledAsync(ExperimentationConstants exp)

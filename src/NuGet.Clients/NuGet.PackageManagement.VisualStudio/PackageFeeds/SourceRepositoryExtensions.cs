@@ -101,6 +101,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Update http source cache context MaxAge so that it can always go online to fetch latest version of packages.
                 sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
 
+                if (await ExperimentUtility.IsIfModifiedSinceEnabled.GetValueAsync(cancellationToken))
+                {
+                    sourceCacheContext.EnableIfModifiedSinceHeader = true;
+                }
+
                 return await metadataResource.GetMetadataAsync(identity, sourceCacheContext, Common.NullLogger.Instance, cancellationToken);
             }
         }
@@ -124,6 +129,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Update http source cache context MaxAge so that it can always go online to fetch
                 // latest version of packages.
                 sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
+
+                if (await ExperimentUtility.IsIfModifiedSinceEnabled.GetValueAsync(cancellationToken))
+                {
+                    sourceCacheContext.EnableIfModifiedSinceHeader = true;
+                }
 
                 var packages = await metadataResource.GetMetadataAsync(
                     identity.Id,
@@ -153,6 +163,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
+                if (await ExperimentUtility.IsIfModifiedSinceEnabled.GetValueAsync(cancellationToken))
+                {
+                    sourceCacheContext.EnableIfModifiedSinceHeader = true;
+                }
+
                 var localPackages = await localResource?.GetMetadataAsync(
                     identity.Id,
                     includePrerelease: true,
@@ -184,6 +199,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 // latest version of packages.
                 sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
 
+                if (await ExperimentUtility.IsIfModifiedSinceEnabled.GetValueAsync(cancellationToken))
+                {
+                    sourceCacheContext.EnableIfModifiedSinceHeader = true;
+                }
+
                 var packages = await metadataResource?.GetMetadataAsync(
                     packageId,
                     includePrerelease,
@@ -214,6 +234,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Update http source cache context MaxAge so that it can always go online to fetch
                 // latest versions of the package.
                 sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
+
+                if (await ExperimentUtility.IsIfModifiedSinceEnabled.GetValueAsync(cancellationToken))
+                {
+                    sourceCacheContext.EnableIfModifiedSinceHeader = true;
+                }
 
                 var packages = await metadataResource?.GetMetadataAsync(
                     packageId,
@@ -258,6 +283,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
+                if (await ExperimentUtility.IsIfModifiedSinceEnabled.GetValueAsync(cancellationToken))
+                {
+                    sourceCacheContext.EnableIfModifiedSinceHeader = true;
+                }
+
                 var versions = await autoCompleteResource?.VersionStartsWith(
                     packageId,
                     versionPrefix,

@@ -28,5 +28,6 @@ namespace NuGet.VisualStudio
         public static readonly ExperimentationConstants PackageRecommender = new("nugetrecommendpkgs", "NUGET_RECOMMEND_PACKAGES");
         public static readonly ExperimentationConstants BulkRestoreCoordination = new("nugetBulkRestoreCoordination", "NUGET_BULK_RESTORE_COORDINATION");
         public static readonly ExperimentationConstants TransitiveDependenciesInPMUI = new("nugetTransitiveDependenciesInPMUI", "NUGET_TRANSITIVE_DEPENDENCIES_IN_PMUI");
+        public static readonly ExperimentationConstants IfModifiedSinceHeader = new("nugetIfModifiedSinceHeader", "NUGET_IF_MODIFIED_SINCE_HEADER");
     }
 }

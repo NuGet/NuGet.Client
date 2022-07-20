@@ -127,8 +127,7 @@ namespace NuGet.Protocol
                         }
                     }
 
-                    // Enable Http IfModifiedSince for non direct download only for now, technically we can use cache file for direct download too since returned content would be same as one on disc.
-                    bool enableIfModifiedSinceRequest = cacheHit && !request.CacheContext.DirectDownload && EnsureFileLastWriteValid(cacheFilelastWriteTimeUtc);
+                    bool enableIfModifiedSinceRequest = EnableIfModifiedSinceRequest(cacheHit, request, cacheFilelastWriteTimeUtc);
                     var cacheFileAge = DateTime.UtcNow.Subtract(cacheFilelastWriteTimeUtc);
 
                     Func<HttpRequestMessage> requestFactory = () =>
@@ -546,6 +545,17 @@ namespace NuGet.Protocol
             }
 
             _disposed = true;
+        }
+
+        private bool EnableIfModifiedSinceRequest(bool cacheHit, HttpSourceCachedRequest request, DateTime cacheFilelastWriteTimeUtc)
+        {
+            // Enable Http IfModifiedSince for non direct download only for now, technically we can use cache file for direct download too since returned content would be same as one on disc.
+            // Currently enable for nuget.org only
+            return cacheHit
+                && !request.CacheContext.DirectDownload
+                && EnsureFileLastWriteValid(cacheFilelastWriteTimeUtc)
+                && UriUtility.IsNuGetOrg(_sourceUri.AbsoluteUri)
+                && request.CacheContext.SourceCacheContext.EnableIfModifiedSinceHeader;
         }
 
         private class ThrottledResponse : IDisposable
