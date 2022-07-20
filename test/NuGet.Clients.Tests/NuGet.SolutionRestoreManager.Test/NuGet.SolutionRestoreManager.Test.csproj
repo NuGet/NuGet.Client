@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" />
   </ItemGroup>
 
