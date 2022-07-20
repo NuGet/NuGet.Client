@@ -44,11 +44,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>VerbArgs.tt</DependentUpon>
     </Compile>
-    <Compile Update="CommandArgs\SystemCommandLine\VerbArgs.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>VerbArgs.tt</DependentUpon>
-    </Compile>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -68,16 +63,12 @@
       <LastGenOutput>VerbArgs.cs</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
-    <None Update="CommandArgs\SystemCommandLine\VerbArgs.tt">
-      <LastGenOutput>VerbArgs.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

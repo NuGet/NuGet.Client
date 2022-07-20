@@ -7,71 +7,8 @@
 <#@ import namespace="System.Xml.Linq" #>
 <#@ import namespace="System.Linq" #>
 <#@ output extension=".cs" #>
+<#@ include file="..\..\NuGet.CommandLine.XPlat\Commands\SystemCommandLine\Utils.tt" once="true" #>
 <#
-    string InitCaps(string input)
-    {
-        if (input == null) 
-        {
-            return null;
-        }
-
-        var textInfo = CultureInfo.InvariantCulture.TextInfo;
-        var output = textInfo.ToTitleCase(input);
-        
-        return output;
-    }
-
-    bool IsArgumentOrOption(string type)
-    {
-        return IsArgument(type) || IsOption(type);
-    }
-
-    bool IsArgument(string type)
-    {
-        return type == "Argument";
-    }
-
-    bool IsOption(string type)
-    {
-        return type == "Option";
-    }
-
-    string GetProperty(XElement element)
-    {
-        switch (element.Name.LocalName)
-        {
-            case "SingleValueOption":
-                return "Option";
-            case "SwitchOption":
-                return "Option";
-            case "Value":
-                return "Option";
-            case "Argument":
-                return "Argument";
-            case "Example":
-                return "Example";
-            case "SeeAlso":
-                return "SeeAlso";
-            default:
-                return "Unknown Element Type " + element.Name.LocalName;
-        }
-    }
-
-    string GetOptionType(XElement element)
-    {
-        switch (element.Name.LocalName)
-        {
-            case "SingleValueOption":
-                return "SingleValue";
-            case "SwitchOption":
-                return "NoValue";
-            case "Value":
-                return "Value";
-            default:
-                return "Unknown Element Type " + element.Name.LocalName;
-        }
-    }
-
     string commandFile = this.Host.ResolvePath("..\\..\\NuGet.CommandLine.XPlat\\Commands\\Commands.xml");
     XDocument commands = XDocument.Load(commandFile);
 #>
@@ -82,68 +19,27 @@
 // instead modify the neighboring .tt file (text template) and/or NuGet.CommandLine.Xplat\Commands\Commands.xml (data file),
 // then re-execute the text template via "run custom tool" on VS context menu for .tt file, or via dotnet-t4 global tool.
 
-using System;
-using System.Threading.Tasks;
-using NuGet.Common;
-
 namespace NuGet.Commands
 {
 <#
     // VerbNounArgs class
-     foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
-     {
+    foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
+    {
         string verbName = verb.Attribute(XName.Get("Name", "")).Value;
         string verbFormalName = InitCaps(verbName);
         foreach (XElement noun in verb.Descendants(XName.Get("Noun")))
         {
             string nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
-            string nounFormalName = InitCaps(nounName);
-            nounFormalName = nounFormalName.Replace("-", "");
-#>
-    public partial class <#= verbFormalName #><#= nounFormalName #>Args
-    {
-<#
-            foreach (XElement option in noun.Descendants())
-            {
-                if (IsArgumentOrOption(GetProperty(option)))
-                {
-                    string optionName = option.Attribute(XName.Get("Name", ""))?.Value;
-                    string optionType = option.Attribute(XName.Get("Type", ""))?.Value;
-                    string optionFormalName = InitCaps(optionName);
-                    optionFormalName = optionFormalName.Replace("-", "");
-                    if (IsArgument(GetProperty(option)))
-                    {
-#>
-        public string <#= optionFormalName #> { get; set; }
-<#
-                    }
-                    else if (IsOption(GetProperty(option)))
-                    {
-                        switch (GetOptionType(option))
-                        {
-                        case "SingleValue":
-#>
-        public string <#= optionFormalName #> { get; set; }
-<#
-                            break;
-                        case "NoValue":
-#>
-        public bool <#= optionFormalName #> { get; set; }
-<#
-                            break;
-                        case "Value":
-#>
-        public <#= optionType #> <#= optionFormalName #> { get; set; }
-<#
-                            break;
-                        }
-                    }
-                }
-            }
-#>
-    }
+            string nounFormalName = StringUtilities.GetFormalName(nounName);
 
-<#
+            GenerateArgsClass(verbFormalName + nounFormalName + "Args", noun, "public", 4);
+        } // foreach noun
+
+        var opts = verb.Elements().Where(n => isValidOption(n));
+        if (opts.Any())
+        {
+            GenerateArgsClass(verbFormalName + "Args", verb, "internal", 4);
         }
-    }
-#>}
+    } // foreach verb
+#>
+}

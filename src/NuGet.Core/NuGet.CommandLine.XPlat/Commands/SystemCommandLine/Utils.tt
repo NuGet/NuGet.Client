@@ -90,6 +90,10 @@ public static class StringUtilities
             case "NoValue":
                 return "bool";
             case "Value":
+                if (string.IsNullOrEmpty(optionType))
+                {
+                    return "string";
+                }
                 return optionType;
             default:
                 return "object";
