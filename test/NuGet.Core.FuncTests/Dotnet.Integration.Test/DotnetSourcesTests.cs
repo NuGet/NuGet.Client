@@ -7,7 +7,6 @@ using System.Linq;
 using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
-using Org.BouncyCastle.Bcpg.OpenPgp;
 using Xunit;
 
 namespace Dotnet.Integration.Test

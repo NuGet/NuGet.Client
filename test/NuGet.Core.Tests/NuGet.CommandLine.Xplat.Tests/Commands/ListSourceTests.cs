@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         {
             // Arrange
             var cmd = new[] { "list", "source" };
-   
+
             var currentCli = new CommandLineApplication();
             var testLoggerCurrent = new TestLogger();
             ListVerbParser.Register(currentCli, () => testLoggerCurrent);
