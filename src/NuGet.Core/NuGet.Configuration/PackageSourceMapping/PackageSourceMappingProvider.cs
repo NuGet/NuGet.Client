@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace NuGet.Configuration
 {
-    internal class PackageSourceMappingProvider
+    public class PackageSourceMappingProvider
     {
         private readonly ISettings _settings;
 
