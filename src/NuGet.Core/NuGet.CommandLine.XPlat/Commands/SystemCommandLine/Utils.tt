@@ -426,7 +426,6 @@ public class OptionData
 
     bool GenerateSetCustomHandler(string commandVarName, XElement node, int indent = 4)
     {
-        // TODO: Test
         PushIndent(Indent(indent));
         string customHandler = node.Attribute(XName.Get("Handler", ""))?.Value;
         bool hasCustomHandler = !string.IsNullOrEmpty(customHandler);
