@@ -822,11 +822,6 @@ namespace NuGet.PackageManagement.UI
                 searchTask: null);
         }
 
-        public static bool IsRecommenderFlightEnabled(INuGetExperimentationService nuGetExperimentationService)
-        {
-            return nuGetExperimentationService.IsExperimentEnabled(ExperimentationConstants.PackageRecommender);
-        }
-
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
@@ -905,28 +900,14 @@ namespace NuGet.PackageManagement.UI
         private bool GetUseRecommendedPackages(PackageLoadContext loadContext, string searchText)
         {
             // only make recommendations when
-            //   the single source repository is nuget.org,
+            //   one of the source repositories is nuget.org,
             //   the package manager was opened for a project, not a solution,
             //   this is the Browse tab,
             //   and the search text is an empty string
-            _recommendPackages = false;
-            if (loadContext.IsSolution == false
-                && _topPanel.Filter == ItemFilter.All
-                && searchText == string.Empty
-                && SelectedSource.PackageSources.Any(item => UriUtility.IsNuGetOrg(item.Source)))
-            {
-                _recommendPackages = true;
-            }
-
-            // Check for A/B experiment here. For control group, return false instead of _recommendPackages
-            if (IsRecommenderFlightEnabled(NuGetExperimentationService))
-            {
-                return _recommendPackages;
-            }
-            else
-            {
-                return false;
-            }
+            return (loadContext.IsSolution == false
+                    && _topPanel.Filter == ItemFilter.All
+                    && searchText == string.Empty
+                    && SelectedSource.PackageSources.Any(item => UriUtility.IsNuGetOrg(item.Source)));
         }
 
         private async ValueTask RefreshInstalledAndUpdatesTabsAsync()
