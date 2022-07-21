@@ -1,4 +1,4 @@
-<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ template debug="false" hostspecific="true" language="C#" #>
 <#@ assembly name="System.Xml.XDocument" #>
 <#@ assembly name="System.Xml.Linq" #>
 <#@ assembly name="System.Xml" #>
