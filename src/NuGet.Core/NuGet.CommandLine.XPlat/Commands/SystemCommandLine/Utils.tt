@@ -98,8 +98,6 @@ public static class StringUtilities
             default:
                 return "object";
         }
-
-        return "";
     }
 
     public static string GetOptionType(XElement element)
