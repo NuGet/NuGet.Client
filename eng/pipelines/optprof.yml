@@ -28,6 +28,11 @@ parameters:
   type: string
   default: main
 
+# The prefix naming of the OptimizationInputs drop
+- name: optimizationDropPrefix
+  type: string
+  default: TESTOptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
+
 # Whether or not to delete the test machines after the run completes.
 - name: testMachineCleanUpStrategy
   type: string
@@ -40,13 +45,13 @@ stages:
 - template: \templates\stages\visual-studio\single-runsettings.yml@DartLabOptProfTemplates
   parameters:
     ##### Required #####
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/DevDiv/NuGet-NuGet.Client-Trusted/$(resources.pipeline.ComponentBuildUnderTest.sourceBranch)/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings
+    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings
     visualStudioBootstrapperURI: $(VisualStudio.InstallationUnderTest.BootstrapperURL)
     ##### Optional #####
     name: OptProf_ProfilingWorkflow
     displayName: OptProf Profiling Workflow
     # NOTE: fix prefix when ready for production (remove 'TEST')
-    optOptimizationInputsDropName: TESTOptimizationInputs/DevDiv/NuGet-NuGet.Client-Trusted/$(resources.pipeline.ComponentBuildUnderTest.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
+    optOptimizationInputsDropName: ${{parameters.optimizationDropPrefix}}/$(resources.pipeline.ComponentBuildUnderTest.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
     # Remove this parameter if you don't want LKG support
     previousOptimizationInputsDropName: $(PreviousOptimizationInputsDropName)
     testLabPoolName: VS-Platform
