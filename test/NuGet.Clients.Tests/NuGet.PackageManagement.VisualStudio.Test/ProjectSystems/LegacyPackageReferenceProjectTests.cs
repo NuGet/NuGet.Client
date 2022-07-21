@@ -1453,6 +1453,83 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Theory]
+        [InlineData(null,null,null, 0, 0)]
+        [InlineData("win-x64", null, null, 1, 0)]
+        [InlineData("win-x64", "win-x86", null, 2, 0)]
+        [InlineData("win-x64", "win-x86;win-x64", null, 2, 0)]
+        [InlineData("win-x64", "win-x86;win-x64", "win", 2, 1)]
+        public async Task GetPackageSpecsAsync_WithRuntimeIdentifiers_GeneratesRuntimeGraph(string runtimeIdentifier, string runtimeIdentifiers, string runtimeSupports, int runtimeCount, int supportsCount)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectBuildProperties = new Mock<IProjectBuildProperties>();
+                var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
+
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RuntimeIdentifier))))
+                    .Returns(runtimeIdentifier);
+
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RuntimeIdentifiers))))
+                    .Returns(runtimeIdentifiers);
+
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RuntimeSupports))))
+                    .Returns(runtimeSupports);
+
+                var projectServices = new TestProjectSystemServices();
+
+                var testProject = new LegacyPackageReferenceProject(
+                    projectAdapter,
+                    Guid.NewGuid().ToString(),
+                    projectServices,
+                    _threadingService);
+
+                var settings = NullSettings.Instance;
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                // Act
+                var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                Assert.NotNull(packageSpecs);
+                var actualRestoreSpec = packageSpecs.Single();
+                SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
+
+                // Assert runtime graph
+                actualRestoreSpec.RuntimeGraph.Runtimes.Count.Should().Be(runtimeCount);
+                actualRestoreSpec.RuntimeGraph.Supports.Count.Should().Be(supportsCount);
+
+                // Verify
+                projectBuildProperties.VerifyAll();
+            }
+        }
+
+        [Theory]
+        [InlineData(null, null, "")]
+        [InlineData("win-x64", null, "win-x64")]
+        [InlineData("win-x64", "win-x64", "win-x64")]
+        [InlineData(null, "win-x64", "win-x64")]
+        [InlineData("win-x86", "win-x64", "win-x86;win-x64")]
+        public void GetRuntimeIdentifiers_WithVariousInputs(string runtimeIdentifier, string runtimeIdentifiers, string expected)
+        {
+            var actual = LegacyPackageReferenceProject.GetRuntimeIdentifiers(runtimeIdentifier, runtimeIdentifiers);
+            Assert.Equal(expected, string.Join(";", actual.Select(e => e.RuntimeIdentifier)));
+        }
+
+        [Theory]
+        [InlineData(null, "")]
+        [InlineData("net46.app;win8.app", "net46.app;win8.app")]
+        [InlineData("net46.app;win10.app;net46.app;win10.app", "net46.app;win10.app;net46.app;win10.app")]
+        public void GetRuntimeSupports_WithVariousInputs(string runtimeSupports, string expected)
+        {
+            var actual = LegacyPackageReferenceProject.GetRuntimeSupports(runtimeSupports);
+            Assert.Equal(expected, string.Join(";", actual.Select(e => e.Name.ToString())));
+        }
+
         private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string range)
         {
             return ProjectFactories.CreateLegacyPackageReferenceProject(testDirectory, Guid.NewGuid().ToString(), range, _threadingService);

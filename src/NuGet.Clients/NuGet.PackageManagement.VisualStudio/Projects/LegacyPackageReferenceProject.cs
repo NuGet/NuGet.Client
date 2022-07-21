@@ -449,7 +449,7 @@ namespace NuGet.PackageManagement.VisualStudio
             };
         }
 
-        private static IEnumerable<RuntimeDescription> GetRuntimeIdentifiers(string unparsedRuntimeIdentifer, string unparsedRuntimeIdentifers)
+        internal static IEnumerable<RuntimeDescription> GetRuntimeIdentifiers(string unparsedRuntimeIdentifer, string unparsedRuntimeIdentifers)
         {
             var runtimes = Enumerable.Empty<string>();
 
@@ -472,7 +472,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(runtime => new RuntimeDescription(runtime));
         }
 
-        private static IEnumerable<CompatibilityProfile> GetRuntimeSupports(string unparsedRuntimeSupports)
+        internal static IEnumerable<CompatibilityProfile> GetRuntimeSupports(string unparsedRuntimeSupports)
         {
             if (unparsedRuntimeSupports == null)
             {
