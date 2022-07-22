@@ -188,55 +188,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return Enumerable.Empty<string>();
         }
 
-        public async Task<IEnumerable<RuntimeDescription>> GetRuntimeIdentifiersAsync()
-        {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var unparsedRuntimeIdentifer = BuildProperties.GetPropertyValue(
-                ProjectBuildProperties.RuntimeIdentifier);
-            var unparsedRuntimeIdentifers = BuildProperties.GetPropertyValue(
-                ProjectBuildProperties.RuntimeIdentifiers);
-
-            var runtimes = Enumerable.Empty<string>();
-
-            if (unparsedRuntimeIdentifer != null)
-            {
-                runtimes = runtimes.Concat(new[] { unparsedRuntimeIdentifer });
-            }
-
-            if (unparsedRuntimeIdentifers != null)
-            {
-                runtimes = runtimes.Concat(unparsedRuntimeIdentifers.Split(';'));
-            }
-
-            runtimes = runtimes
-                .Select(x => x.Trim())
-                .Distinct(StringComparer.Ordinal)
-                .Where(x => !string.IsNullOrEmpty(x));
-
-            return runtimes
-                .Select(runtime => new RuntimeDescription(runtime));
-        }
-
-        public async Task<IEnumerable<CompatibilityProfile>> GetRuntimeSupportsAsync()
-        {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var unparsedRuntimeSupports = BuildProperties.GetPropertyValue(
-                ProjectBuildProperties.RuntimeSupports);
-
-            if (unparsedRuntimeSupports == null)
-            {
-                return Enumerable.Empty<CompatibilityProfile>();
-            }
-
-            return unparsedRuntimeSupports
-                .Split(';')
-                .Select(x => x.Trim())
-                .Where(x => !string.IsNullOrEmpty(x))
-                .Select(support => new CompatibilityProfile(support));
-        }
-
         public async Task<NuGetFramework> GetTargetFrameworkAsync()
         {
             var frameworkString = await GetTargetFrameworkStringAsync();
@@ -247,16 +198,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return NuGetFramework.UnsupportedFramework;
-        }
-
-        public Task<string> GetPropertyValueAsync(string propertyName)
-        {
-            if (propertyName == null)
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
-
-            return BuildProperties.GetPropertyValueAsync(propertyName);
         }
 
         public async Task<IEnumerable<(string ItemId, string[] ItemMetadata)>> GetBuildItemInformationAsync(string itemName, params string[] metadataNames)

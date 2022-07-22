@@ -63,16 +63,6 @@ namespace NuGet.VisualStudio
         Task<IEnumerable<string>> GetReferencedProjectsAsync();
 
         /// <summary>
-        /// Project's runtime identifiers. Should never be null but can be an empty sequence.
-        /// </summary>
-        Task<IEnumerable<RuntimeDescription>> GetRuntimeIdentifiersAsync();
-
-        /// <summary>
-        /// Project's supports (a.k.a guardrails). Should never be null but can be an empty sequence.
-        /// </summary>
-        Task<IEnumerable<CompatibilityProfile>> GetRuntimeSupportsAsync();
-
-        /// <summary>
         /// Project's target framework
         /// </summary>
         Task<NuGetFramework> GetTargetFrameworkAsync();

@@ -376,8 +376,11 @@ namespace NuGet.PackageManagement.VisualStudio
             AssetTargetFallbackUtility.ApplyFramework(projectTfi, packageTargetFallback, assetTargetFallback);
 
             // Build up runtime information.
-            var runtimes = await _vsProjectAdapter.GetRuntimeIdentifiersAsync();
-            var supports = await _vsProjectAdapter.GetRuntimeSupportsAsync();
+
+            var runtimes = GetRuntimeIdentifiers(
+                GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeIdentifier),
+                GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeIdentifiers));
+            var supports = GetRuntimeSupports(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeSupports));
             var runtimeGraph = new RuntimeGraph(runtimes, supports);
 
             // In legacy CSProj, we only have one target framework per project
@@ -444,6 +447,43 @@ namespace NuGet.PackageManagement.VisualStudio
                     CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageTransitivePinningEnabled)),
                 }
             };
+        }
+
+        internal static IEnumerable<RuntimeDescription> GetRuntimeIdentifiers(string unparsedRuntimeIdentifer, string unparsedRuntimeIdentifers)
+        {
+            var runtimes = Enumerable.Empty<string>();
+
+            if (unparsedRuntimeIdentifer != null)
+            {
+                runtimes = runtimes.Concat(new[] { unparsedRuntimeIdentifer });
+            }
+
+            if (unparsedRuntimeIdentifers != null)
+            {
+                runtimes = runtimes.Concat(unparsedRuntimeIdentifers.Split(';'));
+            }
+
+            runtimes = runtimes
+                .Select(x => x.Trim())
+                .Distinct(StringComparer.Ordinal)
+                .Where(x => !string.IsNullOrEmpty(x));
+
+            return runtimes
+                .Select(runtime => new RuntimeDescription(runtime));
+        }
+
+        internal static IEnumerable<CompatibilityProfile> GetRuntimeSupports(string unparsedRuntimeSupports)
+        {
+            if (unparsedRuntimeSupports == null)
+            {
+                return Enumerable.Empty<CompatibilityProfile>();
+            }
+
+            return unparsedRuntimeSupports
+                .Split(';')
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrEmpty(x))
+                .Select(support => new CompatibilityProfile(support));
         }
 
         /// <inheritdoc/>
