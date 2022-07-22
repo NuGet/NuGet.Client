@@ -8,7 +8,7 @@ using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test
 {
-    [Collection(MockedVs.CollectionName)]
+    [Collection(MockedVS.CollectionName)]
     public class CachingIServiceBrokerProviderTests
     {
         public CachingIServiceBrokerProviderTests(GlobalServiceProvider serviceProvider)

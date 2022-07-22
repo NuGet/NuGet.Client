@@ -24,7 +24,6 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Common.Test;
 using Test.Utility;
 using Xunit;
 using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
