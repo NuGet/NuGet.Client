@@ -647,5 +647,49 @@ namespace NuGet.Configuration.Test
                 File.ReadAllText(configPath1).Replace("\r\n", "\n"));
         }
 
+        [Fact]
+        public void SavePackageSourceMappings_PackageSourceMappingDisabled_AddMapping()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>");
+
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
+
+            List<PackagePatternItem> packagePatternItems = new List<PackagePatternItem>();
+            for (int i = 0; i < 3; i++)
+            {
+                PackagePatternItem tempPackagePatternItem = new PackagePatternItem(i.ToString());
+                packagePatternItems.Add(tempPackagePatternItem);
+            }
+            PackageSourceMappingSourceItem tempMapping = new PackageSourceMappingSourceItem("tempSource", packagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(tempMapping);
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+
+            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSourceMapping>
+    <packageSource key=""tempSource"">
+        <package pattern=""0"" />
+        <package pattern=""1"" />
+        <package pattern=""2"" />
+      </packageSource>
+  </packageSourceMapping>
+</configuration>";
+
+            result.Replace("\r\n", "\n")
+                .Should().BeEquivalentTo(
+                File.ReadAllText(configPath1).Replace("\r\n", "\n"));
+        }
+
     }
 }

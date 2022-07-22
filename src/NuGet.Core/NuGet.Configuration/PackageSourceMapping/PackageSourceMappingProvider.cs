@@ -67,10 +67,6 @@ namespace NuGet.Configuration
             }
 
             IReadOnlyList<PackageSourceMappingSourceItem> existingSettingsLookup = GetPackageSourceMappingItems();
-            if (existingSettingsLookup == null)
-            {
-                return;
-            }
             // Remove all old mappings not in new mappings
             List<PackageSourceMappingSourceItem> removeMappings = new List<PackageSourceMappingSourceItem>();
             foreach (PackageSourceMappingSourceItem sourceItem in existingSettingsLookup)
