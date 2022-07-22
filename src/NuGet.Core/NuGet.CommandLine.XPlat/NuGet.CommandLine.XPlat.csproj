@@ -46,10 +46,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CommandParsers.tt</DependentUpon>
     </Compile>
-    <Compile Update="Commands\SystemCommandLine\Verbs.cs">
+    <Compile Update="Commands\SystemCommandLine\VerbParsers.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Verbs.tt</DependentUpon>
+      <DependentUpon>VerbParsers.tt</DependentUpon>
     </Compile>
     <Compile Update="Commands\Verbs.cs">
       <DesignTime>True</DesignTime>
@@ -88,8 +88,8 @@
       <LastGenOutput>CommandParsers.cs</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
-    <None Update="Commands\SystemCommandLine\Verbs.tt">
-      <LastGenOutput>Verbs.cs</LastGenOutput>
+    <None Update="Commands\SystemCommandLine\VerbParsers.tt">
+      <LastGenOutput>VerbParsers.cs</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
     <None Update="Commands\SystemCommandLine\CommandParsers.tt">
