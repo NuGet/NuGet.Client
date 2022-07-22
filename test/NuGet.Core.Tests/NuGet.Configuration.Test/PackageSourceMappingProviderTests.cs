@@ -556,7 +556,6 @@ namespace NuGet.Configuration.Test
             var sourceMappingProvider = new PackageSourceMappingProvider(settings);
             sourceMappingProvider.SavePackageSourceMappings(tempMappings);
 
-
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSourceMapping>
@@ -624,7 +623,6 @@ namespace NuGet.Configuration.Test
 
             sourceMappingProvider.SavePackageSourceMappings(tempMappings);
 
-
             var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSourceMapping>
@@ -688,6 +686,5 @@ namespace NuGet.Configuration.Test
                 .Should().BeEquivalentTo(
                 File.ReadAllText(configPath1).Replace("\r\n", "\n"));
         }
-
     }
 }
