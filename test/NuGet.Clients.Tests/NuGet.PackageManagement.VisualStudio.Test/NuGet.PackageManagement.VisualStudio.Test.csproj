@@ -30,7 +30,6 @@
     <Compile Include="CpsPackageReferenceProjectTests.cs" />
     <Compile Include="PackageFeeds\PackageSourceMonikerTests.cs" />
     <Compile Include="Projects\FrameworkInstalledPackagesTests.cs" />
-    <Compile Include="MockedVS.cs" />
     <Compile Include="ProjectFactories.cs" />
     <Compile Include="ProjectSystems\LegacyPackageReferenceProjectTests.cs" />
     <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
