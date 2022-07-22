@@ -16,7 +16,7 @@ namespace NuGet.Configuration
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public IReadOnlyList<PackageSourceMappingSourceItem> GetPackageSourceMappingItems()
+        internal IReadOnlyList<PackageSourceMappingSourceItem> GetPackageSourceMappingItems()
         {
             SettingSection packageSourceMappingSection = _settings.GetSection(ConfigurationConstants.PackageSourceMapping);
             if (packageSourceMappingSection == null)
@@ -27,7 +27,7 @@ namespace NuGet.Configuration
             return packageSourceMappingSection.Items.OfType<PackageSourceMappingSourceItem>().ToList();
         }
 
-        public void Remove(IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingSourceItems)
+        internal void Remove(IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingSourceItems)
         {
             if (packageSourceMappingSourceItems == null || packageSourceMappingSourceItems.Count == 0)
             {
@@ -47,7 +47,7 @@ namespace NuGet.Configuration
             _settings.SaveToDisk();
         }
 
-        public void AddOrUpdatePackageSourceMappingSourceItem(PackageSourceMappingSourceItem packageSourceMappingSourceItem)
+        internal void AddOrUpdatePackageSourceMappingSourceItem(PackageSourceMappingSourceItem packageSourceMappingSourceItem)
         {
             if (packageSourceMappingSourceItem == null)
             {
