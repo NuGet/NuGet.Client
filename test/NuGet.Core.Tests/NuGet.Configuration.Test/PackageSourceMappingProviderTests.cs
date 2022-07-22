@@ -537,6 +537,9 @@ namespace NuGet.Configuration.Test
         <packageSource key=""nuget.org"">
             <package pattern=""stuff"" />
         </packageSource>
+        <packageSource key=""nuget2.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
     </packageSourceMapping>
 </configuration>");
 
@@ -544,18 +547,13 @@ namespace NuGet.Configuration.Test
             List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
             testPackagePatternItems.Add(testPackagePatternItem);
             PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
-            PackageSourceMappingSourceItem testMappingItem2 = new PackageSourceMappingSourceItem("nuget2.org", testPackagePatternItems);
             List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
             tempMappings.Add(testMappingItem);
-            tempMappings.Add(testMappingItem2);
 
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
 
             // Act & Assert
             var sourceMappingProvider = new PackageSourceMappingProvider(settings);
-            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
-
-            tempMappings.Remove(testMappingItem2);
             sourceMappingProvider.SavePackageSourceMappings(tempMappings);
 
 
