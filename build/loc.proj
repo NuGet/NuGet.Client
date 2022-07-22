@@ -29,10 +29,8 @@
     <Copy SourceFiles="@(NonProjectFilesToMove)" DestinationFiles="@(NonProjectFilesToMove->'%(DestinationDir)')"/>
     <ItemGroup>
       <FilesToLocalize Include="@(NonProjectFilesToMove->'%(DestinationDir)')">
-        <TranslationFile Condition="'%(Extension)' == '.dll'">$(LocalizationWorkDirectory)\{Lang}\15\%(Filename).dll.lcl</TranslationFile>    <!--Required: translation file-->
-        <LciCommentFile Condition="'%(Extension)' == '.dll'">$(LocalizationWorkDirectory)\comments\15\%(Filename).dll.lci</LciCommentFile>
-        <TranslationFile Condition="'%(Extension)' != '.dll'">$(LocalizationWorkDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
-        <LciCommentFile Condition="'%(Extension)' != '.dll'">$(LocalizationWorkDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
+        <TranslationFile>$(LocalizationWorkDirectory)\{Lang}\15\%(Filename)%(Extension).lcl</TranslationFile>    <!--Required: translation file-->
+        <LciCommentFile>$(LocalizationWorkDirectory)\comments\15\%(Filename)%(Extension).lci</LciCommentFile>
         <Parser Condition="'%(Extension)' == '.vsixlangpack'">210</Parser>
         <SettingsFile Condition="'%(Extension)' == '.vsixlangpack'">$(LSBuildRoot)\locxml_teamarch.lss</SettingsFile>
         <HasLceComments>false</HasLceComments>
