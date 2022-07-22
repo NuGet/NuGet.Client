@@ -77,7 +77,7 @@ namespace NuGet.Configuration
                 }
             }
 
-            if (removeMappings != null && removeMappings.Count > 0)
+            if (removeMappings.Count > 0)
             {
                 Remove(removeMappings);
             }
