@@ -686,5 +686,97 @@ namespace NuGet.Configuration.Test
                 .Should().BeEquivalentTo(
                 File.ReadAllText(configPath1).Replace("\r\n", "\n"));
         }
+
+        [Fact]
+        public void SavePackageSourceMappings_NewPatternExistingSource_Add()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
+            PackagePatternItem testPackagePatternItem2 = new PackagePatternItem("newPattern");
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
+            testPackagePatternItems.Add(testPackagePatternItem);
+            testPackagePatternItems.Add(testPackagePatternItem2);
+            PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(testMappingItem);
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+
+            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+            <package pattern=""newPattern"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>";
+
+            result.Replace("\r\n", "\n")
+                .Should().BeEquivalentTo(
+                File.ReadAllText(configPath1).Replace("\r\n", "\n"));
+        }
+
+        [Fact]
+        public void SavePackageSourceMappings_RemovePatternExistingSource_Remove()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+            <package pattern=""newPattern"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
+            testPackagePatternItems.Add(testPackagePatternItem);
+            PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(testMappingItem);
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+
+            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>";
+
+            result.Replace("\r\n", "\n")
+                .Should().BeEquivalentTo(
+                File.ReadAllText(configPath1).Replace("\r\n", "\n"));
+        }
     }
 }
