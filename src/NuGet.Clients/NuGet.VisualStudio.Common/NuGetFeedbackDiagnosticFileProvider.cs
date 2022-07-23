@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Internal.VisualStudio.Shell.Embeddable.Feedback;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
 #nullable enable
@@ -22,7 +21,7 @@ namespace NuGet.VisualStudio.Common
     {
         // Don't crash VS feedback if imports fail. Maybe broken MEF is exactly what the customer is trying to report!
         [Import(AllowDefault = true)]
-        public IVsSolutionManager? SolutionManager { get; set; }
+        public ISolutionManager? SolutionManager { get; set; }
 
         public IReadOnlyCollection<string> GetFiles()
         {
@@ -30,7 +29,7 @@ namespace NuGet.VisualStudio.Common
             using (var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
             using (var zip = new ZipArchive(fileStream, ZipArchiveMode.Create))
             {
-                AddDgSpec(zip);
+                ThreadHelper.JoinableTaskFactory.Run(() => AddDgSpecAsync(zip));
             }
 
             return new List<string>()
@@ -53,11 +52,6 @@ namespace NuGet.VisualStudio.Common
                     return fullPath;
                 }
             }
-        }
-
-        private void AddDgSpec(ZipArchive zip)
-        {
-            ThreadHelper.JoinableTaskFactory.Run(() => AddDgSpecAsync(zip));
         }
 
         private async Task AddDgSpecAsync(ZipArchive zip)
