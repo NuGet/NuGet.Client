@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Sdk.TestFramework;
+using Moq;
 using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.VisualStudio;
@@ -13,12 +13,15 @@ using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(MockedVS.Collection)]
     public class VsCredentialProviderAdapterTests
     {
-        public VsCredentialProviderAdapterTests(GlobalServiceProvider gsp)
+        private Mock<IVsSolutionManager> _solutionManager;
+
+        public VsCredentialProviderAdapterTests()
         {
-            gsp.Reset();
+            _solutionManager = new Mock<IVsSolutionManager>();
+            _solutionManager.SetupGet(sm => sm.VsShutdownToken)
+                .Returns(CancellationToken.None);
         }
 
         private class TestVsCredentialProvider : IVsCredentialProvider
@@ -42,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var provider = new TestVsCredentialProvider(null);
-            var adapter = new VsCredentialProviderAdapter(provider);
+            var adapter = new VsCredentialProviderAdapter(provider, _solutionManager.Object);
 
             // Act
             var result = await adapter.GetAsync(
@@ -65,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             var expected = new NetworkCredential("foo", "bar");
             var provider = new TestVsCredentialProvider(expected);
-            var adapter = new VsCredentialProviderAdapter(provider);
+            var adapter = new VsCredentialProviderAdapter(provider, _solutionManager.Object);
 
             // Act
             var result = await adapter.GetAsync(

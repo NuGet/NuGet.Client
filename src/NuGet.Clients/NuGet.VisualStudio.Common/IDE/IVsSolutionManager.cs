@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -101,5 +102,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Gets the current open solution directory. <see cref="null"/> if the there's no open solution.
         /// </summary>
         Task<string> GetSolutionDirectoryAsync();
+
+        /// <summary>Mockable indirection for <see cref="Microsoft.VisualStudio.Shell.VsShellUtilities.ShutdownToken"/></summary>
+        CancellationToken VsShutdownToken { get; }
     }
 }
