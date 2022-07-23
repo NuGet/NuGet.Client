@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.VisualStudio;
@@ -12,8 +13,14 @@ using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
+    [Collection(MockedVS.Collection)]
     public class VsCredentialProviderAdapterTests
     {
+        public VsCredentialProviderAdapterTests(GlobalServiceProvider gsp)
+        {
+            gsp.Reset();
+        }
+
         private class TestVsCredentialProvider : IVsCredentialProvider
         {
             private readonly ICredentials _testResponse;
