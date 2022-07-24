@@ -458,7 +458,8 @@ function Test-AddBindingRedirectToWebsiteWithNonExistingOutputPath {
 }
 
 function Test-InstallCanPipeToFSharpProjects {
-    param($context)    
+    [SkipTest('https://github.com/NuGet/Home/issues/11982')]
+    param($context)
     # Arrange
     $p = New-FSharpLibrary
     Build-Solution # wait for project nomination
