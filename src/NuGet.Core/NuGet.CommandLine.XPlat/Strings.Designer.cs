@@ -799,6 +799,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Set the report output format..
+        /// </summary>
+        internal static string ListPkg_OutputFormatDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_OutputFormatDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The version of report output..
+        /// </summary>
+        internal static string ListPkg_OutputVersionDescription {
+            get {
+                return ResourceManager.GetString("ListPkg_OutputVersionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A path to a project, solution file or directory..
         /// </summary>
         internal static string ListPkg_PathDescription {

@@ -765,4 +765,10 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>PackageReference for package '{0}' added to '{1}' and PackageVersion added to central package management file '{2}'.</value>
     <comment>0 - The package ID. 1 - Directory.Packages.props file path. 2 - Project file path.</comment>
   </data>
+  <data name="ListPkg_OutputFormatDescription" xml:space="preserve">
+    <value>Set the report output format.</value>
+  </data>
+  <data name="ListPkg_OutputVersionDescription" xml:space="preserve">
+    <value>The version of report output.</value>
+  </data>
 </root>

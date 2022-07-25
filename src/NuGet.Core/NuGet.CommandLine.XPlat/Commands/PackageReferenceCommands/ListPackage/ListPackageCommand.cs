@@ -59,6 +59,16 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_VulnerableDescription,
                     CommandOptionType.NoValue);
 
+                var outputFormat = listpkg.Option(
+                    "--format",
+                    Strings.ListPkg_OutputFormatDescription,
+                    CommandOptionType.SingleValue);
+
+                var outputVersion = listpkg.Option(
+                    "--output-version",
+                    Strings.ListPkg_OutputVersionDescription,
+                    CommandOptionType.SingleValue);
+
                 var includeTransitive = listpkg.Option(
                     "--include-transitive",
                     Strings.ListPkg_TransitiveDescription,
@@ -117,11 +127,15 @@ namespace NuGet.CommandLine.XPlat
                         isDeprecated: deprecatedReport.HasValue(),
                         isVulnerable: vulnerableReport.HasValue());
 
+                    (OutputFormat outputFormatValue, OutputVersion outputVersionValue) = GetOutputType(outputFormat.Value(), outputVersion.Value());
+
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
                         packageSources,
                         framework.Values,
                         reportType,
+                        outputFormatValue,
+                        outputVersionValue,
                         includeTransitive.HasValue(),
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
@@ -156,6 +170,24 @@ namespace NuGet.CommandLine.XPlat
             }
 
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_InvalidOptions));
+        }
+
+        private static (OutputFormat, OutputVersion) GetOutputType(string outputFormatOption, string outputVersionOption)
+        {
+            OutputVersion outputVersion = OutputVersion.V1;
+            OutputFormat outputFormat = OutputFormat.Console;
+
+            if (!string.IsNullOrEmpty(outputFormatOption) && !Enum.TryParse(outputFormatOption, out outputFormat))
+            {
+                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions));
+            }
+
+            if (!string.IsNullOrEmpty(outputVersionOption) && outputVersionOption != "1")
+            {
+                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions));
+            }
+
+            return (outputFormat, outputVersion);
         }
 
         private static void DisplayMessages(ListPackageArgs packageRefArgs)
