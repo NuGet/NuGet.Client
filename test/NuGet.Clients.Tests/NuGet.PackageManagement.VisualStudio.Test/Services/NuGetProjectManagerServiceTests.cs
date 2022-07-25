@@ -1755,6 +1755,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             public string SolutionDirectory => _directory.Path;
 
+            public CancellationToken VsShutdownToken => CancellationToken.None;
+
             public bool IsSolutionOpen => throw new NotImplementedException();
 
             public INuGetProjectContext NuGetProjectContext { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
