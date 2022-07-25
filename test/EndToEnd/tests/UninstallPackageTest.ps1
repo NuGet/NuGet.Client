@@ -120,7 +120,7 @@ function Test-UninstallPackageWithNestedContentFiles {
 }
 
 function Test-SimpleFSharpUninstall {
-    [Skip('https://github.com/NuGet/Home/issues/11982')]
+    [SkipTest('https://github.com/NuGet/Home/issues/11982')]
     param($context)
 
     # Arrange
