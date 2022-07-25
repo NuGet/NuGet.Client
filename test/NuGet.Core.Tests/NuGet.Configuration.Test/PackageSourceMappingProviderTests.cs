@@ -794,17 +794,21 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSourceMapping>
         <clear />        
-        <packageSource key=""testSource"">
-            <package pattern=""pattern1"" />
-        </packageSource>
     </packageSourceMapping>
 </configuration>");
 
+            PackagePatternItem testPackagePatternItem = new PackagePatternItem("pattern1");
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
+            testPackagePatternItems.Add(testPackagePatternItem);
+            PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("testSource", testPackagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(testMappingItem);
 
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath2, configPath1 });
 
             // Act & Assert
             var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
             IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
             packageSourceMappingItems.Should().HaveCount(1);
             var packageSourceMappingSourceItem = packageSourceMappingItems.First();
