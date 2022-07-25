@@ -29,6 +29,7 @@ parameters:
   default: main
 
 # The prefix naming of the OptimizationInputs drop
+# NOTE: fix prefix when ready for production (remove 'TEST')
 - name: optimizationDropPrefix
   type: string
   default: TESTOptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
@@ -50,12 +51,14 @@ stages:
     ##### Optional #####
     name: OptProf_ProfilingWorkflow
     displayName: OptProf Profiling Workflow
-    # NOTE: fix prefix when ready for production (remove 'TEST')
     optOptimizationInputsDropName: ${{parameters.optimizationDropPrefix}}/$(resources.pipeline.ComponentBuildUnderTest.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
     # Remove this parameter if you don't want LKG support
     previousOptimizationInputsDropName: $(PreviousOptimizationInputsDropName)
     testLabPoolName: VS-Platform
     testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
+    variables: 
+    - name: VisualStudio.InstallationUnderTest.Signing
+      value: Test
     ##### Step Hooks #####
     preTestMachineConfigurationStepList:
     - powershell : |
