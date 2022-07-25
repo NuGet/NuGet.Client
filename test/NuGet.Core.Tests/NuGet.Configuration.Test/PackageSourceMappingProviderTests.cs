@@ -485,11 +485,6 @@ namespace NuGet.Configuration.Test
     </packageSourceMapping>
 </configuration>");
 
-            PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
-            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
-            testPackagePatternItems.Add(testPackagePatternItem);
-            PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
-
             List<PackagePatternItem> packagePatternItems = new List<PackagePatternItem>();
             for (int i = 0; i < 3; i++)
             {
@@ -498,7 +493,6 @@ namespace NuGet.Configuration.Test
             }
             PackageSourceMappingSourceItem tempMapping = new PackageSourceMappingSourceItem("nuget.org", packagePatternItems);
             List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
-            tempMappings.Add(testMappingItem);
             tempMappings.Add(tempMapping);
 
             var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
