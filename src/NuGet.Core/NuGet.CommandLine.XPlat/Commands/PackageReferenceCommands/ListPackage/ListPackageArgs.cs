@@ -16,6 +16,8 @@ namespace NuGet.CommandLine.XPlat
         public IEnumerable<PackageSource> PackageSources { get; }
         public IEnumerable<string> Frameworks { get; }
         public ReportType ReportType { get; }
+        public OutputFormat OutputFormat { get; }
+        public OutputVersion OutputVersion { get; }
         public bool IncludeTransitive { get; }
         public bool Prerelease { get; }
         public bool HighestPatch { get; }
@@ -31,6 +33,8 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageSources"> The sources for the packages to check in the case of --outdated </param>
         /// <param name="frameworks"> The user inputed frameworks to look up for their packages </param>
         /// <param name="reportType"> Which report we're producing (e.g. --outdated) </param>
+        /// <param name="outputFormat">The report output format (e.g. console, json)</param>
+        /// <param name="outputVersion">The report output version(e.g. 1)</param>
         /// <param name="includeTransitive"> Bool for --include-transitive present </param>
         /// <param name="prerelease"> Bool for --include-prerelease present </param>
         /// <param name="highestPatch"> Bool for --highest-patch present </param>
@@ -42,6 +46,8 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<PackageSource> packageSources,
             IEnumerable<string> frameworks,
             ReportType reportType,
+            OutputFormat outputFormat,
+            OutputVersion outputVersion,
             bool includeTransitive,
             bool prerelease,
             bool highestPatch,
@@ -53,6 +59,8 @@ namespace NuGet.CommandLine.XPlat
             PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
             ReportType = reportType;
+            OutputFormat = outputFormat;
+            OutputVersion = outputVersion;
             IncludeTransitive = includeTransitive;
             Prerelease = prerelease;
             HighestPatch = highestPatch;

@@ -753,4 +753,10 @@ The search is a case-insensitive string comparison using the supplied value, whi
 Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.</value>
     <comment>0 - The command name. Ex. Push/Delete. 1 - list of server uris</comment>
   </data>
+  <data name="ListPkg_OutputFormatDescription" xml:space="preserve">
+    <value>Set the report output format.</value>
+  </data>
+  <data name="ListPkg_OutputVersionDescription" xml:space="preserve">
+    <value>The version of report output.</value>
+  </data>
 </root>
