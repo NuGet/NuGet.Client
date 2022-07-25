@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using Microsoft.Internal.VisualStudio.Shell.Embeddable.Feedback;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.VisualStudio.Telemetry;
 
@@ -26,16 +28,41 @@ namespace NuGet.VisualStudio.Common
         public IReadOnlyCollection<string> GetFiles()
         {
             string filePath = GetFilePath();
-            using (var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
-            using (var zip = new ZipArchive(fileStream, ZipArchiveMode.Create))
-            {
-                ThreadHelper.JoinableTaskFactory.Run(() => AddDgSpecAsync(zip));
-            }
+
+            // See comments on IFeedbackDiagnosticFileProvider.GetFiles
+            ThreadHelper.JoinableTaskFactory.RunAsync(() => WriteToZip(filePath))
+                .PostOnFailure(nameof(NuGetFeedbackDiagnosticFileProvider), nameof(WriteToZip));
 
             return new List<string>()
             {
                 filePath
             };
+        }
+
+        public async Task WriteToZip(string filePath)
+        {
+            var telemetry = new TelemetryEvent("feedback");
+            telemetry["IsDebuggerAttached"] = Debugger.IsAttached;
+            bool successful = false;
+            Stopwatch sw = Stopwatch.StartNew();
+            try
+            {
+
+                using (var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (var zip = new ZipArchive(fileStream, ZipArchiveMode.Create))
+                {
+                    await AddDgSpecAsync(zip);
+                }
+
+                successful = true;
+            }
+            finally
+            {
+                sw.Stop();
+                telemetry["successful"] = successful;
+                telemetry["duration_ms"] = sw.Elapsed.TotalMilliseconds;
+                TelemetryActivity.EmitTelemetryEvent(telemetry);
+            }
         }
 
         private string GetFilePath()
