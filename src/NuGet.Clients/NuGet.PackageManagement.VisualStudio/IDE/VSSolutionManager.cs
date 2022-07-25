@@ -331,6 +331,8 @@ namespace NuGet.PackageManagement.VisualStudio
             return false;
         }
 
+        public CancellationToken VsShutdownToken => VsShellUtilities.ShutdownToken;
+
         /// <summary>
         /// IsSolutionOpen is true, if the dte solution is open
         /// and is saved as required

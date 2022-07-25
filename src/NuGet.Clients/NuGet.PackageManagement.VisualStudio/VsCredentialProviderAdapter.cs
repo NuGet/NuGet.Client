@@ -5,7 +5,6 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.Credentials;
@@ -20,15 +19,12 @@ namespace NuGet.PackageManagement.VisualStudio
     public class VsCredentialProviderAdapter : ICredentialProvider
     {
         private readonly IVsCredentialProvider _provider;
+        private readonly IVsSolutionManager _solutionManager;
 
-        public VsCredentialProviderAdapter(IVsCredentialProvider provider)
+        public VsCredentialProviderAdapter(IVsCredentialProvider provider, IVsSolutionManager solutionManager)
         {
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-
-            _provider = provider;
+            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
         }
 
         public string Id => _provider.GetType().FullName;
@@ -59,7 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 isProxyRequest: type == CredentialRequestType.Proxy,
                 isRetry: isRetry,
                 nonInteractive: nonInteractive,
-                cancellationToken: VsShellUtilities.ShutdownToken);
+                cancellationToken: _solutionManager.VsShutdownToken);
 
             // Since the above task will only cancel when VS is shutting down, we can abandon the task when our own cancellation token
             // requests cancellation and we're not in interactive mode. This lets us free resources (like concurrent requests per host limits)

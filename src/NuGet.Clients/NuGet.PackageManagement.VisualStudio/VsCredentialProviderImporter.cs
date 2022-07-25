@@ -57,6 +57,9 @@ namespace NuGet.PackageManagement.VisualStudio
         [ImportMany(typeof(IVsCredentialProvider))]
         public IEnumerable<Lazy<IVsCredentialProvider>> ImportedProviders { get; set; }
 
+        [Import]
+        public IVsSolutionManager SolutionManager { get; set; }
+
         /// <summary>
         /// Plugin providers are entered loaded the same way as other nuget extensions,
         /// matching any extension named CredentialProvider.*.exe.
@@ -88,7 +91,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     try
                     {
                         var credentialProvider = credentialProviderFactory.Value;
-                        importedProviders.Add(new VsCredentialProviderAdapter(credentialProvider));
+                        importedProviders.Add(new VsCredentialProviderAdapter(credentialProvider, SolutionManager));
                     }
                     catch (Exception exception)
                     {
