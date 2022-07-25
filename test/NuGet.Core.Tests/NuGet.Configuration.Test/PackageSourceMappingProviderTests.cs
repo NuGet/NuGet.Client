@@ -772,5 +772,45 @@ namespace NuGet.Configuration.Test
                 .Should().BeEquivalentTo(
                 File.ReadAllText(configPath1).Replace("\r\n", "\n"));
         }
+
+        [Fact]
+        public void SavePackageSourceMappings_WithTwoConfigs_UseCorrectMapping()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <packageSource key=""nuget.org"">
+            <package pattern=""pattern1"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            using var mockBaseDirectory2 = TestDirectory.Create();
+            var configPath2 = Path.Combine(mockBaseDirectory2, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath2, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />        
+        <packageSource key=""testSource"">
+            <package pattern=""pattern1"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath2, configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            packageSourceMappingItems.Should().HaveCount(1);
+            var packageSourceMappingSourceItem = packageSourceMappingItems.First();
+            packageSourceMappingSourceItem.Key.Should().Be("testSource");
+            packageSourceMappingSourceItem.Patterns.Should().HaveCount(1);
+            packageSourceMappingSourceItem.Patterns.First().Pattern.Should().Be("pattern1");
+        }
     }
 }
