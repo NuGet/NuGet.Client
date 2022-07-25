@@ -60,7 +60,7 @@ stages:
     preTestMachineConfigurationStepList:
     - powershell : |
         try {
-          $branchName = $(resources.pipeline.ComponentBuildUnderTest.sourceBranch)
+          $branchName = "$(resources.pipeline.ComponentBuildUnderTest.sourceBranch)"
           $branchName = $branchName.Replace('refs/heads/', '')
 
           Write-Host "SourceBranchName: $branchName"
