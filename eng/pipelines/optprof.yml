@@ -45,7 +45,7 @@ stages:
 - template: \templates\stages\visual-studio\single-runsettings.yml@DartLabOptProfTemplates
   parameters:
     ##### Required #####
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings
+    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranchName)/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings
     visualStudioBootstrapperURI: $(VisualStudio.InstallationUnderTest.BootstrapperURL)
     ##### Optional #####
     name: OptProf_ProfilingWorkflow
@@ -58,6 +58,20 @@ stages:
     testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
     ##### Step Hooks #####
     preTestMachineConfigurationStepList:
+    - powershell : |
+        try {
+          $branchName = $(resources.pipeline.ComponentBuildUnderTest.sourceBranch)
+          $branchName = $branchName.Replace('refs/heads/', '')
+
+          Write-Host "SourceBranchName: $branchName"
+          Set-AzurePipelinesVariable 'SourceBranchName' $branchName
+        }
+        catch {
+          Write-Host $_
+          Write-Error "Failed to set SourceBranchName pipeline variable"
+          throw
+        }
+      displayName: Set SourceBranchName
     - download: ComponentBuildUnderTest
       artifact: MicroBuildOutputs
       patterns: '**\BootstrapperInfo.json'
@@ -88,7 +102,7 @@ stages:
           $commitID = $json.CommitID
           
           Write-Host "PreviousOptimizationInputsDropName: $dropname"
-          Set-AzurePipelinesVariable 'PreviousOptimizationInputsDropName' $dropname    
+          Set-AzurePipelinesVariable 'PreviousOptimizationInputsDropName' $dropname
         }
         catch {
           Write-Host $_
