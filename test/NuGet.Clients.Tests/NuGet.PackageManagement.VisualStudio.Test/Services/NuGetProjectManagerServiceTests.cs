@@ -35,6 +35,7 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using StreamJsonRpc;
 using Test.Utility;
 using Xunit;
