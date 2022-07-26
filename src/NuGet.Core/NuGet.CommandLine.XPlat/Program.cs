@@ -68,7 +68,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             CommandLineApplication app = InitializeApp(args, log);
-            Command newCmd = InitializeSystemCommandLineApp(args, log);
+            Command command = InitializeSystemCommandLineApp(args, log);
 
             // Remove the correct item in array for "package" commands. Only do this when "add package", "remove package", etc... are being run.
             if (app.Name == DotnetPackageAppName)
@@ -97,14 +97,14 @@ namespace NuGet.CommandLine.XPlat
 
             try
             {
-                ParseResult result = newCmd.Parse(args);
+                ParseResult result = command.Parse(args);
                 if (result.Errors.Any())
                 {
                     exitCode = app.Execute(args);
                 }
                 else
                 {
-                    exitCode = newCmd.Invoke(args);
+                    exitCode = command.Invoke(args);
                 }
             }
             catch (Exception e)
@@ -186,10 +186,7 @@ namespace NuGet.CommandLine.XPlat
         {
             var app = new RootCommand();
 
-            if (!args.Any() || args[0] != "package")
-            {
-                Commands.CommandParsers.Register(app, GenerateLoggerHidePrefix(log));
-            }
+            Commands.CommandParsers.Register(app, GenerateLoggerHidePrefix(log));
 
             return app;
         }

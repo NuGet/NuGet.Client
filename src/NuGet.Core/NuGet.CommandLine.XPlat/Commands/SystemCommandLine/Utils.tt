@@ -56,6 +56,18 @@
         return n.Name != XName.Get("Noun") && n.Name != XName.Get("Example") && n.Name != XName.Get("SeeAlso");
     }
 
+    string getCommandHelpString(XElement cmd, string fallbackStringResource)
+    {
+        string help = cmd.Attribute(XName.Get("Help", ""))?.Value;
+
+        if (help != null)
+        {
+            return help;
+        }
+
+        return fallbackStringResource;
+    }
+
 public static class StringUtilities
 {
     public static string InitCaps(string input)
@@ -127,7 +139,7 @@ public static class StringUtilities
 
     public static string GetFormalName(string name)
     {
-        return InitCaps(name).Replace("-", "");
+        return InitCaps(name)?.Replace("-", "");
     }
 
     public static string GetParamName(string name)
@@ -204,7 +216,7 @@ public class OptionData
     public string BaseClass { get; set; }
     public string OptionType { get; set; }
     public string Name { get; set; }
-    public string InitCapsName { get { return StringUtilities.InitCaps(Name).Replace("-", ""); } }
+    public string InitCapsName { get { return StringUtilities.GetFormalName(Name); } }
     public string LongName { get; set; }
     public string LongNameOrName { get { return LongName != null ? LongName : Name; }}
     public string FormalName { get { return StringUtilities.GetFormalName(Name); } }

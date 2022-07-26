@@ -26,18 +26,6 @@ using NuGet.Common;
 namespace NuGet.CommandLine.XPlat.Commands
 {
 <#
-    string getCommandHelpString(XElement cmd, string fallbackStringResource)
-    {
-        string help = cmd.Attribute(XName.Get("Help", ""))?.Value;
-
-        if (help != null)
-        {
-            return help;
-        }
-
-        return fallbackStringResource;
-    }
-
 // ********************** Verb-Parser Template
 var allElements = commands.Descendants(XName.Get("Verb","")).Concat(commands.Descendants(XName.Get("Command", "")));
 foreach (XElement verb in allElements)
@@ -61,12 +49,12 @@ foreach (XElement verb in allElements)
     foreach (XElement noun in verb.Descendants(XName.Get("Noun")))
     {
         string nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
-        string nounFormalName = InitCaps(nounName).Replace("-", "");
-        string nounFormalNameVar = nounFormalName + "Cmd";
+        string nounFormalName = InitCaps(nounName)?.Replace("-", "");
         if (nounFormalName == null)
         {
             throw new ArgumentException("nounFormalName cannot be null");
         }
+        string nounFormalNameVar = nounFormalName + "Cmd";
 #>
 
             // noun sub-command: <#= commandName #> <#= nounName #>
