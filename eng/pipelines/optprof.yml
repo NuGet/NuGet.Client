@@ -56,9 +56,7 @@ stages:
     previousOptimizationInputsDropName: $(PreviousOptimizationInputsDropName)
     testLabPoolName: VS-Platform
     testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
-    variables: 
-    - name: VisualStudio.InstallationUnderTest.Signing
-      value: Test
+    visualStudioSigning: Test
     ##### Step Hooks #####
     preTestMachineConfigurationStepList:
     - powershell : |
