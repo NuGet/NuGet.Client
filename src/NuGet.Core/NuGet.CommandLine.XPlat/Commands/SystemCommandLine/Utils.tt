@@ -1,0 +1,454 @@
+<#@ import namespace="System.Text" #>
+<#+
+    string InitCaps(string input)
+    {
+        return StringUtilities.InitCaps(input);
+    }
+
+    bool IsArgument(string type)
+    {
+        return type == "Argument";
+    }
+
+    bool IsOption(string type)
+    {
+        return type == "Option";
+    }
+
+    bool IsArgumentOrOption(string type)
+    {
+        return IsArgument(type) || IsOption(type);
+    }
+
+    string GetClrType(XElement option)
+    {
+        return StringUtilities.GetClrType(option);
+    }
+
+    string GetProperty(XElement element)
+    {
+        switch (element.Name.LocalName)
+        {
+            case "SingleValueOption":
+                return "Option";
+            case "SwitchOption":
+                return "Option";
+            case "Value":
+                return "Option";
+            case "Argument":
+                return "Argument";
+            case "Example":
+                return "Example";
+            case "SeeAlso":
+                return "SeeAlso";
+            default:
+                throw new ArgumentException("Unknown Property Type " + element.Name.LocalName);
+        }
+    }
+
+    string GetOptionType(XElement element)
+    {
+        return StringUtilities.GetOptionType(element);
+    }
+
+    bool isValidOption(XElement n)
+    {
+        return n.Name != XName.Get("Noun") && n.Name != XName.Get("Example") && n.Name != XName.Get("SeeAlso");
+    }
+
+    string getCommandHelpString(XElement cmd, string fallbackStringResource)
+    {
+        string help = cmd.Attribute(XName.Get("Help", ""))?.Value;
+
+        if (help != null)
+        {
+            return help;
+        }
+
+        return fallbackStringResource;
+    }
+
+public static class StringUtilities
+{
+    public static string InitCaps(string input)
+    {
+        if (input == null)
+        {
+            return null;
+        }
+
+        var textInfo = CultureInfo.InvariantCulture.TextInfo;
+        var output = textInfo.ToTitleCase(input);
+
+        return output;
+    }
+
+    public static string GetClrType(XElement option)
+    {
+        string opt = GetOptionType(option);
+        string optionType = option.Attribute(XName.Get("Type", ""))?.Value;
+
+        if (optionType != null)
+        {
+            return optionType;
+        }
+
+        switch (GetOptionType(option))
+        {
+            case "MultipleValue":
+                return "string";
+            case "SingleValue":
+                return "string";
+            case "NoValue":
+                return "bool";
+            case "Value":
+                if (string.IsNullOrEmpty(optionType))
+                {
+                    return "string";
+                }
+                return optionType;
+            default:
+                return "object";
+        }
+    }
+
+    public static string GetOptionType(XElement element)
+    {
+        string arity = element.Attribute(XName.Get("Arity", ""))?.Value;
+        if (arity != null)
+        {
+            return arity;
+        }
+
+        switch (element.Name.LocalName)
+        {
+            case "MultipleValueOption":
+                return "MultipleValue";
+            case "SingleValueOption":
+                return "SingleValue";
+            case "SwitchOption":
+                return "NoValue";
+            case "Value":
+                return "Value";
+            case "Argument":
+                return "Value";
+            default:
+                throw new ArgumentException("Unknown Option Type " + element.Name.LocalName);
+        }
+    }
+
+    public static string GetFormalName(string name)
+    {
+        return InitCaps(name)?.Replace("-", "");
+    }
+
+    public static string GetParamName(string name)
+    {
+        if (name == null)
+        {
+            return null;
+        }
+        if (name == "")
+        {
+            return "";
+        }
+
+        string formal = GetFormalName(name);
+        var textInfo = CultureInfo.InvariantCulture.TextInfo;
+
+        if (formal.Length == 1)
+        {
+            return textInfo.ToLower(formal.Substring(0, 1));
+        }
+
+        return textInfo.ToLower(formal.Substring(0, 1)) + formal.Substring(1);
+    }
+}
+
+public class OptionData
+{
+    public OptionData(XElement element)
+    {
+        string elementName = element.Name.LocalName;
+        Name = element.Attribute(XName.Get("Name", ""))?.Value;
+        LongName = element.Attribute(XName.Get("LongName", ""))?.Value;
+        Help = element.Attribute(XName.Get("Help", ""))?.Value;
+        if (Help != null) { Help = "Strings." + Help; }
+        Shortcut = element.Attribute(XName.Get("Shortcut",""))?.Value;
+        IsRequired = element.Attribute(XName.Get("Required", ""))?.Value == "true";
+        DataType = StringUtilities.GetClrType(element);
+
+        string optionType = StringUtilities.GetOptionType(element);
+
+        switch (elementName)
+        {
+            case "MultipleValueOption":
+                BaseClass = "Option";
+                OptionType = "ArgumentArity.OneOrMore";
+                break;
+            case "SingleValueOption":
+                BaseClass = "Option";
+                OptionType = "ArgumentArity.ZeroOrOne";
+                break;
+            case "SwitchOption":
+                BaseClass = "Option";
+                OptionType = "ArgumentArity.Zero";
+                break;
+            case "Value":
+                BaseClass = "Option";
+                OptionType = "ArgumentArity.ExactlyOne";
+                break;
+            case "Argument":
+                BaseClass = "Argument";
+                OptionType =  optionType != "Value" ? optionType : "ArgumentArity.ExactlyOne";
+                break;
+            case "Example":
+                BaseClass = "Example";
+                break;
+            case "SeeAlso":
+                BaseClass = "SeeAlso";
+                break;
+            default:
+                throw new Exception("Unknown Element Type " + element.Name.LocalName);
+        }
+    }
+
+    public string BaseClass { get; set; }
+    public string OptionType { get; set; }
+    public string Name { get; set; }
+    public string InitCapsName { get { return StringUtilities.GetFormalName(Name); } }
+    public string LongName { get; set; }
+    public string LongNameOrName { get { return LongName != null ? LongName : Name; }}
+    public string FormalName { get { return StringUtilities.GetFormalName(Name); } }
+    public string Shortcut { get; set; }
+    public string Help { get; set; }
+    public bool IsRequired { get; set; }
+    public string ShortcutString { get { return HasShortcut? ShortcutName + "|" + FullName : FullName; } }
+    public bool HasShortcut { get { return Shortcut != null; } }
+    public string ShortcutName { get { return "-" + Shortcut; } }
+    public string FullName { get { return "--" + Name.ToLower(); } }
+    public string DataType { get; set; }
+}
+
+    string getSeparator(bool isFirst)
+    {
+        if (isFirst)
+        {
+            return "  ";
+        }
+        return ", ";
+    }
+
+    string Indent(int spaces)
+    {
+        return "".PadLeft(spaces);
+    }
+
+    string GenerateOptionNameVar(OptionData data)
+    {
+        return data.Name + "_" + data.BaseClass;
+    }
+
+    void GenerateAddOptionOrArgument(XElement parentNode, string commandVarName, int indent = 4)
+    {
+        foreach (XElement option in parentNode.Elements())
+        {
+            var optionXName = option.Name;
+            if (!isValidOption(option))
+            {
+                continue;
+            }
+
+            var data = new OptionData(option);
+            string optionNameVar =  GenerateOptionNameVar(data);
+            if (data.BaseClass == "Argument")
+            {
+                // Generate Argument
+#>
+<#= Indent(indent) #>var <#= optionNameVar #> = new Argument<<#= data.DataType #>>(name: "<#= data.LongNameOrName #>", description: <#= data.Help #>)
+<#= Indent(indent) #>{
+<#= Indent(indent) #>    Arity = <#= data.OptionType #>,
+<#= Indent(indent) #>};
+<#+
+                // End Generate argument
+            }
+            else if (data.BaseClass == "Option")
+            {
+                // Generate Option
+                if (data.HasShortcut)
+                {
+#>
+<#= Indent(indent) #>var <#= optionNameVar #> = new Option<<#= data.DataType #>>(aliases: new[] { "<#= data.ShortcutName #>", "<#= data.FullName #>" }, description: <#= data.Help #>);
+<#+
+                }
+                else
+                {
+#>
+<#= Indent(indent) #>var <#= optionNameVar #> = new Option<<#= data.DataType #>>(name: "<#= data.FullName #>", description: <#= data.Help #>)
+<#+
+                }
+#>
+<#= Indent(indent) #>{
+<#= Indent(indent) #>    Arity = <#= data.OptionType #>,
+<#= Indent(indent) #>};
+<#+
+                // End Generate option
+            }
+#>
+<#= Indent(indent) #><#= commandVarName #>.Add(<#= optionNameVar #>);
+<#+
+        }
+    }
+
+    void GenerateHandlerArguments(XElement optionsNode, int indent = 4)
+    {
+        // Create paramethers for command handler
+        bool isFirst = true;
+        var paramEnumerator = optionsNode.Elements().GetEnumerator();
+        while (paramEnumerator.MoveNext())
+        {
+            XElement option = paramEnumerator.Current;
+            if (!isValidOption(option))
+            {
+                continue;
+            }
+            var data = new OptionData(option);
+#>
+<#= Indent(indent) #><#= getSeparator(isFirst) #><#= StringUtilities.GetParamName(data.Name) #>
+<#+
+            isFirst = false;
+        }
+    }
+
+    string GenerateCommandHandlerFunctionArgs(XElement optionsNode)
+    {
+        var sb = new StringBuilder();
+        var paramEnumerator = optionsNode.Elements().GetEnumerator();
+        while (paramEnumerator.MoveNext())
+        {
+            XElement option = paramEnumerator.Current;
+            if (!isValidOption(option))
+            {
+                continue;
+            }
+            var data = new OptionData(option);
+
+            sb.Append($", {GenerateOptionNameVar(data)}");
+        }
+
+        return sb.ToString();
+    }
+
+    void GenerateCommandHandler(string commandNameVar, string verbNounPrefix, XElement noun, int indent = 4)
+    {
+#>
+<#= Indent(indent) #>// Create handler delegate handler for <#= commandNameVar #>
+<#= Indent(indent) #><#= commandNameVar #>.SetHandler((
+<#+
+        GenerateHandlerArguments(noun, indent + 4);
+#>
+<#= Indent(indent) #>) =>
+<#= Indent(indent) #>{
+<#= Indent(indent) #>    var args = new <#= verbNounPrefix #>Args()
+<#= Indent(indent) #>    {
+<#+
+        // Generate option arg assignment
+        foreach (XElement option in noun.Elements())
+        {
+            if (!isValidOption(option))
+            {
+                continue;
+            }
+
+            var data = new OptionData(option);
+#>
+<#= Indent(indent) #>        <#= data.FormalName #> = <#= StringUtilities.GetParamName(data.Name) #>,
+<#+
+        } // end foreach option arg assignment
+#>
+<#= Indent(indent) #>    }; // end of args assignment
+
+<#+
+        // Generate Required Argument/Options validation code
+        foreach (XElement requiredArg in noun.Elements())
+        {
+            if (!isValidOption(requiredArg))
+            {
+                continue;
+            }
+            var optionData = new OptionData(requiredArg);
+            if (optionData.IsRequired)
+            {
+#>
+<#= Indent(indent) #>    if (args.<#= optionData.FormalName #> == null)
+<#= Indent(indent) #>    {
+<#= Indent(indent) #>        throw new CommandException("'<#= optionData.FormalName #>' argument is missing but required.");
+<#= Indent(indent) #>    }
+<#+
+            }
+        } // end foreach of required arguments
+#>
+<#= Indent(indent) #>    <#= verbNounPrefix #>Runner.Run(args, getLogger);
+<#= Indent(indent) #>}<#= GenerateCommandHandlerFunctionArgs(noun) #>); // End handler of <#= commandNameVar #>
+<#+
+    } // end method GenerateCommandHandler
+
+
+    void GenerateArgsClass(string className, XElement nodeMembers, string classVisibility = "public", int indent = 4)
+    {
+        PushIndent(Indent(indent));
+        WriteLine($"{classVisibility} partial class {className}");
+        WriteLine("{");
+        PushIndent("    ");
+        foreach (XElement option in nodeMembers.Elements())
+        {
+            if (IsArgumentOrOption(GetProperty(option)))
+            {
+                string optionName = option.Attribute(XName.Get("Name", ""))?.Value;
+                string optionFormalName = StringUtilities.GetFormalName(optionName);
+                WriteLine($"public {GetClrType(option)} {optionFormalName} {{ get; set; }}");
+            }
+        }
+        PopIndent();
+        WriteLine("}");
+        PopIndent();
+        WriteLine("");
+    } // end method GenerateArgsClass
+
+
+    string GenerateTypeParams(XElement optionsNode, int indent = 4)
+    {
+        bool isFirst = true;
+        var paramEnumerator = optionsNode.Elements().GetEnumerator();
+        string arrayDelim;
+        var sb = new StringBuilder();
+        while (paramEnumerator.MoveNext())
+        {
+            XElement option = paramEnumerator.Current;
+            if (!isValidOption(option))
+            {
+                continue;
+            }
+            var data = new OptionData(option);
+            arrayDelim = data.OptionType == "ArgumentArity.OneOrMore" || data.OptionType == "ArgumentArity.ZeroOrMore" ? "[]" : "";
+            sb.Append($"{getSeparator(isFirst)}{data.DataType}{arrayDelim}");
+            isFirst = false;
+        }
+
+        return sb.ToString();
+    }
+
+    bool GenerateSetCustomHandler(string commandVarName, XElement node, int indent = 4)
+    {
+        PushIndent(Indent(indent));
+        string customHandler = node.Attribute(XName.Get("Handler", ""))?.Value;
+        bool hasCustomHandler = !string.IsNullOrEmpty(customHandler);
+        if (hasCustomHandler)
+        {
+            WriteLine($"{commandVarName}.SetHandler({customHandler});");
+        }
+        PopIndent();
+
+        return hasCustomHandler;
+    } // GenerateSetCustomHandler
+#>

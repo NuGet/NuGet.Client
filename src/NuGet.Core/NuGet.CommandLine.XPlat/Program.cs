@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -65,7 +67,8 @@ namespace NuGet.CommandLine.XPlat
                 CultureUtility.DisableLocalization();
             }
 
-            var app = InitializeApp(args, log);
+            CommandLineApplication app = InitializeApp(args, log);
+            Command command = InitializeSystemCommandLineApp(args, log);
 
             // Remove the correct item in array for "package" commands. Only do this when "add package", "remove package", etc... are being run.
             if (app.Name == DotnetPackageAppName)
@@ -94,7 +97,15 @@ namespace NuGet.CommandLine.XPlat
 
             try
             {
-                exitCode = app.Execute(args);
+                ParseResult result = command.Parse(args);
+                if (result.Errors.Any())
+                {
+                    exitCode = app.Execute(args);
+                }
+                else
+                {
+                    exitCode = command.Invoke(args);
+                }
             }
             catch (Exception e)
             {
@@ -162,15 +173,28 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
-
-        private static CommandLineApplication InitializeApp(string[] args, CommandOutputLogger log)
+        private static Func<ILogger> GenerateLoggerHidePrefix(CommandOutputLogger log)
         {
-            // Many commands don't want prefixes output. Use this func instead of () => log to set the HidePrefix property first.
-            Func<ILogger> getHidePrefixLogger = () =>
+            return () =>
             {
                 log.HidePrefixForInfoAndMinimal = true;
                 return log;
             };
+        }
+
+        private static Command InitializeSystemCommandLineApp(string[] args, CommandOutputLogger log)
+        {
+            var app = new RootCommand();
+
+            Commands.CommandParsers.Register(app, GenerateLoggerHidePrefix(log));
+
+            return app;
+        }
+
+        private static CommandLineApplication InitializeApp(string[] args, CommandOutputLogger log)
+        {
+            // Many commands don't want prefixes output. Use this func instead of () => log to set the HidePrefix property first.
+            Func<ILogger> getHidePrefixLogger = GenerateLoggerHidePrefix(log);
 
             // Allow commands to set the NuGet log level
             Action<LogLevel> setLogLevel = (logLevel) => log.VerbosityLevel = logLevel;

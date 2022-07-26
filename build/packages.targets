@@ -3,6 +3,7 @@
         <MicrosoftBuildPackageVersion>16.8.0</MicrosoftBuildPackageVersion>
         <NewtonsoftJsonPackageVersion Condition="$(NewtonsoftJsonPackageVersion) == ''">13.0.1</NewtonsoftJsonPackageVersion>
         <MicrosoftWebXdtPackageVersion Condition="'$(MicrosoftWebXdtPackageVersion)' == ''">3.0.0</MicrosoftWebXdtPackageVersion>
+        <SystemCommandLinePackageVersion Condition="$(SystemCommandLinePackageVersion) == ''">2.0.0-beta4.22272.1</SystemCommandLinePackageVersion>
         <SystemComponentModelCompositionPackageVersion Condition="'$(SystemComponentModelCompositionPackageVersion)' == ''">4.5.0</SystemComponentModelCompositionPackageVersion>
         <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
         <VSFrameworkVersion>17.1.0-preview-2-31918-073</VSFrameworkVersion>
@@ -49,6 +50,7 @@
         <PackageReference Update="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
         <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
         <PackageReference Update="SharpZipLib" Version="1.3.3" />
+        <PackageReference Update="System.CommandLine" Version="$(SystemCommandLinePackageVersion)" />
         <PackageReference Update="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionPackageVersion)" />
         <!--
           The Microsoft.VisualStudio.SDK metapackage brings in System.Threading.Tasks.Dataflow 4.11.1 (assembly version 4.9.5.0).
