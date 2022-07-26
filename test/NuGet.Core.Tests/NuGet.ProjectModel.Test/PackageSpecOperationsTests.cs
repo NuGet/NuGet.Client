@@ -254,6 +254,102 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void AddOrUpdateDependency_WithCentralPackageManagementEnabled_AddsDependency()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("NuGet.Versioning", new NuGetVersion("1.0.0"));
+
+            var targetFrameworkInformation = new TargetFrameworkInformation
+            {
+                FrameworkName = FrameworkConstants.CommonFrameworks.Net45
+            };
+
+            var spec = new PackageSpec(new[] { targetFrameworkInformation })
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    CentralPackageVersionsEnabled = true
+                }
+            };
+
+            // Act
+            PackageSpecOperations.AddOrUpdateDependency(
+                spec,
+                packageIdentity,
+                new[] { targetFrameworkInformation.FrameworkName });
+
+            // Assert
+            Assert.Equal(1, spec.TargetFrameworks[0].Dependencies.Count);
+            Assert.Equal(packageIdentity.Id, spec.TargetFrameworks[0].Dependencies[0].LibraryRange.Name);
+            Assert.Equal(packageIdentity.Version, spec.TargetFrameworks[0].Dependencies[0].LibraryRange.VersionRange.MinVersion);
+            Assert.True(spec.TargetFrameworks[0].Dependencies[0].VersionCentrallyManaged);
+
+            Assert.True(spec.TargetFrameworks[0].CentralPackageVersions.ContainsKey(packageIdentity.Id));
+            Assert.Equal(packageIdentity.Version, spec.TargetFrameworks[0].CentralPackageVersions[packageIdentity.Id].VersionRange.MinVersion);
+        }
+
+        [Fact]
+        public void AddOrUpdateDependency_WithCentralPackageManagementEnabled_UpdatesDependency()
+        {
+            // Arrange
+            var packageId = "NuGet.Versioning";
+            var oldVersion = new NuGetVersion("1.0.0");
+            var newVersion = new NuGetVersion("2.0.0");
+
+            var frameworkA = new TargetFrameworkInformation
+            {
+                FrameworkName = FrameworkConstants.CommonFrameworks.Net45
+            };
+
+            var ld = new LibraryDependency
+            {
+                LibraryRange = new LibraryRange(packageId, new VersionRange(oldVersion), LibraryDependencyTarget.Package),
+                VersionCentrallyManaged = true
+            };
+
+            var frameworkB = new TargetFrameworkInformation
+            {
+                FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard16,
+                Dependencies = new List<LibraryDependency>() { ld },
+            };
+
+            frameworkB.CentralPackageVersions[ld.Name] = new CentralPackageVersion(ld.Name, ld.LibraryRange.VersionRange);
+
+            var spec = new PackageSpec(new[] { frameworkA, frameworkB })
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    CentralPackageVersionsEnabled = true
+                }
+            };
+            var identity = new PackageIdentity(packageId, newVersion);
+
+            //Preconditions
+            Assert.Equal(
+                oldVersion,
+                spec.TargetFrameworks[1].Dependencies[0].LibraryRange.VersionRange.MinVersion);
+
+            // Act
+            PackageSpecOperations.AddOrUpdateDependency(
+                spec,
+                identity,
+                new[] { frameworkB.FrameworkName });
+
+            // Assert
+            Assert.Empty(spec.Dependencies);
+
+            Assert.Empty(spec.TargetFrameworks[0].Dependencies);
+
+            Assert.Equal(1, spec.TargetFrameworks[1].Dependencies.Count);
+            Assert.Equal(identity.Id, spec.TargetFrameworks[1].Dependencies[0].LibraryRange.Name);
+            Assert.Equal(identity.Version, spec.TargetFrameworks[1].Dependencies[0].LibraryRange.VersionRange.MinVersion);
+            Assert.True(spec.TargetFrameworks[1].Dependencies[0].VersionCentrallyManaged);
+
+            Assert.True(spec.TargetFrameworks[1].CentralPackageVersions.ContainsKey(identity.Id));
+            Assert.Equal(identity.Version, spec.TargetFrameworks[1].CentralPackageVersions[identity.Id].VersionRange.MinVersion);
+        }
+
+        [Fact]
         public void RemoveDependency_RemovesFromAllFrameworkLists()
         {
             // Arrange

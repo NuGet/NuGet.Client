@@ -14,7 +14,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    public class SignCommandRunnerTests : IClassFixture<CertificatesFixture>
+    public class SignCommandRunnerTests : IClassFixture<CertificatesFixture>, IClassFixture<X509TrustTestFixture>
     {
         private readonly CertificatesFixture _fixture;
 

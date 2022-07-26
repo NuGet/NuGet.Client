@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
+using EnvDTE;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 
@@ -47,7 +49,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         throw new InvalidOperationException();
                     }
 
-                    var dte = await ServiceLocator.GetInstanceAsync<EnvDTE.DTE>();
+                    var dte = await ServiceLocator.GetGlobalServiceAsync<SDTE, DTE>();
                     dte.Solution.Remove(project.Project);
                 }
             });

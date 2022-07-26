@@ -42,8 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
-            PackageIdentity[] feedItems = _installedPackages.GetLatest();
-            IPackageSearchMetadata[] searchItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(feedItems, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            IPackageSearchMetadata[] searchItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(_installedPackages.GetLatest(), searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
 
             return CreateResult(searchItems);
         }

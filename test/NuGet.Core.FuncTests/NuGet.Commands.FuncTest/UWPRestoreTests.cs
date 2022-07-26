@@ -18,6 +18,7 @@ using Xunit;
 
 namespace NuGet.Commands.FuncTest
 {
+    [Collection(TestCollection.Name)]
     public class UWPRestoreTests
     {
         // Verify that a v1 lock file can be parsed without crashing.

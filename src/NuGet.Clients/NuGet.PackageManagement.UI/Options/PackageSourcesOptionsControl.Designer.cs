@@ -43,17 +43,24 @@ namespace NuGet.Options
             this.NewPackageSource = new System.Windows.Forms.TextBox();
             this.NewPackageNameLabel = new System.Windows.Forms.Label();
             this.NewPackageName = new System.Windows.Forms.TextBox();
-            this.PackageSourcesListBox = new NuGet.Options.PackageSourceCheckedListBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.addButton = new System.Windows.Forms.Button();
+            this.PackageSourcesListBox = new NuGet.Options.PackageSourceCheckedListBox();
             this.MachineWideSourcesLabel = new System.Windows.Forms.Label();
             this.MachineWidePackageSourcesListBox = new NuGet.Options.PackageSourceCheckedListBox();
+            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
+            this.HttpWarning = new System.Windows.Forms.Label();
+            this.HttpWarningIcon = new System.Windows.Forms.PictureBox();
             this.images32px = new System.Windows.Forms.ImageList(this.components);
             this.images64px = new System.Windows.Forms.ImageList(this.components);
             this.PackageSourcesContextMenu.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
+            this.tableLayoutPanel3.SuspendLayout();
+            this.tableLayoutPanel4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.HttpWarningIcon)).BeginInit();
             this.SuspendLayout();
             // 
             // HeaderLabel
@@ -63,6 +70,7 @@ namespace NuGet.Options
             // 
             // PackageSourcesContextMenu
             // 
+            this.PackageSourcesContextMenu.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.PackageSourcesContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.CopyPackageSourceStripMenuItem});
             this.PackageSourcesContextMenu.Name = "contextMenuStrip1";
@@ -114,6 +122,7 @@ namespace NuGet.Options
             // 
             resources.ApplyResources(this.NewPackageSource, "NewPackageSource");
             this.NewPackageSource.Name = "NewPackageSource";
+            this.NewPackageSource.TextChanged += new System.EventHandler(this.NewPackageSource_TextChanged);
             // 
             // NewPackageNameLabel
             // 
@@ -124,19 +133,6 @@ namespace NuGet.Options
             // 
             resources.ApplyResources(this.NewPackageName, "NewPackageName");
             this.NewPackageName.Name = "NewPackageName";
-            // 
-            // PackageSourcesListBox
-            // 
-            resources.ApplyResources(this.PackageSourcesListBox, "PackageSourcesListBox");
-            this.PackageSourcesListBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.PackageSourcesListBox.CheckBoxSize = new System.Drawing.Size(0, 0);
-            this.tableLayoutPanel1.SetColumnSpan(this.PackageSourcesListBox, 4);
-            this.PackageSourcesListBox.ContextMenuStrip = this.PackageSourcesContextMenu;
-            this.PackageSourcesListBox.FormattingEnabled = true;
-            this.PackageSourcesListBox.Name = "PackageSourcesListBox";
-            this.PackageSourcesListBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.PackageSourcesListBox_KeyUp);
-            this.PackageSourcesListBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PackageSourcesListBox_MouseMove);
-            this.PackageSourcesListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.PackageSourcesListBox_ItemCheck);
             // 
             // tableLayoutPanel1
             // 
@@ -151,6 +147,7 @@ namespace NuGet.Options
             this.tableLayoutPanel1.Controls.Add(this.NewPackageSource, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.BrowseButton, 2, 5);
             this.tableLayoutPanel1.Controls.Add(this.updateButton, 3, 5);
+            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel3, 1, 6);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             // 
             // tableLayoutPanel2
@@ -171,6 +168,19 @@ namespace NuGet.Options
             this.addButton.UseVisualStyleBackColor = true;
             this.addButton.Click += new System.EventHandler(this.OnAddButtonClick);
             // 
+            // PackageSourcesListBox
+            // 
+            resources.ApplyResources(this.PackageSourcesListBox, "PackageSourcesListBox");
+            this.PackageSourcesListBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.PackageSourcesListBox.CheckBoxSize = new System.Drawing.Size(0, 0);
+            this.tableLayoutPanel1.SetColumnSpan(this.PackageSourcesListBox, 4);
+            this.PackageSourcesListBox.ContextMenuStrip = this.PackageSourcesContextMenu;
+            this.PackageSourcesListBox.FormattingEnabled = true;
+            this.PackageSourcesListBox.Name = "PackageSourcesListBox";
+            this.PackageSourcesListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.PackageSourcesListBox_ItemCheck);
+            this.PackageSourcesListBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.PackageSourcesListBox_KeyUp);
+            this.PackageSourcesListBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PackageSourcesListBox_MouseMove);
+            // 
             // MachineWideSourcesLabel
             // 
             resources.ApplyResources(this.MachineWideSourcesLabel, "MachineWideSourcesLabel");
@@ -186,9 +196,36 @@ namespace NuGet.Options
             this.MachineWidePackageSourcesListBox.ContextMenuStrip = this.PackageSourcesContextMenu;
             this.MachineWidePackageSourcesListBox.FormattingEnabled = true;
             this.MachineWidePackageSourcesListBox.Name = "MachineWidePackageSourcesListBox";
+            this.MachineWidePackageSourcesListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.PackageSourcesListBox_ItemCheck);
             this.MachineWidePackageSourcesListBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.PackageSourcesListBox_KeyUp);
             this.MachineWidePackageSourcesListBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PackageSourcesListBox_MouseMove);
-            this.MachineWidePackageSourcesListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.PackageSourcesListBox_ItemCheck);
+            // 
+            // tableLayoutPanel3
+            // 
+            resources.ApplyResources(this.tableLayoutPanel3, "tableLayoutPanel3");
+            this.tableLayoutPanel1.SetColumnSpan(this.tableLayoutPanel3, 3);
+            this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel4, 0, 0);
+            this.tableLayoutPanel3.GrowStyle = System.Windows.Forms.TableLayoutPanelGrowStyle.FixedSize;
+            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+            // 
+            // tableLayoutPanel4
+            // 
+            resources.ApplyResources(this.tableLayoutPanel4, "tableLayoutPanel4");
+            this.tableLayoutPanel4.Controls.Add(this.HttpWarning, 1, 0);
+            this.tableLayoutPanel4.Controls.Add(this.HttpWarningIcon, 0, 0);
+            this.tableLayoutPanel4.Name = "tableLayoutPanel4";
+            // 
+            // HttpWarning
+            // 
+            resources.ApplyResources(this.HttpWarning, "HttpWarning");
+            this.HttpWarning.Name = "HttpWarning";
+            // 
+            // HttpWarningIcon
+            // 
+            resources.ApplyResources(this.HttpWarningIcon, "HttpWarningIcon");
+            this.HttpWarningIcon.AccessibleRole = System.Windows.Forms.AccessibleRole.Alert;
+            this.HttpWarningIcon.Name = "HttpWarningIcon";
+            this.HttpWarningIcon.TabStop = false;
             // 
             // images32px
             // 
@@ -219,6 +256,11 @@ namespace NuGet.Options
             this.tableLayoutPanel1.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
+            this.tableLayoutPanel3.ResumeLayout(false);
+            this.tableLayoutPanel3.PerformLayout();
+            this.tableLayoutPanel4.ResumeLayout(false);
+            this.tableLayoutPanel4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.HttpWarningIcon)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -246,5 +288,9 @@ namespace NuGet.Options
         private PackageSourceCheckedListBox MachineWidePackageSourcesListBox;
         private ImageList images32px;
         private ImageList images64px;
+        private TableLayoutPanel tableLayoutPanel3;
+        private TableLayoutPanel tableLayoutPanel4;
+        private Label HttpWarning;
+        private PictureBox HttpWarningIcon;
     }
 }

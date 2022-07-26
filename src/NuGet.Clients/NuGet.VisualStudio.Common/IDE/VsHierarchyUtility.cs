@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using EnvDTE;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.VisualStudio.Common;
 using Task = System.Threading.Tasks.Task;
 using TaskExpandedNodes = System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<NuGet.VisualStudio.VsHierarchyItem>>>;
 
@@ -23,21 +24,31 @@ namespace NuGet.VisualStudio
         public static string GetProjectPath(IVsHierarchy project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            project.GetCanonicalName(VSConstants.VSITEMID_ROOT, out string projectPath);
+            var format = (IPersistFileFormat)project;
+            format.GetCurFile(out string projectPath, out uint _);
             return projectPath;
         }
 
-        public static bool IsSupported(IVsHierarchy hierarchy, string projectTypeGuid)
+        public static bool IsSupportedByGuid(IVsHierarchy hierarchy)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+            ErrorHandler.ThrowOnFailure(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid));
+            var guid = pguid.ToString("B");
+            if (ProjectType.IsUnsupported(guid) || !ProjectType.IsSupported(guid))
+            {
+                return false;
+            }
+            return true;
+        }
 
+        public static bool IsNuGetSupported(IVsHierarchy hierarchy)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (IsProjectCapabilityCompliant(hierarchy))
             {
                 return true;
             }
-
-            return !string.IsNullOrEmpty(projectTypeGuid) && ProjectType.IsSupported(projectTypeGuid) && !HasUnsupportedProjectCapability(hierarchy);
+            return IsSupportedByGuid(hierarchy) && !HasUnsupportedProjectCapability(hierarchy);
         }
 
         /// <summary>Check if this project appears to support NuGet.</summary>
@@ -61,7 +72,12 @@ namespace NuGet.VisualStudio
             return hierarchy.IsCapabilityMatch(ProjectCapabilities.SharedAssetsProject);
         }
 
-        public static string[] GetProjectTypeGuids(IVsHierarchy hierarchy, string defaultType = "")
+        /// <summary>
+        /// Gets the project type guids from the hierarchy.
+        /// </summary>
+        /// <param name="hierarchy">hierarchy for a project</param>
+        /// <returns>The project type guids of all the types in the hierarchy.</returns>
+        public static string[] GetProjectTypeGuidsFromHierarchy(IVsHierarchy hierarchy)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -75,12 +91,8 @@ namespace NuGet.VisualStudio
                 return projectTypeGuids.Split(';');
             }
 
-            if (!string.IsNullOrEmpty(defaultType))
-            {
-                return new[] { defaultType };
-            }
-
-            return Array.Empty<string>();
+            ErrorHandler.ThrowOnFailure(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid));
+            return new string[] { pguid.ToString("B") };
         }
 
         /// <summary>
@@ -119,11 +131,11 @@ namespace NuGet.VisualStudio
             // this operation needs to execute on UI thread
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = await ServiceLocator.GetInstanceAsync<EnvDTE.DTE>();
+            var dte = await ServiceLocator.GetGlobalServiceAsync<SDTE, DTE>();
             var projects = dte.Solution.Projects;
 
             var results = new Dictionary<string, ISet<VsHierarchyItem>>(StringComparer.OrdinalIgnoreCase);
-            foreach (var project in projects.Cast<EnvDTE.Project>())
+            foreach (var project in projects.Cast<Project>())
             {
                 var expandedNodes =
                     await GetExpandedProjectHierarchyItemsAsync(project);
@@ -136,14 +148,14 @@ namespace NuGet.VisualStudio
 
         public static async Task CollapseAllNodesAsync(IDictionary<string, ISet<VsHierarchyItem>> ignoreNodes)
         {
-            Verify.ArgumentIsNotNull(ignoreNodes, nameof(ignoreNodes));
+            Common.Verify.ArgumentIsNotNull(ignoreNodes, nameof(ignoreNodes));
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte = await ServiceLocator.GetInstanceAsync<EnvDTE.DTE>();
+            var dte = await ServiceLocator.GetGlobalServiceAsync<SDTE, DTE>();
             var projects = dte.Solution.Projects;
 
-            foreach (var project in projects.Cast<EnvDTE.Project>())
+            foreach (var project in projects.Cast<Project>())
             {
                 ISet<VsHierarchyItem> expandedNodes;
                 if (ignoreNodes.TryGetValue(project.GetUniqueName(), out expandedNodes)
@@ -153,6 +165,55 @@ namespace NuGet.VisualStudio
                     await CollapseProjectHierarchyItemsAsync(project, expandedNodes);
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets all the hierarchies of all the NuGet compatible projects
+        /// </summary>
+        /// <param name="vsSolution">The VS Solution instance. Must not be <see cref="null"/>. </param>
+        /// <returns>Hierarchies of the NuGet compatible projects</returns>
+        /// <remarks>This method assumes the solution is open.</remarks>
+        public static List<IVsHierarchy> GetAllLoadedProjects(IVsSolution vsSolution)
+        {
+            Assumes.NotNull(vsSolution);
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var compatibleProjectHierarchies = new List<IVsHierarchy>();
+
+            var hr = vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out IEnumHierarchies ppenum);
+            ErrorHandler.ThrowOnFailure(hr);
+
+            IVsHierarchy[] hierarchies = new IVsHierarchy[1];
+            while ((ppenum.Next((uint)hierarchies.Length, hierarchies, out uint fetched) == VSConstants.S_OK) && (fetched == (uint)hierarchies.Length))
+            {
+                var hierarchy = hierarchies[0];
+                if (IsNuGetSupported(hierarchy))
+                {
+                    compatibleProjectHierarchies.Add(hierarchy);
+                }
+            }
+
+            return compatibleProjectHierarchies;
+        }
+
+        public static bool AreAnyLoadedProjectsNuGetCompatible(IVsSolution vsSolution)
+        {
+            Assumes.NotNull(vsSolution);
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var hr = vsSolution.GetProjectEnum((uint)__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION, Guid.Empty, out IEnumHierarchies ppenum);
+            ErrorHandler.ThrowOnFailure(hr);
+
+            IVsHierarchy[] hierarchies = new IVsHierarchy[1];
+            while ((ppenum.Next((uint)hierarchies.Length, hierarchies, out uint fetched) == VSConstants.S_OK) && (fetched == (uint)hierarchies.Length))
+            {
+                var hierarchy = hierarchies[0];
+                if (IsNuGetSupported(hierarchy))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static async Task<ICollection<VsHierarchyItem>> GetExpandedProjectHierarchyItemsAsync(EnvDTE.Project project)

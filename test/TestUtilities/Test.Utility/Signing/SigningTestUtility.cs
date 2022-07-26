@@ -26,7 +26,7 @@ namespace Test.Utility.Signing
 {
     public static class SigningTestUtility
     {
-        private static readonly string _signatureLogPrefix = "Package '{0} {1}' from source '{2}':";
+        private static readonly string SignatureLogPrefix = "Package '{0} {1}' from source '{2}':";
 
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
@@ -204,6 +204,98 @@ namespace Test.Utility.Signing
             }
 
             return certChain;
+        }
+
+        public static IX509CertificateChain GenerateCertificateChainWithoutTrust(
+            int length,
+            string crlServerUri,
+            string crlLocalUri,
+            bool configureLeafCrl = true,
+            Action<TestCertificateGenerator> leafCertificateActionGenerator = null,
+            bool revokeEndCertificate = false)
+        {
+            List<TestCertificate> testCertificates = new();
+            X509CertificateChain certificateChain = new();
+            Action<TestCertificateGenerator> actionGenerator = CertificateModificationGeneratorForCodeSigningEkuCert;
+            Action<TestCertificateGenerator> leafGenerator = leafCertificateActionGenerator ?? actionGenerator;
+            X509Certificate2 issuer = null;
+            X509Certificate2 certificate = null;
+            CertificateRevocationList crl = null;
+
+            for (var i = 0; i < length; i++)
+            {
+                TestCertificate testCertificate;
+
+                if (i == 0) // root CA cert
+                {
+                    ChainCertificateRequest chainCertificateRequest = new()
+                    {
+                        ConfigureCrl = true,
+                        CrlLocalBaseUri = crlLocalUri,
+                        CrlServerBaseUri = crlServerUri,
+                        IsCA = true
+                    };
+
+                    testCertificate = TestCertificate.Generate(actionGenerator, chainCertificateRequest);
+
+                    testCertificates.Add(testCertificate);
+
+                    issuer = certificate = testCertificate.PublicCertWithPrivateKey;
+                }
+                else if (i < length - 1) // intermediate CA cert
+                {
+                    ChainCertificateRequest chainCertificateRequest = new ChainCertificateRequest()
+                    {
+                        ConfigureCrl = true,
+                        CrlLocalBaseUri = crlLocalUri,
+                        CrlServerBaseUri = crlServerUri,
+                        IsCA = true,
+                        Issuer = issuer
+                    };
+
+                    testCertificate = TestCertificate.Generate(actionGenerator, chainCertificateRequest);
+
+                    testCertificates.Add(testCertificate);
+
+                    issuer = certificate = testCertificate.PublicCertWithPrivateKey;
+
+                    if (revokeEndCertificate)
+                    {
+                        crl = testCertificate.Crl;
+                    }
+                }
+                else // leaf cert
+                {
+                    ChainCertificateRequest chainCertificateRequest = new()
+                    {
+                        CrlLocalBaseUri = crlLocalUri,
+                        CrlServerBaseUri = crlServerUri,
+                        IsCA = false,
+                        ConfigureCrl = configureLeafCrl,
+                        Issuer = issuer
+                    };
+
+                    testCertificate = TestCertificate.Generate(leafGenerator, chainCertificateRequest);
+
+                    certificate = testCertificate.PublicCertWithPrivateKey;
+
+                    if (revokeEndCertificate)
+                    {
+                        testCertificates[testCertificates.Count - 1].Crl.RevokeCertificate(certificate);
+                    }
+
+                    testCertificates.Add(testCertificate);
+                }
+
+                certificateChain.Insert(index: 0, certificate);
+            }
+
+            foreach (TestCertificate testCertificate in testCertificates)
+            {
+                testCertificate.Cert.Dispose();
+            }
+
+            return certificateChain;
         }
 
         public static X509CertificateWithKeyInfo GenerateCertificateWithKeyInfo(
@@ -773,7 +865,7 @@ namespace Test.Utility.Signing
 
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)
         {
-            return $"{string.Format(_signatureLogPrefix, package.Id, package.Version, source)} {log}";
+            return $"{string.Format(SignatureLogPrefix, package.Id, package.Version, source)} {log}";
         }
     }
 }

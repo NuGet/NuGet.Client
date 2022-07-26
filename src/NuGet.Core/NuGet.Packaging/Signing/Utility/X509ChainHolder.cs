@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
 {
@@ -21,7 +22,9 @@ namespace NuGet.Packaging.Signing
 
         public X509ChainHolder()
         {
-            Chain = new X509Chain();
+            IX509ChainFactory creator = X509TrustStore.GetX509ChainFactory(NullLogger.Instance);
+
+            Chain = creator.Create();
         }
 
         public void Dispose()

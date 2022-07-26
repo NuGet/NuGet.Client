@@ -850,4 +850,18 @@ Valid from:</comment>
     <value>The {0}'s timestamping certificate is not trusted by the trust provider.</value>
     <comment>0 -Signature friendly name</comment>
   </data>
+  <data name="ChainBuilding_UsingDefaultTrustStore" xml:space="preserve">
+    <value>X.509 certificate chain validation will use the default trust store selected by .NET.</value>
+  </data>
+  <data name="ChainBuilding_UsingFallbackCertificateBundle" xml:space="preserve">
+    <value>X.509 certificate chain validation will use the fallback certificate bundle at '{0}'.</value>
+    <comment>{0} is the file path</comment>
+  </data>
+  <data name="ChainBuilding_UsingNoCertificateBundle" xml:space="preserve">
+    <value>X.509 certificate chain validation will not have any trusted roots. Chain building will fail with an untrusted status.</value>
+  </data>
+  <data name="ChainBuilding_UsingSystemCertificateBundle" xml:space="preserve">
+    <value>X.509 certificate chain validation will use the system certificate bundle at '{0}'.</value>
+    <comment>{0} is the file path</comment>
+  </data>
 </root>

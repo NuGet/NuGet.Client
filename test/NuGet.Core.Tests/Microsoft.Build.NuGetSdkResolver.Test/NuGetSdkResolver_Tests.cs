@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
 using Microsoft.Build.Framework;
-using Moq;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -77,6 +76,29 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 result.Version.Should().Be(sdkReference.Version);
                 result.Errors.Should().BeEmpty();
                 result.Warnings.Should().BeEmpty();
+
+                bool wasMessageFound = false;
+
+                foreach ((string Message, MessageImportance _) in sdkResolverContext.MockSdkLogger.LoggedMessages)
+                {
+                    // On Linux and macOS the message will be:
+                    //
+                    //    X.509 certificate chain validation will not have any trusted roots.
+                    //    Chain building will fail with an untrusted status.
+                    //
+                    // This is because this test is not a .NET SDK test but a unit test.
+                    if (Message.Contains("X.509 certificate chain validation will"))
+                    {
+                        wasMessageFound = true;
+                        break;
+                    }
+                }
+
+#if NETFRAMEWORK
+                wasMessageFound.Should().BeFalse();
+#else
+                wasMessageFound.Should().BeTrue();
+#endif
             }
         }
 

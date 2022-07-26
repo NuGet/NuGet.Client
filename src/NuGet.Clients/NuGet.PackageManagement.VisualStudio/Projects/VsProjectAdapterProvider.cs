@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
@@ -66,12 +67,53 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectNames = await ProjectNames.FromDTEProjectAsync(dteProject, vsSolution);
             var fullProjectPath = dteProject.GetFullProjectPath();
+            if (fullProjectPath == null && dteProject.IsWebSite())
+            {
+                var projectDirectory = await dteProject.GetFullPathAsync();
+
+                return new VsProjectAdapter(
+                    vsHierarchyItem,
+                    projectNames,
+                    fullProjectPath,
+                    projectDirectory,
+                    loadDteProject,
+                    vsBuildProperties,
+                    _threadingService);
+            }
 
             return new VsProjectAdapter(
                 vsHierarchyItem,
                 projectNames,
                 fullProjectPath,
-                dteProject.Kind,
+                loadDteProject,
+                vsBuildProperties,
+                _threadingService);
+        }
+
+        public async Task<IVsProjectAdapter> CreateAdapterForFullyLoadedProjectAsync(IVsHierarchy hierarchy)
+        {
+            Assumes.Present(hierarchy);
+
+            // Get services while we might be on background thread
+            var vsSolution = await _vsSolution.GetValueAsync();
+
+            // switch to main thread and use services we know must be done on main thread.
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var vsHierarchyItem = VsHierarchyItem.FromVsHierarchy(hierarchy);
+            Func<IVsHierarchy, EnvDTE.Project> loadDteProject = hierarchy => VsHierarchyUtility.GetProjectFromHierarchy(hierarchy);
+
+            var buildStorageProperty = vsHierarchyItem.VsHierarchy as IVsBuildPropertyStorage;
+            var vsBuildProperties = new VsProjectBuildProperties(
+                new Lazy<EnvDTE.Project>(() => loadDteProject(hierarchy)), buildStorageProperty, _threadingService);
+
+            var fullProjectPath = VsHierarchyUtility.GetProjectPath(hierarchy);
+            var projectNames = await ProjectNames.FromIVsSolution2(fullProjectPath, (IVsSolution2)vsSolution, hierarchy, CancellationToken.None);
+
+            return new VsProjectAdapter(
+                vsHierarchyItem,
+                projectNames,
+                fullProjectPath,
                 loadDteProject,
                 vsBuildProperties,
                 _threadingService);

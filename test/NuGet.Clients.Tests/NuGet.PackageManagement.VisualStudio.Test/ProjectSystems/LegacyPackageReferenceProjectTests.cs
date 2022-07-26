@@ -242,10 +242,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Mock.Get(projectAdapter)
                     .VerifyGet(x => x.ProjectName, Times.AtLeastOnce);
                 Mock.Get(projectAdapter)
-                    .Verify(x => x.GetRuntimeIdentifiersAsync(), Times.AtLeastOnce);
-                Mock.Get(projectAdapter)
-                    .Verify(x => x.GetRuntimeSupportsAsync(), Times.AtLeastOnce);
-                Mock.Get(projectAdapter)
                     .VerifyGet(x => x.FullProjectPath, Times.AtLeastOnce);
                 Mock.Get(projectAdapter)
                     .Verify(x => x.GetTargetFrameworkAsync(), Times.AtLeastOnce);
@@ -304,17 +300,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                var projectAdapter = CreateProjectAdapter(testDirectory);
-                Mock.Get(projectAdapter)
-                    .SetupGet(x => x.RestorePackagesPath)
+                var projectBuildProperties = new Mock<IProjectBuildProperties>();
+                var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
+
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>( x => x.Equals(ProjectBuildProperties.RestorePackagesPath))))
                     .Returns(restorePackagesPath);
 
-                Mock.Get(projectAdapter)
-                    .SetupGet(x => x.RestoreSources)
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RestoreSources))))
                     .Returns(sources);
 
-                Mock.Get(projectAdapter)
-                    .SetupGet(x => x.RestoreFallbackFolders)
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RestoreFallbackFolders))))
                     .Returns(fallbackFolders);
 
                 var projectServices = new TestProjectSystemServices();
@@ -350,12 +348,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(Enumerable.SequenceEqual(expectedFolders.OrderBy(t => t), specFallback.OrderBy(t => t)));
 
                 // Verify
-                Mock.Get(projectAdapter)
-                    .Verify(x => x.RestorePackagesPath, Times.Once);
-                Mock.Get(projectAdapter)
-                    .Verify(x => x.RestoreSources, Times.Once);
-                Mock.Get(projectAdapter)
-                    .Verify(x => x.RestoreFallbackFolders, Times.Once);
+                projectBuildProperties.VerifyAll();
             }
         }
 
@@ -371,17 +364,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                var projectAdapter = CreateProjectAdapter(testDirectory);
-                Mock.Get(projectAdapter)
-                    .SetupGet(x => x.RestorePackagesPath)
+                var projectBuildProperties = new Mock<IProjectBuildProperties>();
+                var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
+
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RestorePackagesPath))))
                     .Returns(restorePackagesPath);
 
-                Mock.Get(projectAdapter)
-                    .SetupGet(x => x.RestoreSources)
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RestoreSources))))
                     .Returns(sources);
 
-                Mock.Get(projectAdapter)
-                    .SetupGet(x => x.RestoreFallbackFolders)
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RestoreFallbackFolders))))
                     .Returns(fallbackFolders);
 
                 var projectServices = new TestProjectSystemServices();
@@ -417,12 +412,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(Enumerable.SequenceEqual(expectedFolders.OrderBy(t => t), specFallback.OrderBy(t => t)));
 
                 // Verify
-                Mock.Get(projectAdapter)
-                    .Verify(x => x.RestorePackagesPath, Times.Once);
-                Mock.Get(projectAdapter)
-                    .Verify(x => x.RestoreSources, Times.Once);
-                Mock.Get(projectAdapter)
-                    .Verify(x => x.RestoreFallbackFolders, Times.Once);
+                projectBuildProperties.VerifyAll();
             }
         }
 
@@ -434,9 +424,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                var projectAdapter = CreateProjectAdapter(testDirectory);
-                Mock.Get(projectAdapter)
-                    .SetupGet(x => x.PackageTargetFallback)
+                var projectBuildProperties = new Mock<IProjectBuildProperties>();
+                var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
+
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.PackageTargetFallback))))
                     .Returns("portable-net45+win8;dnxcore50");
 
                 var testProject = new LegacyPackageReferenceProject(
@@ -475,8 +467,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     ((FallbackFramework)actualTfi.FrameworkName).Fallback);
 
                 // Verify
-                Mock.Get(projectAdapter)
-                    .Verify(x => x.PackageTargetFallback, Times.AtLeastOnce);
+                projectBuildProperties.VerifyAll();
             }
         }
 
@@ -779,18 +770,20 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                var projectAdapter = CreateProjectAdapter(testDirectory);
-                Mock.Get(projectAdapter)
-                    .Setup(x => x.GetRestorePackagesWithLockFileAsync())
-                    .ReturnsAsync(restorePackagesWithLockFile);
+                var projectBuildProperties = new Mock<IProjectBuildProperties>();
+                var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
 
-                Mock.Get(projectAdapter)
-                    .Setup(x => x.GetNuGetLockFilePathAsync())
-                    .ReturnsAsync(lockFilePath);
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RestorePackagesWithLockFile))))
+                    .Returns(restorePackagesWithLockFile);
 
-                Mock.Get(projectAdapter)
-                    .Setup(x => x.IsRestoreLockedAsync())
-                    .ReturnsAsync(restoreLockedMode);
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.NuGetLockFilePath))))
+                    .Returns(lockFilePath);
+
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RestoreLockedMode))))
+                    .Returns(restoreLockedMode.ToString());
 
                 var projectServices = new TestProjectSystemServices();
 
@@ -935,7 +928,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetPackageSpecAsync_TransitiveDependencyPinning_CanBeEnabled(string transitiveDependencyPinning, bool expected)
         {
             // Arrange
-
             var projectNames = new ProjectNames(
                         fullName: "projectName",
                         uniqueName: "projectName",
@@ -1459,6 +1451,83 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 cache_packages.TransitivePackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageB", new NuGetVersion("1.0.0"))));
                 Assert.True(lastWriteTime == File.GetLastWriteTimeUtc(lockFilePath));
             }
+        }
+
+        [Theory]
+        [InlineData(null,null,null, 0, 0)]
+        [InlineData("win-x64", null, null, 1, 0)]
+        [InlineData("win-x64", "win-x86", null, 2, 0)]
+        [InlineData("win-x64", "win-x86;win-x64", null, 2, 0)]
+        [InlineData("win-x64", "win-x86;win-x64", "win", 2, 1)]
+        public async Task GetPackageSpecsAsync_WithRuntimeIdentifiers_GeneratesRuntimeGraph(string runtimeIdentifier, string runtimeIdentifiers, string runtimeSupports, int runtimeCount, int supportsCount)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectBuildProperties = new Mock<IProjectBuildProperties>();
+                var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
+
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RuntimeIdentifier))))
+                    .Returns(runtimeIdentifier);
+
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RuntimeIdentifiers))))
+                    .Returns(runtimeIdentifiers);
+
+                projectBuildProperties
+                    .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.RuntimeSupports))))
+                    .Returns(runtimeSupports);
+
+                var projectServices = new TestProjectSystemServices();
+
+                var testProject = new LegacyPackageReferenceProject(
+                    projectAdapter,
+                    Guid.NewGuid().ToString(),
+                    projectServices,
+                    _threadingService);
+
+                var settings = NullSettings.Instance;
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+                // Act
+                var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                Assert.NotNull(packageSpecs);
+                var actualRestoreSpec = packageSpecs.Single();
+                SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
+
+                // Assert runtime graph
+                actualRestoreSpec.RuntimeGraph.Runtimes.Count.Should().Be(runtimeCount);
+                actualRestoreSpec.RuntimeGraph.Supports.Count.Should().Be(supportsCount);
+
+                // Verify
+                projectBuildProperties.VerifyAll();
+            }
+        }
+
+        [Theory]
+        [InlineData(null, null, "")]
+        [InlineData("win-x64", null, "win-x64")]
+        [InlineData("win-x64", "win-x64", "win-x64")]
+        [InlineData(null, "win-x64", "win-x64")]
+        [InlineData("win-x86", "win-x64", "win-x86;win-x64")]
+        public void GetRuntimeIdentifiers_WithVariousInputs(string runtimeIdentifier, string runtimeIdentifiers, string expected)
+        {
+            var actual = LegacyPackageReferenceProject.GetRuntimeIdentifiers(runtimeIdentifier, runtimeIdentifiers);
+            Assert.Equal(expected, string.Join(";", actual.Select(e => e.RuntimeIdentifier)));
+        }
+
+        [Theory]
+        [InlineData(null, "")]
+        [InlineData("net46.app;win8.app", "net46.app;win8.app")]
+        [InlineData("net46.app;win10.app;net46.app;win10.app", "net46.app;win10.app;net46.app;win10.app")]
+        public void GetRuntimeSupports_WithVariousInputs(string runtimeSupports, string expected)
+        {
+            var actual = LegacyPackageReferenceProject.GetRuntimeSupports(runtimeSupports);
+            Assert.Equal(expected, string.Join(";", actual.Select(e => e.Name.ToString())));
         }
 
         private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string range)

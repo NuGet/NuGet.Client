@@ -3964,17 +3964,20 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var projectCache = new ProjectSystemCache();
 
+            // Child project
+            var childProject = "childProject";
+            var childProjectPackageSpec = ProjectTestHelpers.GetPackageSpec(settings, childProject, rootPath: pathContext.SolutionRoot);
+            var childDependencyGraphSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(childProjectPackageSpec);
+            var childProjectFullPath = childDependencyGraphSpec.Projects[0].FilePath;
+            var childPackageReferenceProject = CreateTestCpsPackageReferenceProject(childProject, childProjectFullPath, projectCache);
+
             // Parent project
             var parentProject = "parentProject";
-            var parentDependencyGraphSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(ProjectTestHelpers.GetPackageSpec(settings, parentProject, rootPath: pathContext.SolutionRoot));
+            var parentProjectPackageSpec = ProjectTestHelpers.GetPackageSpec(settings, parentProject, rootPath: pathContext.SolutionRoot);
+            parentProjectPackageSpec = parentProjectPackageSpec.WithTestProjectReference(childProjectPackageSpec);
+            var parentDependencyGraphSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(parentProjectPackageSpec);
             var parentProjectFullPath = parentDependencyGraphSpec.Projects[0].FilePath;
             var parentPackageReferenceProject = CreateTestCpsPackageReferenceProject(parentProject, parentProjectFullPath, projectCache);
-
-            // Child project
-            var childProject = "parentProject";
-            var childDependencyGraphSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(ProjectTestHelpers.GetPackageSpec(settings, childProject, rootPath: pathContext.SolutionRoot));
-            var childProjectFullPath = parentDependencyGraphSpec.Projects[0].FilePath;
-            var childPackageReferenceProject = CreateTestCpsPackageReferenceProject(childProject, childProjectFullPath, projectCache);
 
             // Populate caches
             AddProjectDetailsToCache(projectCache, parentDependencyGraphSpec, parentPackageReferenceProject, GetTestProjectNames(parentProjectFullPath, parentProject));
@@ -3990,7 +3993,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             progressReporter.Setup(e => e.EndProjectUpdate(It.Is<string>(path => path == childProjectFullPath), It.IsAny<IReadOnlyList<string>>())).Verifiable();
 
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, testSolutionManager, new TestDeleteOnRestartManager(), progressReporter.Object);
-            var actions = await nuGetPackageManager.PreviewInstallPackageAsync(parentPackageReferenceProject, packageA.Id, new ResolutionContext(), new TestNuGetProjectContext(),
+            var actions = await nuGetPackageManager.PreviewInstallPackageAsync(childPackageReferenceProject, packageA.Id, new ResolutionContext(), new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
             // Preconditions
@@ -3998,7 +4001,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Act
             await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                parentPackageReferenceProject,
+                childPackageReferenceProject,
                 actions,
                 new TestNuGetProjectContext(),
                 new SourceCacheContext(),

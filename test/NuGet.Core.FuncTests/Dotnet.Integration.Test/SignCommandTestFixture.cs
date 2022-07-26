@@ -23,173 +23,218 @@ namespace Dotnet.Integration.Test
         //setting up a short cert chain then it's easier to make it invalid.
         private const int _shortCertChainLength = 2;
 
-        private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
-        private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
-        private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
-        private TrustedTestCert<X509Certificate2> _trustedTimestampRoot;
-        private TrustedTestCert<X509Certificate2> _untrustedSelfIssuedCertificateInCertificateStore;
-        private TrustedTestCertificateChain _trustedTestCertChain;
-        private TrustedTestCertificateChain _revokedTestCertChain;
-        private TrustedTestCertificateChain _revocationUnknownTestCertChain;
+        private X509StoreCertificate _trustedTimestampRoot;
+        private X509StoreCertificate _untrustedSelfIssuedCertificateInCertificateStore;
+        private List<X509StoreCertificate> _defaultCertificateChain;
+        private List<X509StoreCertificate> _invalidEkuCertificateChain;
+        private List<X509StoreCertificate> _expiredCertificateChain;
+        private List<X509StoreCertificate> _notYetValidCertificateChain;
+        private List<X509StoreCertificate> _revokedCertificateChain;
+        private List<X509StoreCertificate> _revocationUnknownCertificateChain;
         private IList<ISignatureVerificationProvider> _trustProviders;
         private SigningSpecifications _signingSpecifications;
         private MockServer _crlServer;
         private bool _crlServerRunning;
-        private object _crlServerRunningLock = new object();
+        private object _crlServerRunningLock = new();
         private TestDirectory _testDirectory;
         private Lazy<Task<SigningTestServer>> _testServer;
         private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
         private readonly DisposableList<IDisposable> _responders;
+        private FileInfo _fallbackCertificateBundle;
 
-        public TrustedTestCertificateChain TrustedTestCertificateChain
+        public IX509StoreCertificate DefaultCertificate
         {
             get
             {
-                if (_trustedTestCertChain == null)
+                if (_defaultCertificateChain is null)
                 {
-                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_normalCertChainLength, CrlServer.Uri, TestDirectory.Path);
+                    _defaultCertificateChain = new List<X509StoreCertificate>();
 
-                    _trustedTestCertChain = new TrustedTestCertificateChain()
+                    using (IX509CertificateChain chain = SigningTestUtility.GenerateCertificateChainWithoutTrust(
+                        _normalCertChainLength,
+                        CrlServer.Uri,
+                        TestDirectory.Path))
                     {
-                        Certificates = certChain
-                    };
+                        StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
+
+                        _defaultCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _defaultCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[1]));
+                        _defaultCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[2]));
+                    }
 
                     SetUpCrlDistributionPoint();
                 }
 
-                return _trustedTestCertChain;
+                return _defaultCertificateChain[0];
             }
         }
 
-        public TrustedTestCert<TestCertificate> TrustedTestCertificateWithInvalidEku
+        public IX509StoreCertificate CertificateWithInvalidEku
         {
             get
             {
-                if (_trustedTestCertWithInvalidEku == null)
+                if (_invalidEkuCertificateChain is null)
                 {
-                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForInvalidEkuCert;
-                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_normalCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: true, leafCertificateActionGenerator: actionGenerator);
+                    _invalidEkuCertificateChain = new List<X509StoreCertificate>();
 
-                    TrustedTestCertificateChain _trustedTestLeafCertWithInvalidEkuChain = new TrustedTestCertificateChain()
-                    {
-                        Certificates = certChain
-                    };
+                    using (IX509CertificateChain chain = SigningTestUtility.GenerateCertificateChainWithoutTrust(
+                        _normalCertChainLength,
+                        CrlServer.Uri,
+                        TestDirectory.Path,
+                        configureLeafCrl: true,
+                        leafCertificateActionGenerator: SigningTestUtility.CertificateModificationGeneratorForInvalidEkuCert))
+                    { 
+                        StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
 
-                    SetUpCrlDistributionPoint();
-
-                    _trustedTestCertWithInvalidEku = _trustedTestLeafCertWithInvalidEkuChain.Leaf;
-                }
-
-                return _trustedTestCertWithInvalidEku;
-            }
-
-        }
-
-        public TrustedTestCert<TestCertificate> TrustedTestCertificateExpired
-        {
-            get
-            {
-                if (_trustedTestCertExpired == null)
-                {
-                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCertificateThatOnlyValidInSpecifiedPeriod(notBefore: DateTime.UtcNow.AddSeconds(-10), notAfter: DateTime.UtcNow.AddSeconds(-9));
-                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_normalCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: true, leafCertificateActionGenerator: actionGenerator);
-
-                    TrustedTestCertificateChain _trustedTestLeafCertExpiredChain = new TrustedTestCertificateChain()
-                    {
-                        Certificates = certChain
-                    };
-
-                    SetUpCrlDistributionPoint();
-
-                    _trustedTestCertExpired = _trustedTestLeafCertExpiredChain.Leaf;
-                }
-
-                return _trustedTestCertExpired;
-            }
-        }
-
-        public TrustedTestCert<TestCertificate> TrustedTestCertificateNotYetValid
-        {
-            get
-            {
-                if (_trustedTestCertNotYetValid == null)
-                {
-                    var actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCertificateThatOnlyValidInSpecifiedPeriod(notBefore: DateTime.UtcNow.AddMinutes(10), notAfter: DateTime.UtcNow.AddMinutes(15));
-                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_normalCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: true, leafCertificateActionGenerator: actionGenerator);
-
-                    TrustedTestCertificateChain _trustedTestLeafCertNotYetValidChain = new TrustedTestCertificateChain()
-                    {
-                        Certificates = certChain
-                    };
-
-                    SetUpCrlDistributionPoint();
-
-                    _trustedTestCertNotYetValid = _trustedTestLeafCertNotYetValidChain.Leaf;
-                }
-
-                return _trustedTestCertNotYetValid;
-            }
-        }
-
-        public TrustedTestCert<TestCertificate> RevokedTestCertificateWithChain
-        {
-            get
-            {
-                if (_revokedTestCertChain == null)
-                {
-                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_shortCertChainLength, CrlServer.Uri, TestDirectory.Path);
-
-                    _revokedTestCertChain = new TrustedTestCertificateChain()
-                    {
-                        Certificates = certChain
-                    };
-
-                    // mark leaf certificate as revoked
-                    _revokedTestCertChain.Certificates[0].Source.Crl.RevokeCertificate(_revokedTestCertChain.Leaf.Source.Cert);
+                        _invalidEkuCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _invalidEkuCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[1]));
+                        _invalidEkuCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[2]));
+                    }
 
                     SetUpCrlDistributionPoint();
                 }
 
-                return _revokedTestCertChain.Leaf;
+                return _invalidEkuCertificateChain[0];
             }
         }
 
-        public TrustedTestCert<TestCertificate> RevocationUnknownTestCertificateWithChain
+        public IX509StoreCertificate ExpiredCertificate
         {
             get
             {
-                if (_revocationUnknownTestCertChain == null)
+                if (_expiredCertificateChain is null)
                 {
-                    IList<TrustedTestCert<TestCertificate>> certChain = SigningTestUtility.GenerateCertificateChain(_shortCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: false);
+                    _expiredCertificateChain = new List<X509StoreCertificate>();
 
-                    _revocationUnknownTestCertChain = new TrustedTestCertificateChain()
+                    Action<TestCertificateGenerator> actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCertificateThatOnlyValidInSpecifiedPeriod(
+                        notBefore: DateTime.UtcNow.AddSeconds(-10),
+                        notAfter: DateTime.UtcNow.AddSeconds(-9));
+
+                    using (IX509CertificateChain chain = SigningTestUtility.GenerateCertificateChainWithoutTrust(
+                        _normalCertChainLength,
+                        CrlServer.Uri,
+                        TestDirectory.Path,
+                        configureLeafCrl: true,
+                        leafCertificateActionGenerator: actionGenerator))
                     {
-                        Certificates = certChain
-                    };
+                        StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
+
+                        _expiredCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _expiredCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[1]));
+                        _expiredCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[2]));
+                    }
 
                     SetUpCrlDistributionPoint();
                 }
 
-                return _revocationUnknownTestCertChain.Leaf;
+                return _expiredCertificateChain[0];
             }
         }
 
-        public X509Certificate2 UntrustedSelfIssuedCertificateInCertificateStore
+        public IX509StoreCertificate NotYetValidCertificate
         {
             get
             {
-                if (_untrustedSelfIssuedCertificateInCertificateStore == null)
+                if (_notYetValidCertificateChain is null)
+                {
+                    _notYetValidCertificateChain = new List<X509StoreCertificate>();
+
+                    Action<TestCertificateGenerator> actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCertificateThatOnlyValidInSpecifiedPeriod(
+                        notBefore: DateTime.UtcNow.AddMinutes(10),
+                        notAfter: DateTime.UtcNow.AddMinutes(15));
+
+                    using (IX509CertificateChain chain = SigningTestUtility.GenerateCertificateChainWithoutTrust(
+                        _normalCertChainLength,
+                        CrlServer.Uri,
+                        TestDirectory.Path,
+                        configureLeafCrl: true,
+                        leafCertificateActionGenerator: actionGenerator))
+                    {
+                        StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
+
+                        _notYetValidCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _notYetValidCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[1]));
+                        _notYetValidCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[2]));
+                    }
+
+                    SetUpCrlDistributionPoint();
+                }
+
+                return _notYetValidCertificateChain[0];
+            }
+        }
+
+        public IX509StoreCertificate RevokedCertificate
+        {
+            get
+            {
+                if (_revokedCertificateChain is null)
+                {
+                    _revokedCertificateChain = new List<X509StoreCertificate>();
+
+                    using (IX509CertificateChain chain = SigningTestUtility.GenerateCertificateChainWithoutTrust(
+                        _shortCertChainLength,
+                        CrlServer.Uri,
+                        TestDirectory.Path,
+                        revokeEndCertificate: true))
+                    {
+                        StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
+
+                        _revokedCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _revokedCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[1]));
+                    }
+
+                    SetUpCrlDistributionPoint();
+                }
+
+                return _revokedCertificateChain[0];
+            }
+        }
+
+        public IX509StoreCertificate RevocationUnknownCertificate
+        {
+            get
+            {
+                if (_revocationUnknownCertificateChain is null)
+                {
+                    _revocationUnknownCertificateChain = new List<X509StoreCertificate>();
+
+                    using (IX509CertificateChain chain = SigningTestUtility.GenerateCertificateChainWithoutTrust(
+                        _shortCertChainLength,
+                        CrlServer.Uri,
+                        TestDirectory.Path,
+                        configureLeafCrl: false))
+                    {
+                        StoreLocation rootStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: false);
+
+                        _revocationUnknownCertificateChain.Add(CreateX509StoreCertificate(StoreLocation.CurrentUser, StoreName.My, chain[0]));
+                        _revocationUnknownCertificateChain.Add(CreateX509StoreCertificate(rootStoreLocation, StoreName.Root, chain[1]));
+                    }
+
+                    SetUpCrlDistributionPoint();
+                }
+
+                return _revocationUnknownCertificateChain[0];
+            }
+        }
+
+        public IX509StoreCertificate UntrustedSelfIssuedCertificateInCertificateStore
+        {
+            get
+            {
+                if (_untrustedSelfIssuedCertificateInCertificateStore is null)
                 {
                     X509Certificate2 certificate = SigningTestUtility.GenerateSelfIssuedCertificate(isCa: false);
 
-                    _untrustedSelfIssuedCertificateInCertificateStore = TrustedTestCert.Create(
-                        certificate,
+                    _untrustedSelfIssuedCertificateInCertificateStore = new X509StoreCertificate(
+                        StoreLocation.CurrentUser,
                         StoreName.My,
-                        StoreLocation.CurrentUser);
+                        certificate,
+                        _fallbackCertificateBundle);
                 }
 
-                return new X509Certificate2(_untrustedSelfIssuedCertificateInCertificateStore.Source);
+                return _untrustedSelfIssuedCertificateInCertificateStore;
             }
         }
 
@@ -322,14 +367,16 @@ namespace Dotnet.Integration.Test
 
         public void Dispose()
         {
-            _trustedTestCertWithInvalidEku?.Dispose();
-            _trustedTestCertExpired?.Dispose();
-            _trustedTestCertNotYetValid?.Dispose();
             _trustedTimestampRoot?.Dispose();
             _untrustedSelfIssuedCertificateInCertificateStore?.Dispose();
-            _trustedTestCertChain?.Dispose();
-            _revokedTestCertChain?.Dispose();
-            _revocationUnknownTestCertChain?.Dispose();
+
+            DisposeX509StoreCertificates(_defaultCertificateChain);
+            DisposeX509StoreCertificates(_invalidEkuCertificateChain);
+            DisposeX509StoreCertificates(_expiredCertificateChain);
+            DisposeX509StoreCertificates(_notYetValidCertificateChain);
+            DisposeX509StoreCertificates(_revokedCertificateChain);
+            DisposeX509StoreCertificates(_revocationUnknownCertificateChain);
+
             _crlServer?.Stop();
             _crlServer?.Dispose();
             _testDirectory?.Dispose();
@@ -341,6 +388,17 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        private static void DisposeX509StoreCertificates(List<X509StoreCertificate> storeCertificates)
+        {
+            if (storeCertificates is not null)
+            {
+                foreach (X509StoreCertificate storeCertificate in storeCertificates)
+                {
+                    storeCertificate.Dispose();
+                }
+            }
+        }
+
         private async Task<CertificateAuthority> CreateDefaultTrustedCertificateAuthorityAsync()
         {
             var testServer = await _testServer.Value;
@@ -349,10 +407,11 @@ namespace Dotnet.Integration.Test
             var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
             StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
-            _trustedTimestampRoot = TrustedTestCert.Create(
-                rootCertificate,
+            _trustedTimestampRoot = new X509StoreCertificate(
+                storeLocation,
                 StoreName.Root,
-                storeLocation);
+                rootCertificate,
+                _fallbackCertificateBundle);
 
             var ca = intermediateCa;
 
@@ -376,6 +435,30 @@ namespace Dotnet.Integration.Test
             _responders.Add(testServer.RegisterResponder(timestampService));
 
             return timestampService;
+        }
+
+        internal void SetFallbackCertificateBundle(DirectoryInfo sdkDirectory)
+        {
+            ArgumentNullException.ThrowIfNull(sdkDirectory, nameof(sdkDirectory));
+
+            _fallbackCertificateBundle = new FileInfo(
+                Path.Combine(
+                    sdkDirectory.FullName,
+                    FallbackCertificateBundleX509ChainFactory.SubdirectoryName,
+                    FallbackCertificateBundleX509ChainFactory.FileName));
+        }
+
+        private X509StoreCertificate CreateX509StoreCertificate(
+            StoreLocation storeLocation,
+            StoreName storeName,
+            X509Certificate2 certificate)
+        {
+            // Clone the source certificate because the source certificate will be disposed.
+            return new X509StoreCertificate(
+                storeLocation,
+                storeName,
+                new X509Certificate2(certificate),
+                _fallbackCertificateBundle);
         }
     }
 }

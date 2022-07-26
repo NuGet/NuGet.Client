@@ -85,26 +85,26 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var asVSProject4 = vsProjectAdapter.Project.Object as VSProject4;
+            var vsProject4 = vsProjectAdapter.Project.Object as VSProject4;
 
             // A legacy CSProj must cast to VSProject4 to manipulate package references
-            if (asVSProject4 == null)
+            if (vsProject4 == null)
             {
                 return null;
             }
 
             // Check for RestoreProjectStyle property
-            var restoreProjectStyle = await vsProjectAdapter.BuildProperties.GetPropertyValueAsync(
+            var restoreProjectStyle = vsProjectAdapter.BuildProperties.GetPropertyValue(
                 ProjectBuildProperties.RestoreProjectStyle);
 
             // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
             // project has atleast one package dependency defined as PackageReference
             if (forceCreate
                 || PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase)
-                || (asVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
+                || (vsProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
             {
                 var nominatesOnSolutionLoad = await vsProjectAdapter.IsCapabilityMatchAsync(NuGet.VisualStudio.IDE.ProjectCapabilities.PackageReferences);
-                return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, _threadingService, nominatesOnSolutionLoad, _scriptExecutor);
+                return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, _threadingService, vsProject4, nominatesOnSolutionLoad, _scriptExecutor);
             }
 
             return null;

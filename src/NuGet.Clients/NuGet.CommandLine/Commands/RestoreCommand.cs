@@ -616,10 +616,8 @@ namespace NuGet.CommandLine
 
             // Filter down to just the requested projects in the file
             // that support transitive references.
-            var v3RestoreProjects = dgFileOutput.Projects
-                .Where(project => (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
-                    || project.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
-                    && entryPointProjects.Contains(project));
+            var v3RestoreProjects = entryPointProjects
+                .Where(project => project.RestoreMetadata.ProjectStyle is ProjectStyle.PackageReference or ProjectStyle.ProjectJson);
 
             packageRestoreInputs.RestoreV3Context.Inputs.AddRange(v3RestoreProjects
                 .Select(project => project.RestoreMetadata.ProjectPath));

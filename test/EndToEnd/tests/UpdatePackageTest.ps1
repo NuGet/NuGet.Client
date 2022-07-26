@@ -632,9 +632,8 @@ function Test-UpdateAllPackagesInSolution {
 }
 
 function Test-UpdatePackageOnAnFSharpProjectWithMultiplePackages {
-    param(
-        $context
-    )
+    [SkipTest('https://github.com/NuGet/Home/issues/11982')]
+    param($context)
 
     # Arrange
     $p = New-FSharpLibrary

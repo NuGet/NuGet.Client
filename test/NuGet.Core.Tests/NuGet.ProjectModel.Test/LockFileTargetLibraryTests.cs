@@ -987,5 +987,46 @@ namespace NuGet.ProjectModel.Test
 
             leftSide.GetHashCode().Should().Be(rightSide.GetHashCode());
         }
+
+        [Theory]
+        [InlineData("a", "a", true)]
+        [InlineData("a .pdb;.xml", "a .pdb;.xml", true)]
+        [InlineData("a .pdb;.xml", "a;", false)]
+        [InlineData("a .pdb", "b .pdb", false)]
+        [InlineData("a .pdb;.xml", "a .xml;.pdb", false)]
+        public void Equals_WithRuntimeAssembliesAndRelatedFiles(string left, string right, bool expected)
+        {
+            string[] leftParts = left.Trim().Split(' ');
+            var leftRuntimeAssembly = new LockFileItem(leftParts[0]);
+            if (leftParts.Length > 1)
+            {
+                leftRuntimeAssembly.Properties.Add("related", leftParts[1]);
+            }
+            var leftSide = new LockFileTargetLibrary()
+            {
+                RuntimeAssemblies = new List<LockFileItem>() { leftRuntimeAssembly }
+            };
+
+            string[] rightParts = right.Split(' ');
+            var rightRuntimeAssembly = new LockFileItem(rightParts[0]);
+            if (rightParts.Length > 1)
+            {
+                rightRuntimeAssembly.Properties.Add("related", rightParts[1]);
+            }
+            var rightSide = new LockFileTargetLibrary()
+            {
+                RuntimeAssemblies = new List<LockFileItem>() { rightRuntimeAssembly }
+            };
+
+            // Act & Assert
+            if (expected)
+            {
+                leftSide.Should().Be(rightSide);
+            }
+            else
+            {
+                leftSide.Should().NotBe(rightSide);
+            }
+        }
     }
 }

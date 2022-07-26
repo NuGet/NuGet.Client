@@ -4,6 +4,7 @@
 using System;
 using NuGet.Common;
 using NuGet.VisualStudio.Common.Telemetry.PowerShell;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Common.Telemetry
 {
@@ -56,7 +57,8 @@ namespace NuGet.VisualStudio.Common.Telemetry
             NuGetPowerShellUsage.PmcWindowsEvent += NuGetPowerShellUsage_PMCWindowsEventHandler;
             NuGetPowerShellUsage.SolutionOpenEvent += NuGetPowerShellUsage_SolutionOpenHandler;
             NuGetPowerShellUsage.SolutionCloseEvent += NuGetPowerShellUsage_SolutionCloseHandler;
-            NuGetPowerShellUsage.VSInstanceCloseEvent += NuGetPowerShellUsage_VSInstanseCloseHandler;
+
+            InstanceCloseTelemetryEmitter.AddEventsOnShutdown += NuGetPowerShellUsage_VSInstanseCloseHandler;
         }
 
         private void NuGetPowerShellUsage_PMCLoadEventHandler(bool isPMC)
@@ -228,7 +230,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
             }
         }
 
-        private void NuGetPowerShellUsage_VSInstanseCloseHandler()
+        private void NuGetPowerShellUsage_VSInstanseCloseHandler(object sender, TelemetryEvent telemetryEvent)
         {
             lock (_lock)
             {
@@ -239,8 +241,8 @@ namespace NuGet.VisualStudio.Common.Telemetry
                     TelemetryActivity.EmitTelemetryEvent(_vsSolutionData.ToTelemetryEvent());
                 }
 
-                // Emit VS Instance telemetry
-                TelemetryActivity.EmitTelemetryEvent(_vsInstanceData.ToTelemetryEvent());
+                // Add VS Instance telemetry
+                _vsInstanceData.AddProperties(telemetryEvent);
             }
         }
 
@@ -265,7 +267,8 @@ namespace NuGet.VisualStudio.Common.Telemetry
             NuGetPowerShellUsage.PmcWindowsEvent -= NuGetPowerShellUsage_PMCWindowsEventHandler;
             NuGetPowerShellUsage.SolutionOpenEvent -= NuGetPowerShellUsage_SolutionOpenHandler;
             NuGetPowerShellUsage.SolutionCloseEvent -= NuGetPowerShellUsage_SolutionCloseHandler;
-            NuGetPowerShellUsage.VSInstanceCloseEvent -= NuGetPowerShellUsage_VSInstanseCloseHandler;
+
+            InstanceCloseTelemetryEmitter.AddEventsOnShutdown -= NuGetPowerShellUsage_VSInstanseCloseHandler;
         }
 
         internal class SolutionData
@@ -341,18 +344,15 @@ namespace NuGet.VisualStudio.Common.Telemetry
                 SolutionCount = 0;
             }
 
-            internal TelemetryEvent ToTelemetryEvent()
+            internal void AddProperties(TelemetryEvent telemetryEvent)
             {
-                var telemetry = new InstanceCloseEvent(
-                    pmcExecuteCommandCount: PmcExecuteCommandCount,
-                    pmcWindowLoadCount: PmcWindowLoadCount,
-                    pmuiExecuteCommandCount: PmuiExecuteCommandCount,
-                    pmcPowerShellLoadedSolutionCount: PmcLoadedSolutionCount,
-                    pmuiPowerShellLoadedSolutionCount: PmuiLoadedSolutionCount,
-                    reOpenAtStart: ReOpenAtStart,
-                    solutionCount: SolutionCount
-                    );
-                return telemetry;
+                telemetryEvent[PowerShellHost + NuGetPowerShellUsageCollector.PmcExecuteCommandCount] = PmcExecuteCommandCount;
+                telemetryEvent[PowerShellHost + NuGetPowerShellUsageCollector.PmcWindowLoadCount] = PmcWindowLoadCount;
+                telemetryEvent[PowerShellHost + NuGetPowerShellUsageCollector.PmuiExecuteCommandCount] = PmuiExecuteCommandCount;
+                telemetryEvent[PowerShellHost + PmcPowerShellLoadedSolutionCount] = PmcLoadedSolutionCount;
+                telemetryEvent[PowerShellHost + PmuiPowerShellLoadedSolutionCount] = PmuiLoadedSolutionCount;
+                telemetryEvent[PowerShellHost + NuGetPowerShellUsageCollector.ReOpenAtStart] = ReOpenAtStart;
+                telemetryEvent[PowerShellHost + NuGetPowerShellUsageCollector.SolutionCount] = SolutionCount;
             }
         }
     }

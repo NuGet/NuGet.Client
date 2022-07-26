@@ -3,8 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 
@@ -16,12 +18,13 @@ namespace NuGet.PackageManagement.VisualStudio
     internal class VsProjectBuildProperties
         : IProjectBuildProperties
     {
-        private readonly EnvDTE.Project _project;
+        private readonly Lazy<Project> _dteProject;
+        private Project _project;
         private readonly IVsBuildPropertyStorage _propertyStorage;
         private readonly IVsProjectThreadingService _threadingService;
 
         public VsProjectBuildProperties(
-            EnvDTE.Project project,
+            Project project,
             IVsBuildPropertyStorage propertyStorage,
             IVsProjectThreadingService threadingService)
         {
@@ -33,25 +36,30 @@ namespace NuGet.PackageManagement.VisualStudio
             _threadingService = threadingService;
         }
 
-        public string GetPropertyValue(string propertyName)
+        public VsProjectBuildProperties(
+            Lazy<Project> project,
+            IVsBuildPropertyStorage propertyStorage,
+            IVsProjectThreadingService threadingService)
         {
-            return _threadingService.JoinableTaskFactory.Run(() => GetPropertyValueAsync(propertyName));
+            Assumes.Present(project);
+            Assumes.Present(threadingService);
+
+            _dteProject = project;
+            _propertyStorage = propertyStorage;
+            _threadingService = threadingService;
         }
 
-        public async Task<string> GetPropertyValueAsync(string propertyName)
+        public string GetPropertyValue(string propertyName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             Assumes.NotNullOrEmpty(propertyName);
-
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             if (_propertyStorage != null)
             {
-                string output = null;
                 var result = _propertyStorage.GetPropertyValue(
                     pszPropName: propertyName,
                     pszConfigName: null,
                     storage: (uint)_PersistStorageType.PST_PROJECT_FILE,
-                    pbstrPropValue: out output);
+                    pbstrPropValue: out string output);
 
                 if (result == VSConstants.S_OK && !string.IsNullOrWhiteSpace(output))
                 {
@@ -61,6 +69,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
+                if (_project == null)
+                {
+                    _project = _dteProject.Value;
+                }
                 var property = _project.Properties.Item(propertyName);
                 return property?.Value as string;
             }
@@ -70,6 +82,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return null;
+        }
+
+        public async Task<string> GetPropertyValueAsync(string propertyName)
+        {
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+            return GetPropertyValue(propertyName);
         }
     }
 }

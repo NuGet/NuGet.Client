@@ -59,10 +59,11 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (SolutionManager.SolutionDirectory != null)
+                var solutionDirectory = SolutionManager.SolutionDirectory;
+                if (solutionDirectory != null)
                 {
                     _packagesFolderPath =
-                        PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
+                        PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, Settings);
                 }
 
                 return _packagesFolderPath;
