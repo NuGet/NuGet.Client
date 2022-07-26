@@ -410,5 +410,411 @@ namespace NuGet.Configuration.Test
                 .Should().BeEquivalentTo(
                 File.ReadAllText(configPath1).Replace("\r\n", "\n"));
         }
+
+        [Fact]
+        public void SavePackageSourceMappings_WithNewMappings_Add()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
+            testPackagePatternItems.Add(testPackagePatternItem);
+            PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
+
+            List<PackagePatternItem> packagePatternItems = new List<PackagePatternItem>();
+            for (int i = 0; i < 3; i++)
+            {
+                PackagePatternItem tempPackagePatternItem = new PackagePatternItem(i.ToString());
+                packagePatternItems.Add(tempPackagePatternItem);
+            }
+            PackageSourceMappingSourceItem tempMapping = new PackageSourceMappingSourceItem("tempSource", packagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(testMappingItem);
+            tempMappings.Add(tempMapping);
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+
+            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+        <packageSource key=""tempSource"">
+            <package pattern=""0"" />
+            <package pattern=""1"" />
+            <package pattern=""2"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>";
+
+            result.Replace("\r\n", "\n")
+                .Should().BeEquivalentTo(
+                File.ReadAllText(configPath1).Replace("\r\n", "\n"));
+        }
+
+        [Fact]
+        public void SavePackageSourceMappings_WithUpdatedMappings_Update()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            List<PackagePatternItem> packagePatternItems = new List<PackagePatternItem>();
+            for (int i = 0; i < 3; i++)
+            {
+                PackagePatternItem tempPackagePatternItem = new PackagePatternItem(i.ToString());
+                packagePatternItems.Add(tempPackagePatternItem);
+            }
+            PackageSourceMappingSourceItem tempMapping = new PackageSourceMappingSourceItem("nuget.org", packagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(tempMapping);
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+
+            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""0"" />
+            <package pattern=""1"" />
+            <package pattern=""2"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>";
+
+            result.Replace("\r\n", "\n")
+                .Should().BeEquivalentTo(
+                File.ReadAllText(configPath1).Replace("\r\n", "\n"));
+        }
+
+        [Fact]
+        public void SavePackageSourceMappings_WithMappingsDeleted_Remove()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+        <packageSource key=""nuget2.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
+            testPackagePatternItems.Add(testPackagePatternItem);
+            PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(testMappingItem);
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+
+            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>";
+
+            result.Replace("\r\n", "\n")
+                .Should().BeEquivalentTo(
+                File.ReadAllText(configPath1).Replace("\r\n", "\n"));
+        }
+
+        [Fact]
+        public void SavePackageSourceMappings_WithMappingsAddedRemovedUpdated_AddRemoveUpdate()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
+            testPackagePatternItems.Add(testPackagePatternItem);
+            PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
+            PackageSourceMappingSourceItem testMappingItem2 = new PackageSourceMappingSourceItem("nuget2.org", testPackagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(testMappingItem);
+            tempMappings.Add(testMappingItem2);
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+
+            //Update
+            List<PackagePatternItem> packagePatternItems = new List<PackagePatternItem>();
+            for (int i = 0; i < 3; i++)
+            {
+                PackagePatternItem tempPackagePatternItem = new PackagePatternItem(i.ToString());
+                packagePatternItems.Add(tempPackagePatternItem);
+            }
+            PackageSourceMappingSourceItem tempMapping = new PackageSourceMappingSourceItem("nuget.org", packagePatternItems);
+            tempMappings.Add(tempMapping);
+
+            //Add
+            PackagePatternItem packagePatternItemAdd = new PackagePatternItem("stuff");
+            List<PackagePatternItem> packagePatternItemsAdd = new List<PackagePatternItem>();
+            packagePatternItemsAdd.Add(packagePatternItemAdd);
+            PackageSourceMappingSourceItem testMappingItemAdd = new PackageSourceMappingSourceItem("newSource", packagePatternItemsAdd);
+
+            tempMappings.Add(testMappingItemAdd);
+            tempMappings.Remove(testMappingItem2);
+
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+
+            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""0"" />
+            <package pattern=""1"" />
+            <package pattern=""2"" />
+        </packageSource>
+        <packageSource key=""newSource"">
+            <package pattern=""stuff"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>";
+
+            result.Replace("\r\n", "\n")
+                .Should().BeEquivalentTo(
+                File.ReadAllText(configPath1).Replace("\r\n", "\n"));
+        }
+
+        [Fact]
+        public void SavePackageSourceMappings_PackageSourceMappingDisabled_AddMapping()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>");
+
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
+
+            List<PackagePatternItem> packagePatternItems = new List<PackagePatternItem>();
+            for (int i = 0; i < 3; i++)
+            {
+                PackagePatternItem tempPackagePatternItem = new PackagePatternItem(i.ToString());
+                packagePatternItems.Add(tempPackagePatternItem);
+            }
+            PackageSourceMappingSourceItem tempMapping = new PackageSourceMappingSourceItem("tempSource", packagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(tempMapping);
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+
+            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSourceMapping>
+    <packageSource key=""tempSource"">
+        <package pattern=""0"" />
+        <package pattern=""1"" />
+        <package pattern=""2"" />
+      </packageSource>
+  </packageSourceMapping>
+</configuration>";
+
+            result.Replace("\r\n", "\n")
+                .Should().BeEquivalentTo(
+                File.ReadAllText(configPath1).Replace("\r\n", "\n"));
+        }
+
+        [Fact]
+        public void SavePackageSourceMappings_NewPatternExistingSource_Add()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
+            PackagePatternItem testPackagePatternItem2 = new PackagePatternItem("newPattern");
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
+            testPackagePatternItems.Add(testPackagePatternItem);
+            testPackagePatternItems.Add(testPackagePatternItem2);
+            PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(testMappingItem);
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+
+            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+            <package pattern=""newPattern"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>";
+
+            result.Replace("\r\n", "\n")
+                .Should().BeEquivalentTo(
+                File.ReadAllText(configPath1).Replace("\r\n", "\n"));
+        }
+
+        [Fact]
+        public void SavePackageSourceMappings_RemovePatternExistingSource_Remove()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+            <package pattern=""newPattern"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            PackagePatternItem testPackagePatternItem = new PackagePatternItem("stuff");
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
+            testPackagePatternItems.Add(testPackagePatternItem);
+            PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("nuget.org", testPackagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(testMappingItem);
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+
+            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>";
+
+            result.Replace("\r\n", "\n")
+                .Should().BeEquivalentTo(
+                File.ReadAllText(configPath1).Replace("\r\n", "\n"));
+        }
+
+        [Fact]
+        public void SavePackageSourceMappings_WithTwoConfigs_UseCorrectMapping()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <packageSource key=""nuget.org"">
+            <package pattern=""pattern1"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            using var mockBaseDirectory2 = TestDirectory.Create();
+            var configPath2 = Path.Combine(mockBaseDirectory2, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath2, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear />        
+    </packageSourceMapping>
+</configuration>");
+
+            PackagePatternItem testPackagePatternItem = new PackagePatternItem("pattern1");
+            List<PackagePatternItem> testPackagePatternItems = new List<PackagePatternItem>();
+            testPackagePatternItems.Add(testPackagePatternItem);
+            PackageSourceMappingSourceItem testMappingItem = new PackageSourceMappingSourceItem("testSource", testPackagePatternItems);
+            List<PackageSourceMappingSourceItem> tempMappings = new List<PackageSourceMappingSourceItem>();
+            tempMappings.Add(testMappingItem);
+
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath2, configPath1 });
+
+            // Act & Assert
+            var sourceMappingProvider = new PackageSourceMappingProvider(settings);
+            sourceMappingProvider.SavePackageSourceMappings(tempMappings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            packageSourceMappingItems.Should().HaveCount(1);
+            var packageSourceMappingSourceItem = packageSourceMappingItems.First();
+            packageSourceMappingSourceItem.Key.Should().Be("testSource");
+            packageSourceMappingSourceItem.Patterns.Should().HaveCount(1);
+            packageSourceMappingSourceItem.Patterns.First().Pattern.Should().Be("pattern1");
+        }
     }
 }
