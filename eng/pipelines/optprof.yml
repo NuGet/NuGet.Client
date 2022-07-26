@@ -11,7 +11,7 @@ resources:
     branch: main
   - pipeline: DartLab.OptProf
     source: DartLab.OptProf
-    branch: main
+    branch: dev/mityler/VsSigning
   repositories:
   - repository: DartLabTemplates
     type: git
@@ -20,7 +20,7 @@ resources:
   - repository: DartLabOptProfTemplates
     type: git
     name: DartLab.OptProf
-    ref: refs/heads/main
+    ref: refs/heads/dev/mityler/VsSigning
 
 parameters:
 # The name of the Visual Studio branch the bootstrapper URL was built from
