@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using Moq;
 using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.ReportRenderers;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -137,8 +138,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 var listPackageArgs = new ListPackageArgs(path: "", packageSources: Enumerable.Empty<PackageSource>(),
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Outdated,
-                    OutputFormat.Console,
-                    OutputVersion.V1,
+                    ConsoleWriter.Instance,
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
                     logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
@@ -213,8 +213,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 var listPackageArgs = new ListPackageArgs(path: "", packageSources: Enumerable.Empty<PackageSource>(),
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Deprecated,
-                    OutputFormat.Console,
-                    OutputVersion.V1,
+                    ConsoleWriter.Instance,
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
@@ -288,8 +287,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 var listPackageArgs = new ListPackageArgs(path: "", packageSources: Enumerable.Empty<PackageSource>(),
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Vulnerable,
-                    OutputFormat.Console,
-                    OutputVersion.V1,
+                    ConsoleWriter.Instance,
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 

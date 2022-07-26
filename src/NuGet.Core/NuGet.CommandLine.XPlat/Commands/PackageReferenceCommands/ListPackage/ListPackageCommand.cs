@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.CommandLine.XPlat.ReportRenderers;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -134,8 +135,7 @@ namespace NuGet.CommandLine.XPlat
                         packageSources,
                         framework.Values,
                         reportType,
-                        outputFormatValue,
-                        outputVersionValue,
+                        ConsoleWriter.Instance,
                         includeTransitive.HasValue(),
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
