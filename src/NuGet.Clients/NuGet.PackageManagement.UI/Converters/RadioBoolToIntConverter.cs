@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.UI
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             int integer = (int)value;
-            if (integer == int.Parse(parameter.ToString()))
+            if (integer == int.Parse(parameter.ToString(), culture))
                 return true;
             else
                 return false;

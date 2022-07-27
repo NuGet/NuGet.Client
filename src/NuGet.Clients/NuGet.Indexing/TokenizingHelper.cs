@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace NuGet.Indexing
 {
@@ -20,7 +21,7 @@ namespace NuGet.Indexing
                 yield break;
             }
 
-            string word = term[0].ToString();
+            string word = term[0].ToString(CultureInfo.CurrentCulture);
             bool lastIsUpper = Char.IsUpper(term[0]);
             bool lastIsLetter = Char.IsLetter(term[0]);
 

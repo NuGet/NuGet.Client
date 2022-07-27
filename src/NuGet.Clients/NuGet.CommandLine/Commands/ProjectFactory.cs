@@ -302,7 +302,7 @@ namespace NuGet.CommandLine
             {
                 Logger.Log(
                     PackagingLogMessage.CreateWarning(
-                        string.Format(NuGetResources.ProjectJsonPack_Deprecated, builder.Id),
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.ProjectJsonPack_Deprecated, builder.Id),
                         NuGetLogCode.NU5126));
                 _usingJsonFile = true;
 
@@ -312,7 +312,7 @@ namespace NuGet.CommandLine
                 {
                     Logger.Log(
                         PackagingLogMessage.CreateError(
-                            string.Format(NuGetResources.Error_ProjectJson_Deprecated_And_Removed, builder.Id, NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK),
+                            string.Format(CultureInfo.CurrentCulture, NuGetResources.Error_ProjectJson_Deprecated_And_Removed, builder.Id, NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK),
                             NuGetLogCode.NU5042));
                     return null;
                 }
@@ -458,7 +458,7 @@ namespace NuGet.CommandLine
                 // Make if the target path doesn't exist, fail
                 if (!Directory.Exists(TargetPath) && !File.Exists(TargetPath))
                 {
-                    throw new PackagingException(NuGetLogCode.NU5012, String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("UnableToFindBuildOutput"), TargetPath));
+                    throw new PackagingException(NuGetLogCode.NU5012, string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("UnableToFindBuildOutput"), TargetPath));
                 }
             }
         }
@@ -477,7 +477,7 @@ namespace NuGet.CommandLine
             if (0 != result) // 0 is msbuild.exe success code
             {
                 // If the build fails, report the error
-                var error = String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));
+                var error = string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));
                 throw new PackagingException(NuGetLogCode.NU5013, error);
             }
 
@@ -754,7 +754,7 @@ namespace NuGet.CommandLine
                 {
                     Logger.Log(
                     PackagingLogMessage.CreateWarning(
-                        string.Format(NuGetResources.ProjectJsonPack_Deprecated, builder.Id),
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.ProjectJsonPack_Deprecated, builder.Id),
                         NuGetLogCode.NU5126));
                 }
 
@@ -911,7 +911,7 @@ namespace NuGet.CommandLine
         private void ProcessDependencies(Packaging.PackageBuilder builder)
         {
             // get all packages and dependencies, including the ones in project references
-            var packagesAndDependencies = new Dictionary<String, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>>();
+            var packagesAndDependencies = new Dictionary<string, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>>();
             ApplyAction(p => p.AddDependencies(packagesAndDependencies));
 
             // list of all dependency packages
@@ -1020,7 +1020,7 @@ namespace NuGet.CommandLine
             return !found;
         }
 
-        private void AddDependencies(Dictionary<String, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
+        private void AddDependencies(Dictionary<string, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
             Dictionary<string, object> props = new Dictionary<string, object>();
 
@@ -1125,7 +1125,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static void DisposePackageReaders(Dictionary<String, Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
+        private static void DisposePackageReaders(Dictionary<string, Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
         {
             // Release the open file handles
             foreach (var package in packagesAndDependencies)
@@ -1401,7 +1401,7 @@ namespace NuGet.CommandLine
         {
             if (LogLevel == LogLevel.Verbose)
             {
-                Logger.Log(PackagingLogMessage.CreateMessage(string.Format(format, args), LogLevel.Verbose));
+                Logger.Log(PackagingLogMessage.CreateMessage(string.Format(CultureInfo.CurrentCulture, format, args), LogLevel.Verbose));
             }
         }
 

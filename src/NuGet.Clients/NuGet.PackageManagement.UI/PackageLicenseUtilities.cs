@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.UI
                                 list.Add(new FreeText(licenseToBeProcessed.Substring(0, licenseStart)));
                             }
                             var license = licenseToBeProcessed.Substring(licenseStart, identifier.Length);
-                            list.Add(new LicenseText(license, new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, license))));
+                            list.Add(new LicenseText(license, new Uri(string.Format(CultureInfo.CurrentCulture, LicenseMetadata.LicenseServiceLinkTemplate, license))));
                             licenseToBeProcessed = licenseToBeProcessed.Substring(licenseStart + identifier.Length);
                         }
 

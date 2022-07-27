@@ -16,8 +16,13 @@ namespace NuGet.PackageManagement.UI
         // values[0] is the format string
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            if (values == null || values.Length < 2)
+            {
+                return null;
+            }
+
             string formatString = values[0] as string;
-            var formattedString = string.Format(formatString, values.Skip(1).ToArray());
+            var formattedString = string.Format(culture, formatString, values.Skip(1).ToArray());
             return formattedString;
         }
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Drawing;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft;
@@ -116,7 +117,7 @@ namespace NuGet.Options
         {
             get
             {
-                return ParentCheckedListBox.GetItemChecked(_index).ToString();
+                return ParentCheckedListBox.GetItemChecked(_index).ToString(CultureInfo.CurrentCulture);
             }
         }
 
