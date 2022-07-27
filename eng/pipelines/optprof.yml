@@ -83,14 +83,14 @@ stages:
         filePath: $(DartLab.Path)\Scripts\VisualStudio\Bootstrapper\Get-BootstrapperURL.ps1
         arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\BootstrapperInfo.json' -VSBranch '${{parameters.vsBranch}}' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
     preDeployAndRunTestsStepList:
-    - download: VisualStudioBuildUnderTest
+    - download: ComponentBuildUnderTest
     # Remove this step hook and it's task if you don't want LKG support
     prePublishOptimizationInputsDropStepList:
     # Set parameter for PreviousOptimizationInputsDropName 
     - powershell: |
         try {
           $artifactName = 'OptProf'
-          $BuildID = $(resources.pipeline.VisualStudioBuildUnderTest.runID)
+          $BuildID = $(resources.pipeline.ComponentBuildUnderTest.runID)
           $artifact = Get-BuildArtifact -InstanceURL 'https://dev.azure.com/devdiv' -ProjectName 'DevDiv' -BuildID $BuildID -ArtifactName $artifactName -OAuthAccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force)
           $containerName = $artifact.Resource.Data -Split '/' | Select-Object -Last 1
           $fileName = Join-Path $containerName 'Metadata.json'
