@@ -65,7 +65,7 @@ stages:
           $branchName = $branchName.Replace('refs/heads/', '')
 
           Write-Host "RunSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$branchName/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings"
-          Set-AzurePipelinesVariable 'RunSettingsURI' https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$branchName/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings
+          Set-AzurePipelinesVariable 'RunSettingsURI' "https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$branchName/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings"
         }
         catch {
           Write-Host $_
