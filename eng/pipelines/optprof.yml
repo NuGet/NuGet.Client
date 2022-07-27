@@ -46,7 +46,7 @@ stages:
 - template: \templates\stages\visual-studio\single-runsettings.yml@DartLabOptProfTemplates
   parameters:
     ##### Required #####
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranchName)/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings
+    runSettingsURI: $(RunSettingsURI)
     visualStudioBootstrapperURI: $(VisualStudio.InstallationUnderTest.BootstrapperURL)
     ##### Optional #####
     name: OptProf_ProfilingWorkflow
@@ -64,15 +64,15 @@ stages:
           $branchName = "$(resources.pipeline.ComponentBuildUnderTest.sourceBranch)"
           $branchName = $branchName.Replace('refs/heads/', '')
 
-          Write-Host "SourceBranchName: $branchName"
-          Set-AzurePipelinesVariable 'SourceBranchName' $branchName
+          Write-Host "RunSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(branchName)/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings"
+          Set-AzurePipelinesVariable 'RunSettingsURI' https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(branchName)/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings
         }
         catch {
           Write-Host $_
           Write-Error "Failed to set SourceBranchName pipeline variable"
           throw
         }
-      displayName: Set SourceBranchName
+      displayName: Set RunSettingsURI
     - download: ComponentBuildUnderTest
       artifact: MicroBuildOutputs
       patterns: '**\BootstrapperInfo.json'
