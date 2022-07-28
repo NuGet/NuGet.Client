@@ -6,6 +6,8 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers
     internal interface IReportRenderer
     {
         void ReportPayloadReceived(string payload);
-        void SetErrorText(string errorText, string project);
+        void WriteErrorLine(string errorText, string project);
+        void WriteLine();
+        void WriteLine(string value);
     }
 }

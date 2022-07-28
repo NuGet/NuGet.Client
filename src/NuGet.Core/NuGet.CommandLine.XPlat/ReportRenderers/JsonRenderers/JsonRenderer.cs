@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers
@@ -19,14 +20,24 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers
         {
         }
 
-        public void SetErrorText(string errorText, string project)
+        public void WriteErrorLine(string errorText, string project)
         {
             _problems.Add(new RenderProblem(project, errorText));
         }
 
         public virtual void WriteResult()
         {
-            System.Console.WriteLine("Write Json");
+            Console.WriteLine("Write Json");
+        }
+
+        public void WriteLine()
+        {
+            Console.WriteLine();
+        }
+
+        public void WriteLine(string value)
+        {
+            Console.WriteLine(value);
         }
     }
 }

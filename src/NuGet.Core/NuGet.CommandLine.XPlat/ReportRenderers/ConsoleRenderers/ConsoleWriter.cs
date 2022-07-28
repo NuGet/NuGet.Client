@@ -12,9 +12,19 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderers
             Console.WriteLine(payload);
         }
 
-        public void SetErrorText(string errorText, string _)
+        public void WriteErrorLine(string errorText, string _)
         {
-            Console.WriteLine(errorText);
+            Console.Error.WriteLine(errorText);
+        }
+
+        public void WriteLine()
+        {
+            Console.WriteLine();
+        }
+
+        public void WriteLine(string value)
+        {
+            Console.WriteLine(value);
         }
 
         public static ConsoleWriter Instance { get; } = new ConsoleWriter();
