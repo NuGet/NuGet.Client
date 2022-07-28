@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.UI
             var model = (PackageDetailControlModel)DataContext;
             List<string> sources = new List<string>() { "dotnet-eng" };
             Dictionary<string, List<string>> patterns = new Dictionary<string, List<string>>() { { model.Id, sources } };
-            PackageSourceMapping psm = new PackageSourceMapping((IReadOnlyDictionary<string, IReadOnlyList<string>>)patterns);
+            PackageSourceMapping psm = new PackageSourceMapping((Dictionary<string, List<string>>)patterns);
             if (model != null && model.SelectedVersion != null)
             {
                 var userAction = UserAction.CreateInstallAction(
@@ -139,8 +139,8 @@ namespace NuGet.PackageManagement.UI
         private void SolutionInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageSolutionDetailControlModel)DataContext;
-            IReadOnlyList<string> sources = new List<string>() { "dotnet-eng" };
-            IReadOnlyDictionary<string, IReadOnlyList<string>> patterns = new Dictionary<string, IReadOnlyList<string>>() { { model.Id, sources } };
+            List<string> sources = new List<string>() { "dotnet-eng" };
+            Dictionary<string, List<string>> patterns = new Dictionary<string, List<string>>() { { model.Id, sources } };
             PackageSourceMapping psm = new PackageSourceMapping(patterns);
             if (model != null && model.SelectedVersion != null)
             {

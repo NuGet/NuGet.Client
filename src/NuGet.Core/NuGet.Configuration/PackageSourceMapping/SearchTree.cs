@@ -20,7 +20,7 @@ namespace NuGet.Configuration
 
             _root = new SearchNode();
 
-            foreach (KeyValuePair<string, IReadOnlyList<string>> patternsPerSource in configuration.Patterns)
+            foreach (KeyValuePair<string, List<string>> patternsPerSource in configuration.Patterns)
             {
                 foreach (string namespaceId in patternsPerSource.Value)
                 {
@@ -80,7 +80,7 @@ namespace NuGet.Configuration
         /// <param name="term">Search term. Cannot be null, empty, or whitespace only. </param>
         /// <returns>Package source names with matching prefix "term" from package source mapping section.</returns>
         /// <exception cref="ArgumentException"> if <paramref name="term"/> is null, empty, or whitespace only.</exception>
-        public IReadOnlyList<string> GetConfiguredPackageSources(string term)
+        public List<string> GetConfiguredPackageSources(string term)
         {
             if (string.IsNullOrWhiteSpace(term))
             {

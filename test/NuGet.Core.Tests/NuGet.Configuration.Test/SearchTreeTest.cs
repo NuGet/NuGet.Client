@@ -40,7 +40,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             configuration.IsEnabled.Should().BeTrue();
-            IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
+            List<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
             Assert.Equal(1, configuredSources.Count);
             Assert.Equal(configuration.Patterns.Keys.First().Trim(), configuredSources[0]);
         }
@@ -57,7 +57,7 @@ namespace NuGet.Configuration.Test
             SearchTree searchTree = GetSearchTree(packagePatterns);
 
             // Act & Assert
-            IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
+            List<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
             Assert.Null(configuredSources);
         }
 
@@ -72,7 +72,7 @@ namespace NuGet.Configuration.Test
             SearchTree searchTree = new SearchTree(configuration);
 
             // Act & Assert
-            IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
+            List<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
             Assert.Equal(1, configuredSources.Count);
             Assert.True(configuredSources[0].StartsWith(term.Trim().Substring(0, 5)));
         }
@@ -88,7 +88,7 @@ namespace NuGet.Configuration.Test
             SearchTree searchTree = new SearchTree(configuration);
 
             // Act & Assert
-            IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
+            List<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
             Assert.Equal(1, configuredSources.Count);
             Assert.True(term.Trim().StartsWith(configuredSources[0], StringComparison.OrdinalIgnoreCase));
         }
@@ -104,7 +104,7 @@ namespace NuGet.Configuration.Test
             SearchTree searchTree = GetSearchTree(packagePatterns);
 
             // Act & Assert
-            IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
+            List<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
             Assert.Null(configuredSources);
         }
 
@@ -118,7 +118,7 @@ namespace NuGet.Configuration.Test
             SearchTree searchTree = GetSearchTree(packagePatterns);
 
             // Act & Assert
-            IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
+            List<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
             Assert.Null(configuredSources);
         }
 
@@ -138,7 +138,7 @@ namespace NuGet.Configuration.Test
             SearchTree searchTree = GetSearchTree(packagePatterns);
 
             // Act & Assert
-            IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
+            List<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
             Assert.Null(configuredSources);
         }
 
@@ -149,7 +149,7 @@ namespace NuGet.Configuration.Test
             SearchTree searchTree = GetSearchTree("source1,nuget.*|source2,nuget.common,nuget.protocol.*|source3,nuget.common.identity");
 
             // Act & Assert
-            IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Common1");
+            List<string> configuredSources = searchTree.GetConfiguredPackageSources("NuGet.Common1");
             Assert.Equal(1, configuredSources.Count);
             Assert.Equal("source1", configuredSources.First());
 
