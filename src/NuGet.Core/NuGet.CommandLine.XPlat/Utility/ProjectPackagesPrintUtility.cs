@@ -326,11 +326,11 @@ namespace NuGet.CommandLine.XPlat.Utility
             return result.ToArray();
         }
 
-        internal static void PrintSources(IEnumerable<PackageSource> packageSources)
+        internal static void PrintSources(ListPackageArgs listPackageArgs)
         {
-            foreach (var source in packageSources)
+            foreach (var source in listPackageArgs.PackageSources)
             {
-                Console.WriteLine("   " + source.Source);
+                listPackageArgs.Renderer.WriteLine("   " + source.Source);
             }
         }
     }

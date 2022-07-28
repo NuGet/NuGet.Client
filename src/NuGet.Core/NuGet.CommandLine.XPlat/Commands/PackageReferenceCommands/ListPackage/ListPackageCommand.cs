@@ -196,7 +196,7 @@ namespace NuGet.CommandLine.XPlat
             if (!string.IsNullOrEmpty(outputVersionOption) && outputVersionOption != "1")
             {
                 string currentlySupportedVersions = "1";
-                reportRenderer.SetErrorText(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedVersions), project: null);
+                reportRenderer.WriteErrorLine(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedVersions), project: null);
             }
 
             return reportRenderer;

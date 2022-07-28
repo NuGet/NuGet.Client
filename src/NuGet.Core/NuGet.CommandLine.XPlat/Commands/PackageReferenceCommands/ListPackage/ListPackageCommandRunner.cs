@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
+using NuGet.CommandLine.XPlat.ReportRenderers;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -31,11 +32,12 @@ namespace NuGet.CommandLine.XPlat
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
+            IReportRenderer reportRenderer = listPackageArgs.Renderer;
             if (!File.Exists(listPackageArgs.Path))
             {
-                Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                reportRenderer.WriteErrorLine(errorText: string.Format(CultureInfo.CurrentCulture,
                         Strings.ListPkg_ErrorFileNotFound,
-                        listPackageArgs.Path));
+                        listPackageArgs.Path), project: null);
                 return;
             }
             //If the given file is a solution, get the list of projects
@@ -50,10 +52,10 @@ namespace NuGet.CommandLine.XPlat
             //Print sources, but not for generic list (which is offline)
             if (listPackageArgs.ReportType != ReportType.Default)
             {
-                Console.WriteLine();
-                Console.WriteLine(Strings.ListPkg_SourcesUsedDescription);
-                ProjectPackagesPrintUtility.PrintSources(listPackageArgs.PackageSources);
-                Console.WriteLine();
+                reportRenderer.WriteLine();
+                reportRenderer.WriteLine(Strings.ListPkg_SourcesUsedDescription);
+                ProjectPackagesPrintUtility.PrintSources(listPackageArgs);
+                reportRenderer.WriteLine();
             }
 
             foreach (var projectPath in projectsPaths)
@@ -64,10 +66,10 @@ namespace NuGet.CommandLine.XPlat
 
                 if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
                 {
-                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                    reportRenderer.WriteErrorLine(errorText: string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_NotPRProject,
-                        projectPath));
-                    Console.WriteLine();
+                        projectPath), project: projectPath);
+                    reportRenderer.WriteLine();
                     continue;
                 }
 
@@ -78,10 +80,10 @@ namespace NuGet.CommandLine.XPlat
                 // If the file was not found, print an error message and continue to next project
                 if (!File.Exists(assetsPath))
                 {
-                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                    reportRenderer.WriteErrorLine(errorText: string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_AssetsFileNotFound,
-                        projectPath));
-                    Console.WriteLine();
+                        projectPath), project: projectPath);
+                    reportRenderer.WriteLine();
                 }
                 else
                 {
@@ -158,7 +160,7 @@ namespace NuGet.CommandLine.XPlat
             // Print a legend message for auto-reference markers used
             if (autoReferenceFound)
             {
-                Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
+                reportRenderer.WriteLine(Strings.ListPkg_AutoReferenceDescription);
             }
         }
 
