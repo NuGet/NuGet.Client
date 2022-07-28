@@ -1,0 +1,26 @@
+NuGet.Commands.PushArgs
+NuGet.Commands.PushArgs.ApiKey.get -> string
+NuGet.Commands.PushArgs.ApiKey.set -> void
+NuGet.Commands.PushArgs.DisableBuffering.get -> bool
+NuGet.Commands.PushArgs.DisableBuffering.set -> void
+NuGet.Commands.PushArgs.ForceEnglishOutput.get -> bool
+NuGet.Commands.PushArgs.ForceEnglishOutput.set -> void
+NuGet.Commands.PushArgs.Interactive.get -> bool
+NuGet.Commands.PushArgs.Interactive.set -> void
+NuGet.Commands.PushArgs.NoServiceEndpoint.get -> bool
+NuGet.Commands.PushArgs.NoServiceEndpoint.set -> void
+NuGet.Commands.PushArgs.NoSymbols.get -> bool
+NuGet.Commands.PushArgs.NoSymbols.set -> void
+NuGet.Commands.PushArgs.PackagePaths.get -> string
+NuGet.Commands.PushArgs.PackagePaths.set -> void
+NuGet.Commands.PushArgs.PushArgs() -> void
+NuGet.Commands.PushArgs.SkipDuplicate.get -> bool
+NuGet.Commands.PushArgs.SkipDuplicate.set -> void
+NuGet.Commands.PushArgs.Source.get -> string
+NuGet.Commands.PushArgs.Source.set -> void
+NuGet.Commands.PushArgs.SymbolApiKey.get -> string
+NuGet.Commands.PushArgs.SymbolApiKey.set -> void
+NuGet.Commands.PushArgs.SymbolSource.get -> string
+NuGet.Commands.PushArgs.SymbolSource.set -> void
+NuGet.Commands.PushArgs.Timeout.get -> int
+NuGet.Commands.PushArgs.Timeout.set -> void

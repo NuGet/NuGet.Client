@@ -77,7 +77,7 @@ foreach (XElement verb in allElements)
             <#= commandFormalNameVar #>.AddCommand(<#= nounFormalNameVar #>);
 <#
 
-    } // end noun foreach
+    } // end noun/command foreach
 
     GenerateSetCustomHandler(commandFormalNameVar, verb, 12);
 #>

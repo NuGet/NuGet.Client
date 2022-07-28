@@ -246,7 +246,7 @@ public class OptionData
 
     string GenerateOptionNameVar(OptionData data)
     {
-        return data.Name + "_" + data.BaseClass;
+        return StringUtilities.GetFormalName(data.Name) + "_" + data.BaseClass;
     }
 
     void GenerateAddOptionOrArgument(XElement parentNode, string commandVarName, int indent = 4)
@@ -278,7 +278,7 @@ public class OptionData
                 if (data.HasShortcut)
                 {
 #>
-<#= Indent(indent) #>var <#= optionNameVar #> = new Option<<#= data.DataType #>>(aliases: new[] { "<#= data.ShortcutName #>", "<#= data.FullName #>" }, description: <#= data.Help #>);
+<#= Indent(indent) #>var <#= optionNameVar #> = new Option<<#= data.DataType #>>(aliases: new[] { "<#= data.ShortcutName #>", "<#= data.FullName #>" }, description: <#= data.Help #>)
 <#+
                 }
                 else
@@ -394,6 +394,12 @@ public class OptionData
     } // end method GenerateCommandHandler
 
 
+    void GenerateCustomBinderHandler(XElement noun, int indent = 4)
+    {
+
+    }
+
+
     void GenerateArgsClass(string className, XElement nodeMembers, string classVisibility = "public", int indent = 4)
     {
         PushIndent(Indent(indent));
@@ -445,10 +451,56 @@ public class OptionData
         bool hasCustomHandler = !string.IsNullOrEmpty(customHandler);
         if (hasCustomHandler)
         {
-            WriteLine($"{commandVarName}.SetHandler({customHandler});");
+            Write($"{commandVarName}.SetHandler({customHandler}");
+            Write(GenerateCommandHandlerFunctionArgs(node));
+            WriteLine(");");
         }
         PopIndent();
 
         return hasCustomHandler;
     } // GenerateSetCustomHandler
+
+    ValueTuple<string, string> GetVerbNounFormalNames(XElement verb, XElement noun = null)
+    {
+        string verbName = verb.Attribute(XName.Get("Name", ""))?.Value;
+        string verbFormalName = StringUtilities.GetFormalName(verbName);
+
+        string nounFormalName = string.Empty;
+        if (noun != null)
+        {
+            string nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
+            nounFormalName = StringUtilities.GetFormalName(nounName);
+        }
+
+        return (verbFormalName, nounFormalName);
+    }
+
+    string GetArgsClassName(XElement verb, XElement noun = null)
+    {
+        (string verbFormalName, string nounFormalName) = GetVerbNounFormalNames(verb, noun);
+
+        return $"{verbFormalName}{nounFormalName}Args";
+    }
+
+    string GetCustomBinderClassName(XElement verb, XElement noun = null)
+    {
+        (string verbFormalName, string nounFormalName) = GetVerbNounFormalNames(verb, noun);
+
+        return $"{verbFormalName}{nounFormalName}CustomBinder";
+    }
+
+    void GenerateCustomBinderClass(string className, string binderClassName)
+    {
+        WriteLine($"internal partial class {className} : BinderBase<{binderClassName}>");
+        WriteLine("{");
+        PushIndent(Indent(4));
+        WriteLine($"protected override {binderClassName} GetBoundValue(BindingContext bindingContext)");
+        WriteLine("{");
+        PushIndent(Indent(4));
+        WriteLine("throw new NotImplementedException();");
+        PopIndent();
+        WriteLine("} // end GetBoundValue method");
+        PopIndent();
+        WriteLine("} // end class");
+    }
 #>
