@@ -771,4 +771,12 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="ListPkg_OutputVersionDescription" xml:space="preserve">
     <value>The version of report output.</value>
   </data>
+  <data name="ListPkg_InvalidOutputFormat" xml:space="preserve">
+    <value>Invalid value {0} provided for output format. The accepted values are {1}.</value>
+    <comment>{0} - argument name in format option {1} - the possible values of the argument.</comment>
+  </data>
+  <data name="ListPkg_InvalidOutputVersion" xml:space="preserve">
+    <value>Unsupported output format version {0} was requested. Defaulting to latest available format version {1}. The accepted values are {2}.</value>
+    <comment>{0} - argument name in version option {1} - current selected version {2} - the possible values of the argument.</comment>
+  </data>
 </root>

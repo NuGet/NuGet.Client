@@ -9,6 +9,8 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.CommandLine.XPlat.ReportRenderers;
+using NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderers;
+using NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -128,14 +130,14 @@ namespace NuGet.CommandLine.XPlat
                         isDeprecated: deprecatedReport.HasValue(),
                         isVulnerable: vulnerableReport.HasValue());
 
-                    (OutputFormat outputFormatValue, OutputVersion outputVersionValue) = GetOutputType(outputFormat.Value(), outputVersion.Value());
+                    IReportRenderer reportRenderer = GetOutputType(outputFormat.Value(), outputVersion.Value());
 
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
                         packageSources,
                         framework.Values,
                         reportType,
-                        ConsoleWriter.Instance,
+                        reportRenderer,
                         includeTransitive.HasValue(),
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
@@ -172,22 +174,32 @@ namespace NuGet.CommandLine.XPlat
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_InvalidOptions));
         }
 
-        private static (OutputFormat, OutputVersion) GetOutputType(string outputFormatOption, string outputVersionOption)
+        private static IReportRenderer GetOutputType(string outputFormatOption, string outputVersionOption)
         {
-            OutputVersion outputVersion = OutputVersion.V1;
             OutputFormat outputFormat = OutputFormat.Console;
 
             if (!string.IsNullOrEmpty(outputFormatOption) && !Enum.TryParse(outputFormatOption, out outputFormat))
             {
-                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions));
+                string currentlySupportedFormat = "console, json";
+                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOutputFormat, outputFormatOption, currentlySupportedFormat));
             }
 
+            if (outputFormat == OutputFormat.Console)
+            {
+                return ConsoleWriter.Instance;
+            }
+
+            // currently only version 1 is available, so default to latest available version 1.
+            IReportRenderer reportRenderer = new JsonRendererV1();
+
+            // If customer pass unsupported version then default to latest available version and warn about unsupported version.
             if (!string.IsNullOrEmpty(outputVersionOption) && outputVersionOption != "1")
             {
-                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions));
+                string currentlySupportedVersions = "1";
+                reportRenderer.SetErrorText(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedVersions), project: null);
             }
 
-            return (outputFormat, outputVersion);
+            return reportRenderer;
         }
 
         private static void DisplayMessages(ListPackageArgs packageRefArgs)

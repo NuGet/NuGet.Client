@@ -700,6 +700,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value {0} provided for output format. The accepted values are {1}..
+        /// </summary>
+        internal static string ListPkg_InvalidOutputFormat {
+            get {
+                return ResourceManager.GetString("ListPkg_InvalidOutputFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsupported output format version {0} was requested. Defaulting to latest available format version {1}. The accepted values are {2}..
+        /// </summary>
+        internal static string ListPkg_InvalidOutputVersion {
+            get {
+                return ResourceManager.GetString("ListPkg_InvalidOutputVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Latest.
         /// </summary>
         internal static string ListPkg_Latest {
