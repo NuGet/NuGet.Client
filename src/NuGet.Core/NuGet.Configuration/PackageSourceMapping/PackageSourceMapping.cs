@@ -83,7 +83,7 @@ namespace NuGet.Configuration
         }
 
         //Adds one source to a mapping for a package
-        internal void AddMapping(string packageID, string source)
+        public void AddMapping(string packageID, string source)
         {
             if (!Patterns.ContainsKey(packageID))
             {

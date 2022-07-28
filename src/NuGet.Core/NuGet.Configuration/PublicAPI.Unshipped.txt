@@ -1,1 +1,3 @@
-#nullable enable
+NuGet.Configuration.PackageSourceMapping.GetConfiguredPackageSources(string packageId) -> System.Collections.Generic.List<string>
+NuGet.Configuration.PackageSourceMapping.PackageSourceMapping(System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>> patterns) -> void
+NuGet.Configuration.NuGetConfigurationException.NuGetConfigurationException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
