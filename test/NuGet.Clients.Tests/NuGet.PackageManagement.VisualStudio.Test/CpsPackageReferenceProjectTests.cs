@@ -30,6 +30,7 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Test.Utility;
+using Test.Utility.VisualStudio;
 using Xunit;
 using Xunit.Abstractions;
 using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
@@ -52,7 +53,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 { constant.FlightFlag, true },
             };
 
-            var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled), new Lazy<IOutputConsoleProvider>(() => new TestOutputConsoleProvider()));
+            var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), NuGetExperimentationServiceUtility.GetMock(flightsEnabled).Object, new Lazy<IOutputConsoleProvider>(() => new TestOutputConsoleProvider()));
 
             service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(true);
             componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(service);

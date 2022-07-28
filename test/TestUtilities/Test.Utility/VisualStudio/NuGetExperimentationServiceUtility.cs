@@ -13,9 +13,10 @@ namespace Test.Utility.VisualStudio
 {
     public static class NuGetExperimentationServiceUtility
     {
-        public static void GetThing()
+        public static Mock<INuGetExperimentationService> GetMock()
         {
-            var mock = Mock<INuGetExperimentationService>()
+            var mock = new Mock<INuGetExperimentationService>();
+            return mock;
         }
     }
 }
