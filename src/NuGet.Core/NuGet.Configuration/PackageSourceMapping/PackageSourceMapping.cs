@@ -18,7 +18,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Source name to package patterns list.
         /// </summary>
-        internal Dictionary<string, List<string>> Patterns { get; set; }
+        internal IReadOnlyDictionary<string, IReadOnlyList<string>> Patterns { get; }
 
         private Lazy<SearchTree> SearchTree { get; }
 
@@ -33,12 +33,12 @@ namespace NuGet.Configuration
         /// <param name="packageId">Search packageId. Cannot be null, empty, or whitespace only. </param>
         /// <returns>Package source names with matching prefix "packageId" from package patterns.</returns>
         /// <exception cref="ArgumentException"> if <paramref name="packageId"/> is null, empty, or whitespace only.</exception>
-        public List<string> GetConfiguredPackageSources(string packageId)
+        public IReadOnlyList<string> GetConfiguredPackageSources(string packageId)
         {
             return SearchTree.Value?.GetConfiguredPackageSources(packageId);
         }
 
-        public PackageSourceMapping(Dictionary<string, List<string>> patterns)
+        public PackageSourceMapping(IReadOnlyDictionary<string, IReadOnlyList<string>> patterns)
         {
             Patterns = patterns ?? throw new ArgumentNullException(nameof(patterns));
             IsEnabled = Patterns.Count > 0;
@@ -60,7 +60,7 @@ namespace NuGet.Configuration
 
             var packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
 
-            var patterns = new Dictionary<string, List<string>>();
+            var patterns = new Dictionary<string, IReadOnlyList<string>>();
 
             foreach (PackageSourceMappingSourceItem packageSourceNamespaceItem in packageSourceMappingProvider.GetPackageSourceMappingItems())
             {
@@ -80,16 +80,6 @@ namespace NuGet.Configuration
             }
 
             return patternsLookup;
-        }
-
-        //Adds one source to a mapping for a package
-        public void AddMapping(string packageID, string source)
-        {
-            if (!Patterns.ContainsKey(packageID))
-            {
-                Patterns[packageID] = new List<string>();
-            }
-            Patterns[packageID].Add(source);
         }
     }
 }

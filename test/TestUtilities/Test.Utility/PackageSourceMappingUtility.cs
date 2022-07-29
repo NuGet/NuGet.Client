@@ -11,7 +11,7 @@ namespace Test.Utility
         public static PackageSourceMapping GetpackageSourceMapping(string packagePatterns)
         {
             string[] sections = packagePatterns.Split('|');
-            var patterns = new Dictionary<string, List<string>>();
+            var patterns = new Dictionary<string, IReadOnlyList<string>>();
 
             foreach (string section in sections)
             {

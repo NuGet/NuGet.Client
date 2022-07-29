@@ -31,7 +31,9 @@
     <Grid.RowDefinitions>
       <RowDefinition
         Height="auto" />
-      <RowDefinition />
+      <RowDefinition
+        Height="auto"/>
+      <RowDefinition/>
       <RowDefinition
         Height="auto" />
     </Grid.RowDefinitions>
@@ -58,8 +60,11 @@
         Content="{x:Static nuget:Resources.Button_Copy}"
         Click="CopyButtonClicked" />
     </Grid>
+    <TextBlock Grid.Row="1" Name="_packageSourceMapping" Margin="12,12,12,0">
+      Package source mapping is enabled
+    </TextBlock>
     <Border
-      Grid.Row="1"
+      Grid.Row="2"
       Margin="12,12"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
       BorderThickness="1">
@@ -151,7 +156,7 @@
     </Border>
 
     <Grid
-      Grid.Row="2">
+      Grid.Row="3">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="auto" />

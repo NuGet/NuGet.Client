@@ -66,7 +66,7 @@ namespace NuGet.DependencyResolver
             // filter package patterns if enabled            
             if (PackageSourceMapping?.IsEnabled == true && libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
             {
-                List<string> sources = PackageSourceMapping.GetConfiguredPackageSources(libraryRange.Name).ToList();
+                IReadOnlyList<string> sources = PackageSourceMapping.GetConfiguredPackageSources(libraryRange.Name);
 
                 if (sources == null || sources.Count == 0)
                 {

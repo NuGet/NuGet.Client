@@ -17,6 +17,7 @@
       <ResourceDictionary.MergedDictionaries>
         <local:SharedResources />
       </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
       <local:InstalledVersionsCountConverter
         x:Key="InstalledVersionsCountConverter" />
       <local:TooltipConverter
@@ -338,6 +339,10 @@
         <RowDefinition Height="auto" />
         <RowDefinition Height="10" />
         <RowDefinition Height="auto" />
+        <RowDefinition Height="10"/>
+        <RowDefinition Height="auto"/>
+        <RowDefinition Height="auto"/>
+        <RowDefinition Height="auto"/>
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="auto" />
@@ -436,6 +441,28 @@
         Click="InstallButton_Clicked"
         IsEnabled="{Binding CanInstall}"
         Content="{x:Static local:Resources.Button_Install}" />
+
+      <TextBlock
+        Grid.Row="4"
+        Grid.Column="0"
+        FontWeight="Bold"
+        Text="Mapping:"
+        Name="mappingHeader"/>
+
+      <CheckBox Grid.Row="4" Grid.Column="2" Name="newMapping" Margin="0,0,0,10" IsChecked="{Binding SelectMappingCheckBoxState}">Add mapping to selected source</CheckBox>
+      <TextBlock Grid.Row="5" Grid.Column="2" Name="existingMappings" Margin="0,0,0,10">Package already has mappings</TextBlock>
+
+      <Button
+        Grid.Row="6"
+        Grid.Column="2"
+        Name="settingsLink"
+        Click="SettingsButtonClicked"
+        Background="Transparent"
+        BorderBrush="Transparent">
+        <Hyperlink>
+          <Run>Package Source Mapping Settings</Run>
+        </Hyperlink>
+      </Button>
     </Grid>
   </Grid>
 </UserControl>

@@ -1072,7 +1072,6 @@ namespace NuGet.PackageManagement.UI
             IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
             int selectedIndex = _packageList.SelectedIndex;
             int recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
-
             if (selectedItem == null)
             {
                 _packageDetail.Visibility = Visibility.Hidden;
@@ -1092,6 +1091,71 @@ namespace NuGet.PackageManagement.UI
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return;
+                }
+            }
+            //Shows text if there are already mappings to selected package
+            PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(Settings);
+            string packageID = _detailModel.Id;
+            _detailModel.IsPackageSourceMappingEnabled = packageSourceMapping.IsEnabled;
+            //for install button binding
+            _detailModel.IsAllSourcesSelected = SelectedSource.SourceName == "All";
+            IReadOnlyList<string> configuredSources = packageSourceMapping.GetConfiguredPackageSources(packageID);
+            if (configuredSources == null)
+            {
+                if (_detailModel.IsSolution)
+                {
+                    _packageDetail._solutionView.existingMappings.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    _packageDetail._projectView.existingMappings.Visibility = Visibility.Collapsed;
+                    _packageDetail._projectView.PackageDetailControlModel.UpdateIsInstallorUpdateButtonEnabled();
+                }
+                _detailModel.IsExistingMappingsNull = true;
+            }
+            else
+            {
+                if (_detailModel.IsSolution)
+                {
+                    _packageDetail._solutionView.existingMappings.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    _packageDetail._projectView.existingMappings.Visibility = Visibility.Visible;
+                }
+                _detailModel.IsExistingMappingsNull = false;
+            }
+            //Hides mapping panel if All sources selected
+            if (SelectedSource.SourceName == "All")
+            {
+                if (_detailModel.IsSolution)
+                {
+                    _packageDetail._solutionView.mappingHeader.Visibility = Visibility.Collapsed;
+                    _packageDetail._solutionView.newMapping.Visibility = Visibility.Collapsed;
+                    _packageDetail._solutionView.existingMappings.Visibility = Visibility.Collapsed;
+                    _packageDetail._solutionView.settingsLink.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    _packageDetail._projectView.mappingHeader.Visibility = Visibility.Collapsed;
+                    _packageDetail._projectView.newMapping.Visibility = Visibility.Collapsed;
+                    _packageDetail._projectView.existingMappings.Visibility = Visibility.Collapsed;
+                    _packageDetail._projectView.settingsLink.Visibility = Visibility.Collapsed;
+                }
+            }
+            else
+            {
+                if (_detailModel.IsSolution)
+                {
+                    _packageDetail._solutionView.mappingHeader.Visibility = Visibility.Visible;
+                    _packageDetail._solutionView.newMapping.Visibility = Visibility.Visible;
+                    _packageDetail._solutionView.settingsLink.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    _packageDetail._projectView.mappingHeader.Visibility = Visibility.Visible;
+                    _packageDetail._projectView.newMapping.Visibility = Visibility.Visible;
+                    _packageDetail._projectView.settingsLink.Visibility = Visibility.Visible;
                 }
             }
         }
@@ -1677,9 +1741,6 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
         internal void InstallPackage(string packageId, NuGetVersion version, IEnumerable<PackageItemViewModel> packagesInfo)
         {
-            //IReadOnlyList<string> patterns = new List<string>() { "dotnet-eng" };
-            // I//ReadOnlyDictionary<string, IReadOnlyList<string>> psmDictonary = new Dictionary<string, IReadOnlyList<string>>() { { packageId, patterns } };
-            //PackageSourceMapping mapping = new PackageSourceMapping(psmDictonary);
             var action = UserAction.CreateInstallAction(packageId, version, Model.IsSolution, UIUtility.ToContractsItemFilter(_topPanel.Filter));
 
             ExecuteAction(

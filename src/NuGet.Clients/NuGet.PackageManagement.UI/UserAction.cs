@@ -32,10 +32,11 @@ namespace NuGet.PackageManagement.UI
             VersionRange = versionRange;
         }
 
-        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, PackageSourceMapping mapping)
+        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, string newMappingID, string newMappingSource)
            : this(action, packageId, packageVersion, isSolutionLevel, activeTab)
         {
-            NewMapping = mapping;
+            NewMappingID = newMappingID;
+            NewMappingSource = newMappingSource;
         }
 
         public NuGetProjectActionType Action { get; private set; }
@@ -44,16 +45,12 @@ namespace NuGet.PackageManagement.UI
         public string PackageId { get; }
         public NuGetVersion Version { get; }
         public VersionRange VersionRange { get; }
-        public PackageSourceMapping NewMapping { get; }
+        public string NewMappingID { get; }
+        public string NewMappingSource { get; }
 
-        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, PackageSourceMapping mapping)
+        public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, string newMappingID, string newMappingSource)
         {
-            if (mapping == null)
-            {
-                throw new ArgumentNullException(nameof(mapping));
-            }
-
-            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, isSolutionLevel, activeTab, mapping);
+            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, isSolutionLevel, activeTab, newMappingID, newMappingSource);
         }
 
         public static UserAction CreateInstallAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab)

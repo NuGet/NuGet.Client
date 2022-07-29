@@ -37,6 +37,7 @@ namespace NuGet.PackageManagement.UI
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly NuGetPackageManager _packageManager;
         private readonly INuGetLockService _lockService;
+        public bool IsPackageSourceMappingEnabled { get; private set; }
 
         /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
@@ -77,7 +78,9 @@ namespace NuGet.PackageManagement.UI
                     userAction,
                     uiService.RemoveDependencies,
                     uiService.ForceRemove,
-                    cancellationToken),
+                    cancellationToken,
+                    userAction.NewMappingID,
+                    userAction.NewMappingSource),
                 cancellationToken);
         }
 
@@ -521,6 +524,7 @@ namespace NuGet.PackageManagement.UI
 
                     var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(uiService.Settings);
                     bool isPackageSourceMappingEnabled = packageSourceMapping?.IsEnabled ?? false;
+                    IsPackageSourceMappingEnabled = isPackageSourceMappingEnabled;
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         projectIds,
@@ -841,7 +845,9 @@ namespace NuGet.PackageManagement.UI
             UserAction userAction,
             bool removeDependencies,
             bool forceRemove,
-            CancellationToken token)
+            CancellationToken token,
+            string newMappingID = null,
+            string newMappingSource = null)
         {
             var results = new List<ProjectAction>();
 
@@ -868,9 +874,38 @@ namespace NuGet.PackageManagement.UI
                     uiService.DependencyBehavior,
                     packageSourceNames,
                     userAction.VersionRange,
-                    token);
+                    token,
+                    newMappingID,
+                    newMappingSource);
 
                 results.AddRange(actions);
+
+                if (newMappingID != null || newMappingSource != null)
+                {
+                    PackageSourceMappingProvider mappingProvider = new PackageSourceMappingProvider(uiService.Settings);
+                    List<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems().ToList();
+                    PackagePatternItem packagePattern = new PackagePatternItem(newMappingID);
+                    bool newSource = true;
+                    var existingPackageSourceMappingItemsCopy = mappingProvider.GetPackageSourceMappingItems().ToList();
+                    foreach (var sourceItem in existingPackageSourceMappingItemsCopy)
+                    {
+                        if (sourceItem.Key == newMappingSource)
+                        {
+                            var patterns = sourceItem.Patterns;
+                            patterns.Add(packagePattern);
+                            PackageSourceMappingSourceItem mappingSourceItem = new PackageSourceMappingSourceItem(newMappingSource, patterns);
+                            existingPackageSourceMappingItems.Remove(sourceItem);
+                            existingPackageSourceMappingItems.Add(mappingSourceItem);
+                            newSource = false;
+                        }
+                    }
+                    if (newSource == true)
+                    {
+                        PackageSourceMappingSourceItem mappingSourceItem = new PackageSourceMappingSourceItem(newMappingSource, new List<PackagePatternItem>() { packagePattern });
+                        existingPackageSourceMappingItems.Add(mappingSourceItem);
+                    }
+                    mappingProvider.SavePackageSourceMappings(existingPackageSourceMappingItems);
+                }
             }
             else
             {

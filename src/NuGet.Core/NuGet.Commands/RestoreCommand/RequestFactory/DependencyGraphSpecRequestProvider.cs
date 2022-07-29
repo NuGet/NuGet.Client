@@ -159,11 +159,26 @@ namespace NuGet.Commands
             var settings = Settings.LoadImmutableSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths, settingsLoadingContext);
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
-            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+
+            var packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
+
+            var patterns = new Dictionary<string, List<string>>();
+
+            foreach (PackageSourceMappingSourceItem packageSourceNamespaceItem in packageSourceMappingProvider.GetPackageSourceMappingItems())
+            {
+                patterns.Add(packageSourceNamespaceItem.Key, new List<string>(packageSourceNamespaceItem.Patterns.Select(e => e.Pattern)));
+            }
+
             if (restoreArgs.NewMappingID != null && restoreArgs.NewMappingSource != null)
             {
-                packageSourceMapping.AddMapping(restoreArgs.NewMappingID, restoreArgs.NewMappingSource);
+                if (!patterns.ContainsKey(restoreArgs.NewMappingSource))
+                {
+                    patterns[restoreArgs.NewMappingSource] = new List<string>();
+                }
+                patterns[restoreArgs.NewMappingSource].Add(restoreArgs.NewMappingID);
             }
+            Dictionary<string, IReadOnlyList<string>> patternsReadOnly = patterns.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)pair.Value);
+            var packageSourceMapping = new PackageSourceMapping(patternsReadOnly);
             var updateLastAccess = SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings);
 
             var sharedCache = _providerCache.GetOrCreate(

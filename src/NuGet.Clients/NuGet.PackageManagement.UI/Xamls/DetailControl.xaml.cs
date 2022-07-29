@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -51,6 +49,8 @@ namespace NuGet.PackageManagement.UI
 
                 _projectView.InstallButtonClicked -= ProjectInstallButtonClicked;
                 _projectView.UninstallButtonClicked -= ProjectUninstallButtonClicked;
+
+                _solutionView.Control = Control;
             }
             else
             {
@@ -59,6 +59,8 @@ namespace NuGet.PackageManagement.UI
 
                 _solutionView.InstallButtonClicked -= SolutionInstallButtonClicked;
                 _solutionView.UninstallButtonClicked -= SolutionUninstallButtonClicked;
+
+                _projectView.Control = Control;
             }
         }
 
@@ -109,9 +111,13 @@ namespace NuGet.PackageManagement.UI
         private void ProjectInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageDetailControlModel)DataContext;
-            List<string> sources = new List<string>() { "dotnet-eng" };
-            Dictionary<string, List<string>> patterns = new Dictionary<string, List<string>>() { { model.Id, sources } };
-            PackageSourceMapping psm = new PackageSourceMapping((Dictionary<string, List<string>>)patterns);
+            string newMappingSource = null;
+            string newMappingID = null;
+            if (_solutionView.newMapping.IsChecked == true)
+            {
+                newMappingID = model.Id;
+                newMappingSource = Control.SelectedSource.SourceName;
+            }
             if (model != null && model.SelectedVersion != null)
             {
                 var userAction = UserAction.CreateInstallAction(
@@ -119,7 +125,8 @@ namespace NuGet.PackageManagement.UI
                     model.SelectedVersion.Version,
                     Control.Model.IsSolution,
                     UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
-                    psm);
+                    newMappingID,
+                    newMappingSource);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -139,16 +146,22 @@ namespace NuGet.PackageManagement.UI
         private void SolutionInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageSolutionDetailControlModel)DataContext;
-            List<string> sources = new List<string>() { "dotnet-eng" };
-            Dictionary<string, List<string>> patterns = new Dictionary<string, List<string>>() { { model.Id, sources } };
-            PackageSourceMapping psm = new PackageSourceMapping(patterns);
+            string newMappingSource = null;
+            string newMappingID = null;
+            if (_solutionView.newMapping.IsChecked == true)
+            {
+                newMappingID = model.Id;
+                newMappingSource = Control.SelectedSource.SourceName;
+            }
             if (model != null && model.SelectedVersion != null)
             {
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
                     model.SelectedVersion.Version,
                     Control.Model.IsSolution,
-                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter), psm);
+                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
+                    newMappingID,
+                    newMappingSource);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }

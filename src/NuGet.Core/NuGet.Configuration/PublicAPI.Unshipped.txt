@@ -1,3 +1,5 @@
-NuGet.Configuration.PackageSourceMapping.GetConfiguredPackageSources(string packageId) -> System.Collections.Generic.List<string>
-NuGet.Configuration.PackageSourceMapping.PackageSourceMapping(System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>> patterns) -> void
-NuGet.Configuration.NuGetConfigurationException.NuGetConfigurationException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
+NuGet.Configuration.PackageSourceMappingProvider
+NuGet.Configuration.PackageSourceMappingProvider.AddOrUpdatePackageSourceMappingSourceItem(NuGet.Configuration.PackageSourceMappingSourceItem packageSourceMappingSourceItem) -> void
+NuGet.Configuration.PackageSourceMappingProvider.GetPackageSourceMappingItems() -> System.Collections.Generic.IReadOnlyList<NuGet.Configuration.PackageSourceMappingSourceItem>
+NuGet.Configuration.PackageSourceMappingProvider.PackageSourceMappingProvider(NuGet.Configuration.ISettings settings) -> void
+NuGet.Configuration.PackageSourceMappingProvider.SavePackageSourceMappings(System.Collections.Generic.IReadOnlyList<NuGet.Configuration.PackageSourceMappingSourceItem> packageSourceMappingsSourceItems) -> void

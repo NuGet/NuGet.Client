@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.TeamFoundation.Common;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
@@ -21,6 +22,7 @@ namespace NuGet.PackageManagement.UI
     {
         public event EventHandler<EventArgs> InstallButtonClicked;
         public event EventHandler<EventArgs> UninstallButtonClicked;
+        public PackageManagerControl Control { get; set; }
 
         public ProjectView()
         {
@@ -59,7 +61,7 @@ namespace NuGet.PackageManagement.UI
 
         private PackageDetailControlModel _packageDetailControlModel;
 
-        private PackageDetailControlModel PackageDetailControlModel
+        internal PackageDetailControlModel PackageDetailControlModel
         {
             get
             {
@@ -279,6 +281,16 @@ namespace NuGet.PackageManagement.UI
             PackageDetailControlModel.PreviousSelectedVersion = e.AddedItems.Count > 0 && e.AddedItems[0] != null ? e.AddedItems[0].ToString() : string.Empty;
 
             return;
+
+        }
+        private void SettingsButtonClicked(object sender, EventArgs e)
+        {
+            Control.Model.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSources);
+        }
+
+        private void NewMapping_Checked(object sender, RoutedEventArgs e)
+        {
+            PackageDetailControlModel.UpdateIsInstallorUpdateButtonEnabled();
         }
     }
 }

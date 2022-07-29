@@ -16,6 +16,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.VisualStudio.PlatformUI;
 using NuGet.Options;
+using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
@@ -32,7 +33,6 @@ namespace NuGet.PackageManagement.UI
         public event EventHandler<EventArgs> InstallButtonClicked;
 
         public event EventHandler<EventArgs> UninstallButtonClicked;
-
         private PackageSourceMoniker SelectedSource => Control.SelectedSource;
 
         public PackageManagerControl Control { get; set; }
@@ -342,6 +342,11 @@ namespace NuGet.PackageManagement.UI
                 TogglePatternIdentifiers.ToggleStateProperty,
                 oldValue ? ToggleState.On : ToggleState.Off,
                 newValue ? ToggleState.On : ToggleState.Off);
+        }
+
+        private void SettingsButtonClicked(object sender, EventArgs e)
+        {
+            Control.Model.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSources);
         }
     }
 }

@@ -47,7 +47,7 @@ namespace NuGet.Configuration
             _settings.SaveToDisk();
         }
 
-        internal void AddOrUpdatePackageSourceMappingSourceItem(PackageSourceMappingSourceItem packageSourceMappingSourceItem)
+        public void AddOrUpdatePackageSourceMappingSourceItem(PackageSourceMappingSourceItem packageSourceMappingSourceItem)
         {
             if (packageSourceMappingSourceItem == null)
             {

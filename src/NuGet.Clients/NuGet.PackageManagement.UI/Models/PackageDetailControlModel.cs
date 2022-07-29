@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Data;
+using EnvDTE;
 using Microsoft.ServiceHub.Framework;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -21,6 +22,8 @@ namespace NuGet.PackageManagement.UI
     {
         // This class does not own this instance, so do not dispose of it in this class.
         private readonly INuGetSolutionManagerService _solutionManager;
+        private bool? _selectMappingCheckBoxState = false;
+        private bool _isInstallorUpdateButtonEnabled = false;
 
         public PackageDetailControlModel(
             IServiceBroker serviceBroker,
@@ -30,6 +33,7 @@ namespace NuGet.PackageManagement.UI
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;
+            UpdateIsInstallorUpdateButtonEnabled();
         }
 
         public async override Task SetCurrentPackageAsync(
@@ -327,7 +331,12 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return SelectedVersion != null && !IsSelectedVersionInstalled && !InstalledVersionIsAutoReferenced;
+                return _isInstallorUpdateButtonEnabled;
+            }
+            set
+            {
+                _isInstallorUpdateButtonEnabled = value;
+                OnPropertyChanged(nameof(IsInstallorUpdateButtonEnabled));
             }
         }
 
@@ -352,6 +361,33 @@ namespace NuGet.PackageManagement.UI
         public override IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action)
         {
             return _nugetProjects;
+        }
+
+        public bool? SelectMappingCheckBoxState
+        {
+            get
+            {
+                return _selectMappingCheckBoxState;
+            }
+            set
+            {
+                _selectMappingCheckBoxState = value;
+                OnPropertyChanged(nameof(SelectMappingCheckBoxState));
+            }
+        }
+
+        public void UpdateIsInstallorUpdateButtonEnabled()
+        {
+            bool isPackageMapped = true;
+            if (IsPackageSourceMappingEnabled == true && _selectMappingCheckBoxState == false && IsExistingMappingsNull == true)
+            {
+                isPackageMapped = false;
+            }
+            if (IsAllSourcesSelected == true && IsPackageSourceMappingEnabled)
+            {
+                isPackageMapped = false;
+            }
+            IsInstallorUpdateButtonEnabled = SelectedVersion != null && !IsSelectedVersionInstalled && !InstalledVersionIsAutoReferenced && isPackageMapped;
         }
     }
 }
