@@ -7,11 +7,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderers
 {
     internal class ConsoleWriter : IReportRenderer
     {
-        public void ReportPayloadReceived(string payload)
-        {
-            Console.WriteLine(payload);
-        }
-
         public void WriteErrorLine(string errorText, string _)
         {
             Console.Error.WriteLine(errorText);

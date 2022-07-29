@@ -30,16 +30,16 @@ namespace NuGet.CommandLine.XPlat.Utility
             switch (listPackageArgs.ReportType)
             {
                 case ReportType.Outdated:
-                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ProjectUpdatesHeaderLog, projectName));
+                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectUpdatesHeaderLog, projectName));
                     break;
                 case ReportType.Deprecated:
-                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ProjectDeprecationsHeaderLog, projectName));
+                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectDeprecationsHeaderLog, projectName));
                     break;
                 case ReportType.Vulnerable:
-                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ProjectVulnerabilitiesHeaderLog, projectName));
+                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectVulnerabilitiesHeaderLog, projectName));
                     break;
                 case ReportType.Default:
-                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ProjectHeaderLog, projectName));
+                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectHeaderLog, projectName));
                     break;
             }
 
