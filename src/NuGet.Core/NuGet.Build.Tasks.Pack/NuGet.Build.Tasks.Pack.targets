@@ -168,7 +168,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_CleanPackageFiles"
           DependsOnTargets="_GetOutputItemsFromPack"
           AfterTargets="Clean"
-          Condition="'$(GeneratePackageOnBuild)' == 'true'">
+          Condition="'$(GeneratePackageOnBuild)' == 'true' AND '$(IsInnerBuild)' != 'true'">
     <ItemGroup>
       <_PackageFilesToDelete Include="@(_OutputPackItems)"/>
     </ItemGroup>
