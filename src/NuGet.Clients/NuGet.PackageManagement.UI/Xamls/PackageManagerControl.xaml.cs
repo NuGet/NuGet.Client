@@ -934,7 +934,7 @@ namespace NuGet.PackageManagement.UI
             Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
 
             // Update installed tab warning icon
-            (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, refreshCts.Token);
+            (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, SelectedSource.PackageSources, refreshCts.Token);
             _topPanel.UpdateWarningStatusOnInstalledTab(vulnerablePackages, deprecatedPackages);
 
             // Update updates tab count
@@ -948,7 +948,7 @@ namespace NuGet.PackageManagement.UI
             _topPanel.UpdateCountOnUpdatesTab(Model.CachedUpdates.Packages.Count);
         }
 
-        private async Task<(int, int)> GetInstalledVulnerableAndDeprecatedPackagesCountAsync(PackageLoadContext loadContext, CancellationToken token)
+        private async Task<(int, int)> GetInstalledVulnerableAndDeprecatedPackagesCountAsync(PackageLoadContext loadContext, IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken token)
         {
             // Switch off the UI thread before fetching installed packages and deprecation metadata.
             await TaskScheduler.Default;
@@ -956,7 +956,7 @@ namespace NuGet.PackageManagement.UI
             PackageCollection installedPackages = await loadContext.GetInstalledPackagesAsync();
 
             var installedPackageMetadata = await Task.WhenAll(
-                installedPackages.Select(p => GetPackageMetadataAsync(p, token)));
+                installedPackages.Select(p => GetPackageMetadataAsync(p, packageSources, token)));
 
             int vulnerablePackagesCount = 0;
             int deprecatedPackagesCount = 0;
@@ -975,13 +975,12 @@ namespace NuGet.PackageManagement.UI
             return (vulnerablePackagesCount, deprecatedPackagesCount);
         }
 
-        private async Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetPackageMetadataAsync(PackageCollectionItem package, CancellationToken cancellationToken)
+        private async Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetPackageMetadataAsync(PackageCollectionItem package, IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken cancellationToken)
         {
             using (INuGetSearchService searchService = await _serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken: cancellationToken))
             {
                 Assumes.NotNull(searchService);
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                return await searchService.GetPackageMetadataAsync(package, SelectedSource.PackageSources, true, cancellationToken);
+                return await searchService.GetPackageMetadataAsync(package, packageSources, true, cancellationToken);
             }
         }
 
