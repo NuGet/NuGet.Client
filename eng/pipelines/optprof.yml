@@ -23,11 +23,6 @@ resources:
     ref: refs/heads/dev/mityler/VsSigning
 
 parameters:
-# The name of the Visual Studio branch the bootstrapper URL was built from
-- name: vsBranch
-  type: string
-  default: main
-
 # The prefix naming of the OptimizationInputs drop
 # NOTE: fix prefix when ready for production (remove 'TEST')
 - name: optimizationDropPrefix
@@ -62,7 +57,7 @@ stages:
     - powershell: |
         try {
           Write-Host "Set VSBranch variable"
-          $buildInfoJsonFilePath = "$(Pipeline.Workspace)\ComponentBuildUnderTest\RunSettings\BuildInfo\buildinfo.json"
+          $buildInfoJsonFilePath = "$(Pipeline.Workspace)\ComponentBuildUnderTest\BuildInfo\buildinfo.json"
 
           Write-Host "buildinfo.json drop URI:  $buildInfoJsonFilePath"
           $buildInfoJson = (Get-Content $buildInfoJsonFilePath -Raw) | ConvertFrom-Json
