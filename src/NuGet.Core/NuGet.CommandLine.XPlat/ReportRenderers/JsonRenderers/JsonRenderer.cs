@@ -25,7 +25,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers
 
         public virtual void WriteResult()
         {
-            Console.WriteLine("Write Json");
             JsonOutputFormat.Render(new JsonOutputContent()
             {
                 Parameters = "parameters",
@@ -35,14 +34,29 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers
             });
         }
 
+        public void Write(string value)
+        {
+            // do nothing
+        }
+
         public void WriteLine()
         {
-            // Does empty new line matter for json output? Currently ignore.
+            // do nothing
         }
 
         public void WriteLine(string value)
         {
-            //_projects.Add(new ReportProject());
+            // do nothing
+        }
+
+        public void SetForegroundColor(ConsoleColor consoleColor)
+        {
+            // do nothing
+        }
+
+        public void ResetColor()
+        {
+            // do nothing
         }
     }
 }

@@ -52,32 +52,32 @@ namespace NuGet.CommandLine.XPlat.Utility
                 // appropriate message
                 if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
                 {
-                    Console.ForegroundColor = ConsoleColor.Blue;
+                    listPackageArgs.Renderer.SetForegroundColor(ConsoleColor.Blue);
 
                     switch (listPackageArgs.ReportType)
                     {
                         case ReportType.Outdated:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, frameworkPackages.Framework));
+                            listPackageArgs.Renderer.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, frameworkPackages.Framework));
                             break;
                         case ReportType.Deprecated:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoDeprecationsForFramework, frameworkPackages.Framework));
+                            listPackageArgs.Renderer.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoDeprecationsForFramework, frameworkPackages.Framework));
                             break;
                         case ReportType.Vulnerable:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoVulnerabilitiesForFramework, frameworkPackages.Framework));
+                            listPackageArgs.Renderer.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoVulnerabilitiesForFramework, frameworkPackages.Framework));
                             break;
                         case ReportType.Default:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
+                            listPackageArgs.Renderer.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
                             break;
                     }
 
-                    Console.ResetColor();
+                    listPackageArgs.Renderer.ResetColor();
                 }
                 else
                 {
                     // Print name of the framework
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine(string.Format("   [{0}]: ", frameworkPackages.Framework));
-                    Console.ResetColor();
+                    listPackageArgs.Renderer.SetForegroundColor(ConsoleColor.Blue);
+                    listPackageArgs.Renderer.WriteLine(string.Format("   [{0}]: ", frameworkPackages.Framework));
+                    listPackageArgs.Renderer.ResetColor();
 
                     // Print top-level packages
                     if (frameworkTopLevelPackages.Any())
@@ -87,7 +87,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                             frameworkTopLevelPackages, printingTransitive: false, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
-                            PrintPackagesTable(tableToPrint);
+                            PrintPackagesTable(tableToPrint, listPackageArgs);
                             hasAutoReference = hasAutoReference || tableHasAutoReference;
                         }
                     }
@@ -100,7 +100,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                             frameworkTransitivePackages, printingTransitive: true, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
-                            PrintPackagesTable(tableToPrint);
+                            PrintPackagesTable(tableToPrint, listPackageArgs);
                             hasAutoReference = hasAutoReference || tableHasAutoReference;
                         }
                     }
@@ -173,20 +173,20 @@ namespace NuGet.CommandLine.XPlat.Utility
             return tableToPrint;
         }
 
-        internal static void PrintPackagesTable(IEnumerable<FormattedCell> tableToPrint)
+        internal static void PrintPackagesTable(IEnumerable<FormattedCell> tableToPrint, ListPackageArgs listPackageArgs)
         {
             foreach (var formattedCell in tableToPrint)
             {
                 if (formattedCell.ForegroundColor.HasValue)
                 {
-                    Console.ForegroundColor = formattedCell.ForegroundColor.Value;
+                    listPackageArgs.Renderer.SetForegroundColor(formattedCell.ForegroundColor.Value);
                 }
 
-                Console.Write(formattedCell.Value);
-                Console.ResetColor();
+                listPackageArgs.Renderer.Write(formattedCell.Value);
+                listPackageArgs.Renderer.ResetColor();
             }
 
-            Console.WriteLine();
+            listPackageArgs.Renderer.WriteLine();
         }
 
         internal static IEnumerable<FormattedCell> PrintVulnerabilitiesSeverities(

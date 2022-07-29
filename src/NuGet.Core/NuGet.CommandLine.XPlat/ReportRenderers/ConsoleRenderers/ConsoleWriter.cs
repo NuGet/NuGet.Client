@@ -12,6 +12,11 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderers
             Console.Error.WriteLine(errorText);
         }
 
+        public void Write(string value)
+        {
+            Console.Write(value);
+        }
+
         public void WriteLine()
         {
             Console.WriteLine();
@@ -20,6 +25,16 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderers
         public void WriteLine(string value)
         {
             Console.WriteLine(value);
+        }
+
+        public void SetForegroundColor(ConsoleColor consoleColor)
+        {
+            Console.ForegroundColor = consoleColor;
+        }
+
+        public void ResetColor()
+        {
+            Console.ResetColor();
         }
 
         public static ConsoleWriter Instance { get; } = new ConsoleWriter();
