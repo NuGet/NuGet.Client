@@ -46,7 +46,7 @@ stages:
 - template: \templates\stages\visual-studio\single-runsettings.yml@DartLabOptProfTemplates
   parameters:
     ##### Required #####
-    runSettingsURI: $(RunSettingsURI)
+    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/dev/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings
     visualStudioBootstrapperURI: $(VisualStudio.InstallationUnderTest.BootstrapperURL)
     ##### Optional #####
     name: OptProf_ProfilingWorkflow
@@ -59,6 +59,38 @@ stages:
     visualStudioSigning: Test
     ##### Step Hooks #####
     preTestMachineConfigurationStepList:
+    - powershell: |
+        try {
+          Write-Host "Set VSBranch variable"
+          $buildInfoJsonFilePath = "$(Pipeline.Workspace)\ComponentBuildUnderTest\RunSettings\BuildInfo\buildinfo.json"
+
+          Write-Host "buildinfo.json drop URI:  $buildInfoJsonFilePath"
+          $buildInfoJson = (Get-Content $buildInfoJsonFilePath -Raw) | ConvertFrom-Json
+          $VSBranch = $buildInfoJson.VsTargetBranch
+
+          Write-Host "Target Visual Studio branch (full name): $VSBranch"
+
+          # The value will be something like 'master' or 'rel/d16.4';
+          # however, the subsequent task which gets bootstrapper details has a parameter (VSBranch)
+          # which (as of writing this) requires the branch "short" name.
+          # For the 'master' branch, the short name is still 'master'.
+          # For the 'rel/d16.4' branch, the short name is 'd16.4'.
+          # Ideally, we would not need to figure out the branch short name ourselves,
+          # but short-term we will to unblock ourselves.
+          $branchParts = $VSBranch.Split('/')
+          $VSBranch = $branchParts[$branchParts.Count - 1]
+
+          Write-Host "Target Visual Studio branch (short name): $VSBranch"
+
+          Write-Host "Target Visual Studio branch: $VSBranch"
+          Set-AzurePipelinesVariable 'VSBranch' $VSBranch
+        }
+        catch {
+          Write-Host $_
+          Write-Error "Failed to set VSBranch pipeline variable"
+          throw
+        }
+      displayName: 'Set VSBranch variable'
     - powershell : |
         try {
           $branchName = "$(resources.pipeline.ComponentBuildUnderTest.sourceBranch)"
@@ -72,7 +104,7 @@ stages:
           Write-Error "Failed to set SourceBranchName pipeline variable"
           throw
         }
-      displayName: Set RunSettingsURI
+      displayName: 'Set RunSettingsURI variable'
     - download: ComponentBuildUnderTest
       artifact: MicroBuildOutputs
       patterns: '**\BootstrapperInfo.json'
@@ -81,7 +113,7 @@ stages:
       displayName: Set 'VisualStudio.InstallationUnderTest.BootstrapperURL'
       inputs:
         filePath: $(DartLab.Path)\Scripts\VisualStudio\Bootstrapper\Get-BootstrapperURL.ps1
-        arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\BootstrapperInfo.json' -VSBranch '${{parameters.vsBranch}}' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
+        arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\BootstrapperInfo.json' -VSBranch '$(VSBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
     preDeployAndRunTestsStepList:
     - download: ComponentBuildUnderTest
     # Remove this step hook and it's task if you don't want LKG support
