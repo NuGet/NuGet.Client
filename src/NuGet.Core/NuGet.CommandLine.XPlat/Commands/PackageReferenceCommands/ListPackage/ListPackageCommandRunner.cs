@@ -24,13 +24,14 @@ namespace NuGet.CommandLine.XPlat
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
         private Dictionary<PackageSource, SourceRepository> _sourceRepositoryCache;
+        private const int GenericExitErrorCode = 1;
 
         public ListPackageCommandRunner()
         {
             _sourceRepositoryCache = new Dictionary<PackageSource, SourceRepository>();
         }
 
-        public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
+        public async Task<int> ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
             IReportRenderer reportRenderer = listPackageArgs.Renderer;
             if (!File.Exists(listPackageArgs.Path))
@@ -38,7 +39,7 @@ namespace NuGet.CommandLine.XPlat
                 reportRenderer.WriteErrorLine(errorText: string.Format(CultureInfo.CurrentCulture,
                         Strings.ListPkg_ErrorFileNotFound,
                         listPackageArgs.Path), project: null);
-                return;
+                return GenericExitErrorCode;
             }
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
@@ -162,6 +163,8 @@ namespace NuGet.CommandLine.XPlat
             {
                 reportRenderer.WriteLine(Strings.ListPkg_AutoReferenceDescription);
             }
+
+            return 0;
         }
 
         private static void WarnForHttpSources(ListPackageArgs listPackageArgs)

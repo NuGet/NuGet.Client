@@ -150,8 +150,7 @@ namespace NuGet.CommandLine.XPlat
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
                     var listPackageCommandRunner = getCommandRunner();
-                    await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
-                    return 0;
+                    return await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
                 });
             });
         }
