@@ -189,16 +189,16 @@ namespace NuGet.CommandLine.XPlat
             }
 
             // currently only version 1 is available, so default to latest available version 1.
-            IReportRenderer reportRenderer = new JsonRendererV1();
+            IReportRenderer jsonReportRenderer = new JsonRendererV1();
 
             // If customer pass unsupported version then default to latest available version and warn about unsupported version.
             if (!string.IsNullOrEmpty(outputVersionOption) && outputVersionOption != "1")
             {
                 string currentlySupportedVersions = "1";
-                reportRenderer.WriteErrorLine(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedVersions), project: null);
+                jsonReportRenderer.WriteErrorLine(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedVersions), project: null);
             }
 
-            return reportRenderer;
+            return jsonReportRenderer;
         }
 
         private static void DisplayMessages(ListPackageArgs packageRefArgs)
@@ -206,7 +206,7 @@ namespace NuGet.CommandLine.XPlat
             if (packageRefArgs.ReportType != ReportType.Outdated &&
                 (packageRefArgs.Prerelease || packageRefArgs.HighestMinor || packageRefArgs.HighestPatch))
             {
-                Console.WriteLine(Strings.ListPkg_VulnerableIgnoredOptions);
+                packageRefArgs.Renderer.WriteLine(Strings.ListPkg_VulnerableIgnoredOptions);
             }
         }
 

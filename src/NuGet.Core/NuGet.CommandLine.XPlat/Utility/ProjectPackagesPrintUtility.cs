@@ -53,7 +53,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 // appropriate message
                 if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
                 {
-                    Console.ForegroundColor = ConsoleColor.Blue;
+                    listPackageArgs.Renderer.SetForegroundColor(ConsoleColor.Blue);
 
                     switch (listPackageArgs.ReportType)
                     {
@@ -71,7 +71,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                             break;
                     }
 
-                    Console.ResetColor();
+                    listPackageArgs.Renderer.ResetColor();
                 }
                 else
                 {
@@ -88,7 +88,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                             frameworkTopLevelPackages, printingTransitive: false, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
-                            PrintPackagesTable(tableToPrint);
+                            PrintPackagesTable(tableToPrint, listPackageArgs);
                             hasAutoReference = hasAutoReference || tableHasAutoReference;
                         }
                     }
@@ -101,7 +101,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                             frameworkTransitivePackages, printingTransitive: true, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
-                            PrintPackagesTable(tableToPrint);
+                            PrintPackagesTable(tableToPrint, listPackageArgs);
                             hasAutoReference = hasAutoReference || tableHasAutoReference;
                         }
                     }
@@ -174,20 +174,20 @@ namespace NuGet.CommandLine.XPlat.Utility
             return tableToPrint;
         }
 
-        internal static void PrintPackagesTable(IEnumerable<FormattedCell> tableToPrint)
+        internal static void PrintPackagesTable(IEnumerable<FormattedCell> tableToPrint, ListPackageArgs listPackageArgs)
         {
             foreach (var formattedCell in tableToPrint)
             {
                 if (formattedCell.ForegroundColor.HasValue)
                 {
-                    Console.ForegroundColor = formattedCell.ForegroundColor.Value;
+                    listPackageArgs.Renderer.SetForegroundColor(formattedCell.ForegroundColor.Value);
                 }
 
-                Console.Write(formattedCell.Value);
-                Console.ResetColor();
+                listPackageArgs.Renderer.Write(formattedCell.Value);
+                listPackageArgs.Renderer.ResetColor();
             }
 
-            Console.WriteLine();
+            listPackageArgs.Renderer.WriteLine();
         }
 
         internal static IEnumerable<FormattedCell> PrintVulnerabilitiesSeverities(
