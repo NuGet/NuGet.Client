@@ -934,7 +934,7 @@ namespace NuGet.PackageManagement.UI
             Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
 
             // Update installed tab warning icon
-            (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, refreshCts.Token);
+            (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, SelectedSource.PackageSources, refreshCts.Token);
             _topPanel.UpdateWarningStatusOnInstalledTab(vulnerablePackages, deprecatedPackages);
 
             // Update updates tab count
@@ -948,11 +948,8 @@ namespace NuGet.PackageManagement.UI
             _topPanel.UpdateCountOnUpdatesTab(Model.CachedUpdates.Packages.Count);
         }
 
-        private async Task<(int, int)> GetInstalledVulnerableAndDeprecatedPackagesCountAsync(PackageLoadContext loadContext, CancellationToken token)
+        private async Task<(int, int)> GetInstalledVulnerableAndDeprecatedPackagesCountAsync(PackageLoadContext loadContext, IReadOnlyCollection<PackageSourceContextInfo> packageSources, CancellationToken token)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
-
             // Switch off the UI thread before fetching installed packages and deprecation metadata.
             await TaskScheduler.Default;
 
