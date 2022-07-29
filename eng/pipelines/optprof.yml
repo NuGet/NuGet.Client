@@ -54,6 +54,7 @@ stages:
     visualStudioSigning: Test
     ##### Step Hooks #####
     preTestMachineConfigurationStepList:
+    - download: ComponentBuildUnderTest
     - powershell: |
         try {
           Write-Host "Set VSBranch variable"
