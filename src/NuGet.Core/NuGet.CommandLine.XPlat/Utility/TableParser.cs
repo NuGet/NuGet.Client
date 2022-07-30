@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             // Fill headers
             if (columnHeaders != null)
             {
-                Debug.Assert(columnHeaders.Length == valueSelectors.Length);
+                Debug.Assert(columnHeaders.Length == valueSelectors.Length + vulnerabilityValueSelectors?.Count);
 
                 var headers = new List<FormattedCell>();
                 headers.AddRange(columnHeaders.Select(h => new FormattedCell(h, printingTransitive ? ReportPackageColumn.TransitivePackage : ReportPackageColumn.TopLevelPackage)));
@@ -61,28 +61,25 @@ namespace NuGet.CommandLine.XPlat.Utility
                     // we have a potential multi-line value--we need to add the first line and store remainder
                     var firstLine = true;
                     var queue = new Queue<FormattedCell>();
-                    foreach (var dataCell in dataEnum)
+                    foreach (FormattedCell formattedDataCell in dataEnum)
                     {
-                        if (dataCell is FormattedCell formattedDataCell)
+                        formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString() ?? string.Empty;
+                        if (firstLine)
                         {
-                            formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString() ?? string.Empty;
-                            if (firstLine)
-                            {
-                                // print it
-                                row.Add(formattedDataCell);
-                                firstLine = false;
-                            }
-                            else
-                            {
-                                // store the rest
-                                queue.Enqueue(formattedDataCell);
-                            }
+                            // print it
+                            row.Add(formattedDataCell);
+                            firstLine = false;
+                        }
+                        else
+                        {
+                            // store the rest
+                            queue.Enqueue(formattedDataCell);
                         }
                     }
 
                     if (queue.Count > 0) // only add a queue when there's something to store
                     {
-                        columnQueues[colIndex] = queue;
+                        columnQueues[valueSelectors.Length + colIndex] = queue;
                     }
                 }
 
@@ -92,10 +89,10 @@ namespace NuGet.CommandLine.XPlat.Utility
                 while (columnQueues.Count > 0)
                 {
                     var subsequentRow = new List<FormattedCell>();
-                    for (var colIndex = 0; colIndex < valueSelectors.Length; colIndex++)
+                    for (var colIndex = 0; colIndex < valueSelectors.Length + vulnerabilityValueSelectors?.Count; colIndex++)
                     {
-                        var formattedDataCell = (FormattedCell)null;
-                        if (columnQueues.TryGetValue(colIndex, out var thisColumnQueue)) // we have at least one remaining value for this column
+                        FormattedCell formattedDataCell = null;
+                        if (columnQueues.TryGetValue(colIndex, out Queue<FormattedCell> thisColumnQueue)) // we have at least one remaining value for this column
                         {
                             formattedDataCell = thisColumnQueue.Dequeue();
                             if (thisColumnQueue.Count == 0)
