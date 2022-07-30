@@ -6,25 +6,27 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using NuGet.CommandLine.XPlat.ReportRenderers;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
     internal static class TableParser
     {
-        internal static IEnumerable<FormattedCell> ToStringTable<T>(
+        internal static (IEnumerable<FormattedCell>, ReportFrameworkPackage) ToStringTable<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
-          ReportOutputFormat reportOutputFormat,
+          string framework,
           bool printingTransitive,
           Func<T, FormattedCell>[] valueSelectors,
           List<Func<T, IEnumerable<FormattedCell>>> vulnerabilityValueSelectors)
         {
-            return ToFormattedStringTable(values.ToArray(), columnHeaders, printingTransitive, valueSelectors, vulnerabilityValueSelectors);
+            return ToFormattedStringTable(values.ToArray(), columnHeaders, framework, printingTransitive, valueSelectors, vulnerabilityValueSelectors);
         }
 
-        internal static IEnumerable<FormattedCell> ToFormattedStringTable<T>(
+        internal static (IEnumerable<FormattedCell>, ReportFrameworkPackage) ToFormattedStringTable<T>(
           this T[] values,
           string[] columnHeaders,
+          string framework,
           bool printingTransitive,
           Func<T, FormattedCell>[] valueSelectors,
           List<Func<T, IEnumerable<FormattedCell>>> vulnerabilityValueSelectors)
@@ -34,12 +36,15 @@ namespace NuGet.CommandLine.XPlat.Utility
             // Fill headers
             if (columnHeaders != null)
             {
-                Debug.Assert(columnHeaders.Length == valueSelectors.Length + vulnerabilityValueSelectors?.Count);
+                Debug.Assert(columnHeaders.Length == valueSelectors.Length + (vulnerabilityValueSelectors == null ? 0 : vulnerabilityValueSelectors.Count));
 
                 var headers = new List<FormattedCell>();
                 headers.AddRange(columnHeaders.Select(h => new FormattedCell(h, printingTransitive ? ReportPackageColumn.TransitivePackage : ReportPackageColumn.TopLevelPackage)));
                 stringTable.Add(headers);
             }
+
+            List<TopLevelPackage> topLevelPackages = new();
+            List<TransitivePackage> transitivePackages = printingTransitive ? new() : null;
 
             // Fill table rows - we need a queue for multi-line values
             var columnQueues = new Dictionary<int, Queue<FormattedCell>>();
@@ -85,6 +90,85 @@ namespace NuGet.CommandLine.XPlat.Utility
 
                 stringTable.Add(row);
 
+                if (printingTransitive)
+                {
+                    TransitivePackage transitivePackage = new();
+                    foreach (FormattedCell formattedCell in row)
+                    {
+                        switch (formattedCell.ReportPackageColumn)
+                        {
+                            case ReportPackageColumn.EmptyColumn:
+                                break;
+                            case ReportPackageColumn.Requested:
+                                break;
+                            case ReportPackageColumn.Resolved:
+                                transitivePackage.ResolvedVersion = formattedCell.Value;
+                                break;
+                            case ReportPackageColumn.TransitivePackage:
+                                transitivePackage.PackageId = formattedCell.Value;
+                                break;
+                            case ReportPackageColumn.Latest:
+                                transitivePackage.LatestVersion = formattedCell.Value;
+                                break;
+                            case ReportPackageColumn.Deprecated:
+                                transitivePackage.DeprecationReasons = formattedCell.Value;
+                                break;
+                            case ReportPackageColumn.AlternatePackage:
+                                break;
+                            case ReportPackageColumn.Vulnerabilities:
+                                break;
+                            case ReportPackageColumn.VulnerabilitySeverity:
+                                break;
+                            case ReportPackageColumn.VulnerabilityAdvisoryurl:
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    Debug.Assert(transitivePackage.PackageId != null);
+                    transitivePackages.Add(transitivePackage);
+                }
+                else
+                {
+                    TopLevelPackage topLevelPackage = new();
+
+                    foreach (FormattedCell formattedCell in row)
+                    {
+                        switch (formattedCell.ReportPackageColumn)
+                        {
+                            case ReportPackageColumn.TopLevelPackage:
+                                topLevelPackage.PackageId = formattedCell.Value;
+                                break;
+                            case ReportPackageColumn.EmptyColumn:
+                                break;
+                            case ReportPackageColumn.Requested:
+                                topLevelPackage.RequestedVersion = formattedCell.Value;
+                                break;
+                            case ReportPackageColumn.Resolved:
+                                topLevelPackage.ResolvedVersion = formattedCell.Value;
+                                break;
+                            case ReportPackageColumn.Latest:
+                                break;
+                            case ReportPackageColumn.Deprecated:
+                                break;
+                            case ReportPackageColumn.AlternatePackage:
+                                break;
+                            case ReportPackageColumn.Vulnerabilities:
+                                break;
+                            case ReportPackageColumn.VulnerabilitySeverity:
+                                break;
+                            case ReportPackageColumn.VulnerabilityAdvisoryurl:
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    Debug.Assert(topLevelPackage.PackageId != null);
+                    topLevelPackages.Add(topLevelPackage);
+                }
+
                 // clear column queues (strings for subsequent rows for this value) before proceeding with next row
                 while (columnQueues.Count > 0)
                 {
@@ -112,7 +196,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 }
             }
 
-            return ToPaddedStringTable(stringTable);
+            return (ToPaddedStringTable(stringTable), new ReportFrameworkPackage(framework, topLevelPackages, transitivePackages));
         }
 
         internal static IEnumerable<FormattedCell> ToPaddedStringTable(IEnumerable<ICollection<FormattedCell>> values)

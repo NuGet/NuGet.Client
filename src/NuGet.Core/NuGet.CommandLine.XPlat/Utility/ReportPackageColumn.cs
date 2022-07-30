@@ -27,7 +27,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         Vulnerabilities,
         [Description("Severity")]
         VulnerabilitySeverity,
-        [Description("advisoryurl")]
+        [Description("Advisoryurl")]
         VulnerabilityAdvisoryurl
     }
 }

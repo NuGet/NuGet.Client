@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat.ReportRenderers;
+using NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Versioning;
@@ -44,12 +45,12 @@ namespace NuGet.CommandLine.XPlat.Utility
                     break;
             }
 
-            List<ReportFrameworkPackage> reportFrameworkPackages = new();
-            ReportProject reportProject = new ReportProject(projectName, reportFrameworkPackages);
+            List<ReportFrameworkPackage> reportAllFrameworkPackages = new();
 
             hasAutoReference = false;
             foreach (var frameworkPackages in packages)
             {
+                string frameWork = frameworkPackages.Framework;
                 var frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
                 var frameworkTransitivePackages = frameworkPackages.TransitivePackages;
 
@@ -88,12 +89,13 @@ namespace NuGet.CommandLine.XPlat.Utility
                     if (frameworkTopLevelPackages.Any())
                     {
                         var tableHasAutoReference = false;
-                        (IEnumerable<FormattedCell> tableToPrint, IEnumerable<ReportFrameworkPackage> ReportFrameworkPackages) = BuildPackagesTable(
-                            frameworkTopLevelPackages, printingTransitive: false, listPackageArgs, ref tableHasAutoReference);
+                        (IEnumerable<FormattedCell> tableToPrint, ReportFrameworkPackage reportFrameworkTopLevelPackage) = BuildPackagesTable(
+                            frameworkTopLevelPackages, frameWork, printingTransitive: false, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
                             PrintPackagesTable(tableToPrint, listPackageArgs);
                             hasAutoReference = hasAutoReference || tableHasAutoReference;
+                            reportAllFrameworkPackages.Add(reportFrameworkTopLevelPackage);
                         }
                     }
 
@@ -101,8 +103,8 @@ namespace NuGet.CommandLine.XPlat.Utility
                     if (listPackageArgs.IncludeTransitive && frameworkTransitivePackages.Any())
                     {
                         var tableHasAutoReference = false;
-                        (IEnumerable<FormattedCell> tableToPrint, IEnumerable<ReportFrameworkPackage> _) = BuildPackagesTable(
-                            frameworkTransitivePackages, printingTransitive: true, listPackageArgs, ref tableHasAutoReference);
+                        (IEnumerable<FormattedCell> tableToPrint, ReportFrameworkPackage reportFrameworkTransitivePackages) = BuildPackagesTable(
+                            frameworkTransitivePackages, frameWork, printingTransitive: true, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
                             PrintPackagesTable(tableToPrint, listPackageArgs);
@@ -111,18 +113,28 @@ namespace NuGet.CommandLine.XPlat.Utility
                     }
                 }
             }
+
+            ReportProject reportProject = new ReportProject(projectName, reportAllFrameworkPackages);
+
+            if (listPackageArgs.Renderer is JsonRenderer jsonRenderer)
+            {
+                jsonRenderer.AddProjectData(reportProject);
+                jsonRenderer.FinishRendering();
+            }
         }
 
         /// <summary>
         /// Given a list of packages, this function will print them in a table
         /// </summary>
         /// <param name="packages">The list of packages</param>
+        /// <param name="framework">The framework for packages</param>
         /// <param name="printingTransitive">Whether the function is printing transitive packages information.</param>
         /// <param name="listPackageArgs">Command line options.</param>
         /// <param name="tableHasAutoReference">Flagged if an autoreference marker was printer</param>
         /// <returns>The table as a string and list of ReportFrameworkPackage</returns>
-        internal static (IEnumerable<FormattedCell>, IEnumerable<ReportFrameworkPackage>) BuildPackagesTable(
+        internal static (IEnumerable<FormattedCell>, ReportFrameworkPackage) BuildPackagesTable(
             IEnumerable<InstalledPackageReference> packages,
+            string framework,
             bool printingTransitive,
             ListPackageArgs listPackageArgs,
             ref bool tableHasAutoReference)
@@ -175,11 +187,10 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
 
 
-            var tableToPrint = packages.ToStringTable(headers, listPackageArgs.ReportOutputFormat, printingTransitive, valueSelectors.ToArray(), vulnerabilityValueSelectors);
-            IEnumerable<ReportFrameworkPackage> reportFrameworkPackages = new List<ReportFrameworkPackage>();
+            (IEnumerable<FormattedCell> tableToPrint, ReportFrameworkPackage reportFrameworkPackage) = packages.ToStringTable(headers, framework, printingTransitive, valueSelectors.ToArray(), vulnerabilityValueSelectors);
 
             tableHasAutoReference = autoReferenceFlagged;
-            return (tableToPrint, reportFrameworkPackages);
+            return (tableToPrint, reportFrameworkPackage);
         }
 
         internal static void PrintPackagesTable(IEnumerable<FormattedCell> tableToPrint, ListPackageArgs listPackageArgs)
