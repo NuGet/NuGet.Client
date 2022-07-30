@@ -140,30 +140,30 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             var valueSelectors = new List<Func<InstalledPackageReference, object>>
             {
-                p => new FormattedCell(p.Name),
-                p => new FormattedCell(GetAutoReferenceMarker(p, printingTransitive, ref autoReferenceFlagged)),
+                p => new FormattedCell(p.Name, printingTransitive ? ReportPackageColumn.TransitivePackage : ReportPackageColumn.TopLevelPackage),
+                p => new FormattedCell(GetAutoReferenceMarker(p, printingTransitive, ref autoReferenceFlagged), ReportPackageColumn.EmptyColumn),
             };
 
             // Include "Requested" version column for top level package list
             if (!printingTransitive)
             {
-                valueSelectors.Add(p => new FormattedCell(p.OriginalRequestedVersion));
+                valueSelectors.Add(p => new FormattedCell(p.OriginalRequestedVersion, ReportPackageColumn.Requested));
             }
 
             // "Resolved" version
-            valueSelectors.Add(p => new FormattedCell(GetPackageVersion(p)));
+            valueSelectors.Add(p => new FormattedCell(GetPackageVersion(p), ReportPackageColumn.Resolved));
 
             switch (listPackageArgs.ReportType)
             {
                 case ReportType.Outdated:
                     // "Latest" version
-                    valueSelectors.Add(p => new FormattedCell(GetPackageVersion(p, useLatest: true)));
+                    valueSelectors.Add(p => new FormattedCell(GetPackageVersion(p, useLatest: true), ReportPackageColumn.Latest));
                     break;
                 case ReportType.Deprecated:
                     valueSelectors.Add(p => new FormattedCell(
-                        PrintDeprecationReasons(p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)));
+                        PrintDeprecationReasons(p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result), ReportPackageColumn.Deprecated));
                     valueSelectors.Add(p => new FormattedCell(
-                        PrintAlternativePackage((p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage)));
+                        PrintAlternativePackage((p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage), ReportPackageColumn.AlternatePackage));
                     break;
                 case ReportType.Vulnerable:
                     valueSelectors.Add(p => PrintVulnerabilitiesSeverities(p.ResolvedPackageMetadata.Vulnerabilities));
@@ -172,7 +172,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
 
 
-            var tableToPrint = packages.ToStringTable(headers, valueSelectors.ToArray());
+            var tableToPrint = packages.ToStringTable(headers, listPackageArgs.ReportOutputFormat, printingTransitive, valueSelectors.ToArray());
             IEnumerable<ReportFrameworkPackage> reportFrameworkPackages = new List<ReportFrameworkPackage>();
 
             tableHasAutoReference = autoReferenceFlagged;
@@ -199,7 +199,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata)
         {
             return vulnerabilityMetadata == null || !vulnerabilityMetadata.Any()
-                ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
+                ? new List<FormattedCell> { new FormattedCell(string.Empty, ReportPackageColumn.VulnerabilitySeverity, foregroundColor: null) }
                 : vulnerabilityMetadata.Select(VulnerabilityToSeverityFormattedCell);
         }
 
@@ -207,21 +207,21 @@ namespace NuGet.CommandLine.XPlat.Utility
             IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata)
         {
             return vulnerabilityMetadata == null || !vulnerabilityMetadata.Any()
-                ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
-                : vulnerabilityMetadata.Select(v => new FormattedCell(v.AdvisoryUrl?.ToString() ?? string.Empty, foregroundColor: null));
+                ? new List<FormattedCell> { new FormattedCell(string.Empty, ReportPackageColumn.VulnerabilityAdvisoryurl, foregroundColor: null) }
+                : vulnerabilityMetadata.Select(v => new FormattedCell(v.AdvisoryUrl?.ToString() ?? string.Empty, ReportPackageColumn.VulnerabilityAdvisoryurl, foregroundColor: null));
         }
 
         private static FormattedCell VulnerabilityToSeverityFormattedCell(PackageVulnerabilityMetadata vulnerability)
         {
             switch (vulnerability?.Severity ?? -1)
             {
-                case 0: return new FormattedCell("Low", foregroundColor: null); // default color for low severity
-                case 1: return new FormattedCell("Moderate", foregroundColor: ConsoleColor.Yellow);
-                case 2: return new FormattedCell("High", foregroundColor: ConsoleColor.Red);
-                case 3: return new FormattedCell("Critical", foregroundColor: ConsoleColor.Red);
+                case 0: return new FormattedCell("Low", ReportPackageColumn.VulnerabilitySeverity, foregroundColor: null); // default color for low severity
+                case 1: return new FormattedCell("Moderate", ReportPackageColumn.VulnerabilitySeverity, foregroundColor: ConsoleColor.Yellow);
+                case 2: return new FormattedCell("High", ReportPackageColumn.VulnerabilitySeverity, foregroundColor: ConsoleColor.Red);
+                case 3: return new FormattedCell("Critical", ReportPackageColumn.VulnerabilitySeverity, foregroundColor: ConsoleColor.Red);
             }
 
-            return new FormattedCell(string.Empty, foregroundColor: null);
+            return new FormattedCell(string.Empty, ReportPackageColumn.VulnerabilitySeverity, foregroundColor: null);
         }
 
         private static string GetAutoReferenceMarker(

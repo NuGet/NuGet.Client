@@ -73,7 +73,5 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
                 Sources = _sources
             });
         }
-
-        public static JsonRenderer Instance { get; } = new JsonRendererV1();
     }
 }

@@ -150,7 +150,10 @@ namespace NuGet.CommandLine.XPlat
 
                     DisplayMessages(packageRefArgs);
 
-                    JsonRendererLogParameters(reportRenderer, args);
+                    if (reportOutputFormat == ReportOutputFormat.Json)
+                    {
+                        JsonRendererLogParameters(reportRenderer, args);
+                    }
 
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
@@ -194,17 +197,23 @@ namespace NuGet.CommandLine.XPlat
             }
 
             // currently only version 1 is available, so default to latest available version 1.
-            IReportRenderer jsonReportRenderer = JsonRenderer.Instance;
+            IReportRenderer jsonReportRenderer;
 
+            var currentlySupportedReportVersions = new List<string> { "1" };
             // If customer pass unsupported version then default to latest available version and warn about unsupported version.
-            if (!string.IsNullOrEmpty(outputVersionOption) && outputVersionOption != "1")
+            if (!string.IsNullOrEmpty(outputVersionOption) && !currentlySupportedReportVersions.Contains(outputVersionOption))
             {
-                string currentlySupportedVersions = "1";
-                jsonReportRenderer.WriteErrorLine(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedVersions), project: null);
+                jsonReportRenderer = new JsonRendererV1();
+                jsonReportRenderer.WriteErrorLine(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions), project: null);
+            }
+            else
+            {
+                jsonReportRenderer = new JsonRendererV1();
             }
 
             return (jsonReportRenderer, ReportOutputFormat.Json);
         }
+
 
         private static void DisplayMessages(ListPackageArgs packageRefArgs)
         {

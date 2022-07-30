@@ -14,14 +14,17 @@ namespace NuGet.CommandLine.XPlat.Utility
         internal static IEnumerable<FormattedCell> ToStringTable<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
+          ReportOutputFormat reportOutputFormat,
+          bool printingTransitive,
           params Func<T, object>[] valueSelectors)
         {
-            return ToFormattedStringTable(values.ToArray(), columnHeaders, valueSelectors);
+            return ToFormattedStringTable(values.ToArray(), columnHeaders, printingTransitive, valueSelectors);
         }
 
         internal static IEnumerable<FormattedCell> ToFormattedStringTable<T>(
           this T[] values,
           string[] columnHeaders,
+          bool printingTransitive,
           params Func<T, object>[] valueSelectors)
         {
             var stringTable = new List<List<FormattedCell>>();
@@ -32,7 +35,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 Debug.Assert(columnHeaders.Length == valueSelectors.Length);
 
                 var headers = new List<FormattedCell>();
-                headers.AddRange(columnHeaders.Select(h => new FormattedCell(h)));
+                headers.AddRange(columnHeaders.Select(h => new FormattedCell(h, printingTransitive ? ReportPackageColumn.TransitivePackage : ReportPackageColumn.TopLevelPackage)));
                 stringTable.Add(headers);
             }
 
@@ -44,7 +47,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 var row = new List<FormattedCell>();
                 for (var colIndex = 0; colIndex < valueSelectors.Length; colIndex++)
                 {
-                    var data = valueSelectors[colIndex](values[rowIndex]);
+                    object data = valueSelectors[colIndex](values[rowIndex]);
                     if (data is IEnumerable<object> dataEnum)
                     {
                         // we have a potential multi-line value--we need to add the first line and store remainder
@@ -104,7 +107,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                         }
                         else
                         {
-                            formattedDataCell = new FormattedCell();
+                            formattedDataCell = new FormattedCell(string.Empty, ReportPackageColumn.EmptyColumn);
                         }
 
                         subsequentRow.Add(formattedDataCell);
@@ -122,7 +125,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             var maxColumnsWidth = GetMaxColumnsWidth(values);
             var stringTable = new List<FormattedCell>();
 
-            foreach (var row in values)
+            foreach (ICollection<FormattedCell> row in values)
             {
                 int colIndex = 0;
                 foreach (var dataCell in row)
@@ -132,7 +135,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     colIndex++;
                 }
 
-                stringTable.Add(new FormattedCell(Environment.NewLine));
+                stringTable.Add(new FormattedCell(Environment.NewLine, ReportPackageColumn.EmptyColumn));
             }
 
             return stringTable;
