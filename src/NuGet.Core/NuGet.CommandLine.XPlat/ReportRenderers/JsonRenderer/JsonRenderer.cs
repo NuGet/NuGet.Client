@@ -4,16 +4,18 @@
 using System;
 using System.Collections.Generic;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers
+namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 {
     internal abstract class JsonRenderer : IReportRenderer
     {
         protected readonly List<RenderProblem> _problems = new();
         protected readonly List<string> _sources = new();
         protected readonly List<ReportProject> _projects = new();
-        protected OutputVersion OutputVersion { get; private set; }
+        protected ReportOutputVersion OutputVersion { get; private set; }
 
-        protected JsonRenderer(OutputVersion outputVersion)
+        protected string _parameters = string.Empty;
+
+        protected JsonRenderer(ReportOutputVersion outputVersion)
         {
             OutputVersion = outputVersion;
         }
@@ -21,17 +23,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers
         public void WriteErrorLine(string errorText, string project)
         {
             _problems.Add(new RenderProblem(project, errorText));
-        }
-
-        public virtual void WriteResult()
-        {
-            JsonOutputFormat.Render(new JsonOutputContent()
-            {
-                Parameters = "parameters",
-                Problems = _problems,
-                Projects = _projects,
-                Sources = _sources
-            });
         }
 
         public void Write(string value)
@@ -58,5 +49,31 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers
         {
             // do nothing
         }
+
+        public void LogParameters(string parameters)
+        {
+            if (string.IsNullOrEmpty(parameters))
+            {
+                _parameters = parameters;
+            }
+        }
+
+        public void AddProjectData(ReportProject reportProject)
+        {
+            _projects.Add(reportProject);
+        }
+
+        public void FinishRendering()
+        {
+            JsonOutputFormat.Render(new JsonOutputContent()
+            {
+                Parameters = _parameters,
+                Problems = _problems,
+                Projects = _projects,
+                Sources = _sources
+            });
+        }
+
+        public static JsonRenderer Instance { get; } = new JsonRendererV1();
     }
 }

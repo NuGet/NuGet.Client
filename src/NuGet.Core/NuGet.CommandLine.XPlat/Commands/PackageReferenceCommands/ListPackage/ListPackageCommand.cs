@@ -5,11 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.CommandLine.XPlat.ReportRenderers;
-using NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderers;
-using NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers;
+using NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer;
+using NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -22,6 +23,7 @@ namespace NuGet.CommandLine.XPlat
     {
         public static void Register(
             CommandLineApplication app,
+            string[] args,
             Func<ILogger> getLogger,
             Action<LogLevel> setLogLevel,
             Func<IListPackageCommandRunner> getCommandRunner)
@@ -61,16 +63,6 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_VulnerableDescription,
                     CommandOptionType.NoValue);
 
-                var outputFormat = listpkg.Option(
-                    "--format",
-                    Strings.ListPkg_OutputFormatDescription,
-                    CommandOptionType.SingleValue);
-
-                var outputVersion = listpkg.Option(
-                    "--output-version",
-                    Strings.ListPkg_OutputVersionDescription,
-                    CommandOptionType.SingleValue);
-
                 var includeTransitive = listpkg.Option(
                     "--include-transitive",
                     Strings.ListPkg_TransitiveDescription,
@@ -101,6 +93,16 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_ConfigDescription,
                     CommandOptionType.SingleValue);
 
+                var outputFormat = listpkg.Option(
+                    "--format",
+                    Strings.ListPkg_OutputFormatDescription,
+                    CommandOptionType.SingleValue);
+
+                var outputVersion = listpkg.Option(
+                    "--output-version",
+                    Strings.ListPkg_OutputVersionDescription,
+                    CommandOptionType.SingleValue);
+
                 var interactive = listpkg.Option(
                     "--interactive",
                     Strings.NuGetXplatCommand_Interactive,
@@ -129,7 +131,7 @@ namespace NuGet.CommandLine.XPlat
                         isDeprecated: deprecatedReport.HasValue(),
                         isVulnerable: vulnerableReport.HasValue());
 
-                    IReportRenderer reportRenderer = GetOutputType(outputFormat.Value(), outputVersion.Value());
+                    (IReportRenderer reportRenderer, ReportOutputFormat reportOutputFormat) = GetOutputType(outputFormat.Value(), outputVersionOption: outputVersion.Value());
 
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
@@ -137,6 +139,7 @@ namespace NuGet.CommandLine.XPlat
                         framework.Values,
                         reportType,
                         reportRenderer,
+                        reportOutputFormat,
                         includeTransitive.HasValue(),
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
@@ -145,6 +148,8 @@ namespace NuGet.CommandLine.XPlat
                         CancellationToken.None);
 
                     DisplayMessages(packageRefArgs);
+
+                    JsonRendererLogParameters(reportRenderer, args);
 
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
@@ -172,9 +177,9 @@ namespace NuGet.CommandLine.XPlat
             throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions));
         }
 
-        private static IReportRenderer GetOutputType(string outputFormatOption, string outputVersionOption)
+        private static (IReportRenderer, ReportOutputFormat) GetOutputType(string outputFormatOption, string outputVersionOption)
         {
-            OutputFormat outputFormat = OutputFormat.Console;
+            ReportOutputFormat outputFormat = ReportOutputFormat.Console;
 
             if (!string.IsNullOrEmpty(outputFormatOption) && !Enum.TryParse(outputFormatOption, out outputFormat))
             {
@@ -182,13 +187,13 @@ namespace NuGet.CommandLine.XPlat
                 throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOutputFormat, outputFormatOption, currentlySupportedFormat));
             }
 
-            if (outputFormat == OutputFormat.Console)
+            if (outputFormat == ReportOutputFormat.Console)
             {
-                return ConsoleWriter.Instance;
+                return (ConsoleWriter.Instance, ReportOutputFormat.Console);
             }
 
             // currently only version 1 is available, so default to latest available version 1.
-            IReportRenderer jsonReportRenderer = new JsonRendererV1();
+            IReportRenderer jsonReportRenderer = JsonRenderer.Instance;
 
             // If customer pass unsupported version then default to latest available version and warn about unsupported version.
             if (!string.IsNullOrEmpty(outputVersionOption) && outputVersionOption != "1")
@@ -197,7 +202,7 @@ namespace NuGet.CommandLine.XPlat
                 jsonReportRenderer.WriteErrorLine(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedVersions), project: null);
             }
 
-            return jsonReportRenderer;
+            return (jsonReportRenderer, ReportOutputFormat.Json);
         }
 
         private static void DisplayMessages(ListPackageArgs packageRefArgs)
@@ -257,6 +262,17 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return packageSources;
+        }
+
+        private static void JsonRendererLogParameters(
+            IReportRenderer reportRenderer,
+            string[] args)
+        {
+            if (reportRenderer is JsonRenderer jsonRenderer)
+            {
+                //jsonRenderer.LogParameters(parameters: HttpUtility.JavaScriptStringEncode(string.Join(" ", args)));
+                jsonRenderer.LogParameters(parameters: string.Join(" ", args));
+            }
         }
     }
 }

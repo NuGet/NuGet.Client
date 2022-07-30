@@ -14,5 +14,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers
 
         void SetForegroundColor(ConsoleColor consoleColor);
         void ResetColor();
+        void LogParameters(string parameters);
+        void FinishRendering();
     }
 }

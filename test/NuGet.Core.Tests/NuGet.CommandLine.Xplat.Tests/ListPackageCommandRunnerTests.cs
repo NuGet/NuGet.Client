@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using Moq;
 using NuGet.CommandLine.XPlat;
-using NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderers;
+using NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -139,6 +139,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Outdated,
                     ConsoleWriter.Instance,
+                    ReportOutputFormat.Console,
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
                     logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
@@ -214,6 +215,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Deprecated,
                     ConsoleWriter.Instance,
+                    ReportOutputFormat.Console,
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
@@ -288,6 +290,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Vulnerable,
                     ConsoleWriter.Instance,
+                    ReportOutputFormat.Console,
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 

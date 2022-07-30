@@ -3,14 +3,14 @@
 
 using System.Collections.Generic;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers
+namespace NuGet.CommandLine.XPlat.ReportRenderers
 {
     internal class ReportProject
     {
-        private string Path { get; set; }
-        private List<FrameworkPackage> FrameworkPackages { get; set; }
+        internal string Path { get; set; }
+        internal List<ReportFrameworkPackage> FrameworkPackages { get; set; }
 
-        public ReportProject(string path, List<FrameworkPackage> frameworkPackages)
+        public ReportProject(string path, List<ReportFrameworkPackage> frameworkPackages)
         {
             Path = path;
             FrameworkPackages = frameworkPackages;
