@@ -3,8 +3,9 @@
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal enum OutputVersion
+    internal enum ReportOutputFormat
     {
-        V1
+        Console,
+        Json
     }
 }

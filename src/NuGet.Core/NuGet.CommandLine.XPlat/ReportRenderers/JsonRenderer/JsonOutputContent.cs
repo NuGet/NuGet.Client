@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers
+namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 {
     internal class JsonOutputContent
     {

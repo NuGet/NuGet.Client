@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderers
+namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 {
     internal static class JsonOutputFormat
     {

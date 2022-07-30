@@ -3,10 +3,13 @@
 
 using System;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderers
+namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
 {
     internal class ConsoleWriter : IReportRenderer
     {
+        private ConsoleWriter()
+        { }
+
         public void WriteErrorLine(string errorText, string _)
         {
             Console.Error.WriteLine(errorText);
@@ -35,6 +38,16 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderers
         public void ResetColor()
         {
             Console.ResetColor();
+        }
+
+        public void LogParameters(string parameters)
+        {
+            // do nothing, cli no need to log parameters.
+        }
+
+        public void FinishRendering()
+        {
+            // do nothing
         }
 
         public static ConsoleWriter Instance { get; } = new ConsoleWriter();
