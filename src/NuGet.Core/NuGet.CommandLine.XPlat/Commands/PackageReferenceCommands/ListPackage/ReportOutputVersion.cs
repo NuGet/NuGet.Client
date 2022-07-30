@@ -5,6 +5,6 @@ namespace NuGet.CommandLine.XPlat
 {
     internal enum ReportOutputVersion
     {
-        V1
+        V1 = 1
     }
 }

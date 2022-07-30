@@ -18,7 +18,7 @@ namespace NuGet.CommandLine.XPlat
         public IEnumerable<string> Frameworks { get; }
         public ReportType ReportType { get; }
         public IReportRenderer Renderer { get; }
-        public ReportOutputFormat OutputFormat { get; }
+        public ReportOutputFormat ReportOutputFormat { get; }
         public bool IncludeTransitive { get; }
         public bool Prerelease { get; }
         public bool HighestPatch { get; }
@@ -60,7 +60,7 @@ namespace NuGet.CommandLine.XPlat
             PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
             ReportType = reportType;
-            OutputFormat = outputFormat;
+            ReportOutputFormat = outputFormat;
             Renderer = renderer;
             IncludeTransitive = includeTransitive;
             Prerelease = prerelease;

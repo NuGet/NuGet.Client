@@ -28,6 +28,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers
     internal class TopLevelPackage
     {
         private string PackageId { get; set; }
+        private string AutoReference { get; set; }
         private string RequestedVersion { get; set; }
         private string ResolvedVersion { get; set; }
         private string LatestVersion { get; set; }

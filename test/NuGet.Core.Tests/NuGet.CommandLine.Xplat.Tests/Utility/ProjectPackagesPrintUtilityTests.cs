@@ -263,7 +263,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
                     }
                 }
 
-                result.Add(new FormattedCell(cellText, foregroundColor));
+                result.Add(new FormattedCell(cellText, ReportPackageColumn.TopLevelPackage, foregroundColor));
             }
 
             return result.ToArray();
