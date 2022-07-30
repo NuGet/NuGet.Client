@@ -138,11 +138,13 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             var headers = BuildTableHeaders(printingTransitive, listPackageArgs);
 
-            var valueSelectors = new List<Func<InstalledPackageReference, object>>
+            var valueSelectors = new List<Func<InstalledPackageReference, FormattedCell>>
             {
                 p => new FormattedCell(p.Name, printingTransitive ? ReportPackageColumn.TransitivePackage : ReportPackageColumn.TopLevelPackage),
                 p => new FormattedCell(GetAutoReferenceMarker(p, printingTransitive, ref autoReferenceFlagged), ReportPackageColumn.EmptyColumn),
             };
+
+            List<Func<InstalledPackageReference, IEnumerable<FormattedCell>>> vulnerabilityValueSelectors = null;
 
             // Include "Requested" version column for top level package list
             if (!printingTransitive)
@@ -166,13 +168,14 @@ namespace NuGet.CommandLine.XPlat.Utility
                         PrintAlternativePackage((p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage), ReportPackageColumn.AlternatePackage));
                     break;
                 case ReportType.Vulnerable:
-                    valueSelectors.Add(p => PrintVulnerabilitiesSeverities(p.ResolvedPackageMetadata.Vulnerabilities));
-                    valueSelectors.Add(p => PrintVulnerabilitiesAdvisoryUrls(p.ResolvedPackageMetadata.Vulnerabilities));
+                    vulnerabilityValueSelectors = new();
+                    vulnerabilityValueSelectors.Add(p => PrintVulnerabilitiesSeverities(p.ResolvedPackageMetadata.Vulnerabilities));
+                    vulnerabilityValueSelectors.Add(p => PrintVulnerabilitiesAdvisoryUrls(p.ResolvedPackageMetadata.Vulnerabilities));
                     break;
             }
 
 
-            var tableToPrint = packages.ToStringTable(headers, listPackageArgs.ReportOutputFormat, printingTransitive, valueSelectors.ToArray());
+            var tableToPrint = packages.ToStringTable(headers, listPackageArgs.ReportOutputFormat, printingTransitive, valueSelectors.ToArray(), vulnerabilityValueSelectors);
             IEnumerable<ReportFrameworkPackage> reportFrameworkPackages = new List<ReportFrameworkPackage>();
 
             tableHasAutoReference = autoReferenceFlagged;

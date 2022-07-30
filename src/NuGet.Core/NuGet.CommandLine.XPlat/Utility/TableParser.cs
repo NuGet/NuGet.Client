@@ -16,16 +16,18 @@ namespace NuGet.CommandLine.XPlat.Utility
           string[] columnHeaders,
           ReportOutputFormat reportOutputFormat,
           bool printingTransitive,
-          params Func<T, object>[] valueSelectors)
+          Func<T, FormattedCell>[] valueSelectors,
+          List<Func<T, IEnumerable<FormattedCell>>> vulnerabilityValueSelectors)
         {
-            return ToFormattedStringTable(values.ToArray(), columnHeaders, printingTransitive, valueSelectors);
+            return ToFormattedStringTable(values.ToArray(), columnHeaders, printingTransitive, valueSelectors, vulnerabilityValueSelectors);
         }
 
         internal static IEnumerable<FormattedCell> ToFormattedStringTable<T>(
           this T[] values,
           string[] columnHeaders,
           bool printingTransitive,
-          params Func<T, object>[] valueSelectors)
+          Func<T, FormattedCell>[] valueSelectors,
+          List<Func<T, IEnumerable<FormattedCell>>> vulnerabilityValueSelectors)
         {
             var stringTable = new List<List<FormattedCell>>();
 
@@ -47,44 +49,40 @@ namespace NuGet.CommandLine.XPlat.Utility
                 var row = new List<FormattedCell>();
                 for (var colIndex = 0; colIndex < valueSelectors.Length; colIndex++)
                 {
-                    object data = valueSelectors[colIndex](values[rowIndex]);
-                    if (data is IEnumerable<object> dataEnum)
+                    FormattedCell formattedDataCell = valueSelectors[colIndex](values[rowIndex]);
+                    // the normal case
+                    formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString() ?? string.Empty;
+                    row.Add(formattedDataCell);
+                }
+
+                for (var colIndex = 0; colIndex < vulnerabilityValueSelectors?.Count; colIndex++)
+                {
+                    IEnumerable<FormattedCell> dataEnum = vulnerabilityValueSelectors[colIndex](values[rowIndex]);
+                    // we have a potential multi-line value--we need to add the first line and store remainder
+                    var firstLine = true;
+                    var queue = new Queue<FormattedCell>();
+                    foreach (var dataCell in dataEnum)
                     {
-                        // we have a potential multi-line value--we need to add the first line and store remainder
-                        var firstLine = true;
-                        var queue = new Queue<FormattedCell>();
-                        foreach (var dataCell in dataEnum)
+                        if (dataCell is FormattedCell formattedDataCell)
                         {
-                            if (dataCell is FormattedCell formattedDataCell)
+                            formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString() ?? string.Empty;
+                            if (firstLine)
                             {
-                                formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-                                if (firstLine)
-                                {
-                                    // print it
-                                    row.Add(formattedDataCell);
-                                    firstLine = false;
-                                }
-                                else
-                                {
-                                    // store the rest
-                                    queue.Enqueue(formattedDataCell);
-                                }
+                                // print it
+                                row.Add(formattedDataCell);
+                                firstLine = false;
+                            }
+                            else
+                            {
+                                // store the rest
+                                queue.Enqueue(formattedDataCell);
                             }
                         }
-
-                        if (queue.Count > 0) // only add a queue when there's something to store
-                        {
-                            columnQueues[colIndex] = queue;
-                        }
                     }
-                    else
+
+                    if (queue.Count > 0) // only add a queue when there's something to store
                     {
-                        // the normal case
-                        if (data is FormattedCell formattedDataCell)
-                        {
-                            formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-                            row.Add(formattedDataCell);
-                        }
+                        columnQueues[colIndex] = queue;
                     }
                 }
 
