@@ -642,7 +642,7 @@ namespace NuGet.Test.Utility
 
                 foreach (var file in package.Files)
                 {
-                    builder.Files.Add(CreatePackageFile(file.Key));
+                    builder.Files.Add((Packaging.IPackageFile)CreatePackageFile(file.Key));
                 }
 
                 using (var stream = File.OpenWrite(Path.Combine(repositoryPath, $"{package.Identity.Id}.{package.Identity.Version.ToString()}.nupkg")))
