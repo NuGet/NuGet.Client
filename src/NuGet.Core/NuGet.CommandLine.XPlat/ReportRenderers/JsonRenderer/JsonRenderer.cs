@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Build.Evaluation;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 {
     internal abstract class JsonRenderer : IReportRenderer
     {
-        protected readonly List<RenderProblem> _problems = new();
+        protected readonly List<ReportProblem> _problems = new();
         protected readonly List<string> _sources = new();
         protected readonly List<ReportProject> _projects = new();
         protected ReportOutputVersion OutputVersion { get; private set; }
@@ -22,7 +23,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 
         public void WriteErrorLine(string errorText, string project)
         {
-            _problems.Add(new RenderProblem(project, errorText));
+            _problems.Add(new ReportProblem(project, errorText));
         }
 
         public void Write(string value)
@@ -65,13 +66,24 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 
         public void FinishRendering()
         {
-            JsonOutputFormat.Render(new JsonOutputContent()
+            try
             {
-                Parameters = _parameters,
-                Problems = _problems,
-                Projects = _projects,
-                Sources = _sources
-            });
+                string jsonRenderedOutput = JsonOutputFormat.Render(new JsonOutputContent()
+                {
+                    Parameters = _parameters,
+                    Problems = _problems,
+                    Projects = _projects,
+                    Sources = _sources
+                });
+
+                Console.WriteLine(jsonRenderedOutput);
+            }
+            catch (Exception ex)
+            {
+                _problems.Add(new ReportProblem(string.Empty, ex.Message));
+            }
         }
+
+        public int ExitCode => _problems.Count > 0 ? 1 : 0;
     }
 }

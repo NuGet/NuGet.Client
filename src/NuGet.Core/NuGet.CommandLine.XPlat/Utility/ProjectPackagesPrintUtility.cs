@@ -118,7 +118,6 @@ namespace NuGet.CommandLine.XPlat.Utility
             if (listPackageArgs.Renderer is JsonRenderer jsonRenderer)
             {
                 jsonRenderer.AddProjectData(reportProject);
-                jsonRenderer.FinishRendering();
             }
         }
 

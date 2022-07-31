@@ -21,9 +21,9 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers
 {
     internal class ReportFrameworkPackage
     {
-        private string FrameWork { get; set; }
-        private List<TopLevelPackage> TopLevelPackages { get; set; }
-        private List<TransitivePackage> TransitivePackages { get; set; }
+        internal string FrameWork { get; set; }
+        internal List<TopLevelPackage> TopLevelPackages { get; set; }
+        internal List<TransitivePackage> TransitivePackages { get; set; }
         public ReportFrameworkPackage(string frameWork, List<TopLevelPackage> topLevelPackages, List<TransitivePackage> transitivePackages)
         {
             FrameWork = frameWork;
