@@ -29,6 +29,7 @@ using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
+using Test.Utility.VisualStudio;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 

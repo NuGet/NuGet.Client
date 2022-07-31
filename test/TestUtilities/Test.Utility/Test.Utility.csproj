@@ -105,5 +105,6 @@
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <Compile Remove="ProjectManagement\TestProjectKProject.cs" />
     <Compile Remove="Threading\*.cs" />
+    <Compile Remove="VisualStudio\*.cs" />
   </ItemGroup>
 </Project>

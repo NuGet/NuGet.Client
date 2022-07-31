@@ -25,6 +25,7 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Test.Utility;
+using Test.Utility.VisualStudio;
 using Xunit;
 using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
 using Task = System.Threading.Tasks.Task;

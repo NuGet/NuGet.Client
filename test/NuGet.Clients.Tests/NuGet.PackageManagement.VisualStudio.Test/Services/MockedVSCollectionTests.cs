@@ -15,8 +15,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     {
         private readonly Dictionary<Type, Task<object>> _services = new Dictionary<Type, Task<object>>();
         protected readonly Dictionary<string, bool> _experimentationFlags;
-        var mockExperimentationService = Mock.Of<IExperimentationService>(MockBehavior.Strict);
-        mockExperimentationService.
+        //var mockExperimentationService = Mock.Of<IExperimentationService>(MockBehavior.Strict);
+        //mockExperimentationService.
 
         public MockedVSCollectionTests(GlobalServiceProvider globalServiceProvider)
         {

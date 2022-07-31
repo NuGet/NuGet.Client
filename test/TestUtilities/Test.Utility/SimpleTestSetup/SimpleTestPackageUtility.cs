@@ -23,6 +23,8 @@ using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
 {
+    using IPackageFile = NuGet.Packaging.IPackageFile;
+
     public static class SimpleTestPackageUtility
     {
         public static async Task CreateFullPackagesAsync(string repositoryDir, IDictionary<string, IEnumerable<string>> packages)
@@ -642,7 +644,7 @@ namespace NuGet.Test.Utility
 
                 foreach (var file in package.Files)
                 {
-                    builder.Files.Add((Packaging.IPackageFile)CreatePackageFile(file.Key));
+                    builder.Files.Add(CreatePackageFile(file.Key));
                 }
 
                 using (var stream = File.OpenWrite(Path.Combine(repositoryPath, $"{package.Identity.Id}.{package.Identity.Version.ToString()}.nupkg")))
