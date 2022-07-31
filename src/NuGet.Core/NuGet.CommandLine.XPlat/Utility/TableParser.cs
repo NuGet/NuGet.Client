@@ -68,7 +68,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     var queue = new Queue<FormattedCell>();
                     foreach (FormattedCell formattedDataCell in dataEnum)
                     {
-                        formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString() ?? string.Empty;
+                        formattedDataCell.Value = formattedDataCell.Value?.ToString() ?? string.Empty;
                         if (firstLine)
                         {
                             // print it
