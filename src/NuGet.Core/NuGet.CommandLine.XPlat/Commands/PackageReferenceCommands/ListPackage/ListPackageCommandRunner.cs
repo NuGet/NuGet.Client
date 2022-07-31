@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat.ReportRenderers;
+using NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -162,6 +163,15 @@ namespace NuGet.CommandLine.XPlat
             if (autoReferenceFound)
             {
                 reportRenderer.WriteLine(Strings.ListPkg_AutoReferenceDescription);
+
+                // Should log into json output ?
+            }
+
+            if (listPackageArgs.Renderer is JsonRenderer jsonRenderer)
+            {
+                jsonRenderer.FinishRendering();
+
+                return jsonRenderer.ExitCode;
             }
 
             return 0;

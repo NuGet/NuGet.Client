@@ -3,11 +3,11 @@
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers
 {
-    internal class RenderProblem
+    internal class ReportProblem
     {
         public string Project { get; private set; }
         public string Message { get; private set; }
-        public RenderProblem(string project, string message)
+        public ReportProblem(string project, string message)
         {
             Project = project;
             Message = message;

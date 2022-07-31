@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using NuGet.CommandLine.XPlat.Utility;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 {
@@ -16,6 +18,14 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
         private const string ProblemsProperty = "problems";
         private const string SourcesProperty = "sources";
         private const string ProjectsProperty = "projects";
+        private const string FrameworksProperty = "frameworks";
+        private const string FrameworkProperty = "framework";
+        private const string PathProperty = "path";
+        private const string TopLevelPackagesProperty = "topLevelPackages";
+        private const string TransitivePackagesProperty = "transitivePackages";
+        private const string IdProperty = "id";
+        private const string RequestedVersionProperty = "requestedVersion";
+        private const string ResolvedVersionProperty = "resolvedVersion";
 
         private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(GetSerializerSettings());
 
@@ -28,13 +38,13 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
             }
         }
 
-        public static void Write(StringWriter stringWriter, JsonOutputContent hashFile)
+        public static void Write(StringWriter stringWriter, JsonOutputContent jsonOutputContent)
         {
             using (var jsonWriter = new JsonTextWriter(stringWriter))
             {
                 jsonWriter.Formatting = Formatting.Indented;
 
-                JsonSerializer.Serialize(jsonWriter, hashFile);
+                JsonSerializer.Serialize(jsonWriter, jsonOutputContent);
             }
         }
 
@@ -48,11 +58,94 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
             return settings;
         }
 
+        private static void WriteProblem(JsonWriter writer, ReportProblem renderProblem)
+        {
+            writer.WriteStartObject();
+
+            writer.WritePropertyName(renderProblem.Message);
+            writer.WriteValue(renderProblem.Message);
+
+            writer.WriteEndObject();
+        }
+
+        private static void WriteSource(JsonWriter writer, string source)
+        {
+            writer.WriteStartObject();
+
+            writer.WriteValue(source);
+
+            writer.WriteEndObject();
+        }
+
+        private static void WriteProject(JsonWriter writer, ReportProject reportProject)
+        {
+            //writer.WriteStartObject();
+
+            writer.WritePropertyName(PathProperty);
+            writer.WriteValue(reportProject.Path);
+
+            writer.WritePropertyName(FrameworksProperty);
+            JsonUtility.WriteObject(writer, reportProject.FrameworkPackages, WriteFrameworkPackage);
+
+            //writer.WriteEndObject();
+        }
+
+        private static void WriteFrameworkPackage(JsonWriter writer, ReportFrameworkPackage reportFrameworkPackage)
+        {
+            //writer.WriteStartObject();
+
+            writer.WritePropertyName(FrameworkProperty);
+            writer.WriteValue(reportFrameworkPackage.FrameWork);
+
+            if (reportFrameworkPackage.TopLevelPackages?.Count > 0)
+            {
+                writer.WritePropertyName(TopLevelPackagesProperty);
+                JsonUtility.WriteObject(writer, reportFrameworkPackage.TopLevelPackages, WriteTopLevelPackage);
+            }
+
+            if (reportFrameworkPackage.TransitivePackages?.Count > 0)
+            {
+                writer.WritePropertyName(TransitivePackagesProperty);
+                JsonUtility.WriteObject(writer, reportFrameworkPackage.TransitivePackages, WriteTransitivePackage);
+            }
+
+            //writer.WriteEndObject();
+        }
+
+        private static void WriteTopLevelPackage(JsonWriter writer, TopLevelPackage topLevelPackage)
+        {
+            //writer.WriteStartObject();
+
+            writer.WritePropertyName(IdProperty);
+            writer.WriteValue(topLevelPackage.PackageId);
+
+            writer.WritePropertyName(RequestedVersionProperty);
+            writer.WriteValue(topLevelPackage.RequestedVersion);
+
+            writer.WritePropertyName(ResolvedVersionProperty);
+            writer.WriteValue(topLevelPackage.ResolvedVersion);
+
+            //writer.WriteEndObject();
+        }
+
+        private static void WriteTransitivePackage(JsonWriter writer, TransitivePackage transitivePackage)
+        {
+            //writer.WriteStartObject();
+
+            writer.WritePropertyName(IdProperty);
+            writer.WriteValue(transitivePackage.PackageId);
+
+            writer.WritePropertyName(ResolvedVersionProperty);
+            writer.WriteValue(transitivePackage.ResolvedVersion);
+
+            //writer.WriteEndObject();
+        }
+
         private class JsonOutputConverter : JsonConverter
         {
             internal static JsonOutputConverter Default { get; } = new JsonOutputConverter();
 
-            private static readonly Type TargetType = typeof(JsonOutputConverter);
+            private static readonly Type TargetType = typeof(JsonOutputContent);
             public override bool CanConvert(Type objectType)
             {
                 return objectType == TargetType;
@@ -78,14 +171,23 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
                 writer.WritePropertyName(ParametersProperty);
                 writer.WriteValue(jsonOutputContent.Parameters);
 
-                writer.WritePropertyName(ProblemsProperty);
-                writer.WriteValue(jsonOutputContent.Problems);
+                if (jsonOutputContent.Problems.Count > 0)
+                {
+                    writer.WritePropertyName(ProblemsProperty);
+                    JsonUtility.WriteObject(writer, jsonOutputContent.Problems, WriteProblem);
+                }
 
-                writer.WritePropertyName(SourcesProperty);
-                writer.WriteValue(jsonOutputContent.Sources);
+                if (jsonOutputContent.Sources.Count > 0)
+                {
+                    writer.WritePropertyName(SourcesProperty);
+                    JsonUtility.WriteObject(writer, jsonOutputContent.Sources, WriteSource);
+                }
 
-                writer.WritePropertyName(ProjectsProperty);
-                writer.WriteValue(jsonOutputContent.Projects);
+                if (jsonOutputContent.Projects.Count > 0)
+                {
+                    writer.WritePropertyName(ProjectsProperty);
+                    JsonUtility.WriteObject(writer, jsonOutputContent.Projects, WriteProject);
+                }
 
                 writer.WriteEndObject();
             }

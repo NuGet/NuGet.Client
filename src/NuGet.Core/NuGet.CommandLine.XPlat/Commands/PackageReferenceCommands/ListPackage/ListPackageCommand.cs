@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.CommandLine.XPlat.Enums;
 using NuGet.CommandLine.XPlat.ReportRenderers;
 using NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer;
 using NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer;
@@ -184,11 +185,17 @@ namespace NuGet.CommandLine.XPlat
         private static (IReportRenderer, ReportOutputFormat) GetOutputType(string outputFormatOption, string outputVersionOption)
         {
             ReportOutputFormat outputFormat = ReportOutputFormat.Console;
-
-            if (!string.IsNullOrEmpty(outputFormatOption) && !Enum.TryParse(outputFormatOption, out outputFormat))
+            if (!string.IsNullOrEmpty(outputFormatOption))
             {
-                string currentlySupportedFormat = "console, json";
-                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOutputFormat, outputFormatOption, currentlySupportedFormat));
+                try
+                {
+                    outputFormat = EnumExtensions.GetValueFromName<ReportOutputFormat>(outputFormatOption);
+                }
+                catch (ArgumentException)
+                {
+                    string currentlySupportedFormat = "console, json";
+                    throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOutputFormat, outputFormatOption, currentlySupportedFormat));
+                }
             }
 
             if (outputFormat == ReportOutputFormat.Console)

@@ -9,7 +9,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
     {
         internal int Version { get; set; } = JsonOutputFormat.Version;
         internal string Parameters { get; set; }
-        internal List<RenderProblem> Problems { get; set; }
+        internal List<ReportProblem> Problems { get; set; }
         internal List<string> Sources { get; set; }
         internal List<ReportProject> Projects { get; set; }
     }
