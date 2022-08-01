@@ -16,10 +16,11 @@ namespace NuGet.CommandLine.XPlat.Utility
           string[] columnHeaders,
           string framework,
           bool printingTransitive,
+          ReportOutputFormat reportOutputFormat,
           Func<T, FormattedCell>[] valueSelectors,
           List<Func<T, IEnumerable<FormattedCell>>> vulnerabilityValueSelectors)
         {
-            return ToFormattedStringTable(values.ToArray(), columnHeaders, framework, printingTransitive, valueSelectors, vulnerabilityValueSelectors);
+            return ToFormattedStringTable(values.ToArray(), columnHeaders, framework, printingTransitive, reportOutputFormat, valueSelectors, vulnerabilityValueSelectors);
         }
 
         internal static (IEnumerable<FormattedCell>, ReportFrameworkPackage) ToFormattedStringTable<T>(
@@ -27,6 +28,7 @@ namespace NuGet.CommandLine.XPlat.Utility
           string[] columnHeaders,
           string framework,
           bool printingTransitive,
+          ReportOutputFormat reportOutputFormat,
           Func<T, FormattedCell>[] valueSelectors,
           List<Func<T, IEnumerable<FormattedCell>>> vulnerabilityValueSelectors)
         {
@@ -55,7 +57,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 {
                     FormattedCell formattedDataCell = valueSelectors[colIndex](values[rowIndex]);
                     // the normal case
-                    formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString() ?? string.Empty;
+                    formattedDataCell.Value = (reportOutputFormat == ReportOutputFormat.Console && colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString() ?? string.Empty;
                     row.Add(formattedDataCell);
                 }
 

@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.CommandLine.XPlat.Utility;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
@@ -77,68 +79,113 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
             writer.WriteEndObject();
         }
 
-        private static void WriteProject(JsonWriter writer, ReportProject reportProject)
+        private static void WriteProjectArray(JsonWriter writer, List<ReportProject> reportProjects)
         {
-            //writer.WriteStartObject();
+            writer.WritePropertyName(ProjectsProperty);
 
-            writer.WritePropertyName(PathProperty);
-            writer.WriteValue(reportProject.Path);
-
-            writer.WritePropertyName(FrameworksProperty);
-            JsonUtility.WriteObject(writer, reportProject.FrameworkPackages, WriteFrameworkPackage);
-
-            //writer.WriteEndObject();
-        }
-
-        private static void WriteFrameworkPackage(JsonWriter writer, ReportFrameworkPackage reportFrameworkPackage)
-        {
-            //writer.WriteStartObject();
-
-            writer.WritePropertyName(FrameworkProperty);
-            writer.WriteValue(reportFrameworkPackage.FrameWork);
-
-            if (reportFrameworkPackage.TopLevelPackages?.Count > 0)
+            writer.WriteStartArray();
+            foreach (ReportProject reportProject in reportProjects)
             {
-                writer.WritePropertyName(TopLevelPackagesProperty);
-                JsonUtility.WriteObject(writer, reportFrameworkPackage.TopLevelPackages, WriteTopLevelPackage);
-            }
+                writer.WriteStartObject();
+                writer.WritePropertyName(PathProperty);
+                writer.WriteValue(reportProject.Path);
 
-            if (reportFrameworkPackage.TransitivePackages?.Count > 0)
+                if (reportProject.FrameworkPackages.Count > 0)
+                {
+                    writer.WritePropertyName(FrameworksProperty);
+
+                    WriteFrameworkPackage(writer, reportProject.FrameworkPackages);
+
+                }
+                writer.WriteEndObject();
+
+                //writer.WritePropertyName(IdProperty);
+                //writer.WriteValue(topLevelPackage.PackageId);
+
+                //writer.WritePropertyName(RequestedVersionProperty);
+                //writer.WriteValue(topLevelPackage.RequestedVersion);
+
+                //writer.WritePropertyName(ResolvedVersionProperty);
+                //writer.WriteValue(topLevelPackage.ResolvedVersion);
+            }
+            writer.WriteEndArray();
+        }
+
+        private static void WriteFrameworkPackage(JsonWriter writer, List<ReportFrameworkPackage> reportFrameworkPackages)
+        {
+            writer.WriteStartArray();
+            foreach (ReportFrameworkPackage reportFrameworkPackage in reportFrameworkPackages)
             {
-                writer.WritePropertyName(TransitivePackagesProperty);
-                JsonUtility.WriteObject(writer, reportFrameworkPackage.TransitivePackages, WriteTransitivePackage);
+                writer.WriteStartObject();
+                writer.WritePropertyName(FrameworkProperty);
+                writer.WriteValue(reportFrameworkPackage.FrameWork);
+                WriteTopLevelPackages(writer, TopLevelPackagesProperty, reportFrameworkPackage.TopLevelPackages);
+                WriteTransitivePackages(writer, TransitivePackagesProperty, reportFrameworkPackage.TransitivePackages);
+                writer.WriteEndObject();
+
+                //writer.WriteStartObject();
+                //writer.WritePropertyName(PathProperty);
+                //writer.WriteValue(reportProject.Path);
+                //writer.WriteEndObject();
+
+                //if (reportProject.FrameworkPackages.Count > 0)
+                //{
+                //    WriteFrameworkPackage(writer, reportProject.FrameworkPackages);
+                //}
+
+                //writer.WritePropertyName(IdProperty);
+                //writer.WriteValue(topLevelPackage.PackageId);
+
+                //writer.WritePropertyName(RequestedVersionProperty);
+                //writer.WriteValue(topLevelPackage.RequestedVersion);
+
+                //writer.WritePropertyName(ResolvedVersionProperty);
+                //writer.WriteValue(topLevelPackage.ResolvedVersion);
             }
-
-            //writer.WriteEndObject();
+            writer.WriteEndArray();
         }
 
-        private static void WriteTopLevelPackage(JsonWriter writer, TopLevelPackage topLevelPackage)
+        private static void WriteTopLevelPackages(JsonWriter writer, string property, List<TopLevelPackage> topLevelPackages)
         {
-            //writer.WriteStartObject();
+            if (topLevelPackages?.Count > 0)
+            {
+                writer.WritePropertyName(property);
 
-            writer.WritePropertyName(IdProperty);
-            writer.WriteValue(topLevelPackage.PackageId);
+                writer.WriteStartArray();
+                foreach (TopLevelPackage topLevelPackage in topLevelPackages)
+                {
+                    writer.WriteStartObject();
+                    writer.WritePropertyName(IdProperty);
+                    writer.WriteValue(topLevelPackage.PackageId);
 
-            writer.WritePropertyName(RequestedVersionProperty);
-            writer.WriteValue(topLevelPackage.RequestedVersion);
+                    writer.WritePropertyName(RequestedVersionProperty);
+                    writer.WriteValue(topLevelPackage.RequestedVersion);
 
-            writer.WritePropertyName(ResolvedVersionProperty);
-            writer.WriteValue(topLevelPackage.ResolvedVersion);
-
-            //writer.WriteEndObject();
+                    writer.WritePropertyName(ResolvedVersionProperty);
+                    writer.WriteValue(topLevelPackage.ResolvedVersion);
+                    writer.WriteEndObject();
+                }
+                writer.WriteEndArray();
+            }
         }
 
-        private static void WriteTransitivePackage(JsonWriter writer, TransitivePackage transitivePackage)
+        private static void WriteTransitivePackages(JsonWriter writer, string property, List<TransitivePackage> transitivePackages)
         {
-            //writer.WriteStartObject();
+            if (transitivePackages?.Count > 0)
+            {
+                writer.WritePropertyName(property);
 
-            writer.WritePropertyName(IdProperty);
-            writer.WriteValue(transitivePackage.PackageId);
+                writer.WriteStartArray();
+                foreach (TransitivePackage transitivePackage in transitivePackages)
+                {
+                    writer.WritePropertyName(IdProperty);
+                    writer.WriteValue(transitivePackage.PackageId);
 
-            writer.WritePropertyName(ResolvedVersionProperty);
-            writer.WriteValue(transitivePackage.ResolvedVersion);
-
-            //writer.WriteEndObject();
+                    writer.WritePropertyName(ResolvedVersionProperty);
+                    writer.WriteValue(transitivePackage.ResolvedVersion);
+                }
+                writer.WriteEndArray();
+            }
         }
 
         private class JsonOutputConverter : JsonConverter
@@ -185,8 +232,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 
                 if (jsonOutputContent.Projects.Count > 0)
                 {
-                    writer.WritePropertyName(ProjectsProperty);
-                    JsonUtility.WriteObject(writer, jsonOutputContent.Projects, WriteProject);
+                    WriteProjectArray(writer, jsonOutputContent.Projects);
                 }
 
                 writer.WriteEndObject();

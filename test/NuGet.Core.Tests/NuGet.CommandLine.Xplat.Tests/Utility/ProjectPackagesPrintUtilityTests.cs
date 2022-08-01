@@ -32,7 +32,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             {
                 // Act
                 var autoReferenceFound = false;
-                (IEnumerable<FormattedCell> report, _) = ProjectPackagesPrintUtility.BuildPackagesTable(packageRefs, "net5.0", printingTransitive, pkgArgs, ref autoReferenceFound);
+                (IEnumerable<FormattedCell> report, _) = ProjectPackagesPrintUtility.BuildPackagesTable(packageRefs, "net5.0", printingTransitive, ReportOutputFormat.Console, pkgArgs, ref autoReferenceFound);
 
                 // Assert
                 var reportArr = report.ToArray();
