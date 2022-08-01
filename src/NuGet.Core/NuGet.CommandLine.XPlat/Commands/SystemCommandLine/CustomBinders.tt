@@ -1,11 +1,13 @@
-<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ template debug="true" hostspecific="true" language="C#" #>
 <#@ assembly name="System.Xml.XDocument" #>
 <#@ assembly name="System.Xml.Linq" #>
 <#@ assembly name="System.Xml" #>
 <#@ assembly name="System.Core" #>
+<#@ assembly name="System.Collections" #>
 <#@ import namespace="System.Globalization" #>
 <#@ import namespace="System.Xml.Linq" #>
 <#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".cs" #>
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
@@ -14,7 +16,7 @@
 // instead modify the neighboring .tt file (text template) and/or NuGet.CommandLine.Xplat\Commands\SystemCommandLine\Commands.xml (data file),
 // then re-execute the text template via "run custom tool" on VS context menu for .tt file, or via dotnet-t4 global tool.
 
-using System;
+using System.CommandLine;
 using System.CommandLine.Binding;
 using NuGet.Commands;
 
@@ -32,7 +34,7 @@ foreach (XElement verb in allElements)
     {
         string binderTypeClassName = GetArgsClassName(verb, noun);
         string binderClassName = GetCustomBinderClassName(verb, noun);
-        GenerateCustomBinderClass(binderClassName, binderTypeClassName);
+        GenerateCustomBinderClass(binderClassName, binderTypeClassName, noun);
         WriteLine(string.Empty);
     }
 
@@ -41,7 +43,7 @@ foreach (XElement verb in allElements)
     {
         string binderTypeClassName = GetArgsClassName(verb, null);
         string binderClassName = GetCustomBinderClassName(verb, null);
-        GenerateCustomBinderClass(binderClassName, binderTypeClassName);
+        GenerateCustomBinderClass(binderClassName, binderTypeClassName, verb);
         WriteLine(string.Empty);
     }
 

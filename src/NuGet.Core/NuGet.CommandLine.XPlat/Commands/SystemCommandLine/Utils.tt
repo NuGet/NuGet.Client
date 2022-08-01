@@ -177,7 +177,6 @@ public class OptionData
         Shortcut = element.Attribute(XName.Get("Shortcut",""))?.Value;
         IsRequired = element.Attribute(XName.Get("Required", ""))?.Value == "true";
         DataType = StringUtilities.GetClrType(element);
-
         string optionType = StringUtilities.GetOptionType(element);
 
         switch (elementName)
@@ -211,6 +210,10 @@ public class OptionData
             default:
                 throw new Exception("Unknown Element Type " + element.Name.LocalName);
         }
+
+        var textInfo = CultureInfo.InvariantCulture.TextInfo;
+        CamelCaseName = $"{textInfo.ToLower(InitCapsName[0])}{InitCapsName.Substring(1)}";
+        PrivateMemberName = $"_{CamelCaseName}";
     }
 
     public string BaseClass { get; set; }
@@ -228,13 +231,19 @@ public class OptionData
     public string ShortcutName { get { return "-" + Shortcut; } }
     public string FullName { get { return "--" + Name.ToLower(); } }
     public string DataType { get; set; }
+    public string PrivateMemberName { get; }
+    public string CamelCaseName { get; }
 }
 
-    string getSeparator(bool isFirst)
+    string getSeparator(bool isFirst, bool firstWithSpace = true)
     {
         if (isFirst)
         {
-            return "  ";
+            if (firstWithSpace)
+            {
+                return " ";
+            }
+            return string.Empty;
         }
         return ", ";
     }
@@ -246,7 +255,7 @@ public class OptionData
 
     string GenerateOptionNameVar(OptionData data)
     {
-        return StringUtilities.GetFormalName(data.Name) + "_" + data.BaseClass;
+        return StringUtilities.GetFormalName(data.Name) + data.BaseClass;
     }
 
     void GenerateAddOptionOrArgument(XElement parentNode, string commandVarName, int indent = 4)
@@ -339,6 +348,22 @@ public class OptionData
         return sb.ToString();
     }
 
+
+    void GenerateCommandHandlerCustomBinder(string commandNameVar, string verbNounPrefix, XElement noun, int indent = 4)
+    {
+        string binderClassName = $"{verbNounPrefix}Args";
+        string runnerClassName = $"{verbNounPrefix}Runner";
+
+        WriteLine($"// Create handler delegate handler for {commandNameVar}");
+        WriteLine($"{commandNameVar}.SetHandler((argsObject, getLogger)");
+        WriteLine("{");
+        PushIndent(Indent(4));
+        WriteLine($"{runnerClassName}.Run(args, getLogger);");
+        PopIndent();
+        Write("},");
+        Write(GenerateCommandHandlerFunctionArgs(noun));
+    }
+
     void GenerateCommandHandler(string commandNameVar, string verbNounPrefix, XElement noun, int indent = 4)
     {
 #>
@@ -392,12 +417,6 @@ public class OptionData
 <#= Indent(indent) #>}<#= GenerateCommandHandlerFunctionArgs(noun) #>); // End handler of <#= commandNameVar #>
 <#+
     } // end method GenerateCommandHandler
-
-
-    void GenerateCustomBinderHandler(XElement noun, int indent = 4)
-    {
-
-    }
 
 
     void GenerateArgsClass(string className, XElement nodeMembers, string classVisibility = "public", int indent = 4)
@@ -489,15 +508,73 @@ public class OptionData
         return $"{verbFormalName}{nounFormalName}CustomBinder";
     }
 
-    void GenerateCustomBinderClass(string className, string binderClassName)
+    void GenerateCustomBinderClass(string className, string binderClassName, XElement argsOptionsNode)
     {
+        List<OptionData> options = new List<OptionData>();
+        foreach (XElement option in argsOptionsNode.Elements())
+        {
+            if (isValidOption(option))
+            {
+                options.Add(new OptionData(option));
+            }
+        }
+
         WriteLine($"internal partial class {className} : BinderBase<{binderClassName}>");
         WriteLine("{");
         PushIndent(Indent(4));
+
+        // Binder members
+        foreach (OptionData data in options)
+        {
+            WriteLine($"private readonly {data.BaseClass}<{data.DataType}> {data.PrivateMemberName};");
+        }
+        WriteLine(string.Empty);
+
+        // Constructor arguments
+        bool isFirst = true;
+        Write($"public {className}(");
+
+        foreach (OptionData data in options)
+        {
+            Write($"{getSeparator(isFirst, firstWithSpace: false)}{data.BaseClass}<{data.DataType}> {data.CamelCaseName}");
+            isFirst = false;
+        }
+        WriteLine(")");
+        WriteLine("{");
+        PushIndent(Indent(4));
+        // Assignment
+        foreach (OptionData data in options)
+        {
+            WriteLine($"{data.PrivateMemberName} = {data.CamelCaseName};");
+        }
+        PopIndent();
+        WriteLine("}");
+        WriteLine(string.Empty);
+
         WriteLine($"protected override {binderClassName} GetBoundValue(BindingContext bindingContext)");
         WriteLine("{");
         PushIndent(Indent(4));
-        WriteLine("throw new NotImplementedException();");
+
+        WriteLine($"var returnValue = new {binderClassName}()");
+        WriteLine("{");
+        PushIndent(Indent(4));
+        // Argument assignment
+        foreach (OptionData data in options)
+        {
+            if (data.BaseClass == "Option")
+            {
+                WriteLine($"{data.InitCapsName} = bindingContext.ParseResult.GetValueForOption({data.PrivateMemberName}),");
+            }
+            else
+            {
+                WriteLine($"{data.InitCapsName} = bindingContext.ParseResult.GetValueForArgument({data.PrivateMemberName}),");
+            }
+        }
+        PopIndent();
+        WriteLine("};");
+
+        WriteLine("return returnValue;");
+
         PopIndent();
         WriteLine("} // end GetBoundValue method");
         PopIndent();
