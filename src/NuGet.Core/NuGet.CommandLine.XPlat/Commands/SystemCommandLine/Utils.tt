@@ -257,7 +257,6 @@ public class OptionData
     string GenerateOptionNameVar(OptionData data)
     {
         return data.Name + "_" + data.BaseClass;
-        //return StringUtilities.GetFormalName(data.Name) + data.BaseClass;
     }
 
     void GenerateAddOptionOrArgument(XElement parentNode, string commandVarName, int indent = 4)
@@ -355,7 +354,6 @@ public class OptionData
 
     void GenerateCommandHandlerCustomBinder(string commandNameVar, string verbNounPrefix, string binderClassName, XElement noun)
     {
-        //string binderTypeClassName = $"{verbNounPrefix}Args";
         string runnerClassName = $"{verbNounPrefix}Runner";
 
         WriteLine($"// Create handler delegate handler for {commandNameVar}");
