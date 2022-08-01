@@ -9,9 +9,9 @@ using NuGet.Resolver;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class Options : INotifyPropertyChanged
+    public class OptionsViewModel : INotifyPropertyChanged
     {
-        public Options()
+        public OptionsViewModel()
         {
             ShowPreviewWindow = true;
             ShowDeprecatedFrameworkWindow = true;

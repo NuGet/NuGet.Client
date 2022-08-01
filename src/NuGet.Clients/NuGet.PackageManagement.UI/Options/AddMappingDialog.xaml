@@ -1,0 +1,120 @@
+<nuget:VsDialogWindow x:Class="NuGet.Options.AddMappingDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vsui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             mc:Ignorable="d" 
+             x:Uid="AddMappingDialogWindow"
+             AutomationProperties.Name="AddMappingDialogWindow"
+             Height="304"
+             Width="456"
+             ShowInTaskbar="False"
+             WindowStyle="None"
+             AllowsTransparency="True"
+             WindowStartupLocation="CenterOwner"
+             BorderBrush="{DynamicResource {x:Static vsui:EnvironmentColors.PanelBorderBrushKey}}"
+             BorderThickness="1"
+             Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="30"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="36"/>
+    </Grid.RowDefinitions>
+    <StackPanel Grid.Row="0">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="24"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock AutomationProperties.Name="AddNewPackageNamespace"
+                   Grid.Column="0"
+                   Text="{x:Static nuget:Resources.VSOptions_Label_AddPackageNamespace}"
+                   Margin="12,12,0,0"/>
+        <Button x:Uid="ButtonClose"
+                       Grid.Column="1"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top"
+                       Margin="0,6,6,0"
+                       Command="{Binding HideButtonCommand}"
+                       AutomationProperties.Name="Close"
+                       IsCancel="True"
+                       BorderBrush="Transparent"
+                       BorderThickness="0"
+                       Background="{Binding Path=(Window.Background), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
+          <Canvas x:Uid="canvas" Width="12" Height="10">
+            <Path x:Uid="CloseButtonPath"
+                  Width="10"
+                  Height="8"
+                  Fill="{Binding Path=(TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                  Stretch="Uniform"
+                  Data="F1 M 0,0L 2,0L 5,3L 8,0L 10,0L 6,4L 10,8L 8,8L 5,5L 2,8L 0,8L 4,4L 0,0 Z" />
+          </Canvas>
+        </Button>
+      </Grid>
+    </StackPanel>
+    <StackPanel Grid.Row="1">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="48"/>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="36"/>
+        </Grid.RowDefinitions>
+        <vsui:WatermarkedTextBox Grid.Row="0"
+                                 AutomationProperties.Name="Package ID"
+                                 x:Name="packageID"
+                                 MaxLength="100"
+                                 Margin="12,6,12,6"
+                                 Watermark="{x:Static nuget:Resources.VSOptions_Watermark_AddPackageNamespace}"
+                                 Foreground="{Binding Path=(TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                 Background="{Binding Path=(Window.Background), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+        <StackPanel Orientation="Vertical"  Grid.Row="1">
+          <nuget:ProjectsListView AutomationProperties.Name="Sources List"
+                    x:Name="sourcesListBox"
+                    ItemsSource="{Binding SourcesCollection}"
+                    Margin="12,0,12,12"
+                    Height="184">
+            <ListView.View>
+              <GridView>
+                <!-- checkbox column -->
+                <GridViewColumn>
+                  <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                      <CheckBox AutomationProperties.Name="SourcesCheckBox"
+                                IsTabStop="False"
+                                IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"/>
+                    </DataTemplate>
+                  </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <!-- the text column -->
+                <GridViewColumn x:Name="_projectColumn">
+                  <GridViewColumnHeader Content="{x:Static nuget:Resources.VSOptions_Label_Source}" HorizontalContentAlignment="Left"/>
+                  <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                      <StackPanel Orientation="Horizontal">
+                        <TextBlock Name="SourceInfo"
+                                Text="{Binding SourceInfo.Name}"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+              </GridView>
+            </ListView.View>
+          </nuget:ProjectsListView>
+        </StackPanel>
+      </Grid>
+    </StackPanel>
+    <Grid Grid.Row="2">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="190"/>
+      </Grid.ColumnDefinitions>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"  Grid.Column="1">
+        <Button Name="AddCloud" Height="24" Width="86" Command="{Binding AddButtonCommand}" Margin="0,0,3,12" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
+        <Button Name="CancelClose" Height="24" Width="86"  Command ="{Binding HideButtonCommand}" Margin="3,0,12,12" Content="{x:Static nuget:Resources.VSOptions_Button_Cancel}"/>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</nuget:VsDialogWindow>

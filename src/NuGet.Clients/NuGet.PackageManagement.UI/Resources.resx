@@ -950,4 +950,28 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Warning_NewHTTPSource_VSOptions" xml:space="preserve">
     <value>Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</value>
   </data>
+  <data name="VSOptions_Button_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="VSOptions_Button_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="VSOptions_Button_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="VSOptions_Button_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="VSOptions_Label_AddPackageNamespace" xml:space="preserve">
+    <value>Add New Package Source Mapping</value>
+  </data>
+  <data name="VSOptions_Label_PackageSourceMappings" xml:space="preserve">
+    <value>Package Source Mappings:</value>
+  </data>
+  <data name="VSOptions_Label_Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="VSOptions_Watermark_AddPackageNamespace" xml:space="preserve">
+    <value>Add Valid Package ID</value>
+  </data>
 </root>
