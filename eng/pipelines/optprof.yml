@@ -23,12 +23,6 @@ resources:
     ref: refs/heads/dev/mityler/VsSigning
 
 parameters:
-# The prefix naming of the OptimizationInputs drop
-# NOTE: fix prefix when ready for production (remove 'TEST')
-- name: optimizationDropPrefix
-  type: string
-  default: TESTOptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-
 # Whether or not commit should be tagged for manual deployments
 - name: optEnableOptProfTagging
   type: boolean
@@ -52,6 +46,7 @@ stages:
     name: OptProf_ProfilingWorkflow
     displayName: OptProf Profiling Workflow
     variables:
+    # NOTE: fix prefix when ready for production (remove 'TEST')
     - name: optDropName
       value: TESTOptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(resources.pipeline.ComponentBuildUnderTest.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
     optOptimizationInputsDropName: $(optDropName)
