@@ -1,0 +1,56 @@
+<UserControl x:Class="NuGet.Options.PackageSourceMappingOptionsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+             Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="24"/>
+      <RowDefinition Height="144*"/>
+      <RowDefinition Height="223*"/>
+      <RowDefinition Height="36"/>
+    </Grid.RowDefinitions>
+    <Grid.Resources>
+      <!-- Data Template for list items -->
+      <DataTemplate x:Uid="MappingItemTemplate" x:Key="MappingItemTemplate">
+        <StackPanel x:Uid="ListItemStackPanel">
+          <TextBlock FontWeight="Bold">
+            <TextBlock.Text>
+              <Binding Path="ID"/>
+            </TextBlock.Text>
+          </TextBlock>
+          <TextBlock>
+            <TextBlock.Text>
+              <Binding Path="SourcesString"/>
+            </TextBlock.Text>
+          </TextBlock>
+        </StackPanel>
+      </DataTemplate>
+    </Grid.Resources>
+    <TextBlock  Grid.Row="0" Margin="6,0,0,0" Text="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}"/>
+    <ListBox Name="packageList"
+             ItemsSource="{Binding SourceMappingsCollection}"
+             Grid.Row="1"
+             Margin="6,6,6,6"
+             ItemTemplate="{StaticResource MappingItemTemplate}"
+             IsSynchronizedWithCurrentItem="True"
+             ScrollViewer.VerticalScrollBarVisibility="Auto"
+             AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}" Grid.RowSpan="2"/>
+    <Grid Grid.Row="3">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="101"/>
+        <ColumnDefinition Width="89"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="101"/>
+      </Grid.ColumnDefinitions>
+      <Button Grid.Column="0" Width="86" Height="24" Command="{Binding ShowButtonCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
+      <Button Grid.Column="1" Width="86" Height="24" Margin = "3,0,0,0" Command="{Binding RemoveButtonCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Remove}"/>
+      <Button Grid.Column="3" Width="86" Height="24"  Command="{Binding ClearButtonCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Clear}"/>
+    </Grid>
+  </Grid>
+</UserControl>

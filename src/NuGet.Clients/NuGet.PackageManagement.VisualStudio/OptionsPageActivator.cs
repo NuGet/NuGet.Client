@@ -22,6 +22,9 @@ namespace NuGet.PackageManagement.VisualStudio
         // GUID of the General page, defined in GeneralOptionsPage.cs
         private const string _generalGUID = "0F052CF7-BF62-4743-B190-87FA4D49421E";
 
+        // GUID of the Package Source Mapping page, defined in PackageSourceMappingOptionsPage.cs
+        private const string _packageSourceMappingGUID = "F175964E-89F5-4521-8FE2-C10C07BB968C";
+
         private Action _closeCallback;
         private readonly AsyncLazy<IVsUIShell> _vsUIShell;
 
@@ -63,6 +66,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
                     await ShowOptionsPageAsync(_packageSourcesGUID);
+                }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
+            }
+            else if (page == OptionsPage.PackageSourceMapping)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ShowOptionsPageAsync(_packageSourceMappingGUID);
                 }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
             }
             else

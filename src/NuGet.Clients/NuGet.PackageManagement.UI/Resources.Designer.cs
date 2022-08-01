@@ -2277,6 +2277,78 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add.
+        /// </summary>
+        public static string VSOptions_Button_Add {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string VSOptions_Button_Cancel {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clear.
+        /// </summary>
+        public static string VSOptions_Button_Clear {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_Clear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove.
+        /// </summary>
+        public static string VSOptions_Button_Remove {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add New Package Source Mapping.
+        /// </summary>
+        public static string VSOptions_Label_AddPackageNamespace {
+            get {
+                return ResourceManager.GetString("VSOptions_Label_AddPackageNamespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package Source Mappings:.
+        /// </summary>
+        public static string VSOptions_Label_PackageSourceMappings {
+            get {
+                return ResourceManager.GetString("VSOptions_Label_PackageSourceMappings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source.
+        /// </summary>
+        public static string VSOptions_Label_Source {
+            get {
+                return ResourceManager.GetString("VSOptions_Label_Source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Valid Package ID.
+        /// </summary>
+        public static string VSOptions_Watermark_AddPackageNamespace {
+            get {
+                return ResourceManager.GetString("VSOptions_Watermark_AddPackageNamespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to critical.
         /// </summary>
         public static string VulnerabilitySeverity_Critical {
