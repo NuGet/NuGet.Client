@@ -70,7 +70,6 @@ foreach (XElement verb in allElements)
         if (!handlerGenerated)
         {
             // Generate handler for noun
-            //GenerateCommandHandler(nounFormalNameVar, commandFormalName + nounFormalName, noun, 12);
             PushIndent(Indent(12));
             string binderClassName = GetCustomBinderClassName(verb, noun);
             GenerateCommandHandlerCustomBinder(nounFormalNameVar, commandFormalName + nounFormalName, binderClassName, noun);
