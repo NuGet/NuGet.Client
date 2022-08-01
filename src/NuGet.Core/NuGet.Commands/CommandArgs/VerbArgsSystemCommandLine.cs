@@ -7,20 +7,4 @@
 
 namespace NuGet.Commands
 {
-    public partial class PushArgs
-    {
-        public bool ForceEnglishOutput { get; set; }
-        public string Source { get; set; }
-        public string SymbolSource { get; set; }
-        public int Timeout { get; set; }
-        public string ApiKey { get; set; }
-        public string SymbolApiKey { get; set; }
-        public bool DisableBuffering { get; set; }
-        public bool NoSymbols { get; set; }
-        public string PackagePaths { get; set; }
-        public bool NoServiceEndpoint { get; set; }
-        public bool Interactive { get; set; }
-        public bool SkipDuplicate { get; set; }
-    }
-
 }

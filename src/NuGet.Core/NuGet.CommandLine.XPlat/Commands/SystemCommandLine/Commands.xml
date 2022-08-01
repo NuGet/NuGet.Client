@@ -13,19 +13,4 @@
       <SeeAlso Title="sources command (nuget.exe)" Url="/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
   </Verb>
-  <Command Name="push"
-    Help="Push_Description" Handler="PushHandlerAsync">
-    <SwitchOption Name="force-english-output" Help="ForceEnglishOutput_Description" />
-    <SingleValueOption Name="source" Shortcut="s" Help="Source_Description" />
-    <SingleValueOption Name="symbol-source" Shortcut="ss" Help="SymbolSource_Description" />
-    <SingleValueOption Name="timeout" Shortcut="t" Help="Push_Timeout_Description" Type="int" />
-    <SingleValueOption Name="api-key" Shortcut="k" Help="ApiKey_Description" />
-    <SingleValueOption Name="symbol-api-key" Shortcut="sk" Help="SymbolApiKey_Description" />
-    <SwitchOption Name="disable-buffering" Shortcut="d" Help="DisableBuffering_Description" />
-    <SwitchOption Name="no-symbols" Shortcut="n" Help="NoSymbols_Description" />
-    <Argument Name="package-paths" Help="Push_Package_ApiKey_Description" Arity="ArgumentArity.OneOrMore" Type="string" />
-    <SwitchOption Name="no-service-endpoint" Help="NoServiceEndpoint_Description" />
-    <SwitchOption Name="interactive" Help="NuGetXplatCommand_Interactive" />
-    <SwitchOption Name="skip-duplicate" Help="PushCommandSkipDuplicateDescription" />
-  </Command>
 </Commands>

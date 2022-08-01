@@ -1,4 +1,5 @@
 <#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
 <#+
     string InitCaps(string input)
     {
@@ -329,10 +330,11 @@ public class OptionData
         }
     }
 
-    string GenerateCommandHandlerFunctionArgs(XElement optionsNode)
+    string GenerateCommandHandlerFunctionArgs(XElement optionsNode, bool initialComma = true, bool initialSpace = true)
     {
         var sb = new StringBuilder();
         var paramEnumerator = optionsNode.Elements().GetEnumerator();
+        bool isFirst = !initialComma;
         while (paramEnumerator.MoveNext())
         {
             XElement option = paramEnumerator.Current;
@@ -342,26 +344,28 @@ public class OptionData
             }
             var data = new OptionData(option);
 
-            sb.Append($", {GenerateOptionNameVar(data)}");
+            sb.Append($"{getSeparator(isFirst, initialSpace)}{GenerateOptionNameVar(data)}");
+            isFirst = false;
         }
 
         return sb.ToString();
     }
 
 
-    void GenerateCommandHandlerCustomBinder(string commandNameVar, string verbNounPrefix, XElement noun, int indent = 4)
+    void GenerateCommandHandlerCustomBinder(string commandNameVar, string verbNounPrefix, string binderClassName, XElement noun)
     {
-        string binderClassName = $"{verbNounPrefix}Args";
+        //string binderTypeClassName = $"{verbNounPrefix}Args";
         string runnerClassName = $"{verbNounPrefix}Runner";
 
         WriteLine($"// Create handler delegate handler for {commandNameVar}");
-        WriteLine($"{commandNameVar}.SetHandler((argsObject, getLogger)");
+        WriteLine($"{commandNameVar}.SetHandler((args) =>");
         WriteLine("{");
         PushIndent(Indent(4));
-        WriteLine($"{runnerClassName}.Run(args, getLogger);");
+        WriteLine($"{runnerClassName}.Run(args, getLogger);"); // logger comes from param arg
         PopIndent();
-        Write("},");
-        Write(GenerateCommandHandlerFunctionArgs(noun));
+        Write($"}}, new {binderClassName}(");
+        Write(GenerateCommandHandlerFunctionArgs(noun, initialComma: false, initialSpace: false));
+        WriteLine("));");
     }
 
     void GenerateCommandHandler(string commandNameVar, string verbNounPrefix, XElement noun, int indent = 4)
