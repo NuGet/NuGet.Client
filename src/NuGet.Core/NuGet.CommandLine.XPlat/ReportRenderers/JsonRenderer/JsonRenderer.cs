@@ -80,6 +80,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 _problems.Add(new ReportProblem(string.Empty, ex.Message));
             }
         }

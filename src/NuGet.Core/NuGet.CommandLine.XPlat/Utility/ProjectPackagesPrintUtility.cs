@@ -90,7 +90,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     {
                         var tableHasAutoReference = false;
                         (IEnumerable<FormattedCell> tableToPrint, ReportFrameworkPackage reportFrameworkTopLevelPackage) = BuildPackagesTable(
-                            frameworkTopLevelPackages, frameWork, printingTransitive: false, listPackageArgs, ref tableHasAutoReference);
+                            frameworkTopLevelPackages, frameWork, printingTransitive: false, listPackageArgs.ReportOutputFormat, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
                             PrintPackagesTable(tableToPrint, listPackageArgs);
@@ -104,7 +104,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     {
                         var tableHasAutoReference = false;
                         (IEnumerable<FormattedCell> tableToPrint, ReportFrameworkPackage reportFrameworkTransitivePackages) = BuildPackagesTable(
-                            frameworkTransitivePackages, frameWork, printingTransitive: true, listPackageArgs, ref tableHasAutoReference);
+                            frameworkTransitivePackages, frameWork, printingTransitive: true, ReportOutputFormat.Console, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
                             PrintPackagesTable(tableToPrint, listPackageArgs);
@@ -128,6 +128,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="packages">The list of packages</param>
         /// <param name="framework">The framework for packages</param>
         /// <param name="printingTransitive">Whether the function is printing transitive packages information.</param>
+        /// <param name="reportOutputFormat">Report output format (e.g json, console etc).</param>
         /// <param name="listPackageArgs">Command line options.</param>
         /// <param name="tableHasAutoReference">Flagged if an autoreference marker was printer</param>
         /// <returns>The table as a string and list of ReportFrameworkPackage</returns>
@@ -135,6 +136,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             IEnumerable<InstalledPackageReference> packages,
             string framework,
             bool printingTransitive,
+            ReportOutputFormat reportOutputFormat,
             ListPackageArgs listPackageArgs,
             ref bool tableHasAutoReference)
         {
@@ -186,7 +188,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
 
 
-            (IEnumerable<FormattedCell> tableToPrint, ReportFrameworkPackage reportFrameworkPackage) = packages.ToStringTable(headers, framework, printingTransitive, valueSelectors.ToArray(), vulnerabilityValueSelectors);
+            (IEnumerable<FormattedCell> tableToPrint, ReportFrameworkPackage reportFrameworkPackage) = packages.ToStringTable(headers, framework, printingTransitive, reportOutputFormat, valueSelectors.ToArray(), vulnerabilityValueSelectors);
 
             tableHasAutoReference = autoReferenceFlagged;
             return (tableToPrint, reportFrameworkPackage);
