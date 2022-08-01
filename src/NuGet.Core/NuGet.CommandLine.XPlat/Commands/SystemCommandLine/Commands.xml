@@ -4,7 +4,7 @@
 <Commands>
   <Verb Name="list">
     <Noun Name="source" Version="3.1.200"
-       Description="lists all existing sources from your NuGet configuration files.">
+       Description="lists all existing sources from your NuGet configuration files." >
       <SingleValueOption Name="format" Help="SourcesCommandFormatDescription" />
       <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
       <Example Title="List configured sources from the current directory:" Command="dotnet nuget list source" />
