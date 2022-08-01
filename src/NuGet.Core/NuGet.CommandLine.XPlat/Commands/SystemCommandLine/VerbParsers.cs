@@ -26,21 +26,21 @@ namespace NuGet.CommandLine.XPlat.Commands
             var SourceCmd = new Command(name: "source", description: Strings.ListSourceCommandDescription);
 
             // Options under sub-command: list source
-            var FormatOption = new Option<string>(name: "--format", description: Strings.SourcesCommandFormatDescription)
+            var format_Option = new Option<string>(name: "--format", description: Strings.SourcesCommandFormatDescription)
             {
                 Arity = ArgumentArity.ZeroOrOne,
             };
-            SourceCmd.Add(FormatOption);
-            var ConfigfileOption = new Option<string>(name: "--configfile", description: Strings.Option_ConfigFile)
+            SourceCmd.Add(format_Option);
+            var configfile_Option = new Option<string>(name: "--configfile", description: Strings.Option_ConfigFile)
             {
                 Arity = ArgumentArity.ZeroOrOne,
             };
-            SourceCmd.Add(ConfigfileOption);
+            SourceCmd.Add(configfile_Option);
             // Create handler delegate handler for SourceCmd
             SourceCmd.SetHandler((args) =>
             {
                 ListSourceRunner.Run(args, getLogger);
-            }, new ListSourceCustomBinder(FormatOption, ConfigfileOption));
+            }, new ListSourceCustomBinder(format_Option, configfile_Option));
 
             ListCmd.AddCommand(SourceCmd);
 

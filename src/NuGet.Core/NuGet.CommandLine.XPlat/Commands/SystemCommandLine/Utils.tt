@@ -256,7 +256,8 @@ public class OptionData
 
     string GenerateOptionNameVar(OptionData data)
     {
-        return StringUtilities.GetFormalName(data.Name) + data.BaseClass;
+        return data.Name + "_" + data.BaseClass;
+        //return StringUtilities.GetFormalName(data.Name) + data.BaseClass;
     }
 
     void GenerateAddOptionOrArgument(XElement parentNode, string commandVarName, int indent = 4)
