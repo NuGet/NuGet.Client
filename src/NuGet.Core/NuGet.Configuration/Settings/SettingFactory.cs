@@ -97,7 +97,7 @@ namespace NuGet.Configuration
             return null;
         }
 
-        private class SettingElementComparer : IComparer<SettingElement>, IEqualityComparer<SettingElement>
+        private class SettingElementKeyComparer : IComparer<SettingElement>, IEqualityComparer<SettingElement>
         {
             public int Compare(SettingElement x, SettingElement y)
             {
