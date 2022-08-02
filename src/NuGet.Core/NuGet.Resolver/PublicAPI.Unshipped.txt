@@ -1,3 +1,0 @@
-NuGet.Resolver.NuGetResolverConstraintException.NuGetResolverConstraintException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
-NuGet.Resolver.NuGetResolverException.NuGetResolverException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
-NuGet.Resolver.NuGetResolverInputException.NuGetResolverInputException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void

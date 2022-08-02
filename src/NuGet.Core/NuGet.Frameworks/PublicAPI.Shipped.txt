@@ -59,6 +59,7 @@ NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers
 NuGet.Frameworks.FrameworkConstants.PlatformIdentifiers
 NuGet.Frameworks.FrameworkConstants.SpecialIdentifiers
 NuGet.Frameworks.FrameworkException
+NuGet.Frameworks.FrameworkException.FrameworkException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Frameworks.FrameworkException.FrameworkException(string message) -> void
 NuGet.Frameworks.FrameworkExpander
 NuGet.Frameworks.FrameworkExpander.Expand(NuGet.Frameworks.NuGetFramework framework) -> System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework>

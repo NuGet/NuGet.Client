@@ -99,6 +99,7 @@ NuGet.Configuration.ISettings.Remove(string sectionName, NuGet.Configuration.Set
 NuGet.Configuration.ISettings.SaveToDisk() -> void
 NuGet.Configuration.ISettings.SettingsChanged -> System.EventHandler
 NuGet.Configuration.NuGetConfigurationException
+NuGet.Configuration.NuGetConfigurationException.NuGetConfigurationException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Configuration.NuGetConfigurationException.NuGetConfigurationException(string message) -> void
 NuGet.Configuration.NuGetConfigurationException.NuGetConfigurationException(string message, System.Exception innerException) -> void
 NuGet.Configuration.NuGetConstants
@@ -171,6 +172,7 @@ NuGet.Configuration.PackageSourceCredential.ValidAuthenticationTypesText.get -> 
 NuGet.Configuration.PackageSourceMapping
 NuGet.Configuration.PackageSourceMapping.GetConfiguredPackageSources(string packageId) -> System.Collections.Generic.IReadOnlyList<string>
 NuGet.Configuration.PackageSourceMapping.IsEnabled.get -> bool
+NuGet.Configuration.PackageSourceMapping.PackageSourceMapping(System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<string>> patterns) -> void
 NuGet.Configuration.PackageSourceMappingSourceItem
 NuGet.Configuration.PackageSourceMappingSourceItem.PackageSourceMappingSourceItem(string name, System.Collections.Generic.IEnumerable<NuGet.Configuration.PackagePatternItem> packagePatternItems) -> void
 NuGet.Configuration.PackageSourceMappingSourceItem.Patterns.get -> System.Collections.Generic.IList<NuGet.Configuration.PackagePatternItem>
