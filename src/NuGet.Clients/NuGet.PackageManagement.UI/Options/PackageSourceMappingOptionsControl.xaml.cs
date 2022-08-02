@@ -60,10 +60,7 @@ namespace NuGet.Options
             IReadOnlyList<MappingUIDisplay> SourceMappingsCollectiontemp = ReadMappingsFromConfigToUI(_originalPackageSourceMappings);
             //clear sourcemappings so that they don't repeat
             SourceMappingsCollection.Clear();
-            foreach (MappingUIDisplay item in SourceMappingsCollectiontemp)
-            {
-                SourceMappingsCollection.Add(item);
-            }
+            SourceMappingsCollection.AddRange(SourceMappingsCollectiontemp);
             //make sure all buttons show on open if there are already sourcemappings
             (ClearButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
             (RemoveButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
