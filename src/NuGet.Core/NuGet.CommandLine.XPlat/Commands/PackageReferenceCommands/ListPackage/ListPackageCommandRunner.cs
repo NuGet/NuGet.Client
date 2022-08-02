@@ -167,14 +167,8 @@ namespace NuGet.CommandLine.XPlat
                 // Should log into json output ?
             }
 
-            if (listPackageArgs.Renderer is JsonRenderer jsonRenderer)
-            {
-                jsonRenderer.FinishRendering();
-
-                return jsonRenderer.ExitCode;
-            }
-
-            return 0;
+            listPackageArgs.Renderer.FinishRendering();
+            return listPackageArgs.Renderer.ExitCode();
         }
 
         private static void WarnForHttpSources(ListPackageArgs listPackageArgs)

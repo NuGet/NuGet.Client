@@ -7,11 +7,13 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
 {
     internal class ConsoleWriter : IReportRenderer
     {
+        private int _problemCount;
         private ConsoleWriter()
         { }
 
         public void WriteErrorLine(string errorText, string _)
         {
+            _problemCount++;
             Console.Error.WriteLine(errorText);
         }
 
@@ -51,5 +53,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
         }
 
         public static ConsoleWriter Instance { get; } = new ConsoleWriter();
+
+        public int ExitCode() => _problemCount > 0 ? 1 : 0;
     }
 }
