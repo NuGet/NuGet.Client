@@ -147,7 +147,7 @@ namespace NuGet.Configuration
         {
             var children = new List<T>();
             IEnumerable<T> descendants = xElement.Elements().Select(d => Parse(d, origin)).OfType<T>();
-            SettingElementComparer comparer = new SettingElementComparer();
+            SettingElementKeyComparer comparer = new SettingElementKeyComparer();
 
             HashSet<T> distinctDescendants = new HashSet<T>(comparer);
 
