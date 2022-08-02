@@ -16,5 +16,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers
         void ResetColor();
         void LogParameters(string parameters);
         void FinishRendering();
+        int ExitCode();
     }
 }

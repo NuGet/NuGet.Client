@@ -85,6 +85,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
             }
         }
 
-        public int ExitCode => _problems.Count > 0 ? 1 : 0;
+        public int ExitCode() => _problems.Count > 0 ? 1 : 0;
     }
 }
