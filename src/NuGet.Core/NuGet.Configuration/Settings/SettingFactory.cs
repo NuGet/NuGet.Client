@@ -162,6 +162,9 @@ namespace NuGet.Configuration
             {
                 if (!distinctDescendants.Add(item))
                 {
+                    // Updating element to the last one seen to match behavior like distinct
+                    distinctDescendants.Remove(item);
+                    distinctDescendants.Add(item);
                     duplicatedDescendants.Add(item);
                 }
             }
