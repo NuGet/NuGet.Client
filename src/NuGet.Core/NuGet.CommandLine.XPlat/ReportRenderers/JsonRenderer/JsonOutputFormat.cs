@@ -4,10 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NuGet.CommandLine.XPlat.Utility;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 {
@@ -58,25 +55,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
             };
             settings.Converters.Add(JsonOutputConverter.Default);
             return settings;
-        }
-
-        private static void WriteProblem(JsonWriter writer, ReportProblem renderProblem)
-        {
-            writer.WriteStartObject();
-
-            writer.WritePropertyName(renderProblem.Message);
-            writer.WriteValue(renderProblem.Message);
-
-            writer.WriteEndObject();
-        }
-
-        private static void WriteSource(JsonWriter writer, string source)
-        {
-            writer.WriteStartObject();
-
-            writer.WriteValue(source);
-
-            writer.WriteEndObject();
         }
 
         private static void WriteProjectArray(JsonWriter writer, List<ReportProject> reportProjects)
