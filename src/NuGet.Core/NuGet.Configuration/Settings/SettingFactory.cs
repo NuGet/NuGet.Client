@@ -106,12 +106,12 @@ namespace NuGet.Configuration
                     return 0;
                 }
 
-                if (ReferenceEquals(x, null))
+                if (ReferenceEquals(x, null) || !x.Attributes.ContainsKey("key"))
                 {
                     return -1;
                 }
 
-                if (ReferenceEquals(y, null))
+                if (ReferenceEquals(y, null) || !y.Attributes.ContainsKey("key"))
                 {
                     return 1;
                 }
@@ -127,6 +127,11 @@ namespace NuGet.Configuration
                 }
 
                 if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
+                {
+                    return false;
+                }
+
+                if (!x.Attributes.ContainsKey("key") || !y.Attributes.ContainsKey("key"))
                 {
                     return false;
                 }
