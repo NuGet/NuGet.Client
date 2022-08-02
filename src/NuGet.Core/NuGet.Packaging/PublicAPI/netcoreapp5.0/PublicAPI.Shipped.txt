@@ -390,6 +390,7 @@ NuGet.Packaging.Licenses.NuGetLicenseExpression.Type.get -> NuGet.Packaging.Lice
 NuGet.Packaging.Licenses.NuGetLicenseExpression.Type.set -> void
 NuGet.Packaging.Licenses.NuGetLicenseExpressionExtensions
 NuGet.Packaging.Licenses.NuGetLicenseExpressionParsingException
+NuGet.Packaging.Licenses.NuGetLicenseExpressionParsingException.NuGetLicenseExpressionParsingException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Packaging.Licenses.NuGetLicenseExpressionParsingException.NuGetLicenseExpressionParsingException(string message) -> void
 NuGet.Packaging.Licenses.NuGetLicenseExpressionParsingException.NuGetLicenseExpressionParsingException(string message, System.Exception innerException) -> void
 NuGet.Packaging.Licenses.WithOperator
@@ -1237,6 +1238,7 @@ NuGet.Packaging.Signing.X509SignatureProvider
 NuGet.Packaging.Signing.X509SignatureProvider.CreatePrimarySignatureAsync(NuGet.Packaging.Signing.SignPackageRequest request, NuGet.Packaging.Signing.SignatureContent signatureContent, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.PrimarySignature>
 NuGet.Packaging.Signing.X509SignatureProvider.CreateRepositoryCountersignatureAsync(NuGet.Packaging.Signing.RepositorySignPackageRequest request, NuGet.Packaging.Signing.PrimarySignature primarySignature, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Packaging.Signing.PrimarySignature>
 NuGet.Packaging.Signing.X509SignatureProvider.X509SignatureProvider(NuGet.Packaging.Signing.ITimestampProvider timestampProvider) -> void
+NuGet.Packaging.Signing.X509TrustStore
 NuGet.Packaging.StreamExtensions
 NuGet.Packaging.TopologicalSortUtility
 NuGet.Packaging.UnsafePackageEntryException
@@ -1733,6 +1735,7 @@ static NuGet.Packaging.Signing.TrustedSignersProvider.GetAllowListEntries(NuGet.
 static NuGet.Packaging.Signing.TstInfo.Read(byte[] bytes) -> NuGet.Packaging.Signing.TstInfo
 static NuGet.Packaging.Signing.VerificationUtility.GetSignatureVerificationStatus(NuGet.Packaging.Signing.SignatureVerificationStatusFlags flags) -> NuGet.Packaging.Signing.SignatureVerificationStatus
 static NuGet.Packaging.Signing.VerificationUtility.IsVerificationTarget(NuGet.Packaging.Signing.SignatureType signatureType, NuGet.Packaging.Signing.VerificationTarget target) -> bool
+static NuGet.Packaging.Signing.X509TrustStore.InitializeForDotNetSdk(NuGet.Common.ILogger logger) -> void
 static NuGet.Packaging.StreamExtensions.CopyToFile(this System.IO.Stream inputStream, string fileFullPath) -> string
 static NuGet.Packaging.TopologicalSortUtility.SortPackagesByDependencyOrder(System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependencyInfo> packages) -> System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Core.PackageDependencyInfo>
 static NuGet.Packaging.TopologicalSortUtility.SortPackagesByDependencyOrder<T>(System.Collections.Generic.IEnumerable<T> items, System.StringComparer comparer, System.Func<T, string> getId, System.Func<T, string[]> getDependencies) -> System.Collections.Generic.IReadOnlyList<T>
