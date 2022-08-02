@@ -3,14 +3,14 @@
 
 using System.Collections.Generic;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
+namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 {
-    internal class JsonOutputContent
+    internal class ListPackageJsonOutputContent
     {
-        internal int Version { get; set; } = JsonOutputFormat.Version;
+        internal int Version { get; set; } = ListPackageJsonOutputSerializer.Version;
         internal string Parameters { get; set; }
         internal List<ReportProblem> Problems { get; set; }
         internal List<string> Sources { get; set; }
-        internal List<ReportProject> Projects { get; set; }
+        internal List<ListPackageReportProject> Projects { get; set; }
     }
 }

@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
+namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 {
-    internal static class JsonOutputFormat
+    internal static class ListPackageJsonOutputSerializer
     {
         public const int Version = 1;
 
@@ -28,7 +28,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 
         private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(GetSerializerSettings());
 
-        public static string Render(JsonOutputContent jsonOutputContent)
+        public static string Render(ListPackageJsonOutputContent jsonOutputContent)
         {
             using (var writer = new StringWriter())
             {
@@ -37,7 +37,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
             }
         }
 
-        public static void Write(StringWriter stringWriter, JsonOutputContent jsonOutputContent)
+        public static void Write(StringWriter stringWriter, ListPackageJsonOutputContent jsonOutputContent)
         {
             using (var jsonWriter = new JsonTextWriter(stringWriter))
             {
@@ -57,12 +57,12 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
             return settings;
         }
 
-        private static void WriteProjectArray(JsonWriter writer, List<ReportProject> reportProjects)
+        private static void WriteProjectArray(JsonWriter writer, List<ListPackageReportProject> reportProjects)
         {
             writer.WritePropertyName(ProjectsProperty);
 
             writer.WriteStartArray();
-            foreach (ReportProject reportProject in reportProjects)
+            foreach (ListPackageReportProject reportProject in reportProjects)
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName(PathProperty);
@@ -80,10 +80,10 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
             writer.WriteEndArray();
         }
 
-        private static void WriteFrameworkPackage(JsonWriter writer, List<ReportFrameworkPackage> reportFrameworkPackages)
+        private static void WriteFrameworkPackage(JsonWriter writer, List<ListPackageReportFrameworkPackage> reportFrameworkPackages)
         {
             writer.WriteStartArray();
-            foreach (ReportFrameworkPackage reportFrameworkPackage in reportFrameworkPackages)
+            foreach (ListPackageReportFrameworkPackage reportFrameworkPackage in reportFrameworkPackages)
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName(FrameworkProperty);
@@ -142,7 +142,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
         {
             internal static JsonOutputConverter Default { get; } = new JsonOutputConverter();
 
-            private static readonly Type TargetType = typeof(JsonOutputContent);
+            private static readonly Type TargetType = typeof(ListPackageJsonOutputContent);
             public override bool CanConvert(Type objectType)
             {
                 return objectType == TargetType;
@@ -155,7 +155,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
-                if (!(value is JsonOutputContent jsonOutputContent))
+                if (!(value is ListPackageJsonOutputContent jsonOutputContent))
                 {
                     throw new ArgumentException(message: "value is not of type JsonOutputContent", paramName: nameof(value));
                 }

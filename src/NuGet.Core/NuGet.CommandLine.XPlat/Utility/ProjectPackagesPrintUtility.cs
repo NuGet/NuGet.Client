@@ -5,10 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
-using NuGet.CommandLine.XPlat.ReportRenderers;
-using NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer;
-using NuGet.Configuration;
+using NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
@@ -45,7 +42,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     break;
             }
 
-            List<ReportFrameworkPackage> reportAllFrameworkPackages = new();
+            List<ListPackageReportFrameworkPackage> reportAllFrameworkPackages = new();
 
             hasAutoReference = false;
             foreach (var frameworkPackages in packages)
@@ -89,7 +86,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     if (frameworkTopLevelPackages.Any())
                     {
                         var tableHasAutoReference = false;
-                        (IEnumerable<FormattedCell> tableToPrint, ReportFrameworkPackage reportFrameworkTopLevelPackage) = BuildPackagesTable(
+                        (IEnumerable<FormattedCell> tableToPrint, ListPackageReportFrameworkPackage reportFrameworkTopLevelPackage) = BuildPackagesTable(
                             frameworkTopLevelPackages, frameWork, printingTransitive: false, listPackageArgs.ReportOutputFormat, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
@@ -103,7 +100,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     if (listPackageArgs.IncludeTransitive && frameworkTransitivePackages.Any())
                     {
                         var tableHasAutoReference = false;
-                        (IEnumerable<FormattedCell> tableToPrint, ReportFrameworkPackage reportFrameworkTransitivePackages) = BuildPackagesTable(
+                        (IEnumerable<FormattedCell> tableToPrint, ListPackageReportFrameworkPackage reportFrameworkTransitivePackages) = BuildPackagesTable(
                             frameworkTransitivePackages, frameWork, printingTransitive: true, ReportOutputFormat.Console, listPackageArgs, ref tableHasAutoReference);
                         if (tableToPrint != null)
                         {
@@ -114,7 +111,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 }
             }
 
-            ReportProject reportProject = new ReportProject(projectName, reportAllFrameworkPackages);
+            ListPackageReportProject reportProject = new ListPackageReportProject(projectName, reportAllFrameworkPackages);
 
             // Used by non-console renderer.
             listPackageArgs.Renderer.Write(reportProject);
@@ -130,7 +127,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="listPackageArgs">Command line options.</param>
         /// <param name="tableHasAutoReference">Flagged if an autoreference marker was printer</param>
         /// <returns>The table as a string and list of ReportFrameworkPackage</returns>
-        internal static (IEnumerable<FormattedCell>, ReportFrameworkPackage) BuildPackagesTable(
+        internal static (IEnumerable<FormattedCell>, ListPackageReportFrameworkPackage) BuildPackagesTable(
             IEnumerable<InstalledPackageReference> packages,
             string framework,
             bool printingTransitive,
@@ -186,7 +183,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
 
 
-            (IEnumerable<FormattedCell> tableToPrint, ReportFrameworkPackage reportFrameworkPackage) = packages.ToStringTable(headers, framework, printingTransitive, reportOutputFormat, valueSelectors.ToArray(), vulnerabilityValueSelectors);
+            (IEnumerable<FormattedCell> tableToPrint, ListPackageReportFrameworkPackage reportFrameworkPackage) = packages.ToStringTable(headers, framework, printingTransitive, reportOutputFormat, valueSelectors.ToArray(), vulnerabilityValueSelectors);
 
             tableHasAutoReference = autoReferenceFlagged;
             return (tableToPrint, reportFrameworkPackage);

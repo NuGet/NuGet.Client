@@ -8,8 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
-using NuGet.CommandLine.XPlat.ReportRenderers;
-using NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Configuration;
 using NuGet.Packaging;
