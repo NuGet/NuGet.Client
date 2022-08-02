@@ -11,11 +11,11 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers
         void Write(string value);
         void WriteLine();
         void WriteLine(string value);
-
+        void Write(ReportProject reportProject);
         void SetForegroundColor(ConsoleColor consoleColor);
         void ResetColor();
         void LogParameters(string parameters);
-        void FinishRendering();
+        void End();
         int ExitCode();
     }
 }

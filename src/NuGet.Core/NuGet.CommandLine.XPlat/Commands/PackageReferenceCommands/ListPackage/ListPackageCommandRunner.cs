@@ -167,7 +167,7 @@ namespace NuGet.CommandLine.XPlat
                 // Should log into json output ?
             }
 
-            listPackageArgs.Renderer.FinishRendering();
+            listPackageArgs.Renderer.End();
             return listPackageArgs.Renderer.ExitCode();
         }
 

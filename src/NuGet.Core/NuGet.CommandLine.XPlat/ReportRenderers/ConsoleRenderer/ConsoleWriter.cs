@@ -47,9 +47,14 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
             // do nothing, cli no need to log parameters.
         }
 
-        public void FinishRendering()
+        public void Write(ReportProject reportProject)
         {
-            // do nothing
+            // do nothing, cli already writes data as it goes
+        }
+
+        public void End()
+        {
+            // do nothing, cli already writes data as it goes
         }
 
         public static ConsoleWriter Instance { get; } = new ConsoleWriter();
