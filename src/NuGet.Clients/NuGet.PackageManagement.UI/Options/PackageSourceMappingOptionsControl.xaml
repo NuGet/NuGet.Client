@@ -18,7 +18,7 @@
     <Grid.Resources>
       <!-- Data Template for list items -->
       <DataTemplate x:Uid="MappingItemTemplate" x:Key="MappingItemTemplate">
-        <StackPanel x:Uid="ListItemStackPanel">
+        <StackPanel x:Uid="ListItemStackPanel" Margin="0,3,0,3">
           <TextBlock FontWeight="Bold">
             <TextBlock.Text>
               <Binding Path="ID"/>
