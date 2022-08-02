@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Build.Evaluation;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 {
@@ -59,12 +58,12 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
             }
         }
 
-        public void AddProjectData(ReportProject reportProject)
+        public void Write(ReportProject reportProject)
         {
             _projects.Add(reportProject);
         }
 
-        public void FinishRendering()
+        public void End()
         {
             try
             {

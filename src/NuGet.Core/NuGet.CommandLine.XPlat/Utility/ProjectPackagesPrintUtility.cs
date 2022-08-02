@@ -116,10 +116,8 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             ReportProject reportProject = new ReportProject(projectName, reportAllFrameworkPackages);
 
-            if (listPackageArgs.Renderer is JsonRenderer jsonRenderer)
-            {
-                jsonRenderer.AddProjectData(reportProject);
-            }
+            // Used by non-console renderer.
+            listPackageArgs.Renderer.Write(reportProject);
         }
 
         /// <summary>
