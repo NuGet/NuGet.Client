@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using NuGet.CommandLine.XPlat.ReportRenderers;
+using NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
     internal static class TableParser
     {
-        internal static (IEnumerable<FormattedCell>, ReportFrameworkPackage) ToStringTable<T>(
+        internal static (IEnumerable<FormattedCell>, ListPackageReportFrameworkPackage) ToStringTable<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
           string framework,
@@ -23,7 +23,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             return ToFormattedStringTable(values.ToArray(), columnHeaders, framework, printingTransitive, reportOutputFormat, valueSelectors, vulnerabilityValueSelectors);
         }
 
-        internal static (IEnumerable<FormattedCell>, ReportFrameworkPackage) ToFormattedStringTable<T>(
+        internal static (IEnumerable<FormattedCell>, ListPackageReportFrameworkPackage) ToFormattedStringTable<T>(
           this T[] values,
           string[] columnHeaders,
           string framework,
@@ -197,7 +197,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 }
             }
 
-            return (ToPaddedStringTable(stringTable), new ReportFrameworkPackage(framework, topLevelPackages, transitivePackages));
+            return (ToPaddedStringTable(stringTable), new ListPackageReportFrameworkPackage(framework, topLevelPackages, transitivePackages));
         }
 
         internal static IEnumerable<FormattedCell> ToPaddedStringTable(IEnumerable<ICollection<FormattedCell>> values)

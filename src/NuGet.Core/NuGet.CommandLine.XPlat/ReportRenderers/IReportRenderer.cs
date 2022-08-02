@@ -3,7 +3,7 @@
 
 using System;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers
+namespace NuGet.CommandLine.XPlat
 {
     internal interface IReportRenderer
     {

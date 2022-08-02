@@ -5,13 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.CommandLine.XPlat.Enums;
-using NuGet.CommandLine.XPlat.ReportRenderers;
 using NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer;
-using NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer;
+using NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -209,12 +207,12 @@ namespace NuGet.CommandLine.XPlat
             // If customer pass unsupported version then default to latest available version and warn about unsupported version.
             if (!string.IsNullOrEmpty(outputVersionOption) && !currentlySupportedReportVersions.Contains(outputVersionOption))
             {
-                jsonReportRenderer = new JsonRendererV1();
+                jsonReportRenderer = new ListPackageJsonRendererV1();
                 jsonReportRenderer.WriteErrorLine(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions), project: null);
             }
             else
             {
-                jsonReportRenderer = new JsonRendererV1();
+                jsonReportRenderer = new ListPackageJsonRendererV1();
             }
 
             return (jsonReportRenderer, ReportOutputFormat.Json);
@@ -284,7 +282,7 @@ namespace NuGet.CommandLine.XPlat
             IReportRenderer reportRenderer,
             string[] args)
         {
-            if (reportRenderer is JsonRenderer jsonRenderer)
+            if (reportRenderer is ListPackageJsonRenderer jsonRenderer)
             {
                 // Do we need to escape args?
                 jsonRenderer.LogParameters(parameters: string.Join(" ", args));

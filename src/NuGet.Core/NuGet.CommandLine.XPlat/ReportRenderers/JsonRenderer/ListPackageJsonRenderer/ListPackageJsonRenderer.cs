@@ -4,18 +4,18 @@
 using System;
 using System.Collections.Generic;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
+namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 {
-    internal abstract class JsonRenderer : IReportRenderer
+    internal abstract class ListPackageJsonRenderer : IReportRenderer
     {
         protected readonly List<ReportProblem> _problems = new();
         protected readonly List<string> _sources = new();
-        protected readonly List<ReportProject> _projects = new();
+        protected readonly List<ListPackageReportProject> _projects = new();
         protected ReportOutputVersion OutputVersion { get; private set; }
 
         protected string _parameters = string.Empty;
 
-        protected JsonRenderer(ReportOutputVersion outputVersion)
+        protected ListPackageJsonRenderer(ReportOutputVersion outputVersion)
         {
             OutputVersion = outputVersion;
         }
@@ -60,14 +60,17 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 
         public void Write(ReportProject reportProject)
         {
-            _projects.Add(reportProject);
+            if (reportProject is ListPackageReportProject listPackageReportProject)
+            {
+                _projects.Add(listPackageReportProject);
+            }
         }
 
         public void End()
         {
             try
             {
-                string jsonRenderedOutput = JsonOutputFormat.Render(new JsonOutputContent()
+                string jsonRenderedOutput = ListPackageJsonOutputSerializer.Render(new ListPackageJsonOutputContent()
                 {
                     Parameters = _parameters,
                     Problems = _problems,
