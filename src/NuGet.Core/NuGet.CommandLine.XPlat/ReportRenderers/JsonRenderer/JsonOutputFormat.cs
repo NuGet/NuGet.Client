@@ -98,15 +98,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
 
                 }
                 writer.WriteEndObject();
-
-                //writer.WritePropertyName(IdProperty);
-                //writer.WriteValue(topLevelPackage.PackageId);
-
-                //writer.WritePropertyName(RequestedVersionProperty);
-                //writer.WriteValue(topLevelPackage.RequestedVersion);
-
-                //writer.WritePropertyName(ResolvedVersionProperty);
-                //writer.WriteValue(topLevelPackage.ResolvedVersion);
             }
             writer.WriteEndArray();
         }
@@ -122,25 +113,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
                 WriteTopLevelPackages(writer, TopLevelPackagesProperty, reportFrameworkPackage.TopLevelPackages);
                 WriteTransitivePackages(writer, TransitivePackagesProperty, reportFrameworkPackage.TransitivePackages);
                 writer.WriteEndObject();
-
-                //writer.WriteStartObject();
-                //writer.WritePropertyName(PathProperty);
-                //writer.WriteValue(reportProject.Path);
-                //writer.WriteEndObject();
-
-                //if (reportProject.FrameworkPackages.Count > 0)
-                //{
-                //    WriteFrameworkPackage(writer, reportProject.FrameworkPackages);
-                //}
-
-                //writer.WritePropertyName(IdProperty);
-                //writer.WriteValue(topLevelPackage.PackageId);
-
-                //writer.WritePropertyName(RequestedVersionProperty);
-                //writer.WriteValue(topLevelPackage.RequestedVersion);
-
-                //writer.WritePropertyName(ResolvedVersionProperty);
-                //writer.WriteValue(topLevelPackage.ResolvedVersion);
             }
             writer.WriteEndArray();
         }
@@ -221,13 +193,15 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.JsonRenderer
                 if (jsonOutputContent.Problems.Count > 0)
                 {
                     writer.WritePropertyName(ProblemsProperty);
-                    JsonUtility.WriteObject(writer, jsonOutputContent.Problems, WriteProblem);
+                    // Not implemented yet
+                    //JsonUtility.WriteObject(writer, jsonOutputContent.Problems, WriteProblem);
                 }
 
                 if (jsonOutputContent.Sources.Count > 0)
                 {
                     writer.WritePropertyName(SourcesProperty);
-                    JsonUtility.WriteObject(writer, jsonOutputContent.Sources, WriteSource);
+                    // Not implemented yet
+                    //JsonUtility.WriteObject(writer, jsonOutputContent.Sources, WriteSource);
                 }
 
                 if (jsonOutputContent.Projects.Count > 0)

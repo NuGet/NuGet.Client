@@ -286,7 +286,7 @@ namespace NuGet.CommandLine.XPlat
         {
             if (reportRenderer is JsonRenderer jsonRenderer)
             {
-                //jsonRenderer.LogParameters(parameters: HttpUtility.JavaScriptStringEncode(string.Join(" ", args)));
+                // Do we need to escape args?
                 jsonRenderer.LogParameters(parameters: string.Join(" ", args));
             }
         }
