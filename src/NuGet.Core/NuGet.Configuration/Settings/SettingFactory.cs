@@ -106,17 +106,19 @@ namespace NuGet.Configuration
                     return 0;
                 }
 
-                if (ReferenceEquals(x, null) || !x.Attributes.ContainsKey("key"))
+                if (ReferenceEquals(x, null))
                 {
                     return -1;
                 }
 
-                if (ReferenceEquals(y, null) || !y.Attributes.ContainsKey("key"))
+                if (ReferenceEquals(y, null))
                 {
                     return 1;
                 }
 
-                return StringComparer.OrdinalIgnoreCase.Compare(x.Attributes["key"], y.Attributes["key"]);
+                return StringComparer.OrdinalIgnoreCase.Compare(
+                    x.ElementName + string.Join("", x.Attributes.Select(a => a.Value)),
+                    y.ElementName + string.Join("", y.Attributes.Select(a => a.Value)));
             }
 
             public bool Equals(SettingElement x, SettingElement y)
@@ -131,11 +133,9 @@ namespace NuGet.Configuration
                     return false;
                 }
 
-                if (!x.Attributes.ContainsKey("key") || !y.Attributes.ContainsKey("key"))
-                {
-                    return false;
-                }
-                return StringComparer.OrdinalIgnoreCase.Equals(x.Attributes["key"], y.Attributes["key"]);
+                return StringComparer.OrdinalIgnoreCase.Equals(
+                    x.ElementName + string.Join("", x.Attributes.Select(a => a.Value)),
+                    y.ElementName + string.Join("", y.Attributes.Select(a => a.Value)));
             }
 
             public int GetHashCode(SettingElement obj)
@@ -144,7 +144,8 @@ namespace NuGet.Configuration
                 {
                     return 0;
                 }
-                return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.ElementName + (obj.Attributes.ContainsKey("key") ? obj.Attributes["key"] : string.Empty));
+
+                return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.ElementName + string.Join("", obj.Attributes.Select(a => a.Value)));
             }
         }
 
@@ -162,21 +163,15 @@ namespace NuGet.Configuration
             {
                 if (!distinctDescendants.Add(item))
                 {
-                    // Updating element to the last one seen to match behavior like distinct
-                    distinctDescendants.Remove(item);
-                    distinctDescendants.Add(item);
                     duplicatedDescendants.Add(item);
                 }
             }
 
-            if (xElement.Name.LocalName.Equals(ConfigurationConstants.PackageSourceMapping, StringComparison.OrdinalIgnoreCase))
+            if (xElement.Name.LocalName.Equals(ConfigurationConstants.PackageSourceMapping, StringComparison.OrdinalIgnoreCase) && duplicatedDescendants.Any())
             {
-                if (duplicatedDescendants.Any())
-                {
-                    var duplicatedKey = string.Join(", ", duplicatedDescendants.Select(d => d.Attributes["key"]));
-                    var source = duplicatedDescendants.Select(d => d.Origin.ConfigFilePath).First();
-                    throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_DuplicatePackageSource, duplicatedKey, source));
-                }
+                var duplicatedKey = string.Join(", ", duplicatedDescendants.Select(d => d.Attributes["key"]));
+                var source = duplicatedDescendants.Select(d => d.Origin.ConfigFilePath).First();
+                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_DuplicatePackageSource, duplicatedKey, source));
             }
 
             foreach (var descendant in distinctDescendants)
