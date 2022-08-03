@@ -18,9 +18,9 @@ namespace NuGet.Options
             }
         }
 
-        public MappingUIDisplay(string packageId, List<PackageSourceContextInfo> packageSources)
+        public MappingUIDisplay(string packageid, List<PackageSourceContextInfo> packageSources)
         {
-            ID = packageId;
+            ID = packageid;
             Sources = packageSources;
         }
     }

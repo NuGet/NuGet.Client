@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.ObjectModel;
 using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -204,12 +204,30 @@ namespace NuGet.Options
             {
                 foreach (PackageSourceContextInfo source in mappingUIDisplay.Sources)
                 {
-                    if (!mappingsDictonary.Keys.Contains(source.Name))
+                    //Contains method did not work since diff instances of MappingUIDisplay even though name is the same
+                    //made own contains method
+                    bool newSource = true;
+                    foreach (string mapping in mappingsDictonary.Keys)
+                    {
+                        if (mapping == source.Name)
+                        {
+                            newSource = false;
+                        }
+                    }
+                    if (newSource == true)
                     {
                         mappingsDictonary[source.Name] = new List<PackagePatternItem>();
                     }
                     PackagePatternItem tempID = new PackagePatternItem(mappingUIDisplay.ID);
-                    if (!mappingsDictonary[source.Name].Any(id => id.Pattern == tempID.Pattern))
+                    bool newID = true;
+                    foreach (PackagePatternItem id in mappingsDictonary[source.Name])
+                    {
+                        if (id.Pattern == tempID.Pattern)
+                        {
+                            newID = false;
+                        }
+                    }
+                    if (newID == true)
                     {
                         mappingsDictonary[source.Name].Add(tempID);
                     }
