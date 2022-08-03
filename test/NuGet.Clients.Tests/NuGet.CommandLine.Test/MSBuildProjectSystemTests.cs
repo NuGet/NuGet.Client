@@ -141,7 +141,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var import = @"packages\mypackage.1.0.0\build\mypackage.targets";
             var projectFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<Project ToolsVersion=""14.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+<Project DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
   <Import Project=""packages\mypackage.1.0.0\build\mypackage.targets"" Condition=""Exists('packages\mypackage.1.0.0\build\mypackage.targets')"" />
   <Target Name=""EnsureNuGetPackageBuildImports"" BeforeTargets=""PrepareForBuild"" >
     <PropertyGroup>   
@@ -171,7 +171,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var import = @"packages\mypackage.1.0.0\build\mypackage.targets";
             var projectFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<Project ToolsVersion=""14.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+<Project DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
   <Import Project=""packages/mypackage.1.0.0/build/mypackage.targets"" Condition=""Exists('packages/mypackage.1.0.0/build/mypackage.targets')"" />
   <Target Name=""EnsureNuGetPackageBuildImports"" BeforeTargets=""PrepareForBuild"" >
     <PropertyGroup>   
