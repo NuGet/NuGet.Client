@@ -37,7 +37,6 @@
     <Compile Include="Converters\VersionToStringConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Models\DonnieTests.cs" />
     <Compile Include="Models\PackageDependencySetMetadataTests.cs" />
     <Compile Include="Models\DetailControlModelTests.cs" />
     <Compile Include="Models\TestDetailControlModel.cs" />
