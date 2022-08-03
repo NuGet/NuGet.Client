@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
@@ -15,17 +15,13 @@ using Xunit;
 
 namespace NuGet.VisualStudio.Common.Test
 {
-    [Collection(MockedVS.Collection)]
     public class NuGetFeedbackDiagnosticFileProviderTests
     {
         private NuGetFeedbackDiagnosticFileProvider _target;
         private Mock<ISolutionManager> _solutionManager;
 
-        public NuGetFeedbackDiagnosticFileProviderTests(GlobalServiceProvider globalServiceProvider)
+        public NuGetFeedbackDiagnosticFileProviderTests()
         {
-            // NuGetFeedbackGiagnosticFileProvider uses ThreadHelper.JoinableTaskFactory, so MockedVS is needed
-            globalServiceProvider.Reset();
-
             _solutionManager = new Mock<ISolutionManager>();
             _solutionManager.Setup(sm => sm.GetNuGetProjectsAsync())
                 .Returns(Task.FromResult<IEnumerable<NuGetProject>>(Array.Empty<NuGetProject>())); // empty or no solution
@@ -35,21 +31,28 @@ namespace NuGet.VisualStudio.Common.Test
         }
 
         [Fact]
-        public void EnsureSingleFileWithFullPathIsReturned()
+        public async void GetFiles_NoSolutionMock_ReturnsZip()
         {
-            // Arranged in constructor
+            // Arrange - also see constructor
+            List<Task> backgroundTasks = new();
+            _target.BackgroundTaskStarted += (_, task) => backgroundTasks.Add(task);
+
             // Act
             IReadOnlyCollection<string> files = _target.GetFiles();
+            await Task.WhenAll(backgroundTasks);
 
             try
             {
                 // Assert
                 // As per feedback team's docs, multiple files should be saved in a zip, so our class should only
-                // return that 1 filename.I guess the interface // returning a collection was a design mistake that
-                // can't be broken for backwards compat reasons.
-                var file = Assert.Single(files);
-                Assert.EndsWith(".zip", file);
-                Assert.True(Path.IsPathRooted(file));
+                // return that 1 filename.
+                string fullPath = Assert.Single(files);
+                Assert.EndsWith(".zip", fullPath);
+                Assert.True(Path.IsPathRooted(fullPath));
+                Assert.True(File.Exists(fullPath));
+
+                // ensure file is readable (file handle isn't still open with FileShare.None)
+                File.OpenRead(fullPath).Dispose();
             }
             finally
             {
@@ -61,31 +64,21 @@ namespace NuGet.VisualStudio.Common.Test
         }
 
         [Fact]
-        public void EnsureContainsOnlyExpectedFiles()
+        public async Task WriteToZipAsync_NoSolutionMock_ContainsOnlyExpectedFiles()
         {
-            // Arranged in constructor
+            // Arrange
+            using var stream = new MemoryStream();
+
             // Act
-            IReadOnlyCollection<string> files = _target.GetFiles();
+            await _target.WriteToZipAsync(stream);
 
-            try
+            // Assert
+            using (var zip = new ZipArchive(stream))
             {
-                // Assert
-                var file = Assert.Single(files);
-                using (var fileStream = File.OpenRead(file))
-                using (var zip = new ZipArchive(fileStream))
-                {
-                    var zipFiles = zip.Entries.Select(e => e.FullName);
-                    var expectedFiles = new[] { "dgspec.json" };
+                var zipFiles = zip.Entries.Select(e => e.FullName);
+                var expectedFiles = new[] { "dgspec.json" };
 
-                    Assert.Equal(zipFiles.OrderBy(f => f), expectedFiles);
-                }
-            }
-            finally
-            {
-                foreach (var file in files)
-                {
-                    File.Delete(file);
-                }
+                Assert.Equal(zipFiles.OrderBy(f => f), expectedFiles);
             }
         }
     }

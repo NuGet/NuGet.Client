@@ -9,7 +9,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using Microsoft.Internal.VisualStudio.Shell.Embeddable.Feedback;
-using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.VisualStudio.Telemetry;
@@ -25,21 +24,65 @@ namespace NuGet.VisualStudio.Common
         [Import(AllowDefault = true)]
         public ISolutionManager? SolutionManager { get; set; }
 
+        [Import(AllowDefault = true)]
+        public INuGetTelemetryProvider? TelemetryProvider { get; set; }
+
+        /// <summary>Used for testing, so tests can wait for the background task to finish.</summary>
+        public event EventHandler<Task>? BackgroundTaskStarted;
+
         public IReadOnlyCollection<string> GetFiles()
         {
-            string filePath = GetFilePath();
+            FileStream fileStream = GetOutputFile();
 
             // See comments on IFeedbackDiagnosticFileProvider.GetFiles
-            ThreadHelper.JoinableTaskFactory.RunAsync(() => WriteToZip(filePath))
-                .PostOnFailure(nameof(NuGetFeedbackDiagnosticFileProvider), nameof(WriteToZip));
+            var task = Task.Run(() => WriteToZipAndCloseFileAsync(fileStream));
+            BackgroundTaskStarted?.Invoke(this, task);
 
             return new List<string>()
             {
-                filePath
+                fileStream.Name
             };
         }
 
-        public async Task WriteToZip(string filePath)
+        private async Task WriteToZipAndCloseFileAsync(Stream stream)
+        {
+            using (stream)
+            {
+                try
+                {
+                    await WriteToZipAsync(stream);
+                }
+                catch (Exception exception)
+                {
+                    await TelemetryUtility.PostFaultAsync(exception, nameof(NuGetFeedbackDiagnosticFileProvider), nameof(WriteToZipAndCloseFileAsync));
+                }
+            }
+        }
+
+        private FileStream GetOutputFile()
+        {
+            string fileNamePrefix = "nuget." + DateTime.UtcNow.ToString("yyyy-MM-dd.HH-mm-ss");
+            for (int attempt = 0; attempt < 100; attempt++)
+            {
+                var fileName = attempt == 0
+                    ? fileNamePrefix + ".zip"
+                    : fileNamePrefix + "." + attempt + ".zip";
+                var fullPath = Path.Combine(Path.GetTempPath(), fileName);
+                try
+                {
+                    FileStream fileStream = new FileStream(fullPath, FileMode.CreateNew);
+                    return fileStream;
+                }
+                catch (IOException)
+                {
+                    // Unlikely that the customer is going to click "report a problem" more than once per second, but just in case
+                }
+            }
+
+            throw new Exception("Unable to create file to attach");
+        }
+
+        public async Task WriteToZipAsync(Stream stream)
         {
             var telemetry = new TelemetryEvent("feedback");
             telemetry["IsDebuggerAttached"] = Debugger.IsAttached;
@@ -47,9 +90,7 @@ namespace NuGet.VisualStudio.Common
             Stopwatch sw = Stopwatch.StartNew();
             try
             {
-
-                using (var fileStream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
-                using (var zip = new ZipArchive(fileStream, ZipArchiveMode.Create))
+                using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
                 {
                     await AddDgSpecAsync(zip);
                 }
@@ -61,23 +102,7 @@ namespace NuGet.VisualStudio.Common
                 sw.Stop();
                 telemetry["successful"] = successful;
                 telemetry["duration_ms"] = sw.Elapsed.TotalMilliseconds;
-                TelemetryActivity.EmitTelemetryEvent(telemetry);
-            }
-        }
-
-        private string GetFilePath()
-        {
-            string fileNamePrefix = "nuget." + DateTime.UtcNow.ToString("yyyy-MM-dd.HH-mm-ss");
-            int attempts = 0;
-            for (; ; )
-            {
-                attempts++;
-                var fileName = attempts == 0 ? fileNamePrefix + ".zip" : fileNamePrefix + "." + attempts + ".zip";
-                var fullPath = Path.Combine(Path.GetTempPath(), fileName);
-                if (!File.Exists(fullPath))
-                {
-                    return fullPath;
-                }
+                EmitTelemetryEvent(telemetry);
             }
         }
 
@@ -104,6 +129,18 @@ namespace NuGet.VisualStudio.Common
                 {
                     File.Delete(tempFile);
                 }
+            }
+        }
+
+        private void EmitTelemetryEvent(TelemetryEvent telemetryEvent)
+        {
+            if (TelemetryProvider != null)
+            {
+                TelemetryProvider.EmitEvent(telemetryEvent);
+            }
+            else
+            {
+                TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
             }
         }
     }
