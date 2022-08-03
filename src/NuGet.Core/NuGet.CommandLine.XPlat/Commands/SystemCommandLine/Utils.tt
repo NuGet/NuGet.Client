@@ -330,7 +330,7 @@ public class OptionData
         }
     }
 
-    string GenerateCommandHandlerFunctionArgs(XElement optionsNode, bool initialComma = true, bool initialSpace = true)
+    string GenerateCommandHandlerFunctionArgs(XElement optionsNode, bool hasInitialComma = true, bool hasInitialSpace = true)
     {
         var sb = new StringBuilder();
         var paramEnumerator = optionsNode.Elements().GetEnumerator();
