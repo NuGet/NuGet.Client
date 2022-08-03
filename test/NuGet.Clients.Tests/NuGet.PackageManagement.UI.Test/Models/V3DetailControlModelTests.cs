@@ -27,12 +27,15 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI.Test.Models
 {
-    [Collection(MockedVS.Collection)]
     public abstract class V3DetailControlModelTestBase : IClassFixture<V3PackageSearchMetadataFixture>
     {
         protected readonly V3PackageSearchMetadataFixture _testData;
         protected readonly PackageItemViewModel _testViewModel;
 
+        public V3DetailControlModelTestBase(GlobalServiceProvider sp)
+        {
+            
+        }
         public V3DetailControlModelTestBase(V3PackageSearchMetadataFixture testData, GlobalServiceProvider sp)
         {
             sp.Reset();
@@ -1248,6 +1251,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
     }
 
+    [Collection(MockedVS.Collection)]
     public class V3PackageSolutionDetailControlModelTests : V3DetailControlModelTestBase, IAsyncServiceProvider
     {
         private PackageSolutionDetailControlModel _testInstance;
