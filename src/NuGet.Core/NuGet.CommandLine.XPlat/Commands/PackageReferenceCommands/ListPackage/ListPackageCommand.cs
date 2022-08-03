@@ -205,7 +205,7 @@ namespace NuGet.CommandLine.XPlat
             IReportRenderer jsonReportRenderer;
 
             var currentlySupportedReportVersions = new List<string> { "1" };
-            // If customer pass unsupported version then default to latest available version and warn about unsupported version.
+            // If customer pass unsupported version then default to latest available version and error about unsupported version.
             if (!string.IsNullOrEmpty(outputVersionOption) && !currentlySupportedReportVersions.Contains(outputVersionOption))
             {
                 jsonReportRenderer = new ListPackageJsonRendererV1();
