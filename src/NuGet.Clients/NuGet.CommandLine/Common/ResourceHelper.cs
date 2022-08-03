@@ -17,6 +17,10 @@ namespace NuGet.CommandLine
             {
                 throw new ArgumentNullException(nameof(resourceType));
             }
+            if (string.IsNullOrEmpty(resourceNames))
+            {
+                throw new ArgumentException("Cannot be null or empty", nameof(resourceNames));
+            }
 
             if (_cachedManagers == null)
             {
@@ -47,9 +51,7 @@ namespace NuGet.CommandLine
             var builder = new StringBuilder();
             foreach (var resource in resourceNames.Split(';'))
             {
-                var culture = LocalizedResourceManager.GetLanguageName();
-                string value = resourceManager.GetString(resource + '_' + culture, CultureInfo.InvariantCulture) ??
-                    resourceManager.GetString(resource, CultureInfo.InvariantCulture);
+                string value = LocalizedResourceManager.GetString(resource, resourceManager);
                 if (String.IsNullOrEmpty(value))
                 {
                     throw new InvalidOperationException(
