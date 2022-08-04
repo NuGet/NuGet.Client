@@ -172,9 +172,7 @@ namespace NuGet.Configuration
                 }
             }
 
-            if (xElement.Name.LocalName.Equals(ConfigurationConstants.PackageSourceMapping, StringComparison.OrdinalIgnoreCase)
-                && duplicatedDescendants != null
-                && duplicatedDescendants.Any())
+            if (xElement.Name.LocalName.Equals(ConfigurationConstants.PackageSourceMapping, StringComparison.OrdinalIgnoreCase) && duplicatedDescendants != null)
             {
                 var duplicatedKey = string.Join(", ", duplicatedDescendants.Select(d => d.Attributes["key"]));
                 var source = duplicatedDescendants.Select(d => d.Origin.ConfigFilePath).First();
