@@ -157,17 +157,24 @@ namespace NuGet.Configuration
 
             HashSet<T> distinctDescendants = new HashSet<T>(comparer);
 
-            List<T> duplicatedDescendants = new List<T>();
+            List<T> duplicatedDescendants = null;
 
             foreach (var item in descendants)
             {
                 if (!distinctDescendants.Add(item))
                 {
+                    if (duplicatedDescendants == null)
+                    {
+                        duplicatedDescendants = new List<T>();
+                    }
+
                     duplicatedDescendants.Add(item);
                 }
             }
 
-            if (xElement.Name.LocalName.Equals(ConfigurationConstants.PackageSourceMapping, StringComparison.OrdinalIgnoreCase) && duplicatedDescendants.Any())
+            if (xElement.Name.LocalName.Equals(ConfigurationConstants.PackageSourceMapping, StringComparison.OrdinalIgnoreCase)
+                && duplicatedDescendants != null
+                && duplicatedDescendants.Any())
             {
                 var duplicatedKey = string.Join(", ", duplicatedDescendants.Select(d => d.Attributes["key"]));
                 var source = duplicatedDescendants.Select(d => d.Origin.ConfigFilePath).First();
