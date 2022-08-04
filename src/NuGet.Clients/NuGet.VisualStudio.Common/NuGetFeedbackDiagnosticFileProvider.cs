@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Internal.VisualStudio.Shell.Embeddable.Feedback;
 using NuGet.Common;
@@ -121,7 +122,7 @@ namespace NuGet.VisualStudio.Common
             }
             catch (Exception exception)
             {
-                await TelemetryUtility.PostFaultAsync(exception, nameof(NuGetFeedbackDiagnosticFileProvider));
+                await PostFaultAsync(exception, nameof(NuGetFeedbackDiagnosticFileProvider));
             }
             finally
             {
@@ -141,6 +142,18 @@ namespace NuGet.VisualStudio.Common
             else
             {
                 TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+            }
+        }
+
+        private async Task PostFaultAsync(Exception exception, [CallerMemberName] string? callerMemberName = default)
+        {
+            if (TelemetryProvider != null)
+            {
+                await TelemetryProvider.PostFaultAsync(exception, nameof(NuGetFeedbackDiagnosticFileProvider), callerMemberName);
+            }
+            else
+            {
+                await TelemetryUtility.PostFaultAsync(exception, nameof(NuGetFeedbackDiagnosticFileProvider), callerMemberName);
             }
         }
     }
