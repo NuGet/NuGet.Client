@@ -299,4 +299,8 @@
   <data name="Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly" xml:space="preserve">
     <value>Argument cannot be null, empty, or whitespace only.</value>
   </data>
+  <data name="Error_DuplicatePackageSource" xml:space="preserve">
+    <value>PackageSourceMapping is enabled and there are multiple package sources associated with the same key(s): {0}. Path: {1}</value>
+    <comment>0 - package sources separated with comma 1 - path</comment>
+  </data>
 </root>

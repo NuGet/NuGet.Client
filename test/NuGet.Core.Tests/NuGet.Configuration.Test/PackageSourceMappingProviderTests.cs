@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -44,6 +45,40 @@ namespace NuGet.Configuration.Test
             packageSourceMappingSourceItem.Key.Should().Be("nuget.org");
             packageSourceMappingSourceItem.Patterns.Should().HaveCount(1);
             packageSourceMappingSourceItem.Patterns.First().Pattern.Should().Be("stuff");
+        }
+
+        [Fact]
+        public void GetPackageSourceMappingItems_WithOneConfig_WithDuplicateKeys_Throws()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <clear/>
+        <packageSource key=""dotnet"">
+            <package pattern=""stuff"" />
+        </packageSource>
+        <packageSource key=""dotnet"">
+            <package pattern=""stuff1"" />
+        </packageSource>
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuf2"" />
+        </packageSource>
+        <packageSource key=""nuget.org"">
+            <package pattern=""stuff3"" />
+        </packageSource>
+        <packageSource key=""source"">
+            <package pattern=""stuff4"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+            // Act & Assert
+            var exception = Assert.Throws<NuGetConfigurationException>(
+                () => Settings.LoadSettingsGivenConfigPaths(new string[] { configPath}));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, "PackageSourceMapping is enabled and there are multiple package sources associated with the same key(s): dotnet, nuget.org. Path: {0}", configPath), exception.Message);
         }
 
         [Fact]
