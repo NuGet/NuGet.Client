@@ -26,7 +26,7 @@ namespace NuGet.Commands
                 int i = 1;
                 while (true)
                 {
-                    var defaultNameToUse = defaultNamePrefix + i.ToString();
+                    var defaultNameToUse = defaultNamePrefix + i.ToString(CultureInfo.CurrentCulture);
                     if (!namesSet.Contains(defaultNameToUse))
                     {
                         args.Name = defaultNameToUse;
@@ -148,12 +148,13 @@ namespace NuGet.Commands
                             var namePadding = new string(' ', i >= 9 ? 1 : 2);
 
                             getLogger().LogMinimal(string.Format(
+                                CultureInfo.CurrentCulture,
                                 "  {0}.{1}{2} [{3}]",
                                 indexNumber,
                                 namePadding,
                                 source.Name,
                                 source.IsEnabled ? string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandEnabled) : string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandDisabled)));
-                            getLogger().LogMinimal(string.Format("{0}{1}", sourcePadding, source.Source));
+                            getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture, "{0}{1}", sourcePadding, source.Source));
                         }
 
                         WarnForHttpSources(sourcesList, getLogger);
@@ -187,7 +188,7 @@ namespace NuGet.Commands
                     break;
                 case SourcesListFormat.None:
                     // This validation could move to the Command or Args and be code-generated.
-                    throw new CommandException(string.Format(Strings.Source_InvalidFormatValue, args.Format));
+                    throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Source_InvalidFormatValue, args.Format));
             }
         }
 

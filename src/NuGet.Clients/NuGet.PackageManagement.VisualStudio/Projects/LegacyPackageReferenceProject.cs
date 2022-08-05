@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -119,7 +120,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (packageSpec == null)
                 {
                     throw new InvalidOperationException(
-                        string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+                        string.Format(CultureInfo.CurrentCulture, Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
                 }
                 context?.PackageSpecCache.Add(ProjectFullPath, packageSpec);
             }
@@ -243,6 +244,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (shouldThrow)
                 {
                     throw new InvalidDataException(string.Format(
+                        CultureInfo.CurrentCulture,
                         Strings.MSBuildPropertyNotFound,
                         ProjectBuildProperties.MSBuildProjectExtensionsPath,
                         _vsProjectAdapter.ProjectDirectory));

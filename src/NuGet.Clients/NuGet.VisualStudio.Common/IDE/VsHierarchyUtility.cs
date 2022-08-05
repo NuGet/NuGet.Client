@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using EnvDTE;
@@ -33,7 +34,7 @@ namespace NuGet.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             ErrorHandler.ThrowOnFailure(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid));
-            var guid = pguid.ToString("B");
+            var guid = pguid.ToString("B", CultureInfo.CurrentCulture);
             if (ProjectType.IsUnsupported(guid) || !ProjectType.IsSupported(guid))
             {
                 return false;
@@ -92,7 +93,7 @@ namespace NuGet.VisualStudio
             }
 
             ErrorHandler.ThrowOnFailure(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid));
-            return new string[] { pguid.ToString("B") };
+            return new string[] { pguid.ToString("B", CultureInfo.CurrentCulture) };
         }
 
         /// <summary>

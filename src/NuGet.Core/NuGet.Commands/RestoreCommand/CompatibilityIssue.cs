@@ -280,7 +280,7 @@ namespace NuGet.Commands
 
             if (AvailableFrameworks.Any())
             {
-                sb.AppendFormat(supports);
+                sb.AppendFormat(CultureInfo.CurrentCulture, supports);
 
                 if (AvailableFrameworks.Count > 1)
                 {
@@ -299,7 +299,7 @@ namespace NuGet.Commands
             }
             else if (AvailableFrameworkRuntimePairs.Any())
             {
-                sb.AppendFormat(supports);
+                sb.AppendFormat(CultureInfo.CurrentCulture, supports);
 
                 if (AvailableFrameworkRuntimePairs.Count > 1)
                 {

@@ -45,7 +45,7 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    listArgs.Logger.LogWarning(string.Format(listArgs.ListCommandListNotSupported, packageSource.Source));
+                    listArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, listArgs.ListCommandListNotSupported, packageSource.Source));
                 }
             }
 

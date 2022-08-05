@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -160,8 +161,8 @@ namespace NuGet.Build.Tasks
 
             var options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["GenerateRestoreGraphFile"] = true.ToString(),
-                [nameof(Recursive)] = Recursive.ToString(),
+                ["GenerateRestoreGraphFile"] = true.ToString(CultureInfo.CurrentCulture),
+                [nameof(Recursive)] = Recursive.ToString(CultureInfo.CurrentCulture),
                 [nameof(RestoreGraphOutputPath)] = RestoreGraphOutputPath,
             };
             // Semicolon delimited list of options

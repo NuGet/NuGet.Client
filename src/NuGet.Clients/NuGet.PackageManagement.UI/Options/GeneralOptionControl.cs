@@ -173,7 +173,7 @@ namespace NuGet.Options
                 catch (Exception ex)
                 {
                     await UpdateLocalsCommandStatusTextAsync(string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message), visibility: true);
-                    LogError(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message));
+                    LogError(string.Format(CultureInfo.CurrentCulture, Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message));
                     ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
                 }
                 finally
