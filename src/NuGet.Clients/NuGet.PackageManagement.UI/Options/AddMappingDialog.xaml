@@ -25,7 +25,7 @@
     </Grid.RowDefinitions>
     <Grid.Resources>
       <Style TargetType="ScrollBar">
-        <Setter Property="Background" Value="{Binding Grid.Background}"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ScrollBarColorKey}}"/>
       </Style>
     </Grid.Resources>
     <StackPanel Grid.Row="0">
