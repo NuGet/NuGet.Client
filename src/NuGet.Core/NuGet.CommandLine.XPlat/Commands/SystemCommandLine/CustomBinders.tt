@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.XPlat.Commands
 PushIndent(Indent(4));
 string commandFile = this.Host.ResolvePath("Commands.xml");
 XDocument commands = XDocument.Load(commandFile);
-var allElements = commands.Descendants(XName.Get("Verb","")).Concat(commands.Descendants(XName.Get("Command", "")));
+IEnumerable<XElement> allElements = commands.Descendants(XName.Get("Verb")).Concat(commands.Descendants(XName.Get("Command")));
 foreach (XElement verb in allElements)
 {
     foreach (XElement noun in verb.Descendants(XName.Get("Noun")))
@@ -34,7 +34,7 @@ foreach (XElement verb in allElements)
         GenerateBinderClass(noun, verb, noun);
     }
 
-    var opts = verb.Elements().Where(n => isValidOption(n));
+    IEnumerable<XElement> opts = verb.Elements().Where(n => isValidOption(n));
     if (opts.Any())
     {
         GenerateBinderClass(verb, verb);

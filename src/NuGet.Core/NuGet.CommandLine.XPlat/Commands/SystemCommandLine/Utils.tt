@@ -602,11 +602,11 @@ public class OptionData
     {
         if (membersNode == null)
         {
-            throw new ArgumentNullException(membersNode);
+            throw new ArgumentNullException(nameof(membersNode));
         }
         if (verbNameNode == null)
         {
-            throw new ArgumentNullException(verbNameNode);
+            throw new ArgumentNullException(nameof(verbNameNode));
         }
 
         string binderTypeClassName = GetArgsClassName(verbNameNode, nounNameNode);
