@@ -236,11 +236,11 @@ public class OptionData
     public string CamelCaseName { get; }
 }
 
-    string getSeparator(bool isFirst, bool firstWithSpace = true)
+    string getSeparator(bool isFirst, bool isFirstWithSpace = true)
     {
         if (isFirst)
         {
-            if (firstWithSpace)
+            if (isFirstWithSpace)
             {
                 return " ";
             }
@@ -334,7 +334,7 @@ public class OptionData
     {
         var sb = new StringBuilder();
         var paramEnumerator = optionsNode.Elements().GetEnumerator();
-        bool isFirst = !initialComma;
+        bool isFirst = !hasInitialComma;
         while (paramEnumerator.MoveNext())
         {
             XElement option = paramEnumerator.Current;
@@ -344,7 +344,7 @@ public class OptionData
             }
             var data = new OptionData(option);
 
-            sb.Append($"{getSeparator(isFirst, initialSpace)}{GenerateOptionNameVar(data)}");
+            sb.Append($"{getSeparator(isFirst, hasInitialSpace)}{GenerateOptionNameVar(data)}");
             isFirst = false;
         }
 
@@ -363,7 +363,7 @@ public class OptionData
         WriteLine($"{runnerClassName}.Run(args, getLogger);"); // logger comes from param arg
         PopIndent();
         Write($"}}, new {binderClassName}(");
-        Write(GenerateCommandHandlerFunctionArgs(noun, initialComma: false, initialSpace: false));
+        Write(GenerateCommandHandlerFunctionArgs(noun, hasInitialComma: false, hasInitialSpace: false));
         WriteLine("));");
     }
 
@@ -539,7 +539,7 @@ public class OptionData
 
         foreach (OptionData data in options)
         {
-            Write($"{getSeparator(isFirst, firstWithSpace: false)}{data.BaseClass}<{data.DataType}> {data.CamelCaseName}");
+            Write($"{getSeparator(isFirst, isFirstWithSpace: false)}{data.BaseClass}<{data.DataType}> {data.CamelCaseName}");
             isFirst = false;
         }
         WriteLine(")");
