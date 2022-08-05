@@ -482,37 +482,25 @@ public class OptionData
         return hasCustomHandler;
     } // GenerateSetCustomHandler
 
-    ValueTuple<string, string> GetVerbNounFormalNames(XElement verb, XElement noun = null)
+    string GetNodeFormalName(XElement nodeWithArgs)
     {
-        string verbName = verb.Attribute(XName.Get("Name", ""))?.Value;
-        string verbFormalName = StringUtilities.GetFormalName(verbName);
+        string name = nodeWithArgs.Attribute(XName.Get("Name", ""))?.Value;
+        string formalName = StringUtilities.GetFormalName(name);
 
-        string nounFormalName = string.Empty;
-        if (noun != null)
+        return formalName;
+    }
+
+    string GetArgsClassName(XElement verb, XElement noun = null) => $"{GetNodeFormalName(verb)}{GetNodeFormalName(noun)}Args";
+
+    string GetCustomBinderClassName(XElement verb, XElement noun = null) => $"{GetNodeFormalName(verb)}{GetNodeFormalName(noun)}CustomBinder";
+
+    IReadOnlyCollection<OptionData> GetOptionsFromNode(XElement argsOptionsNode)
+    {
+        if (argsOptionsNode == null)
         {
-            string nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
-            nounFormalName = StringUtilities.GetFormalName(nounName);
+            throw new ArgumentNullException(nameof(argsOptionsNode));
         }
 
-        return (verbFormalName, nounFormalName);
-    }
-
-    string GetArgsClassName(XElement verb, XElement noun = null)
-    {
-        (string verbFormalName, string nounFormalName) = GetVerbNounFormalNames(verb, noun);
-
-        return $"{verbFormalName}{nounFormalName}Args";
-    }
-
-    string GetCustomBinderClassName(XElement verb, XElement noun = null)
-    {
-        (string verbFormalName, string nounFormalName) = GetVerbNounFormalNames(verb, noun);
-
-        return $"{verbFormalName}{nounFormalName}CustomBinder";
-    }
-
-    void GenerateCustomBinderClass(string className, string binderClassName, XElement argsOptionsNode)
-    {
         List<OptionData> options = new List<OptionData>();
         foreach (XElement option in argsOptionsNode.Elements())
         {
@@ -520,6 +508,32 @@ public class OptionData
             {
                 options.Add(new OptionData(option));
             }
+        }
+
+        return options;
+    }
+
+    void GenerateCustomBinderClass(string className, string binderClassName, IReadOnlyCollection<OptionData> options)
+    {
+        if (className == null)
+        {
+            throw new ArgumentNullException(nameof(className));
+        }
+        if (binderClassName == null)
+        {
+            throw new ArgumentNullException(nameof(binderClassName));
+        }
+        if (options == null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+        if (className.Trim() == string.Empty)
+        {
+            throw new ArgumentException("Trimmed value cannot be empty", nameof(binderClassName));
+        }
+        if (binderClassName.Trim() == string.Empty)
+        {
+            throw new ArgumentException("Trimmed value cannot be empty", nameof(className));
         }
 
         WriteLine($"internal partial class {className} : BinderBase<{binderClassName}>");
@@ -582,5 +596,14 @@ public class OptionData
         WriteLine("} // end GetBoundValue method");
         PopIndent();
         WriteLine("} // end class");
+    }
+
+    void GenerateVerbNounBinderClass(XElement membersNode, XElement verbNameNode, XElement nounNameNode = null)
+    {
+        string binderTypeClassName = GetArgsClassName(verbNameNode, nounNameNode);
+        string binderClassName = GetCustomBinderClassName(verbNameNode, nounNameNode);
+        IReadOnlyCollection<OptionData> options = GetOptionsFromNode(membersNode);
+        GenerateCustomBinderClass(binderClassName, binderTypeClassName, options);
+        WriteLine(string.Empty);
     }
 #>

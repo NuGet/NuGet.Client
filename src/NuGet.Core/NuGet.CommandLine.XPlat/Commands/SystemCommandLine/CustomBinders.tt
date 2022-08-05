@@ -23,31 +23,23 @@ using NuGet.Commands;
 namespace NuGet.CommandLine.XPlat.Commands
 {
 <#
+PushIndent(Indent(4));
 string commandFile = this.Host.ResolvePath("Commands.xml");
 XDocument commands = XDocument.Load(commandFile);
 var allElements = commands.Descendants(XName.Get("Verb","")).Concat(commands.Descendants(XName.Get("Command", "")));
 foreach (XElement verb in allElements)
 {
-    PushIndent(Indent(4));
-
     foreach (XElement noun in verb.Descendants(XName.Get("Noun")))
     {
-        string binderTypeClassName = GetArgsClassName(verb, noun);
-        string binderClassName = GetCustomBinderClassName(verb, noun);
-        GenerateCustomBinderClass(binderClassName, binderTypeClassName, noun);
-        WriteLine(string.Empty);
+        GenerateVerbNounBinderClass(noun, verb, noun);
     }
 
     var opts = verb.Elements().Where(n => isValidOption(n));
     if (opts.Any())
     {
-        string binderTypeClassName = GetArgsClassName(verb, null);
-        string binderClassName = GetCustomBinderClassName(verb, null);
-        GenerateCustomBinderClass(binderClassName, binderTypeClassName, verb);
-        WriteLine(string.Empty);
+        GenerateVerbNounBinderClass(verb, verb);
     }
-
-    PopIndent();
 } // end verb foreach
+PopIndent();
 #>
 } // end namespace
