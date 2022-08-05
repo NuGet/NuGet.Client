@@ -513,7 +513,7 @@ public class OptionData
         return options;
     }
 
-    void GenerateCustomBinderClass(string className, string binderClassName, IReadOnlyCollection<OptionData> options)
+    void GenerateBinderClass(string className, string binderClassName, IReadOnlyCollection<OptionData> options)
     {
         if (className == null)
         {
@@ -598,12 +598,12 @@ public class OptionData
         WriteLine("} // end class");
     }
 
-    void GenerateVerbNounBinderClass(XElement membersNode, XElement verbNameNode, XElement nounNameNode = null)
+    void GenerateBinderClass(XElement membersNode, XElement verbNameNode, XElement nounNameNode = null)
     {
         string binderTypeClassName = GetArgsClassName(verbNameNode, nounNameNode);
         string binderClassName = GetCustomBinderClassName(verbNameNode, nounNameNode);
         IReadOnlyCollection<OptionData> options = GetOptionsFromNode(membersNode);
-        GenerateCustomBinderClass(binderClassName, binderTypeClassName, options);
+        GenerateBinderClass(binderClassName, binderTypeClassName, options);
         WriteLine(string.Empty);
     }
 #>

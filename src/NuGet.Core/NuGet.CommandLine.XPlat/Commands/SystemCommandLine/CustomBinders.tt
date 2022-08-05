@@ -31,13 +31,13 @@ foreach (XElement verb in allElements)
 {
     foreach (XElement noun in verb.Descendants(XName.Get("Noun")))
     {
-        GenerateVerbNounBinderClass(noun, verb, noun);
+        GenerateBinderClass(noun, verb, noun);
     }
 
     var opts = verb.Elements().Where(n => isValidOption(n));
     if (opts.Any())
     {
-        GenerateVerbNounBinderClass(verb, verb);
+        GenerateBinderClass(verb, verb);
     }
 } // end verb foreach
 PopIndent();
