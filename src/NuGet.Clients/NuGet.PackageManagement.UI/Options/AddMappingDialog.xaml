@@ -23,6 +23,11 @@
       <RowDefinition Height="*"/>
       <RowDefinition Height="36"/>
     </Grid.RowDefinitions>
+    <Grid.Resources>
+      <Style TargetType="ScrollBar">
+        <Setter Property="Background" Value="{Binding Grid.Background}"/>
+      </Style>
+    </Grid.Resources>
     <StackPanel Grid.Row="0">
       <Grid>
         <Grid.ColumnDefinitions>
@@ -71,7 +76,7 @@
                                  Foreground="{Binding Path=(TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                  Background="{Binding Path=(Window.Background), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
         <StackPanel Orientation="Vertical"  Grid.Row="1">
-          <nuget:ProjectsListView AutomationProperties.Name="Sources List"
+          <ListView AutomationProperties.Name="Sources List"
                     x:Name="sourcesListBox"
                     ItemsSource="{Binding SourcesCollection}"
                     Margin="12,0,12,12"
@@ -102,7 +107,7 @@
                 </GridViewColumn>
               </GridView>
             </ListView.View>
-          </nuget:ProjectsListView>
+          </ListView>
         </StackPanel>
       </Grid>
     </StackPanel>
