@@ -65,9 +65,9 @@ foreach (XElement verb in allElements)
         // Look for options directly under each noun
         GenerateAddOptionOrArgument(noun, nounFormalNameVar, 12);
 
-        bool handlerGenerated = GenerateSetCustomHandler(nounFormalNameVar, noun, 12);
+        bool isHandlerGenerated = GenerateSetCustomHandler(nounFormalNameVar, noun, 12);
 
-        if (!handlerGenerated)
+        if (!isHandlerGenerated)
         {
             // Generate handler for noun
             PushIndent(Indent(12));
