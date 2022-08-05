@@ -600,6 +600,15 @@ public class OptionData
 
     void GenerateBinderClass(XElement membersNode, XElement verbNameNode, XElement nounNameNode = null)
     {
+        if (membersNode == null)
+        {
+            throw new ArgumentNullException(membersNode);
+        }
+        if (verbNameNode == null)
+        {
+            throw new ArgumentNullException(verbNameNode);
+        }
+
         string binderTypeClassName = GetArgsClassName(verbNameNode, nounNameNode);
         string binderClassName = GetCustomBinderClassName(verbNameNode, nounNameNode);
         IReadOnlyCollection<OptionData> options = GetOptionsFromNode(membersNode);
