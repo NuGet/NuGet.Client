@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
@@ -47,6 +48,14 @@ namespace NuGet.Protocol
                 {
                     throttle = SemaphoreSlimThrottle.CreateSemaphoreThrottle(source.PackageSource.MaxHttpRequestsPerSource);
                 }
+
+#if IS_DESKTOP
+                if (RuntimeEnvironmentHelper.IsWindows
+                    && source.PackageSource.MaxHttpRequestsPerSource == 0)
+                {
+                    source.PackageSource.MaxHttpRequestsPerSource = 64;
+                }
+#endif
 
                 curResource = _cache.GetOrAdd(
                     source.PackageSource,

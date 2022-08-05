@@ -6,8 +6,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
@@ -47,6 +50,13 @@ namespace NuGet.Protocol
                 Proxy = proxy,
                 AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
             };
+
+#if IS_DESKTOP
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                clientHandler.MaxConnectionsPerServer = packageSource.MaxHttpRequestsPerSource;
+            }
+#endif
 
             // Setup http client handler client certificates
             if (packageSource.ClientCertificates != null)
