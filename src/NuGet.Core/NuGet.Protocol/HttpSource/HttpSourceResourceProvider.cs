@@ -48,10 +48,8 @@ namespace NuGet.Protocol
                 {
                     throttle = SemaphoreSlimThrottle.CreateSemaphoreThrottle(source.PackageSource.MaxHttpRequestsPerSource);
                 }
-
 #if IS_DESKTOP
-                if (RuntimeEnvironmentHelper.IsWindows
-                    && source.PackageSource.MaxHttpRequestsPerSource == 0)
+                else if (RuntimeEnvironmentHelper.IsWindows)
                 {
                     source.PackageSource.MaxHttpRequestsPerSource = 64;
                 }
