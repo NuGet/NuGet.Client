@@ -12,6 +12,8 @@ In general a PR should be approved by the Subject Matter Expert (SME) of that co
 
 To commit the PR to the repo use the GitHub `Squash and Merge` button. We can't stress this enough. Always use `Squash and Merge` unless an exception is explicitly stated in this document.
 
+This repo has bots that manage all stale PRs. Stale PRs will be autoclosed.
+
 - *Do* favor having more than 1 reviewer.
 - *Do not* merge too quickly. Wait for at least 24h after the last significant changes before merging unless the change is urgent.
 - *Do* address all feedback. Not necessarily by accepting it, but by reaching a resolution with the reviewer. All comments need to be marked as resolved before merging.
@@ -31,7 +33,6 @@ GitHub merges have 2 means to specify a commit message when squash merging. Insp
 #### Draft Pull Requests
 
 Draft pull requests are allowed, but should have a clear plan for transition to a review ready pull request.
-Draft pull requests will be closed within 30 days.
 
 ### Branching strategy
 
