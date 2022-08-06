@@ -200,15 +200,9 @@
           {
             "name": "isOpen",
             "parameters": {}
-          },
-          {
-            "name": "isDraftPr",
-            "parameters": {
-              "value": "false"
-            }
           }
         ],
-        "taskName": "[stale non-community PR] [5-1] Search for PRs with no activity over 7 days and warn. (except community PRs and draft PRs)",
+        "taskName": "[stale non-community PR] [5-1] Search for PRs with no activity over 7 days and warn. (except community PRs)",
         "actions": [
           {
             "name": "addLabel",
@@ -605,19 +599,13 @@
             "parameters": {}
           },
           {
-            "name": "isDraftPr",
-            "parameters": {
-              "value": "false"
-            }
-          },
-          {
             "name": "noLabel",
             "parameters": {
               "label": "Status:No recent activity"
             }
           }
         ],
-        "taskName": "[stale community PR] [5-1] Search for community PRs with no activity over 30 days and warn. (except draft PRs)",
+        "taskName": "[stale community PR] [5-1] Search for community PRs with no activity over 30 days and warn.",
         "actions": [
           {
             "name": "addLabel",
