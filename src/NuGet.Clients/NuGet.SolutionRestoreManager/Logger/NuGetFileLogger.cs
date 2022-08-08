@@ -5,6 +5,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using NuGet.Common;
@@ -107,7 +108,7 @@ namespace NuGet.SolutionRestoreManager
 
         private string FormatWithTime(string logMessage)
         {
-            return Now.ToString("O") + " MI:" + Thread.CurrentThread.ManagedThreadId + " : " + logMessage;
+            return Now.ToString("O", CultureInfo.CurrentCulture) + " MI:" + Thread.CurrentThread.ManagedThreadId + " : " + logMessage;
         }
 
         private StreamWriter CreateStreamWriter(string message)

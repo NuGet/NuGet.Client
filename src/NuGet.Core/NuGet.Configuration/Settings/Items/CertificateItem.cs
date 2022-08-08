@@ -52,7 +52,7 @@ namespace NuGet.Configuration
 
                 return false;
             }
-            set => UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, value.ToString().ToLower());
+            set => UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, value.ToString(CultureInfo.CurrentCulture).ToLower());
         }
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; }
@@ -73,7 +73,7 @@ namespace NuGet.Configuration
 
             AddAttribute(ConfigurationConstants.Fingerprint, fingerprint);
             AddAttribute(ConfigurationConstants.HashAlgorithm, hashAlgorithm.ToString().ToUpper());
-            AddAttribute(ConfigurationConstants.AllowUntrustedRoot, allowUntrustedRoot.ToString().ToLower());
+            AddAttribute(ConfigurationConstants.AllowUntrustedRoot, allowUntrustedRoot.ToString(CultureInfo.CurrentCulture).ToLower());
         }
 
         internal CertificateItem(XElement element, SettingsFile origin)
@@ -88,7 +88,7 @@ namespace NuGet.Configuration
 
             // Update attributes with propert casing
             UpdateAttribute(ConfigurationConstants.HashAlgorithm, HashAlgorithm.ToString().ToUpper());
-            UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, AllowUntrustedRoot.ToString().ToLower());
+            UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, AllowUntrustedRoot.ToString(CultureInfo.CurrentCulture).ToLower());
         }
 
         public override SettingBase Clone()

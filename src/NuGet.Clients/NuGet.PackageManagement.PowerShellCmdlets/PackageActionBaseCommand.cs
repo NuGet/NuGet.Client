@@ -236,7 +236,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (Source != null && Project is BuildIntegratedNuGetProject)
             {
-                var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), NuGetProject.GetUniqueNameOrName(Project));
+                var warning = string.Format(CultureInfo.CurrentCulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), NuGetProject.GetUniqueNameOrName(Project));
                 Log(MessageLevel.Warning, warning);
             }
         }

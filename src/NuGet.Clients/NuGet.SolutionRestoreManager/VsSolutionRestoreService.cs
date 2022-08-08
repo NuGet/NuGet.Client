@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -224,7 +225,7 @@ namespace NuGet.SolutionRestoreManager
                 }
                 catch (Exception e)
                 {
-                    var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1105, string.Format(Resources.NU1105, projectNames.ShortName, e.Message));
+                    var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1105, string.Format(CultureInfo.CurrentCulture, Resources.NU1105, projectNames.ShortName, e.Message));
                     restoreLogMessage.ProjectPath = projectUniqueName;
 
                     nominationErrors = new List<IAssetsLogMessage>()

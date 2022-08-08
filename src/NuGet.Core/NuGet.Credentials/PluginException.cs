@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using NuGet.Credentials;
 
@@ -26,30 +27,30 @@ namespace NuGet.Credentials
         public static PluginException Create(string path, Exception inner)
         {
             return new PluginException(
-                string.Format(Resources.PluginException_Exception_Format, path, inner.GetType().Name),
+                string.Format(CultureInfo.CurrentCulture, Resources.PluginException_Exception_Format, path, inner.GetType().Name),
                 inner);
         }
 
         public static PluginException CreateTimeoutMessage(string path, int timeoutMillis)
         {
             return new PluginException(
-                string.Format(Resources.PluginException_Timeout_Format, path, timeoutMillis));
+                string.Format(CultureInfo.CurrentCulture, Resources.PluginException_Timeout_Format, path, timeoutMillis));
         }
 
         public static PluginException CreateNotStartedMessage(string path)
         {
-            return new PluginException(string.Format(Resources.PluginException_NotStarted_Format, path));
+            return new PluginException(string.Format(CultureInfo.CurrentCulture, Resources.PluginException_NotStarted_Format, path));
         }
 
         public static PluginException CreatePathNotFoundMessage(string path, string attempted)
         {
-            return new PluginException(string.Format(Resources.PluginException_PathNotFound_Format, path,
+            return new PluginException(string.Format(CultureInfo.CurrentCulture, Resources.PluginException_PathNotFound_Format, path,
                 attempted));
         }
 
         public static PluginException CreateAbortMessage(string path, string message)
         {
-            return new PluginException(string.Format(Resources.PluginException_Abort_Format, path, message));
+            return new PluginException(string.Format(CultureInfo.CurrentCulture, Resources.PluginException_Abort_Format, path, message));
         }
 
         public static PluginException CreateUnreadableResponseExceptionMessage(
@@ -57,6 +58,7 @@ namespace NuGet.Credentials
             PluginCredentialResponseExitCode status)
         {
             return new PluginException(string.Format(
+                CultureInfo.CurrentCulture,
                 Resources.PluginException_UnreadableResponse_Format,
                 path,
                 status));
@@ -68,6 +70,7 @@ namespace NuGet.Credentials
             PluginCredentialResponse response)
         {
             return new PluginException(string.Format(
+                CultureInfo.CurrentCulture,
                 Resources.PluginException_InvalidResponse_Format,
                 path,
                 status,

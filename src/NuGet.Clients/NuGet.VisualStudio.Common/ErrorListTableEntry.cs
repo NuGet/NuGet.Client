@@ -71,7 +71,7 @@ namespace NuGet.VisualStudio.Common
                     if (Message.Code > NuGetLogCode.Undefined)
                     {
                         result = Message.Code.TryGetName(out var codeString);
-                        content = string.Format(HelpLink, codeString);
+                        content = string.Format(CultureInfo.CurrentCulture, HelpLink, codeString);
                     }
 
                     return result;

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft;
@@ -46,6 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (string.IsNullOrEmpty(msbuildProjectExtensionsPath))
             {
                 throw new InvalidDataException(string.Format(
+                    CultureInfo.CurrentCulture,
                     Strings.MSBuildPropertyNotFound,
                     ProjectBuildProperties.MSBuildProjectExtensionsPath,
                     MSBuildProjectPath));

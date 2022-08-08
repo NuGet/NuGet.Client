@@ -59,7 +59,7 @@ namespace NuGet.VisualStudio
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 IOutputConsole console = await _outputConsoleProvider.Value.CreatePackageManagerConsoleAsync();
-                await console.WriteLineAsync(string.Format(CultureInfo.CurrentUICulture, Resources.ExperimentVariableOverrideLogText, flightName, variableName, variableValue));
+                await console.WriteLineAsync(string.Format(CultureInfo.CurrentCulture, Resources.ExperimentVariableOverrideLogText, flightName, variableName, variableValue));
             }).PostOnFailure(nameof(NuGetExperimentationService), nameof(LogEnvironmentVariableOverride));
         }
     }

@@ -74,7 +74,7 @@ namespace NuGetVSExtension
         /// </summary>
         public string RegKeyName(RegistrationContext context)
         {
-            return string.Format(CultureInfo.InvariantCulture, "Packages\\{0}", context.ComponentType.GUID.ToString("B"));
+            return string.Format(CultureInfo.InvariantCulture, "Packages\\{0}", context.ComponentType.GUID.ToString("B", CultureInfo.InvariantCulture));
         }
 
         public override void Register(RegistrationContext context)

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.Versioning;
 using NuGet.Commands;
@@ -76,6 +77,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                     FrameworkConstants.FrameworkIdentifiers.NetStandard))
                 {
                     throw new ArgumentException(string.Format(
+                        CultureInfo.CurrentCulture,
                         VsResources.InvalidNetStandardFramework,
                         frameworkName));
                 }

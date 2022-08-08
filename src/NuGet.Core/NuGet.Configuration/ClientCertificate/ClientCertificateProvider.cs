@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace NuGet.Configuration
@@ -67,7 +68,7 @@ namespace NuGet.Configuration
             var groupsWithSamePackageSource = groupedByPackageSourceItems.Where(g => g.Count() > 1).ToList();
             if (groupsWithSamePackageSource.Any())
             {
-                var message = string.Format(Resources.ClientCertificateDuplicateConfiguration,
+                var message = string.Format(CultureInfo.CurrentCulture, Resources.ClientCertificateDuplicateConfiguration,
                                             string.Join(", ", $"'{groupsWithSamePackageSource.Select(g => g.Key)}'"));
                 throw new NuGetConfigurationException(message);
             }

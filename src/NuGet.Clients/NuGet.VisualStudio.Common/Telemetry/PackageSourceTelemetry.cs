@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -316,7 +317,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             foreach (var pair in statusCodes)
             {
-                subevent[pair.Key.ToString()] = pair.Value;
+                subevent[pair.Key.ToString(CultureInfo.CurrentCulture)] = pair.Value;
             }
 
             return subevent;

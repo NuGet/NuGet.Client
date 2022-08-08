@@ -104,7 +104,7 @@ namespace NuGet.Configuration
                         }
                         catch (Exception e)
                         {
-                            throw new NuGetConfigurationException(string.Format(Resources.FileCertItemPasswordCannotBeDecrypted, PackageSource), e);
+                            throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.FileCertItemPasswordCannotBeDecrypted, PackageSource), e);
                         }
                     }
                 }

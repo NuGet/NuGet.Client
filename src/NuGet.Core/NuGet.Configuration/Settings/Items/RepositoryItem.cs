@@ -85,7 +85,7 @@ namespace NuGet.Configuration
             var newItem = new RepositoryItem(
                 Name,
                 ServiceIndex,
-                string.Join(OwnersItem.OwnersListSeparator.ToString(), Owners),
+                string.Join(OwnersItem.OwnersListSeparator.ToString(CultureInfo.CurrentCulture), Owners),
                 Certificates.Select(c => c.Clone() as CertificateItem).ToArray());
 
             if (Origin != null)
@@ -172,7 +172,7 @@ namespace NuGet.Configuration
             {
                 if (_owners == null || !Owners.Any())
                 {
-                    _owners = new OwnersItem(string.Join(OwnersItem.OwnersListSeparator.ToString(), repository.Owners));
+                    _owners = new OwnersItem(string.Join(OwnersItem.OwnersListSeparator.ToString(CultureInfo.CurrentCulture), repository.Owners));
                     Owners = _owners.Content;
 
                     if (Origin != null)
