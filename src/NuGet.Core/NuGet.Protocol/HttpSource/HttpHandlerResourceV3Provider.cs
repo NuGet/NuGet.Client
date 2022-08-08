@@ -50,7 +50,7 @@ namespace NuGet.Protocol
             };
 
 #if IS_DESKTOP
-            if (RuntimeEnvironmentHelper.IsWindows)
+            if (RuntimeEnvironmentHelper.IsWindows && packageSource.MaxHttpRequestsPerSource > 0)
             {
                 clientHandler.MaxConnectionsPerServer = packageSource.MaxHttpRequestsPerSource;
             }
