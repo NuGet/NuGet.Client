@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
@@ -50,8 +49,7 @@ namespace NuGet.Protocol
                     throttle = SemaphoreSlimThrottle.CreateSemaphoreThrottle(source.PackageSource.MaxHttpRequestsPerSource);
                 }
 #if IS_DESKTOP
-                else if (RuntimeEnvironmentHelper.IsWindows
-                    && ServicePointManager.DefaultConnectionLimit == ServicePointManager.DefaultPersistentConnectionLimit)
+                else if (ServicePointManager.DefaultConnectionLimit == ServicePointManager.DefaultPersistentConnectionLimit)
                 {
                     source.PackageSource.MaxHttpRequestsPerSource = 64;
                 }

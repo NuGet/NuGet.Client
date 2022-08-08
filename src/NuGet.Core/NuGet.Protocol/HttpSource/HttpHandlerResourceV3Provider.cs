@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
@@ -50,7 +49,7 @@ namespace NuGet.Protocol
             };
 
 #if IS_DESKTOP
-            if (RuntimeEnvironmentHelper.IsWindows && packageSource.MaxHttpRequestsPerSource > 0)
+            if (packageSource.MaxHttpRequestsPerSource > 0)
             {
                 clientHandler.MaxConnectionsPerServer = packageSource.MaxHttpRequestsPerSource;
             }
