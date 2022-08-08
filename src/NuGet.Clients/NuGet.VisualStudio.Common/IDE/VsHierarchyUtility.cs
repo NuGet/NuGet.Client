@@ -33,13 +33,17 @@ namespace NuGet.VisualStudio
         public static bool IsSupportedByGuid(IVsHierarchy hierarchy)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            ErrorHandler.ThrowOnFailure(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid));
-            var guid = pguid.ToString("B", CultureInfo.CurrentCulture);
-            if (ProjectType.IsUnsupported(guid) || !ProjectType.IsSupported(guid))
+
+            if (ErrorHandler.Succeeded(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid)))
             {
-                return false;
+                var guid = pguid.ToString("B");
+                if (ProjectType.IsUnsupported(guid) || !ProjectType.IsSupported(guid))
+                {
+                    return false;
+                }
+                return true;
             }
-            return true;
+            return false;
         }
 
         public static bool IsNuGetSupported(IVsHierarchy hierarchy)
@@ -92,8 +96,11 @@ namespace NuGet.VisualStudio
                 return projectTypeGuids.Split(';');
             }
 
-            ErrorHandler.ThrowOnFailure(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid));
-            return new string[] { pguid.ToString("B", CultureInfo.CurrentCulture) };
+            if (ErrorHandler.Succeeded(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid)))
+            {
+                return new string[] { pguid.ToString("B") };
+            }
+            return Array.Empty<string>();
         }
 
         /// <summary>
