@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -49,8 +49,6 @@ namespace NuGet.Options
         {
             IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
             IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
-
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
 
             //show package source mappings on open
             var componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
@@ -175,7 +173,7 @@ namespace NuGet.Options
         //converts from list of packagesourcemappingsourceItems to a dictonary that can be read by UI
         private IReadOnlyList<MappingUIDisplay> ReadMappingsFromConfigToUI(IReadOnlyList<PackageSourceMappingSourceItem> originalMappings)
         {
-            Dictionary<string, List<PackageSourceContextInfo>> uiSourceMappings = new Dictionary<string, List<PackageSourceContextInfo>>();
+            var uiSourceMappings = new Dictionary<string, List<PackageSourceContextInfo>>();
             foreach (PackageSourceMappingSourceItem sourceItem in originalMappings)
             {
                 foreach (PackagePatternItem patternItem in sourceItem.Patterns)
@@ -187,7 +185,7 @@ namespace NuGet.Options
                     uiSourceMappings[patternItem.Pattern].Add(new PackageSourceContextInfo(sourceItem.Key));
                 }
             }
-            List<MappingUIDisplay> mappingsCollection = new List<MappingUIDisplay>();
+            var mappingsCollection = new List<MappingUIDisplay>();
             foreach (string packageID in uiSourceMappings.Keys)
             {
                 MappingUIDisplay temp = new MappingUIDisplay(packageID, uiSourceMappings[packageID]);
@@ -204,30 +202,12 @@ namespace NuGet.Options
             {
                 foreach (PackageSourceContextInfo source in mappingUIDisplay.Sources)
                 {
-                    //Contains method did not work since diff instances of MappingUIDisplay even though name is the same
-                    //made own contains method
-                    bool newSource = true;
-                    foreach (string mapping in mappingsDictonary.Keys)
-                    {
-                        if (mapping == source.Name)
-                        {
-                            newSource = false;
-                        }
-                    }
-                    if (newSource == true)
+                    if (!mappingsDictonary.Keys.Contains(source.Name))
                     {
                         mappingsDictonary[source.Name] = new List<PackagePatternItem>();
                     }
                     PackagePatternItem tempID = new PackagePatternItem(mappingUIDisplay.ID);
-                    bool newID = true;
-                    foreach (PackagePatternItem id in mappingsDictonary[source.Name])
-                    {
-                        if (id.Pattern == tempID.Pattern)
-                        {
-                            newID = false;
-                        }
-                    }
-                    if (newID == true)
+                    if (!mappingsDictonary[source.Name].Any(id => id.Pattern == tempID.Pattern))
                     {
                         mappingsDictonary[source.Name].Add(tempID);
                     }
