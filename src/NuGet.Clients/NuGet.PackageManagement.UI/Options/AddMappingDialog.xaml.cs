@@ -1,7 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading;
-using System.Windows;
 using System.Windows.Input;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.UI;
@@ -59,7 +60,6 @@ namespace NuGet.Options
                 PackageSourceContextInfoChecked tempSource = new PackageSourceContextInfoChecked(source, false);
                 SourcesCollection.Add(tempSource);
             }
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
         }
 
         private void ExecuteHideButtonCommand(object parameter)

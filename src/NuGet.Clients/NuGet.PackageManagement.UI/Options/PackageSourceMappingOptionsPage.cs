@@ -26,13 +26,7 @@ namespace NuGet.Options
         /// Gets the Windows Presentation Foundation (WPF) child element to be hosted inside the Options dialog page.
         /// </summary>
         /// <returns>The WPF child element.</returns>
-        protected override UIElement Child
-        {
-            get
-            {
-                return _packageSourceMappingOptionsControl.Value;
-            }
-        }
+        protected override UIElement Child => _packageSourceMappingOptionsControl.Value;
 
         public PackageSourceMappingOptionsPage()
         {
@@ -79,12 +73,6 @@ namespace NuGet.Options
             await _packageSourceMappingOptionsControl.Value.InitializeOnActivatedAsync(cancellationToken);
         }
 
-        private PackageSourceMappingOptionsControl PackageSourceMappingControl
-        {
-            get
-            {
-                return _packageSourceMappingOptionsControl.Value;
-            }
-        }
+        private PackageSourceMappingOptionsControl PackageSourceMappingControl => _packageSourceMappingOptionsControl.Value;
     }
 }
