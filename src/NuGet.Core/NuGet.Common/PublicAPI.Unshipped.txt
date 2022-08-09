@@ -1,5 +1,0 @@
-NuGet.Common.NuGetLogCode.NU1504 = 1504 -> NuGet.Common.NuGetLogCode
-NuGet.Common.NuGetLogCode.NU1505 = 1505 -> NuGet.Common.NuGetLogCode
-NuGet.Common.NuGetLogCode.NU1506 = 1506 -> NuGet.Common.NuGetLogCode
-NuGet.Common.NuGetLogCode.NU1803 = 1803 -> NuGet.Common.NuGetLogCode
-static NuGet.Common.UriUtility.IsNuGetOrg(string source) -> bool

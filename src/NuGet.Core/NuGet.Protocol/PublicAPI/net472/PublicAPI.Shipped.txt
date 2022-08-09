@@ -49,6 +49,7 @@ NuGet.Protocol.Core.Types.DownloadResourceResultStatus.AvailableWithoutStream = 
 NuGet.Protocol.Core.Types.DownloadResourceResultStatus.Cancelled = 3 -> NuGet.Protocol.Core.Types.DownloadResourceResultStatus
 NuGet.Protocol.Core.Types.DownloadResourceResultStatus.NotFound = 2 -> NuGet.Protocol.Core.Types.DownloadResourceResultStatus
 NuGet.Protocol.Core.Types.FatalProtocolException
+NuGet.Protocol.Core.Types.FatalProtocolException.FatalProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Protocol.Core.Types.FatalProtocolException.FatalProtocolException(string message) -> void
 NuGet.Protocol.Core.Types.FatalProtocolException.FatalProtocolException(string message, System.Exception innerException) -> void
 NuGet.Protocol.Core.Types.FindPackageByIdDependencyInfo
@@ -115,6 +116,7 @@ NuGet.Protocol.Core.Types.MetadataResource.GetLatestVersion(string packageId, bo
 NuGet.Protocol.Core.Types.MetadataResource.GetVersions(string packageId, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Versioning.NuGetVersion>>
 NuGet.Protocol.Core.Types.MetadataResource.MetadataResource() -> void
 NuGet.Protocol.Core.Types.NuGetProtocolException
+NuGet.Protocol.Core.Types.NuGetProtocolException.NuGetProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Protocol.Core.Types.NuGetProtocolException.NuGetProtocolException(string message) -> void
 NuGet.Protocol.Core.Types.NuGetProtocolException.NuGetProtocolException(string message, System.Exception innerException) -> void
 NuGet.Protocol.Core.Types.NuGetResourceProviderPositions
@@ -249,6 +251,7 @@ NuGet.Protocol.Core.Types.ResourceProvider.ResourceProvider(System.Type resource
 NuGet.Protocol.Core.Types.ResourceProvider.ResourceProvider(System.Type resourceType, string name, System.Collections.Generic.IEnumerable<string> before, System.Collections.Generic.IEnumerable<string> after) -> void
 NuGet.Protocol.Core.Types.ResourceProvider.ResourceProvider(System.Type resourceType, string name, string before) -> void
 NuGet.Protocol.Core.Types.RetriableProtocolException
+NuGet.Protocol.Core.Types.RetriableProtocolException.RetriableProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Protocol.Core.Types.RetriableProtocolException.RetriableProtocolException(string message) -> void
 NuGet.Protocol.Core.Types.RetriableProtocolException.RetriableProtocolException(string message, System.Exception innerException) -> void
 NuGet.Protocol.Core.Types.SearchFilter
@@ -563,6 +566,7 @@ NuGet.Protocol.IV2FeedParser
 NuGet.Protocol.IV2FeedParser.GetPackagesPageAsync(string searchTerm, NuGet.Protocol.Core.Types.SearchFilter filters, int skip, int take, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.V2FeedPage>
 NuGet.Protocol.IV2FeedParser.GetSearchPageAsync(string searchTerm, NuGet.Protocol.Core.Types.SearchFilter filters, int skip, int take, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.V2FeedPage>
 NuGet.Protocol.InvalidCacheProtocolException
+NuGet.Protocol.InvalidCacheProtocolException.InvalidCacheProtocolException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Protocol.InvalidCacheProtocolException.InvalidCacheProtocolException(string message) -> void
 NuGet.Protocol.InvalidCacheProtocolException.InvalidCacheProtocolException(string message, System.Exception innerException) -> void
 NuGet.Protocol.JsonExtensions

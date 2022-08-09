@@ -200,6 +200,9 @@ NuGet.Common.NuGetLogCode.NU1500 = 1500 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1501 = 1501 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1502 = 1502 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1503 = 1503 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1504 = 1504 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1505 = 1505 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1506 = 1506 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1507 = 1507 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1601 = 1601 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1602 = 1602 -> NuGet.Common.NuGetLogCode
@@ -212,6 +215,7 @@ NuGet.Common.NuGetLogCode.NU1702 = 1702 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1703 = 1703 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1801 = 1801 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1802 = 1802 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1803 = 1803 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU3000 = 3000 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU3001 = 3001 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU3002 = 3002 -> NuGet.Common.NuGetLogCode
@@ -631,6 +635,7 @@ static NuGet.Common.UriUtility.CreateSourceUri(string source, System.UriKind kin
 static NuGet.Common.UriUtility.GetAbsolutePath(string rootDirectory, string path) -> string
 static NuGet.Common.UriUtility.GetAbsolutePathFromFile(string sourceFile, string path) -> string
 static NuGet.Common.UriUtility.GetLocalPath(string localOrUriPath) -> string
+static NuGet.Common.UriUtility.IsNuGetOrg(string source) -> bool
 static NuGet.Common.UriUtility.TryCreateSourceUri(string source, System.UriKind kind) -> System.Uri
 static NuGet.Common.UriUtility.UrlEncodeOdataParameter(string value) -> string
 static NuGet.Common.XmlUtility.Load(string filePath) -> System.Xml.Linq.XDocument
