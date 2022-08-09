@@ -11,7 +11,9 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Internal.VisualStudio.Shell.Embeddable.Feedback;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement;
+using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Telemetry;
 
 #nullable enable
@@ -27,6 +29,9 @@ namespace NuGet.VisualStudio.Common
 
         [Import(AllowDefault = true)]
         public INuGetTelemetryProvider? TelemetryProvider { get; set; }
+
+        [Import(AllowDefault = true)]
+        public ISettings? Settings { get; set; }
 
         /// <summary>Used for testing, so tests can wait for the background task to finish.</summary>
         public event EventHandler<Task>? BackgroundTaskStarted;
@@ -109,27 +114,22 @@ namespace NuGet.VisualStudio.Common
 
         private async Task AddDgSpecAsync(ZipArchive zip)
         {
-            string? tempFile = null;
             try
             {
                 if (SolutionManager == null) { return; }
 
-                var dgspec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, context: null);
-                tempFile = Path.GetTempFileName();
-                dgspec.Save(tempFile);
+                var context = new DependencyGraphCacheContext(NullLogger.Instance, Settings);
+                var dgspec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, context);
 
-                _ = zip.CreateEntryFromFile(tempFile, "dgspec.json");
+                var file = zip.CreateEntry("dgspec.json");
+                using (var fileStream = file.Open())
+                {
+                    dgspec.Save(fileStream);
+                }
             }
             catch (Exception exception)
             {
                 await PostFaultAsync(exception, nameof(NuGetFeedbackDiagnosticFileProvider));
-            }
-            finally
-            {
-                if (tempFile != null)
-                {
-                    File.Delete(tempFile);
-                }
             }
         }
 
