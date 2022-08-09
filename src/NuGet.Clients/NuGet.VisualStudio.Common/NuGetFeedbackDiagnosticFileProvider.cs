@@ -14,6 +14,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
 using NuGet.VisualStudio.Telemetry;
 
 #nullable enable
@@ -38,15 +39,20 @@ namespace NuGet.VisualStudio.Common
 
         public IReadOnlyCollection<string> GetFiles()
         {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // fileStream gets disposed in the background task below.
             FileStream fileStream = GetOutputFile();
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+            string fileName = fileStream.Name;
 
             // See comments on IFeedbackDiagnosticFileProvider.GetFiles
-            var task = Task.Run(() => WriteToZipAndCloseFileAsync(fileStream));
+            Task task = Task.Run(() => WriteToZipAndCloseFileAsync(fileStream));
             BackgroundTaskStarted?.Invoke(this, task);
 
             return new List<string>()
             {
-                fileStream.Name
+                fileName
             };
         }
 
@@ -60,7 +66,7 @@ namespace NuGet.VisualStudio.Common
                 }
                 catch (Exception exception)
                 {
-                    await TelemetryUtility.PostFaultAsync(exception, nameof(NuGetFeedbackDiagnosticFileProvider), nameof(WriteToZipAndCloseFileAsync));
+                    await PostFaultAsync(exception);
                 }
             }
         }
@@ -70,10 +76,10 @@ namespace NuGet.VisualStudio.Common
             string fileNamePrefix = "nuget." + DateTime.UtcNow.ToString("yyyy-MM-dd.HH-mm-ss");
             for (int attempt = 0; attempt < 100; attempt++)
             {
-                var fileName = attempt == 0
+                string fileName = attempt == 0
                     ? fileNamePrefix + ".zip"
                     : fileNamePrefix + "." + attempt + ".zip";
-                var fullPath = Path.Combine(Path.GetTempPath(), fileName);
+                string fullPath = Path.Combine(Path.GetTempPath(), fileName);
                 try
                 {
                     FileStream fileStream = new FileStream(fullPath, FileMode.CreateNew);
@@ -122,8 +128,8 @@ namespace NuGet.VisualStudio.Common
                 return;
             }
 
-            var file = zip.CreateEntry("mef-errors.txt");
-            using (var stream = file.Open())
+            ZipArchiveEntry file = zip.CreateEntry("mef-errors.txt");
+            using (Stream stream = file.Open())
             using (var writer = new StreamWriter(stream))
             {
                 writer.WriteLine($"{nameof(SolutionManager)}  : {GetFileOutput(SolutionManager)}");
@@ -146,17 +152,17 @@ namespace NuGet.VisualStudio.Common
                 if (SolutionManager == null) { return; }
 
                 var context = new DependencyGraphCacheContext(NullLogger.Instance, Settings);
-                var dgspec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, context);
+                DependencyGraphSpec dgspec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, context);
 
-                var file = zip.CreateEntry("dgspec.json");
-                using (var fileStream = file.Open())
+                ZipArchiveEntry file = zip.CreateEntry("dgspec.json");
+                using (Stream fileStream = file.Open())
                 {
                     dgspec.Save(fileStream);
                 }
             }
             catch (Exception exception)
             {
-                await PostFaultAsync(exception, nameof(NuGetFeedbackDiagnosticFileProvider));
+                await PostFaultAsync(exception);
             }
         }
 

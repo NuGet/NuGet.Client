@@ -68,7 +68,7 @@ namespace NuGet.VisualStudio.Common.Test
             }
             finally
             {
-                foreach (var file in files)
+                foreach (string file in files)
                 {
                     File.Delete(file);
                 }
@@ -87,7 +87,7 @@ namespace NuGet.VisualStudio.Common.Test
             // Assert
             using (var zip = new ZipArchive(stream))
             {
-                var zipFiles = zip.Entries.Select(e => e.FullName);
+                IEnumerable<string> zipFiles = zip.Entries.Select(e => e.FullName);
                 var expectedFiles = new[] { "dgspec.json" };
 
                 Assert.Equal(zipFiles.OrderBy(f => f), expectedFiles);
@@ -148,7 +148,7 @@ namespace NuGet.VisualStudio.Common.Test
             }
             finally
             {
-                foreach (var file in files)
+                foreach (string file in files)
                 {
                     File.Delete(file);
                 }
@@ -169,7 +169,7 @@ namespace NuGet.VisualStudio.Common.Test
             // Assert
             using (var zip = new ZipArchive(stream))
             {
-                var zipFiles = zip.Entries.Select(e => e.FullName);
+                IEnumerable<string> zipFiles = zip.Entries.Select(e => e.FullName);
                 Assert.Contains("mef-errors.txt", zipFiles);
             }
         }
