@@ -92,23 +92,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </_GenerateRestoreGraphProjectEntryInputProperties>
   </PropertyGroup>
 
-  <ItemDefinitionGroup Condition="'$(ManagePackageVersionsCentrally)' == 'true' And '$(RestoreEnableGlobalPackageReference)' != 'false'">
-    <GlobalPackageReference>
-      <!--
-        Default central package references to only consume Analyzers and Build assets of a package.  This helps ensure that the package
-        assets are not passed to the compiler or copied to the output directory.  Having a compile-time reference to a package for all
-        projects in a tree is not recommended.  Instead, central package references should just extend the build.
-      -->
-      <IncludeAssets Condition="'$(RestoreEnableGlobalPackageReferenceIncludeAssetsBuildAnalyzers)' != 'false'">Analyzers;Build;BuildMultitargeting;BuildTransitive</IncludeAssets>
-      <!--
-        Default global package references to have all assets private.  This is because central package references are generally packages
-        that provide versioning, signing, etc and should not flow to downstream dependencies.  Also, central package references are
-        already referenced by every project in the tree so they don't need to be transitive.
-      -->
-      <PrivateAssets Condition="'$(RestoreEnableGlobalPackageReferencePrivateAssetsAll)' != 'false'">All</PrivateAssets>
-    </GlobalPackageReference>
-  </ItemDefinitionGroup>
-
   <!-- Tasks -->
   <UsingTask TaskName="NuGet.Build.Tasks.RestoreTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.WriteRestoreGraphTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
@@ -203,8 +186,19 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!--
         Add GlobalPackageReference items to the PackageReference item group with no version.  The PackageVersion items are added
         in the CollectCentralPackageVersions target.
+
+        Global package references only include the same assets as a development dependency (runtime; build; native; contentfiles; analyzers)
+        because those kind of packages are the best candidate for a global package reference.  They are generally packages that
+        extend the build.
+
+        Global package references have all assets private because central package references are generally packages that provide
+        versioning, signing, etc and should not flow to downstream dependencies.  Also, central package references are already
+        referenced by every project in the tree so they don't need to be transitive.
       -->
-      <PackageReference Include="@(GlobalPackageReference)" Version="" />
+      <PackageReference Include="@(GlobalPackageReference)"
+                        Version=""
+                        IncludeAssets="Runtime;Build;Native;contentFiles;Analyzers"
+                        PrivateAssets="All" />
     </ItemGroup>
 
     <CheckForDuplicateNuGetItemsTask

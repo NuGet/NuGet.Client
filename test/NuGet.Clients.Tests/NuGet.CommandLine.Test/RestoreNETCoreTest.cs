@@ -10190,7 +10190,7 @@ namespace NuGet.CommandLine.Test
                 packageADependency.IncludeType.Should().Be(LibraryIncludeFlags.All);
                 packageADependency.SuppressParent.Should().Be(LibraryIncludeFlagUtils.DefaultSuppressParent);
 
-                toolPackageADependency.IncludeType.Should().Be(LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.Build | LibraryIncludeFlags.BuildTransitive);
+                toolPackageADependency.IncludeType.Should().Be(LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile & ~LibraryIncludeFlags.BuildTransitive);
                 toolPackageADependency.SuppressParent.Should().Be(LibraryIncludeFlags.All);
             }
         }
