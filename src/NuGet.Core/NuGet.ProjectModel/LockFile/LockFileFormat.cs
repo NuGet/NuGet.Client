@@ -828,7 +828,7 @@ namespace NuGet.ProjectModel
             var valueToken = json[property];
             if (valueToken == null)
             {
-                throw new Exception(string.Format("TODO: lock file missing required property {0}", property));
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, "TODO: lock file missing required property {0}", property));
             }
             return SemanticVersion.Parse(valueToken.Value<string>());
         }

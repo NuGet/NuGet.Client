@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 
@@ -189,7 +190,7 @@ namespace NuGet.Protocol.Plugins
 
         internal static string CreateNewId()
         {
-            return Guid.NewGuid().ToString("N");
+            return Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         }
 
         private void FireBeforeClose()

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using NuGet.Common;
 
 namespace NuGet.PackageManagement
@@ -27,8 +28,8 @@ namespace NuGet.PackageManagement
                     { nameof(OperationId), operationId },
                     { nameof(PackagesCount), packageCount },
                     { nameof(Status), status },
-                    { nameof(StartTime), startTime.UtcDateTime.ToString("O") },
-                    { nameof(EndTime), endTime.UtcDateTime.ToString("O") },
+                    { nameof(StartTime), startTime.UtcDateTime.ToString("O", CultureInfo.CurrentCulture) },
+                    { nameof(EndTime), endTime.UtcDateTime.ToString("O", CultureInfo.CurrentCulture) },
                     { nameof(Duration), duration },
                     { nameof(ProjectsCount), projectIds.Length }
                 })

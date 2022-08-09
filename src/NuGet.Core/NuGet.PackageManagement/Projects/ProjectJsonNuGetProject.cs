@@ -177,7 +177,7 @@ namespace NuGet.ProjectManagement.Projects
                 if (packageSpec == null)
                 {
                     throw new InvalidOperationException(
-                        string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+                        string.Format(CultureInfo.CurrentCulture, Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
                 }
                 var metadata = new ProjectRestoreMetadata();
                 packageSpec.RestoreMetadata = metadata;
@@ -320,7 +320,7 @@ namespace NuGet.ProjectManagement.Projects
             catch (Exception ex)
             {
                 throw new InvalidOperationException(
-                    string.Format(Strings.ErrorLoadingPackagesConfig, _jsonConfig.FullName, ex.Message), ex);
+                    string.Format(CultureInfo.CurrentCulture, Strings.ErrorLoadingPackagesConfig, _jsonConfig.FullName, ex.Message), ex);
             }
         }
 
@@ -339,7 +339,7 @@ namespace NuGet.ProjectManagement.Projects
             catch (Exception ex)
             {
                 throw new InvalidOperationException(
-                    string.Format(Strings.ErrorLoadingPackagesConfig, _jsonConfig.FullName, ex.Message), ex);
+                    string.Format(CultureInfo.CurrentCulture, Strings.ErrorLoadingPackagesConfig, _jsonConfig.FullName, ex.Message), ex);
             }
         }
 

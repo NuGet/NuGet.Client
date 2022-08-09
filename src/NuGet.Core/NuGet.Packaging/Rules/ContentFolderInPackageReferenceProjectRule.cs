@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
@@ -33,7 +34,7 @@ namespace NuGet.Packaging.Rules
                 {
                     var issue = new List<PackagingLogMessage>();
                     issue.Add(PackagingLogMessage.CreateWarning(
-                        string.Format(MessageFormat), NuGetLogCode.NU5121));
+                        string.Format(CultureInfo.CurrentCulture, MessageFormat), NuGetLogCode.NU5121));
                     return issue;
                 }
             }

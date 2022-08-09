@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -25,7 +26,7 @@ namespace NuGet.ProjectModel
 
         public static string GetDGSpecFileName(string projectName)
         {
-            return string.Format(DGSpecFileNameExtension, projectName);
+            return string.Format(CultureInfo.CurrentCulture, DGSpecFileNameExtension, projectName);
         }
 
         public DependencyGraphSpec()

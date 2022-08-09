@@ -133,7 +133,7 @@ namespace NuGet.Packaging.Signing
             flags |= VerificationUtility.ValidateTimestamp(this, signature, treatIssueAsError, issues, SigningSpecifications.V1);
             if (flags == SignatureVerificationStatusFlags.NoErrors)
             {
-                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.TimestampValue, GeneralizedTime.LocalDateTime.ToString()) + Environment.NewLine));
+                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.TimestampValue, GeneralizedTime.LocalDateTime.ToString(CultureInfo.CurrentCulture)) + Environment.NewLine));
 
                 issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
                     Strings.VerificationTimestamperCertDisplay,

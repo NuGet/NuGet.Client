@@ -288,7 +288,7 @@ namespace NuGet.PackageManagement.Utility
             }
             if (!File.Exists(pcFile))
             {
-                throw new FileNotFoundException(string.Format(Strings.Error_FileDoesNotExist, pcFile), pcFile);
+                throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FileDoesNotExist, pcFile), pcFile);
             }
             if (projectTfm == null)
             {
@@ -300,7 +300,7 @@ namespace NuGet.PackageManagement.Utility
             }
             if (!Directory.Exists(packagesFolderPath))
             {
-                throw new DirectoryNotFoundException(string.Format(Strings.Error_DirectoryDoesNotExist, packagesFolderPath));
+                throw new DirectoryNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.Error_DirectoryDoesNotExist, packagesFolderPath));
             }
 
             var lockFile = new PackagesLockFile();

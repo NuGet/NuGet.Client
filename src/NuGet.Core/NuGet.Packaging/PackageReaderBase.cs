@@ -568,7 +568,7 @@ namespace NuGet.Packaging
 
         protected string NormalizeDirectoryPath(string path)
         {
-            if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            if (!path.EndsWith(Path.DirectorySeparatorChar.ToString(CultureInfo.CurrentCulture)))
             {
                 path += Path.DirectorySeparatorChar;
             }

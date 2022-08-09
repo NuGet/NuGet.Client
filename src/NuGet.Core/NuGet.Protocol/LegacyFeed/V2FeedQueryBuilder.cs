@@ -86,7 +86,7 @@ namespace NuGet.Protocol
                 orderBy != null ? orderBy + QueryDelimiter : string.Empty,
                 UriUtility.UrlEncodeOdataParameter(searchTerm),
                 UriUtility.UrlEncodeOdataParameter(shortFormTargetFramework),
-                filters.IncludePrerelease.ToString().ToLowerInvariant(),
+                filters.IncludePrerelease.ToString(CultureInfo.CurrentCulture).ToLowerInvariant(),
                 skip,
                 take);
 
@@ -142,7 +142,7 @@ namespace NuGet.Protocol
             // Start building the URI.
             var builder = new StringBuilder();
 
-            builder.AppendFormat(GetPackagesFormat, useParenthesis ? EndpointParenthesis : string.Empty);
+            builder.AppendFormat(CultureInfo.CurrentCulture, GetPackagesFormat, useParenthesis ? EndpointParenthesis : string.Empty);
 
             var hasParameters = false;
 
@@ -150,6 +150,7 @@ namespace NuGet.Protocol
             if (filterParameter != null)
             {
                 builder.AppendFormat(
+                    CultureInfo.CurrentCulture,
                     hasParameters ? ParameterFormat : FirstParameterFormat,
                     filterParameter);
                 hasParameters = true;
@@ -158,6 +159,7 @@ namespace NuGet.Protocol
             if (orderByParameter != null)
             {
                 builder.AppendFormat(
+                    CultureInfo.CurrentCulture,
                     hasParameters ? ParameterFormat : FirstParameterFormat,
                     orderByParameter);
                 hasParameters = true;
@@ -166,6 +168,7 @@ namespace NuGet.Protocol
             if (skipParameter != null)
             {
                 builder.AppendFormat(
+                    CultureInfo.CurrentCulture,
                     hasParameters ? ParameterFormat : FirstParameterFormat,
                     skipParameter);
                 hasParameters = true;
@@ -174,12 +177,14 @@ namespace NuGet.Protocol
             if (topParameter != null)
             {
                 builder.AppendFormat(
+                    CultureInfo.CurrentCulture,
                     hasParameters ? ParameterFormat : FirstParameterFormat,
                     topParameter);
                 hasParameters = true;
             }
 
             builder.AppendFormat(
+                CultureInfo.CurrentCulture,
                 hasParameters ? ParameterFormat : FirstParameterFormat,
                 SemVerLevel);
             hasParameters = true;

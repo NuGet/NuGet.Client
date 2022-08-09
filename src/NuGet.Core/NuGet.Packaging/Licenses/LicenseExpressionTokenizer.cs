@@ -89,11 +89,11 @@ namespace NuGet.Packaging.Licenses
         {
             if (bracket == '(')
             {
-                return new LicenseExpressionToken(bracket.ToString(), LicenseTokenType.OPENING_BRACKET);
+                return new LicenseExpressionToken(bracket.ToString(CultureInfo.CurrentCulture), LicenseTokenType.OPENING_BRACKET);
             }
             if (bracket == ')')
             {
-                return new LicenseExpressionToken(bracket.ToString(), LicenseTokenType.CLOSING_BRACKET);
+                return new LicenseExpressionToken(bracket.ToString(CultureInfo.CurrentCulture), LicenseTokenType.CLOSING_BRACKET);
             }
             return null;
         }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace NuGet.ContentModel.Infrastructure
@@ -169,7 +170,7 @@ namespace NuGet.ContentModel.Infrastructure
                 ContentPropertyDefinition propertyDefinition;
                 if (!propertyDefinitions.TryGetValue(_token, out propertyDefinition))
                 {
-                    throw new Exception(string.Format("Unable to find property definition for {{{0}}}", _token));
+                    throw new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find property definition for {{{0}}}", _token));
                 }
 
                 for (var scanIndex = startIndex; scanIndex != path.Length;)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -32,7 +33,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             var outerMessage = new JObject(
-                new JProperty("now", _now.ToString("O")), // round-trip format
+                new JProperty("now", _now.ToString("O", CultureInfo.CurrentCulture)), // round-trip format
                 new JProperty("type", type),
                 new JProperty("message", message));
 

@@ -181,7 +181,7 @@ namespace NuGet.PackageManagement
                 // We are done when the queue is empty, and the number of finished requests matches the total request count
                 if (_gatherRequests.Count < 1 && _workerTasks.Count < 1)
                 {
-                    _context.Log.LogDebug(string.Format("Total number of results gathered : {0}", _results.Count));
+                    _context.Log.LogDebug(string.Format(CultureInfo.CurrentCulture, "Total number of results gathered : {0}", _results.Count));
                     break;
                 }
             }
@@ -223,7 +223,7 @@ namespace NuGet.PackageManagement
                             }
                         }
 
-                        string message = String.Format(Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
+                        string message = String.Format(CultureInfo.CurrentCulture, Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
                         throw new InvalidOperationException(message);
                     }
                 }
@@ -231,12 +231,12 @@ namespace NuGet.PackageManagement
             // calculate total time taken to gather all packages as well as with each source
             stopWatch.Stop();
             _context.Log.LogMinimal(
-                string.Format(Strings.GatherTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
+                string.Format(CultureInfo.CurrentCulture, Strings.GatherTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
             _context.Log.LogDebug("Summary of time taken to gather dependencies per source :");
             foreach (var key in _timeTaken.Keys)
             {
                 _context.Log.LogDebug(
-                    string.Format("{0}\t-\t{1}", key, DatetimeUtility.ToReadableTimeFormat(_timeTaken[key])));
+                    string.Format(CultureInfo.CurrentCulture, "{0}\t-\t{1}", key, DatetimeUtility.ToReadableTimeFormat(_timeTaken[key])));
             }
             return combinedResults;
         }
@@ -409,7 +409,7 @@ namespace NuGet.PackageManagement
             if (_cache != null && cacheResult.HasEntry)
             {
                 // Use cached packages
-                _context.Log.LogDebug(string.Format("Package {0} from source {1} gathered from cache.", request.Package.Id, request.Source.Source.PackageSource.Name));
+                _context.Log.LogDebug(string.Format(CultureInfo.CurrentCulture, "Package {0} from source {1} gathered from cache.", request.Package.Id, request.Source.Source.PackageSource.Name));
                 packages.AddRange(cacheResult.Packages);
             }
             else
@@ -459,13 +459,13 @@ namespace NuGet.PackageManagement
                 {
                     if (!ex.CancellationToken.IsCancellationRequested)
                     {
-                        string message = String.Format(Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
+                        string message = String.Format(CultureInfo.CurrentCulture, Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
                         throw new InvalidOperationException(message, ex);
                     }
                 }
                 catch (Exception ex) when (ex is System.Net.Http.HttpRequestException || ex is OperationCanceledException || ex is TaskCanceledException)
                 {
-                    string message = String.Format(Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
+                    string message = String.Format(CultureInfo.CurrentCulture, Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
                     throw new InvalidOperationException(message, ex);
                 }
 
@@ -658,7 +658,7 @@ namespace NuGet.PackageManagement
             catch (Exception ex) when (ex is System.Net.Http.HttpRequestException || ex is OperationCanceledException ||
                                        ex is InvalidOperationException || ex is TaskCanceledException || ex is AggregateException)
             {
-                string message = String.Format(Strings.ExceptionWhenTryingToAddSource, ex.GetType().ToString(), currentSource);
+                string message = String.Format(CultureInfo.CurrentCulture, Strings.ExceptionWhenTryingToAddSource, ex.GetType().ToString(), currentSource);
                 throw new InvalidOperationException(message, ex);
             }
 

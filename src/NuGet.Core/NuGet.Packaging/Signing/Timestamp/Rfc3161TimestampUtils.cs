@@ -100,7 +100,7 @@ namespace NuGet.Packaging.Signing
 
             foreach (byte b in bytes)
             {
-                builder.Append(b.ToString("X2"));
+                builder.Append(b.ToString("X2", CultureInfo.CurrentCulture));
             }
 
             return builder.ToString();

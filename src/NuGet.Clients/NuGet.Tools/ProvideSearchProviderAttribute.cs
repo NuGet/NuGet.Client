@@ -25,7 +25,7 @@ namespace NuGetVSExtension
                 throw new ArgumentException("'providerName' cannot be null or empty.");
             }
 
-            _providerTypeGuid = providerType.GUID.ToString("B", CultureInfo.CurrentCulture);
+            _providerTypeGuid = providerType.GUID.ToString("B", CultureInfo.InvariantCulture);
             _providerName = providerName;
         }
 
@@ -36,7 +36,7 @@ namespace NuGetVSExtension
                 using (Key subKey = key.CreateSubkey(_providerTypeGuid))
                 {
                     subKey.SetValue(String.Empty, _providerName);
-                    subKey.SetValue("Package", context.ComponentType.GUID.ToString("B", CultureInfo.CurrentCulture));
+                    subKey.SetValue("Package", context.ComponentType.GUID.ToString("B", CultureInfo.InvariantCulture));
                 }
             }
         }

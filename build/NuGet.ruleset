@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="NuGet Code Analysis Rules" ToolsVersion="17.0">
   <Include Path="managedminimumrules.ruleset" Action="Default" />
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
@@ -73,7 +73,7 @@
   </Rules>
   <Rules AnalyzerId="Microsoft.NetCore.Analyzers" RuleNamespace="Microsoft.NetCore.Analyzers">
     <Rule Id="CA1303" Action="Info" />
-    <Rule Id="CA1305" Action="Info" />
+    <Rule Id="CA1305" Action="Warning" />
     <Rule Id="CA1401" Action="None" />
     <Rule Id="CA1820" Action="None" />
     <Rule Id="CA1826" Action="None" />
