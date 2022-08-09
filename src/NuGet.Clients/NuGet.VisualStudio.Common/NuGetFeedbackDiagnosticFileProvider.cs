@@ -98,6 +98,7 @@ namespace NuGet.VisualStudio.Common
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
                 {
+                    AddMefErrors(zip);
                     await AddDgSpecAsync(zip);
                 }
 
@@ -109,6 +110,32 @@ namespace NuGet.VisualStudio.Common
                 telemetry["successful"] = successful;
                 telemetry["duration_ms"] = sw.Elapsed.TotalMilliseconds;
                 EmitTelemetryEvent(telemetry);
+            }
+        }
+
+        private void AddMefErrors(ZipArchive zip)
+        {
+            if (SolutionManager != null
+                && TelemetryProvider != null
+                && Settings != null)
+            {
+                return;
+            }
+
+            var file = zip.CreateEntry("mef-errors.txt");
+            using (var stream = file.Open())
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.WriteLine($"{nameof(SolutionManager)}  : {GetFileOutput(SolutionManager)}");
+                writer.WriteLine($"{nameof(TelemetryProvider)}: {GetFileOutput(TelemetryProvider)}");
+                writer.WriteLine($"{nameof(Settings)}         : {GetFileOutput(Settings)}");
+            }
+
+            static string GetFileOutput(object? o)
+            {
+                if (o is null)
+                    return "null";
+                return "not null";
             }
         }
 

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Telemetry;
@@ -23,6 +24,7 @@ namespace NuGet.VisualStudio.Common.Test
         private NuGetFeedbackDiagnosticFileProvider _target;
         private Mock<ISolutionManager> _solutionManager;
         private Mock<INuGetTelemetryProvider> _telemetryProvider;
+        private Mock<ISettings> _settings;
 
         public NuGetFeedbackDiagnosticFileProviderTests()
         {
@@ -32,9 +34,12 @@ namespace NuGet.VisualStudio.Common.Test
 
             _telemetryProvider = new Mock<INuGetTelemetryProvider>();
 
+            _settings = new Mock<ISettings>();
+
             _target = new NuGetFeedbackDiagnosticFileProvider();
             _target.SolutionManager = _solutionManager.Object;
             _target.TelemetryProvider = _telemetryProvider.Object;
+            _target.Settings = _settings.Object;
         }
 
         [Fact]
@@ -112,7 +117,7 @@ namespace NuGet.VisualStudio.Common.Test
         // by causing MEF composition errors when trying to create our provider (although there's a good chance that
         // our provider won't even be discovered when the MEF cache is missing NuGet types).
         [Fact]
-        public async Task MEF_ImportsNotAvailable_ReturnsFiles()
+        public async Task GetFiles_MefImportsNotAvailable_ReturnsFiles()
         {
             // Arrange
             var container = new CompositionContainer();
@@ -121,6 +126,7 @@ namespace NuGet.VisualStudio.Common.Test
 
             _target.SolutionManager = null;
             _target.TelemetryProvider = null;
+            _target.Settings = null;
 
             // Act
             container.ComposeParts(_target);
@@ -146,6 +152,25 @@ namespace NuGet.VisualStudio.Common.Test
                 {
                     File.Delete(file);
                 }
+            }
+        }
+
+        [Fact]
+        public async Task WriteToZipAsync_MefImportsNotAvailable_AddsMefErrorsFie()
+        {
+            // Arrange
+            _target.SolutionManager = null;
+            _target.Settings = null;
+            using var stream = new MemoryStream();
+
+            // Act
+            await _target.WriteToZipAsync(stream);
+
+            // Assert
+            using (var zip = new ZipArchive(stream))
+            {
+                var zipFiles = zip.Entries.Select(e => e.FullName);
+                Assert.Contains("mef-errors.txt", zipFiles);
             }
         }
     }
