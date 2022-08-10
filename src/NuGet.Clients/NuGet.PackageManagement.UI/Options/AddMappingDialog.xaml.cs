@@ -98,15 +98,17 @@ namespace NuGet.Options
 
         private bool CanExecuteAddButtonCommand(object parameter)
         {
-            List<PackageSourceContextInfo> tempSources = new List<PackageSourceContextInfo>();
             foreach (PackageSourceContextInfoChecked source in sourcesListBox.Items)
             {
                 if (source.IsChecked)
                 {
-                    tempSources.Add(source.SourceInfo);
+                    if (!string.IsNullOrEmpty(packageID.Text))
+                    {
+                        return true;
+                    }
                 }
             }
-            return tempSources.Count > 0;
+            return false;
         }
 
         // Allows the user to drag the window around
@@ -117,6 +119,11 @@ namespace NuGet.Options
         }
 
         private void CheckBox_Checked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            (AddButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
+        }
+
+        private void PackageID_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             (AddButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
         }

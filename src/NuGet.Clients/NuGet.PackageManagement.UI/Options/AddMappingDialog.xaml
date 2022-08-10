@@ -74,7 +74,8 @@
                                  Margin="12,6,12,6"
                                  Watermark="{x:Static nuget:Resources.VSOptions_Watermark_AddPackageNamespace}"
                                  Foreground="{Binding Path=(TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
-                                 Background="{Binding Path=(Window.Background), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                                 Background="{Binding Path=(Window.Background), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                 TextChanged="PackageID_TextChanged"/>
         <StackPanel Orientation="Vertical"  Grid.Row="1">
           <ListView AutomationProperties.Name="Sources List"
                     x:Name="sourcesListBox"
