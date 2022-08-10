@@ -89,7 +89,9 @@
                     <DataTemplate>
                       <CheckBox AutomationProperties.Name="SourcesCheckBox"
                                 IsTabStop="False"
-                                IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"/>
+                                IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"
+                                Checked="CheckBox_Checked"
+                                Unchecked="CheckBox_Checked"/>
                     </DataTemplate>
                   </GridViewColumn.CellTemplate>
                 </GridViewColumn>
