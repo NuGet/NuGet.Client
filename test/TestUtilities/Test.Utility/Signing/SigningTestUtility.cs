@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
@@ -865,7 +866,7 @@ namespace Test.Utility.Signing
 
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)
         {
-            return $"{string.Format(SignatureLogPrefix, package.Id, package.Version, source)} {log}";
+            return $"{string.Format(CultureInfo.CurrentCulture, SignatureLogPrefix, package.Id, package.Version, source)} {log}";
         }
     }
 }

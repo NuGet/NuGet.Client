@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -52,7 +53,7 @@ namespace Test.Utility
             GlobalPackagesFolder = Path.Combine(SolutionDirectory, "globalpackages");
 
             // create nuget config in solution root
-            File.WriteAllText(NuGetConfigPath, string.Format(_configContent, GlobalPackagesFolder));
+            File.WriteAllText(NuGetConfigPath, string.Format(CultureInfo.CurrentCulture, _configContent, GlobalPackagesFolder));
         }
 
         public TestSolutionManager(string solutionDirectory)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -282,7 +283,7 @@ namespace Test.Utility
             StringBuilder sb = new();
             for (int i = 0; i < 10000; i++)
             {
-                sb.AppendLine(i.ToString());
+                sb.AppendLine(i.ToString(CultureInfo.CurrentCulture));
             }
             string contents = sb.ToString();
 
@@ -403,14 +404,14 @@ namespace Test.Utility
             bool dependencies)
         {
             var frameworkAssemblyReferences = frameworkAssemblies ?
-                string.Format(FrameworkAssembliesStringFormat, "System.Xml", "net45") : string.Empty;
+                string.Format(CultureInfo.CurrentCulture, FrameworkAssembliesStringFormat, "System.Xml", "net45") : string.Empty;
 
             var minClientVersionString = minClientVersion == null ? string.Empty :
-                string.Format(MinClientVersionStringFormat, minClientVersion.ToNormalizedString());
+                string.Format(CultureInfo.CurrentCulture, MinClientVersionStringFormat, minClientVersion.ToNormalizedString());
 
             var dependenciesString = dependencies ?
-                string.Format(DependenciesStringFormat, "Owin", "1.0") : string.Empty;
-            return string.Format(NuspecStringFormat, packageId, packageVersion,
+                string.Format(CultureInfo.CurrentCulture, DependenciesStringFormat, "Owin", "1.0") : string.Empty;
+            return string.Format(CultureInfo.CurrentCulture, NuspecStringFormat, packageId, packageVersion,
                 string.Join(Environment.NewLine, frameworkAssemblyReferences, dependenciesString),
                 minClientVersionString);
         }

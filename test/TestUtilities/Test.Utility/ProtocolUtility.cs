@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -26,7 +27,7 @@ namespace Test.Utility
 
         public static string CreateServiceAddress()
         {
-            return string.Format("http://{0}/", Guid.NewGuid());
+            return string.Format(CultureInfo.CurrentCulture, "http://{0}/", Guid.NewGuid());
         }
     }
 }

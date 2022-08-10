@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
@@ -29,16 +30,16 @@ namespace NuGet.CommandLine.XPlat.Utility
             switch (listPackageArgs.ReportType)
             {
                 case ReportType.Outdated:
-                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectUpdatesHeaderLog, projectName));
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ProjectUpdatesHeaderLog, projectName));
                     break;
                 case ReportType.Deprecated:
-                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectDeprecationsHeaderLog, projectName));
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ProjectDeprecationsHeaderLog, projectName));
                     break;
                 case ReportType.Vulnerable:
-                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectVulnerabilitiesHeaderLog, projectName));
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ProjectVulnerabilitiesHeaderLog, projectName));
                     break;
                 case ReportType.Default:
-                    Console.WriteLine(string.Format(Strings.ListPkg_ProjectHeaderLog, projectName));
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ProjectHeaderLog, projectName));
                     break;
             }
 
@@ -57,16 +58,16 @@ namespace NuGet.CommandLine.XPlat.Utility
                     switch (listPackageArgs.ReportType)
                     {
                         case ReportType.Outdated:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, frameworkPackages.Framework));
+                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, "   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, frameworkPackages.Framework));
                             break;
                         case ReportType.Deprecated:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoDeprecationsForFramework, frameworkPackages.Framework));
+                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, "   [{0}]: " + Strings.ListPkg_NoDeprecationsForFramework, frameworkPackages.Framework));
                             break;
                         case ReportType.Vulnerable:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoVulnerabilitiesForFramework, frameworkPackages.Framework));
+                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, "   [{0}]: " + Strings.ListPkg_NoVulnerabilitiesForFramework, frameworkPackages.Framework));
                             break;
                         case ReportType.Default:
-                            Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
+                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, "   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
                             break;
                     }
 
@@ -76,7 +77,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 {
                     // Print name of the framework
                     Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine(string.Format("   [{0}]: ", frameworkPackages.Framework));
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, "   [{0}]: ", frameworkPackages.Framework));
                     Console.ResetColor();
 
                     // Print top-level packages

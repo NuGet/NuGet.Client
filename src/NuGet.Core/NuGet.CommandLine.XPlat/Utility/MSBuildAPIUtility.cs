@@ -393,7 +393,7 @@ namespace NuGet.CommandLine.XPlat
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingAssetsFile, assetsFile.Path));
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingAssetsFile, assetsFile.Path));
                     return null;
                 }
 

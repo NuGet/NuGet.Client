@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -154,7 +155,7 @@ namespace NuGet.CommandLine.XPlat
                 return isDeprecated ? ReportType.Deprecated : isOutdated ? ReportType.Outdated : ReportType.Vulnerable;
             }
 
-            throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOptions));
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_InvalidOptions));
         }
 
         private static void DisplayMessages(ListPackageArgs packageRefArgs)
