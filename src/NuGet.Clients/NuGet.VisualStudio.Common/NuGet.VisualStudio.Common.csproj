@@ -18,7 +18,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Framework" />
     <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" />
