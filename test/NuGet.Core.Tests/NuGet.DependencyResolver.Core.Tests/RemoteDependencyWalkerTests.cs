@@ -1840,6 +1840,47 @@ namespace NuGet.DependencyResolver.Tests
             result.Downgrades.Should().BeEmpty();
         }
 
+        /// <summary>
+        /// A 1.0 -> D 1.0 (Central transitive)
+        ///       -> B 1.0 -> D 3.0 (Central transitive - should be ignored because it is not at root)
+        ///                -> C 1.0 -> D 2.0
+        /// </summary>
+        [Fact]
+        public async Task TransitiveDependenciesFromNonRootLibraries_AreIgnored()
+        {
+            var context = new TestRemoteWalkContext();
+            var projectProvider = new DependencyProvider();
+            projectProvider.Package("A", "1.0")
+                .DependsOn("B", "1.0", LibraryDependencyTarget.Project)
+                .DependsOn("D", "1.0", LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            projectProvider.Package("B", "1.0", LibraryType.Project)
+                .DependsOn("C", "1.0", LibraryDependencyTarget.Project)
+                .DependsOn("D", "3.0", LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            projectProvider.Package("C", "1.0", LibraryType.Project)
+                .DependsOn("D", "2.0", LibraryDependencyTarget.Package);
+
+            context.ProjectLibraryProviders.Add(projectProvider);
+
+            var libraryProvider = new DependencyProvider();
+            libraryProvider.Package("D", "1.0", LibraryType.Package);
+            libraryProvider.Package("D", "2.0", LibraryType.Package);
+            libraryProvider.Package("D", "3.0", LibraryType.Package);
+
+            context.LocalLibraryProviders.Add(libraryProvider);
+
+            var walker = new RemoteDependencyWalker(context);
+            var root = await DoWalkAsync(walker, "A");
+            var result = root.Analyze();
+            Assert.Equal(0, result.VersionConflicts.Count);
+            Assert.Equal(0, result.Cycles.Count);
+            Assert.Equal(1, result.Downgrades.Count);
+            var d = result.Downgrades.Single();
+            AssertPath(d.DowngradedFrom, "A 1.0", "B 1.0", "C 1.0", "D 2.0");
+            AssertPath(d.DowngradedTo, "A 1.0", "D 1.0");
+        }
+
         private void AssertPath<TItem>(GraphNode<TItem> node, params string[] items)
         {
             var matches = new List<string>();

@@ -11276,6 +11276,115 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             }
         }
 
+        /// <summary>
+        /// A 1.0 -> D 1.0 (Central transitive)
+        ///       -> B 1.0 -> D 3.0 (Central transitive - should be ignored because it is not at root)
+        ///                -> C 1.0 -> D 2.0
+        /// </summary>
+        [Theory]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        public async Task RestoreNetCore_TransitiveDependenciesFromNonRootLibraries_AreIgnored(bool centralPackageTransitivePinningEnabled, bool expectedSuccess)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+            var projectC = CreateProject(pathContext, "C");
+            var projectB = CreateProject(pathContext, "B", projectC);
+            var projectA = CreateProject(pathContext, "A", projectB);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("D", "1.0.0"),
+                new SimpleTestPackageContext("D", "2.0.0"),
+                new SimpleTestPackageContext("D", "3.0.0")
+            );
+
+            solution.Projects.Add(projectA);
+            solution.Projects.Add(projectB);
+            solution.Projects.Add(projectC);
+            solution.Create(pathContext.SolutionRoot);
+
+            AddPackageReferenceToProject(projectC);
+
+            CreateDirectoryPackagesPropsWithVersionForPackageD(pathContext, projectA, "1.0.0");
+            CreateDirectoryPackagesPropsWithVersionForPackageD(pathContext, projectB, "3.0.0");
+            CreateDirectoryPackagesPropsWithVersionForPackageD(pathContext, projectC, "2.0.0");
+
+            var args = new string[] {
+                    "restore",
+                    solution.SolutionPath,
+                    "-Verbosity",
+                    "detailed",
+                };
+
+            // Act
+            var r = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                pathContext.WorkingDirectory.Path,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            // Assert
+            r.Success.Should().Be(expectedSuccess, because: r.AllOutput);
+
+            if (expectedSuccess == false)
+            {
+                r.Errors.Should().Contain(
+                        "NU1109: Detected package downgrade: D from 2.0.0 to centrally defined 1.0.0. Update the centrally managed package version to a higher version.");
+                r.Errors.Should().Contain("A -> B -> C -> D (>= 2.0.0)");
+                r.Errors.Should().Contain("A -> D (>= 1.0.0)");
+            }
+
+            // Local methods
+            void CreateDirectoryPackagesPropsWithVersionForPackageD(SimpleTestPathContext pathContext, SimpleTestProjectContext projectContext, string version)
+            {
+                var directoryPackagesPropsContent =
+                    @$"<Project>
+                            <ItemGroup>
+                                <PackageVersion Include=""D"" Version=""{version}"" />
+                            </ItemGroup>
+                        </Project>";
+                var directoryName = Path.GetDirectoryName(projectContext.ProjectPath);
+                File.WriteAllText(Path.Combine(directoryName, $"Directory.Packages.Props"), directoryPackagesPropsContent);
+            }
+
+            SimpleTestProjectContext CreateProject(SimpleTestPathContext pathContext, string name, SimpleTestProjectContext referencedProject = null)
+            {
+                var projectContext = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    name,
+                    pathContext.SolutionRoot,
+                    "net472");
+
+                projectContext.Properties.Add("ManagePackageVersionsCentrally", "true");
+                projectContext.Properties.Add("CentralPackageTransitivePinningEnabled", centralPackageTransitivePinningEnabled.ToString());
+
+                if (referencedProject != null)
+                    projectContext.AddProjectToAllFrameworks(referencedProject);
+
+                return projectContext;
+            }
+
+            void AddPackageReferenceToProject(SimpleTestProjectContext project)
+            {
+                var xml = project.GetXML();
+
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "PackageReference",
+                    "D",
+                    NuGetFramework.AnyFramework,
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, string>());
+
+                xml.Save(project.ProjectPath);
+            }
+        }
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
