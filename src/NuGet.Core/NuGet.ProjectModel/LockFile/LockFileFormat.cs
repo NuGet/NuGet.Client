@@ -28,7 +28,7 @@ namespace NuGet.ProjectModel
         private const string LibrariesProperty = "libraries";
         private const string TargetsProperty = "targets";
         private const string ProjectFileDependencyGroupsProperty = "projectFileDependencyGroups";
-        private const string ServicableProperty = "servicable";
+        private const string ServiceableProperty = "serviceable";
         private const string Sha512Property = "sha512";
         private const string FilesProperty = "files";
         private const string HasToolsProperty = "hasTools";
