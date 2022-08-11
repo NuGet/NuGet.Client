@@ -69,7 +69,7 @@ namespace NuGet.Build.Tasks.Test
                     Path.Combine(msbuildBinPath, "MSBuild.exe"),
 #endif
                     projectPath,
-                        $"Property1=Value1;Property2=  Value2  ;ExcludeRestorePackageImports=true;OriginalMSBuildStartupDirectory={testDirectory}");
+                        $"Property1=Value1;Property2=  Value2  ;ExcludeRestorePackageImports=True;OriginalMSBuildStartupDirectory={testDirectory}");
                 }
             }
         }
