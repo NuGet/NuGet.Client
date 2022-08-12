@@ -99,8 +99,6 @@ namespace NuGet.PackageManagement
 
                     RestoreSummary.Log(log, restoreSummaries);
 
-                    await PersistDGSpec(dgSpec);
-
                     return restoreSummaries;
                 }
             }
@@ -108,25 +106,7 @@ namespace NuGet.PackageManagement
             return new List<RestoreSummary>();
         }
 
-        private static async Task PersistDGSpec(DependencyGraphSpec dgSpec)
-        {
-            try
-            {
-                var filePath = GetDefaultDGSpecFileName();
-
-                // create nuget temp folder if not exists
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
-                // delete existing dg spec file (if exists) then replace it with new file.
-                await FileUtility.ReplaceWithLock(
-                    (tempFile) => dgSpec.Save(tempFile), filePath);
-            }
-            catch (Exception)
-            {
-                //ignore any failure if it fails to write or replace dg spec file.
-            }
-        }
-
+        [Obsolete]
         public static string GetDefaultDGSpecFileName()
         {
             return Path.Combine(
