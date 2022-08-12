@@ -10401,6 +10401,74 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_CPVMProject_WithPinnedNonEclipsedPackage_LeavesPackageAsTransitive()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var packagesForSource = new List<SimpleTestPackageContext>();
+                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp20;
+
+                var projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, framework);
+
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "PackageA",
+                    Version = "1.0.0"
+                };
+
+                var packageB = new SimpleTestPackageContext()
+                {
+                    Id = "PackageB",
+                    Version = "2.0.0"
+                };
+
+                packageA.Dependencies.Add(packageB);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new[] { packageA, packageB });
+
+                projectA.AddPackageToAllFrameworks(new[]
+                {
+                    new SimpleTestPackageContext()
+                    {
+                        Id = "PackageA",
+                        Version = null,
+                    },
+                });
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot, centralPackageTransitivePinningEnabled: true)
+                    .SetPackageVersion(packageA.Id, packageA.Version)
+                    .SetPackageVersion(packageB.Id, packageB.Version);
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+
+                var assetFileReader = new LockFileFormat();
+                var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
+
+                var expectedLibraries = new List<string>() { "PackageA.1.0.0", "PackageB.2.0.0" };
+                var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
+                Assert.Equal(expectedLibraries, libraries);
+
+                var centralfileDependencyGroups = assetsFile
+                    .CentralTransitiveDependencyGroups
+                    .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
+
+                Assert.Equal(0, centralfileDependencyGroups.Count);
+            }
+        }
+
+        [Fact]
         public async Task RestorePackageReference_WithPackagesConfigProjectReference_IncludesTransitivePackageReferenceProjects()
         {
             // Arrange

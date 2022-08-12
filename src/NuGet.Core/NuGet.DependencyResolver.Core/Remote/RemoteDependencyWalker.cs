@@ -321,6 +321,12 @@ namespace NuGet.DependencyResolver
                         return (DependencyResult.PotentiallyDowngraded, d);
                     }
 
+                    // Only consider the dependency to be eclipsed if the versions are not identical for central transitive dependencies
+                    if (d.ReferenceType == LibraryDependencyReferenceType.None && VersionRangeComparer.Default.Equals(d.LibraryRange.VersionRange, childDependencyLibrary.VersionRange))
+                    {
+                        continue;
+                    }
+
                     return (DependencyResult.Eclipsed, d);
                 }
             }
