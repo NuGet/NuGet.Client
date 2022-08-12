@@ -2943,9 +2943,9 @@ namespace NuGet.Commands.Test
                     new List<CentralPackageVersion>() {centralVersion2},
                     framework);
 
-                PackageSpec packageSpecA = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfiA }, framework, projectNameA, projectPathA, cpvmEnabled: true);
-                PackageSpec packageSpecB = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfiB }, framework, projectNameB, projectPathB, cpvmEnabled: true);
-                PackageSpec packageSpecC = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfiC }, framework, projectNameC, projectPathC, cpvmEnabled: true);
+                PackageSpec packageSpecA = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfiA }, framework, projectNameA, projectPathA, centralPackageManagementEnabled: true);
+                PackageSpec packageSpecB = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfiB }, framework, projectNameB, projectPathB, centralPackageManagementEnabled: true);
+                PackageSpec packageSpecC = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfiC }, framework, projectNameC, projectPathC, centralPackageManagementEnabled: true);
                 packageSpecA = packageSpecA.WithTestProjectReference(packageSpecB);
                 packageSpecB = packageSpecB.WithTestProjectReference(packageSpecC);
                 packageSpecA.RestoreMetadata.CentralPackageTransitivePinningEnabled = true;
