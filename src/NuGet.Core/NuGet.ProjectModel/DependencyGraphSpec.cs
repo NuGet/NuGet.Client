@@ -329,7 +329,14 @@ namespace NuGet.ProjectModel
         public void Save(string path)
         {
             using (var fileStream = new FileStream(path, FileMode.Create))
-            using (var textWriter = new StreamWriter(fileStream))
+            {
+                Save(fileStream);
+            }
+        }
+
+        public void Save(Stream stream)
+        {
+            using (var textWriter = new StreamWriter(stream))
             using (var jsonWriter = new JsonTextWriter(textWriter))
             using (var writer = new RuntimeModel.JsonObjectWriter(jsonWriter))
             {
