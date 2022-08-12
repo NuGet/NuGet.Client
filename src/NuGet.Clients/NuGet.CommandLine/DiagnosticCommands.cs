@@ -64,7 +64,7 @@ namespace NuGet.CommandLine
             }
 
             _log.LogMinimal($"{lib.Name} {lib.Version}");
-            _log.LogMinimal($"Servicable: {lib.IsServiceable}");
+            _log.LogMinimal($"Serviceable: {lib.IsServiceable}");
             _log.LogMinimal($"SHA512 Hash: {lib.Sha512}");
             _log.LogMinimal($"Files:");
             foreach (var file in lib.Files)

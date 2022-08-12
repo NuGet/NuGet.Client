@@ -254,7 +254,7 @@ namespace NuGet.ProjectModel
             library.MSBuildProject = JsonUtility.ReadProperty<string>(jObject, MSBuildProjectProperty);
             library.Sha512 = JsonUtility.ReadProperty<string>(jObject, Sha512Property);
 
-            library.IsServiceable = ReadBool(json, ServicableProperty, defaultValue: false);
+            library.IsServiceable = ReadBool(json, ServiceableProperty, defaultValue: false);
             library.Files = ReadPathArray(json[FilesProperty] as JArray);
 
             library.HasTools = ReadBool(json, HasToolsProperty, defaultValue: false);
@@ -269,7 +269,7 @@ namespace NuGet.ProjectModel
 
             if (library.IsServiceable)
             {
-                writer.WritePropertyName(ServicableProperty);
+                writer.WritePropertyName(ServiceableProperty);
                 writer.WriteValue(library.IsServiceable);
             }
 
