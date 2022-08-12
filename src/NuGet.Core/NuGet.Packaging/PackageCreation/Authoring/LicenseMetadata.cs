@@ -112,7 +112,7 @@ namespace NuGet.Packaging
 
         private static string GenerateLicenseServiceLink(string license)
         {
-            return new Uri(string.Format(CultureInfo.CurrentCulture, LicenseServiceLinkTemplate, license)).AbsoluteUri;
+            return new Uri(string.Format(CultureInfo.InvariantCulture, LicenseServiceLinkTemplate, license)).AbsoluteUri;
         }
     }
 

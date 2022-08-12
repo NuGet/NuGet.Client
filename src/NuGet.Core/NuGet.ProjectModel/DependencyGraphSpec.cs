@@ -26,7 +26,7 @@ namespace NuGet.ProjectModel
 
         public static string GetDGSpecFileName(string projectName)
         {
-            return string.Format(CultureInfo.CurrentCulture, DGSpecFileNameExtension, projectName);
+            return string.Format(CultureInfo.InvariantCulture, DGSpecFileNameExtension, projectName);
         }
 
         public DependencyGraphSpec()

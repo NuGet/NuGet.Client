@@ -27,7 +27,7 @@ namespace Test.Utility
 
         public static string CreateServiceAddress()
         {
-            return string.Format(CultureInfo.CurrentCulture, "http://{0}/", Guid.NewGuid());
+            return string.Format(CultureInfo.InvariantCulture, "http://{0}/", Guid.NewGuid());
         }
     }
 }
