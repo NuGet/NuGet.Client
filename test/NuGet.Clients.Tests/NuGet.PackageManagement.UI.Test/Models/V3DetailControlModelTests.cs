@@ -32,11 +32,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         protected readonly V3PackageSearchMetadataFixture _testData;
         protected readonly PackageItemViewModel _testViewModel;
 
-        public V3DetailControlModelTestBase(GlobalServiceProvider sp)
-        {
-            
-        }
-        public V3DetailControlModelTestBase(V3PackageSearchMetadataFixture testData, GlobalServiceProvider sp)
+        public V3DetailControlModelTestBase(GlobalServiceProvider sp, V3PackageSearchMetadataFixture testData)
         {
             sp.Reset();
             _testData = testData;
@@ -83,8 +79,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
     {
         private readonly Dictionary<Type, Task<object>> _services = new Dictionary<Type, Task<object>>(TypeEquivalenceComparer.Instance);
         private readonly PackageDetailControlModel _testInstance;
-        public V3PackageDetailControlModelTests(V3PackageSearchMetadataFixture testData, GlobalServiceProvider sp)
-            : base(testData, sp)
+        public V3PackageDetailControlModelTests(GlobalServiceProvider sp, V3PackageSearchMetadataFixture testData)
+                : base(sp, testData)
         {
             var solMgr = new Mock<INuGetSolutionManagerService>();
 
@@ -1257,7 +1253,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         private PackageSolutionDetailControlModel _testInstance;
         private readonly Dictionary<Type, Task<object>> _services = new Dictionary<Type, Task<object>>(TypeEquivalenceComparer.Instance);
         public V3PackageSolutionDetailControlModelTests(GlobalServiceProvider sp, V3PackageSearchMetadataFixture testData)
-            : base(testData, sp)
+            : base(sp, testData)
         {
             var packageSearchMetadata = new List<PackageSearchMetadataContextInfo>()
             {
