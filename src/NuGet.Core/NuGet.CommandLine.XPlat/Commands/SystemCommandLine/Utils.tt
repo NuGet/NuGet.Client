@@ -444,11 +444,11 @@ public class OptionData
     {
         if (string.IsNullOrWhiteSpace(className))
         {
-            throw new ArgumentException("Value cannot be null or space", nameof(className));
+            throw new ArgumentException("Value cannot be null or empty", nameof(className));
         }
         if (string.IsNullOrWhiteSpace(binderClassName))
         {
-            throw new ArgumentException("Value cannot be null or space", nameof(binderClassName));
+            throw new ArgumentException("Value cannot be null or empty", nameof(binderClassName));
         }
         if (options == null)
         {
