@@ -281,7 +281,7 @@ namespace NuGet.Build.Tasks
                 {
                     try
                     {
-                        globalProperties = getGlobalPropertiesMethod.Invoke(BuildEngine, null) as IReadOnlyDictionary<string, string>;
+                        globalProperties = getGlobalPropertiesMethod.Invoke(BuildEngine, parameters: null) as IReadOnlyDictionary<string, string>;
                     }
                     catch (Exception)
                     {
