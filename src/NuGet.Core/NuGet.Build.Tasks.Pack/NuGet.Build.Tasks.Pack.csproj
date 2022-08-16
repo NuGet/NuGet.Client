@@ -39,9 +39,9 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core"  ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core"  ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -122,6 +122,12 @@
       <IlmergeCommand>$(IlmergeCommand) ^
         $(PathToBuiltNuGetPack) ^
         @(BuildArtifacts, ' ')</IlmergeCommand>
+      <IlmergeCommand Condition=" '$(IsCore)' == 'true' ">$(IlmergeCommand) ^
+        /lib:$(PkgMicrosoft_Build_Utilities_Core)\lib\netstandard2.0 ^
+        /lib:$(PkgMicrosoft_Build_Tasks_Core)\lib\netstandard2.0 ^
+        /lib:$(PkgMicrosoft_Build_Framework)\lib\netstandard2.0
+      </IlmergeCommand>
+
     </PropertyGroup>
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
