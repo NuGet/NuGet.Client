@@ -25,7 +25,7 @@
 
   <!-- Microsoft.Build.Locator is only used when debugging, and the compiler will trim this dependency from Release assemblies we insert. -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Locator"  />
+    <PackageReference Include="Microsoft.Build.Locator" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
