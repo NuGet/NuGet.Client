@@ -442,25 +442,17 @@ public class OptionData
 
     void GenerateBinderClass(string className, string binderClassName, IReadOnlyCollection<OptionData> options)
     {
-        if (className == null)
+        if (string.IsNullOrWhiteSpace(className))
         {
-            throw new ArgumentNullException(nameof(className));
+            throw new ArgumentException("Value cannot be null or space", nameof(className));
         }
-        if (binderClassName == null)
+        if (string.IsNullOrWhiteSpace(binderClassName))
         {
-            throw new ArgumentNullException(nameof(binderClassName));
+            throw new ArgumentException("Value cannot be null or space", nameof(binderClassName));
         }
         if (options == null)
         {
             throw new ArgumentNullException(nameof(options));
-        }
-        if (className.Trim() == string.Empty)
-        {
-            throw new ArgumentException("Trimmed value cannot be empty", nameof(binderClassName));
-        }
-        if (binderClassName.Trim() == string.Empty)
-        {
-            throw new ArgumentException("Trimmed value cannot be empty", nameof(className));
         }
 
         WriteLine($"internal partial class {className} : BinderBase<{binderClassName}>");

@@ -85,7 +85,7 @@ foreach (XElement verb in allElements)
         PopIndent();
     } // end noun foreach
 
-    // TODO: Generate handler for commands
+    // TODO: Generate handler for commands. See https://github.com/NuGet/Client.Engineering/issues/1817
 #>
 
             GetLoggerFunction = getLogger;
