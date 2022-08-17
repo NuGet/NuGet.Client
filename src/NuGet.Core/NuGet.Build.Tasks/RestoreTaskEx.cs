@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+#if !IS_CORECLR
 using System.Reflection;
+#endif
 using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using NuGet.Packaging;
 
 namespace NuGet.Build.Tasks
 {
@@ -213,6 +214,7 @@ namespace NuGet.Build.Tasks
                 [nameof(Recursive)] = Recursive,
                 [nameof(RestorePackagesConfig)] = RestorePackagesConfig,
             };
+
             // Semicolon delimited list of options
             yield return string.Join(";", options.Where(i => i.Value).Select(i => $"{i.Key}={i.Value}"));
 
@@ -230,9 +232,7 @@ namespace NuGet.Build.Tasks
                     : ProjectFullPath;
 
             // Semicolon delimited list of MSBuild global properties
-            var globalProperties = GetGlobalProperties().Select(i => $"{i.Key}={i.Value}").Concat(new string[] { $"OriginalMSBuildStartupDirectory={MSBuildStartupDirectory}" });
-
-            yield return string.Join(";", globalProperties);
+            yield return string.Join(";", GetGlobalProperties().Select(i => $"{i.Key}={i.Value}"));
         }
 
         /// <summary>
@@ -253,33 +253,35 @@ namespace NuGet.Build.Tasks
 #endif
         }
 
-        private Dictionary<string, string> GetGlobalProperties()
+        /// <summary>
+        /// Enumerates a list of global properties for the current MSBuild instance.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{T}" /> of <see cref="KeyValuePair{TKey, TValue}" /> objects containing global properties.</returns>
+        internal IEnumerable<KeyValuePair<string, string>> GetGlobalProperties()
         {
+            IReadOnlyDictionary<string, string> globalProperties = null;
+
 #if IS_CORECLR
             // MSBuild 16.5 and above has a method to get the global properties, older versions do not
-            Dictionary<string, string> msBuildGlobalProperties = BuildEngine is IBuildEngine6 buildEngine6
-                ? buildEngine6.GetGlobalProperties().ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase)
-                : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (BuildEngine is IBuildEngine6 buildEngine6)
+            {
+                globalProperties = buildEngine6.GetGlobalProperties();
+            }
 #else
-            var msBuildGlobalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
             // MSBuild 16.5 added a new interface, IBuildEngine6, which has a GetGlobalProperties() method.  However, we compile against
             // Microsoft.Build.Framework version 4.0 when targeting .NET Framework, so reflection is required since type checking
             // can't be done at compile time
-            var buildEngine6Type = typeof(IBuildEngine).Assembly.GetType("Microsoft.Build.Framework.IBuildEngine6");
+            Type buildEngine6Type = typeof(IBuildEngine).Assembly.GetType("Microsoft.Build.Framework.IBuildEngine6");
 
             if (buildEngine6Type != null)
             {
-                var getGlobalPropertiesMethod = buildEngine6Type.GetMethod("GetGlobalProperties", BindingFlags.Instance | BindingFlags.Public);
+                MethodInfo getGlobalPropertiesMethod = buildEngine6Type.GetMethod("GetGlobalProperties", BindingFlags.Instance | BindingFlags.Public);
 
                 if (getGlobalPropertiesMethod != null)
                 {
                     try
                     {
-                        if (getGlobalPropertiesMethod.Invoke(BuildEngine, null) is IReadOnlyDictionary<string, string> globalProperties)
-                        {
-                            msBuildGlobalProperties.AddRange(globalProperties);
-                        }
+                        globalProperties = getGlobalPropertiesMethod.Invoke(BuildEngine, parameters: null) as IReadOnlyDictionary<string, string>;
                     }
                     catch (Exception)
                     {
@@ -288,14 +290,22 @@ namespace NuGet.Build.Tasks
                 }
             }
 #endif
-            msBuildGlobalProperties["ExcludeRestorePackageImports"] = "true";
+            if (globalProperties != null)
+            {
+                foreach (KeyValuePair<string, string> item in globalProperties)
+                {
+                    yield return item;
+                }
+            }
+
+            yield return new KeyValuePair<string, string>("ExcludeRestorePackageImports", bool.TrueString);
+
+            yield return new KeyValuePair<string, string>("OriginalMSBuildStartupDirectory", MSBuildStartupDirectory);
 
             if (IsSolutionPathDefined)
             {
-                msBuildGlobalProperties["SolutionPath"] = SolutionPath;
+                yield return new KeyValuePair<string, string>("SolutionPath", SolutionPath);
             }
-
-            return msBuildGlobalProperties;
         }
     }
 }
