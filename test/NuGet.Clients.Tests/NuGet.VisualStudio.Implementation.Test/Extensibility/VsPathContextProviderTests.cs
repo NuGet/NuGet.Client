@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -22,6 +23,7 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Extensibility;
+using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
@@ -236,7 +238,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         }
 
         [Fact]
-        public async Task CreatePathContextAsync_WithUnrestoredPackagesConfig_Throws()
+        public async Task CreatePathContextAsync_WithUnrestoredPackagesConfig_LogsError()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -244,6 +246,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 var userPackageFolder = Path.Combine(testDirectory.Path, "packagesA");
 
                 var settings = Mock.Of<ISettings>();
+                var logger = new Mock<ILogger>();
                 Mock.Get(settings)
                     .Setup(x => x.GetSection("config"))
                     .Returns(() => new VirtualSettingSection("config",
@@ -253,7 +256,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 var target = new VsPathContextProvider(
                     settings,
                     Mock.Of<IVsSolutionManager>(),
-                    Mock.Of<ILogger>(),
+                    logger.Object,
                     getLockFileOrNullAsync: null,
                     _telemetryProvider.Object);
 
@@ -277,10 +280,14 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     });
 
                 // Act
-                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => target.CreatePathContextAsync(project.Object, CancellationToken.None));
+                var result = await target.CreatePathContextAsync(project.Object, CancellationToken.None);
 
                 // Assert
-                Assert.Contains(projectUniqueName, exception.Message);
+                var message = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, "Foo.1.0.1");
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_CreateContextError, projectUniqueName, message);
+                logger.Verify(l => l.LogError(errorMessage));
+
+                Assert.Equal(null, result);
             }
         }
 
@@ -433,12 +440,13 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         }
 
         [Fact]
-        public async Task CreatePathContextAsync_WithUnrestoredPackageReference_Throws()
+        public async Task CreatePathContextAsync_WithUnrestoredPackageReference_LogsError()
         {
+            var logger = new Mock<ILogger>();
             var target = new VsPathContextProvider(
                 Mock.Of<ISettings>(),
                 Mock.Of<IVsSolutionManager>(),
-                Mock.Of<ILogger>(),
+                logger.Object,
                 getLockFileOrNullAsync: _ => Task.FromResult(null as LockFile),
                 _telemetryProvider.Object);
 
@@ -447,9 +455,14 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             var project = new TestPackageReferenceProject(projectUniqueName);
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => target.CreatePathContextAsync(project, CancellationToken.None));
+            var result = await target.CreatePathContextAsync(project, CancellationToken.None);
 
-            Assert.Contains(projectUniqueName, exception.Message);
+            // Assert
+            var message = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_LockFileError);
+            var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_CreateContextError, projectUniqueName, message);
+            logger.Verify(l => l.LogError(errorMessage));
+
+            Assert.Equal(null, result);
         }
 
         [Fact]

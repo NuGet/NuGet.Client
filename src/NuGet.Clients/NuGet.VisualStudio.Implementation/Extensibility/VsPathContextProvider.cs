@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
+using Microsoft.Build.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -147,30 +148,22 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 throw new ArgumentNullException(nameof(projectUniqueName));
             }
 
-            try
-            {
-                // invoke async operation from within synchronous method
-                outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                    async () =>
+            // invoke async operation from within synchronous method
+            outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                async () =>
+                {
+                    var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
+
+                    // It's possible the project isn't a NuGet-compatible project at all.
+                    if (nuGetProject == null)
                     {
-                        var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
+                        return null;
+                    }
 
-                        // It's possible the project isn't a NuGet-compatible project at all.
-                        if (nuGetProject == null)
-                        {
-                            return null;
-                        }
+                    return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
+                });
 
-                        return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
-                    });
-
-                return outputPathContext != null;
-            }
-            catch (Exception exception)
-            {
-                _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
-                throw;
-            }
+            return outputPathContext != null;
         }
 
         public bool TryCreateSolutionContext(out IVsPathContext2 outputPathContext)
@@ -289,7 +282,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 var message = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_LockFileError);
                 var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_CreateContextError, projectUniqueName, message);
                 _logger.Value.LogError(errorMessage);
-                throw new InvalidOperationException(errorMessage);
+                return null;
             }
 
             // The user packages folder is always the first package folder. Subsequent package folders are always
@@ -320,7 +313,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 var packageInstallPath = fppr.GetPackageDirectory(pid.Id, pid.Version);
                 if (string.IsNullOrEmpty(packageInstallPath))
                 {
-                    throw new KeyNotFoundException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid));
+                    _logger.Value.LogError(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid));
+                    return null;
                 }
 
                 trie[packageInstallPath] = packageInstallPath;
@@ -352,7 +346,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                     var message = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid);
                     var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_CreateContextError, projectUniqueName, message);
                     _logger.Value.LogError(errorMessage);
-                    throw new InvalidOperationException(errorMessage);
+                    return null;
                 }
 
                 trie[packageInstallPath] = packageInstallPath;
