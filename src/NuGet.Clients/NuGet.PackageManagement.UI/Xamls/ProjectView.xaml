@@ -93,10 +93,18 @@
       Text="{x:Static local:Resources.Label_Version}" />
 
     <Label Name="SubscriptionsLabel" Content="{x:Static local:Resources.Label_Version}" Visibility="Collapsed"/>
-    <ComboBox
+    <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Vertical">
+      <ComboBox x:Name="_testVersions" Style="{x:Null}"
+        MinHeight="22"
+        IsEditable="True"
+        IsTextSearchEnabled="True"
+        IsReadOnly="True"
+        StaysOpenOnEdit="True"
+        ItemsSource="{Binding Path=VersionsView}">
+      </ComboBox>
+      <ComboBox
       x:Name="_versions"
-      Grid.Row="2"
-      Grid.Column="2"
+     
       MinHeight="22"
       AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
       AutomationProperties.LabeledBy="{Binding ElementName=SubscriptionsLabel}"
@@ -132,7 +140,7 @@
             </Style>
         </ComboBox.ItemContainerStyle>
     </ComboBox>
-
+    </StackPanel>
     <!-- install button and update button. They are in fact the same button. Which
          one is displayed depends on whether InstalledVersion is null.
     -->
