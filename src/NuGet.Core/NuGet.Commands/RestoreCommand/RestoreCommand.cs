@@ -483,10 +483,16 @@ namespace NuGet.Commands
                 return false;
             }
 
-            // Log a warning if there are more than one configured source and package source mapping is not enabled
-            if (restoreRequest.Project.RestoreMetadata.Sources.Count > 1 && !restoreRequest.PackageSourceMapping.IsEnabled)
+            if (!restoreRequest.PackageSourceMapping.IsEnabled)
             {
-                await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1507, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping, restoreRequest.Project.RestoreMetadata.Sources.Count, string.Join(", ", restoreRequest.Project.RestoreMetadata.Sources.Select(i => i.Name)))));
+                // Get a list of package sources that are not local folders
+                List<Configuration.PackageSource> nonLocalPackageSources = restoreRequest.Project.RestoreMetadata.Sources.Where(i => !i.IsLocal).ToList();
+
+                // Log a warning if there are more than one configured source and package source mapping is not enabled
+                if (nonLocalPackageSources.Count > 1)
+                {
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1507, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping, nonLocalPackageSources.Count, string.Join(", ", nonLocalPackageSources.Select(i => i.Name)))));
+                }
             }
 
             // The dependencies should not have versions explicitly defined if cpvm is enabled.
