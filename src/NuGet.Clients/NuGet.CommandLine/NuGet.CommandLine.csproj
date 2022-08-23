@@ -102,6 +102,7 @@
       <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
       <!-- NuGet.exe needs all NuGet.Commands.resources.dll merged in -->
       <LocalizedArtifacts Include="$(ArtifactsDirectory)\NuGet.Commands\**\$(NETFXTargetFramework)\**\*.resources.dll" />
+      <LocalizedArtifacts Include="$(ArtifactsDirectory)\NuGet.CommandLine\**\$(NETFXTargetFramework)\**\*.resources.dll" />
     </ItemGroup>
     <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetExe)" Importance="High" />
   </Target>
