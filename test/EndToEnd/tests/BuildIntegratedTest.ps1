@@ -63,7 +63,7 @@ function Test-BuildIntegratedInstallAndVerifyLockFileContainsChildDependency {
     # Assert
     Assert-ProjectJsonLockFilePackage $project WindowsAzure.MobileServices 1.0.2
     Assert-ProjectJsonDependencyNotFound $project WindowsAzure.MobileServices
-} 
+}
 
 # basic uninstall
 function Test-BuildIntegratedUninstallPackage {
@@ -153,7 +153,7 @@ function Test-BuildIntegratedInstallPackageInvokeInitScript {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-BuildIntegratedProj
 
@@ -216,7 +216,7 @@ function Test-BuildIntegratedProjectClosureWithLegacyProjects {
 function Test-BuildIntegratedMixedLegacyProjects {
     # Arrange
     $project1 = New-ClassLibrary
-    $project1 | Install-Package Newtonsoft.Json -Version 5.0.6
+    $project1 | Install-Package Newtonsoft.Json -Version 13.0.1
 
     $project2 = New-Project BuildIntegratedClassLibrary
     $project2 | Install-Package NuGet.Versioning -Version 1.0.7
@@ -244,7 +244,7 @@ function Test-BuildIntegratedMixedLegacyProjects {
 function Test-BuildIntegratedMixedLegacyProjectsProjectJsonOnly {
     # Arrange
     $project1 = New-ClassLibrary
-    $project1 | Install-Package Newtonsoft.Json -Version 5.0.6
+    $project1 | Install-Package Newtonsoft.Json -Version 13.0.1
 
     $project2 = New-Project BuildIntegratedClassLibrary
     $project2 | Install-Package NuGet.Versioning -Version 1.0.7
@@ -265,7 +265,7 @@ function Test-BuildIntegratedMixedLegacyProjectsProjectJsonOnly {
 function Test-BuildIntegratedMixedLegacyProjectsPackagesFolderOnly {
     # Arrange
     $project1 = New-ClassLibrary
-    $project1 | Install-Package Newtonsoft.Json -Version 5.0.6
+    $project1 | Install-Package Newtonsoft.Json -Version 13.0.1
 
     $project2 = New-Project BuildIntegratedClassLibrary
     $project2 | Install-Package NuGet.Versioning -Version 1.0.7
@@ -374,11 +374,11 @@ function Test-BuildIntegratedParentProjectIsRestoredAfterUpdate {
     Remove-ProjectJsonLockFile $project2
     Remove-ProjectJsonLockFile $project3
 
-    # Act    
+    # Act
     $project3 | Update-Package NuGet.Versioning -Version 1.0.7
 
     # Assert
-    Assert-ProjectJsonLockFilePackage $project1 NuGet.Versioning 1.0.7    
+    Assert-ProjectJsonLockFilePackage $project1 NuGet.Versioning 1.0.7
     Assert-ProjectJsonLockFilePackage $project2 NuGet.Versioning 1.0.7
     Assert-ProjectJsonLockFilePackage $project3 NuGet.Versioning 1.0.7
 
@@ -386,7 +386,7 @@ function Test-BuildIntegratedParentProjectIsRestoredAfterUpdate {
     Assert-ProjectJsonLockFileDoesNotExist $project4
 }
 
-# Verify that all build integrated projects are included in the closure, even when a 
+# Verify that all build integrated projects are included in the closure, even when a
 # non-build integrated project exists in between them
 function Test-BuildIntegratedParentProjectIsRestoredAfterInstallWithClassLibInTree {
     # Arrange
@@ -410,7 +410,7 @@ function Test-BuildIntegratedCleanDeleteCacheFile {
 
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
     Build-Solution
-    
+
     Assert-ProjectCacheFileExists $project
 
     #Act
@@ -423,28 +423,28 @@ function Test-InconsistencyBetweenAssetsAndProjectFile{
     param()
 
     $projectT = New-Project PackageReferenceClassLibrary
-    $projectT | Install-Package Newtonsoft.Json -Version 9.0.1
+    $projectT | Install-Package Newtonsoft.Json -Version 13.0.1
     $solutionFile = Get-SolutionFullName
     $projectFullName = $projectT.FullName
     $projectT.Save();
-    
+
     #Pre-condition
-    Assert-True ($projectT | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should be installed'
-    
+    Assert-True ($projectT | Test-InstalledPackage -Id Newtonsoft.Json -Version 13.0.1) -Message 'Test package should be installed'
+
     SaveAs-Solution($solutionFile)
     Close-Solution
     Remove-PackageReference $projectFullName Newtonsoft.Json
-    Open-Solution $solutionFile    
+    Open-Solution $solutionFile
     $project = Get-Project
 
     #Pre-condition
-    Assert-False ($project | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should not be installed'
+    Assert-False ($project | Test-InstalledPackage -Id Newtonsoft.Json -Version 13.0.1) -Message 'Test package should not be installed'
 
     #Act
-    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    $project | Install-Package Newtonsoft.Json -Version 13.0.1
 
     #Assert
-    Assert-True ($project | Test-InstalledPackage -Id Newtonsoft.Json -Version 9.0.1) -Message 'Test package should be installed'
+    Assert-True ($project | Test-InstalledPackage -Id Newtonsoft.Json -Version 13.0.1) -Message 'Test package should be installed'
 }
 
 function Remove-PackageReference {
@@ -466,7 +466,7 @@ function Remove-PackageReference {
 function Test-BuildIntegratedLegacyCleanDeleteCacheFile {
     # Arrange
     $project = New-Project PackageReferenceClassLibrary
-    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    $project | Install-Package Newtonsoft.Json -Version 13.0.1
     Build-Solution
     Assert-ProjectCacheFileExists $project
 
@@ -499,7 +499,7 @@ function Test-BuildIntegratedRebuildDoesNotDeleteCacheFile {
 function Test-BuildIntegratedLegacyRebuildDoesNotDeleteCacheFile {
     # Arrange
     $project = New-Project PackageReferenceClassLibrary
-    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    $project | Install-Package Newtonsoft.Json -Version 13.0.1
     Build-Solution
     Assert-ProjectCacheFileExists $project
 
@@ -518,7 +518,7 @@ function Test-BuildIntegratedLegacyRebuildDoesNotDeleteCacheFile {
 function Test-BuildIntegratedRestoreAfterInstall {
     # Arrange
     $project = New-Project PackageReferenceClassLibrary
-    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    $project | Install-Package Newtonsoft.Json -Version 13.0.1
     Assert-ProjectCacheFileExists $project
     $cacheFile = Get-ProjectCacheFilePath $project
     $installTimeStamp = ([datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
@@ -526,7 +526,7 @@ function Test-BuildIntegratedRestoreAfterInstall {
     #Act
     Build-Solution
     $restoreTimeStamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
-    
+
     #Assert
     Assert-True ($installTimeStamp -eq $restoreTimeStamp)
 }
@@ -534,19 +534,19 @@ function Test-BuildIntegratedRestoreAfterInstall {
 function Test-BuildIntegratedRestoreAfterUninstall {
     # Arrange
     $project = New-Project PackageReferenceClassLibrary
-    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    $project | Install-Package Newtonsoft.Json -Version 13.0.1
     Assert-ProjectCacheFileExists $project
     $cacheFile = Get-ProjectCacheFilePath $project
 
     #Act
-    $project | Uninstall-Package Newtonsoft.Json -Version 9.0.1
+    $project | Uninstall-Package Newtonsoft.Json -Version 13.0.1
 
     $uninstallTimeStamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
-    
+
     Build-Solution
 
     $restoreTimeStamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
-    
+
     #Assert
     Assert-True ($uninstallTimeStamp -eq $restoreTimeStamp)
 }
@@ -597,14 +597,14 @@ function TestCases-PackageReferenceProjectGetPackageTransitive{
 function Test-BuildIntegratedVSandMSBuildNoOp {
     # Arrange
     $project = New-Project PackageReferenceClassLibrary
-    $project | Install-Package Newtonsoft.Json -Version 9.0.1
+    $project | Install-Package Newtonsoft.Json -Version 13.0.1
     Assert-ProjectCacheFileExists $project
     $cacheFile = Get-ProjectCacheFilePath $project
-    
+
     Build-Solution
 
     $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
-    
+
     $MSBuildExe = Get-MSBuildExe
 
     & "$MSBuildExe" /t:restore $project.FullName
@@ -619,9 +619,9 @@ function Test-BuildIntegratedVSandMSBuildNoOp {
 function Test-PackageReferenceProjectWithLockFile{
 
     $projectT = New-Project PackageReferenceClassLibraryWithLockFile
-    $projectT | Install-Package Newtonsoft.Json -Version 9.0.1
+    $projectT | Install-Package Newtonsoft.Json -Version 13.0.1
     $projectT.Save();
-    
+
     #Assert
     Assert-PackagesLockFile $projectT
 }
@@ -636,7 +636,7 @@ function Test-PackageReferenceToPackagesConfigProjectWithLockFile {
 
     $assetsFile = Get-NetCoreLockFilePath $project1
     Remove-Item -Force $assetsFile
-    $project1 | Install-Package Newtonsoft.Json -Version 9.0.1
+    $project1 | Install-Package Newtonsoft.Json -Version 13.0.1
 
     # Act
     Build-Solution
@@ -645,10 +645,10 @@ function Test-PackageReferenceToPackagesConfigProjectWithLockFile {
     Assert-PathExists $assetsFile
 }
 
-function BuildProjectTemplateTestCases([string[]]$ProjectTemplates) {		
-    $ProjectTemplates | ForEach-Object{		
-        $testCase = New-Object System.Object		
-        $testCase | Add-Member -Type NoteProperty -Name ProjectTemplate -Value $_		
-        $testCase		
-    }		
+function BuildProjectTemplateTestCases([string[]]$ProjectTemplates) {
+    $ProjectTemplates | ForEach-Object{
+        $testCase = New-Object System.Object
+        $testCase | Add-Member -Type NoteProperty -Name ProjectTemplate -Value $_
+        $testCase
+    }
 }

@@ -32,7 +32,7 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
         $context
     )
 
-    # Arrange 
+    # Arrange
 
     $p = New-WebApplication
 
@@ -46,7 +46,7 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
     install-package Microsoft.jQuery.Unobtrusive.Ajax -version 2.0.30116.0 -ignoreDependencies
     install-package Modernizr -version 2.6.2 -ignoreDependencies
     install-package Microsoft.Web.Infrastructure -version 1.0.0 -ignoreDependencies
-    install-package Newtonsoft.Json -version 4.5.11 -ignoreDependencies
+    install-package Newtonsoft.Json -version 13.0.1 -ignoreDependencies
     install-package Microsoft.AspNet.Razor -version 2.0.20715.0 -ignoreDependencies
     install-package Microsoft.AspNet.WebPages -version 2.0.20710.0 -ignoreDependencies
     install-package Microsoft.AspNet.Mvc -version 4.0.20710.0 -ignoreDependencies
@@ -67,20 +67,20 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
     $output = (Get-PropertyValue $p FullPath)
     $packageConfigPath = Join-Path $output 'packages.config'
 
-    $config = [xml](Get-Content $packageConfigPath)       
+    $config = [xml](Get-Content $packageConfigPath)
     $config.packages.package | ? { $_.id -eq 'jquery' } | % { $_.setAttribute("developmentDependency", "true") }
     $config.Save($packageConfigPath)
-    
+
     $p.Save()
 
     # Act
-    
+
     & $context.NuGetExe pack $p.FullName -build -OutputDirectory $output
 
     # Assert
     $packageFile = Get-ChildItem $output -Filter *.nupkg
     Assert-NotNull $packageFile
-    
+
 }
 
 function NoTest-PackFromProjectUsesInstalledPackagesAsDependencies {
@@ -89,7 +89,7 @@ function NoTest-PackFromProjectUsesInstalledPackagesAsDependencies {
     )
 
     $p = New-ClassLibrary
-    
+
     $p | Install-Package PackageWithContentFileAndDependency -Source $context.RepositoryRoot
     $p.Save()
 
@@ -111,7 +111,7 @@ function NoTest-PackFromProjectUsesInstalledPackagesAsDependencies {
 
 function NoTest-PackFromProjectUsesVersionSpecForDependencyIfApplicable {
     $p = New-ClassLibrary
-    
+
     $p | Install-Package PackageWithContentFileAndDependency -Source $context.RepositoryRoot
     Add-PackageConstraint $p PackageWithContentFileAndDependency "[1.0, 2.5)"
     $p.Save()
