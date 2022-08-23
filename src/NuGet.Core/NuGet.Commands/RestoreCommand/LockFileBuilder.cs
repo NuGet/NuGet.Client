@@ -231,7 +231,7 @@ namespace NuGet.Commands
                         var package = packageInfo.Package;
                         var libraryDependency = tfi.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
-                        var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
+                        var (warn, targetLibrary) = LockFileUtils.CreateLockFileTargetLibrary(
                             libraryDependency?.Aliases,
                             libraries[Tuple.Create(library.Name, library.Version)],
                             package,
@@ -241,44 +241,30 @@ namespace NuGet.Commands
                             dependencies: graphItem.Data.Dependencies,
                             cache: lockFileBuilderCache);
 
+                        // Should we do the non-fallback framework first and then run it later? That seems better than running the below every single time.
                         target.Libraries.Add(targetLibrary);
 
                         // Log warnings if the target library used the fallback framework
-                        if (warnForImportsOnGraph && !librariesWithWarnings.Contains(library))
+                        if (warnForImportsOnGraph && warn)
                         {
-                            var nonFallbackFramework = new NuGetFramework(target.TargetFramework);
+                            var libraryName = DiagnosticUtility.FormatIdentity(library);
 
-                            var targetLibraryWithoutFallback = LockFileUtils.CreateLockFileTargetLibrary(
-                                libraryDependency?.Aliases,
-                                libraries[Tuple.Create(library.Name, library.Version)],
-                                package,
-                                targetGraph,
-                                targetFrameworkOverride: nonFallbackFramework,
-                                dependencyType: includeFlags,
-                                dependencies: graphItem.Data.Dependencies,
-                                cache: lockFileBuilderCache);
+                            var message = string.Format(CultureInfo.CurrentCulture,
+                                Strings.Log_ImportsFallbackWarning,
+                                libraryName,
+                                GetFallbackFrameworkString(target.TargetFramework),
+                                target.TargetFramework); // Is this an issue?
 
-                            if (!targetLibrary.Equals(targetLibraryWithoutFallback))
-                            {
-                                var libraryName = DiagnosticUtility.FormatIdentity(library);
+                            var logMessage = RestoreLogMessage.CreateWarning(
+                                NuGetLogCode.NU1701,
+                                message,
+                                library.Name,
+                                targetGraph.TargetGraphName);
 
-                                var message = string.Format(CultureInfo.CurrentCulture,
-                                    Strings.Log_ImportsFallbackWarning,
-                                    libraryName,
-                                    GetFallbackFrameworkString(target.TargetFramework),
-                                    nonFallbackFramework);
+                            _logger.Log(logMessage);
 
-                                var logMessage = RestoreLogMessage.CreateWarning(
-                                    NuGetLogCode.NU1701,
-                                    message,
-                                    library.Name,
-                                    targetGraph.TargetGraphName);
-
-                                _logger.Log(logMessage);
-
-                                // only log the warning once per library
-                                librariesWithWarnings.Add(library);
-                            }
+                            // only log the warning once per library
+                            librariesWithWarnings.Add(library);
                         }
                     }
                 }

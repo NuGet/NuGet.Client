@@ -31,7 +31,7 @@ namespace NuGet.Commands
             RestoreTargetGraph targetGraph,
             LibraryIncludeFlags dependencyType)
         {
-            return CreateLockFileTargetLibrary(
+            var (_, lockFileTargetLibrary) = CreateLockFileTargetLibrary(
                 aliases: null,
                 library,
                 package,
@@ -40,6 +40,7 @@ namespace NuGet.Commands
                 targetFrameworkOverride: null,
                 dependencies: null,
                 cache: new LockFileBuilderCache());
+            return lockFileTargetLibrary;
         }
 
         /// <summary>
@@ -54,7 +55,7 @@ namespace NuGet.Commands
         /// <param name="dependencies">The dependencies of this package.</param>
         /// <param name="cache">The lock file build cache.</param>
         /// <returns>The LockFileTargetLibrary</returns>
-        internal static LockFileTargetLibrary CreateLockFileTargetLibrary(
+        internal static (bool, LockFileTargetLibrary) CreateLockFileTargetLibrary(
                 string aliases,
                 LockFileLibrary library,
                 LocalPackageInfo package,
@@ -78,6 +79,7 @@ namespace NuGet.Commands
                     var contentItems = cache.GetContentItems(library, package);
 
                     var packageTypes = nuspec.GetPackageTypes().AsList();
+                    bool warn = false;
 
                     for (var i = 0; i < orderedCriteriaSets.Count; i++)
                     {
@@ -91,6 +93,7 @@ namespace NuGet.Commands
                             PackageType = packageTypes
                         };
 
+                        // Check the ordered criteria sets and decide if we need to warn, here!
                         // Populate assets
 
                         if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
@@ -103,6 +106,11 @@ namespace NuGet.Commands
                         }
                         else
                         {
+                            if (i > 0)
+                            {
+                                warn = true;
+                            }
+
                             AddAssets(aliases, library, package, targetGraph.Conventions, dependencyType, lockFileLib,
                                 framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
                             // Check if compatible assets were found.
@@ -124,7 +132,7 @@ namespace NuGet.Commands
                     // Exclude items
                     ExcludeItems(lockFileLib, dependencyType);
 
-                    return lockFileLib;
+                    return (warn, lockFileLib);
                 });
         }
 
