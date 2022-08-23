@@ -80,7 +80,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             // Ignore invalid versions, there may be another resolver that can handle the version specified
             if (!TryGetNuGetVersionForSdk(sdkReference.Name, sdkReference.Version, resolverContext, out var parsedSdkVersion))
             {
-                return factory.IndicateFailure(null, new List<string>() { "NuGetSdkResolver did not resolve this SDK because there was no version specified in the project or global.json." });
+                return factory.IndicateFailure(errors: null, warnings: new List<string>() { Strings.Error_NoSdkVersion });
             }
 
             return NuGetAbstraction.GetSdkResult(sdkReference, parsedSdkVersion, resolverContext, factory);
