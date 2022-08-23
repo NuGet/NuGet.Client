@@ -73,14 +73,14 @@ namespace Microsoft.Build.NuGetSdkResolver
             // Escape hatch to disable this resolver
             if (DisableNuGetSdkResolver.Value)
             {
-                return null;
+                return factory.IndicateFailure(null, new List<string>() { "NuGetSdkResolver did not resolve this SDK because it was disabled by the MSBUILDDISABLENUGETSDKRESOLVER environment variable." });
             }
 
             // This resolver only works if the user specifies a version in a project or a global.json.
             // Ignore invalid versions, there may be another resolver that can handle the version specified
             if (!TryGetNuGetVersionForSdk(sdkReference.Name, sdkReference.Version, resolverContext, out var parsedSdkVersion))
             {
-                return null;
+                return factory.IndicateFailure(null, new List<string>() { "NuGetSdkResolver did not resolve this SDK because there was no version specified in the project or global.json." });
             }
 
             return NuGetAbstraction.GetSdkResult(sdkReference, parsedSdkVersion, resolverContext, factory);
