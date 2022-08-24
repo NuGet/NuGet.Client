@@ -28,8 +28,8 @@ namespace NuGet.PackageManagement
                     { nameof(OperationId), operationId },
                     { nameof(PackagesCount), packageCount },
                     { nameof(Status), status },
-                    { nameof(StartTime), startTime.UtcDateTime.ToString("O", CultureInfo.CurrentCulture) },
-                    { nameof(EndTime), endTime.UtcDateTime.ToString("O", CultureInfo.CurrentCulture) },
+                    { nameof(StartTime), startTime.UtcDateTime.ToString("O", CultureInfo.InvariantCulture) },
+                    { nameof(EndTime), endTime.UtcDateTime.ToString("O", CultureInfo.InvariantCulture) },
                     { nameof(Duration), duration },
                     { nameof(ProjectsCount), projectIds.Length }
                 })
