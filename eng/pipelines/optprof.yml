@@ -40,7 +40,7 @@ stages:
 - template: \templates\stages\visual-studio\single-runsettings.yml@DartLabOptProfTemplates
   parameters:
     ##### Required #####
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/dev/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.OptProfV2.runsettings
+    runSettingsURI: $(RunSettingsURI)
     visualStudioBootstrapperURI: $(VisualStudio.InstallationUnderTest.BootstrapperURL)
     ##### Optional #####
     name: OptProf_ProfilingWorkflow
@@ -49,6 +49,8 @@ stages:
     # NOTE: fix prefix when ready for production (remove 'TEST')
     - name: optDropName
       value: TESTOptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(resources.pipeline.ComponentBuildUnderTest.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
+    - name: RunSettingsURI
+      value: $[stageDependencies.OptProf_ProfilingWorkflow.SetRunSettingsURI.outputs['RunSettingsURI']]
     optOptimizationInputsDropName: $(optDropName)
     # Remove this parameter if you don't want LKG support
     previousOptimizationInputsDropName: $(PreviousOptimizationInputsDropName)
@@ -57,9 +59,11 @@ stages:
     visualStudioSigning: Test
     ##### Step Hooks #####
     preTestMachineConfigurationStepList:
-    - download: ComponentBuildUnderTest
     - powershell: "Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize"
-      displayName: "Print Environment Variables"
+      displayName: 'Print Environment Variables'
+    - download: ComponentBuildUnderTest
+      artifact: BuildInfo
+      displayName: 'Download buildinfo.json'
     - powershell: |
         try {
           Write-Host "Set VSBranch variable"
@@ -106,6 +110,7 @@ stages:
           throw
         }
       displayName: 'Set RunSettingsURI variable'
+      name: SetRunSettingsURI
     - download: ComponentBuildUnderTest
       artifact: MicroBuildOutputs
       patterns: '**\BootstrapperInfo.json'
