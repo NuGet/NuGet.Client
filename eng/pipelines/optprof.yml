@@ -6,6 +6,10 @@ resources:
   pipelines:
   - pipeline: ComponentBuildUnderTest
     source: NuGet.Client-Official
+    trigger:
+      branches:
+        - dev
+        - release-*
   - pipeline: DartLab
     source: DartLab
     branch: main
@@ -26,7 +30,7 @@ parameters:
 # Whether or not commit should be tagged for manual deployments
 - name: optEnableOptProfTagging
   type: boolean
-  default: false 
+  default: true
 
 # Whether or not to delete the test machines after the run completes.
 - name: testMachineCleanUpStrategy
@@ -46,9 +50,8 @@ stages:
     name: OptProf_ProfilingWorkflow
     displayName: OptProf Profiling Workflow
     variables:
-    # NOTE: fix prefix when ready for production (remove 'TEST')
     - name: optDropName
-      value: TESTOptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(resources.pipeline.ComponentBuildUnderTest.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
+      value: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(resources.pipeline.ComponentBuildUnderTest.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
     - name: RunSettingsURI
       value: $[stageDependencies.OptProf_ProfilingWorkflow.SetRunSettingsURI.outputs['RunSettingsURI']]
     optOptimizationInputsDropName: $(optDropName)
@@ -75,10 +78,10 @@ stages:
 
           Write-Host "Target Visual Studio branch (full name): $VSBranch"
 
-          # The value will be something like 'master' or 'rel/d16.4';
+          # The value will be something like 'main' or 'rel/d16.4';
           # however, the subsequent task which gets bootstrapper details has a parameter (VSBranch)
           # which (as of writing this) requires the branch "short" name.
-          # For the 'master' branch, the short name is still 'master'.
+          # For the 'main' branch, the short name is still 'main'.
           # For the 'rel/d16.4' branch, the short name is 'd16.4'.
           # Ideally, we would not need to figure out the branch short name ourselves,
           # but short-term we will to unblock ourselves.
