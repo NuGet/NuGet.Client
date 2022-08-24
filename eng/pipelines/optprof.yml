@@ -58,6 +58,8 @@ stages:
     ##### Step Hooks #####
     preTestMachineConfigurationStepList:
     - download: ComponentBuildUnderTest
+    - powershell: "Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize"
+      displayName: "Print Environment Variables"
     - powershell: |
         try {
           Write-Host "Set VSBranch variable"
