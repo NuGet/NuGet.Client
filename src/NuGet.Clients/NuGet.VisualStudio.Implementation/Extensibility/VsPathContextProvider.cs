@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
-using Microsoft.Build.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -148,22 +147,31 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 throw new ArgumentNullException(nameof(projectUniqueName));
             }
 
-            // invoke async operation from within synchronous method
-            outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                async () =>
-                {
-                    var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
-
-                    // It's possible the project isn't a NuGet-compatible project at all.
-                    if (nuGetProject == null)
+            try
+            {
+                // invoke async operation from within synchronous method
+                outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                    async () =>
                     {
-                        return null;
-                    }
+                        var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
 
-                    return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
-                });
+                        // It's possible the project isn't a NuGet-compatible project at all.
+                        if (nuGetProject == null)
+                        {
+                            return null;
+                        }
 
-            return outputPathContext != null;
+                        return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
+                    });
+
+                return outputPathContext != null;
+            }
+            catch (Exception exception)
+            {
+                _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
+                outputPathContext = null;
+                return false;
+            }
         }
 
         public bool TryCreateSolutionContext(out IVsPathContext2 outputPathContext)
@@ -236,29 +244,39 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         {
             IVsPathContext context;
 
-            var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+            try
+            {
+                var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
 
-            if (buildIntegratedProject != null)
-            {
-                // if project is build integrated, then read it from assets file.
-                context = await GetPathContextFromAssetsFileAsync(
-                    buildIntegratedProject, token);
-            }
-            else
-            {
-                var msbuildNuGetProject = nuGetProject as MSBuildNuGetProject;
-                if (msbuildNuGetProject != null)
+                if (buildIntegratedProject != null)
                 {
-                    // when a msbuild project, then read it from packages.config file.
-                    context = await GetPathContextFromPackagesConfigAsync(
-                        msbuildNuGetProject, token);
+                    // if project is build integrated, then read it from assets file.
+                    context = await GetPathContextFromAssetsFileAsync(
+                        buildIntegratedProject, token);
                 }
                 else
                 {
-                    // Fallback to reading the path context from the solution's settings. Note that project level settings in
-                    // VS are not currently supported.
-                    context = GetSolutionPathContext();
+                    var msbuildNuGetProject = nuGetProject as MSBuildNuGetProject;
+                    if (msbuildNuGetProject != null)
+                    {
+                        // when a msbuild project, then read it from packages.config file.
+                        context = await GetPathContextFromPackagesConfigAsync(
+                            msbuildNuGetProject, token);
+                    }
+                    else
+                    {
+                        // Fallback to reading the path context from the solution's settings. Note that project level settings in
+                        // VS are not currently supported.
+                        context = GetSolutionPathContext();
+                    }
                 }
+            }
+            catch (Exception e) when (e is KeyNotFoundException || e is InvalidOperationException)
+            {
+                var projectUniqueName = NuGetProject.GetUniqueNameOrName(nuGetProject);
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_CreateContextError, projectUniqueName, e.Message);
+                _logger.Value.LogError(errorMessage);
+                throw new InvalidOperationException(errorMessage, e);
             }
 
             return context;
@@ -278,11 +296,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             if ((lockFile?.PackageFolders?.Count ?? 0) == 0)
             {
-                var projectUniqueName = NuGetProject.GetUniqueNameOrName(buildIntegratedProject);
-                var message = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_LockFileError);
-                var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_CreateContextError, projectUniqueName, message);
-                _logger.Value.LogError(errorMessage);
-                return null;
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_LockFileError));
             }
 
             // The user packages folder is always the first package folder. Subsequent package folders are always
@@ -313,8 +327,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 var packageInstallPath = fppr.GetPackageDirectory(pid.Id, pid.Version);
                 if (string.IsNullOrEmpty(packageInstallPath))
                 {
-                    _logger.Value.LogError(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid));
-                    return null;
+                    throw new KeyNotFoundException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid));
                 }
 
                 trie[packageInstallPath] = packageInstallPath;
@@ -342,11 +355,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 var packageInstallPath = msbuildNuGetProject.FolderNuGetProject.GetInstalledPath(pid);
                 if (string.IsNullOrEmpty(packageInstallPath))
                 {
-                    var projectUniqueName = NuGetProject.GetUniqueNameOrName(msbuildNuGetProject);
-                    var message = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid);
-                    var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_CreateContextError, projectUniqueName, message);
-                    _logger.Value.LogError(errorMessage);
-                    return null;
+                    throw new KeyNotFoundException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid));
                 }
 
                 trie[packageInstallPath] = packageInstallPath;
