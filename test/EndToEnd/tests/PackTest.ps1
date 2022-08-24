@@ -32,7 +32,7 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
         $context
     )
 
-    # Arrange
+    # Arrange 
 
     $p = New-WebApplication
 
@@ -67,20 +67,20 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
     $output = (Get-PropertyValue $p FullPath)
     $packageConfigPath = Join-Path $output 'packages.config'
 
-    $config = [xml](Get-Content $packageConfigPath)
+    $config = [xml](Get-Content $packageConfigPath)       
     $config.packages.package | ? { $_.id -eq 'jquery' } | % { $_.setAttribute("developmentDependency", "true") }
     $config.Save($packageConfigPath)
-
+    
     $p.Save()
 
     # Act
-
+    
     & $context.NuGetExe pack $p.FullName -build -OutputDirectory $output
 
     # Assert
     $packageFile = Get-ChildItem $output -Filter *.nupkg
     Assert-NotNull $packageFile
-
+    
 }
 
 function NoTest-PackFromProjectUsesInstalledPackagesAsDependencies {
@@ -89,7 +89,7 @@ function NoTest-PackFromProjectUsesInstalledPackagesAsDependencies {
     )
 
     $p = New-ClassLibrary
-
+    
     $p | Install-Package PackageWithContentFileAndDependency -Source $context.RepositoryRoot
     $p.Save()
 
@@ -111,7 +111,7 @@ function NoTest-PackFromProjectUsesInstalledPackagesAsDependencies {
 
 function NoTest-PackFromProjectUsesVersionSpecForDependencyIfApplicable {
     $p = New-ClassLibrary
-
+    
     $p | Install-Package PackageWithContentFileAndDependency -Source $context.RepositoryRoot
     Add-PackageConstraint $p PackageWithContentFileAndDependency "[1.0, 2.5)"
     $p.Save()
