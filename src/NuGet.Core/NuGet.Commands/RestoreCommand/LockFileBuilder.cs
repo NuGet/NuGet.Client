@@ -241,30 +241,48 @@ namespace NuGet.Commands
                             dependencies: graphItem.Data.Dependencies,
                             cache: lockFileBuilderCache);
 
-                        // Should we do the non-fallback framework first and then run it later? That seems better than running the below every single time.
                         target.Libraries.Add(targetLibrary);
 
                         // Log warnings if the target library used the fallback framework
-                        if (warnForImportsOnGraph && warn)
+                        if (warnForImportsOnGraph && !librariesWithWarnings.Contains(library))
                         {
-                            var libraryName = DiagnosticUtility.FormatIdentity(library);
+                            if (target.TargetFramework is FallbackFramework)
+                            {
+                                var nonFallbackFramework = new NuGetFramework(target.TargetFramework);
 
-                            var message = string.Format(CultureInfo.CurrentCulture,
-                                Strings.Log_ImportsFallbackWarning,
-                                libraryName,
-                                GetFallbackFrameworkString(target.TargetFramework),
-                                target.TargetFramework); // Is this an issue?
+                                var targetLibraryWithoutFallback = LockFileUtils.CreateLockFileTargetLibrary(
+                                    libraryDependency?.Aliases,
+                                    libraries[Tuple.Create(library.Name, library.Version)],
+                                    package,
+                                    targetGraph,
+                                    targetFrameworkOverride: nonFallbackFramework,
+                                    dependencyType: includeFlags,
+                                    dependencies: graphItem.Data.Dependencies,
+                                    cache: lockFileBuilderCache);
+                                warn = !targetLibrary.Equals(targetLibraryWithoutFallback);
+                            }
 
-                            var logMessage = RestoreLogMessage.CreateWarning(
-                                NuGetLogCode.NU1701,
-                                message,
-                                library.Name,
-                                targetGraph.TargetGraphName);
+                            if (warn)
+                            {
+                                var libraryName = DiagnosticUtility.FormatIdentity(library);
 
-                            _logger.Log(logMessage);
+                                var message = string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_ImportsFallbackWarning,
+                                    libraryName,
+                                    GetFallbackFrameworkString(target.TargetFramework),
+                                    new NuGetFramework(target.TargetFramework));
 
-                            // only log the warning once per library
-                            librariesWithWarnings.Add(library);
+                                var logMessage = RestoreLogMessage.CreateWarning(
+                                    NuGetLogCode.NU1701,
+                                    message,
+                                    library.Name,
+                                    targetGraph.TargetGraphName);
+
+                                _logger.Log(logMessage);
+
+                                // only log the warning once per library
+                                librariesWithWarnings.Add(library);
+                            }
                         }
                     }
                 }
