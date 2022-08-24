@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio
 
             if (ErrorHandler.Succeeded(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid)))
             {
-                var guid = pguid.ToString("B", CultureInfo.InvariantCulture);
+                var guid = pguid.ToString("B", null);
                 if (ProjectType.IsUnsupported(guid) || !ProjectType.IsSupported(guid))
                 {
                     return false;
@@ -98,7 +98,7 @@ namespace NuGet.VisualStudio
 
             if (ErrorHandler.Succeeded(hierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_TypeGuid, out Guid pguid)))
             {
-                return new string[] { pguid.ToString("B", CultureInfo.InvariantCulture) };
+                return new string[] { pguid.ToString("B", null) };
             }
             return Array.Empty<string>();
         }

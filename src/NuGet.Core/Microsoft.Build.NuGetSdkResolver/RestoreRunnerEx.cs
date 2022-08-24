@@ -46,9 +46,9 @@ namespace NuGet.Commands
                 IgnoreFailedSources = true,
             })
             {
-                var projectDirectory = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
+                var projectDirectory = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Guid.NewGuid().ToString("N", null));
 
-                var projectName = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+                var projectName = Guid.NewGuid().ToString("N", null);
 
                 var projectFullPath = Path.Combine(projectDirectory, $"{projectName}.proj");
 

@@ -218,7 +218,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionEvents.ProjectRemoved += OnEnvDTEProjectRemoved;
             _solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
 
-            var vSStd97CmdIDGUID = VSConstants.GUID_VSStandardCommandSet97.ToString("B", CultureInfo.InvariantCulture);
+            var vSStd97CmdIDGUID = VSConstants.GUID_VSStandardCommandSet97.ToString("B", null);
             var solutionSaveID = (int)VSConstants.VSStd97CmdID.SaveSolution;
             var solutionSaveAsID = (int)VSConstants.VSStd97CmdID.SaveSolutionAs;
 

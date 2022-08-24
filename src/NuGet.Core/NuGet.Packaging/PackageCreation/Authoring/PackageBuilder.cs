@@ -462,7 +462,7 @@ namespace NuGet.Packaging
             }
             else
             {
-                return Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+                return Guid.NewGuid().ToString("N", null);
             }
         }
 

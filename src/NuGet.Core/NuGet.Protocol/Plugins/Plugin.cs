@@ -190,7 +190,7 @@ namespace NuGet.Protocol.Plugins
 
         internal static string CreateNewId()
         {
-            return Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            return Guid.NewGuid().ToString("N", null);
         }
 
         private void FireBeforeClose()
