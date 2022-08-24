@@ -32,7 +32,6 @@ namespace NuGet.CommandLine
         private const string DotNetSetupRegistryKey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
         private const int Net462ReleasedVersion = 394802;
 
-
         private static readonly string ThisExecutableName = typeof(Program).Assembly.GetName().Name;
 
         [Import]

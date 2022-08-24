@@ -31,12 +31,12 @@ namespace NuGet.CommandLine
                 throw new ArgumentNullException(nameof(resourceManager));
             }
 
-            string localizedString = resourceManager.GetString(resourceName, Thread.CurrentThread.CurrentUICulture);
-
+            CultureInfo cultureNeutral = GetNeutralCulture(Thread.CurrentThread.CurrentUICulture);
+            string localizedString = resourceManager.GetString(resourceName, cultureNeutral);
             if (localizedString == null) // can be empty if .resx has an empty string
             {
                 // Fallback on existing method
-                string culture = GetLanguageName();
+                string culture = GetLanguageName(cultureNeutral);
                 return resourceManager.GetString(resourceName + '_' + culture, CultureInfo.InvariantCulture) ??
                        resourceManager.GetString(resourceName, CultureInfo.InvariantCulture);
             }
@@ -44,14 +44,9 @@ namespace NuGet.CommandLine
             return localizedString;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "the convention is to used lower case letter for language name.")]
-        /// <summary>
-        /// Returns the 3 letter language name used to locate localized resources.
-        /// </summary>
-        /// <returns>the 3 letter language name used to locate localized resources.</returns>
-        public static string GetLanguageName()
+        private static CultureInfo GetNeutralCulture(CultureInfo inputCulture)
         {
-            var culture = Thread.CurrentThread.CurrentUICulture;
+            CultureInfo culture = inputCulture;
             while (!culture.IsNeutralCulture)
             {
                 if (culture.Parent == culture)
@@ -62,7 +57,21 @@ namespace NuGet.CommandLine
                 culture = culture.Parent;
             }
 
-            return culture.ThreeLetterWindowsLanguageName.ToLowerInvariant();
+            return culture;
         }
+
+        /// <summary>
+        /// Returns the 3 letter language name used to locate localized resources.
+        /// </summary>
+        /// <returns>the 3 letter language name used to locate localized resources.</returns>
+        public static string GetLanguageName()
+        {
+            CultureInfo culture = GetNeutralCulture(Thread.CurrentThread.CurrentUICulture);
+
+            return GetLanguageName(culture);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "the convention is to used lower case letter for language name.")]
+        private static string GetLanguageName(CultureInfo culture) => culture.ThreeLetterWindowsLanguageName.ToLowerInvariant();
     }
 }
