@@ -75,7 +75,7 @@ namespace NuGet.Commands
                     // This will throw an appropriate error if the nuspec is missing
                     var nuspec = package.Nuspec;
 
-                    var orderedCriteriaSets = cache.GetSelectionCriteria(targetGraph, framework);
+                    var orderedCriteriaSets = cache.GetSelectionCriteriaExt(targetGraph, framework);
                     var contentItems = cache.GetContentItems(library, package);
 
                     var packageTypes = nuspec.GetPackageTypes().AsList();
@@ -98,7 +98,7 @@ namespace NuGet.Commands
 
                         if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
                         {
-                            AddToolsAssets(targetGraph.Conventions, lockFileLib, contentItems, orderedCriteriaSets[i]);
+                            AddToolsAssets(targetGraph.Conventions, lockFileLib, contentItems, orderedCriteriaSets[i].Item1);
                             if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
                             {
                                 break;
@@ -107,14 +107,14 @@ namespace NuGet.Commands
                         else
                         {
                             AddAssets(aliases, library, package, targetGraph.Conventions, dependencyType, lockFileLib,
-                                framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                                framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i].Item1);
                             // Check if compatible assets were found.
                             // If no compatible assets were found and this is the last check
                             // continue on with what was given, this will fail in the normal
                             // compat verification.
                             if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
                             {
-                                if (i > 0) // If it is not the first criteria that was used, then suggests that we need to warn.
+                                if (orderedCriteriaSets[i].Item2) // If a fallback is being used, say that we should warn.
                                 {
                                     warn = true;
                                 }
@@ -135,38 +135,38 @@ namespace NuGet.Commands
                 });
         }
 
-        internal static List<List<SelectionCriteria>> CreateOrderedCriteriaSets(ManagedCodeConventions codeConventions, NuGetFramework framework, string runtimeIdentifier)
+        internal static List<(List<SelectionCriteria>, bool)> CreateOrderedCriteriaSets(ManagedCodeConventions codeConventions, NuGetFramework framework, string runtimeIdentifier)
         {
             // Create an ordered list of selection criteria. Each will be applied, if the result is empty
             // fallback frameworks from "imports" will be tried.
             // These are only used for framework/RID combinations where content model handles everything.
             // AssetTargetFallback and DualCompatbiility frameworks will provide multiple criteria since all assets need to be
             // evaluated before selecting the TFM to use.
-            var orderedCriteriaSets = new List<List<SelectionCriteria>>(1);
+            var orderedCriteriaSets = new List<(List<SelectionCriteria>, bool)>(1);
 
             var assetTargetFallback = framework as AssetTargetFallbackFramework;
 
             if (assetTargetFallback != null)
             {
                 // Add the root project framework first.
-                orderedCriteriaSets.Add(CreateCriteria(codeConventions, assetTargetFallback.RootFramework, runtimeIdentifier));
+                orderedCriteriaSets.Add((CreateCriteria(codeConventions, assetTargetFallback.RootFramework, runtimeIdentifier), false));
                 // Add the secondary framework if dual compatibility framework.
                 if (assetTargetFallback.RootFramework is DualCompatibilityFramework dualCompatibilityFramework)
                 {
-                    orderedCriteriaSets.Add(CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework, runtimeIdentifier));
+                    orderedCriteriaSets.Add((CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework, runtimeIdentifier), false));
                 }
 
                 // Add all fallbacks in order.
-                orderedCriteriaSets.AddRange(assetTargetFallback.Fallback.Select(e => CreateCriteria(codeConventions, e, runtimeIdentifier)));
+                orderedCriteriaSets.AddRange(assetTargetFallback.Fallback.Select(e => (CreateCriteria(codeConventions, e, runtimeIdentifier), true)));
             }
             else
             {
                 // Add the current framework.
-                orderedCriteriaSets.Add(CreateCriteria(codeConventions, framework, runtimeIdentifier));
+                orderedCriteriaSets.Add((CreateCriteria(codeConventions, framework, runtimeIdentifier), false));
 
                 if (framework is DualCompatibilityFramework dualCompatibilityFramework)
                 {
-                    orderedCriteriaSets.Add(CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework, runtimeIdentifier));
+                    orderedCriteriaSets.Add((CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework, runtimeIdentifier), false));
                 }
             }
 

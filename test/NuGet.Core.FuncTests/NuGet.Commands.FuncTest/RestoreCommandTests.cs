@@ -3190,6 +3190,7 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Libraries.Should().HaveCount(2);
             result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native"));
             result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native.child"));
+            result.LockFile.LogMessages.Should().HaveCount(0);
         }
 
         [Fact]
@@ -3254,6 +3255,7 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Libraries.Should().HaveCount(2);
             result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native"));
             result.LockFile.Libraries.Should().Contain(e => e.Name.Equals("native.child"));
+            result.LockFile.LogMessages.Should().HaveCount(0);
         }
 
         [Fact]

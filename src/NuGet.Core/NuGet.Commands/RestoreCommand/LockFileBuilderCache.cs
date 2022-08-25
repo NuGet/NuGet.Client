@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -25,7 +26,7 @@ namespace NuGet.Commands
             = new();
 
         // OrderedCriteria is stored per target graph + override framework.
-        private readonly ConcurrentDictionary<CriteriaKey, List<List<SelectionCriteria>>> _criteriaSets =
+        private readonly ConcurrentDictionary<CriteriaKey, List<(List<SelectionCriteria>, bool)>> _criteriaSets =
             new();
 
         private readonly ConcurrentDictionary<(CriteriaKey, string path, string aliases, LibraryIncludeFlags), Lazy<(bool, LockFileTargetLibrary)>> _lockFileTargetLibraryCache =
@@ -35,6 +36,14 @@ namespace NuGet.Commands
         /// Get ordered selection criteria.
         /// </summary>
         public List<List<SelectionCriteria>> GetSelectionCriteria(RestoreTargetGraph graph, NuGetFramework framework)
+        {
+            // Criteria are unique on graph and framework override.
+            var key = new CriteriaKey(graph.TargetGraphName, framework);
+            var result = _criteriaSets.GetOrAdd(key, _ => LockFileUtils.CreateOrderedCriteriaSets(graph.Conventions, framework, runtimeIdentifier: graph.RuntimeIdentifier));
+            return result.Select(e => e.Item1).ToList();
+        }
+
+        internal List<(List<SelectionCriteria>, bool)> GetSelectionCriteriaExt(RestoreTargetGraph graph, NuGetFramework framework)
         {
             // Criteria are unique on graph and framework override.
             var key = new CriteriaKey(graph.TargetGraphName, framework);
