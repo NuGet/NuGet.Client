@@ -1,58 +1,37 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using Microsoft.VisualStudio.Experimentation;
+using Moq;
 using NuGet.VisualStudio;
 
 namespace Test.Utility.VisualStudio
 {
     public static class NuGetExperimentationServiceUtility
     {
-        ////public static Mock<INuGetExperimentationService> GetMock()
-        //{
-        //    var mock = new Mock<INuGetExperimentationService>();
-        //    return mock;
-        //}
-    }
-
-    public class TestVisualStudioExperimentalService : IExperimentationService
-    {
-        private readonly Dictionary<string, bool> _flights;
-
-        public TestVisualStudioExperimentalService()
-            : this(new Dictionary<string, bool>())
+        public static IExperimentationService GetMock(Dictionary<string, bool>? flights = null)
         {
-        }
+            var mock = new Mock<IExperimentationService>();
+            var d = mock.Setup(m => m.IsCachedFlightEnabled(It.IsAny<string>()));
 
-        public TestVisualStudioExperimentalService(Dictionary<string, bool> flights)
-        {
-            _flights = flights ?? throw new ArgumentNullException(nameof(flights));
-        }
+            if (flights is null)
+            {
+                d.Returns(false);
+            }
+            else
+            {
+                d.Returns((string s) => flights.ContainsKey(s) && flights[s]);
+            }
 
-        public void Dispose()
-        {
-            // do nothing
-        }
-
-        public bool IsCachedFlightEnabled(string flight)
-        {
-            _flights.TryGetValue(flight, out bool result);
-            return result;
-        }
-
-        public Task<bool> IsFlightEnabledAsync(string flight, CancellationToken token)
-        {
-            return Task.FromResult(IsCachedFlightEnabled(flight));
-        }
-
-        public void Start()
-        {
-            // do nothing.
+            return mock.Object;
         }
     }
 
