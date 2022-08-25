@@ -21,6 +21,7 @@ function Test-UwpNativeAppUninstallPackage {
 }
 
 function Test-UwpNativeProjectJsonBuild {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/1826')]
     param($context)
 
     $projectT = New-Project UwpNativeProjectJson
