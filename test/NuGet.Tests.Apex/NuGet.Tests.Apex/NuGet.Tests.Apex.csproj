@@ -41,6 +41,7 @@
     <Compile Include="Fixtures\VisualStudioHostFixtureFactory.cs" />
     <Compile Include="Fixtures\VisualStudioOperationsFixture.cs" />
     <Compile Include="NuGetEndToEndTests\IVsServicesTestCase.cs" />
+    <Compile Include="NuGetEndToEndTests\ProjectDefination.cs" />
     <Compile Include="NuGetPackageSigningTests\AuthorSignedPackageTestCase.cs" />
     <Compile Include="NuGetEndToEndTests\NuGetConsoleTestCase.cs" />
     <Compile Include="NuGetEndToEndTests\NetCoreProjectTestCase.cs" />
