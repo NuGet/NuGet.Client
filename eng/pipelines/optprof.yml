@@ -123,7 +123,6 @@ stages:
       inputs:
         filePath: $(DartLab.Path)\Scripts\VisualStudio\Bootstrapper\Get-BootstrapperURL.ps1
         arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\BootstrapperInfo.json' -VSBranch '$(VSBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
-    preDeployAndRunTestsStepList:
     # Remove this step hook and it's task if you don't want LKG support
     prePublishOptimizationInputsDropStepList:
     # Set parameter for PreviousOptimizationInputsDropName 
