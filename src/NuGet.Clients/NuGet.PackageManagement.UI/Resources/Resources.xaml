@@ -167,6 +167,13 @@
 
   <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Static nuget:Styles.ThemedComboStyleKey}}">
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
+    <Style.Triggers>
+      <Trigger Property="IsEditable"
+                     Value="true">
+        <Setter Property="Template"
+                        Value="{StaticResource ComboBoxEditableTemplate}"/>
+      </Trigger>
+    </Style.Triggers>
   </Style>
 
   <Style x:Key="{x:Type ComboBoxItem}" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
