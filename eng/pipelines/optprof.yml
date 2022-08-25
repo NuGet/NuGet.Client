@@ -53,7 +53,7 @@ stages:
     - name: optDropName
       value: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(resources.pipeline.ComponentBuildUnderTest.sourceCommit)/$(Build.BuildId)/$(System.StageId)/$(System.StageAttempt)
     - name: RunSettingsURI
-      value: $[stageDependencies.OptProf_ProfilingWorkflow.TestMachineConfiguration.outputs['SetRunSettingsURI.RunSettingsURI']]
+      value: $[dependencies.TestMachineConfiguration.outputs['SetRunSettingsURI.RunSettingsURI']]
     optOptimizationInputsDropName: $(optDropName)
     # Remove this parameter if you don't want LKG support
     previousOptimizationInputsDropName: $(PreviousOptimizationInputsDropName)
