@@ -3861,6 +3861,39 @@ namespace NuGet.Commands.FuncTest
             logMessage.Message.Should().Be("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.");
         }
 
+        [Fact]
+        public async Task Restore_WithPackageWithoutAsset_Succeeds()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            packageA.Files.Clear();
+            packageA.AddFile("_._");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+
+            var logger = new TestLogger();
+            ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var projectSpec = ProjectTestHelpers.GetPackageSpec("Project1",
+                pathContext.SolutionRoot,
+                framework: "net5.0",
+                dependencyName: "a",
+                useAssetTargetFallback: true,
+                assetTargetFallbackFrameworks: "net472",
+                asAssetTargetFallback: true);
+
+            var request = ProjectTestHelpers.CreateRestoreRequest(projectSpec, pathContext, logger);
+            var command = new RestoreCommand(request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.Libraries.Should().HaveCount(1);
+            result.LockFile.LogMessages.Should().HaveCount(0);
+        }
+
         static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource> sources, ILogger logger)
         {
             var dgSpec = new DependencyGraphSpec();

@@ -106,11 +106,6 @@ namespace NuGet.Commands
                         }
                         else
                         {
-                            if (i > 0)
-                            {
-                                warn = true;
-                            }
-
                             AddAssets(aliases, library, package, targetGraph.Conventions, dependencyType, lockFileLib,
                                 framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
                             // Check if compatible assets were found.
@@ -119,6 +114,10 @@ namespace NuGet.Commands
                             // compat verification.
                             if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
                             {
+                                if (i > 0) // If it is not the first criteria that was used, then suggests that we need to warn.
+                                {
+                                    warn = true;
+                                }
                                 // Stop when compatible assets are found.
                                 break;
                             }
