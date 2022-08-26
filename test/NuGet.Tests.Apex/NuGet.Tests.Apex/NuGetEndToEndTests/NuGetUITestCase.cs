@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.Test.Apex.VisualStudio.Solution;
+using NuGet.Tests.Apex.NuGetEndToEndTests;
 using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
@@ -68,6 +69,35 @@ namespace NuGet.Tests.Apex
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "9.0.1", XunitLogger);
+        }
+
+        [StaFact]
+        public void InstallPackageToWebSiteFromUI()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            var solutionService = VisualStudio.Get<SolutionService>();
+
+            WebSiteProjectItems websiteProject = new WebSiteProjectItems();
+
+            foreach (WebSiteProjectItem item in websiteProject.InitProjectItems())
+            {
+                solutionService.CreateEmptySolution();
+                var project = solutionService.AddProject(ProjectLanguage.CSharp, item.Template, item.TargetFramework, item.PackageName);
+                VisualStudio.ClearOutputWindow();
+                solutionService.SaveAll();
+
+                // Act
+                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+                var nugetTestService = GetNuGetTestService();
+                var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+                uiwindow.InstallPackageFromUI(item.PackageName, item.PackageVersion);
+
+                // Assert
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, item.PackageName, item.PackageVersion, XunitLogger);
+            }
+
         }
 
         [StaFact]
