@@ -231,7 +231,7 @@ namespace NuGet.Commands
                         var package = packageInfo.Package;
                         var libraryDependency = tfi.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
-                        var (usedFallbackFramework, targetLibrary) = LockFileUtils.CreateLockFileTargetLibrary(
+                        var (targetLibrary, usedFallbackFramework) = LockFileUtils.CreateLockFileTargetLibrary(
                             libraryDependency?.Aliases,
                             libraries[Tuple.Create(library.Name, library.Version)],
                             package,

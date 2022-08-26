@@ -31,7 +31,7 @@ namespace NuGet.Commands
             RestoreTargetGraph targetGraph,
             LibraryIncludeFlags dependencyType)
         {
-            var (_, lockFileTargetLibrary) = CreateLockFileTargetLibrary(
+            var (lockFileTargetLibrary, _) = CreateLockFileTargetLibrary(
                 aliases: null,
                 library,
                 package,
@@ -55,7 +55,7 @@ namespace NuGet.Commands
         /// <param name="dependencies">The dependencies of this package.</param>
         /// <param name="cache">The lock file build cache.</param>
         /// <returns>The LockFileTargetLibrary, and whether a fallback framework criteria was used to select it.</returns>
-        internal static (bool, LockFileTargetLibrary) CreateLockFileTargetLibrary(
+        internal static (LockFileTargetLibrary, bool) CreateLockFileTargetLibrary(
                 string aliases,
                 LockFileLibrary library,
                 LocalPackageInfo package,
@@ -93,7 +93,6 @@ namespace NuGet.Commands
                             PackageType = packageTypes
                         };
 
-                        // Check the ordered criteria sets and decide if we need to warn, here!
                         // Populate assets
 
                         if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
@@ -127,7 +126,7 @@ namespace NuGet.Commands
                     // Exclude items
                     ExcludeItems(lockFileLib, dependencyType);
 
-                    return (fallbackUsed, lockFileLib);
+                    return (lockFileLib, fallbackUsed);
                 });
         }
 
