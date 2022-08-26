@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,7 +52,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
                 if (!File.Exists(projectUniqueName))
                 {
-                    throw new FileNotFoundException(string.Format(VsResources.Error_FileNotExists, projectUniqueName));
+                    throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, VsResources.Error_FileNotExists, projectUniqueName));
                 }
 
                 return await MigrateProjectToPackageRefAsync(projectUniqueName);
@@ -70,7 +71,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             if (project == null)
             {
-                throw new InvalidOperationException(string.Format(VsResources.Error_ProjectNotInCache, projectUniqueName));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, VsResources.Error_ProjectNotInCache, projectUniqueName));
             }
 
             var projectSafeName = project.CustomUniqueName;

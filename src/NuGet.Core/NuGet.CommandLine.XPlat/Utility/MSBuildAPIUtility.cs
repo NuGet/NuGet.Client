@@ -632,7 +632,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static string GetTargetFrameworkCondition(string targetFramework)
         {
-            return string.Format("'$(TargetFramework)' == '{0}'", targetFramework);
+            return string.Format(CultureInfo.CurrentCulture, "'$(TargetFramework)' == '{0}'", targetFramework);
         }
     }
 }

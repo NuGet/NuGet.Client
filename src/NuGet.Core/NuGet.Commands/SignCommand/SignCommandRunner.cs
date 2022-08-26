@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -198,7 +199,7 @@ namespace NuGet.Commands
                     signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection, HashAlgorithmName.SHA256));
                     throw new SignCommandException(
                         LogMessage.CreateError(NuGetLogCode.NU3001,
-                        string.Format(Strings.SignCommandMultipleCertException,
+                        string.Format(CultureInfo.CurrentCulture, Strings.SignCommandMultipleCertException,
                         nameof(SignArgs.CertificateFingerprint))));
                 }
                 else
@@ -216,7 +217,7 @@ namespace NuGet.Commands
 
                 throw new SignCommandException(
                     LogMessage.CreateError(NuGetLogCode.NU3001,
-                    string.Format(Strings.SignCommandMultipleCertException,
+                    string.Format(CultureInfo.CurrentCulture, Strings.SignCommandMultipleCertException,
                     nameof(SignArgs.CertificateFingerprint))));
 #endif
             }

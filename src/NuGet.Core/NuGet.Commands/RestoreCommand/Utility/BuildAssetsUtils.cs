@@ -168,7 +168,7 @@ namespace NuGet.Commands
             doc.Root.AddFirst(
                 new XElement(Namespace + "PropertyGroup",
                             new XAttribute("Condition", $" {ExcludeAllCondition} "),
-                            GenerateProperty("RestoreSuccess", success.ToString()),
+                            GenerateProperty("RestoreSuccess", success.ToString(CultureInfo.CurrentCulture)),
                             GenerateProperty("RestoreTool", "NuGet"),
                             GenerateProperty("ProjectAssetsFile", assetsFilePath),
                             GenerateProperty("NuGetPackageRoot", ReplacePathsWithMacros(repositoryRoot)),
@@ -249,7 +249,7 @@ namespace NuGet.Commands
                 }
             }
 
-            entry.Add(new XElement(Namespace + "Private", privateFlag.ToString()));
+            entry.Add(new XElement(Namespace + "Private", privateFlag.ToString(CultureInfo.CurrentCulture)));
 
             // Remove contentFile/lang/tfm/ from start of the path
             var linkPath = string.Join(string.Empty + Path.DirectorySeparatorChar,

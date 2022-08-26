@@ -513,7 +513,7 @@ namespace NuGetVSExtension
             if (nugetProject == null)
             {
                 throw new InvalidOperationException(
-                    string.Format(Resources.ProjectHasAnInvalidNuGetConfiguration, project.Name));
+                    string.Format(CultureInfo.CurrentCulture, Resources.ProjectHasAnInvalidNuGetConfiguration, project.Name));
             }
 
             // load packages.config. This makes sure that an exception will get thrown if there

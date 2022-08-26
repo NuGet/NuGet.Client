@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -48,7 +49,7 @@ namespace NuGet.Packaging.Rules
             var warningMessage = new StringBuilder();
             foreach (var expectedFile in expectedFiles)
             {
-                warningMessage.AppendLine(string.Format(MessageFormat, expectedFile.Extension, expectedFile.Path, expectedFile.ExpectedPath));
+                warningMessage.AppendLine(string.Format(CultureInfo.CurrentCulture, MessageFormat, expectedFile.Extension, expectedFile.Path, expectedFile.ExpectedPath));
             }
 
             var message = PackagingLogMessage.CreateWarning(warningMessage.ToString(), NuGetLogCode.NU5129);

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -250,7 +251,7 @@ namespace NuGet.VisualStudio
                     return RepositoryType.Template;
 
                 default:
-                    ShowErrorMessage(String.Format(VsResources.TemplateWizard_InvalidRepositoryAttribute,
+                    ShowErrorMessage(string.Format(CultureInfo.CurrentCulture, VsResources.TemplateWizard_InvalidRepositoryAttribute,
                         repositoryAttributeValue));
                     throw new WizardBackoutException();
             }
@@ -442,7 +443,7 @@ namespace NuGet.VisualStudio
             }
 
             // provide a current timpestamp (for use by universal provider)
-            replacementsDictionary["$timestamp$"] = DateTime.Now.ToString("yyyyMMddHHmmss");
+            replacementsDictionary["$timestamp$"] = DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.CurrentCulture);
         }
 
         internal virtual void ThrowWizardBackoutError(string message)

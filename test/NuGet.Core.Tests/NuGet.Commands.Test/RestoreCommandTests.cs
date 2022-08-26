@@ -1661,7 +1661,7 @@ namespace NuGet.Commands.Test
                 {
                     LockFilePath = Path.Combine(projectPath, "project.assets.json"),
                     ProjectStyle = ProjectStyle.PackageReference,
-                    
+
                 };
 
                 var restoreCommand = new RestoreCommand(request);
@@ -2886,6 +2886,98 @@ namespace NuGet.Commands.Test
             result.Success.Should().BeTrue();
             result.LogMessages.Should().HaveCount(0);
             result.LockFile.Libraries.Count.Should().Be(4);
+        }
+
+        /// <summary>
+        /// A 1.0 -> D 1.0 (Central transitive)
+        ///       -> B 1.0 -> D 3.0 (Central transitive - should be ignored because it is not at root)
+        ///                -> C 1.0 -> D 2.0
+        /// </summary>
+        [Fact]
+        public async Task ExecuteAsync_TransitiveDependenciesFromNonRootLibraries_AreIgnored()
+        {
+            // Arrange
+            var framework = new NuGetFramework("net46");
+            var projectNameA = "ProjectA";
+            var projectNameB = "ProjectB";
+            var projectNameC = "ProjectC";
+            var packageName = "PackageD";
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectPathA = Path.Combine(pathContext.SolutionRoot, projectNameA, $"{projectNameA}.csproj");
+                var projectPathB = Path.Combine(pathContext.SolutionRoot, projectNameB, $"{projectNameB}.csproj");
+                var projectPathC = Path.Combine(pathContext.SolutionRoot, projectNameC, $"{projectNameC}.csproj");
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(pathContext.PackageSource));
+                var logger = new TestLogger();
+
+                var dependencyD = new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange { Name = packageName }
+                };
+
+                var centralVersion1 = new CentralPackageVersion(packageName, VersionRange.Parse("1.0.0"));
+                var centralVersion2 = new CentralPackageVersion(packageName, VersionRange.Parse("2.0.0"));
+                var centralVersion3 = new CentralPackageVersion(packageName, VersionRange.Parse("3.0.0"));
+
+                var package1Context = new SimpleTestPackageContext(packageName, "1.0.0");
+                var package2Context = new SimpleTestPackageContext(packageName, "2.0.0");
+                var package3Context = new SimpleTestPackageContext(packageName, "3.0.0");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, package1Context);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, package2Context);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, package3Context);
+
+                var tfiA = CreateTargetFrameworkInformation(
+                    new List<LibraryDependency>(), // no direct dependencies
+                    new List<CentralPackageVersion>() { centralVersion1 },
+                    framework);
+
+                var tfiB = CreateTargetFrameworkInformation(
+                    new List<LibraryDependency>(), // no direct dependencies
+                    new List<CentralPackageVersion>() {centralVersion3},
+                    framework);
+
+                var tfiC = CreateTargetFrameworkInformation(
+                    new List<LibraryDependency>() {dependencyD}, // direct dependency
+                    new List<CentralPackageVersion>() {centralVersion2},
+                    framework);
+
+                PackageSpec packageSpecA = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfiA }, framework, projectNameA, projectPathA, centralPackageManagementEnabled: true);
+                PackageSpec packageSpecB = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfiB }, framework, projectNameB, projectPathB, centralPackageManagementEnabled: true);
+                PackageSpec packageSpecC = CreatePackageSpec(new List<TargetFrameworkInformation>() { tfiC }, framework, projectNameC, projectPathC, centralPackageManagementEnabled: true);
+                packageSpecA = packageSpecA.WithTestProjectReference(packageSpecB);
+                packageSpecB = packageSpecB.WithTestProjectReference(packageSpecC);
+                packageSpecA.RestoreMetadata.CentralPackageTransitivePinningEnabled = true;
+                packageSpecB.RestoreMetadata.CentralPackageTransitivePinningEnabled = true;
+                packageSpecC.RestoreMetadata.CentralPackageTransitivePinningEnabled = true;
+
+                var dgspec = new DependencyGraphSpec();
+                dgspec.AddProject(packageSpecA);
+
+                var request = new TestRestoreRequest(dgspec.GetProjectSpec(projectNameA), sources, pathContext.PackagesV2, logger)
+                {
+                    LockFilePath = Path.Combine(projectPathA, "project.assets.json"),
+                    ProjectStyle = ProjectStyle.PackageReference,
+                };
+
+                var externalProjectA = new ExternalProjectReference(projectNameA, packageSpecA, projectPathA, new[] {projectNameB});
+                var externalProjectB = new ExternalProjectReference(projectNameB, packageSpecB, projectPathB, new[] {projectNameC});
+                var externalProjectC = new ExternalProjectReference(projectNameC, packageSpecC, projectPathC, new string[] { });
+                request.ExternalProjects.Add(externalProjectA);
+                request.ExternalProjects.Add(externalProjectB);
+                request.ExternalProjects.Add(externalProjectC);
+                var restoreCommand = new RestoreCommand(request);
+                var result = await restoreCommand.ExecuteAsync();
+
+                // Assert
+                Assert.False(result.Success);
+                var downgrades = result.RestoreGraphs.Single().AnalyzeResult.Downgrades;
+                downgrades.Count.Should().Be(1);
+                var d = downgrades.Single();
+                d.DowngradedFrom.Key.ToString().Should().Be("PackageD (>= 2.0.0)");
+                d.DowngradedTo.Key.ToString().Should().Be("PackageD (>= 1.0.0)");
+            }
         }
 
         private static PackageSpec GetPackageSpec(string projectName, string testDirectory, string referenceSpec)

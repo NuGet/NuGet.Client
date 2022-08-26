@@ -9,10 +9,13 @@ NuGet.Resolver.DependencyBehavior.HighestPatch = 2 -> NuGet.Resolver.DependencyB
 NuGet.Resolver.DependencyBehavior.Ignore = 0 -> NuGet.Resolver.DependencyBehavior
 NuGet.Resolver.DependencyBehavior.Lowest = 1 -> NuGet.Resolver.DependencyBehavior
 NuGet.Resolver.NuGetResolverConstraintException
+NuGet.Resolver.NuGetResolverConstraintException.NuGetResolverConstraintException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Resolver.NuGetResolverConstraintException.NuGetResolverConstraintException(string message) -> void
 NuGet.Resolver.NuGetResolverException
+NuGet.Resolver.NuGetResolverException.NuGetResolverException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Resolver.NuGetResolverException.NuGetResolverException(string message) -> void
 NuGet.Resolver.NuGetResolverInputException
+NuGet.Resolver.NuGetResolverInputException.NuGetResolverInputException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
 NuGet.Resolver.NuGetResolverInputException.NuGetResolverInputException(string message) -> void
 NuGet.Resolver.PackageResolver
 NuGet.Resolver.PackageResolver.PackageResolver() -> void

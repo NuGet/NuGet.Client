@@ -118,9 +118,9 @@ namespace NuGet.Protocol
                 var queryUrl = new UriBuilder(endpoint.AbsoluteUri);
                 var queryString =
                     "q=" + searchTerm +
-                    "&skip=" + skip.ToString() +
-                    "&take=" + take.ToString() +
-                    "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
+                    "&skip=" + skip.ToString(CultureInfo.CurrentCulture) +
+                    "&take=" + take.ToString(CultureInfo.CurrentCulture) +
+                    "&prerelease=" + filters.IncludePrerelease.ToString(CultureInfo.CurrentCulture).ToLowerInvariant();
 
                 if (filters.IncludeDelisted)
                 {
@@ -133,7 +133,7 @@ namespace NuGet.Protocol
                     var frameworks =
                         string.Join("&",
                             filters.SupportedFrameworks.Select(
-                                fx => "supportedFramework=" + fx.ToString()));
+                                fx => "supportedFramework=" + fx.ToString(CultureInfo.CurrentCulture)));
                     queryString += "&" + frameworks;
                 }
 

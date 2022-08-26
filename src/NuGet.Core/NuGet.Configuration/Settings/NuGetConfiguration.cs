@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using NuGet.Shared;
@@ -43,7 +44,7 @@ namespace NuGet.Configuration
         internal NuGetConfiguration(SettingsFile origin)
             : base()
         {
-            var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: PackageSourceProvider.MaxSupportedProtocolVersion.ToString());
+            var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: PackageSourceProvider.MaxSupportedProtocolVersion.ToString(CultureInfo.CurrentCulture));
 
             defaultSource.SetNode(defaultSource.AsXNode());
 
@@ -66,7 +67,7 @@ namespace NuGet.Configuration
             if (!string.Equals(element.Name.LocalName, ElementName, StringComparison.OrdinalIgnoreCase))
             {
                 throw new NuGetConfigurationException(
-                         string.Format(Resources.ShowError_ConfigRootInvalid, origin.ConfigFilePath));
+                         string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigRootInvalid, origin.ConfigFilePath));
             }
         }
 

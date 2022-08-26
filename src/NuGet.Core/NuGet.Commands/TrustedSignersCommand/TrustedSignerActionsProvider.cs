@@ -313,7 +313,7 @@ namespace NuGet.Commands
         {
             if (owners != null && owners.Any())
             {
-                return string.Join(OwnersItem.OwnersListSeparator.ToString(), owners);
+                return string.Join(OwnersItem.OwnersListSeparator.ToString(CultureInfo.CurrentCulture), owners);
             }
 
             return null;

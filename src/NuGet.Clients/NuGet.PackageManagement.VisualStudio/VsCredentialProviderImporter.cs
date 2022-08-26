@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -99,7 +100,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         _errorDelegate(
                             exception,
-                            string.Format(Strings.CredentialProviderFailed_ImportedProvider, targetAssemblyPath)
+                            string.Format(CultureInfo.CurrentCulture, Strings.CredentialProviderFailed_ImportedProvider, targetAssemblyPath)
                             );
                     }
                 }

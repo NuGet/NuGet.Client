@@ -337,7 +337,7 @@ namespace NuGet.CommandLine
                         perAssemblyError = builder.ToString();
                     }
 
-                    var warning = string.Format(resource, item, perAssemblyError);
+                    var warning = string.Format(CultureInfo.CurrentCulture, resource, item, perAssemblyError);
 
                     console.WriteWarning(warning);
                 }

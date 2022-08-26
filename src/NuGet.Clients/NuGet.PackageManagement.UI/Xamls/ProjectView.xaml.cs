@@ -116,7 +116,6 @@ namespace NuGet.PackageManagement.UI
                             {
                                 _versions.SelectedIndex++;
                             }
-                            PackageDetailControlModel.PreviousSelectedVersion = _versions.Text;
 
                             e.Handled = true;
                         }
@@ -133,7 +132,6 @@ namespace NuGet.PackageManagement.UI
                             {
                                 _versions.SelectedIndex--;
                             }
-                            PackageDetailControlModel.PreviousSelectedVersion = _versions.Text;
 
                             e.Handled = true;
                         }
@@ -274,6 +272,13 @@ namespace NuGet.PackageManagement.UI
             {
                 InstallButtonClicked(this, EventArgs.Empty);
             }
+        }
+
+        private void Versions_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            PackageDetailControlModel.PreviousSelectedVersion = e.AddedItems.Count > 0 ? e.AddedItems[0].ToString() : string.Empty;
+
+            return;
         }
     }
 }
