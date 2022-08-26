@@ -1,1 +1,1 @@
-NuGet.Frameworks.FrameworkConstants.Version7 -> Version
+NuGet.Frameworks.FrameworkConstants.Version7
