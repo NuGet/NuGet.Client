@@ -1,5 +1,6 @@
 function Test-PackageSourceMappingRestore-WithSingleFeed
 {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/1826')]
     param($context)
 
     # Arrange
@@ -54,6 +55,7 @@ function Test-PackageSourceMappingRestore-WithSingleFeed
 
 function Test-PackageSourceMappingRestore-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackage
 {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/1826')]
     param($context)
 
     # Arrange
@@ -116,6 +118,7 @@ function Test-PackageSourceMappingRestore-WithMultipleFeedsWithIdenticalPackages
 }
 
 function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithSingleFeed-Succeed {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/1826')]
     param(
         $context
     )
@@ -206,6 +209,7 @@ function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithSingleF
 
 function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithSpecifiedVersion
 {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/1826')]
     param($context)
 
     # Arrange
@@ -267,6 +271,7 @@ function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithMultipl
 
 function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithMultipleFeedsWithIdenticalPackages-RestoresCorrectPackageWithLatestVersion
 {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/1826')]
     param($context)
 
     # Arrange
@@ -328,6 +333,7 @@ function Test-VsPackageInstallerServices-PackageSourceMappingInstall-WithMultipl
 
 function Test-PC-PackageSourceMappingInstall-Succeed
 {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/1826')]
     param($context)
 
     # Arrange
@@ -410,6 +416,7 @@ function Test-PC-PackageSourceMappingInstall-Fails
 
 function Test-PC-PackageSourceMappingInstall-WithCorrectSourceOption-Succeed
 {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/1826')]
     param($context)
 
     # Arrange
@@ -518,6 +525,7 @@ function Test-PC-PackageSourceMappingInstall-WithWrongSourceOption-Fails
 
 function Test-PC-PackageSourceMappingUpdate-WithCorrectSourceOption-Succeed
 {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/1826')]
     param($context)
 
     # Arrange
