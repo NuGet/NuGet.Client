@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.UI.Test
             GlobalServiceProvider globalServiceProvider,
             ITestOutputHelper output,
             LocalPackageSearchMetadataFixture testData)
-           // : base(globalServiceProvider)
+            : base(globalServiceProvider)
         {
             globalServiceProvider.Reset();
             _serviceBroker.Setup(

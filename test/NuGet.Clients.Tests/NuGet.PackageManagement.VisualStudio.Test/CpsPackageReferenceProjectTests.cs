@@ -53,8 +53,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 { constant.FlightFlag, true },
             };
 
-            var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled), new Lazy<IOutputConsoleProvider>(() => new TestOutputConsoleProvider()));
-            //var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), NuGetExperimentationServiceUtility.GetMock(flightsEnabled).Object, new Lazy<IOutputConsoleProvider>(() => new TestOutputConsoleProvider()));
+
+            var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(flightsEnabled), _outputConsoleProvider);
 
             service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(true);
             componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(service);
