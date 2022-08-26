@@ -75,11 +75,11 @@ namespace NuGet.Commands
                     // This will throw an appropriate error if the nuspec is missing
                     var nuspec = package.Nuspec;
 
-                    var orderedCriteriaSets = cache.GetSelectionCriteriaExt(targetGraph, framework);
+                    var orderedCriteriaSets = cache.GetLabeledSelectionCriteria(targetGraph, framework);
                     var contentItems = cache.GetContentItems(library, package);
 
                     var packageTypes = nuspec.GetPackageTypes().AsList();
-                    bool warn = false;
+                    bool fallbackUsed = false;
 
                     for (var i = 0; i < orderedCriteriaSets.Count; i++)
                     {
@@ -114,15 +114,11 @@ namespace NuGet.Commands
                             // compat verification.
                             if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
                             {
-                                if (orderedCriteriaSets[i].Item2) // If a fallback is being used, say that we should warn.
-                                {
-                                    warn = true;
-                                }
+                                fallbackUsed = orderedCriteriaSets[i].Item2;
                                 // Stop when compatible assets are found.
                                 break;
                             }
                         }
-
                     }
 
                     // Add dependencies
@@ -131,7 +127,7 @@ namespace NuGet.Commands
                     // Exclude items
                     ExcludeItems(lockFileLib, dependencyType);
 
-                    return (warn, lockFileLib);
+                    return (fallbackUsed, lockFileLib);
                 });
         }
 
