@@ -231,7 +231,7 @@ namespace NuGet.Commands
                         var package = packageInfo.Package;
                         var libraryDependency = tfi.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
-                        var (warn, targetLibrary) = LockFileUtils.CreateLockFileTargetLibrary(
+                        var (usedFallbackFramework, targetLibrary) = LockFileUtils.CreateLockFileTargetLibrary(
                             libraryDependency?.Aliases,
                             libraries[Tuple.Create(library.Name, library.Version)],
                             package,
@@ -248,6 +248,7 @@ namespace NuGet.Commands
                         {
                             if (target.TargetFramework is FallbackFramework)
                             {
+                                // PackageTargetFallback works different from AssetTargetFallback so the warning logic for PTF cannot be optimized.
                                 var nonFallbackFramework = new NuGetFramework(target.TargetFramework);
 
                                 var targetLibraryWithoutFallback = LockFileUtils.CreateLockFileTargetLibrary(
@@ -259,10 +260,10 @@ namespace NuGet.Commands
                                     dependencyType: includeFlags,
                                     dependencies: graphItem.Data.Dependencies,
                                     cache: lockFileBuilderCache);
-                                warn = !targetLibrary.Equals(targetLibraryWithoutFallback);
+                                usedFallbackFramework = !targetLibrary.Equals(targetLibraryWithoutFallback);
                             }
 
-                            if (warn)
+                            if (usedFallbackFramework)
                             {
                                 var libraryName = DiagnosticUtility.FormatIdentity(library);
 

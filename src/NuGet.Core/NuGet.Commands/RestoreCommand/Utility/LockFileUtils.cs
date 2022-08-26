@@ -54,7 +54,7 @@ namespace NuGet.Commands
         /// <param name="targetFrameworkOverride">The original framework if the asset selection is happening for a fallback framework.</param>
         /// <param name="dependencies">The dependencies of this package.</param>
         /// <param name="cache">The lock file build cache.</param>
-        /// <returns>The LockFileTargetLibrary</returns>
+        /// <returns>The LockFileTargetLibrary, and whether a fallback framework criteria was used to select it.</returns>
         internal static (bool, LockFileTargetLibrary) CreateLockFileTargetLibrary(
                 string aliases,
                 LockFileLibrary library,
@@ -131,6 +131,10 @@ namespace NuGet.Commands
                 });
         }
 
+        /// <summary>
+        /// Create an ordered criteria list in order, based on the framework and runtime identifier provided.
+        /// The boolean indicates whether the criteria is for a fallback version of the framework or not.
+        /// </summary> 
         internal static List<(List<SelectionCriteria>, bool)> CreateOrderedCriteriaSets(ManagedCodeConventions codeConventions, NuGetFramework framework, string runtimeIdentifier)
         {
             // Create an ordered list of selection criteria. Each will be applied, if the result is empty
