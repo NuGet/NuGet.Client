@@ -99,7 +99,12 @@
       <PathToMergedNuGetExe>$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe</PathToMergedNuGetExe>
     </PropertyGroup>
     <ItemGroup>
-      <BuildArtifacts Include="$(OutputPath)\**\*.dll" Exclude="@(MergeExclude)" />
+      <!-- nuget.exe localized assemblies -->
+      <BuildArtifacts Include="$(OutputPath)\**\$(AssemblyName).resources.dll" Exclude="@(MergeExclude)" />
+      <!-- NuGet.Commands localized assemblies -->
+      <BuildArtifacts Include="$(OutputPath)\**\NuGet.Commands.resources.dll" Exclude="@(MergeExclude)" />
+      <!-- Dependent assemblies -->
+      <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
     </ItemGroup>
     <Message Text="$(MSBuildProjectName) (localized) -&gt; $(PathToMergedNuGetExe)" Importance="High" />
   </Target>
