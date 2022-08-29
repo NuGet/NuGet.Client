@@ -31,13 +31,13 @@ namespace NuGet.CommandLine
                 throw new ArgumentNullException(nameof(resourceManager));
             }
 
-            CultureInfo cultureNeutral = GetNeutralCulture(Thread.CurrentThread.CurrentUICulture);
-            string localizedString = resourceManager.GetString(resourceName, cultureNeutral);
+            string localizedString = resourceManager.GetString(resourceName, Thread.CurrentThread.CurrentUICulture);
             if (localizedString == null) // can be empty if .resx has an empty string
             {
                 // Fallback on existing method
-                string culture = GetLanguageName(cultureNeutral);
-                return resourceManager.GetString(resourceName + '_' + culture, CultureInfo.InvariantCulture) ??
+                CultureInfo cultureNeutral = GetNeutralCulture(Thread.CurrentThread.CurrentUICulture);
+                string languageName = GetLanguageName(cultureNeutral);
+                return resourceManager.GetString(resourceName + '_' + languageName, CultureInfo.InvariantCulture) ??
                        resourceManager.GetString(resourceName, CultureInfo.InvariantCulture);
             }
 
@@ -58,17 +58,6 @@ namespace NuGet.CommandLine
             }
 
             return culture;
-        }
-
-        /// <summary>
-        /// Returns the 3 letter language name used to locate localized resources.
-        /// </summary>
-        /// <returns>the 3 letter language name used to locate localized resources.</returns>
-        public static string GetLanguageName()
-        {
-            CultureInfo culture = GetNeutralCulture(Thread.CurrentThread.CurrentUICulture);
-
-            return GetLanguageName(culture);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "the convention is to used lower case letter for language name.")]

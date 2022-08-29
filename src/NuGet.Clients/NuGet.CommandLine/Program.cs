@@ -226,11 +226,31 @@ namespace NuGet.CommandLine
         // This method acts as a binding redirect
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            var name = new AssemblyName(args.Name);
+            AssemblyName name = new AssemblyName(args.Name);
 
             if (string.Equals(name.Name, ThisExecutableName, StringComparison.OrdinalIgnoreCase))
             {
                 return typeof(Program).Assembly;
+            }
+            // .NET Framework 4.x now trigger AssemblyResolve event for resource assemblies
+            // Catch this event for nuget.exe and NuGet.Command resource assemblies
+            if (name.Name == "NuGet.resources" || name.Name == "NuGet.Commands.resources")
+            {
+                Assembly resourceAssembly = null;
+                string resourceName = $"NuGet.CommandLine.{name.CultureName}.{name.Name}.dll";
+                using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+                {
+                    if (stream == null)
+                    {
+                        return null;
+                    }
+
+                    byte[] assemblyData = new byte[stream.Length];
+                    stream.Read(assemblyData, offset: 0, assemblyData.Length);
+                    resourceAssembly = Assembly.Load(assemblyData);
+                }
+
+                return resourceAssembly;
             }
 
             return null;

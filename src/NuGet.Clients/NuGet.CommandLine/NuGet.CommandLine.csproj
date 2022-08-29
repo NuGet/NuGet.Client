@@ -84,6 +84,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>NuGetResources.resx</DependentUpon>
     </Compile>
+    <!-- nuget.exe localized assemblies -->
+    <EmbeddedResource Include="$(OutputPath)\**\$(AssemblyName).resources.dll" Exclude="@(MergeExclude)" />
+    <!-- NuGet.Commands localized assemblies -->
+    <EmbeddedResource Include="$(OutputPath)\**\NuGet.Commands.resources.dll" Exclude="@(MergeExclude)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -99,10 +103,6 @@
       <PathToMergedNuGetExe>$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe</PathToMergedNuGetExe>
     </PropertyGroup>
     <ItemGroup>
-      <!-- nuget.exe localized assemblies -->
-      <BuildArtifacts Include="$(OutputPath)\**\$(AssemblyName).resources.dll" Exclude="@(MergeExclude)" />
-      <!-- NuGet.Commands localized assemblies -->
-      <BuildArtifacts Include="$(OutputPath)\**\NuGet.Commands.resources.dll" Exclude="@(MergeExclude)" />
       <!-- Dependent assemblies -->
       <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
     </ItemGroup>
@@ -145,7 +145,7 @@
   </Target>
 
   <!-- Do nothing. This basically strips away the framework assemblies from the resulting nuspec.-->
-  <Target Name ="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences"/>
+  <Target Name="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences" />
 
   <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
     <ItemGroup>
