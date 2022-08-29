@@ -99,12 +99,9 @@
       <PathToMergedNuGetExe>$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe</PathToMergedNuGetExe>
     </PropertyGroup>
     <ItemGroup>
-      <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
-      <!-- NuGet.exe needs all NuGet.Commands.resources.dll merged in -->
-      <LocalizedArtifacts Include="$(ArtifactsDirectory)\NuGet.Commands\**\$(Configuration)\$(NETFXTargetFramework)\**\*.resources.dll" />
-      <LocalizedArtifacts Include="$(ArtifactsDirectory)\NuGet.CommandLine\**\$(Configuration)\$(NETFXTargetFramework)\**\*.resources.dll" />
+      <BuildArtifacts Include="$(OutputPath)\**\*.dll" Exclude="@(MergeExclude)" />
     </ItemGroup>
-    <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetExe)" Importance="High" />
+    <Message Text="$(MSBuildProjectName) (localized) -&gt; $(PathToMergedNuGetExe)" Importance="High" />
   </Target>
 
   <!-- 	Since we are moving some code and strings from NuGet.CommandLine to NuGet.Commands, we opted to go through normal localization process
@@ -113,21 +110,20 @@
   <Target Name="ILMergeNuGetExe"
           AfterTargets="Build"
           DependsOnTargets="DetermineILMergeNuGetExeInputsOutputs"
-          Inputs="$(PathToBuiltNuGetExe);@(BuildArtifacts);@(LocalizedArtifacts)"
+          Inputs="$(PathToBuiltNuGetExe);@(BuildArtifacts)"
           Outputs="$(PathToMergedNuGetExe)"
           Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(SkipILMergeOfNuGetExe)' != 'true'" >
     <PropertyGroup>
-      <!-- when done after build, no localizedartifacts are built yet, so expected localized artifact count is 0. -->
-      <ExpectedLocalizedArtifactCount Condition="'$(ExpectedLocalizedArtifactCount)' == ''">0</ExpectedLocalizedArtifactCount>
-    </PropertyGroup>
-    <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props" Condition="'@(BuildArtifacts-&gt;Count())' != '@(MergeInclude-&gt;Count())'" />
-    <Error Text="Satellite assemblies count ILMerged into NuGet.exe should be $(ExpectedLocalizedArtifactCount), but was: @(LocalizedArtifacts-&gt;Count())"
-           Condition="'@(LocalizedArtifacts-&gt;Count())' != '$(ExpectedLocalizedArtifactCount)'" />
-    <PropertyGroup>
-      <IlmergeCommand>$(ILMergeExePath) /lib:$(OutputPath) /out:$(PathToMergedNuGetExe) @(MergeAllowDup -> '/allowdup:%(Identity)', ' ') /log:$(OutputPath)IlMergeLog.txt</IlmergeCommand>
-      <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
-      <!-- LocalizedArtifacts need fullpath, since there will be duplicate file names -->
-      <IlmergeCommand>$(IlmergeCommand) $(PathToBuiltNuGetExe) @(BuildArtifacts->'%(filename)%(extension)', ' ') @(LocalizedArtifacts->'%(fullpath)', ' ')</IlmergeCommand>
+      <IlmergeCommand>$(ILMergeExePath) ^
+        /log:$(OutputPath)IlMergeLog.txt ^
+        /lib:$(OutputPath) ^
+        /out:$(PathToMergedNuGetExe) ^
+        @(MergeAllowDup -> '/allowdup:%(Identity)', ' ')</IlmergeCommand>
+      <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) ^
+        /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
+      <IlmergeCommand>$(IlmergeCommand) ^
+        $(PathToBuiltNuGetExe) ^
+        @(BuildArtifacts->'%(fullpath)', ' ')</IlmergeCommand>
     </PropertyGroup>
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName($(PathToMergedNuGetExe)))" />
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
