@@ -106,7 +106,7 @@
       <!-- Dependent assemblies -->
       <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
     </ItemGroup>
-    <Message Text="$(MSBuildProjectName) (localized) -&gt; $(PathToMergedNuGetExe)" Importance="High" />
+    <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetExe)" Importance="High" />
   </Target>
 
   <!-- 	Since we are moving some code and strings from NuGet.CommandLine to NuGet.Commands, we opted to go through normal localization process

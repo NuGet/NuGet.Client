@@ -113,7 +113,7 @@ steps:
   inputs:
     solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount) /bl:$(Build.StagingDirectory)\\binlog\\04.ILMergeNuGetExe.binlog"
+    msbuildArguments: "/t:ILMergeNuGetExe /bl:$(Build.StagingDirectory)\\binlog\\04.ILMergeNuGetExe.binlog"
 
 - task: MSBuild@1
   displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
