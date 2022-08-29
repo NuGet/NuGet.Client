@@ -49,19 +49,38 @@ namespace NuGet.Build.Tasks.Test
                     RestoreGraphOutputPath = restoreGraphOutputPath,
                 })
                 {
-                    var arguments = task.GetCommandLineArguments().ToList();
-                    arguments.Should().BeEquivalentTo(
+                    FileInfo responseFile = new FileInfo(Path.Combine(testDirectory, Path.GetRandomFileName()));
+
+                    task.WriteResponseFile(responseFile.FullName);
+
+                    List<string> commandLineArguments = task.GetCommandLineArguments(responseFile).ToList();
+
+                    commandLineArguments.Should().BeEquivalentTo(
 #if IS_CORECLR
                     Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
 #endif
-                    $"GenerateRestoreGraphFile=True;Recursive=True;RestoreGraphOutputPath={restoreGraphOutputPath}",
+                    $"@{responseFile.FullName}");
+
+                    var arguments = StaticGraphRestoreArguments.Read(responseFile.FullName);
+
+                    arguments.MSBuildExeFilePath.Should().Be(
 #if IS_CORECLR
-                    Path.Combine(msbuildBinPath, "MSBuild.dll"),
+                    Path.Combine(msbuildBinPath, "MSBuild.dll")
 #else
-                    Path.Combine(msbuildBinPath, "MSBuild.exe"),
+                    Path.Combine(msbuildBinPath, "MSBuild.exe")
 #endif
-                    projectPath,
-                        $"Property1=Value1;Property2=  Value2  ;ExcludeRestorePackageImports=true;OriginalMSBuildStartupDirectory={testDirectory}");
+                    );
+
+                    arguments.EntryProjectFilePath.Should().Be(projectPath);
+
+                    arguments.Options.Should().BeEquivalentTo(new Dictionary<string, string>()
+                    {
+                        [nameof(RestoreTaskEx.Recursive)] = task.Recursive.ToString(),
+                        [nameof(GenerateRestoreGraphFileTask.RestoreGraphOutputPath)] = task.RestoreGraphOutputPath.ToString(),
+                        ["GenerateRestoreGraphFile"] = bool.TrueString
+                    });
+
+                    arguments.GlobalProperties.Should().Contain(globalProperties);
                 }
             }
         }
