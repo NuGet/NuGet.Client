@@ -399,7 +399,7 @@
         SelectedItem="{Binding Path=SelectedVersion}">
 
         <ComboBox.ItemContainerStyle>
-          <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
+          <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
             <Style.Triggers>
               <DataTrigger 
                         Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"

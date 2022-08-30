@@ -276,7 +276,7 @@
             </ToolTip>
           </ComboBox.ToolTip>
           <ComboBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
+            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
               <Setter Property="AutomationProperties.Name" Value="{Binding SourceName}"/>
             </Style>
           </ComboBox.ItemContainerStyle>
