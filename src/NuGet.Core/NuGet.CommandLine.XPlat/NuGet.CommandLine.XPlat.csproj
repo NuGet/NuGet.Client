@@ -23,10 +23,11 @@
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
   </ItemGroup>
 
-<!-- Microsoft.Build.Locator is only used when debugging, and the compiler will skip copying this dependency from Release assemblies we insert because we only refer to it conditionally with the DEBUG configuration -->
-  <ItemGroup>
+<!-- Microsoft.Build.Locator is only used when debugging, and the compiler will skip copying this dependency from Release assemblies we insert because we only refer to it conditionally with the DEBUG configuration.
+  Uncomment the following when debugging. Also uncomment the MSBuildLocator code from Program.cs -->
+  <!-- <ItemGroup>
     <PackageReference Include="Microsoft.Build.Locator" PrivateAssets="All" />
-  </ItemGroup>
+  </ItemGroup> -->
 
   <ItemGroup>
     <Compile Remove="external\*" />
