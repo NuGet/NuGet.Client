@@ -75,7 +75,7 @@ namespace NuGet.Commands
                     // This will throw an appropriate error if the nuspec is missing
                     var nuspec = package.Nuspec;
 
-                    var orderedCriteriaSets = cache.GetLabeledSelectionCriteria(targetGraph, framework);
+                    List<(List<SelectionCriteria>, bool)> orderedCriteriaSets = cache.GetLabeledSelectionCriteria(targetGraph, framework);
                     var contentItems = cache.GetContentItems(library, package);
 
                     var packageTypes = nuspec.GetPackageTypes().AsList();
