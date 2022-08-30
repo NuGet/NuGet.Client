@@ -3485,6 +3485,14 @@ namespace NuGet.Commands.Test
                     { "VersionRange", "3.0.0" },
                     { "TargetFrameworks", "netcoreapp3.0" },
                 });
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "z" },
+                    { "VersionRange", "3.0.0" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
 
