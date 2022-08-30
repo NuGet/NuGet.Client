@@ -11,10 +11,6 @@ using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Commands;
 
-#if DEBUG
-using Microsoft.Build.Locator;
-#endif
-
 namespace NuGet.CommandLine.XPlat
 {
     internal class Program
@@ -43,7 +39,7 @@ namespace NuGet.CommandLine.XPlat
                 // .NET JIT compiles one method at a time. If this method calls `MSBuildLocator` directly, the
                 // try block is never entered if Microsoft.Build.Locator.dll can't be found. So, run it in a
                 // lambda function to ensure we're in the try block. C# IIFE!
-                ((Action)(() => MSBuildLocator.RegisterDefaults()))();
+                ((Action)(() => Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults()))();
             }
             catch
             {
