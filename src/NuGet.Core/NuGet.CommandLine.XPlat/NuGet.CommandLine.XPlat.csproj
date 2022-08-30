@@ -20,23 +20,14 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
     <PackageReference Include="System.Diagnostics.Debug" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
   </ItemGroup>
 
-  <!-- Microsoft.Build.Locator is needed when debugging, but should not be used in the assemblies we insert.
-       It also generates a build error if the output directory contains MSBuild dlls, so exclude msbuild assets when using the locator. -->
-  <Choose>
-    <When Condition=" '$(Configuration)' == 'Debug' ">
-      <ItemGroup>
-        <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
-        <PackageReference Include="Microsoft.Build.Locator" />
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <PackageReference Include="Microsoft.Build" />
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
+<!-- Microsoft.Build.Locator is only used when debugging, and the compiler will skip copying this dependency from Release assemblies we insert because we only refer to it conditionally with the DEBUG configuration.
+  Uncomment the following when debugging. Also uncomment the MSBuildLocator code from Program.cs -->
+  <!-- <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Locator" PrivateAssets="All" />
+  </ItemGroup> -->
 
   <ItemGroup>
     <Compile Remove="external\*" />
