@@ -7,6 +7,7 @@ using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.VisualStudio.PlatformUI;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
@@ -15,7 +16,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class LicenseAcceptanceWindow : VsDialogWindow
+    public partial class LicenseAcceptanceWindow : DialogWindow
     {
         public LicenseAcceptanceWindow()
         {
