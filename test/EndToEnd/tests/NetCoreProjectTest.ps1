@@ -1,4 +1,4 @@
-﻿# VSSolutionManager and ProjectSystemCache event test for .net core
+# VSSolutionManager and ProjectSystemCache event test for .net core
 function Test-NetCoreProjectSystemCacheUpdateEvent {
 
     # Arrange
@@ -17,7 +17,7 @@ function Test-NetCoreProjectSystemCacheUpdateEvent {
     Try
     {
         # Act
-        $projectA | Install-Package Newtonsoft.Json -Version '9.0.1'
+        $projectA | Install-Package Newtonsoft.Json -Version '13.0.1'
 
         $cacheEvent = Wait-Event -SourceIdentifier SolutionManagerCacheUpdated -TimeoutSec 10
     }
