@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
   <PropertyGroup>
     <IsCommandLinePackage>true</IsCommandLinePackage>
@@ -119,16 +119,9 @@
           Outputs="$(PathToMergedNuGetExe)"
           Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(SkipILMergeOfNuGetExe)' != 'true'" >
     <PropertyGroup>
-      <IlmergeCommand>$(ILMergeExePath) ^
-        /log:$(OutputPath)IlMergeLog.txt ^
-        /lib:$(OutputPath) ^
-        /out:$(PathToMergedNuGetExe) ^
-        @(MergeAllowDup -> '/allowdup:%(Identity)', ' ')</IlmergeCommand>
-      <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) ^
-        /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
-      <IlmergeCommand>$(IlmergeCommand) ^
-        $(PathToBuiltNuGetExe) ^
-        @(BuildArtifacts->'%(fullpath)', ' ')</IlmergeCommand>
+      <IlmergeCommand>$(ILMergeExePath) /lib:$(OutputPath) /out:$(PathToMergedNuGetExe) @(MergeAllowDup -> '/allowdup:%(Identity)', ' ') /log:$(OutputPath)IlMergeLog.txt</IlmergeCommand>
+      <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
+      <IlmergeCommand>$(IlmergeCommand) $(PathToBuiltNuGetExe) @(BuildArtifacts->'%(fullpath)', ' ')</IlmergeCommand>
     </PropertyGroup>
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName($(PathToMergedNuGetExe)))" />
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
