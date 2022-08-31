@@ -8,19 +8,26 @@ namespace NuGet.CommandLine.Test
     public class NuGetHelpCommandTest
     {
         [Theory]
+        [InlineData("add")]
+        [InlineData("client-certs")]
         [InlineData("config")]
         [InlineData("delete")]
+        [InlineData("help")]
+        [InlineData("init")]
         [InlineData("install")]
         [InlineData("list")]
+        [InlineData("locals")]
         [InlineData("pack")]
         [InlineData("push")]
         [InlineData("restore")]
+        [InlineData("search")]
         [InlineData("setApiKey")]
+        [InlineData("sign")]
         [InlineData("sources")]
         [InlineData("spec")]
+        [InlineData("trusted-signers")]
         [InlineData("update")]
-        [InlineData("init")]
-        [InlineData("add")]
+        [InlineData("verify")]
         public void HelpCommand_HelpMessage(string command)
         {
             // Arrange
@@ -59,7 +66,25 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void HelpCommand_Failure_InvalidArguments()
         {
-            Util.TestCommandInvalidArguments("help aCommand otherCommand");
+            Util.TestCommandInvalidArguments("help aCommand otherCommand -ForceEnglishOutput");
+        }
+
+        [Fact]
+        public void HelpCommand_Help_ContainsLocalizedOption()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                "help help -ForceEnglishOutput",
+                waitForExit: true);
+
+            // Assert
+            Assert.Equal(0, r.ExitCode);
+            Assert.Contains("Show command help and usage information.", r.Output);
         }
     }
 }
