@@ -35,8 +35,8 @@ namespace NuGet.CommandLine
             if (localizedString == null) // can be empty if .resx has an empty string
             {
                 // Fallback on existing method
-                CultureInfo cultureNeutral = GetNeutralCulture(Thread.CurrentThread.CurrentUICulture);
-                string languageName = GetLanguageName(cultureNeutral);
+                CultureInfo neutralCulture = GetNeutralCulture(Thread.CurrentThread.CurrentUICulture);
+                string languageName = GetLanguageName(neutralCulture);
                 return resourceManager.GetString(resourceName + '_' + languageName, CultureInfo.InvariantCulture) ??
                        resourceManager.GetString(resourceName, CultureInfo.InvariantCulture);
             }
@@ -44,7 +44,7 @@ namespace NuGet.CommandLine
             return localizedString;
         }
 
-        private static CultureInfo GetNeutralCulture(CultureInfo inputCulture)
+        internal static CultureInfo GetNeutralCulture(CultureInfo inputCulture)
         {
             CultureInfo culture = inputCulture;
             while (!culture.IsNeutralCulture)

@@ -232,28 +232,47 @@ namespace NuGet.CommandLine
             {
                 return typeof(Program).Assembly;
             }
-            // .NET Framework 4.x now trigger AssemblyResolve event for resource assemblies
-            // Catch this event for nuget.exe and NuGet.Command resource assemblies
+            // .NET Framework 4.x now triggers AssemblyResolve event for resource assemblies
+            // Catch this event for nuget.exe (NuGet.CommandLine) and NuGet.Command resource assemblies only
             if (name.Name == "NuGet.resources" || name.Name == "NuGet.Commands.resources")
             {
-                Assembly resourceAssembly = null;
-                string resourceName = $"NuGet.CommandLine.{name.CultureName}.{name.Name}.dll";
-                using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
-                {
-                    if (stream == null)
-                    {
-                        return null;
-                    }
-
-                    byte[] assemblyData = new byte[stream.Length];
-                    stream.Read(assemblyData, offset: 0, assemblyData.Length);
-                    resourceAssembly = Assembly.Load(assemblyData);
-                }
-
-                return resourceAssembly;
+                // Load satellite resource assembly from embedded resources
+                return GetNuGetResourcesAssembly(name.Name, name.CultureInfo);
             }
 
             return null;
+        }
+
+        private static Assembly GetNuGetResourcesAssembly(string name, CultureInfo culture)
+        {
+            string resourceName = $"NuGet.CommandLine.{culture.Name}.{name}.dll";
+            Assembly resourceAssembly = LoadAssemblyFromEmbeddedResources(resourceName);
+            if (resourceAssembly == null)
+            {
+                // Sometimes, embedded assembly names have dashes replaced by underscores
+                string altResourceName = $"NuGet.CommandLine.{culture.Name.Replace("-", "_")}.{name}.dll";
+                resourceAssembly = LoadAssemblyFromEmbeddedResources(altResourceName);
+            }
+
+            return resourceAssembly;
+        }
+
+        private static Assembly LoadAssemblyFromEmbeddedResources(string resourceName)
+        {
+            Assembly resourceAssembly = null;
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+            {
+                if (stream == null)
+                {
+                    return null;
+                }
+
+                byte[] assemblyData = new byte[stream.Length];
+                stream.Read(assemblyData, offset: 0, assemblyData.Length);
+                resourceAssembly = Assembly.Load(assemblyData);
+            }
+
+            return resourceAssembly;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to block the exe from usage if anything failed")]
