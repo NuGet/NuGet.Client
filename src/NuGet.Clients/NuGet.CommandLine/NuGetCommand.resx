@@ -5663,4 +5663,7 @@ nuget client-certs List</value>
     <value>usage: {0} {1} {2}</value>
     <comment>{0} - executable name: nuget.exe; {1} - command name (not localizable); {2} - command summary description</comment>
   </data>
+  <data name="Option_Help" xml:space="preserve">
+    <value>Show command help and usage information.</value>
+  </data>
 </root>

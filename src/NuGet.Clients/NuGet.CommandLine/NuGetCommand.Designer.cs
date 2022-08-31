@@ -6355,6 +6355,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show command help and usage information..
+        /// </summary>
+        internal static string Option_Help {
+            get {
+                return ResourceManager.GetString("Option_Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Do not prompt for user input or confirmations..
         /// </summary>
         internal static string Option_NonInteractive {
