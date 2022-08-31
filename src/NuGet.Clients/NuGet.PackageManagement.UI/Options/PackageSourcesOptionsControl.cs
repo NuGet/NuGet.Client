@@ -54,6 +54,7 @@ namespace NuGet.Options
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
                 return (IVsImageService2)Package.GetGlobalService(typeof(SVsImageService));
             }
         }
@@ -62,6 +63,8 @@ namespace NuGet.Options
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
                 ImageAttributes attributes = new ImageAttributes
                 {
                     StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
@@ -80,6 +83,8 @@ namespace NuGet.Options
 
         public PackageSourcesOptionsControl(IAsyncServiceProvider asyncServiceProvider)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             InitializeComponent();
 
             _asyncServiceProvider = asyncServiceProvider;

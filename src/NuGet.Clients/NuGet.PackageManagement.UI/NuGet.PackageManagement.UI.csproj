@@ -217,7 +217,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Resources\Images.cs" />
-    <Compile Include="Resources\Styles.cs" />
     <Compile Include="UserInterfaceService\INuGetUI.cs" />
     <Compile Include="Models\PackageLicenseInfo.cs" />
     <Compile Include="Models\DetailedPackageMetadata.cs" />

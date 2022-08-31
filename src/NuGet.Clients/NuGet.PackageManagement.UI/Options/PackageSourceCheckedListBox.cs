@@ -13,6 +13,7 @@ using NuGet.PackageManagement.UI;
 using NuGet.VisualStudio.Internal.Contracts;
 using GelUtilities = Microsoft.Internal.VisualStudio.PlatformUI.Utilities;
 using NuGet.Configuration;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.Options
 {
@@ -24,6 +25,8 @@ namespace NuGet.Options
 
         private Icon GetWarningIcon()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (WarningIcon == null)
             {
                 ImageAttributes attributes = new ImageAttributes
@@ -66,6 +69,8 @@ namespace NuGet.Options
 
         protected override void OnDrawItem(DrawItemEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var currentListBox = this;
             var graphics = e.Graphics;
             e.DrawBackground();
