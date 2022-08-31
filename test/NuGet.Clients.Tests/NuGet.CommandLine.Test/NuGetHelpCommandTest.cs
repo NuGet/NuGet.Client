@@ -31,10 +31,10 @@ namespace NuGet.CommandLine.Test
         public void HelpCommand_HelpMessage(string command)
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            string nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var r = CommandRunner.Run(
+            CommandRunnerResult r = CommandRunner.Run(
                 nugetexe,
                 Directory.GetCurrentDirectory(),
                 "help " + command,
@@ -49,10 +49,10 @@ namespace NuGet.CommandLine.Test
         public void HelpCommand_SpecCommand()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            string nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var r = CommandRunner.Run(
+            CommandRunnerResult r = CommandRunner.Run(
                 nugetexe,
                 Directory.GetCurrentDirectory(),
                 "help spec",
@@ -73,10 +73,10 @@ namespace NuGet.CommandLine.Test
         public void HelpCommand_Help_ContainsLocalizedOption()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            string nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var r = CommandRunner.Run(
+            CommandRunnerResult r = CommandRunner.Run(
                 nugetexe,
                 Directory.GetCurrentDirectory(),
                 "help help -ForceEnglishOutput",
