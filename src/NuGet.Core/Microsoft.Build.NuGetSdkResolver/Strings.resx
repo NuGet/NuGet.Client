@@ -137,4 +137,10 @@
     <value>Failed to resolve SDK '{0}'. Package restore was successful but a package with the ID of "{1}" was not installed.</value>
     <comment>{0} is name of an MSBuild project SDK and {1} is package ID that was installed.</comment>
   </data>
+  <data name="Error_DisabledSdkResolver" xml:space="preserve">
+    <value>The NuGetSdkResolver did not resolve this SDK because it was disabled by the MSBUILDDISABLENUGETSDKRESOLVER environment variable.</value>
+  </data>
+  <data name="Error_NoSdkVersion" xml:space="preserve">
+    <value>The NuGetSdkResolver did not resolve this SDK because there was no version specified in the project or global.json.</value>
+  </data>
 </root>
