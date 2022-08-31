@@ -22,7 +22,7 @@ namespace NuGet.Options
 {
     public partial class PackageSourceMappingOptionsControl : UserControl
     {
-        public ItemsChangeObservableCollection<MappingUIDisplay> SourceMappingsCollection { get; private set; }
+        public ItemsChangeObservableCollection<SourceMappingViewModel> SourceMappingsCollection { get; private set; }
 
         private IReadOnlyList<PackageSourceMappingSourceItem> _originalPackageSourceMappings;
 
@@ -39,7 +39,7 @@ namespace NuGet.Options
             ShowButtonCommand = new ButtonCommand(ExecuteShowButtonCommand, CanExecuteShowButtonCommand);
             RemoveButtonCommand = new ButtonCommand(ExecuteRemoveButtonCommand, CanExecuteRemoveButtonCommand);
             ClearButtonCommand = new ButtonCommand(ExecuteClearButtonCommand, CanExecuteClearButtonCommand);
-            SourceMappingsCollection = new ItemsChangeObservableCollection<MappingUIDisplay>();
+            SourceMappingsCollection = new ItemsChangeObservableCollection<SourceMappingViewModel>();
             DataContext = this;
             InitializeComponent();
             (ShowButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
@@ -55,7 +55,7 @@ namespace NuGet.Options
             var settings = componentModelMapping.GetService<ISettings>();
             PackageSourceMappingProvider packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
             _originalPackageSourceMappings = packageSourceMappingProvider.GetPackageSourceMappingItems();
-            IReadOnlyList<MappingUIDisplay> SourceMappingsCollectiontemp = ReadMappingsFromConfigToUI(_originalPackageSourceMappings);
+            IReadOnlyList<SourceMappingViewModel> SourceMappingsCollectiontemp = ReadMappingsFromConfigToUI(_originalPackageSourceMappings);
             //clear sourcemappings so that they don't repeat
             SourceMappingsCollection.Clear();
             SourceMappingsCollection.AddRange(SourceMappingsCollectiontemp);
@@ -77,7 +77,7 @@ namespace NuGet.Options
 
         private void ExecuteRemoveButtonCommand(object parameter)
         {
-            SourceMappingsCollection.Remove((MappingUIDisplay)packageList.SelectedItem);
+            SourceMappingsCollection.Remove((SourceMappingViewModel)packageList.SelectedItem);
             (ClearButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
         }
 
@@ -171,7 +171,7 @@ namespace NuGet.Options
         }
 
         //converts from list of packagesourcemappingsourceItems to a dictonary that can be read by UI
-        private IReadOnlyList<MappingUIDisplay> ReadMappingsFromConfigToUI(IReadOnlyList<PackageSourceMappingSourceItem> originalMappings)
+        private IReadOnlyList<SourceMappingViewModel> ReadMappingsFromConfigToUI(IReadOnlyList<PackageSourceMappingSourceItem> originalMappings)
         {
             var uiSourceMappings = new Dictionary<string, List<PackageSourceContextInfo>>();
             foreach (PackageSourceMappingSourceItem sourceItem in originalMappings)
@@ -185,20 +185,20 @@ namespace NuGet.Options
                     uiSourceMappings[patternItem.Pattern].Add(new PackageSourceContextInfo(sourceItem.Key));
                 }
             }
-            var mappingsCollection = new List<MappingUIDisplay>();
+            var mappingsCollection = new List<SourceMappingViewModel>();
             foreach (string packageID in uiSourceMappings.Keys)
             {
-                MappingUIDisplay temp = new MappingUIDisplay(packageID, uiSourceMappings[packageID]);
+                SourceMappingViewModel temp = new SourceMappingViewModel(packageID, uiSourceMappings[packageID]);
                 mappingsCollection.Add(temp);
             }
             return mappingsCollection.AsReadOnly();
         }
 
         //converts from dictonary created by UI to list of packageSourceMappingSourceItems
-        private IReadOnlyList<PackageSourceMappingSourceItem> ReadMappingsFromUIToConfig(ItemsChangeObservableCollection<MappingUIDisplay> uiSourceMappings)
+        private IReadOnlyList<PackageSourceMappingSourceItem> ReadMappingsFromUIToConfig(ItemsChangeObservableCollection<SourceMappingViewModel> uiSourceMappings)
         {
             Dictionary<string, List<PackagePatternItem>> mappingsDictonary = new Dictionary<string, List<PackagePatternItem>>();
-            foreach (MappingUIDisplay mappingUIDisplay in uiSourceMappings)
+            foreach (SourceMappingViewModel mappingUIDisplay in uiSourceMappings)
             {
                 foreach (PackageSourceContextInfo source in mappingUIDisplay.Sources)
                 {

@@ -5,16 +5,16 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Input;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.PlatformUI;
 using NuGet.PackageManagement.UI;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
 
-
 namespace NuGet.Options
 {
-    public partial class AddMappingDialog : VsDialogWindow
+    public partial class AddMappingDialog : DialogWindow
     {
         public ICommand HideButtonCommand { get; set; }
 
@@ -88,7 +88,7 @@ namespace NuGet.Options
                         tempSources.Add(source.SourceInfo);
                     }
                 }
-                MappingUIDisplay tempPkg = new MappingUIDisplay(tempPkgID, tempSources);
+                var tempPkg = new SourceMappingViewModel(tempPkgID, tempSources);
                 _parent.SourceMappingsCollection.Add(tempPkg);
             }
             (_parent.ShowButtonCommand as ButtonCommand).InvokeCanExecuteChanged();

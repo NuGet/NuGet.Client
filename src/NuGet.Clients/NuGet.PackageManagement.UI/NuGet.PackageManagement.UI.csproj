@@ -91,7 +91,7 @@
     <Compile Include="Options\AddMappingDialog.xaml.cs">
       <DependentUpon>AddMappingDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Options\MappingUIDisplay.cs" />
+    <Compile Include="Options\SourceMappingViewModel.cs" />
     <Compile Include="Options\PackageSourceContextInfoChecked.cs" />
     <Compile Include="Options\PackageSourceMappingOptionsControl.xaml.cs">
       <DependentUpon>PackageSourceMappingOptionsControl.xaml</DependentUpon>
