@@ -22,6 +22,7 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Implementation.Exceptions;
 using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
@@ -238,7 +239,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         }
 
         [Fact]
-        public async Task CreatePathContextAsync_WithUnrestoredPackagesConfig_LogsError()
+        public async Task CreatePathContextAsync_WithUnrestoredPackagesConfig_Throws()
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -246,7 +247,6 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 var userPackageFolder = Path.Combine(testDirectory.Path, "packagesA");
 
                 var settings = Mock.Of<ISettings>();
-                var logger = new Mock<ILogger>();
                 Mock.Get(settings)
                     .Setup(x => x.GetSection("config"))
                     .Returns(() => new VirtualSettingSection("config",
@@ -256,7 +256,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 var target = new VsPathContextProvider(
                     settings,
                     Mock.Of<IVsSolutionManager>(),
-                    logger.Object,
+                    Mock.Of<ILogger>(),
                     getLockFileOrNullAsync: null,
                     _telemetryProvider.Object);
 
@@ -280,14 +280,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     });
 
                 // Act
-                var result = await target.CreatePathContextAsync(project.Object, CancellationToken.None);
-
-                // Assert
-                var message = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, "Foo.1.0.1");
-                var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_CreateContextError, projectUniqueName, message);
-                logger.Verify(l => l.LogError(errorMessage));
-
-                Assert.Equal(null, result);
+                var exception = await Assert.ThrowsAsync<AssetsFileMissingException>(() => target.CreatePathContextAsync(project.Object, CancellationToken.None));
+                Assert.Equal(0, _telemetryProvider.Invocations.Count);
+                Assert.Contains(projectUniqueName, exception.Message);
             }
         }
 
@@ -440,13 +435,13 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         }
 
         [Fact]
-        public async Task CreatePathContextAsync_WithUnrestoredPackageReference_LogsError()
+        public async Task CreatePathContextAsync_WithUnrestoredPackageReference_Throws()
         {
-            var logger = new Mock<ILogger>();
+            // Arrange
             var target = new VsPathContextProvider(
                 Mock.Of<ISettings>(),
                 Mock.Of<IVsSolutionManager>(),
-                logger.Object,
+                Mock.Of<ILogger>(),
                 getLockFileOrNullAsync: _ => Task.FromResult(null as LockFile),
                 _telemetryProvider.Object);
 
@@ -454,15 +449,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             var project = new TestPackageReferenceProject(projectUniqueName);
 
-            // Act
-            var result = await target.CreatePathContextAsync(project, CancellationToken.None);
-
             // Assert
-            var message = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_LockFileError);
-            var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_CreateContextError, projectUniqueName, message);
-            logger.Verify(l => l.LogError(errorMessage));
-
-            Assert.Equal(null, result);
+            var exception = await Assert.ThrowsAsync<AssetsFileMissingException>(() => target.CreatePathContextAsync(project, CancellationToken.None));
+            Assert.Contains(projectUniqueName, exception.Message);
         }
 
         [Fact]
