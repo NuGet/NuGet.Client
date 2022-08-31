@@ -22,7 +22,7 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Gets or sets a <see cref="IEnumerable{T}" /> containing <see cref="KeyValuePair{TKey, TValue}" /> representing the global properties.
         /// </summary>
-        public IEnumerable<KeyValuePair<string, string>> GlobalProperties { get; set; }
+        public Dictionary<string, string> GlobalProperties { get; set; }
 
         /// <summary>
         /// Gets or sets the full path to the MSBuild executable.
@@ -69,15 +69,6 @@ namespace NuGet.Build.Tasks
             using FileStream stream = File.OpenRead(argumentFilePath);
 
             return Read(stream);
-        }
-
-        /// <summary>
-        /// Gets a copy of the global properties.
-        /// </summary>
-        /// <returns>A <see cref="Dictionary{TKey, TValue}" /> containing a copy of the global properties.</returns>
-        public Dictionary<string, string> GetGlobalProperties()
-        {
-            return GlobalProperties.ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

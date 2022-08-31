@@ -304,7 +304,7 @@ namespace NuGet.Build.Tasks.Test
             var actual = StaticGraphRestoreArguments.Read(responseFile.FullName);
 
             actual.EntryProjectFilePath.Should().Be(expected.EntryProjectFilePath);
-            actual.GetGlobalProperties().Should().BeEquivalentTo(expected.GetGlobalProperties());
+            actual.GlobalProperties.Should().BeEquivalentTo(expected.GlobalProperties);
             actual.MSBuildExeFilePath.Should().Be(expected.MSBuildExeFilePath);
             actual.Options.Should().BeEquivalentTo(expected.Options);
         }

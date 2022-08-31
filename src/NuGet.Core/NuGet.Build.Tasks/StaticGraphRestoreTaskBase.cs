@@ -153,7 +153,10 @@ namespace NuGet.Build.Tasks
                 }
                 finally
                 {
-                    FileUtility.Delete(responseFile.FullName);
+                    if (!string.Equals(Environment.GetEnvironmentVariable("RESTORE_TASK_DELETE_ARGUMENT_FILE"), bool.FalseString, StringComparison.OrdinalIgnoreCase))
+                    {
+                        FileUtility.Delete(responseFile.FullName);
+                    }
                 }
             }
             catch (Exception e)
@@ -182,7 +185,7 @@ namespace NuGet.Build.Tasks
         /// Enumerates a list of global properties for the current MSBuild instance.
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}" /> of <see cref="KeyValuePair{TKey, TValue}" /> objects containing global properties.</returns>
-        internal virtual IEnumerable<KeyValuePair<string, string>> GetGlobalProperties()
+        internal virtual Dictionary<string, string> GetGlobalProperties()
         {
             IReadOnlyDictionary<string, string> globalProperties = null;
 
@@ -215,22 +218,25 @@ namespace NuGet.Build.Tasks
                 }
             }
 #endif
+            Dictionary<string, string> newGlobalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
             if (globalProperties != null)
             {
                 foreach (KeyValuePair<string, string> item in globalProperties)
                 {
-                    yield return item;
+                    newGlobalProperties[item.Key] = item.Value;
                 }
             }
 
-            yield return new KeyValuePair<string, string>("ExcludeRestorePackageImports", bool.TrueString);
-
-            yield return new KeyValuePair<string, string>("OriginalMSBuildStartupDirectory", MSBuildStartupDirectory);
+            newGlobalProperties["ExcludeRestorePackageImports"] = bool.TrueString;
+            newGlobalProperties["OriginalMSBuildStartupDirectory"] = MSBuildStartupDirectory;
 
             if (IsSolutionPathDefined)
             {
-                yield return new KeyValuePair<string, string>("SolutionPath", SolutionPath);
+                newGlobalProperties["SolutionPath"] = SolutionPath;
             }
+
+            return newGlobalProperties;
         }
 
         /// <summary>
