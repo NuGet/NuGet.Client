@@ -19,7 +19,7 @@ namespace NuGet.CommandLine {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class NuGetCommand {
@@ -108,7 +108,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        ///   Looks up a localized string similar to Path to certificate file..
         /// </summary>
         internal static string ClientCertificatesCommandFilePathDescription {
             get {
@@ -117,7 +117,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FindBy added to a store client certificate source..
+        ///   Looks up a localized string similar to Search method to find certificate in certificate store (see docs)..
         /// </summary>
         internal static string ClientCertificatesCommandFindByDescription {
             get {
@@ -126,7 +126,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        ///   Looks up a localized string similar to Search the certificate store for the supplied value. Used with FindValue (see docs)..
         /// </summary>
         internal static string ClientCertificatesCommandFindValueDescription {
             get {
@@ -135,7 +135,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bypass certificate validation..
+        ///   Looks up a localized string similar to Skip certificate validation..
         /// </summary>
         internal static string ClientCertificatesCommandForceDescription {
             get {
@@ -144,7 +144,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Determines to which package source client certificate will be applied to..
+        ///   Looks up a localized string similar to Package source name..
         /// </summary>
         internal static string ClientCertificatesCommandPackageSourceDescription {
             get {
@@ -153,7 +153,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        ///   Looks up a localized string similar to Password for the certificate, if needed..
         /// </summary>
         internal static string ClientCertificatesCommandPasswordDescription {
             get {
@@ -162,7 +162,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        ///   Looks up a localized string similar to Certificate store location (see docs)..
         /// </summary>
         internal static string ClientCertificatesCommandStoreLocationDescription {
             get {
@@ -171,7 +171,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        ///   Looks up a localized string similar to Certificate store name (see docs)..
         /// </summary>
         internal static string ClientCertificatesCommandStoreNameDescription {
             get {
@@ -180,7 +180,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        ///   Looks up a localized string similar to Enables storing portable certificate password by disabling password encryption..
         /// </summary>
         internal static string ClientCertificatesCommandStorePasswordInClearTextDescription {
             get {
@@ -206,7 +206,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;List|Add|Update|Remove|&gt; [options].
+        ///   Looks up a localized string similar to &lt;List|Add|Update|Remove&gt; [options].
         /// </summary>
         internal static string ClientCertificatesCommandUsageSummary {
             get {
@@ -215,7 +215,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provides the ability to manage list of client certificates located in %AppData%\NuGet\NuGet.config.
+        ///   Looks up a localized string similar to Provides the ability to manage list of client certificates located in NuGet.config files.
         /// </summary>
         internal static string ClientCertificatesDescription {
             get {
@@ -2476,6 +2476,87 @@ namespace NuGet.CommandLine {
         internal static string ForceRestoreCommand {
             get {
                 return ResourceManager.GetString("ForceRestoreCommand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to alias: {0}.
+        /// </summary>
+        internal static string HelpCommand_Alias {
+            get {
+                return ResourceManager.GetString("HelpCommand_Alias", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  ({0}).
+        /// </summary>
+        internal static string HelpCommand_AltText {
+            get {
+                return ResourceManager.GetString("HelpCommand_AltText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Available commands:.
+        /// </summary>
+        internal static string HelpCommand_AvailableCommands {
+            get {
+                return ResourceManager.GetString("HelpCommand_AvailableCommands", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to examples:.
+        /// </summary>
+        internal static string HelpCommand_Examples {
+            get {
+                return ResourceManager.GetString("HelpCommand_Examples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to options:.
+        /// </summary>
+        internal static string HelpCommand_Options {
+            get {
+                return ResourceManager.GetString("HelpCommand_Options", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type &apos;{0} help &lt;command&gt;&apos; for help on a specific command..
+        /// </summary>
+        internal static string HelpCommand_Suggestion {
+            get {
+                return ResourceManager.GetString("HelpCommand_Suggestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Command.
+        /// </summary>
+        internal static string HelpCommand_Title {
+            get {
+                return ResourceManager.GetString("HelpCommand_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to usage: {0} &lt;command&gt; [args] [options].
+        /// </summary>
+        internal static string HelpCommand_Usage {
+            get {
+                return ResourceManager.GetString("HelpCommand_Usage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to usage: {0} {1} {2}.
+        /// </summary>
+        internal static string HelpCommand_UsageDetail {
+            get {
+                return ResourceManager.GetString("HelpCommand_UsageDetail", resourceCulture);
             }
         }
         
@@ -11052,6 +11133,73 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Searches a given source using the query string provided. If no sources are specified, all sources defined in %AppData%\NuGet\NuGet.config are used..
+        /// </summary>
+        internal static string SearchCommandDescription {
+            get {
+                return ResourceManager.GetString("SearchCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Include prerelease packages..
+        /// </summary>
+        internal static string SearchCommandPreRelease {
+            get {
+                return ResourceManager.GetString("SearchCommandPreRelease", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package source to search. You can pass multiple -Source options to search multiple package sources..
+        /// </summary>
+        internal static string SearchCommandSourceDescription {
+            get {
+                return ResourceManager.GetString("SearchCommandSourceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The number of results to return. The default value is 20..
+        /// </summary>
+        internal static string SearchCommandTake {
+            get {
+                return ResourceManager.GetString("SearchCommandTake", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specify search terms..
+        /// </summary>
+        internal static string SearchCommandUsageDescription {
+            get {
+                return ResourceManager.GetString("SearchCommandUsageDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget search foo
+        ///
+        ///nuget search foo -Verbosity detailed
+        ///
+        ///nuget search foo -PreRelease -Take 5.
+        /// </summary>
+        internal static string SearchCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("SearchCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [search terms] [options].
+        /// </summary>
+        internal static string SearchCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("SearchCommandUsageSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Saves an API key for a given server URL. When no URL is provided API key is saved for the NuGet gallery..
         /// </summary>
         internal static string SetApiKeyCommandDescription {
@@ -12819,7 +12967,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UserName to be used when connecting to an authenticated source..
+        ///   Looks up a localized string similar to Username to be used when connecting to an authenticated source..
         /// </summary>
         internal static string SourcesCommandUserNameDescription {
             get {
@@ -13756,6 +13904,7 @@ namespace NuGet.CommandLine {
                 return ResourceManager.GetString("TrustedSignersCommandUsageSummary", resourceCulture);
             }
         }
+        
         /// <summary>
         ///   Looks up a localized string similar to Overrides the default dependency resolution behavior..
         /// </summary>
@@ -13764,6 +13913,7 @@ namespace NuGet.CommandLine {
                 return ResourceManager.GetString("UpdateCommandDependencyVersion", resourceCulture);
             }
         }
+        
         /// <summary>
         ///   Looks up a localized string similar to Update packages to latest available versions. This command also updates NuGet.exe itself..
         /// </summary>
