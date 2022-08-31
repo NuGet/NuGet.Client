@@ -1,4 +1,4 @@
-<ui:VsDialogWindow
+<vs:DialogWindow
   x:Class="NuGet.PackageManagement.UI.FileConflictDialog"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,6 +6,7 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:ui="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
   Background="{DynamicResource {x:Static resx:Brushes.BackgroundBrushKey}}"
   Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
   Title="{x:Static resx:Resources.WindowTitle_FileConflict}"
@@ -75,4 +76,4 @@
       VerticalAlignment="Top"
       AutomationProperties.Name="{Binding Text}"/>
   </DockPanel>
-</ui:VsDialogWindow>
+</vs:DialogWindow>
