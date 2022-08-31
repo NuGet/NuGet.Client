@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Reflection;
 using System.Resources;
 using Moq;
@@ -68,6 +69,37 @@ namespace NuGet.CommandLine.Test
             Assert.Throws<ArgumentException>(() => LocalizedResourceManager.GetString(resourceName: null, resourceManager: null));
             Assert.Throws<ArgumentException>(() => LocalizedResourceManager.GetString(resourceName: "", resourceManager: It.IsAny<ResourceManager>()));
             Assert.Throws<ArgumentNullException>(() => LocalizedResourceManager.GetString(resourceName: "e", resourceManager: null));
+        }
+
+        [Theory]
+        [InlineData("zh-Hant", "zh-Hant")] // Traditional Chinese
+        [InlineData("zh-Hans", "zh-Hans")] // Simplified Chinese
+        [InlineData("es", "es-hn")] // Spanish, Honduras
+        [InlineData("es", "es-es")] // Spanish, Spain
+        [InlineData("pt", "pt-Br")] // Portuguese, Brazil
+        [InlineData("fr", "fr-fr")] // French, France
+        [InlineData("fr", "fr-ca")] // French, Canada
+        [InlineData("de", "de-de")] // Deutsch, Germany
+        [InlineData("it", "it-it")] // Italian, Italy
+        [InlineData("it", "it-ch")] // Italian, Switzerland
+        [InlineData("pl", "pl-pl")] // Polish, Poland
+        [InlineData("tr", "tr-tr")] // Turkish, Turkey
+        [InlineData("tr", "tr")] // Turkish
+        public void GetNeutralCulture_SupportedLocales_ReturnsExpectedLocale(string expectedLocale, string initialLocale)
+        {
+            Assert.Equal(new CultureInfo(expectedLocale), LocalizedResourceManager.GetNeutralCulture(new CultureInfo(initialLocale)));
+        }
+
+        [SkipMonoTheoryAttribute]
+        [InlineData("cs", "cs-cs")] // Czech, Czech Republic
+        [InlineData("ko", "ko-kr")] // Korean, Republic of Korea
+        [InlineData("pt", "pt-pt")] // Portuguese, Portugal
+        [InlineData("ja", "ja-jp")] // Japanese, Japan
+        [InlineData("de", "de-be")] // Deutsch, Belgium
+        [InlineData("ru", "ru-by")] // Russian, Belarus
+        public void GetNeutralCulture_SupportedLocales_ReturnsExpectedLocaleInWindows(string expectedLocale, string initialLocale)
+        {
+            Assert.Equal(new CultureInfo(expectedLocale), LocalizedResourceManager.GetNeutralCulture(new CultureInfo(initialLocale)));
         }
     }
 }
