@@ -7,7 +7,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.Options
 {
-    public class MappingUIDisplay
+    public class SourceMappingViewModel
     {
         public string ID { get; set; }
         public List<PackageSourceContextInfo> Sources { get; private set; }
@@ -21,7 +21,7 @@ namespace NuGet.Options
             }
         }
 
-        public MappingUIDisplay(string packageId, List<PackageSourceContextInfo> packageSources)
+        public SourceMappingViewModel(string packageId, List<PackageSourceContextInfo> packageSources)
         {
             ID = packageId;
             Sources = packageSources;
