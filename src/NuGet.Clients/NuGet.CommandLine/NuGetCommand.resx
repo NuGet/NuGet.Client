@@ -1389,45 +1389,6 @@ nuget push -?</value>
   <data name="InstallCommandExcludeVersionDescription_cht" xml:space="preserve">
     <value>若設定，目的地資料夾僅會包含封裝名稱，而不會有版本號碼</value>
   </data>
-  <data name="InstallCommandNoCache_csy" xml:space="preserve">
-    <value>Zakáže použití mezipaměti počítače jako prvního zdroje balíčků.</value>
-  </data>
-  <data name="InstallCommandNoCache_deu" xml:space="preserve">
-    <value>Verwenden des Computercaches als erste Paketquelle deaktivieren.</value>
-  </data>
-  <data name="InstallCommandNoCache_esp" xml:space="preserve">
-    <value>Deshabilitar el caché de la máquina como el origen del primer paquete.</value>
-  </data>
-  <data name="InstallCommandNoCache_fra" xml:space="preserve">
-    <value>Désactivation grâce au cache de l'ordinateur, agissant comme première source du package.</value>
-  </data>
-  <data name="InstallCommandNoCache_ita" xml:space="preserve">
-    <value>Disabilitare usando la cache della macchina come prima fonte pacchetto.</value>
-  </data>
-  <data name="InstallCommandNoCache_jpn" xml:space="preserve">
-    <value>最初のパッケージ ソースとしてのコンピューター キャッシュの使用を無効にします。</value>
-  </data>
-  <data name="InstallCommandNoCache_kor" xml:space="preserve">
-    <value>시스템 캐시를 첫 번째 패키지 소스로 사용하지 않도록 설정합니다.</value>
-  </data>
-  <data name="InstallCommandNoCache_plk" xml:space="preserve">
-    <value>Wyłącz, używając pamięci podręcznej komputera jako pierwszego źródła pakietu.</value>
-  </data>
-  <data name="InstallCommandNoCache_ptb" xml:space="preserve">
-    <value>Desative usando o cache da máquina como a primeira origem de pacotes.</value>
-  </data>
-  <data name="InstallCommandNoCache_rus" xml:space="preserve">
-    <value>Отключает использование кэша компьютера в качестве первого источника пакетов.</value>
-  </data>
-  <data name="InstallCommandNoCache_trk" xml:space="preserve">
-    <value>Birinci paket kaynağı olarak makine önbelleğinin kullanılmasını devre dışı bırak.</value>
-  </data>
-  <data name="InstallCommandNoCache_chs" xml:space="preserve">
-    <value>禁止使用计算机缓存作为第一个程序包源。</value>
-  </data>
-  <data name="InstallCommandNoCache_cht" xml:space="preserve">
-    <value>停用使用機器快取做為第一個封裝來源。</value>
-  </data>
   <data name="InstallCommandOutputDirDescription_csy" xml:space="preserve">
     <value>Určuje adresář, do něhož budou nainstalovány balíčky. Není-li zadán, použije se aktuální adresář.</value>
   </data>
@@ -1505,45 +1466,6 @@ nuget push -?</value>
   </data>
   <data name="InstallCommandPrerelease_cht" xml:space="preserve">
     <value>允許安裝預先發行的封裝。若從 packages.config 安裝來還原封裝時則不需要此標幟。</value>
-  </data>
-  <data name="InstallCommandSourceDescription_csy" xml:space="preserve">
-    <value>Seznam zdrojů balíčků pro použití při instalaci</value>
-  </data>
-  <data name="InstallCommandSourceDescription_deu" xml:space="preserve">
-    <value>Eine Liste der Paketquellen, die für die Installation verwendet werden sollen.</value>
-  </data>
-  <data name="InstallCommandSourceDescription_esp" xml:space="preserve">
-    <value>Lista de orígenes de paquetes que se usa para la instalación.</value>
-  </data>
-  <data name="InstallCommandSourceDescription_fra" xml:space="preserve">
-    <value>Liste de sources de packages à utiliser pour l'installation.</value>
-  </data>
-  <data name="InstallCommandSourceDescription_ita" xml:space="preserve">
-    <value>Lista di fonti pacchetto da usare per l'installazione.</value>
-  </data>
-  <data name="InstallCommandSourceDescription_jpn" xml:space="preserve">
-    <value>インストールに使用するパッケージ ソースの一覧。</value>
-  </data>
-  <data name="InstallCommandSourceDescription_kor" xml:space="preserve">
-    <value>설치 시 사용되는 패키지 소스 목록입니다.</value>
-  </data>
-  <data name="InstallCommandSourceDescription_plk" xml:space="preserve">
-    <value>Lista źródeł pakietów do użycia podczas instalacji.</value>
-  </data>
-  <data name="InstallCommandSourceDescription_ptb" xml:space="preserve">
-    <value>Uma lista de origens de pacotes para usar para a instalação.</value>
-  </data>
-  <data name="InstallCommandSourceDescription_rus" xml:space="preserve">
-    <value>Список источников пакетов, используемых для установки.</value>
-  </data>
-  <data name="InstallCommandSourceDescription_trk" xml:space="preserve">
-    <value>Yükleme için kullanılacak paketlerin listesi.</value>
-  </data>
-  <data name="InstallCommandSourceDescription_chs" xml:space="preserve">
-    <value>要用于安装的程序包源列表。</value>
-  </data>
-  <data name="InstallCommandSourceDescription_cht" xml:space="preserve">
-    <value>要用來安裝的封裝來源清單。</value>
   </data>
   <data name="InstallCommandUsageDescription_csy" xml:space="preserve">
     <value>Určuje ID a volitelně také verzi balíčku, který se má nainstalovat. Je-li místo ID použita cesta k souboru packages.config, jsou nainstalovány všechny zde obsažené balíčky.</value>
@@ -4496,45 +4418,6 @@ nuget update -Self</value>
   <data name="Option_ConfigFile_cht" xml:space="preserve">
     <value>NuGet 設定檔。如果未指定，檔案 %AppData%\NuGet\NuGet.config 會用做設定檔。</value>
   </data>
-  <data name="InstallCommandDisableParallel_csy" xml:space="preserve">
-    <value>Zakáže instalaci paralelních balíčků nuget.</value>
-  </data>
-  <data name="InstallCommandDisableParallel_deu" xml:space="preserve">
-    <value>Parallele nuget-Paketinstallationen deaktivieren.</value>
-  </data>
-  <data name="InstallCommandDisableParallel_esp" xml:space="preserve">
-    <value>Deshabilitar las instalaciones del paquete nuget en paralelo.</value>
-  </data>
-  <data name="InstallCommandDisableParallel_fra" xml:space="preserve">
-    <value>Désactivez les installations du package nuget parallèle.</value>
-  </data>
-  <data name="InstallCommandDisableParallel_ita" xml:space="preserve">
-    <value>Disabilita parallel nuget package installs.</value>
-  </data>
-  <data name="InstallCommandDisableParallel_jpn" xml:space="preserve">
-    <value>nuget パッケージの並列インストールを無効にします。</value>
-  </data>
-  <data name="InstallCommandDisableParallel_kor" xml:space="preserve">
-    <value>병렬 nuget 패키지 설치를 사용하지 않도록 설정합니다.</value>
-  </data>
-  <data name="InstallCommandDisableParallel_plk" xml:space="preserve">
-    <value>Wyłącz równoległe instalacje pakietów nuget.</value>
-  </data>
-  <data name="InstallCommandDisableParallel_ptb" xml:space="preserve">
-    <value>Desabilite instalações de pacotes NuGet paralelas.</value>
-  </data>
-  <data name="InstallCommandDisableParallel_rus" xml:space="preserve">
-    <value>Отключает параллельную установку пакетов NuGet.</value>
-  </data>
-  <data name="InstallCommandDisableParallel_trk" xml:space="preserve">
-    <value>Paralel nuget paketi yüklemelerini devre dışı bırak.</value>
-  </data>
-  <data name="InstallCommandDisableParallel_chs" xml:space="preserve">
-    <value>禁止并行 nuget 程序包安装。</value>
-  </data>
-  <data name="InstallCommandDisableParallel_cht" xml:space="preserve">
-    <value>停用平行 nuget 封裝安裝。</value>
-  </data>
   <data name="PackageCommandMinClientVersion_csy" xml:space="preserve">
     <value>Nastaví atribut minClientVersion pro vytvořený balíček.</value>
   </data>
@@ -4730,84 +4613,6 @@ nuget update -Self</value>
   <data name="RestoreCommandDescription_cht" xml:space="preserve">
     <value>還原 NuGet 封裝。</value>
   </data>
-  <data name="RestoreCommandDisableParallelProcessing_csy" xml:space="preserve">
-    <value>Zakáže obnovení paralelních balíčků nuget.</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_deu" xml:space="preserve">
-    <value>Parallele nuget-Paketwiederherstllungen deaktivieren.</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_esp" xml:space="preserve">
-    <value>Deshabilitar las restauraciones del paquete nuget en paralelo.</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_fra" xml:space="preserve">
-    <value>Désactivez les restaurations du package nuget parallèle.</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_ita" xml:space="preserve">
-    <value>Disailita  il ripristino parallel nuget package.</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_jpn" xml:space="preserve">
-    <value>nuget パッケージの並列復元を無効にします。</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_kor" xml:space="preserve">
-    <value>병렬 nuget 패키지 복원을 사용하지 않도록 설정합니다.</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_plk" xml:space="preserve">
-    <value>Wyłącz równoległe przywracanie pakietów NuGet.</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_ptb" xml:space="preserve">
-    <value>Desative as restaurações do pacote nuget paralelo.</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_rus" xml:space="preserve">
-    <value>Отключает параллельное восстановление пакетов NuGet.</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_trk" xml:space="preserve">
-    <value>Paralel nuget paketi geri yüklemelerini devre dışı bırak.</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_chs" xml:space="preserve">
-    <value>禁止并行 nuget 程序包还原。</value>
-  </data>
-  <data name="RestoreCommandDisableParallelProcessing_cht" xml:space="preserve">
-    <value>停用平行 nuget 封裝還原。</value>
-  </data>
-  <data name="RestoreCommandNoCache_csy" xml:space="preserve">
-    <value>Zakáže použití mezipaměti počítače jako prvního zdroje balíčků.</value>
-  </data>
-  <data name="RestoreCommandNoCache_deu" xml:space="preserve">
-    <value>Verwendung des Computercaches als erste Paketquelle deaktivieren.</value>
-  </data>
-  <data name="RestoreCommandNoCache_esp" xml:space="preserve">
-    <value>Deshabilitar el uso del caché de máquina como origen del primer paquete.</value>
-  </data>
-  <data name="RestoreCommandNoCache_fra" xml:space="preserve">
-    <value>Désactivation grâce au cache de l'ordinateur, agissant comme première source du package.</value>
-  </data>
-  <data name="RestoreCommandNoCache_ita" xml:space="preserve">
-    <value>Disablita usando la cache della macchina come prima fonte del pacchetto.</value>
-  </data>
-  <data name="RestoreCommandNoCache_jpn" xml:space="preserve">
-    <value>最初のパッケージ ソースとしてのコンピューター キャッシュの使用を無効にします。</value>
-  </data>
-  <data name="RestoreCommandNoCache_kor" xml:space="preserve">
-    <value>시스템 캐시를 첫 번째 패키지 소스로 사용하지 않도록 설정합니다.</value>
-  </data>
-  <data name="RestoreCommandNoCache_plk" xml:space="preserve">
-    <value>Wyłącz, używając pamięci podręcznej komputera jako pierwszego źródła pakietu.</value>
-  </data>
-  <data name="RestoreCommandNoCache_ptb" xml:space="preserve">
-    <value>Desative usando o cache da máquina como a primeira origem de pacotes.</value>
-  </data>
-  <data name="RestoreCommandNoCache_rus" xml:space="preserve">
-    <value>Отключает использование кэша компьютера в качестве первого источника пакетов.</value>
-  </data>
-  <data name="RestoreCommandNoCache_trk" xml:space="preserve">
-    <value>Birinci paket kaynağı olarak makine önbelleğinin kullanılmasını devre dışı bırak.</value>
-  </data>
-  <data name="RestoreCommandNoCache_chs" xml:space="preserve">
-    <value>禁止使用计算机缓存作为第一个程序包源。</value>
-  </data>
-  <data name="RestoreCommandNoCache_cht" xml:space="preserve">
-    <value>停用使用機器快取做為第一個封裝來源。</value>
-  </data>
   <data name="RestoreCommandPackagesDirectory_csy" xml:space="preserve">
     <value>Určuje složku balíčků.</value>
   </data>
@@ -4924,45 +4729,6 @@ nuget update -Self</value>
   </data>
   <data name="RestoreCommandSolutionDirectory_cht" xml:space="preserve">
     <value>指定方案目錄。還原方案封裝時無效。</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_csy" xml:space="preserve">
-    <value>Seznam zdrojů balíčků k použití</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_deu" xml:space="preserve">
-    <value>Eine Liste der zu verwendenden Paketquellen.</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_esp" xml:space="preserve">
-    <value>Una lista de orígenes de paquetes para usar.</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_fra" xml:space="preserve">
-    <value>Liste de sources de packages à utiliser.</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_ita" xml:space="preserve">
-    <value>Lista di fonti pacchetti da usare.</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_jpn" xml:space="preserve">
-    <value>使用するパッケージ ソースの一覧。</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_kor" xml:space="preserve">
-    <value>사용할 패키지 소스의 목록입니다.</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_plk" xml:space="preserve">
-    <value>Lista źródeł pakietów dostępnych do użycia.</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_ptb" xml:space="preserve">
-    <value>Uma lista de origens de pacotes a serem usados.</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_rus" xml:space="preserve">
-    <value>Список используемых источников пакетов.</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_trk" xml:space="preserve">
-    <value>Kullanılacak paket kaynaklarının listesi.</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_chs" xml:space="preserve">
-    <value>要使用的程序包源的列表。</value>
-  </data>
-  <data name="RestoreCommandSourceDescription_cht" xml:space="preserve">
-    <value>要使用的封裝來源清單。</value>
   </data>
   <data name="RestoreCommandUsageDescription_csy" xml:space="preserve">
     <value>Je-li zadáno řešení, tento příkaz obnoví balíčky NuGet, které jsou nainstalovány v řešení a v projektech obsažených v tomto řešení. V opačném případě tento příkaz obnoví balíčky uvedené v zadaném souboru packages.config.</value>
@@ -5629,41 +5395,5 @@ nuget client-certs Remove -PackageSource certificateName
 nuget client-certs
 
 nuget client-certs List</value>
-  </data>
-  <data name="HelpCommand_Alias" xml:space="preserve">
-    <value>alias: {0}</value>
-    <comment>{0} - short command name (not localizable)</comment>
-  </data>
-  <data name="HelpCommand_AltText" xml:space="preserve">
-    <value> ({0})</value>
-    <comment>{0} - command alternative name (not localizable); do not localize this string</comment>
-  </data>
-  <data name="HelpCommand_AvailableCommands" xml:space="preserve">
-    <value>Available commands:</value>
-  </data>
-  <data name="HelpCommand_Examples" xml:space="preserve">
-    <value>examples:</value>
-  </data>
-  <data name="HelpCommand_Options" xml:space="preserve">
-    <value>options:</value>
-  </data>
-  <data name="HelpCommand_Suggestion" xml:space="preserve">
-    <value>Type '{0} help &lt;command&gt;' for help on a specific command.</value>
-    <comment>{0} - executable name: nuget.exe; Don't localize text enclosed in single quotes: '{0} help command'</comment>
-  </data>
-  <data name="HelpCommand_Title" xml:space="preserve">
-    <value>{0} Command</value>
-    <comment>{0} - command name (not localizable)</comment>
-  </data>
-  <data name="HelpCommand_Usage" xml:space="preserve">
-    <value>usage: {0} &lt;command&gt; [args] [options]</value>
-    <comment>{0} - executable name: nuget.exe; Don't localize '&lt;command&gt; [args] [options]'</comment>
-  </data>
-  <data name="HelpCommand_UsageDetail" xml:space="preserve">
-    <value>usage: {0} {1} {2}</value>
-    <comment>{0} - executable name: nuget.exe; {1} - command name (not localizable); {2} - command summary description</comment>
-  </data>
-  <data name="Option_Help" xml:space="preserve">
-    <value>Show command help and usage information.</value>
   </data>
 </root>

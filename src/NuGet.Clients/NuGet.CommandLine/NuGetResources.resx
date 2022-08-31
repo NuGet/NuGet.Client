@@ -461,45 +461,6 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
   <data name="Error_CannotLocateSolutionFile" xml:space="preserve">
     <value>Cannot locate a solution file.</value>
   </data>
-  <data name="DeleteCommandDeletedPackage_csy" xml:space="preserve">
-    <value>{0} {1} bylo úspěšně odstraněno.</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_deu" xml:space="preserve">
-    <value>{0} {1} wurde erfolgreich gelöscht.</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_esp" xml:space="preserve">
-    <value>{0} {1} se ha eliminado correctamente.</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_fra" xml:space="preserve">
-    <value>{0} {1} a été correctement supprimé.</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_ita" xml:space="preserve">
-    <value>{0} {1} è stato correttamente cancellato.</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_jpn" xml:space="preserve">
-    <value>{0} {1} は正常に削除されました。</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_kor" xml:space="preserve">
-    <value>{0} {1}이(가) 삭제되었습니다.</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_plk" xml:space="preserve">
-    <value>Pomyślnie usunięto element {0} {1}.</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_ptb" xml:space="preserve">
-    <value>{0} {1} foi excluído com sucesso.</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_rus" xml:space="preserve">
-    <value>Удаление {0} {1} выполнено.</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_trk" xml:space="preserve">
-    <value>{0} {1} başarıyla silindi.</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_chs" xml:space="preserve">
-    <value>已成功删除 {0} {1}。</value>
-  </data>
-  <data name="DeleteCommandDeletedPackage_cht" xml:space="preserve">
-    <value>{0} {1} 已成功刪除。</value>
-  </data>
   <data name="InvalidOptionValueError_csy" xml:space="preserve">
     <value>Neplatná hodnota možnosti: '{0} {1}'</value>
   </data>
@@ -1514,84 +1475,6 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
   <data name="ConsoleConfirmMessageAccept_cht" xml:space="preserve">
     <value>是</value>
   </data>
-  <data name="DeleteCommandCanceled_csy" xml:space="preserve">
-    <value>Odstranit zrušené</value>
-  </data>
-  <data name="DeleteCommandCanceled_deu" xml:space="preserve">
-    <value>Der Löschvorgang wurde abgebrochen.</value>
-  </data>
-  <data name="DeleteCommandCanceled_esp" xml:space="preserve">
-    <value>Eliminación cancelada</value>
-  </data>
-  <data name="DeleteCommandCanceled_fra" xml:space="preserve">
-    <value>Suppression annulée</value>
-  </data>
-  <data name="DeleteCommandCanceled_ita" xml:space="preserve">
-    <value>cancellazione teminata</value>
-  </data>
-  <data name="DeleteCommandCanceled_jpn" xml:space="preserve">
-    <value>削除は取り消されました</value>
-  </data>
-  <data name="DeleteCommandCanceled_kor" xml:space="preserve">
-    <value>삭제가 취소됨</value>
-  </data>
-  <data name="DeleteCommandCanceled_plk" xml:space="preserve">
-    <value>Usuwanie anulowane</value>
-  </data>
-  <data name="DeleteCommandCanceled_ptb" xml:space="preserve">
-    <value>Excluir cancelado</value>
-  </data>
-  <data name="DeleteCommandCanceled_rus" xml:space="preserve">
-    <value>Удаление отменено</value>
-  </data>
-  <data name="DeleteCommandCanceled_trk" xml:space="preserve">
-    <value>Silme iptal edildi</value>
-  </data>
-  <data name="DeleteCommandCanceled_chs" xml:space="preserve">
-    <value>已取消删除</value>
-  </data>
-  <data name="DeleteCommandCanceled_cht" xml:space="preserve">
-    <value>已取消刪除</value>
-  </data>
-  <data name="DeleteCommandConfirm_csy" xml:space="preserve">
-    <value>{0} {1} bude odstraněno z {2}. Chcete pokračovat?</value>
-  </data>
-  <data name="DeleteCommandConfirm_deu" xml:space="preserve">
-    <value>{0} {1} wird aus "{2}" gelöscht. Möchten Sie den Vorgang fortsetzen?</value>
-  </data>
-  <data name="DeleteCommandConfirm_esp" xml:space="preserve">
-    <value>{0} {1} se eliminará de {2}. ¿Desea continuar?</value>
-  </data>
-  <data name="DeleteCommandConfirm_fra" xml:space="preserve">
-    <value>{0} {1} sera supprimé de {2}. Souhaitez-vous continuer ?</value>
-  </data>
-  <data name="DeleteCommandConfirm_ita" xml:space="preserve">
-    <value>{0} {1} sarà cancellato da {2}. Vuoi continuare?</value>
-  </data>
-  <data name="DeleteCommandConfirm_jpn" xml:space="preserve">
-    <value>{0} {1} は {2} から削除されます。続行しますか?</value>
-  </data>
-  <data name="DeleteCommandConfirm_kor" xml:space="preserve">
-    <value>{0} {1}이(가) {2}에서 삭제됩니다. 계속하시겠습니까?</value>
-  </data>
-  <data name="DeleteCommandConfirm_plk" xml:space="preserve">
-    <value>Element {0} {1} zostanie usunięty z {2}. Czy chcesz kontynuować?</value>
-  </data>
-  <data name="DeleteCommandConfirm_ptb" xml:space="preserve">
-    <value>{0} {1} será excluído do {2}. Deseja continuar?</value>
-  </data>
-  <data name="DeleteCommandConfirm_rus" xml:space="preserve">
-    <value>Будет выполнено удаление {0} {1} из {2}. Продолжить?</value>
-  </data>
-  <data name="DeleteCommandConfirm_trk" xml:space="preserve">
-    <value>{0} {1} öğeleri {2} konumundan silinecek. Devam etmek istiyor musunuz?</value>
-  </data>
-  <data name="DeleteCommandConfirm_chs" xml:space="preserve">
-    <value>将从 {2} 中删除 {0} {1}。是否要继续?</value>
-  </data>
-  <data name="DeleteCommandConfirm_cht" xml:space="preserve">
-    <value>{0} {1} 會從 {2} 刪除。您要繼續嗎?</value>
-  </data>
   <data name="AmbiguousCommand_csy" xml:space="preserve">
     <value>Nejednoznačný příkaz {0}. Možné hodnoty: {1}.</value>
   </data>
@@ -1708,45 +1591,6 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
   </data>
   <data name="InstallCommandNothingToInstall_cht" xml:space="preserve">
     <value>{0} 中列出的所有封裝均已安裝。</value>
-  </data>
-  <data name="NoApiKeyFound_csy" xml:space="preserve">
-    <value>Nebyl zadán žádný klíč API a nebyl nalezen žádný klíč API Key pro {0}. Chcete-li uložit klíč API pro určitý zdroj, použijte příkaz setApiKey.</value>
-  </data>
-  <data name="NoApiKeyFound_deu" xml:space="preserve">
-    <value>Es wurde kein API-Schlüssel bereitgestellt bzw. für "{0}" gefunden. Verwenden Sie zum Speichern eines API-Schlüssels für eine Quelle den Befehl "setApiKey".</value>
-  </data>
-  <data name="NoApiKeyFound_esp" xml:space="preserve">
-    <value>No se ha proporcionado ninguna clave API ni tampoco se ha podido encontrar una para {0}. Para guardar una clave API para un origen use el comando 'setApiKey'.</value>
-  </data>
-  <data name="NoApiKeyFound_fra" xml:space="preserve">
-    <value>Aucune clé API n'a été fournie et aucune clé API n'a été trouvée pour {0}. Utilisez la commande 'setApiKey' pour enregistrer une clé API pour une source.</value>
-  </data>
-  <data name="NoApiKeyFound_ita" xml:space="preserve">
-    <value>Non è stato fornito alcun API Key  e non è stato possibile trovare API Key per {0}. Per salvare un API Key per una fonte usare il comando 'setApiKey'.</value>
-  </data>
-  <data name="NoApiKeyFound_jpn" xml:space="preserve">
-    <value>API キーが指定されておらず、{0} の API キーが見つかりませんでした。ソースの API キーを保存するには、'setApiKey' コマンドを使用してください。</value>
-  </data>
-  <data name="NoApiKeyFound_kor" xml:space="preserve">
-    <value>API 키가 제공되지 않았으므로 {0}에서 API 키를 찾을 수 없습니다. 소스에 대한 API 키를 저장하려면 'setApiKey' 명령을 사용하십시오.</value>
-  </data>
-  <data name="NoApiKeyFound_plk" xml:space="preserve">
-    <value>Nie podano klucza interfejsu API i nie można znaleźć klucza interfejsu API dla {0}. Aby zapisać klucz interfejsu API dla źródła, użyj polecenia „setApiKey”.</value>
-  </data>
-  <data name="NoApiKeyFound_ptb" xml:space="preserve">
-    <value>Nenhuma chave de API foi fornecida e nenhuma chave de API foi encontrada para {0}. Para salvar uma chave de API para uma origem, use o comando "setApiKey.</value>
-  </data>
-  <data name="NoApiKeyFound_rus" xml:space="preserve">
-    <value>Ключ API не указан, также не удалось найти ключ API для {0}. Чтобы сохранить ключ API для источника, используйте команду "setApiKey".</value>
-  </data>
-  <data name="NoApiKeyFound_trk" xml:space="preserve">
-    <value>API Anahtarı belirtilmemiş ve {0} için hiçbir API Anahtarı bulunamadı. Bir kaynak için API Anahtarını kaydetmek için 'setApiKey' komutunu kullanın.</value>
-  </data>
-  <data name="NoApiKeyFound_chs" xml:space="preserve">
-    <value>未提供 API 密钥并且找不到 {0} 的 API 密钥。若要保存源的 API 密钥，请使用 "setApiKey" 命令。</value>
-  </data>
-  <data name="NoApiKeyFound_cht" xml:space="preserve">
-    <value>未提供 API 索引鍵，也找不到 {0} 的 API 索引鍵。如要儲存來源的 API 索引鍵，請使用 'setApiKey' 命令。</value>
   </data>
   <data name="SetApiKeyCommandApiKeySaved_csy" xml:space="preserve">
     <value>Klíč API {0} byl uložen pro {1}.</value>
@@ -2176,45 +2020,6 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
   </data>
   <data name="PackageCommandAttemptingToBuildSymbolsPackage_cht" xml:space="preserve">
     <value>正在嘗試為 '{0}' 建置符號封裝。</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_csy" xml:space="preserve">
-    <value>Byl nalezen balíček symbolů {0}, ale pro server symbolů nebyl zadán žádný klíč API. Chcete-li uložit klíč API, spusťte příkaz NuGet.exe setApiKey [klíč API z webu http://www.NuGet.org].</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_deu" xml:space="preserve">
-    <value>Das Symbolpaket "{0}" wurde gefunden, es wurde jedoch kein API-Schlüssel für den Symbolserver angegeben. Führen Sie zum Speichern eines API-Schlüssels "NuGet.exe setApiKey [Ihr API-Schlüssel von http://www.NuGet.org]" aus.</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_esp" xml:space="preserve">
-    <value>Se ha encontrado el paquete de símbolos '{0}', pero no se ha especificado ninguna clave API para el servidor de símbolos. Para guardar una clave API, ejecute 'NuGet.exe setApiKey [su clave API de http://www.NuGet.org]'.</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_fra" xml:space="preserve">
-    <value>Package de symboles '{0}' trouvé, mais aucune clé API n'a été spécifiée pour le serveur de symboles. Pour enregistrer une clé API, exécutez 'NuGet.exe setApiKey [votre clé API provenant de http://www.NuGet.org]'.</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_ita" xml:space="preserve">
-    <value>Trovato pacchetto simboli '{0}', ma non è stata specificata alcuna API key per il symbol server. Per salvare una API Key, eseguire 'NuGet.exe setApiKey [ API key da http://www.NuGet.org]'.</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_jpn" xml:space="preserve">
-    <value>シンボル パッケージ '{0}' が見つかりましたが、シンボル サーバーの API キーが指定されていません。API キーを保存するには、'NuGet.exe setApiKey [your API key from http://www.NuGet.org]' を実行してください。</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_kor" xml:space="preserve">
-    <value>기호 패키지 '{0}'을(를) 찾았지만 기호 서버에 대한 API 키가 지정되지 않았습니다. API 키를 저장하려면 'NuGet.exe setApiKey [http://www.NuGet.org의 API 키]'를 실행하십시오.</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_plk" xml:space="preserve">
-    <value>Odnaleziono pakiet symboli „{0}”, ale dla serwera symboli nie został określony klucz interfejsu API. Aby zapisać klucz interfejsu API, uruchom polecenie „NuGet.exe setApiKey [Twój klucz interfejsu API ze strony http://www.NuGet.org]”.</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_ptb" xml:space="preserve">
-    <value>O pacote símbolos '{0}' foi localizado, mas nenhuma chave de API foi especificada para o servidor de símbolos. Para salvar uma chave de API,  execute "NuGet.exe setApiKey [sua chave de API de http://www.NuGet.org]".</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_rus" xml:space="preserve">
-    <value>Обнаружен пакет символов "{0}", но для сервера символов не был указан ключ API. Чтобы сохранить ключ API, выполните команду "NuGet.exe setApiKey [ваш ключ API с сайта http://www.NuGet.org]".</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_trk" xml:space="preserve">
-    <value>{0}' simge paketi bulundu ancak simge sunucusu için hiçbir API anahtarı belirtilmemiş. Bir API Anahtarını kaydetmek için 'NuGet.exe setApiKey [http://www.NuGet.org sayfasından aldığınız API anahtarı]' öğesini çalıştırın.</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_chs" xml:space="preserve">
-    <value>找到符号程序包“{0}”，但未为符号服务器指定 API 密钥。若要保存 API 密钥，请运行“NuGet.exe setApiKey [来自 http://www.NuGet.org 的 API 密钥]”。</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured_cht" xml:space="preserve">
-    <value>找到符號封裝 '{0}'，但並未為符號伺服器指定 API 索引鍵。若要儲存 API 索引鍵，請執行 'NuGet.exe setApiKey [http://www.NuGet.org 中的 API 索引鍵]'。</value>
   </data>
   <data name="UsingNuspecForMetadata_csy" xml:space="preserve">
     <value>{0} se používá pro metadata.</value>
@@ -3659,45 +3464,6 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
   <data name="PackageCommandFileFromDependencyIsChanged_cht" xml:space="preserve">
     <value>相依性中的檔案已變更。正在新增檔案 '{0}'。</value>
   </data>
-  <data name="PushCommandPackagePushed_csy" xml:space="preserve">
-    <value>Balíček byl předán.</value>
-  </data>
-  <data name="PushCommandPackagePushed_deu" xml:space="preserve">
-    <value>Ihr Paket wurde mittels Push übertragen.</value>
-  </data>
-  <data name="PushCommandPackagePushed_esp" xml:space="preserve">
-    <value>Se ha insertado su proyecto.</value>
-  </data>
-  <data name="PushCommandPackagePushed_fra" xml:space="preserve">
-    <value>Votre package a été transmis.</value>
-  </data>
-  <data name="PushCommandPackagePushed_ita" xml:space="preserve">
-    <value>Il pacchetto è stato compresso.</value>
-  </data>
-  <data name="PushCommandPackagePushed_jpn" xml:space="preserve">
-    <value>パッケージがプッシュされました。</value>
-  </data>
-  <data name="PushCommandPackagePushed_kor" xml:space="preserve">
-    <value>패키지가 푸시되었습니다.</value>
-  </data>
-  <data name="PushCommandPackagePushed_plk" xml:space="preserve">
-    <value>Pakiet został wypchnięty.</value>
-  </data>
-  <data name="PushCommandPackagePushed_ptb" xml:space="preserve">
-    <value>O pacote foi empurrado.</value>
-  </data>
-  <data name="PushCommandPackagePushed_rus" xml:space="preserve">
-    <value>Ваш пакет был отправлен.</value>
-  </data>
-  <data name="PushCommandPackagePushed_trk" xml:space="preserve">
-    <value>Paketiniz iletildi.</value>
-  </data>
-  <data name="PushCommandPackagePushed_chs" xml:space="preserve">
-    <value>已推送你的程序包。</value>
-  </data>
-  <data name="PushCommandPackagePushed_cht" xml:space="preserve">
-    <value>已推入您的封裝。</value>
-  </data>
   <data name="PackageCommandFileFromDependencyIsNotChanged_csy" xml:space="preserve">
     <value>Soubor ze závislosti se nezměnil. Soubor {0} není přidán.</value>
   </data>
@@ -3736,45 +3502,6 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
   </data>
   <data name="PackageCommandFileFromDependencyIsNotChanged_cht" xml:space="preserve">
     <value>相依性中的檔案並未變更。並未新增檔案 '{0}'。</value>
-  </data>
-  <data name="UnableToFindFile_csy" xml:space="preserve">
-    <value>Soubor neexistuje ({0}).</value>
-  </data>
-  <data name="UnableToFindFile_deu" xml:space="preserve">
-    <value>Die Datei ist nicht vorhanden ("{0}").</value>
-  </data>
-  <data name="UnableToFindFile_esp" xml:space="preserve">
-    <value>No existe el archivo ({0}).</value>
-  </data>
-  <data name="UnableToFindFile_fra" xml:space="preserve">
-    <value>Le fichier n'existe pas ({0}).</value>
-  </data>
-  <data name="UnableToFindFile_ita" xml:space="preserve">
-    <value>Il file non esiste ({0}).</value>
-  </data>
-  <data name="UnableToFindFile_jpn" xml:space="preserve">
-    <value>ファイルは存在しません ({0})。</value>
-  </data>
-  <data name="UnableToFindFile_kor" xml:space="preserve">
-    <value>파일이 없습니다({0}).</value>
-  </data>
-  <data name="UnableToFindFile_plk" xml:space="preserve">
-    <value>Plik nie istnieje ({0}).</value>
-  </data>
-  <data name="UnableToFindFile_ptb" xml:space="preserve">
-    <value>O arquivo não existe ({0}).</value>
-  </data>
-  <data name="UnableToFindFile_rus" xml:space="preserve">
-    <value>Файл не существует ({0}).</value>
-  </data>
-  <data name="UnableToFindFile_trk" xml:space="preserve">
-    <value>Dosya mevcut değil ({0}).</value>
-  </data>
-  <data name="UnableToFindFile_chs" xml:space="preserve">
-    <value>文件不存在({0})。</value>
-  </data>
-  <data name="UnableToFindFile_cht" xml:space="preserve">
-    <value>檔案不存在 ({0})。</value>
   </data>
   <data name="InstallCommandPackageRestoreConsentNotFound_csy" xml:space="preserve">
     <value>Obnovení balíčku je zakázáno. Chcete-li je povolit, otevřete dialogové okno Možnosti sady Visual Studio, klikněte na uzel Správce balíčků a zaškrtněte položku {0}. Obnovení balíčku můžete rovněž povolit nastavením proměnné prostředí EnableNuGetPackageRestore na hodnotu true.</value>
@@ -3892,45 +3619,6 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
   </data>
   <data name="Error_CannotPromptForInput_cht" xml:space="preserve">
     <value>無法在非互動模式下提供提示。</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_csy" xml:space="preserve">
-    <value>Probíhá odstraňování {0} {1} z {2}.</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_deu" xml:space="preserve">
-    <value>{0} {1} wird aus "{2}" gelöscht.</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_esp" xml:space="preserve">
-    <value>Eliminando {0} {1} de {2}.</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_fra" xml:space="preserve">
-    <value>Suppression de {0} {1} de {2}.</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_ita" xml:space="preserve">
-    <value>Cancellando {0} {1} da {2}.</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_jpn" xml:space="preserve">
-    <value>{2} から {0} {1} を削除しています。</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_kor" xml:space="preserve">
-    <value>{0} {1}을(를) {2}에서 삭제하고 있습니다.</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_plk" xml:space="preserve">
-    <value>Usuwanie elementu {0} {1} z {2}.</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_ptb" xml:space="preserve">
-    <value>Excluindo {0} {1} do {2}.</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_rus" xml:space="preserve">
-    <value>Удаление {0} {1} из {2}.</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_trk" xml:space="preserve">
-    <value>{0} {1} öğeleri {2} konumundan siliniyor.</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_chs" xml:space="preserve">
-    <value>正在从 {2} 中删除 {0} {1}。</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage_cht" xml:space="preserve">
-    <value>正在從 {2} 刪除 {0} {1}。</value>
   </data>
   <data name="Option_VerboseDeprecated_csy" xml:space="preserve">
     <value>Možnost Podrobný se již nepoužívá. Použijte místo toho možnost Podrobnosti.</value>
@@ -4126,45 +3814,6 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
   </data>
   <data name="Error_SettingsIsNull_cht" xml:space="preserve">
     <value>屬性設定為 Null。</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_csy" xml:space="preserve">
-    <value>Vlastnost SourceProvider má hodnotu null.</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_deu" xml:space="preserve">
-    <value>Die Eigenschaft "SourceProvider" ist null.</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_esp" xml:space="preserve">
-    <value>La propiedad SourceProvider es nula.</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_fra" xml:space="preserve">
-    <value>Le @@@fournisseur de source de propriété est nul.</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_ita" xml:space="preserve">
-    <value>Property sSourceProvider è nullo.</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_jpn" xml:space="preserve">
-    <value>プロパティ SourceProvider は null です。</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_kor" xml:space="preserve">
-    <value>SourceProvider 속성이 null입니다.</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_plk" xml:space="preserve">
-    <value>Właściwość SourceProvider ma wartość null.</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_ptb" xml:space="preserve">
-    <value>O item SourceProvider de propriedade é nulo.</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_rus" xml:space="preserve">
-    <value>SourceProvider свойства имеет значение NULL.</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_trk" xml:space="preserve">
-    <value>Özellik SourceProvider null.</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_chs" xml:space="preserve">
-    <value>SourceProvider 属性为 null。</value>
-  </data>
-  <data name="Error_SourceProviderIsNull_cht" xml:space="preserve">
-    <value>屬性 SourceProvider 為 Null。</value>
   </data>
   <data name="PackageCommandInvalidMinClientVersion_csy" xml:space="preserve">
     <value>Hodnotou argumentu MinClientVersion není platná verze.</value>
@@ -5449,5 +5098,9 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
   <data name="Warning_HttpSources_Multiple" xml:space="preserve">
     <value>You are running the '{0}' operation with 'HTTP' sources: {1}
 Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.</value>
+  </data>
+  <data name="Error_SourceProviderIsNull" xml:space="preserve">
+    <value>Property SourceProvider is null.</value>
+    <comment>Don't localize 'SourceProvider'</comment>
   </data>
 </root>
