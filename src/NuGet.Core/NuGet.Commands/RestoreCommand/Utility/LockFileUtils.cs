@@ -31,7 +31,7 @@ namespace NuGet.Commands
             RestoreTargetGraph targetGraph,
             LibraryIncludeFlags dependencyType)
         {
-            return CreateLockFileTargetLibrary(
+            var (lockFileTargetLibrary, _) = CreateLockFileTargetLibrary(
                 aliases: null,
                 library,
                 package,
@@ -40,6 +40,7 @@ namespace NuGet.Commands
                 targetFrameworkOverride: null,
                 dependencies: null,
                 cache: new LockFileBuilderCache());
+            return lockFileTargetLibrary;
         }
 
         /// <summary>
@@ -53,8 +54,8 @@ namespace NuGet.Commands
         /// <param name="targetFrameworkOverride">The original framework if the asset selection is happening for a fallback framework.</param>
         /// <param name="dependencies">The dependencies of this package.</param>
         /// <param name="cache">The lock file build cache.</param>
-        /// <returns>The LockFileTargetLibrary</returns>
-        internal static LockFileTargetLibrary CreateLockFileTargetLibrary(
+        /// <returns>The LockFileTargetLibrary, and whether a fallback framework criteria was used to select it.</returns>
+        internal static (LockFileTargetLibrary, bool) CreateLockFileTargetLibrary(
                 string aliases,
                 LockFileLibrary library,
                 LocalPackageInfo package,
@@ -74,10 +75,11 @@ namespace NuGet.Commands
                     // This will throw an appropriate error if the nuspec is missing
                     var nuspec = package.Nuspec;
 
-                    var orderedCriteriaSets = cache.GetSelectionCriteria(targetGraph, framework);
+                    List<(List<SelectionCriteria> orderedCriteria, bool fallbackUsed)> orderedCriteriaSets = cache.GetLabeledSelectionCriteria(targetGraph, framework);
                     var contentItems = cache.GetContentItems(library, package);
 
                     var packageTypes = nuspec.GetPackageTypes().AsList();
+                    bool fallbackUsed = false;
 
                     for (var i = 0; i < orderedCriteriaSets.Count; i++)
                     {
@@ -95,7 +97,7 @@ namespace NuGet.Commands
 
                         if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
                         {
-                            AddToolsAssets(targetGraph.Conventions, lockFileLib, contentItems, orderedCriteriaSets[i]);
+                            AddToolsAssets(targetGraph.Conventions, lockFileLib, contentItems, orderedCriteriaSets[i].orderedCriteria);
                             if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
                             {
                                 break;
@@ -104,18 +106,18 @@ namespace NuGet.Commands
                         else
                         {
                             AddAssets(aliases, library, package, targetGraph.Conventions, dependencyType, lockFileLib,
-                                framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                                framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i].orderedCriteria);
                             // Check if compatible assets were found.
                             // If no compatible assets were found and this is the last check
                             // continue on with what was given, this will fail in the normal
                             // compat verification.
                             if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
                             {
+                                fallbackUsed = orderedCriteriaSets[i].fallbackUsed;
                                 // Stop when compatible assets are found.
                                 break;
                             }
                         }
-
                     }
 
                     // Add dependencies
@@ -124,42 +126,46 @@ namespace NuGet.Commands
                     // Exclude items
                     ExcludeItems(lockFileLib, dependencyType);
 
-                    return lockFileLib;
+                    return (lockFileLib, fallbackUsed);
                 });
         }
 
-        internal static List<List<SelectionCriteria>> CreateOrderedCriteriaSets(ManagedCodeConventions codeConventions, NuGetFramework framework, string runtimeIdentifier)
+        /// <summary>
+        /// Create an ordered criteria list in order, based on the framework and runtime identifier provided.
+        /// The boolean indicates whether the criteria is for a fallback version of the framework or not.
+        /// </summary> 
+        internal static List<(List<SelectionCriteria>, bool)> CreateOrderedCriteriaSets(ManagedCodeConventions codeConventions, NuGetFramework framework, string runtimeIdentifier)
         {
             // Create an ordered list of selection criteria. Each will be applied, if the result is empty
             // fallback frameworks from "imports" will be tried.
             // These are only used for framework/RID combinations where content model handles everything.
             // AssetTargetFallback and DualCompatbiility frameworks will provide multiple criteria since all assets need to be
             // evaluated before selecting the TFM to use.
-            var orderedCriteriaSets = new List<List<SelectionCriteria>>(1);
+            var orderedCriteriaSets = new List<(List<SelectionCriteria>, bool)>(1);
 
             var assetTargetFallback = framework as AssetTargetFallbackFramework;
 
             if (assetTargetFallback != null)
             {
                 // Add the root project framework first.
-                orderedCriteriaSets.Add(CreateCriteria(codeConventions, assetTargetFallback.RootFramework, runtimeIdentifier));
+                orderedCriteriaSets.Add((CreateCriteria(codeConventions, assetTargetFallback.RootFramework, runtimeIdentifier), false));
                 // Add the secondary framework if dual compatibility framework.
                 if (assetTargetFallback.RootFramework is DualCompatibilityFramework dualCompatibilityFramework)
                 {
-                    orderedCriteriaSets.Add(CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework, runtimeIdentifier));
+                    orderedCriteriaSets.Add((CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework, runtimeIdentifier), false));
                 }
 
                 // Add all fallbacks in order.
-                orderedCriteriaSets.AddRange(assetTargetFallback.Fallback.Select(e => CreateCriteria(codeConventions, e, runtimeIdentifier)));
+                orderedCriteriaSets.AddRange(assetTargetFallback.Fallback.Select(e => (CreateCriteria(codeConventions, e, runtimeIdentifier), true)));
             }
             else
             {
                 // Add the current framework.
-                orderedCriteriaSets.Add(CreateCriteria(codeConventions, framework, runtimeIdentifier));
+                orderedCriteriaSets.Add((CreateCriteria(codeConventions, framework, runtimeIdentifier), false));
 
                 if (framework is DualCompatibilityFramework dualCompatibilityFramework)
                 {
-                    orderedCriteriaSets.Add(CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework, runtimeIdentifier));
+                    orderedCriteriaSets.Add((CreateCriteria(codeConventions, dualCompatibilityFramework.SecondaryFramework, runtimeIdentifier), false));
                 }
             }
 

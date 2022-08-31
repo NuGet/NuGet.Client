@@ -1682,8 +1682,8 @@ namespace NuGet.Commands.Test
                     // NU1507: There are 3 package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: D:\NuGet\.test\work\298ed94f\653dd6db\source, https://feed1, https://feed2
                     logger.WarningMessages.Should()
                         .Contain(i => i.Contains(NuGetLogCode.NU1507.ToString()))
-                        .Which.Should().Contain("There are 3 package sources defined in your configuration")
-                        .And.Contain($"The following sources are defined: {pathContext.PackageSource}, https://feed1, https://feed2");
+                        .Which.Should().Contain("There are 2 package sources defined in your configuration")
+                        .And.Contain($"The following sources are defined: https://feed1, https://feed2");
                 }
             }
         }

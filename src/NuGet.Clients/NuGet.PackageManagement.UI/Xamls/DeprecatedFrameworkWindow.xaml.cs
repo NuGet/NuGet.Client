@@ -3,11 +3,12 @@
 
 using System.Windows;
 using System.Windows.Documents;
+using Microsoft.VisualStudio.PlatformUI;
 using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
-    public partial class DeprecatedFrameworkWindow : VsDialogWindow
+    public partial class DeprecatedFrameworkWindow : DialogWindow
     {
         private bool _initialized;
         private INuGetUIContext _uiContext;

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.VisualStudio.PlatformUI;
 using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
@@ -12,7 +13,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PreviewWindow.xaml
     /// </summary>
-    public partial class PreviewWindow : VsDialogWindow
+    public partial class PreviewWindow : DialogWindow
     {
         private bool _initialized;
         private INuGetUIContext _uiContext;
