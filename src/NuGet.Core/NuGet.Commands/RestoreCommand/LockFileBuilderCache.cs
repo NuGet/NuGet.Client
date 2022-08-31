@@ -47,8 +47,8 @@ namespace NuGet.Commands
             _ = framework ?? throw new ArgumentNullException(nameof(framework));
             // Criteria are unique on graph and framework override.
             var key = new CriteriaKey(graph.TargetGraphName, framework);
-            var result = _criteriaSets.GetOrAdd(key, _ => LockFileUtils.CreateOrderedCriteriaSets(graph.Conventions, framework, runtimeIdentifier: graph.RuntimeIdentifier));
-            return result.Select(e => e.Item1).ToList();
+            List<(List<SelectionCriteria> selectionCriterias, bool fallbackUsed)> result = _criteriaSets.GetOrAdd(key, _ => LockFileUtils.CreateOrderedCriteriaSets(graph.Conventions, framework, runtimeIdentifier: graph.RuntimeIdentifier));
+            return result.Select(e => e.selectionCriterias).ToList();
         }
 
         /// <summary>

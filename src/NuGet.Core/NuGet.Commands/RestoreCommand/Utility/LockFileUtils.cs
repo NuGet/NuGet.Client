@@ -75,7 +75,7 @@ namespace NuGet.Commands
                     // This will throw an appropriate error if the nuspec is missing
                     var nuspec = package.Nuspec;
 
-                    List<(List<SelectionCriteria>, bool)> orderedCriteriaSets = cache.GetLabeledSelectionCriteria(targetGraph, framework);
+                    List<(List<SelectionCriteria> orderedCriteria, bool fallbackUsed)> orderedCriteriaSets = cache.GetLabeledSelectionCriteria(targetGraph, framework);
                     var contentItems = cache.GetContentItems(library, package);
 
                     var packageTypes = nuspec.GetPackageTypes().AsList();
@@ -97,7 +97,7 @@ namespace NuGet.Commands
 
                         if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
                         {
-                            AddToolsAssets(targetGraph.Conventions, lockFileLib, contentItems, orderedCriteriaSets[i].Item1);
+                            AddToolsAssets(targetGraph.Conventions, lockFileLib, contentItems, orderedCriteriaSets[i].orderedCriteria);
                             if (CompatibilityChecker.HasCompatibleToolsAssets(lockFileLib))
                             {
                                 break;
@@ -106,14 +106,14 @@ namespace NuGet.Commands
                         else
                         {
                             AddAssets(aliases, library, package, targetGraph.Conventions, dependencyType, lockFileLib,
-                                framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i].Item1);
+                                framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i].orderedCriteria);
                             // Check if compatible assets were found.
                             // If no compatible assets were found and this is the last check
                             // continue on with what was given, this will fail in the normal
                             // compat verification.
                             if (CompatibilityChecker.HasCompatibleAssets(lockFileLib))
                             {
-                                fallbackUsed = orderedCriteriaSets[i].Item2;
+                                fallbackUsed = orderedCriteriaSets[i].fallbackUsed;
                                 // Stop when compatible assets are found.
                                 break;
                             }
