@@ -280,5 +280,25 @@ namespace NuGet.PackageManagement.UI
 
             return;
         }
+
+        private void Versions_DropDownClosed(object sender, EventArgs e)
+        {
+            PackageDetailControlModel.FirstDisplayedVersion = PackageDetailControlModel.SelectedVersion;
+
+            return;
+        }
+
+        private void Versions_DropDownOpened(object sender, EventArgs e)
+        {
+            if (PackageDetailControlModel.FirstDisplayedVersion != null &&
+                (!PackageDetailControlModel.FirstDisplayedVersion.Range.IsFloating) &&
+                (!PackageDetailControlModel.FirstDisplayedVersion.Range.OriginalString.StartsWith("[", StringComparison.OrdinalIgnoreCase) &&
+                !PackageDetailControlModel.FirstDisplayedVersion.Range.OriginalString.StartsWith("(", StringComparison.OrdinalIgnoreCase)))
+            {
+                PackageDetailControlModel.UserInput = _versions.Text; // Update the variable so the filter refreshes
+            }
+
+            return;
+        }
     }
 }

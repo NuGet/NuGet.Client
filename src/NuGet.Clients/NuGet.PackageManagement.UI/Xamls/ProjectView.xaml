@@ -107,6 +107,9 @@
       ItemsSource="{Binding Path=VersionsView}"
       Text="{Binding Path=UserInput, Mode=OneWay}"
       SelectionChanged="Versions_SelectionChanged"
+      DropDownClosed="Versions_DropDownClosed"
+      DropDownOpened="Versions_DropDownOpened"
+      ScrollViewer.CanContentScroll="False"
       SelectedItem="{Binding Path=SelectedVersion, Mode=TwoWay}">
       <ComboBox.ItemContainerStyle>
             <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
