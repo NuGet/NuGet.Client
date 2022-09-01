@@ -1,10 +1,11 @@
-using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using NuGet.Common;
 
 namespace NuGet.CommandLine
 {
@@ -44,7 +45,7 @@ namespace NuGet.CommandLine
 
         public override void ExecuteCommand()
         {
-            if (!String.IsNullOrEmpty(CommandName))
+            if (!string.IsNullOrEmpty(CommandName))
             {
                 ViewHelpForCommand(CommandName);
             }
@@ -64,10 +65,10 @@ namespace NuGet.CommandLine
 
         public void ViewHelp()
         {
-            Console.WriteLine("usage: {0} <command> [args] [options] ", _commandExe);
-            Console.WriteLine("Type '{0} help <command>' for help on a specific command.", _commandExe);
+            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, NuGetCommand.HelpCommand_Usage, _commandExe));
+            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, NuGetCommand.HelpCommand_Suggestion, _commandExe));
             Console.WriteLine();
-            Console.WriteLine("Available commands:");
+            Console.WriteLine(NuGetCommand.HelpCommand_AvailableCommands);
             Console.WriteLine();
 
             var commands = from c in _commandManager.GetCommands()
@@ -110,12 +111,12 @@ namespace NuGet.CommandLine
             ICommand command = _commandManager.GetCommand(commandName);
             CommandAttribute attribute = command.CommandAttribute;
 
-            Console.WriteLine("usage: {0} {1} {2}", _commandExe, attribute.CommandName, attribute.UsageSummary);
+            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, NuGetCommand.HelpCommand_UsageDetail, _commandExe, attribute.CommandName, attribute.UsageSummary));
             Console.WriteLine();
 
-            if (!String.IsNullOrEmpty(attribute.AltName))
+            if (!string.IsNullOrEmpty(attribute.AltName))
             {
-                Console.WriteLine("alias: {0}", attribute.AltName);
+                Console.WriteLine(string.Format(CultureInfo.CurrentCulture, NuGetCommand.HelpCommand_Alias, attribute.AltName));
                 Console.WriteLine();
             }
 
@@ -133,20 +134,25 @@ namespace NuGet.CommandLine
 
             if (options.Count > 0)
             {
-                Console.WriteLine("options:");
+                Console.WriteLine(NuGetCommand.HelpCommand_Options);
                 Console.WriteLine();
 
                 // Get the max option width. +2 for showing + against multivalued properties
                 int maxOptionWidth = options.Max(o => o.Value.Name.Length) + 2;
                 // Get the max altname option width
-                int maxAltOptionWidth = options.Max(o => (o.Key.AltName ?? String.Empty).Length);
+                int maxAltOptionWidth = options.Max(o => (o.Key.AltName ?? string.Empty).Length);
 
-                foreach (var o in options)
+                foreach (KeyValuePair<OptionAttribute, PropertyInfo> o in options)
                 {
-                    Console.Write(" -{0, -" + (maxOptionWidth + 2) + "}", o.Value.Name +
-                        (TypeHelper.IsMultiValuedProperty(o.Value) ? " +" : String.Empty));
-                    Console.Write(" {0, -" + (maxAltOptionWidth + 4) + "}", GetAltText(o.Key.AltName));
-
+                    if (TypeHelper.IsMultiValuedProperty(o.Value))
+                    {
+                        Console.Write(string.Format(CultureInfo.CurrentCulture, $"-{{0, -{maxOptionWidth + 2}}} +", o.Value.Name));
+                    }
+                    else
+                    {
+                        Console.Write(string.Format(CultureInfo.CurrentCulture, $"-{{0, -{maxOptionWidth + 2}}}", o.Value.Name));
+                    }
+                    Console.Write(string.Format(CultureInfo.CurrentCulture, $" {{0, -{maxAltOptionWidth + 4}}}", GetAltText(o.Key.AltName)));
                     Console.PrintJustified((10 + maxAltOptionWidth + maxOptionWidth), o.Key.Description);
                 }
 
@@ -155,7 +161,7 @@ namespace NuGet.CommandLine
 
             if (!string.IsNullOrEmpty(attribute.UsageExample))
             {
-                Console.WriteLine("examples:");
+                Console.WriteLine(NuGetCommand.HelpCommand_Examples);
                 Console.WriteLine();
                 Console.WriteLine(attribute.UsageExample);
                 Console.WriteLine();
@@ -177,7 +183,7 @@ namespace NuGet.CommandLine
 
             foreach (var command in commands)
             {
-                Console.WriteLine(info.ToTitleCase(command.CommandName) + " Command");
+                Console.WriteLine(string.Format(CultureInfo.CurrentCulture, NuGetCommand.HelpCommand_Title, info.ToTitleCase(command.CommandName)));
                 ViewHelpForCommand(command.CommandName);
             }
         }
@@ -204,11 +210,11 @@ namespace NuGet.CommandLine
 
         private static string GetAltText(string altNameText)
         {
-            if (String.IsNullOrEmpty(altNameText))
+            if (string.IsNullOrEmpty(altNameText))
             {
-                return String.Empty;
+                return string.Empty;
             }
-            return String.Format(CultureInfo.CurrentCulture, " ({0})", altNameText);
+            return string.Format(CultureInfo.CurrentCulture, NuGetCommand.HelpCommand_AltText, altNameText);
         }
 
     }

@@ -44,7 +44,7 @@ namespace NuGet.CommandLine
         [Import]
         public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
 
-        [Option("help", AltName = "?")]
+        [Option(typeof(NuGetCommand), "Option_Help", AltName = "?")]
         public bool Help { get; set; }
 
         [Option(typeof(NuGetCommand), "Option_Verbosity")]
