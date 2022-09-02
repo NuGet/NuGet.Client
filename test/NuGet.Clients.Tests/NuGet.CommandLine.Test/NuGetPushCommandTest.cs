@@ -2247,9 +2247,9 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bdnuget.org")]
-        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bdnuget.org/api/v2")]
-        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bdnuget.org/api/v2/Package")]
+        [InlineData("https://invalid.test")]
+        [InlineData("https://invalid.test/api/v2")]
+        [InlineData("https://invalid.test/api/v2/Package")]
         public void PushCommand_InvalidInput_V2HttpSource(string invalidInput)
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -2291,9 +2291,9 @@ namespace NuGet.CommandLine.Test
                 else
                 {
                     Assert.True(
-                        result.Item3.Contains(
-                            "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bdnuget.org'"),
-                        "Expected error message not found in " + result.Item3
+                        result.Errors.Contains(
+                            "The remote name could not be resolved: 'invalid.test'"),
+                        "Expected error message not found in " + result.Errors
                     );
                 }
 
