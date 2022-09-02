@@ -42,9 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio.Telemetry
 
         private static ApiUsage NewApiUsage(string projectTypeGuid)
         {
-#pragma warning disable CA1308 // Normalize strings to uppercase
-            var guid = projectTypeGuid.ToLowerInvariant();
-#pragma warning restore CA1308 // Normalize strings to uppercase
+            var guid = projectTypeGuid.ToUpperInvariant();
             return new ApiUsage()
             {
                 ProjectType = guid
