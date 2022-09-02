@@ -9,7 +9,7 @@ using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using NuGet.PackageManagement.VisualStudio.ProjectServices;
+using NuGet.PackageManagement.VisualStudio.Telemetry;
 using NuGet.VisualStudio;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 

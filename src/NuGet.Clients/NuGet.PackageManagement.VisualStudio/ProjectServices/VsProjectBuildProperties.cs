@@ -8,7 +8,7 @@ using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.PackageManagement.VisualStudio.ProjectServices;
+using NuGet.PackageManagement.VisualStudio.Telemetry;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio

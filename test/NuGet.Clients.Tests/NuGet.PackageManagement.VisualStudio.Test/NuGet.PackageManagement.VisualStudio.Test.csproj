@@ -65,6 +65,7 @@
     <Compile Include="VisualStudioCredentialProviderTests.cs" />
     <Compile Include="VsCredentialProviderAdapterTests.cs" />
     <Compile Include="VsCredentialProviderImporterTests.cs" />
+    <Compile Include="VsProjectBuildPropertiesTelemetryTests.cs" />
     <Compile Include="VSRestoreSettingsUtilityTests.cs" />
     <Compile Include="Telemetry\VsTelemetrySessionTest.cs" />
   </ItemGroup>

@@ -8,7 +8,7 @@ using System.Linq;
 using NuGet.Common;
 using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.PackageManagement.VisualStudio.ProjectServices
+namespace NuGet.PackageManagement.VisualStudio.Telemetry
 {
     [Export(typeof(IVsProjectBuildPropertiesTelemetry))]
     [PartCreationPolicy(CreationPolicy.Shared)]
@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.VisualStudio.ProjectServices
         private static ApiUsage NewApiUsage(string projectTypeGuid)
         {
 #pragma warning disable CA1308 // Normalize strings to uppercase
-            string guid = projectTypeGuid.ToLowerInvariant();
+            var guid = projectTypeGuid.ToLowerInvariant();
 #pragma warning restore CA1308 // Normalize strings to uppercase
             return new ApiUsage()
             {
@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement.VisualStudio.ProjectServices
             };
         }
 
-        private void AddEventsOnShutdown(object sender, TelemetryEvent e)
+        internal void AddEventsOnShutdown(object sender, TelemetryEvent e)
         {
             var entries = _apiUsages.Values.ToList();
             e.ComplexData["ProjectBuildProperties"] = entries;
