@@ -9,6 +9,7 @@ using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.VisualStudio.ProjectServices;
 using NuGet.VisualStudio;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
@@ -19,27 +20,33 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IVsProjectThreadingService _threadingService;
         private readonly AsyncLazy<SVsSolution> _vsSolution;
+        private readonly IVsProjectBuildPropertiesTelemetry _buildPropertiesTelemetry;
 
         [ImportingConstructor]
         public VsProjectAdapterProvider(
             [Import(typeof(SAsyncServiceProvider))]
             IAsyncServiceProvider serviceProvider,
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService,
+            [Import(typeof(IVsProjectBuildPropertiesTelemetry), RequiredCreationPolicy = CreationPolicy.Shared)]
+            IVsProjectBuildPropertiesTelemetry buildPropertiesTelemetry)
             : this(
                   threadingService,
-                  new AsyncLazy<SVsSolution>(() => serviceProvider.GetServiceAsync<SVsSolution, SVsSolution>(throwOnFailure: false), threadingService.JoinableTaskFactory))
+                  new AsyncLazy<SVsSolution>(() => serviceProvider.GetServiceAsync<SVsSolution, SVsSolution>(throwOnFailure: false), threadingService.JoinableTaskFactory),
+                  buildPropertiesTelemetry)
         {
         }
 
         internal VsProjectAdapterProvider(
             IVsProjectThreadingService threadingService,
-            AsyncLazy<SVsSolution> vsSolution)
+            AsyncLazy<SVsSolution> vsSolution,
+            IVsProjectBuildPropertiesTelemetry buildPropertiesTelemetry)
         {
             Assumes.Present(threadingService);
             Assumes.Present(vsSolution);
 
             _threadingService = threadingService;
             _vsSolution = vsSolution;
+            _buildPropertiesTelemetry = buildPropertiesTelemetry;
         }
 
         public IVsProjectAdapter CreateAdapterForFullyLoadedProject(EnvDTE.Project dteProject)
@@ -61,9 +68,11 @@ namespace NuGet.PackageManagement.VisualStudio
             var vsHierarchyItem = await VsHierarchyItem.FromDteProjectAsync(dteProject);
             Func<IVsHierarchy, EnvDTE.Project> loadDteProject = _ => dteProject;
 
+            string[] projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuidsFromHierarchy(vsHierarchyItem.VsHierarchy);
+
             var buildStorageProperty = vsHierarchyItem.VsHierarchy as IVsBuildPropertyStorage;
             var vsBuildProperties = new VsProjectBuildProperties(
-                dteProject, buildStorageProperty, _threadingService);
+                dteProject, buildStorageProperty, _threadingService, _buildPropertiesTelemetry, projectTypeGuids);
 
             var projectNames = await ProjectNames.FromDTEProjectAsync(dteProject, vsSolution);
             var fullProjectPath = dteProject.GetFullProjectPath();
@@ -103,9 +112,11 @@ namespace NuGet.PackageManagement.VisualStudio
             var vsHierarchyItem = VsHierarchyItem.FromVsHierarchy(hierarchy);
             Func<IVsHierarchy, EnvDTE.Project> loadDteProject = hierarchy => VsHierarchyUtility.GetProjectFromHierarchy(hierarchy);
 
+            var projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuidsFromHierarchy(hierarchy);
+
             var buildStorageProperty = vsHierarchyItem.VsHierarchy as IVsBuildPropertyStorage;
             var vsBuildProperties = new VsProjectBuildProperties(
-                new Lazy<EnvDTE.Project>(() => loadDteProject(hierarchy)), buildStorageProperty, _threadingService);
+                new Lazy<EnvDTE.Project>(() => loadDteProject(hierarchy)), buildStorageProperty, _threadingService, _buildPropertiesTelemetry, projectTypeGuids);
 
             var fullProjectPath = VsHierarchyUtility.GetProjectPath(hierarchy);
             var projectNames = await ProjectNames.FromIVsSolution2(fullProjectPath, (IVsSolution2)vsSolution, hierarchy, CancellationToken.None);

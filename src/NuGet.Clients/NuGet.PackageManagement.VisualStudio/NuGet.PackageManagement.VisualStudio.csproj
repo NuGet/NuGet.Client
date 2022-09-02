@@ -44,8 +44,10 @@
     <Compile Include="PackageFeeds\InstalledAndTransitivePackageFeed.cs" />
     <Compile Include="PackageFeeds\PackageSourceMoniker.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
+    <Compile Include="ProjectServices\IVsProjectBuildPropertiesTelemetry.cs" />
     <Compile Include="ProjectServices\NativeProjectSystemReferencesReader.cs" />
     <Compile Include="ProjectServices\CpsProjectSystemReferenceReader.cs" />
+    <Compile Include="ProjectServices\VsProjectBuildPropertiesTelemetry.cs" />
     <Compile Include="Projects\IPackageReferenceProject.cs" />
     <Compile Include="Telemetry\CounterfactualLoggers.cs" />
     <Compile Include="Telemetry\PackageManagerCloseEvent.cs" />

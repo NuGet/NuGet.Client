@@ -8,6 +8,7 @@ using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.VisualStudio.ProjectServices;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -22,11 +23,15 @@ namespace NuGet.PackageManagement.VisualStudio
         private Project _project;
         private readonly IVsBuildPropertyStorage _propertyStorage;
         private readonly IVsProjectThreadingService _threadingService;
+        private readonly IVsProjectBuildPropertiesTelemetry _buildPropertiesTelemetry;
+        private readonly string[] _projectTypeGuids;
 
         public VsProjectBuildProperties(
             Project project,
             IVsBuildPropertyStorage propertyStorage,
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService,
+            IVsProjectBuildPropertiesTelemetry buildPropertiesTelemetry,
+            string[] projectTypeGuids)
         {
             Assumes.Present(project);
             Assumes.Present(threadingService);
@@ -34,12 +39,16 @@ namespace NuGet.PackageManagement.VisualStudio
             _project = project;
             _propertyStorage = propertyStorage;
             _threadingService = threadingService;
+            _buildPropertiesTelemetry = buildPropertiesTelemetry;
+            _projectTypeGuids = projectTypeGuids;
         }
 
         public VsProjectBuildProperties(
             Lazy<Project> project,
             IVsBuildPropertyStorage propertyStorage,
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService,
+            IVsProjectBuildPropertiesTelemetry buildPropertiesTelemetry,
+            string[] projectTypeGuids)
         {
             Assumes.Present(project);
             Assumes.Present(threadingService);
@@ -47,6 +56,8 @@ namespace NuGet.PackageManagement.VisualStudio
             _dteProject = project;
             _propertyStorage = propertyStorage;
             _threadingService = threadingService;
+            _buildPropertiesTelemetry = buildPropertiesTelemetry;
+            _projectTypeGuids = projectTypeGuids;
         }
 
         public string GetPropertyValue(string propertyName)
@@ -63,6 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (result == VSConstants.S_OK && !string.IsNullOrWhiteSpace(output))
                 {
+                    _buildPropertiesTelemetry.OnPropertyStorageUsed(_projectTypeGuids);
                     return output;
                 }
             }
@@ -74,6 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     _project = _dteProject.Value;
                 }
                 var property = _project.Properties.Item(propertyName);
+                _buildPropertiesTelemetry.OnDteUsed(_projectTypeGuids);
                 return property?.Value as string;
             }
             catch (ArgumentException)
