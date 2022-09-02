@@ -91,12 +91,11 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            ProjectPackages packages = await GetInstalledAndTransitivePackagesAsync(token);
+            ProjectPackages packages = await GetInstalledAndTransitivePackagesAsync(useTransitiveOrigins: false, token);
             return packages.InstalledPackages;
         }
 
-        /// <inheritdoc/>
-        public virtual async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
+        public async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(bool useTransitiveOrigins, CancellationToken token)
         {
             PackageSpec packageSpec = null;
             string assetsPath = null;
@@ -159,7 +158,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
-            if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
+            if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token) && useTransitiveOrigins)
             {
                 // Compute Transitive Origins
                 Dictionary<string, TransitiveEntry> transitiveOrigins;
@@ -207,6 +206,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return new ProjectPackages(calculatedInstalledPackages, transitivePkgsResult);
+        }
+
+        /// <inheritdoc/>
+        public virtual async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
+        {
+            return await GetInstalledAndTransitivePackagesAsync(useTransitiveOrigins: false, token);
         }
 
         protected abstract IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages);

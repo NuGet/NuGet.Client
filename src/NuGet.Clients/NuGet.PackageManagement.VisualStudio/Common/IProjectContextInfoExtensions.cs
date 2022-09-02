@@ -58,15 +58,27 @@ namespace NuGet.PackageManagement.VisualStudio
             IServiceBroker serviceBroker,
             CancellationToken cancellationToken)
         {
+            return await GetInstalledAndTransitivePackagesAsync(projectContextInfo, serviceBroker, useTransitiveOrigins: false, cancellationToken);
+        }
+
+        public static async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
+            this IProjectContextInfo projectContextInfo,
+            IServiceBroker serviceBroker,
+            bool useTransitiveOrigins,
+            CancellationToken cancellationToken)
+        {
             Assumes.NotNull(projectContextInfo);
             Assumes.NotNull(serviceBroker);
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            IInstalledAndTransitivePackages projectPackages;
             using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(serviceBroker, cancellationToken))
             {
-                return await projectManager.GetInstalledAndTransitivePackagesAsync(new string[] { projectContextInfo.ProjectId }, cancellationToken);
+                projectPackages = await projectManager.GetInstalledAndTransitivePackagesAsync(new string[] { projectContextInfo.ProjectId }, useTransitiveOrigins, cancellationToken);
             }
+
+            return projectPackages;
         }
 
         /// <summary>
@@ -79,9 +91,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <exception cref="ArgumentNullException">If any argument is null</exception>
         /// <remarks><see cref="NuGetProjectManagerService.GetPackageFoldersAsync(IReadOnlyCollection{string}, CancellationToken)"/></remarks>
         public static async ValueTask<IReadOnlyCollection<string>> GetPackageFoldersAsync(
-            this IProjectContextInfo projectContextInfo,
-            IServiceBroker serviceBroker,
-            CancellationToken cancellationToken)
+        this IProjectContextInfo projectContextInfo,
+        IServiceBroker serviceBroker,
+        CancellationToken cancellationToken)
         {
             if (projectContextInfo == null)
             {

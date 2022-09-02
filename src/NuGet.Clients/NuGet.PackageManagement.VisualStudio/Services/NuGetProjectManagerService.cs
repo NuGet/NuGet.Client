@@ -164,6 +164,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             IReadOnlyCollection<string> projectIds,
+            bool useTransitiveOrigins,
             CancellationToken cancellationToken)
         {
             Assumes.NotNullOrEmpty(projectIds);
@@ -175,11 +176,11 @@ namespace NuGet.PackageManagement.VisualStudio
             // If this is a PR-style project, get installed and transitive package references. Otherwise, just get installed package references.
             var prStyleTasks = new List<Task<ProjectPackages>>();
             var nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
-            foreach (NuGetProject? project in projects)
+            foreach (NuGetProject? project in projects) // can this be parallel ?
             {
                 if (project is IPackageReferenceProject packageReferenceProject)
                 {
-                    prStyleTasks.Add(packageReferenceProject.GetInstalledAndTransitivePackagesAsync(cancellationToken));
+                    prStyleTasks.Add(packageReferenceProject.GetInstalledAndTransitivePackagesAsync(useTransitiveOrigins, cancellationToken));
                 }
                 else
                 {
@@ -197,6 +198,14 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageReferenceContextInfo[] installedPackagesContextInfos = installedPackages.SelectMany(e => e).Select(pr => PackageReferenceContextInfo.Create(pr)).ToArray();
             TransitivePackageReferenceContextInfo[] transitivePackageContextInfos = prStyleReferences.SelectMany(e => e.TransitivePackages).Select(pr => TransitivePackageReferenceContextInfo.Create(pr)).ToArray();
             return new InstalledAndTransitivePackages(installedPackagesContextInfos, transitivePackageContextInfos);
+        }
+
+
+        public async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
+            IReadOnlyCollection<string> projectIds,
+            CancellationToken cancellationToken)
+        {
+            return await GetInstalledAndTransitivePackagesAsync(projectIds, useTransitiveOrigins: false, cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(

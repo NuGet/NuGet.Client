@@ -21,6 +21,10 @@ namespace NuGet.VisualStudio.Internal.Contracts
         ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);
+        ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
+            IReadOnlyCollection<string> projectIds,
+            bool useTransitiveOrigins,
+            CancellationToken cancellationToken);
         ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);

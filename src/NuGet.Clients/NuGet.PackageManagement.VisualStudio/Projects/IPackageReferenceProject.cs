@@ -10,6 +10,15 @@ namespace NuGet.PackageManagement.VisualStudio
     public interface IPackageReferenceProject
     {
         /// <summary>
+        /// Gets the both the installed (top level) and transitive package references for this project, including transitive origins, if needed.
+        /// Returns the package reference as two separate lists (installed and transitive).
+        /// </summary>
+        /// <param name="useTransitiveOrigins">Set it to <c>true</c> to get transitive origins in transitive packages list</param>
+        /// <param name="token">Cancellation token</param>
+        /// <returns>A <see cref="ProjectPackages"/> object with two lists: Installed and transitive packages</returns>
+        public Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(bool useTransitiveOrigins, CancellationToken token);
+
+        /// <summary>
         /// Gets the both the installed (top level) and transitive package references for this project.
         /// Returns the package reference as two separate lists (installed and transitive).
         /// </summary>
