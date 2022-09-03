@@ -975,6 +975,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Act
             var installedAndTransitive = await _projectManager.GetInstalledAndTransitivePackagesAsync(
                 new[] { projectId },
+                useTransitiveOrigins: true,
                 CancellationToken.None);
 
             Assert.Equal(2, installedAndTransitive.InstalledPackages.Count);
