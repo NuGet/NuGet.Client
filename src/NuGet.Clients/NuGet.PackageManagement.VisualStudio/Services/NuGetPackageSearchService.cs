@@ -503,7 +503,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
                     {
                         // We need installed and Transitive Packages
-                        IInstalledAndTransitivePackages installedTabWithTransitiveDepsPackages = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, useTransitiveOrigins: false, cancellationToken);
+                        IInstalledAndTransitivePackages installedTabWithTransitiveDepsPackages = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, useTransitiveOrigins: true, cancellationToken);
                         PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveDepsPackages.InstalledPackages);
                         PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveDepsPackages.TransitivePackages);
 
@@ -539,7 +539,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.UpdatesAvailable)
             {
-                // Updatetabs tab: only needs Installed packages
+                // Updates tab: only needs Installed packages
                 IReadOnlyCollection<IPackageReferenceContextInfo> updatedTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
                 PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(updatedTabPackages);
 

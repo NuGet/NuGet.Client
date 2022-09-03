@@ -164,6 +164,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 Dictionary<string, TransitiveEntry> transitiveOrigins;
                 if (IsInstalledAndTransitiveComputationNeeded || TransitiveOriginsCache == null)
                 {
+                    if (targetsList == null) // special case
+                    {
+                        targetsList = (await GetTargetsListAsync(assetsPath, token))?.ToList();
+                    }
+
                     transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedInstalledPackages, targetsList, token) : new Dictionary<string, TransitiveEntry>();
                 }
                 else
