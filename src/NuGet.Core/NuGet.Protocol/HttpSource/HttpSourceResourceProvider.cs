@@ -14,6 +14,9 @@ namespace NuGet.Protocol
 {
     public class HttpSourceResourceProvider : ResourceProvider
     {
+#if IS_DESKTOP
+        private const int DefaultMaxHttpRequestsPerSource = 64;
+#endif
         // Only one HttpSource per source should exist. This is to reduce the number of TCP connections.
         private readonly ConcurrentDictionary<PackageSource, HttpSourceResource> _cache
             = new ConcurrentDictionary<PackageSource, HttpSourceResource>();
@@ -51,7 +54,7 @@ namespace NuGet.Protocol
 #if IS_DESKTOP
                 else if (ServicePointManager.DefaultConnectionLimit == ServicePointManager.DefaultPersistentConnectionLimit)
                 {
-                    source.PackageSource.MaxHttpRequestsPerSource = 64;
+                    source.PackageSource.MaxHttpRequestsPerSource = DefaultMaxHttpRequestsPerSource;
                 }
 #endif
 
