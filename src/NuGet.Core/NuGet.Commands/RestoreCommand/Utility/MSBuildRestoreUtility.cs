@@ -1000,15 +1000,14 @@ namespace NuGet.Commands
         {
             foreach (var framework in frameworks)
             {
-                if (centralPackageVersions.ContainsKey(framework))
+                if (!centralPackageVersions.TryGetValue(framework, out Dictionary<string, CentralPackageVersion> versions))
                 {
-                    centralPackageVersions[framework].Add(centralPackageVersion.Name, centralPackageVersion);
+                    versions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
+
+                    centralPackageVersions.Add(framework, versions);
                 }
-                else
-                {
-                    var deps = new Dictionary<string, CentralPackageVersion>() { [centralPackageVersion.Name] = centralPackageVersion };
-                    centralPackageVersions.Add(framework, deps);
-                }
+
+                versions[centralPackageVersion.Name] = centralPackageVersion;
             }
         }
 

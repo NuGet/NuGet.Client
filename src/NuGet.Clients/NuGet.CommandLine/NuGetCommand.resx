@@ -5611,8 +5611,8 @@ nuget trusted-signers Remove -Name TrustedRepo</value>
     <value>Provides the ability to manage list of client certificates located in NuGet.config files</value>
   </data>
   <data name="ClientCertificatesCommandUsageSummary" xml:space="preserve">
-<value>&lt;List|Add|Update|Remove&gt; [options]</value>
-</data>
+    <value>&lt;List|Add|Update|Remove&gt; [options]</value>
+  </data>
   <data name="ClientCertificatesCommandUsageExamples" xml:space="preserve">
     <value>nuget client-certs Add -PackageSource Foo -Path .\MyCertificate.pfx
 
@@ -5629,5 +5629,41 @@ nuget client-certs Remove -PackageSource certificateName
 nuget client-certs
 
 nuget client-certs List</value>
+  </data>
+  <data name="HelpCommand_Alias" xml:space="preserve">
+    <value>alias: {0}</value>
+    <comment>{0} - short command name (not localizable)</comment>
+  </data>
+  <data name="HelpCommand_AltText" xml:space="preserve">
+    <value> ({0})</value>
+    <comment>{0} - command alternative name (not localizable); do not localize this string</comment>
+  </data>
+  <data name="HelpCommand_AvailableCommands" xml:space="preserve">
+    <value>Available commands:</value>
+  </data>
+  <data name="HelpCommand_Examples" xml:space="preserve">
+    <value>examples:</value>
+  </data>
+  <data name="HelpCommand_Options" xml:space="preserve">
+    <value>options:</value>
+  </data>
+  <data name="HelpCommand_Suggestion" xml:space="preserve">
+    <value>Type '{0} help &lt;command&gt;' for help on a specific command.</value>
+    <comment>{0} - executable name: nuget.exe; Don't localize text enclosed in single quotes: '{0} help command'</comment>
+  </data>
+  <data name="HelpCommand_Title" xml:space="preserve">
+    <value>{0} Command</value>
+    <comment>{0} - command name (not localizable)</comment>
+  </data>
+  <data name="HelpCommand_Usage" xml:space="preserve">
+    <value>usage: {0} &lt;command&gt; [args] [options]</value>
+    <comment>{0} - executable name: nuget.exe; Don't localize '&lt;command&gt; [args] [options]'</comment>
+  </data>
+  <data name="HelpCommand_UsageDetail" xml:space="preserve">
+    <value>usage: {0} {1} {2}</value>
+    <comment>{0} - executable name: nuget.exe; {1} - command name (not localizable); {2} - command summary description</comment>
+  </data>
+  <data name="Option_Help" xml:space="preserve">
+    <value>Show command help and usage information.</value>
   </data>
 </root>
