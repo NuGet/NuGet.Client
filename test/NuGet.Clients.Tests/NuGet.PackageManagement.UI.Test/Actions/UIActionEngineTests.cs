@@ -238,6 +238,9 @@ namespace NuGet.PackageManagement.UI.Test
             prjMgrSvc
                 .Setup(mgr => mgr.GetInstalledAndTransitivePackagesAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<IInstalledAndTransitivePackages>(installedAndTransitive));
+            prjMgrSvc
+                .Setup(mgr => mgr.GetInstalledAndTransitivePackagesAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IInstalledAndTransitivePackages>(installedAndTransitive));
             var dictMetadata = new Dictionary<string, object>
             {
                 [NuGetProjectMetadataKeys.UniqueName] = "a",
