@@ -24,7 +24,7 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// The default handshake timeout.
         /// </summary>
-        public static readonly TimeSpan HandshakeTimeout = TimeSpan.FromSeconds(5);
+        public static readonly TimeSpan HandshakeTimeout = TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// The maximum timeout value.
@@ -40,6 +40,6 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// The default request timeout.
         /// </summary>
-        public static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(5);
+        public static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
     }
 }
