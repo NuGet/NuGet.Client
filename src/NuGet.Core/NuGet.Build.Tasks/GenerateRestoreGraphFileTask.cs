@@ -19,15 +19,14 @@ namespace NuGet.Build.Tasks
 
         protected override string DebugEnvironmentVariableName => "DEBUG_GENERATE_RESTORE_GRAPH";
 
-        protected override IEnumerable<KeyValuePair<string, string>> GetOptions()
+        protected override Dictionary<string, string> GetOptions()
         {
-            foreach (KeyValuePair<string, string> option in base.GetOptions())
-            {
-                yield return option;
-            }
+            Dictionary<string, string> options = base.GetOptions();
 
-            yield return new KeyValuePair<string, string>("GenerateRestoreGraphFile", bool.TrueString);
-            yield return new KeyValuePair<string, string>(nameof(RestoreGraphOutputPath), RestoreGraphOutputPath);
+            options["GenerateRestoreGraphFile"] = bool.TrueString;
+            options[nameof(RestoreGraphOutputPath)] = RestoreGraphOutputPath;
+
+            return options;
         }
     }
 }

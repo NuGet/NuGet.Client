@@ -20,7 +20,7 @@ namespace NuGet.Build.Tasks
         public string EntryProjectFilePath { get; set; }
 
         /// <summary>
-        /// Gets or sets a <see cref="IEnumerable{T}" /> containing <see cref="KeyValuePair{TKey, TValue}" /> representing the global properties.
+        /// Gets or sets a <see cref="Dictionary{TKey, TValue}" /> representing the global properties.
         /// </summary>
         public Dictionary<string, string> GlobalProperties { get; set; }
 
@@ -30,9 +30,9 @@ namespace NuGet.Build.Tasks
         public string MSBuildExeFilePath { get; set; }
 
         /// <summary>
-        /// Gets or sets an <see cref="IReadOnlyDictionary{TKey, TValue}" /> containing option names and values.
+        /// Gets or sets an <see cref="Dictionary{TKey, TValue}" /> containing option names and values.
         /// </summary>
-        public IReadOnlyDictionary<string, string> Options { get; set; }
+        public Dictionary<string, string> Options { get; set; }
 
         /// <summary>
         /// Reads arguments by searching the specified command-line parameters for an argument file path.
@@ -41,8 +41,8 @@ namespace NuGet.Build.Tasks
         /// <returns>A <see cref="StaticGraphRestoreArguments" /> object if an argument file was found, otherwise <c>null</c>.</returns>
         public static StaticGraphRestoreArguments Read(string[] args)
         {
-            // Look for the first command-line argument that starts with '@'
-            string argumentFilePath = args.FirstOrDefault(i => i.StartsWith("@", StringComparison.Ordinal))?.Trim('@');
+            // The last command-line argument is the path to the arguments file
+            string argumentFilePath = args.Last();
 
             if (string.IsNullOrWhiteSpace(argumentFilePath))
             {
@@ -183,7 +183,7 @@ namespace NuGet.Build.Tasks
                 writer.WriteEndObject();
             }
 
-            void WriteDictionary(JsonTextWriter writer, string propertyName, IEnumerable<KeyValuePair<string, string>> dictionary)
+            void WriteDictionary(JsonTextWriter writer, string propertyName, Dictionary<string, string> dictionary)
             {
                 writer.WritePropertyName(propertyName);
 

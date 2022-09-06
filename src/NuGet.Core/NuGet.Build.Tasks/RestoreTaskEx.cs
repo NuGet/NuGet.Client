@@ -61,22 +61,21 @@ namespace NuGet.Build.Tasks
 
         protected override string DebugEnvironmentVariableName => "DEBUG_RESTORE_TASK_EX";
 
-        protected override IEnumerable<KeyValuePair<string, string>> GetOptions()
+        protected override Dictionary<string, string> GetOptions()
         {
-            foreach (KeyValuePair<string, string> option in base.GetOptions())
-            {
-                yield return option;
-            }
+            Dictionary<string, string> options = base.GetOptions();
 
-            yield return new KeyValuePair<string, string>(nameof(CleanupAssetsForUnsupportedProjects), CleanupAssetsForUnsupportedProjects.ToString());
-            yield return new KeyValuePair<string, string>(nameof(DisableParallel), DisableParallel.ToString());
-            yield return new KeyValuePair<string, string>(nameof(Force), Force.ToString());
-            yield return new KeyValuePair<string, string>(nameof(ForceEvaluate), ForceEvaluate.ToString());
-            yield return new KeyValuePair<string, string>(nameof(HideWarningsAndErrors), HideWarningsAndErrors.ToString());
-            yield return new KeyValuePair<string, string>(nameof(IgnoreFailedSources), IgnoreFailedSources.ToString());
-            yield return new KeyValuePair<string, string>(nameof(Interactive), Interactive.ToString());
-            yield return new KeyValuePair<string, string>(nameof(NoCache), NoCache.ToString());
-            yield return new KeyValuePair<string, string>(nameof(RestorePackagesConfig), RestorePackagesConfig.ToString());
+            options[nameof(CleanupAssetsForUnsupportedProjects)] = CleanupAssetsForUnsupportedProjects.ToString();
+            options[nameof(DisableParallel)] = DisableParallel.ToString();
+            options[nameof(Force)] = Force.ToString();
+            options[nameof(ForceEvaluate)] = ForceEvaluate.ToString();
+            options[nameof(HideWarningsAndErrors)] = HideWarningsAndErrors.ToString();
+            options[nameof(IgnoreFailedSources)] = IgnoreFailedSources.ToString();
+            options[nameof(Interactive)] = Interactive.ToString();
+            options[nameof(NoCache)] = NoCache.ToString();
+            options[nameof(RestorePackagesConfig)] = RestorePackagesConfig.ToString();
+
+            return options;
         }
     }
 }

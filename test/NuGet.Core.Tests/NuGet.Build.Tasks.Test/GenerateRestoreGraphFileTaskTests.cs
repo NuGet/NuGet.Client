@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
@@ -53,13 +52,13 @@ namespace NuGet.Build.Tasks.Test
 
                     task.WriteResponseFile(responseFile.FullName);
 
-                    List<string> commandLineArguments = task.GetCommandLineArguments(responseFile).ToList();
+                    List<string> commandLineArguments = task.GetCommandLineArguments(responseFile);
 
                     commandLineArguments.Should().BeEquivalentTo(
 #if IS_CORECLR
                     Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
 #endif
-                    $"@{responseFile.FullName}");
+                    responseFile.FullName);
 
                     var arguments = StaticGraphRestoreArguments.Read(responseFile.FullName);
 

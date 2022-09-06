@@ -170,21 +170,27 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Gets the command-line arguments to use when launching the process that executes the restore.
         /// </summary>
-        /// <returns>An <see cref="IEnumerable{String}" /> containing the command-line arguments that need to separated by spaces and surrounded by quotes.</returns>
-        internal virtual IEnumerable<string> GetCommandLineArguments(FileInfo responseFile)
+        /// <returns>A <see cref="List{String}" /> containing the command-line arguments that need to be separated by spaces and surrounded by quotes.</returns>
+        internal List<string> GetCommandLineArguments(FileInfo responseFile)
         {
+            return new List<string>(
 #if IS_CORECLR
-            // The full path to the executable for dotnet core
-            yield return Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.dll"));
+                capacity: 2)
+            {
+                // The full path to the executable for dotnet core
+                Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.dll")),
+#else
+                capacity: 1)
+            {
 #endif
-
-            yield return $"@{responseFile.FullName}";
+                responseFile.FullName
+            };
         }
 
         /// <summary>
         /// Enumerates a list of global properties for the current MSBuild instance.
         /// </summary>
-        /// <returns>An <see cref="IEnumerable{T}" /> of <see cref="KeyValuePair{TKey, TValue}" /> objects containing global properties.</returns>
+        /// <returns>A <see cref="Dictionary{TKey, TValue}" /> containing global properties.</returns>
         internal virtual Dictionary<string, string> GetGlobalProperties()
         {
             IReadOnlyDictionary<string, string> globalProperties = null;
@@ -262,9 +268,12 @@ namespace NuGet.Build.Tasks
             _cancellationTokenSource.Dispose();
         }
 
-        protected virtual IEnumerable<KeyValuePair<string, string>> GetOptions()
+        protected virtual Dictionary<string, string> GetOptions()
         {
-            yield return new KeyValuePair<string, string>(nameof(Recursive), Recursive.ToString());
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [nameof(Recursive)] = Recursive.ToString()
+            };
         }
 
         internal void WriteResponseFile(string responseFilePath)
