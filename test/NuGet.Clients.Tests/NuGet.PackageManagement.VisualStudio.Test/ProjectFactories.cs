@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Commands.Test;
@@ -11,7 +10,6 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
-using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
