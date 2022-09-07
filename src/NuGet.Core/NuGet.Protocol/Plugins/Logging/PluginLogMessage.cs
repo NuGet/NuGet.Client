@@ -33,7 +33,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             var outerMessage = new JObject(
-                new JProperty("now", _now.ToString("O", CultureInfo.CurrentCulture)), // round-trip format
+                new JProperty("now", _now.ToString("O", CultureInfo.InvariantCulture)), // round-trip format
                 new JProperty("type", type),
                 new JProperty("message", message));
 

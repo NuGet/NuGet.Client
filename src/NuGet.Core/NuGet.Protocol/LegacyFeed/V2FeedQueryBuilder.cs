@@ -142,7 +142,7 @@ namespace NuGet.Protocol
             // Start building the URI.
             var builder = new StringBuilder();
 
-            builder.AppendFormat(CultureInfo.CurrentCulture, GetPackagesFormat, useParenthesis ? EndpointParenthesis : string.Empty);
+            builder.AppendFormat(CultureInfo.InvariantCulture, GetPackagesFormat, useParenthesis ? EndpointParenthesis : string.Empty);
 
             var hasParameters = false;
 

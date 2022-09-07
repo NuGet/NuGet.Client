@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static string CreateProjectActionId()
         {
-            return Guid.NewGuid().ToString("N", null);
+            return Guid.NewGuid().ToString("N", provider: null);
         }
 
         private void RegisterEventHandlers()

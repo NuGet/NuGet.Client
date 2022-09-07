@@ -190,7 +190,7 @@ namespace NuGet.Protocol.Plugins
 
         internal static string CreateNewId()
         {
-            return Guid.NewGuid().ToString("N", null);
+            return Guid.NewGuid().ToString("N", provider: null);
         }
 
         private void FireBeforeClose()

@@ -25,7 +25,7 @@ namespace NuGetVSExtension
                 throw new ArgumentException("'providerName' cannot be null or empty.");
             }
 
-            _providerTypeGuid = providerType.GUID.ToString("B", null);
+            _providerTypeGuid = providerType.GUID.ToString("B", provider: null);
             _providerName = providerName;
         }
 
