@@ -29,7 +29,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' or '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' or '$(TargetFramework)' == 'net7.0' ">
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
   </ItemGroup>
 
