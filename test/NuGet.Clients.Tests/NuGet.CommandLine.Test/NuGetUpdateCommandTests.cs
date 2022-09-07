@@ -201,14 +201,18 @@ namespace NuGet.CommandLine.Test
                     "update",
                     solutionFile,
                     "-Source",
-                    packagesSourceDirectory
+                    packagesSourceDirectory,
+                    "-Verbose",
+                    "-Verbosity",
+                    "detailed"
                 };
 
                 var r = CommandRunner.Run(
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    waitForExit: true);
+                    waitForExit: true,
+                    environmentVariables: new Dictionary<string, string>() { ["NUGET_SHOW_STACK"] = "true", });
 
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);
 
@@ -418,7 +422,8 @@ namespace NuGet.CommandLine.Test
                     "-Source",
                     packagesSourceDirectory,
                     "-Id",
-                    "A"
+                    "A",
+                    "-ForceEnglishOutput",
                 };
 
                 // Act
@@ -426,7 +431,8 @@ namespace NuGet.CommandLine.Test
                     Util.GetNuGetExePath(),
                     workingPath,
                     string.Join(" ", args),
-                    waitForExit: true);
+                    waitForExit: true,
+                    environmentVariables: new Dictionary<string, string>() { ["NUGET_SHOW_STACK"] = "false" });
 
                 // Assert
                 Assert.True(r.ExitCode == 0, "Output is " + r.Output + ". Error is " + r.Errors);

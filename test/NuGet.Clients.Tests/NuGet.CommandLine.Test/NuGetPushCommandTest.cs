@@ -2254,7 +2254,8 @@ namespace NuGet.CommandLine.Test
                         "push",
                         packageFileName,
                         "-Source",
-                        invalidInput
+                        invalidInput,
+                        "-ForceEnglishOutput",
                 };
 
                 var result = CommandRunner.Run(
@@ -2304,7 +2305,8 @@ namespace NuGet.CommandLine.Test
                         "push",
                         packageFileName,
                         "-Source",
-                        invalidInput
+                        invalidInput,
+                        "-ForceEnglishOutput",
                 };
 
                 var result = CommandRunner.Run(
@@ -2388,7 +2390,8 @@ namespace NuGet.CommandLine.Test
                         "push",
                         packageFileName,
                         "-Source",
-                        invalidInput
+                        invalidInput,
+                        "-ForceEnglishOutput",
                 };
 
                 CommandRunnerResult result = CommandRunner.Run(
