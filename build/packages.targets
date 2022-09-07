@@ -105,8 +105,9 @@
         <PackageReference Update="Moq" Version="4.16.1" />
         <PackageReference Update="NuGet.Core" Version="$(NuGetCoreV2Version)" />
         <PackageReference Update="Portable.BouncyCastle" Version="1.8.10" />
-        <PackageReference Update="System.Collections" Version="$(SystemPackagesVersion)" />
+        <PackageReference Update="System.Collections" Version="$(SystemPackagesVersion)" />      
         <PackageReference Update="System.IO.FileSystem.Primitives" Version="$(SystemPackagesVersion)" />
+        <PackageReference Update="System.Memory" Version="4.5.5" />
         <PackageReference Update="System.Resources.ResourceManager" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.Runtime.Extensions" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.Runtime.InteropServices" Version="$(SystemPackagesVersion)" />
