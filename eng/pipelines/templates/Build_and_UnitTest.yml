@@ -88,14 +88,14 @@ steps:
       }
 
 - task: MSBuild@1
-  displayName: "Restore for VS2019"
+  displayName: "Restore"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /p:IncludeApex=true /bl:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
 
 - task: MSBuild@1
-  displayName: "Build for VS2019"
+  displayName: "Build"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
@@ -109,11 +109,18 @@ steps:
     msbuildArguments: "/t:AfterBuild /bl:$(Build.StagingDirectory)\\binlog\\03.Localize.binlog"
 
 - task: MSBuild@1
-  displayName: "Build Final NuGet.exe (via ILMerge)"
+  displayName: "Build NuGet.exe Localized"
   inputs:
     solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:Build,ILMergeNuGetExe /bl:$(Build.StagingDirectory)\\binlog\\04.ILMergeNuGetExe.binlog"
+    msbuildArguments: "/t:Build /bl:$(Build.StagingDirectory)\\binlog\\04.BuildNuGetExe.binlog"
+
+- task: MSBuild@1
+  displayName: "ILMerge NuGet.exe"
+  inputs:
+    solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/t:ILMergeNuGetExe /bl:$(Build.StagingDirectory)\\binlog\\05.ILMergeNuGetExe.binlog"
 
 - task: MSBuild@1
   displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
