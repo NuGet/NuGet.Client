@@ -9,17 +9,20 @@ using System.Threading.Tasks;
 
 namespace NuGet.VisualStudio.Implementation.Exceptions
 {
-    internal class AssetsFileMissingException : InvalidOperationException
+    internal class ProjectNotRestoredException : InvalidOperationException
     {
-        public AssetsFileMissingException() : base()
+        public ProjectNotRestoredException()
+            : base()
         {
         }
 
-        public AssetsFileMissingException(string message) : base(message)
+        public ProjectNotRestoredException(string message)
+            : base(message)
         {
         }
 
-        public AssetsFileMissingException(string message, Exception innerException) : base(message, innerException)
+        public ProjectNotRestoredException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
     }
