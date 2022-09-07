@@ -75,7 +75,7 @@ namespace NuGet.Protocol
             catch (Exception ex)
             {
                 // Wrap exceptions coming from the server with a user friendly message
-                var error = string.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, package, _localResource.Root);
+                var error = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, package, _localResource.Root);
 
                 throw new FatalProtocolException(error, ex);
             }
@@ -125,7 +125,7 @@ namespace NuGet.Protocol
             {
                 // Wrap exceptions coming from the server with a user friendly message
                 var error = string.Format(
-                    CultureInfo.CurrentUICulture,
+                    CultureInfo.CurrentCulture,
                     Strings.Protocol_PackageMetadataError,
                     packageId,
                     _localResource.Root);

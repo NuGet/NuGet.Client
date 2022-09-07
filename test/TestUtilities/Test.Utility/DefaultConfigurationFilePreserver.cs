@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 
@@ -26,7 +27,7 @@ namespace NuGet.CommandLine.Test
             {
                 bool owner = _mutex.WaitOne(TimeSpan.FromMinutes(2));
                 if (!owner)
-                    throw new TimeoutException(string.Format("Timedout while waiting for mutex {0}", MutexName));
+                    throw new TimeoutException(string.Format(CultureInfo.CurrentCulture, "Timedout while waiting for mutex {0}", MutexName));
             }
 
             BackupAndDeleteDefaultConfigurationFile();

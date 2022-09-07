@@ -157,6 +157,7 @@ namespace NuGet.Protocol.Core.Types
             if (confirm(string.Format(CultureInfo.CurrentCulture, Strings.DeleteCommandConfirm, packageId, packageVersion, sourceDisplayName)))
             {
                 log.LogWarning(string.Format(
+                    CultureInfo.CurrentCulture,
                     Strings.DeleteCommandDeletingPackage,
                     packageId,
                     packageVersion,
@@ -856,7 +857,7 @@ namespace NuGet.Protocol.Core.Types
                 return apiKey;
             }
             var serviceEndpointUrl = GetServiceEndpointUrl(NuGetConstants.DefaultGalleryServerUrl,
-                string.Format(TempApiKeyServiceEndpoint, packageIdentity.Id, packageIdentity.Version), noServiceEndpoint);
+                string.Format(CultureInfo.InvariantCulture, TempApiKeyServiceEndpoint, packageIdentity.Id, packageIdentity.Version), noServiceEndpoint);
 
             try
             {

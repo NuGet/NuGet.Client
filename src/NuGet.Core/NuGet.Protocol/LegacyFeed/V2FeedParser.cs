@@ -436,7 +436,7 @@ namespace NuGet.Protocol
             var results = new List<V2FeedPackageInfo>();
             var uris = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            var uri = string.Format("{0}{1}", _baseAddress, relativeUri);
+            var uri = string.Format(CultureInfo.InvariantCulture, "{0}{1}", _baseAddress, relativeUri);
             uris.Add(uri);
 
             // page

@@ -133,7 +133,7 @@ namespace NuGet.Protocol
                     var frameworks =
                         string.Join("&",
                             filters.SupportedFrameworks.Select(
-                                fx => "supportedFramework=" + fx.ToString(CultureInfo.CurrentCulture)));
+                                fx => "supportedFramework=" + fx.ToString(CultureInfo.InvariantCulture)));
                     queryString += "&" + frameworks;
                 }
 

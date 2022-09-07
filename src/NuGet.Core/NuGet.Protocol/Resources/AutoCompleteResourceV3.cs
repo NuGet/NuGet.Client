@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -44,7 +45,7 @@ namespace NuGet.Protocol
             var queryUrl = new UriBuilder(searchUrl.AbsoluteUri);
             var queryString =
                 "q=" + WebUtility.UrlEncode(packageIdPrefix) +
-                "&prerelease=" + includePrerelease.ToString().ToLowerInvariant() +
+                "&prerelease=" + includePrerelease.ToString(CultureInfo.CurrentCulture).ToLowerInvariant() +
                 "&semVerLevel=2.0.0";
 
             queryUrl.Query = queryString;

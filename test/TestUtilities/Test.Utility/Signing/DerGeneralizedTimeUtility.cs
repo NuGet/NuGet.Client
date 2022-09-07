@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Text;
 
 namespace Test.Utility.Signing
@@ -13,9 +14,9 @@ namespace Test.Utility.Signing
             var utc = datetimeOffset.UtcDateTime;
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.Append(utc.ToString("yyyyMMddHHmmss"));
+            stringBuilder.Append(utc.ToString("yyyyMMddHHmmss", CultureInfo.CurrentCulture));
 
-            var fractionalSeconds = utc.TimeOfDay.ToString("FFFFFFF");
+            var fractionalSeconds = utc.TimeOfDay.ToString("FFFFFFF", CultureInfo.CurrentCulture);
 
             if (!string.IsNullOrEmpty(fractionalSeconds))
             {

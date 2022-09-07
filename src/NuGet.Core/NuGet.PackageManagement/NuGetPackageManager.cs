@@ -322,7 +322,7 @@ namespace NuGet.PackageManagement
 
             if (resolvedPackage == null || resolvedPackage.LatestVersion == null)
             {
-                throw new InvalidOperationException(string.Format(Strings.NoLatestVersionFound, packageId));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.NoLatestVersionFound, packageId));
             }
 
             // Step-2 : Call InstallPackageAsync(project, packageIdentity)
@@ -1481,7 +1481,7 @@ namespace NuGet.PackageManagement
                 if (sourceDepInfo == null)
                 {
                     // this really should never happen
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentUICulture, Strings.PackageNotFound, newPackageToInstall));
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.PackageNotFound, newPackageToInstall));
                 }
 
                 nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceDepInfo.Source, project));
@@ -2066,7 +2066,8 @@ namespace NuGet.PackageManagement
                 catch (Exception ex)
                 {
                     logger.LogWarning(
-                        string.Format(Strings.Warning_ErrorFindingRepository,
+                        string.Format(CultureInfo.CurrentCulture,
+                            Strings.Warning_ErrorFindingRepository,
                             pair.Key.PackageSource.Source,
                             ExceptionUtilities.DisplayMessage(ex)));
                 }
@@ -2260,7 +2261,7 @@ namespace NuGet.PackageManagement
             var packageReference = installedPackages.FirstOrDefault(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase));
             if (packageReference?.PackageIdentity == null)
             {
-                throw new ArgumentException(string.Format(Strings.PackageToBeUninstalledCouldNotBeFound,
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.PackageToBeUninstalledCouldNotBeFound,
                     packageId, nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
 
@@ -2301,7 +2302,7 @@ namespace NuGet.PackageManagement
             var packageReference = installedPackages.FirstOrDefault(pr => pr.PackageIdentity.Equals(packageIdentity));
             if (packageReference?.PackageIdentity == null)
             {
-                throw new ArgumentException(string.Format(Strings.PackageToBeUninstalledCouldNotBeFound,
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.PackageToBeUninstalledCouldNotBeFound,
                     packageIdentity.Id, nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
 
@@ -3501,7 +3502,7 @@ namespace NuGet.PackageManagement
             }
 
             token.ThrowIfCancellationRequested();
-            nuGetProjectContext.Log(MessageLevel.Info, string.Format(Strings.RestoringPackage, packageIdentity));
+            nuGetProjectContext.Log(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Strings.RestoringPackage, packageIdentity));
             var enabledSources = (sourceRepositories != null && sourceRepositories.Any()) ? sourceRepositories :
                 SourceRepositoryProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
 

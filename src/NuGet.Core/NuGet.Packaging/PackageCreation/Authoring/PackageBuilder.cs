@@ -462,7 +462,7 @@ namespace NuGet.Packaging
             }
             else
             {
-                return Guid.NewGuid().ToString("N");
+                return Guid.NewGuid().ToString("N", provider: null);
             }
         }
 

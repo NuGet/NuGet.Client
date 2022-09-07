@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using NuGet.Packaging.Licenses;
 using NuGet.Shared;
@@ -111,7 +112,7 @@ namespace NuGet.Packaging
 
         private static string GenerateLicenseServiceLink(string license)
         {
-            return new Uri(string.Format(LicenseServiceLinkTemplate, license)).AbsoluteUri;
+            return new Uri(string.Format(CultureInfo.InvariantCulture, LicenseServiceLinkTemplate, license)).AbsoluteUri;
         }
     }
 

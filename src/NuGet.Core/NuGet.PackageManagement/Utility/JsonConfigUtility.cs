@@ -58,7 +58,7 @@ namespace NuGet.ProjectManagement
             if (string.IsNullOrEmpty(version))
             {
                 throw new FormatException(
-                    string.Format(CultureInfo.CurrentUICulture, Strings.DependencyDoesNotHaveValidVersion, dependencyToken.ToString()));
+                    string.Format(CultureInfo.CurrentCulture, Strings.DependencyDoesNotHaveValidVersion, dependencyToken.ToString()));
             }
 
             var range = VersionRange.Parse(version);

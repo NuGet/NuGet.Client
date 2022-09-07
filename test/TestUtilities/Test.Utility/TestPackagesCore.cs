@@ -948,24 +948,24 @@ namespace NuGet.Test.Utility
             bool dependencies)
         {
             var frameworkAssemblyReferences = frameworkAssemblies ?
-                string.Format(FrameworkAssembliesStringFormat, "System.Xml", "net45") : string.Empty;
+                string.Format(CultureInfo.CurrentCulture, FrameworkAssembliesStringFormat, "System.Xml", "net45") : string.Empty;
 
             string dependenciesString;
             if (language == "en-US")
             {
                 dependenciesString = dependencies ?
-                    string.Format(DependenciesStringFormat, "Owin", "1.0") : string.Empty;
+                    string.Format(CultureInfo.CurrentCulture, DependenciesStringFormat, "Owin", "1.0") : string.Empty;
             }
             else
             {
                 // Since language is not english, it should be a satellite package
                 // Set the runtime package as a dependency
-                dependenciesString = string.Format(DependenciesStringFormat,
+                dependenciesString = string.Format(CultureInfo.CurrentCulture, DependenciesStringFormat,
                     packageId.Substring(0, packageId.Length - 1 - language.Length),
                     "[" + packageVersion + "]");
             }
 
-            return string.Format(NuspecStringFormat, packageId, packageVersion, language,
+            return string.Format(CultureInfo.CurrentCulture, NuspecStringFormat, packageId, packageVersion, language,
                 string.Join(Environment.NewLine, frameworkAssemblyReferences, dependenciesString));
         }
 

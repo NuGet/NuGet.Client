@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace NuGet.CommandLine.XPlat.Utility
@@ -53,7 +54,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                         {
                             if (dataCell is FormattedCell formattedDataCell)
                             {
-                                formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString() ?? string.Empty;
+                                formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
                                 if (firstLine)
                                 {
                                     // print it
@@ -78,7 +79,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                         // the normal case
                         if (data is FormattedCell formattedDataCell)
                         {
-                            formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString() ?? string.Empty;
+                            formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
                             row.Add(formattedDataCell);
                         }
                     }

@@ -100,7 +100,7 @@ namespace NuGet.Packaging.Signing
 
             if (certCollection.Count > ChainDepthLimit)
             {
-                collectionStringBuilder.AppendLine(string.Format(Strings.CertUtilityMultipleCertificatesFooter, certCollection.Count - ChainDepthLimit));
+                collectionStringBuilder.AppendLine(string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityMultipleCertificatesFooter, certCollection.Count - ChainDepthLimit));
             }
 
             return collectionStringBuilder.ToString();
@@ -122,7 +122,7 @@ namespace NuGet.Packaging.Signing
 
             if (chainElementsCount > ChainDepthLimit)
             {
-                collectionStringBuilder.AppendLine(string.Format(Strings.CertUtilityMultipleCertificatesFooter, chainElementsCount - ChainDepthLimit));
+                collectionStringBuilder.AppendLine(string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityMultipleCertificatesFooter, chainElementsCount - ChainDepthLimit));
             }
 
             return collectionStringBuilder.ToString();

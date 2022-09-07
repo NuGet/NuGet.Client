@@ -670,7 +670,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static string CreateProjectActionId()
         {
-            return Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            return Guid.NewGuid().ToString("N", provider: null);
         }
 
         private async Task<IReadOnlyList<NuGetProject>> GetProjectsAsync(

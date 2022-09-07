@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -41,6 +42,7 @@ namespace NuGet.Protocol
                 if (!IsLocalOrUNC(_localResource.Root))
                 {
                     throw new InvalidOperationException(string.Format(
+                        CultureInfo.CurrentCulture,
                         Strings.Protocol_Search_LocalSourceNotFound,
                         _localResource.Root));
                 }

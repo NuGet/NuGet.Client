@@ -141,7 +141,7 @@ namespace Test.Utility
             var item = new JObject();
 
             item.Add(new JProperty("@id",
-                    string.Format("{0}reg/{1}/{2}.json", serverUri, id, version)));
+                    string.Format(CultureInfo.InvariantCulture, "{0}reg/{1}/{2}.json", serverUri, id, version)));
 
             item.Add(new JProperty("@type", "Package"));
             item.Add(new JProperty("commitId", Guid.NewGuid()));
@@ -153,7 +153,7 @@ namespace Test.Utility
             item.Add(new JProperty("registration", indexUrl));
 
             catalogEntry.Add(new JProperty("@id",
-                string.Format("{0}catalog/{1}/{2}.json", serverUri, id, version)));
+                string.Format(CultureInfo.InvariantCulture, "{0}catalog/{1}/{2}.json", serverUri, id, version)));
 
             catalogEntry.Add(new JProperty("@type", "PackageDetails"));
             catalogEntry.Add(new JProperty("authors", "test"));
