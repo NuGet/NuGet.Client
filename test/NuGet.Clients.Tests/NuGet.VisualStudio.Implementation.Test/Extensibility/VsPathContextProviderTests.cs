@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
@@ -279,8 +280,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                             NuGetFramework.AnyFramework)
                     });
 
-                // Act
-                var exception = await Assert.ThrowsAsync<AssetsFileMissingException>(() => target.CreatePathContextAsync(project.Object, CancellationToken.None));
+                // Act & Assert
+                var exception = await Assert.ThrowsAsync<ProjectNotRestoredException>(() => target.CreatePathContextAsync(project.Object, CancellationToken.None));
                 Assert.Equal(0, _telemetryProvider.Invocations.Count);
                 Assert.Contains(projectUniqueName, exception.Message);
             }
@@ -450,7 +451,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             var project = new TestPackageReferenceProject(projectUniqueName);
 
             // Assert
-            var exception = await Assert.ThrowsAsync<AssetsFileMissingException>(() => target.CreatePathContextAsync(project, CancellationToken.None));
+            var exception = await Assert.ThrowsAsync<ProjectNotRestoredException>(() => target.CreatePathContextAsync(project, CancellationToken.None));
             Assert.Contains(projectUniqueName, exception.Message);
         }
 
