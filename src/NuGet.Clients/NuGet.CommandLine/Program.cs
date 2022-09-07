@@ -32,7 +32,8 @@ namespace NuGet.CommandLine
         private const string DotNetSetupRegistryKey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
         private const int Net462ReleasedVersion = 394802;
 
-        private static readonly string ThisExecutableName = typeof(Program).Assembly.GetName().Name;
+        internal static readonly Assembly NuGetExeAssembly = typeof(Program).Assembly;
+        private static readonly string ThisExecutableName = NuGetExeAssembly.GetName().Name;
 
         [Import]
         public HelpCommand HelpCommand { get; set; }
@@ -230,7 +231,7 @@ namespace NuGet.CommandLine
 
             if (string.Equals(name.Name, ThisExecutableName, StringComparison.OrdinalIgnoreCase))
             {
-                return typeof(Program).Assembly;
+                return NuGetExeAssembly;
             }
             // .NET Framework 4.x now triggers AssemblyResolve event for resource assemblies
             // Catch this event for nuget.exe (NuGet.CommandLine) and NuGet.Command resource assemblies only
@@ -260,7 +261,7 @@ namespace NuGet.CommandLine
         private static Assembly LoadAssemblyFromEmbeddedResources(string resourceName)
         {
             Assembly resourceAssembly = null;
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+            using (var stream = NuGetExeAssembly.GetManifestResourceStream(resourceName))
             {
                 if (stream == null)
                 {
@@ -278,7 +279,7 @@ namespace NuGet.CommandLine
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to block the exe from usage if anything failed")]
         internal static void RemoveOldFile(CoreV2.NuGet.IFileSystem fileSystem)
         {
-            var oldFile = typeof(Program).Assembly.Location + ".old";
+            var oldFile = NuGetExeAssembly.Location + ".old";
             try
             {
                 if (fileSystem.FileExists(oldFile))
