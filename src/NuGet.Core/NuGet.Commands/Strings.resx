@@ -985,10 +985,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Detected package downgrade: {0} from {1} to centrally defined {2}. Update the centrally managed package version to a higher version.</value>
     <comment>{0} is package id, {1} is the package version, {2} is the downgraded package version.</comment>
   </data>
-  <data name="CentralPackageVersionManagementInPreview" xml:space="preserve">
-    <value>The project {0} is using CentralPackageVersionManagement, a NuGet preview feature.</value>
-    <comment>{0} the project path.</comment>
-  </data>
   <data name="Error_CentralPackageVersions_MissingPackageVersion" xml:space="preserve">
     <value>The PackageReference items {0} do not have corresponding PackageVersion.</value>
   </data>
