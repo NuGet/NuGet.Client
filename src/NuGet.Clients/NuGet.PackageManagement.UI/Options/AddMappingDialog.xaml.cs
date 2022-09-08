@@ -20,7 +20,7 @@ namespace NuGet.Options
 
         public ICommand AddButtonCommand { get; set; }
 
-        public ItemsChangeObservableCollection<PackageSourceContextInfoChecked> SourcesCollection { get; private set; }
+        public ItemsChangeObservableCollection<PackageSourceViewModel> SourcesCollection { get; private set; }
 
         private IReadOnlyList<PackageSourceContextInfo> _originalPackageSources;
 
@@ -35,7 +35,7 @@ namespace NuGet.Options
             _parent = parent;
             HideButtonCommand = new ButtonCommand(ExecuteHideButtonCommand, CanExecuteHideButtonCommand);
             AddButtonCommand = new ButtonCommand(ExecuteAddButtonCommand, CanExecuteAddButtonCommand);
-            SourcesCollection = new ItemsChangeObservableCollection<PackageSourceContextInfoChecked>();
+            SourcesCollection = new ItemsChangeObservableCollection<PackageSourceViewModel>();
             DataContext = this;
             InitializeComponent();
             CancellationToken cancellationToken = new CancellationToken(false);
@@ -57,7 +57,7 @@ namespace NuGet.Options
             SourcesCollection.Clear();
             foreach (PackageSourceContextInfo source in _originalPackageSources)
             {
-                PackageSourceContextInfoChecked tempSource = new PackageSourceContextInfoChecked(source, false);
+                var tempSource = new PackageSourceViewModel(source, false);
                 SourcesCollection.Add(tempSource);
             }
         }
@@ -81,7 +81,7 @@ namespace NuGet.Options
             {
                 string tempPkgID = packageID.Text;
                 List<PackageSourceContextInfo> tempSources = new List<PackageSourceContextInfo>();
-                foreach (PackageSourceContextInfoChecked source in sourcesListBox.Items)
+                foreach (PackageSourceViewModel source in sourcesListBox.Items)
                 {
                     if (source.IsChecked)
                     {
@@ -98,7 +98,7 @@ namespace NuGet.Options
 
         private bool CanExecuteAddButtonCommand(object parameter)
         {
-            foreach (PackageSourceContextInfoChecked source in sourcesListBox.Items)
+            foreach (PackageSourceViewModel source in sourcesListBox.Items)
             {
                 if (source.IsChecked)
                 {
