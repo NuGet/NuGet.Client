@@ -5,13 +5,12 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.Options
 {
-    public class PackageSourceContextInfoChecked
+    public class PackageSourceViewModel
     {
         public PackageSourceContextInfo SourceInfo { get; private set; }
         public bool IsChecked { get; set; }
 
-
-        public PackageSourceContextInfoChecked(PackageSourceContextInfo sourceInfo, bool isChecked)
+        public PackageSourceViewModel(PackageSourceContextInfo sourceInfo, bool isChecked)
         {
             SourceInfo = sourceInfo;
             IsChecked = isChecked;
