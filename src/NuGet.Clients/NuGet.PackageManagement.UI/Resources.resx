@@ -649,9 +649,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Error_ProjectNotInCache" xml:space="preserve">
     <value>Project {0} does not exist in the project system cache.</value>
   </data>
-  <data name="Button_Upgrade" xml:space="preserve">
-    <value>Upgrade</value>
-  </data>
   <data name="Text_UpgradeNuGetProjectDescription" xml:space="preserve">
     <value>Migrate this project from packages.config to PackageReference format.</value>
   </data>

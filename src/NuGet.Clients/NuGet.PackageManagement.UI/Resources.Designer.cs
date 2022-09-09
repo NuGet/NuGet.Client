@@ -466,15 +466,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Upgrade.
-        /// </summary>
-        public static string Button_Upgrade {
-            get {
-                return ResourceManager.GetString("Button_Upgrade", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to _Yes.
         /// </summary>
         public static string Button_Yes {
