@@ -1037,7 +1037,7 @@ namespace NuGet.CommandLine
                 }
                 var tempDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp);
 
-                DirectoryUtility.CreateSharedDirectory(tempDirectory);
+                Directory.CreateDirectory(tempDirectory);
 
                 var count = 0;
                 do

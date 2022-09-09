@@ -1113,7 +1113,7 @@ namespace NuGet.Protocol.Plugins
 
         private static string GetTemporaryDirectoryPath()
         {
-            var tempDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            var tempDirectoryPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetRandomFileName());
 
             Directory.CreateDirectory(tempDirectoryPath);
 
