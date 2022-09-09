@@ -562,7 +562,7 @@
     <value>Can not access NuGet.Config, Please check NuGet.Config</value>
   </data>
   <data name="ShowMessage_LocalsCommandFailure" xml:space="preserve">
-    <value>NuGet cache(s) clear failed at {0}. 
+    <value>NuGet storage clear failed at {0}. 
 Error: {1}
 Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <comment>{0} :error message;
@@ -570,11 +570,11 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
 </comment>
   </data>
   <data name="ShowMessage_LocalsCommandSuccess" xml:space="preserve">
-    <value>NuGet cache(s) cleared at {0}</value>
+    <value>NuGet storage cleared at {0}</value>
     <comment>{0} for date and time string</comment>
   </data>
   <data name="ShowMessage_LocalsCommandWorking" xml:space="preserve">
-    <value>Clearing all NuGet cache(s). </value>
+    <value>Clearing all NuGet storage. </value>
   </data>
   <data name="ShowWarning_InvalidSource" xml:space="preserve">
     <value>The source specified is invalid. Please provide a valid source.</value>

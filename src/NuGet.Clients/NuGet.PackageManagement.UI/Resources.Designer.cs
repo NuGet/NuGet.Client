@@ -1636,7 +1636,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet cache(s) clear failed at {0}. 
+        ///   Looks up a localized string similar to NuGet storage clear failed at {0}. 
         ///Error: {1}
         ///Please see https://aka.ms/troubleshoot_nuget_cache for more help..
         /// </summary>
@@ -1647,7 +1647,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet cache(s) cleared at {0}.
+        ///   Looks up a localized string similar to NuGet storage cleared at {0}.
         /// </summary>
         public static string ShowMessage_LocalsCommandSuccess {
             get {
@@ -1656,7 +1656,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clearing all NuGet cache(s). .
+        ///   Looks up a localized string similar to Clearing all NuGet storage. .
         /// </summary>
         public static string ShowMessage_LocalsCommandWorking {
             get {
