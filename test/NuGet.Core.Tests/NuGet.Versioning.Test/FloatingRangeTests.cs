@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using FluentAssertions;
 using Xunit;
 
 namespace NuGet.Versioning.Test
@@ -23,6 +24,40 @@ namespace NuGet.Versioning.Test
                 };
 
             Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void Test2()
+        {
+            var range = VersionRange.Parse("[1.0.*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.1.0-alpha.2"),
+                    NuGetVersion.Parse("1.5.0"),
+                };
+
+            range.FindBestMatch(versions).Should().Be(NuGetVersion.Parse("1.5.0"));
+
+            range = VersionRange.Parse("[1.0.*, 2.0.0)");
+
+            versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.6.0"),
+                    NuGetVersion.Parse("1.5.0"),
+                };
+
+            range.FindBestMatch(versions).Should().Be(NuGetVersion.Parse("1.5.0"));
+
+            range = VersionRange.Parse("[1.0.*, 2.0.0)");
+
+            versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.6.0-beta.1"),
+                    NuGetVersion.Parse("1.5.0-beta.1"),
+                };
+
+            range.FindBestMatch(versions).Should().Be(null);
         }
 
         [Fact]

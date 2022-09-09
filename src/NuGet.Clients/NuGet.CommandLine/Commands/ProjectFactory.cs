@@ -65,7 +65,7 @@ namespace NuGet.CommandLine
         private const string TransformFileExtension = ".transform";
 
         [Import]
-        public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
+        public IMachineWideSettings MachineWideSettings { get; set; }
 
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
@@ -221,7 +221,7 @@ namespace NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        public PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded, Packaging.PackageBuilder builder = null)
+        public PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded, PackageBuilder builder = null)
         {
             if (buildIfNeeded)
             {
@@ -235,6 +235,18 @@ namespace NuGet.CommandLine
                         LocalizedResourceManager.GetString("PackagingFilesFromOutputPath"),
                         Path.GetFullPath(Path.GetDirectoryName(TargetPath))), LogLevel.Minimal));
             }
+
+            string usingNETSDK = _project.GetPropertyValue("UsingMicrosoftNETSDK");
+            if (!string.IsNullOrEmpty(usingNETSDK))
+            {
+                // If this is an SDK based project, then we could fail here.
+                Logger.Log(PackagingLogMessage.CreateError("Use msbuild /t:restore or dotnet restore instead.", NuGetLogCode.NU5041)); // Get a code.
+                return null;
+            }
+
+            var imports = _project.Imports;
+            var toolsVersion = _project.ToolsVersion;
+
 
             builder = new PackageBuilder(false, Logger);
 
