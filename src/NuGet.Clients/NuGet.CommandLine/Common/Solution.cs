@@ -113,6 +113,7 @@ namespace NuGet.Common
         {
             var solutionFileType = msbuildAssembly.GetType("Microsoft.Build.Construction.SolutionFile");
             var parseMethod = solutionFileType.GetMethod("Parse", BindingFlags.Static | BindingFlags.Public);
+            var projectShouldBuildMethod = solutionFileType.GetMethod("ProjectShouldBuild", BindingFlags.NonPublic | BindingFlags.Instance);
             dynamic solutionFile = parseMethod.Invoke(null, new object[] { solutionFileName });
 
             // load projects
@@ -121,8 +122,19 @@ namespace NuGet.Common
             {
                 var projectType = project.ProjectType.ToString();
                 var isSolutionFolder = projectType.Equals("SolutionFolder", StringComparison.OrdinalIgnoreCase);
-                var relativePath = project.RelativePath.Replace('\\', Path.DirectorySeparatorChar);
-                projects.Add(new ProjectInSolution(relativePath, isSolutionFolder));
+                try
+                {
+                    var projectShouldBuild = projectShouldBuildMethod != null ? projectShouldBuildMethod.Invoke(solutionFile, new object[] { project.RelativePath }) : true;
+                    if (projectShouldBuild)
+                    {
+                        var relativePath = project.RelativePath.Replace('\\', Path.DirectorySeparatorChar);
+                        projects.Add(new ProjectInSolution(relativePath, isSolutionFolder));
+                    }
+                }
+                catch (TargetInvocationException ex)
+                {
+                    throw ex.InnerException ?? ex;
+                }
             }
             Projects = projects;
         }

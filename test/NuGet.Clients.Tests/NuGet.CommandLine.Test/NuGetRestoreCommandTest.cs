@@ -328,6 +328,55 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData("packages.config")]
+        [InlineData("packages.proj2.config")]
+        public void RestoreCommand_FromFilteredSolutionFile(string configFileName)
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = Util.CreateBasicTwoProjectSolutionWithSolutionFilters(workingPath, "packages.config", configFileName);
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    "restore " + Path.Combine(workingPath, "a.proj1.slnf") + " -Source " + repositoryPath,
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(_successCode == r.ExitCode, r.Output + " " + r.Errors);
+                var packageFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+                Assert.False(File.Exists(packageFileB));
+            }
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = Util.CreateBasicTwoProjectSolutionWithSolutionFilters(workingPath, "packages.config", configFileName);
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    "restore " + Path.Combine(workingPath, "a.proj2.slnf") + " -Source " + repositoryPath,
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(_successCode == r.ExitCode, r.Output + " " + r.Errors);
+                var packageFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                Assert.False(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+            }
+        }
+
         [Fact]
         public void RestoreCommand_FromProjectFile()
         {
