@@ -77,7 +77,7 @@ namespace NuGet.Protocol.Plugins
             if (OperationClaims != null)
             {
                 // Make sure the cache file directory is created before writing a file to it.
-                DirectoryUtility.CreateSharedDirectory(RootFolder);
+                Directory.CreateDirectory(RootFolder);
 
                 // The update of a cached file is divided into two steps:
                 // 1) Delete the old file.

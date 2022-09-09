@@ -51,6 +51,8 @@ namespace NuGet.Build.Tasks.Console
 #endif
             }
 
+            NuGet.Common.Migrations.MigrationRunner.Run();
+
             // Parse command-line arguments
             if (!TryParseArguments(args, out (Dictionary<string, string> Options, FileInfo MSBuildExeFilePath, string EntryProjectFilePath, Dictionary<string, string> MSBuildGlobalProperties) arguments))
             {
