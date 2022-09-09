@@ -30,7 +30,6 @@ NuGet.Common.CryptoHashProvider.VerifyHash(byte[] data, byte[] hash) -> bool
 NuGet.Common.CryptoHashUtility
 NuGet.Common.CultureUtility
 NuGet.Common.DatetimeUtility
-NuGet.Common.DirectoryUtility
 NuGet.Common.EnvironmentVariableWrapper
 NuGet.Common.EnvironmentVariableWrapper.EnvironmentVariableWrapper() -> void
 NuGet.Common.EnvironmentVariableWrapper.GetEnvironmentVariable(string variable) -> string
@@ -148,6 +147,7 @@ NuGet.Common.LoggerBase.VerbosityLevel.get -> NuGet.Common.LogLevel
 NuGet.Common.LoggerBase.VerbosityLevel.set -> void
 NuGet.Common.LoggingExtensions
 NuGet.Common.MSBuildStringUtility
+NuGet.Common.Migrations.MigrationRunner
 NuGet.Common.NetworkProtocolUtility
 NuGet.Common.NuGetEnvironment
 NuGet.Common.NuGetFolderPath
@@ -520,7 +520,6 @@ static NuGet.Common.CryptoHashUtility.GetHashProvider(this NuGet.Common.HashAlgo
 static NuGet.Common.CryptoHashUtility.OidToHashAlgorithmName(string oid) -> NuGet.Common.HashAlgorithmName
 static NuGet.Common.CultureUtility.DisableLocalization() -> void
 static NuGet.Common.DatetimeUtility.ToReadableTimeFormat(System.TimeSpan time) -> string
-static NuGet.Common.DirectoryUtility.CreateSharedDirectory(string path) -> void
 static NuGet.Common.EnvironmentVariableWrapper.Instance.get -> NuGet.Common.IEnvironmentVariableReader
 static NuGet.Common.ExceptionLogger.Instance.get -> NuGet.Common.ExceptionLogger
 static NuGet.Common.ExceptionUtilities.DisplayMessage(System.AggregateException exception) -> string
@@ -557,6 +556,7 @@ static NuGet.Common.MSBuildStringUtility.Split(string s) -> string[]
 static NuGet.Common.MSBuildStringUtility.Split(string s, params char[] chars) -> string[]
 static NuGet.Common.MSBuildStringUtility.TrimAndExcludeNullOrEmpty(string[] strings) -> string[]
 static NuGet.Common.MSBuildStringUtility.TrimAndGetNullForEmpty(string s) -> string
+static NuGet.Common.Migrations.MigrationRunner.Run() -> void
 static NuGet.Common.NetworkProtocolUtility.SetConnectionLimit() -> void
 static NuGet.Common.NuGetEnvironment.GetDotNetLocation() -> string
 static NuGet.Common.NuGetEnvironment.GetFolderPath(NuGet.Common.NuGetFolderPath folder) -> string

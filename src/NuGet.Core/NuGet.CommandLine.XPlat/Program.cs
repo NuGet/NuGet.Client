@@ -65,6 +65,8 @@ namespace NuGet.CommandLine.XPlat
                 CultureUtility.DisableLocalization();
             }
 
+            NuGet.Common.Migrations.MigrationRunner.Run();
+
             var app = InitializeApp(args, log);
 
             // Remove the correct item in array for "package" commands. Only do this when "add package", "remove package", etc... are being run.
