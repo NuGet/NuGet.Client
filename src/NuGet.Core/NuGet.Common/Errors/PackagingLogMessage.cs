@@ -93,10 +93,5 @@ namespace NuGet.Common
                     return NuGetLogCode.Undefined;
             }
         }
-
-        public static ILogMessage CreateError(string v, object nU5049)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
