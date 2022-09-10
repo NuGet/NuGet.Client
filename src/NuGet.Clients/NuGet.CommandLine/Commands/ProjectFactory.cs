@@ -237,16 +237,11 @@ namespace NuGet.CommandLine
             }
 
             string usingNETSDK = _project.GetPropertyValue("UsingMicrosoftNETSDK");
-            if (!string.IsNullOrEmpty(usingNETSDK))
+            if (!string.IsNullOrEmpty(usingNETSDK)) // NuGet.exe cannot correctly pack SDK based projects.
             {
-                // If this is an SDK based project, then we could fail here.
-                Logger.Log(PackagingLogMessage.CreateError("Use msbuild /t:restore or dotnet restore instead.", NuGetLogCode.NU5041)); // Get a code.
+                Logger.Log(PackagingLogMessage.CreateError(string.Format(NuGetResources.Error_AttemptingToPackSDKproject, CultureInfo.CurrentCulture), NuGetLogCode.NU5049));
                 return null;
             }
-
-            var imports = _project.Imports;
-            var toolsVersion = _project.ToolsVersion;
-
 
             builder = new PackageBuilder(false, Logger);
 

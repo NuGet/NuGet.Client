@@ -185,7 +185,6 @@ namespace NuGet.CommandLine
             catch (Exception exception)
             {
                 LogException(exception, console);
-                // Here we get an exception that says the specified SDK can't be found.
                 return 1;
             }
             finally
