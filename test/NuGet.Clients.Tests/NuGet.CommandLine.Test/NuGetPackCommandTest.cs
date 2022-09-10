@@ -7427,6 +7427,57 @@ namespace proj1
                 }
             }
         }
+
+        [Fact]
+        public void PackCommand_WhenPackingAnSDKBasedCsproj_Errors()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <UsingMicrosoftNETSDK>true</UsingMicrosoftNETSDK> <!-- Pretend that this is an SDK based project -->
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");           
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -build",
+                    waitForExit: true);
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("NU5049");
+                r.AllOutput.Should().Contain("dotnet.exe pack");
+            }
+        }
     }
 
     internal static class PackageArchiveReaderTestExtensions
