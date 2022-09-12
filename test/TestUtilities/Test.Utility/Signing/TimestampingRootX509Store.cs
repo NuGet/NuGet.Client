@@ -6,14 +6,14 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Test.Utility.Signing
 {
-    internal sealed class CustomRootX509Store : IRootX509Store
+    internal sealed class TimestampingRootX509Store : IRootX509Store
     {
-        internal static CustomRootX509Store Instance { get; } = new();
+        internal static TimestampingRootX509Store Instance { get; } = new();
 
         public void Add(StoreLocation storeLocation, X509Certificate2 certificate)
         {
 #if NET5_0_OR_GREATER
-            X509Certificate2Collection certificates = TestFallbackCertificateBundleX509ChainFactory.Instance.Certificates;
+            X509Certificate2Collection certificates = TestFallbackCertificateBundleX509ChainFactories.Instance.TimestampingX509ChainFactory.Certificates;
 
             if (!certificates.Contains(certificate))
             {
@@ -27,7 +27,7 @@ namespace Test.Utility.Signing
         public void Remove(StoreLocation storeLocation, X509Certificate2 certificate)
         {
 #if NET5_0_OR_GREATER
-            TestFallbackCertificateBundleX509ChainFactory.Instance.Certificates.Remove(certificate);
+            TestFallbackCertificateBundleX509ChainFactories.Instance.TimestampingX509ChainFactory.Certificates.Remove(certificate);
 #else
             throw new NotSupportedException();
 #endif

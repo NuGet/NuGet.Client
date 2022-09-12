@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -16,45 +17,61 @@ namespace Dotnet.Integration.Test
     [Collection(DotnetIntegrationCollection.Name)]
     public class X509TrustStoreTests
     {
-        private readonly FileInfo _fallbackCertificateBundle;
+        private readonly FileInfo _codeSigningCertificateBundle;
+        private readonly FileInfo _timestampingCertificateBundle;
         private readonly TestLogger _logger;
 
         public X509TrustStoreTests(MsbuildIntegrationTestFixture msbuildFixture, ITestOutputHelper helper)
         {
             _logger = new TestLogger(helper);
 
-            _fallbackCertificateBundle = new FileInfo(
+            _codeSigningCertificateBundle = new FileInfo(
                 Path.Combine(
                     msbuildFixture.SdkDirectory.FullName,
                     FallbackCertificateBundleX509ChainFactory.SubdirectoryName,
-                    FallbackCertificateBundleX509ChainFactory.FileName));
+                    FallbackCertificateBundleX509ChainFactory.CodeSigningFileName));
+            _timestampingCertificateBundle = new FileInfo(
+                Path.Combine(
+                    msbuildFixture.SdkDirectory.FullName,
+                    FallbackCertificateBundleX509ChainFactory.SubdirectoryName,
+                    FallbackCertificateBundleX509ChainFactory.TimestampingFileName));
 
-            _logger.LogVerbose($"Expected fallback certificate bundle file path:  {_fallbackCertificateBundle.FullName}");
-            _logger.LogVerbose($"Fallback certificate bundle file exists:  {_fallbackCertificateBundle.Exists}");
+            _logger.LogVerbose($"Expected code signing fallback certificate bundle file path:  {_codeSigningCertificateBundle.FullName}");
+            _logger.LogVerbose($"Code signing fallback certificate bundle file exists:  {_codeSigningCertificateBundle.Exists}");
+            _logger.LogVerbose($"Expected timestamping fallback certificate bundle file path:  {_timestampingCertificateBundle.FullName}");
+            _logger.LogVerbose($"Timestamping fallback certificate bundle file exists:  {_timestampingCertificateBundle.Exists}");
         }
 
-        [PlatformFact(Platform.Windows)]
-        public void CreateX509ChainFactoryForDotNetSdk_OnWindowsAlways_ReturnsInstance()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(X509StorePurpose.CodeSigning)]
+        [InlineData(X509StorePurpose.Timestamping)]
+        public void CreateX509ChainFactoryForDotNetSdk_OnWindowsAlways_ReturnsInstance(X509StorePurpose storePurpose)
         {
+            FileInfo certificateBundle = GetCertificateBundle(storePurpose);
             IX509ChainFactory factory = X509TrustStore.CreateX509ChainFactoryForDotNetSdk(
+                storePurpose,
                 _logger,
-                _fallbackCertificateBundle);
+                certificateBundle);
 
             Assert.IsType<DotNetDefaultTrustStoreX509ChainFactory>(factory);
 
-            // 1 message from the API under test and 2 messages from this test class's constructor
-            Assert.Equal(3, _logger.Messages.Count);
+            // 1 message from the API under test and 4 messages from this test class's constructor
+            Assert.Equal(5, _logger.Messages.Count);
             Assert.Equal(1, _logger.InformationMessages.Count);
             Assert.True(_logger.InformationMessages.TryPeek(out string actualMessage));
             Assert.Equal(Strings.ChainBuilding_UsingDefaultTrustStore, actualMessage);
         }
 
-        [PlatformFact(Platform.Linux)]
-        public void CreateX509ChainFactoryForDotNetSdk_OnLinuxAlways_ReturnsInstance()
+        [PlatformTheory(Platform.Linux)]
+        [InlineData(X509StorePurpose.CodeSigning)]
+        [InlineData(X509StorePurpose.Timestamping)]
+        public void CreateX509ChainFactoryForDotNetSdk_OnLinuxAlways_ReturnsInstance(X509StorePurpose storePurpose)
         {
+            FileInfo certificateBundle = GetCertificateBundle(storePurpose);
             IX509ChainFactory factory = X509TrustStore.CreateX509ChainFactoryForDotNetSdk(
+                storePurpose,
                 _logger,
-                _fallbackCertificateBundle);
+                certificateBundle);
 
             bool wasFound = TryReadFirstBundle(
                 SystemCertificateBundleX509ChainFactory.ProbePaths,
@@ -73,8 +90,8 @@ namespace Dotnet.Integration.Test
                 Assert.True(certificateBundleFactory.Certificates.Count > 0);
             }
 
-            // 1 message from the API under test and 2 messages from this test class's constructor
-            Assert.Equal(3, _logger.Messages.Count);
+            // 1 message from the API under test and 4 messages from this test class's constructor
+            Assert.Equal(5, _logger.Messages.Count);
             Assert.Equal(1, _logger.InformationMessages.Count);
             Assert.True(_logger.InformationMessages.TryPeek(out string actualMessage));
 
@@ -98,12 +115,16 @@ namespace Dotnet.Integration.Test
             Assert.Equal(expectedMessage, actualMessage);
         }
 
-        [PlatformFact(Platform.Darwin)]
-        public void CreateX509ChainFactoryForDotNetSdk_OnMacOsAlways_ReturnsInstance()
+        [PlatformTheory(Platform.Darwin)]
+        [InlineData(X509StorePurpose.CodeSigning)]
+        [InlineData(X509StorePurpose.Timestamping)]
+        public void CreateX509ChainFactoryForDotNetSdk_OnMacOsAlways_ReturnsInstance(X509StorePurpose storePurpose)
         {
+            FileInfo certificateBundle = GetCertificateBundle(storePurpose);
             IX509ChainFactory factory = X509TrustStore.CreateX509ChainFactoryForDotNetSdk(
+                storePurpose,
                 _logger,
-                _fallbackCertificateBundle);
+                certificateBundle);
 
             Assert.IsType<FallbackCertificateBundleX509ChainFactory>(factory);
 
@@ -112,8 +133,8 @@ namespace Dotnet.Integration.Test
                 Strings.ChainBuilding_UsingFallbackCertificateBundle,
                 ((CertificateBundleX509ChainFactory)factory).FilePath);
 
-            // 1 message from the API under test and 2 messages from this test class's constructor
-            Assert.Equal(3, _logger.Messages.Count);
+            // 1 message from the API under test and 4 messages from this test class's constructor
+            Assert.Equal(5, _logger.Messages.Count);
             Assert.Equal(1, _logger.InformationMessages.Count);
             Assert.True(_logger.InformationMessages.TryPeek(out string actualMessage));
             Assert.Equal(expectedMessage, actualMessage);
@@ -145,6 +166,16 @@ namespace Dotnet.Integration.Test
             }
 
             return false;
+        }
+
+        private FileInfo GetCertificateBundle(X509StorePurpose storePurpose)
+        {
+            if (storePurpose == X509StorePurpose.CodeSigning)
+            {
+                return _codeSigningCertificateBundle;
+            }
+
+            return _timestampingCertificateBundle;
         }
     }
 }

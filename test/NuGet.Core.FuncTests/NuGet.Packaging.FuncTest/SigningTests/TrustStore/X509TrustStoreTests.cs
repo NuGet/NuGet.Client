@@ -21,12 +21,12 @@ namespace NuGet.Packaging.FuncTest
             _logger = new TestLogger();
 
             // For these tests, use whatever factory X509TrustStore creates by default.
-            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: false);
+            TestFallbackCertificateBundleX509ChainFactories.SetTryUseAsDefault(tryUseAsDefault: false);
         }
 
         public void Dispose()
         {
-            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: true);
+            TestFallbackCertificateBundleX509ChainFactories.SetTryUseAsDefault(tryUseAsDefault: true);
 
             GC.SuppressFinalize(this);
         }
@@ -43,7 +43,7 @@ namespace NuGet.Packaging.FuncTest
         [Fact]
         public void CreateX509ChainFactory_Always_ReturnsInstance()
         {
-            IX509ChainFactory factory = X509TrustStore.CreateX509ChainFactory(_logger);
+            IX509ChainFactory factory = X509TrustStore.CreateX509ChainFactory(X509StorePurpose.CodeSigning, _logger);
 
             Assert.IsType<DotNetDefaultTrustStoreX509ChainFactory>(factory);
             Assert.Equal(1, _logger.Messages.Count);

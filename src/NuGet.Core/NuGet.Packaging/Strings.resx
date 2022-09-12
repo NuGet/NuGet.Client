@@ -864,4 +864,7 @@ Valid from:</comment>
     <value>X.509 certificate chain validation will use the system certificate bundle at '{0}'.</value>
     <comment>{0} is the file path</comment>
   </data>
+  <data name="InvalidX509StorePurpose" xml:space="preserve">
+    <value>Invalid X.509 store purpose.</value>
+  </data>
 </root>

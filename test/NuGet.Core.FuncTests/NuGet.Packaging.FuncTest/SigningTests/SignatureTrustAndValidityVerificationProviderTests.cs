@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1953,7 +1954,7 @@ namespace NuGet.Packaging.FuncTest
         {
             using (IX509CertificateChain certificateChain = SignatureUtility.GetCertificateChain(signature))
             {
-                return TrustRootCertificate(certificateChain);
+                return TrustRootCertificate(certificateChain, X509StorePurpose.CodeSigning);
             }
         }
 
@@ -1968,17 +1969,18 @@ namespace NuGet.Packaging.FuncTest
 
             using (IX509CertificateChain certificateChain = SignatureUtility.GetTimestampCertificateChain(signature))
             {
-                return TrustRootCertificate(certificateChain);
+                return TrustRootCertificate(certificateChain, X509StorePurpose.Timestamping);
             }
         }
 
-        private static IDisposable TrustRootCertificate(IX509CertificateChain certificateChain)
+        private static IDisposable TrustRootCertificate(IX509CertificateChain certificateChain, X509StorePurpose storePurpose)
         {
             X509Certificate2 rootCertificate = certificateChain.Last();
             StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
             return TrustedTestCert.Create(
                 new X509Certificate2(rootCertificate),
+                storePurpose,
                 StoreName.Root,
                 storeLocation,
                 maximumValidityPeriod: TimeSpan.MaxValue);
