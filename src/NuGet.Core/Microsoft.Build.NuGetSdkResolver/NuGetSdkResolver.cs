@@ -83,6 +83,8 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return factory.IndicateFailure(errors: null, warnings: new List<string>() { Strings.Error_NoSdkVersion });
             }
 
+            NuGet.Common.Migrations.MigrationRunner.Run();
+
             return NuGetAbstraction.GetSdkResult(sdkReference, parsedSdkVersion, resolverContext, factory);
         }
 
