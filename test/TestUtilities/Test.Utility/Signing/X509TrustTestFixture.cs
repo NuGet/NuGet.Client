@@ -9,12 +9,12 @@ namespace Test.Utility.Signing
     {
         public X509TrustTestFixture()
         {
-            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: true);
+            TestFallbackCertificateBundleX509ChainFactories.SetTryUseAsDefault(tryUseAsDefault: true);
         }
 
         public void Dispose()
         {
-            TestFallbackCertificateBundleX509ChainFactory.SetTryUseAsDefault(tryUseAsDefault: false);
+            TestFallbackCertificateBundleX509ChainFactories.SetTryUseAsDefault(tryUseAsDefault: false);
         }
     }
 }

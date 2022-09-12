@@ -49,6 +49,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var trustedServerRoot = TrustedTestCert.Create(
                     new X509Certificate2(rootCa.Certificate.GetEncoded()),
+                    X509StorePurpose.Timestamping,
                     StoreName.Root,
                     storeLocation))
                 {

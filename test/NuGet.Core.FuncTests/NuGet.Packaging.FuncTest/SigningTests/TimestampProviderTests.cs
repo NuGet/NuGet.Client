@@ -87,7 +87,7 @@ namespace NuGet.Packaging.FuncTest
                 var chainBuildSuccess = true;
 
                 // rebuild the chain to get the list of certificates
-                using (var chainHolder = new X509ChainHolder())
+                using (X509ChainHolder chainHolder = X509ChainHolder.CreateForTimestamping())
                 {
                     var chain = chainHolder.Chain;
                     var policy = chain.ChainPolicy;

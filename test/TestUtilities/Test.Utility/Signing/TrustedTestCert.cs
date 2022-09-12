@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Packaging.Signing;
 
 namespace Test.Utility.Signing
 {
@@ -10,6 +11,7 @@ namespace Test.Utility.Signing
     {
         public static TrustedTestCert<X509Certificate2> Create(
             X509Certificate2 cert,
+            X509StorePurpose storePurpose,
             StoreName storeName = StoreName.TrustedPeople,
             StoreLocation storeLocation = StoreLocation.CurrentUser,
             TimeSpan? maximumValidityPeriod = null)
@@ -17,6 +19,7 @@ namespace Test.Utility.Signing
             return new TrustedTestCert<X509Certificate2>(
                 cert,
                 x => x,
+                storePurpose,
                 storeName,
                 storeLocation,
                 maximumValidityPeriod);
@@ -36,16 +39,31 @@ namespace Test.Utility.Signing
 
         public StoreLocation StoreLocation { get; }
 
+        private readonly X509StorePurpose _storePurpose;
         private bool _isDisposed;
 
-        public TrustedTestCert(T source,
+        [Obsolete("Use the constructor that takes an X.509 store purpose.")]
+        public TrustedTestCert(
+            T source,
             Func<T, X509Certificate2> getCert,
+            StoreName storeName = StoreName.TrustedPeople,
+            StoreLocation storeLocation = StoreLocation.CurrentUser,
+            TimeSpan? maximumValidityPeriod = null)
+            : this(source, getCert, X509StorePurpose.CodeSigning, storeName, storeLocation, maximumValidityPeriod)
+        {
+        }
+
+        public TrustedTestCert(
+            T source,
+            Func<T, X509Certificate2> getCert,
+            X509StorePurpose storePurpose,
             StoreName storeName = StoreName.TrustedPeople,
             StoreLocation storeLocation = StoreLocation.CurrentUser,
             TimeSpan? maximumValidityPeriod = null)
         {
             Source = source;
             TrustedCert = getCert(source);
+            _storePurpose = storePurpose;
 
             if (!maximumValidityPeriod.HasValue)
             {
@@ -61,7 +79,7 @@ namespace Test.Utility.Signing
             StoreName = storeName;
             StoreLocation = storeLocation;
 
-            X509StoreUtilities.AddCertificateToStore(StoreLocation, StoreName, TrustedCert);
+            X509StoreUtilities.AddCertificateToStore(StoreLocation, StoreName, TrustedCert, storePurpose);
 
             ExportCrl();
         }
@@ -90,7 +108,7 @@ namespace Test.Utility.Signing
         {
             if (!_isDisposed)
             {
-                X509StoreUtilities.RemoveCertificateFromStore(StoreLocation, StoreName, TrustedCert);
+                X509StoreUtilities.RemoveCertificateFromStore(StoreLocation, StoreName, TrustedCert, _storePurpose);
 
                 DisposeCrl();
 
