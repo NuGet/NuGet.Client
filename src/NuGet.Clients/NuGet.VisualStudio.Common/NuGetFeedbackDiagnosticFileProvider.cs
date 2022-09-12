@@ -79,7 +79,7 @@ namespace NuGet.VisualStudio.Common
                 string fileName = attempt == 0
                     ? fileNamePrefix + ".zip"
                     : fileNamePrefix + "." + attempt + ".zip";
-                string fullPath = Path.Combine(Path.GetTempPath(), fileName);
+                string fullPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), fileName);
                 try
                 {
                     FileStream fileStream = new FileStream(fullPath, FileMode.CreateNew);

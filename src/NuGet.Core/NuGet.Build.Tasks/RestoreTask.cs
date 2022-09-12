@@ -84,6 +84,8 @@ namespace NuGet.Build.Tasks
 #endif
             var log = new MSBuildLogger(Log);
 
+            NuGet.Common.Migrations.MigrationRunner.Run();
+
             // Log inputs
             log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");
             log.LogDebug($"(in) RestoreDisableParallel '{RestoreDisableParallel}'");

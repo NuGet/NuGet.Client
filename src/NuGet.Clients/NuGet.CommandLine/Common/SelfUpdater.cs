@@ -90,11 +90,11 @@ namespace NuGet.CommandLine
 
                     var packageIdentity = new PackageIdentity(NuGetCommandLinePackageId, latestVersion);
 
-                    var tempDir = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "updateSelf");
+                    var tempDir = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetRandomFileName());
                     var nupkgPath = FileUtility.GetTempFilePath(tempDir);
                     try
                     {
-                        DirectoryUtility.CreateSharedDirectory(tempDir);
+                        Directory.CreateDirectory(tempDir);
 
                         DownloadResourceResult downloadResourceResult = await PackageDownloader.GetDownloadResourceResultAsync(
                                             sourceRepository,
