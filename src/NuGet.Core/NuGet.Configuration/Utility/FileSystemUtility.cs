@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using NuGet.Shared;
 
@@ -34,7 +35,22 @@ namespace NuGet.Configuration
             {
                 writeToStream(outputStream);
             }
+
+            if (!NuGet.Common.RuntimeEnvironmentHelper.IsWindows)
+            {
+                var mode = Convert.ToInt32("600", 8);
+                if (chmod(fullPath, mode) == -1)
+                {
+                    // it's very unlikely we can't set the permissions of a file we just wrote
+                    var errno = Marshal.GetLastWin32Error(); // fetch the errno before running any other operation
+                    throw new InvalidOperationException($"Unable to set permission while creating {fullPath}, errno={errno}.");
+                }
+            }
         }
+
+        /// <summary>Only to be used for setting nuget.config permissions on Linux/Mac. Do not use elsewhere.</summary>
+        [DllImport("libc", SetLastError = true, CharSet = CharSet.Ansi)]
+        private static extern int chmod(string pathname, int mode);
 
         internal static bool IsPathAFile(string path)
         {
