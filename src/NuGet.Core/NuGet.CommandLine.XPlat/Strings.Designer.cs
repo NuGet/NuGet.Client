@@ -358,6 +358,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}.
+        /// </summary>
+        internal static string Error_CPM_AddPkg_VersionsNotAllowed {
+            get {
+                return ResourceManager.GetString("Error_CPM_AddPkg_VersionsNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to MsBuild was unable to open Project &apos;{0}&apos;..
         /// </summary>
         internal static string Error_MsBuildUnableToOpenProject {

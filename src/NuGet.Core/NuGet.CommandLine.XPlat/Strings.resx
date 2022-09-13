@@ -757,4 +757,8 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>PackageReference for package '{0}' added to '{1}' and PackageVersion added to central package management file '{2}'.</value>
     <comment>0 - The package ID. 1 - Directory.Packages.props file path. 2 - Project file path.</comment>
   </data>
+  <data name="Error_CPM_AddPkg_VersionsNotAllowed" xml:space="preserve">
+    <value>Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}</value>
+    <comment>0 - package id</comment>
+  </data>
 </root>
