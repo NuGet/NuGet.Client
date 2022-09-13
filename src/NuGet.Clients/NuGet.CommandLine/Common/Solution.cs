@@ -111,9 +111,10 @@ namespace NuGet.Common
         // Load the solution file using the public class SolutionFile in msbuild 14
         private void LoadSolutionWithMsbuild14(Assembly msbuildAssembly, string solutionFileName)
         {
+            var isSolutionFilter = solutionFileName.EndsWith(".slnf", StringComparison.OrdinalIgnoreCase);
             var solutionFileType = msbuildAssembly.GetType("Microsoft.Build.Construction.SolutionFile");
             var parseMethod = solutionFileType.GetMethod("Parse", BindingFlags.Static | BindingFlags.Public);
-            var projectShouldBuildMethod = solutionFileType.GetMethod("ProjectShouldBuild", BindingFlags.NonPublic | BindingFlags.Instance);
+            var projectShouldBuildMethod = isSolutionFilter ? solutionFileType.GetMethod("ProjectShouldBuild", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new InvalidOperationException("ProjectShouldBuild method not found") : null;
             dynamic solutionFile = parseMethod.Invoke(null, new object[] { solutionFileName });
 
             // load projects
@@ -122,9 +123,10 @@ namespace NuGet.Common
             {
                 var projectType = project.ProjectType.ToString();
                 var isSolutionFolder = projectType.Equals("SolutionFolder", StringComparison.OrdinalIgnoreCase);
+
                 try
                 {
-                    var projectShouldBuild = projectShouldBuildMethod != null ? projectShouldBuildMethod.Invoke(solutionFile, new object[] { project.RelativePath }) : true;
+                    var projectShouldBuild = !isSolutionFilter || projectShouldBuildMethod.Invoke(solutionFile, new object[] { project.RelativePath });
                     if (projectShouldBuild)
                     {
                         var relativePath = project.RelativePath.Replace('\\', Path.DirectorySeparatorChar);
