@@ -168,9 +168,6 @@
   <data name="Label_FileConflictAction" xml:space="preserve">
     <value>File conflict action:</value>
   </data>
-  <data name="Label_Filter" xml:space="preserve">
-    <value>Filter:</value>
-  </data>
   <data name="Label_Options" xml:space="preserve">
     <value>Options</value>
   </data>
@@ -233,9 +230,6 @@
   </data>
   <data name="Text_ErrorOccurred" xml:space="preserve">
     <value>Error occurred</value>
-  </data>
-  <data name="Label_Solution" xml:space="preserve">
-    <value>Solution '{0}'</value>
   </data>
   <data name="WindowTitle_PreviewChanges" xml:space="preserve">
     <value>Preview Changes</value>
