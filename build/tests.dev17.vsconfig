@@ -102,5 +102,8 @@
     "Microsoft.VisualStudio.Component.VisualStudioData",
     "Microsoft.Net.Component.4.6.1.SDK",
     "Microsoft.Net.Component.4.7.2.SDK"
+    "Microsoft.Net.Component.4.8.1.SDK",
+    "Microsoft.Net.Component.4.8.1.TargetingPack",
+    "Microsoft.VisualStudio.ComponentGroup.AdditionalWebProjectTemplates"
   ]
 }
