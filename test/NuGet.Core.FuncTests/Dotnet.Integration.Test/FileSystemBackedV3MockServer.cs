@@ -26,7 +26,7 @@ namespace Test.Utility
 
         public ISet<PackageIdentity> UnlistedPackages { get; } = new HashSet<PackageIdentity>();
 
-        public string ServiceIndexUri => Uri + _builder.GetV3IndexPath();
+        public string ServiceIndexUri => _builder.GetV3Source();
 
         private void InitializeServer()
         {
@@ -117,7 +117,7 @@ namespace Test.Utility
                         {
                             response.ContentType = "text/javascript";
                             var packageToListedMapping = packages.Select(e => new KeyValuePair<PackageIdentity, bool>(e.Identity, !UnlistedPackages.Contains(e.Identity))).ToArray();
-                            MockResponse mockResponse = _builder.BuildRegistrationIndexResponse(ServiceIndexUri, packageToListedMapping);
+                            MockResponse mockResponse = _builder.BuildRegistrationIndexResponse(Uri, packageToListedMapping);
                             SetResponseContent(response, mockResponse.Content);
                         });
                     }
