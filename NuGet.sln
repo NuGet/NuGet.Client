@@ -70,9 +70,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{96255044
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestUtilities", "TestUtilities", "{79266117-FEDD-45B3-B603-33A4B6E9F12F}"
-	ProjectSection(SolutionItems) = preProject
-		test\NuGet.Clients.Tests\NuGet.CommandLine.Test\FileSystemBackedV3MockServer.cs = test\NuGet.Clients.Tests\NuGet.CommandLine.Test\FileSystemBackedV3MockServer.cs
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Core", "NuGet.Core", "{506AF844-92E0-4404-BBFC-0AB073890A72}"
 EndProject
