@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,6 +25,8 @@ using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
 namespace NuGet.Packaging.FuncTest
 {
+    using X509StorePurpose = global::Test.Utility.Signing.X509StorePurpose;
+
     [Collection(SigningTestCollection.Name)]
     public class SignatureTrustAndValidityVerificationProviderTests
     {

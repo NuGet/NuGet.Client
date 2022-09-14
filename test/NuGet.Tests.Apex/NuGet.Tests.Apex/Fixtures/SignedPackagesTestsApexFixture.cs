@@ -4,7 +4,6 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 

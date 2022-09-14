@@ -16,6 +16,8 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
+    using X509StorePurpose = global::Test.Utility.Signing.X509StorePurpose;
+
     [Collection(SigningTestCollection.Name)]
     public class TimestampTests
     {
