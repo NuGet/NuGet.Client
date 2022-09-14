@@ -100,9 +100,11 @@
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.1.0" />
         <PackageReference Update="Microsoft.TestPlatform.Portable" Version="17.1.0" />
         <PackageReference Update="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
-        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="17.1.0-preview-2-31918-026" />
+        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="17.3.32913.221" />
         <PackageReference Update="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" Version="17.2.7" />
         <PackageReference Update="Moq" Version="4.18.1" />
+        <PackageReference Update="MSTest.TestAdapter" Version="2.2.10" />
+        <PackageReference Update="MSTest.TestFramework" Version="2.2.10" />
         <PackageReference Update="NuGet.Core" Version="$(NuGetCoreV2Version)" />
         <PackageReference Update="Portable.BouncyCastle" Version="1.8.10" />
         <PackageReference Update="System.Collections" Version="$(SystemPackagesVersion)" />
@@ -117,6 +119,9 @@
         <PackageReference Update="xunit" Version="$(XunitVersion)" />
         <PackageReference Update="xunit.runner.visualstudio" Version="$(XunitVersion)" />
         <PackageReference Update="Xunit.StaFact" Version="1.0.37" />
+
+        <PackageReference Update="System.Configuration.ConfigurationManager" Version="4.4.0" Condition="'$(TargetFramework)' == '$(NETCoreTargetFramework)'" />
+        <PackageReference Update="System.Security.Cryptography.ProtectedData" Version="4.4.0" Condition="'$(TargetFramework)' == '$(NETCoreTargetFramework)'" />
     </ItemGroup>
 
   </Project>
