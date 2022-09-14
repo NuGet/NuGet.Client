@@ -12,6 +12,8 @@ using Test.Utility.Signing;
 
 namespace Dotnet.Integration.Test
 {
+    using X509StorePurpose = global::Test.Utility.Signing.X509StorePurpose;
+
     public sealed class X509StoreCertificate : IX509StoreCertificate, IDisposable
     {
         private bool _isDisposed;

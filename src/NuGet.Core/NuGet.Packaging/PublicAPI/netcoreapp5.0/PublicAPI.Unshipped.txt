@@ -1,5 +1,0 @@
-NuGet.Packaging.Signing.X509StorePurpose
-NuGet.Packaging.Signing.X509StorePurpose.CodeSigning = 1 -> NuGet.Packaging.Signing.X509StorePurpose
-NuGet.Packaging.Signing.X509StorePurpose.Timestamping = 2 -> NuGet.Packaging.Signing.X509StorePurpose
-static NuGet.Packaging.Signing.X509ChainHolder.CreateForCodeSigning() -> NuGet.Packaging.Signing.X509ChainHolder
-static NuGet.Packaging.Signing.X509ChainHolder.CreateForTimestamping() -> NuGet.Packaging.Signing.X509ChainHolder

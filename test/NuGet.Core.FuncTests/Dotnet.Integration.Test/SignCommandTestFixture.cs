@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using NuGet.Packaging.Signing;
@@ -16,6 +15,8 @@ using Test.Utility.Signing;
 
 namespace Dotnet.Integration.Test
 {
+    using X509StorePurpose = global::Test.Utility.Signing.X509StorePurpose;
+
     /// <summary>
     /// Used to bootstrap functional tests for signing.
     /// </summary>

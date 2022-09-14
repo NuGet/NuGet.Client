@@ -20,7 +20,6 @@ namespace NuGet.Packaging.Signing
 
         public X509Chain Chain { get; }
 
-        [Obsolete("Use either CreateForCodeSigning() or CreateForTimestamping() instead.")]
         public X509ChainHolder()
         {
             IX509ChainFactory creator = X509TrustStore.GetX509ChainFactory(X509StorePurpose.CodeSigning, NullLogger.Instance);
@@ -35,12 +34,12 @@ namespace NuGet.Packaging.Signing
             Chain = creator.Create();
         }
 
-        public static X509ChainHolder CreateForCodeSigning()
+        internal static X509ChainHolder CreateForCodeSigning()
         {
             return new X509ChainHolder(X509StorePurpose.CodeSigning);
         }
 
-        public static X509ChainHolder CreateForTimestamping()
+        internal static X509ChainHolder CreateForTimestamping()
         {
             return new X509ChainHolder(X509StorePurpose.Timestamping);
         }

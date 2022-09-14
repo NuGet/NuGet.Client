@@ -43,7 +43,7 @@ namespace NuGet.Packaging.FuncTest
         [Fact]
         public void CreateX509ChainFactory_Always_ReturnsInstance()
         {
-            IX509ChainFactory factory = X509TrustStore.CreateX509ChainFactory(X509StorePurpose.CodeSigning, _logger);
+            IX509ChainFactory factory = X509TrustStore.CreateX509ChainFactory(NuGet.Packaging.Signing.X509StorePurpose.CodeSigning, _logger);
 
             Assert.IsType<DotNetDefaultTrustStoreX509ChainFactory>(factory);
             Assert.Equal(1, _logger.Messages.Count);

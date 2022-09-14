@@ -16,6 +16,8 @@ using Test.Utility.Signing;
 
 namespace NuGet.CommandLine.FuncTest.Commands
 {
+    using X509StorePurpose = global::Test.Utility.Signing.X509StorePurpose;
+
     /// <summary>
     /// Used to bootstrap functional tests for signing.
     /// </summary>

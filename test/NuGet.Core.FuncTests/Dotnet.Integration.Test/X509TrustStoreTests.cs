@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -14,6 +13,8 @@ using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
+    using X509StorePurpose = global::Test.Utility.Signing.X509StorePurpose;
+
     [Collection(DotnetIntegrationCollection.Name)]
     public class X509TrustStoreTests
     {
@@ -49,7 +50,7 @@ namespace Dotnet.Integration.Test
         {
             FileInfo certificateBundle = GetCertificateBundle(storePurpose);
             IX509ChainFactory factory = X509TrustStore.CreateX509ChainFactoryForDotNetSdk(
-                storePurpose,
+                (NuGet.Packaging.Signing.X509StorePurpose)storePurpose,
                 _logger,
                 certificateBundle);
 
@@ -69,7 +70,7 @@ namespace Dotnet.Integration.Test
         {
             FileInfo certificateBundle = GetCertificateBundle(storePurpose);
             IX509ChainFactory factory = X509TrustStore.CreateX509ChainFactoryForDotNetSdk(
-                storePurpose,
+                (NuGet.Packaging.Signing.X509StorePurpose)storePurpose,
                 _logger,
                 certificateBundle);
 
@@ -122,7 +123,7 @@ namespace Dotnet.Integration.Test
         {
             FileInfo certificateBundle = GetCertificateBundle(storePurpose);
             IX509ChainFactory factory = X509TrustStore.CreateX509ChainFactoryForDotNetSdk(
-                storePurpose,
+                (NuGet.Packaging.Signing.X509StorePurpose)storePurpose,
                 _logger,
                 certificateBundle);
 
