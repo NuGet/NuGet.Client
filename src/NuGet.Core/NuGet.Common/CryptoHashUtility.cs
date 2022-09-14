@@ -232,7 +232,6 @@ namespace NuGet.Common
         }
 #endif
 
-#if !NET45
         /// <summary>
         /// Extension method to convert NuGet.Common.HashAlgorithmName to System.Security.Cryptography.HashAlgorithmName
         /// </summary>
@@ -253,7 +252,6 @@ namespace NuGet.Common
                         nameof(hashAlgorithmName));
             }
         }
-#endif
 
         /// <summary>
         /// Extension method to convert NuGet.Common.HashAlgorithmName to an Oid string
