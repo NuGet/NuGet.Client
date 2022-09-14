@@ -18,6 +18,7 @@ using Xunit;
 
 namespace NuGet.CommandLine
 {
+    using global::Test.Utility;
     using NuGet.Packaging;
 
     public class ProjectFactoryTest

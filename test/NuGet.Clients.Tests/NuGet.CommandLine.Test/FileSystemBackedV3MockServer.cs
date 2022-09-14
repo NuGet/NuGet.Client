@@ -7,11 +7,11 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
-using Test.Utility;
 
-namespace NuGet.CommandLine.Test
+namespace Test.Utility
 {
     public class FileSystemBackedV3MockServer : MockServer
     {
@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.Test
 
         public ISet<PackageIdentity> UnlistedPackages { get; } = new HashSet<PackageIdentity>();
 
-        public string ServiceIndexUri => Uri + _builder.GetV3IndexPath();
+        public string ServiceIndexUri => _builder.GetV3Source();
 
         private void InitializeServer()
         {
@@ -67,7 +67,7 @@ namespace NuGet.CommandLine.Test
 
                         var id = parts[parts.Length - 2];
 
-                        foreach (var pkg in LocalFolderUtility.GetPackagesV2(_packageDirectory, id, Common.NullLogger.Instance))
+                        foreach (var pkg in LocalFolderUtility.GetPackagesV2(_packageDirectory, id, NullLogger.Instance))
                         {
                             array.Add(pkg.Identity.Version.ToNormalizedString());
                         }
@@ -109,7 +109,7 @@ namespace NuGet.CommandLine.Test
                 else if (path.StartsWith("/reg/") && path.EndsWith("/index.json"))
                 {
                     var id = parts[parts.Length - 2];
-                    var packages = LocalFolderUtility.GetPackagesV2(_packageDirectory, id, Common.NullLogger.Instance);
+                    var packages = LocalFolderUtility.GetPackagesV2(_packageDirectory, id, NullLogger.Instance);
 
                     if (packages.Any())
                     {

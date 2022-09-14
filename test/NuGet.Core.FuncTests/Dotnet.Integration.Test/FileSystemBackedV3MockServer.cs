@@ -10,11 +10,10 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
-using Test.Utility;
 
-namespace Dotnet.Integration.Test
+namespace Test.Utility
 {
-    internal class FileSystemBackedV3MockServer : MockServer
+    public class FileSystemBackedV3MockServer : MockServer
     {
         private string _packageDirectory;
         private readonly MockResponseBuilder _builder;
@@ -27,7 +26,7 @@ namespace Dotnet.Integration.Test
 
         public ISet<PackageIdentity> UnlistedPackages { get; } = new HashSet<PackageIdentity>();
 
-        public string ServiceIndexUri => _builder.GetV3Source();
+        public string ServiceIndexUri => Uri + _builder.GetV3IndexPath();
 
         private void InitializeServer()
         {
@@ -87,7 +86,7 @@ namespace Dotnet.Integration.Test
                             response.ContentType = "application/zip";
                             using (var stream = file.OpenRead())
                             {
-                                var content = ReadAllBytes(stream);
+                                var content = stream.ReadAllBytes();
                                 SetResponseContent(response, content);
                             }
                         });
@@ -139,23 +138,6 @@ namespace Dotnet.Integration.Test
             {
                 // Debug here
                 throw;
-            }
-        }
-
-        public static byte[] ReadAllBytes(Stream stream)
-        {
-            var memoryStream = stream as MemoryStream;
-            if (memoryStream != null)
-            {
-                return memoryStream.ToArray();
-            }
-            else
-            {
-                using (memoryStream = new MemoryStream())
-                {
-                    stream.CopyTo(memoryStream);
-                    return memoryStream.ToArray();
-                }
             }
         }
     }

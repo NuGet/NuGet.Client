@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
+using Test.Utility;
 using Xunit;
 using Strings = NuGet.CommandLine.XPlat.Strings;
 

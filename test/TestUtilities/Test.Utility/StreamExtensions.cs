@@ -4,7 +4,7 @@
 using System.IO;
 using System.Text;
 
-namespace NuGet.CommandLine.Test
+namespace Test.Utility
 {
     public static class StreamExtensions
     {
@@ -28,6 +28,14 @@ namespace NuGet.CommandLine.Test
         public static Stream AsStream(this string value)
         {
             return new MemoryStream(Encoding.UTF8.GetBytes(value));
+        }
+
+        public static string ReadToEnd(this Stream stream)
+        {
+            using (var streamReader = new StreamReader(stream))
+            {
+                return streamReader.ReadToEnd();
+            }
         }
     }
 }
