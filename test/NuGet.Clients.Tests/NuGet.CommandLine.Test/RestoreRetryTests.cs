@@ -10,6 +10,7 @@ using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test

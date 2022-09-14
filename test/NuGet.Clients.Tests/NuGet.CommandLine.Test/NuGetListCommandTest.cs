@@ -11,6 +11,7 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
