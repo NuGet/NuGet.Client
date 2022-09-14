@@ -7475,7 +7475,7 @@ namespace Proj1
                     waitForExit: true);
                 r.Success.Should().BeFalse();
                 r.AllOutput.Should().Contain("NU5049");
-                r.AllOutput.Should().Contain("dotnet.exe pack");
+                r.AllOutput.Should().Contain("dotnet pack");
             }
         }
     }

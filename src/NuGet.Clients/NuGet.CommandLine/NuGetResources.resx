@@ -724,7 +724,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>Don't localize 'SourceProvider'</comment>
   </data>
   <data name="Error_AttemptingToPackSDKproject" xml:space="preserve">
-    <value>NuGet.exe does not support package SDK-based projects, use `dotnet.exe pack` instead.</value>
-    <comment>Do not localize `NuGet.exe`, `SDK` and `dotnet.exe pack`. </comment>
+    <value>The `pack` command for SDK-style projects is not supported, use `dotnet pack` to pack this project instead.</value>
+    <comment>Do not localize `SDK` and `dotnet pack`. </comment>
   </data>
 </root>
