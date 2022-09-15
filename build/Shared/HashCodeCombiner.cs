@@ -127,7 +127,6 @@ namespace NuGet.Shared
             }
         }
 
-#if !NET40
         internal void AddSequence<T>(IReadOnlyList<T> list)
         {
             if (list != null)
@@ -140,7 +139,7 @@ namespace NuGet.Shared
                 }
             }
         }
-#endif
+
         internal void AddDictionary<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> dictionary)
         {
             if (dictionary != null)
