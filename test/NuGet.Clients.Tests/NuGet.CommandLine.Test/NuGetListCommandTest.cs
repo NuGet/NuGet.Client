@@ -59,7 +59,7 @@ namespace NuGet.CommandLine.Test
                 expected = "No such host is known";
             }
 
-            var args = new[] { "list", "-Source", "https://" + hostName + "/", "-ForceEnglishOutput" };
+            var args = new[] { "list", "-Source", "https://" + hostName + "/" };
 
             // Act
             var result = CommandRunner.Run(
@@ -926,7 +926,7 @@ namespace NuGet.CommandLine.Test
             // Act
             using (var pathContext = new SimpleTestPathContext())
             {
-                var args = "list test -Source " + invalidInput + " -ForceEnglishOutput";
+                var args = "list test -Source " + invalidInput;
                 CommandRunnerResult result = CommandRunner.Run(
                     process: nugetexe,
                     workingDirectory: pathContext.SolutionRoot,
