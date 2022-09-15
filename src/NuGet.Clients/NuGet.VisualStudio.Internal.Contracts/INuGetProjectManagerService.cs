@@ -23,7 +23,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             CancellationToken cancellationToken);
         ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             IReadOnlyCollection<string> projectIds,
-            bool useTransitiveOrigins,
+            bool includeTransitiveOrigins,
             CancellationToken cancellationToken);
         ValueTask<IReadOnlyCollection<NuGetFramework>> GetTargetFrameworksAsync(
             IReadOnlyCollection<string> projectIds,

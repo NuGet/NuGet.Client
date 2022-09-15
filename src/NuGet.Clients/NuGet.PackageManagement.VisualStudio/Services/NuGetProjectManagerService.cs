@@ -176,7 +176,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // If this is a PR-style project, get installed and transitive package references. Otherwise, just get installed package references.
             var prStyleTasks = new List<Task<ProjectPackages>>();
             var nonPrStyleTasks = new List<Task<IEnumerable<PackageReference>>>();
-            foreach (NuGetProject? project in projects) // can this be parallel ?
+            foreach (NuGetProject? project in projects)
             {
                 if (project is IPackageReferenceProject packageReferenceProject)
                 {
