@@ -281,7 +281,6 @@ namespace NuGet.CommandLine.XPlat
             AddPackagesToDict(packages, packagesVersionsDict);
 
             //Prepare requests for each of the packages
-            var providers = Repository.Provider.GetCoreV3();
             var getLatestVersionsRequests = new List<Task>();
             foreach (var package in packagesVersionsDict)
             {
@@ -289,7 +288,6 @@ namespace NuGet.CommandLine.XPlat
                     PrepareLatestVersionsRequests(
                         package.Key,
                         listPackageArgs,
-                        providers,
                         packagesVersionsDict));
             }
 
@@ -569,21 +567,19 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="package">The package to get the latest version for</param>
         /// <param name="listPackageArgs">List args for the token and source provider></param>
-        /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>A list of tasks for all latest versions for packages from all sources</returns>
         private IList<Task> PrepareLatestVersionsRequests(
             string package,
             ListPackageArgs listPackageArgs,
-            IEnumerable<Lazy<INuGetResourceProvider>> providers,
             Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
         {
             var latestVersionsRequests = new List<Task>();
             var sources = listPackageArgs.PackageSources;
             foreach (var packageSource in sources)
             {
-                latestVersionsRequests.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, providers, packagesVersionsDict));
+                latestVersionsRequests.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, packagesVersionsDict));
             }
             return latestVersionsRequests;
         }
@@ -627,7 +623,6 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageSource">The source to look for packages at</param>
         /// <param name="listPackageArgs">The list args for the cancellation token</param>
         /// <param name="package">Package to look for updates for</param>
-        /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>An updated package with the highest version at a single source</returns>
@@ -635,10 +630,9 @@ namespace NuGet.CommandLine.XPlat
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
             string package,
-            IEnumerable<Lazy<INuGetResourceProvider>> providers,
             Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
         {
-            var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
+            SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
             var packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
 
             using var sourceCacheContext = new SourceCacheContext();
