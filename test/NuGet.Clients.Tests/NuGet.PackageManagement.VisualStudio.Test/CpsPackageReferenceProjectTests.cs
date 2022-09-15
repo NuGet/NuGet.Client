@@ -3916,7 +3916,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsParamSetToTrue_Async()
+        public async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsParamSetToTrue_ReturnsTransitiveOriginsAsync()
         {
             using (var rootDir = new SimpleTestPathContext())
             {
@@ -3933,7 +3933,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsParamSetToFalse_ReturnsTransitiveOriginsAsync()
+        public async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsParamSetToFalse_ReturnsInstalledAndTransitivePackagesOnlyAsync()
         {
             using (var rootDir = new SimpleTestPathContext())
             {
@@ -3948,7 +3948,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.All(packages.TransitivePackages, pkg => Assert.Empty(pkg.TransitiveOrigins));
             }
         }
-
 
         [Fact]
         public async Task GetPackageSpecsAndAdditionalMessagesAsync_NoRestoreInfoInSolutionManager_ThrowsProjectNotNominatedException()
