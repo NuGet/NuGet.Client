@@ -200,13 +200,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return new InstalledAndTransitivePackages(installedPackagesContextInfos, transitivePackageContextInfos);
         }
 
-
         public async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             IReadOnlyCollection<string> projectIds,
-            CancellationToken cancellationToken)
-        {
-            return await GetInstalledAndTransitivePackagesAsync(projectIds, includeTransitiveOrigins: false, cancellationToken).ConfigureAwait(false);
-        }
+            CancellationToken cancellationToken) => await GetInstalledAndTransitivePackagesAsync(projectIds, includeTransitiveOrigins: false, cancellationToken);
 
         public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
             string projectId,

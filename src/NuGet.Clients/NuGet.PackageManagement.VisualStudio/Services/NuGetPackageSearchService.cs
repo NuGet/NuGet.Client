@@ -381,10 +381,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageReferences.SelectMany(e => e).ToList();
         }
 
-        private async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, bool useTransitiveOrigins, CancellationToken cancellationToken)
+        private async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, bool includeTransitiveOrigins, CancellationToken cancellationToken)
         {
             IEnumerable<Task<IInstalledAndTransitivePackages>> tasks = projectContextInfos
-                .Select(project => project.GetInstalledAndTransitivePackagesAsync(_serviceBroker, useTransitiveOrigins, cancellationToken).AsTask());
+                .Select(project => project.GetInstalledAndTransitivePackagesAsync(_serviceBroker, includeTransitiveOrigins, cancellationToken).AsTask());
             IInstalledAndTransitivePackages[] installedAndTransitivePackagesArray = await Task.WhenAll(tasks);
             if (installedAndTransitivePackagesArray.Length == 1)
             {
@@ -465,7 +465,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (itemFilter == ItemFilter.All)
             {
                 // Browse Tab, Project or Solution View: No need of transitive origins data.
-                IInstalledAndTransitivePackages browseTabPackages = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, useTransitiveOrigins: false, cancellationToken);
+                IInstalledAndTransitivePackages browseTabPackages = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, includeTransitiveOrigins: false, cancellationToken);
                 PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(browseTabPackages.InstalledPackages);
                 PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(browseTabPackages.TransitivePackages);
 
@@ -505,7 +505,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
                     {
                         // Installed Tab, Project View, Experiment On: needs Installed and Transitive packages AND transitive origins data
-                        IInstalledAndTransitivePackages installedTabWithTransitiveOrigins = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, useTransitiveOrigins: true, cancellationToken);
+                        IInstalledAndTransitivePackages installedTabWithTransitiveOrigins = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, includeTransitiveOrigins: true, cancellationToken);
                         PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.InstalledPackages);
                         PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.TransitivePackages);
 

@@ -56,10 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             this IProjectContextInfo projectContextInfo,
             IServiceBroker serviceBroker,
-            CancellationToken cancellationToken)
-        {
-            return await GetInstalledAndTransitivePackagesAsync(projectContextInfo, serviceBroker, includeTransitiveOrigins: false, cancellationToken);
-        }
+            CancellationToken cancellationToken) => await GetInstalledAndTransitivePackagesAsync(projectContextInfo, serviceBroker, includeTransitiveOrigins: false, cancellationToken);
 
         public static async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             this IProjectContextInfo projectContextInfo,
