@@ -786,4 +786,16 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}</value>
     <comment>0 - package id</comment>
   </data>
+  <data name="Error_AddPkg_CentralPackageVersions_EmptyVersionOverride" xml:space="preserve">
+    <value>VersionOverride for package '{0}' should not be empty.</value>
+    <comment>0 - package id</comment>
+  </data>
+  <data name="Error_AddPkg_CentralPackageVersions_PackageReference_WrongLocation" xml:space="preserve">
+    <value>Package reference for package '{0}' defined in incorrect location, PackageReference should be defined in project file.</value>
+    <comment>0 - package id</comment>
+  </data>
+  <data name="Error_AddPkg_CentralPackageVersions_PackageVersion_WrongLocation" xml:space="preserve">
+    <value>PackageVersion for package '{0}' defined in incorrect location, PackageVersion should be defined in Directory.Package.props.</value>
+    <comment>0 - package id</comment>
+  </data>
 </root>

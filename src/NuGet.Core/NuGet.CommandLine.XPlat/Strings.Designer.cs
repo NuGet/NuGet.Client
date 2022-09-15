@@ -331,6 +331,33 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to VersionOverride for package &apos;{0}&apos; should not be empty..
+        /// </summary>
+        internal static string Error_AddPkg_CentralPackageVersions_EmptyVersionOverride {
+            get {
+                return ResourceManager.GetString("Error_AddPkg_CentralPackageVersions_EmptyVersionOverride", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package reference for package &apos;{0}&apos; defined in incorrect location, PackageReference should be defined in project file..
+        /// </summary>
+        internal static string Error_AddPkg_CentralPackageVersions_PackageReference_WrongLocation {
+            get {
+                return ResourceManager.GetString("Error_AddPkg_CentralPackageVersions_PackageReference_WrongLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PackageVersion for package &apos;{0}&apos; defined in incorrect location, PackageVersion should be defined in Directory.Package.props..
+        /// </summary>
+        internal static string Error_AddPkg_CentralPackageVersions_PackageVersion_WrongLocation {
+            get {
+                return ResourceManager.GetString("Error_AddPkg_CentralPackageVersions_PackageVersion_WrongLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Item &apos;{0}&apos; for &apos;{1}&apos; in Imported file &apos;{2}&apos;..
         /// </summary>
         internal static string Error_AddPkgErrorStringForImportedEdit {
