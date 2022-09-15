@@ -502,7 +502,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     CounterfactualLoggers.PMUITransitiveDependencies.EmitIfNeeded();
                     if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
                     {
-                        // We need installed and Transitive Packages
+                        // We need installed and transitive Packages
                         IInstalledAndTransitivePackages installedTabWithTransitiveDepsPackages = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, useTransitiveOrigins: true, cancellationToken);
                         PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveDepsPackages.InstalledPackages);
                         PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveDepsPackages.TransitivePackages);
