@@ -80,7 +80,9 @@
       <DependentUpon>NuGetResources.resx</DependentUpon>
     </Compile>
     <!-- nuget.exe localized assemblies -->
-    <EmbeddedResource Include="$(OutputPath)\**\$(AssemblyName).resources.dll" />
+    <EmbeddedResource Include="$(OutputPath)\**\$(AssemblyName).resources.dll" Exclude="@(MergeExclude)" />
+    <!-- NuGet.Commands localized assemblies -->
+    <LocResource Include="$(OutputPath)\**\NuGet.Commands.resources.dll" Exclude="@(MergeExclude)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -115,6 +117,7 @@
       <IlmergeCommand>$(ILMergeExePath) /lib:$(OutputPath) /out:$(PathToMergedNuGetExe) @(MergeAllowDup -> '/allowdup:%(Identity)', ' ') /log:$(OutputPath)IlMergeLog.txt</IlmergeCommand>
       <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
       <IlmergeCommand>$(IlmergeCommand) $(PathToBuiltNuGetExe) @(BuildArtifacts->'%(fullpath)', ' ')</IlmergeCommand>
+      <IlmergeCommand>$(IlmergeCommand) @(LocResource->'%(fullpath)', ' ')</IlmergeCommand>
     </PropertyGroup>
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName($(PathToMergedNuGetExe)))" />
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
