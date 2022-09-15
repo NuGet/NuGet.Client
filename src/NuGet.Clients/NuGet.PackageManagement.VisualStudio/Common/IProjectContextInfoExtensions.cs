@@ -58,13 +58,13 @@ namespace NuGet.PackageManagement.VisualStudio
             IServiceBroker serviceBroker,
             CancellationToken cancellationToken)
         {
-            return await GetInstalledAndTransitivePackagesAsync(projectContextInfo, serviceBroker, useTransitiveOrigins: false, cancellationToken);
+            return await GetInstalledAndTransitivePackagesAsync(projectContextInfo, serviceBroker, includeTransitiveOrigins: false, cancellationToken);
         }
 
         public static async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             this IProjectContextInfo projectContextInfo,
             IServiceBroker serviceBroker,
-            bool useTransitiveOrigins,
+            bool includeTransitiveOrigins,
             CancellationToken cancellationToken)
         {
             Assumes.NotNull(projectContextInfo);
@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IInstalledAndTransitivePackages projectPackages;
             using (INuGetProjectManagerService projectManager = await GetProjectManagerAsync(serviceBroker, cancellationToken))
             {
-                projectPackages = await projectManager.GetInstalledAndTransitivePackagesAsync(new string[] { projectContextInfo.ProjectId }, useTransitiveOrigins, cancellationToken);
+                projectPackages = await projectManager.GetInstalledAndTransitivePackagesAsync(new string[] { projectContextInfo.ProjectId }, includeTransitiveOrigins, cancellationToken);
             }
 
             return projectPackages;
