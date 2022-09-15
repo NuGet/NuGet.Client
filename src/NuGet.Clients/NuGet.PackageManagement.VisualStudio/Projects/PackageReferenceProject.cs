@@ -91,11 +91,11 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            ProjectPackages packages = await GetInstalledAndTransitivePackagesAsync(useTransitiveOrigins: false, token);
+            ProjectPackages packages = await GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, token);
             return packages.InstalledPackages;
         }
 
-        public async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(bool useTransitiveOrigins, CancellationToken token)
+        public async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(bool includeTransitiveOrigins, CancellationToken token)
         {
             PackageSpec packageSpec = null;
             string assetsPath = null;
@@ -158,13 +158,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
             CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins;
-            if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token) && useTransitiveOrigins)
+            if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token) && includeTransitiveOrigins)
             {
                 // Compute Transitive Origins
                 Dictionary<string, TransitiveEntry> transitiveOrigins;
                 if (IsInstalledAndTransitiveComputationNeeded || TransitiveOriginsCache == null)
                 {
-                    if (targetsList == null) // special case
+                    // Special case: Installed and Transitive lists (<see cref="InstalledPackages" />, <see cref="TransitivePackages" /> respectively) are populated,
+                    // but Transitive Origins Cache <see cref="TransitiveOriginsCache" /> is not populated.
+                    // Then, we need targets section from project.assets.json file on disk to populate Transitive Origins cache
+                    if (targetsList == null)
                     {
                         targetsList = (await GetTargetsListAsync(assetsPath, token))?.ToList();
                     }
@@ -216,7 +219,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <inheritdoc/>
         public virtual async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
         {
-            return await GetInstalledAndTransitivePackagesAsync(useTransitiveOrigins: false, token);
+            return await GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, token);
         }
 
         protected abstract IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages);

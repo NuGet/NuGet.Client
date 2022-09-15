@@ -464,6 +464,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.All)
             {
+                // Browse Tab, Project or Solution View: No need of transitive origins data.
                 IInstalledAndTransitivePackages browseTabPackages = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, useTransitiveOrigins: false, cancellationToken);
                 PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(browseTabPackages.InstalledPackages);
                 PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(browseTabPackages.TransitivePackages);
@@ -472,6 +473,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(sourceRepositories, uiLogger, TelemetryActivity.NuGetTelemetryService);
                 try
                 {
+                    // Recommender needs Installed and transitive package lists, but it does not need transitive origins data.
                     packageFeeds.recommenderFeed = new RecommenderPackageFeed(
                         sourceRepositories,
                         installedPackageCollection,
@@ -492,7 +494,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (isSolution)
                 {
-                    // We only need the installed packages? What about recommender
+                    // Installed Tab, Solution View: only needs Installed packages.
                     IReadOnlyCollection<IPackageReferenceContextInfo> installedSolutionTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
                     PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedSolutionTabPackages);
                     packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider);
@@ -502,16 +504,16 @@ namespace NuGet.PackageManagement.VisualStudio
                     CounterfactualLoggers.PMUITransitiveDependencies.EmitIfNeeded();
                     if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
                     {
-                        // We need installed and transitive Packages
-                        IInstalledAndTransitivePackages installedTabWithTransitiveDepsPackages = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, useTransitiveOrigins: true, cancellationToken);
-                        PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveDepsPackages.InstalledPackages);
-                        PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveDepsPackages.TransitivePackages);
+                        // Installed Tab, Project View, Experiment On: needs Installed and Transitive packages AND transitive origins data
+                        IInstalledAndTransitivePackages installedTabWithTransitiveOrigins = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, useTransitiveOrigins: true, cancellationToken);
+                        PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.InstalledPackages);
+                        PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.TransitivePackages);
 
                         packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
                     }
                     else
                     {
-                        // We only need the installed packages
+                        // Installed Tab, Project View, Experiment Off: only needs Installed packages
                         IReadOnlyCollection<IPackageReferenceContextInfo> installedTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
                         PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabPackages);
                         packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider);
@@ -523,7 +525,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.Consolidate)
             {
-                // Consolidate tab: only needs Installed packages
+                // Consolidate tab, Solution View only: only needs Installed packages
                 IReadOnlyCollection<IPackageReferenceContextInfo> installedTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
                 PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabPackages);
 
@@ -539,7 +541,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.UpdatesAvailable)
             {
-                // Updates tab: only needs Installed packages
+                // Updates tab, Project or Solution View: only needs Installed packages
                 IReadOnlyCollection<IPackageReferenceContextInfo> updatedTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
                 PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(updatedTabPackages);
 
