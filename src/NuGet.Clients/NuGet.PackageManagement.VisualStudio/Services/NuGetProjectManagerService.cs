@@ -164,7 +164,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             IReadOnlyCollection<string> projectIds,
-            bool useTransitiveOrigins,
+            bool includeTransitiveOrigins,
             CancellationToken cancellationToken)
         {
             Assumes.NotNullOrEmpty(projectIds);
@@ -180,7 +180,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (project is IPackageReferenceProject packageReferenceProject)
                 {
-                    prStyleTasks.Add(packageReferenceProject.GetInstalledAndTransitivePackagesAsync(useTransitiveOrigins, cancellationToken));
+                    prStyleTasks.Add(packageReferenceProject.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins, cancellationToken));
                 }
                 else
                 {
@@ -205,7 +205,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken)
         {
-            return await GetInstalledAndTransitivePackagesAsync(projectIds, useTransitiveOrigins: false, cancellationToken).ConfigureAwait(false);
+            return await GetInstalledAndTransitivePackagesAsync(projectIds, includeTransitiveOrigins: false, cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask<IReadOnlyCollection<PackageDependencyInfo>> GetInstalledPackagesDependencyInfoAsync(
