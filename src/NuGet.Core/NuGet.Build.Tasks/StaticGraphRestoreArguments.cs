@@ -12,7 +12,7 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Represents arguments to the out-of-proc static graph-based restore which can be written to disk by <see cref="RestoreTaskEx" /> and then read by NuGet.Build.Tasks.Console.
     /// </summary>
-    internal class StaticGraphRestoreArguments
+    public sealed class StaticGraphRestoreArguments
     {
         /// <summary>
         /// Gets or sets the path to the entry project.
@@ -22,7 +22,9 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Gets or sets a <see cref="Dictionary{TKey, TValue}" /> representing the global properties.
         /// </summary>
+#pragma warning disable CA2227 // Collection properties should be read only
         public Dictionary<string, string> GlobalProperties { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Gets or sets the full path to the MSBuild executable.
@@ -32,7 +34,9 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Gets or sets an <see cref="Dictionary{TKey, TValue}" /> containing option names and values.
         /// </summary>
+#pragma warning disable CA2227 // Collection properties should be read only
         public Dictionary<string, string> Options { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Reads arguments by searching the specified command-line parameters for an argument file path.
