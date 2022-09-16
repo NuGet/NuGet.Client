@@ -30,6 +30,7 @@ namespace NuGet.CommandLine
     public class ProjectFactory : MSBuildUser, IProjectFactory, CoreV2.NuGet.IPropertyProvider
     {
         private const string NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK = nameof(NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK);
+        private const string NUGET_ENABLE_LEGACY_CSPROJ_PACK = nameof(NUGET_ENABLE_LEGACY_CSPROJ_PACK);
 
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
@@ -239,8 +240,14 @@ namespace NuGet.CommandLine
             string usingNETSDK = _project.GetPropertyValue("UsingMicrosoftNETSDK");
             if (!string.IsNullOrEmpty(usingNETSDK)) // NuGet.exe cannot correctly pack SDK based projects.
             {
-                Logger.Log(PackagingLogMessage.CreateError(string.Format(NuGetResources.Error_AttemptingToPackSDKproject, CultureInfo.CurrentCulture), NuGetLogCode.NU5049));
-                return null;
+                _ = bool.TryParse(_environmentVariableReader.GetEnvironmentVariable(NUGET_ENABLE_LEGACY_CSPROJ_PACK),
+                    out bool enableLegacyCsprojPack);
+
+                if (!enableLegacyCsprojPack)
+                {
+                    Logger.Log(PackagingLogMessage.CreateError(string.Format(NuGetResources.Error_AttemptingToPackSDKproject, NUGET_ENABLE_LEGACY_CSPROJ_PACK, CultureInfo.CurrentCulture), NuGetLogCode.NU5049));
+                    return null;
+                }
             }
 
             builder = new PackageBuilder(false, Logger);

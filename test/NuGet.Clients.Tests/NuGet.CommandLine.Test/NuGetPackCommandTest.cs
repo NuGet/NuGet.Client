@@ -7431,16 +7431,13 @@ namespace proj1
         [Fact]
         public void PackCommand_WhenPackingAnSDKBasedCsproj_Errors()
         {
-            var nugetexe = Util.GetNuGetExePath();
+            using var workingDirectory = TestDirectory.Create();
+            var proj1Directory = Path.Combine(workingDirectory, "proj1");
 
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                var proj1Directory = Path.Combine(workingDirectory, "proj1");
-
-                // create project 1
-                Util.CreateFile(
-                    proj1Directory,
-                    "proj1.csproj",
+            // create project 1
+            Util.CreateFile(
+                proj1Directory,
+                "proj1.csproj",
 @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
@@ -7454,9 +7451,9 @@ namespace proj1
   </ItemGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>");
-                Util.CreateFile(
-                    proj1Directory,
-                    "proj1_file1.cs",
+            Util.CreateFile(
+                proj1Directory,
+                "proj1_file1.cs",
 @"using System;
 
 namespace Proj1
@@ -7465,18 +7462,68 @@ namespace Proj1
     {
         public int A { get; set; }
     }
-}");           
+}");
 
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    proj1Directory,
-                    "pack proj1.csproj -build",
-                    waitForExit: true);
-                r.Success.Should().BeFalse();
-                r.AllOutput.Should().Contain("NU5049");
-                r.AllOutput.Should().Contain("dotnet pack");
-            }
+            // Act
+            var r = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                proj1Directory,
+                "pack proj1.csproj -build",
+                waitForExit: true);
+            r.Success.Should().BeFalse();
+            r.AllOutput.Should().Contain("NU5049");
+            r.AllOutput.Should().Contain("dotnet pack");
+        }
+
+        [Fact]
+        public void PackCommand_WhenPackingAnSDKBasedCsproj_WithTheEscapeHatch_Succeeds()
+        {
+            using var workingDirectory = TestDirectory.Create();
+            var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
+            // create project 1
+            Util.CreateFile(
+                proj1Directory,
+                "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <UsingMicrosoftNETSDK>true</UsingMicrosoftNETSDK> <!-- Pretend that this is an SDK based project -->
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+            Util.CreateFile(
+                proj1Directory,
+                "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+
+            // Act
+            var r = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                proj1Directory,
+                "pack proj1.csproj -build",
+                waitForExit: true,
+                environmentVariables: new Dictionary<string, string>()
+                {
+                    { "NUGET_ENABLE_LEGACY_CSPROJ_PACK", "true" }
+                });
+            r.Success.Should().BeTrue();
+            r.AllOutput.Should().NotContain("NU5049");
+            r.AllOutput.Should().NotContain("dotnet pack");
         }
     }
 

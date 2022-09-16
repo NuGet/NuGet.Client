@@ -268,7 +268,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The `pack` command for SDK-style projects is not supported, use `dotnet pack` to pack this project instead..
+        ///   Looks up a localized string similar to The `pack` command for SDK-style projects is not supported, use `dotnet pack` to pack this project instead. You may revert to the legacy pack behavior by setting the  &apos;{0}&apos; environment variable to &apos;true&apos;..
         /// </summary>
         public static string Error_AttemptingToPackSDKproject {
             get {
