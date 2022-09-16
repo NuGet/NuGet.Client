@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using NuGet.Test.Utility;
+using Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
 {

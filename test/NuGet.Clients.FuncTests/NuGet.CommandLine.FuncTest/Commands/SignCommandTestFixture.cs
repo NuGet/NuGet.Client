@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.CommandLine.Test;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Test.Utility.Signing;
 
 namespace NuGet.CommandLine.FuncTest.Commands

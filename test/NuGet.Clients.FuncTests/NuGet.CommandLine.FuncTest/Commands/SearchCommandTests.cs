@@ -3,6 +3,7 @@
 
 using NuGet.CommandLine.Test;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.FuncTest.Commands

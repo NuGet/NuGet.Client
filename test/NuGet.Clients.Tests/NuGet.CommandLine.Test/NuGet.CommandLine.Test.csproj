@@ -35,7 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageDownload Include="NuGet.Core" />
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.TestPlatform.Portable" />
     <PackageReference Include="System.Memory" />

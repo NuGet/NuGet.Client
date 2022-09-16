@@ -8,6 +8,7 @@ using Moq;
 using NuGet.Commands;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test

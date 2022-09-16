@@ -16,9 +16,8 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Test.Server;
-using Test.Utility;
 
-namespace NuGet.CommandLine.Test
+namespace Test.Utility
 {
     /// <summary>
     /// A Mock Server that is used to mimic a NuGet Server.
@@ -417,6 +416,8 @@ namespace NuGet.CommandLine.Test
         /// Creates an OData entry XElement representation of the package.
         /// </summary>
         /// <param name="package">The package.</param>
+        /// <param name="publishedTime">Published time</param>
+        /// <param name="isListed">Whether the package is listed. Default true.</param>
         /// <returns>The OData entry XElement.</returns>
         private XElement ToODataEntryXElement(PackageArchiveReader package, DateTimeOffset publishedTime, bool isListed = true)
         {
