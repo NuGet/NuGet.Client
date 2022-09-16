@@ -33,7 +33,7 @@ namespace Dotnet.Integration.Test
             _msbuildFixture = buildFixture;
             _signFixture = signFixture;
 
-            _signFixture.SetFallbackCertificateBundle(buildFixture.SdkDirectory);
+            _signFixture.SetFallbackCertificateBundles(buildFixture.SdkDirectory);
         }
 
         [Fact]

@@ -3,7 +3,6 @@
 
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using NuGet.Common;
 using NuGet.Packaging.Signing;
 
 namespace Test.Utility.Signing

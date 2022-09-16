@@ -44,7 +44,8 @@ namespace Dotnet.Integration.Test
         private Lazy<Task<CertificateAuthority>> _defaultTrustedTimestampingRootCertificateAuthority;
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
         private readonly DisposableList<IDisposable> _responders;
-        private FileInfo _fallbackCertificateBundle;
+        private FileInfo _codeSigningFallbackCertificateBundle;
+        private FileInfo _timestampingFallbackCertificateBundle;
 
         public IX509StoreCertificate DefaultCertificate
         {
@@ -234,7 +235,7 @@ namespace Dotnet.Integration.Test
                         StoreLocation.CurrentUser,
                         StoreName.My,
                         certificate,
-                        _fallbackCertificateBundle,
+                        _codeSigningFallbackCertificateBundle,
                         X509StorePurpose.CodeSigning);
                 }
 
@@ -408,7 +409,7 @@ namespace Dotnet.Integration.Test
                 storeLocation,
                 StoreName.Root,
                 rootCertificate,
-                _fallbackCertificateBundle,
+                _timestampingFallbackCertificateBundle,
                 X509StorePurpose.Timestamping);
 
             var ca = intermediateCa;
@@ -435,15 +436,21 @@ namespace Dotnet.Integration.Test
             return timestampService;
         }
 
-        internal void SetFallbackCertificateBundle(DirectoryInfo sdkDirectory)
+        internal void SetFallbackCertificateBundles(DirectoryInfo sdkDirectory)
         {
             ArgumentNullException.ThrowIfNull(sdkDirectory, nameof(sdkDirectory));
 
-            _fallbackCertificateBundle = new FileInfo(
+            _codeSigningFallbackCertificateBundle = new FileInfo(
                 Path.Combine(
                     sdkDirectory.FullName,
                     FallbackCertificateBundleX509ChainFactory.SubdirectoryName,
                     FallbackCertificateBundleX509ChainFactory.CodeSigningFileName));
+
+            _timestampingFallbackCertificateBundle = new FileInfo(
+                Path.Combine(
+                    sdkDirectory.FullName,
+                    FallbackCertificateBundleX509ChainFactory.SubdirectoryName,
+                    FallbackCertificateBundleX509ChainFactory.TimestampingFileName));
         }
 
         private X509StoreCertificate CreateX509StoreCertificate(
@@ -452,12 +459,28 @@ namespace Dotnet.Integration.Test
             X509Certificate2 certificate,
             X509StorePurpose storePurpose)
         {
+            FileInfo certificateBundle;
+
+            switch (storePurpose)
+            {
+                case X509StorePurpose.CodeSigning:
+                    certificateBundle = _codeSigningFallbackCertificateBundle;
+                    break;
+
+                case X509StorePurpose.Timestamping:
+                    certificateBundle = _timestampingFallbackCertificateBundle;
+                    break;
+
+                default:
+                    throw new ArgumentException("Unsupported store purpose.", nameof(storePurpose));
+            }
+
             // Clone the source certificate because the source certificate will be disposed.
             return new X509StoreCertificate(
                 storeLocation,
                 storeName,
                 new X509Certificate2(certificate),
-                _fallbackCertificateBundle,
+                certificateBundle,
                 storePurpose);
         }
     }

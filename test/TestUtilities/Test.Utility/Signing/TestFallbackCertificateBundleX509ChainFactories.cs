@@ -10,8 +10,8 @@ namespace Test.Utility.Signing
     {
         internal static TestFallbackCertificateBundleX509ChainFactories Instance { get; } = new();
 
-        internal TestFallbackCertificateBundleX509ChainFactory CodeSigningX509ChainFactory { get; }
-        internal TestFallbackCertificateBundleX509ChainFactory TimestampingX509ChainFactory { get; }
+        internal TestFallbackCertificateBundleX509ChainFactory CodeSigningX509ChainFactory { get; } = new TestFallbackCertificateBundleX509ChainFactory("codesignctl.pem");
+        internal TestFallbackCertificateBundleX509ChainFactory TimestampingX509ChainFactory { get; } = new TestFallbackCertificateBundleX509ChainFactory("timestampctl.pem");
 
         internal static void SetTryUseAsDefault(bool tryUseAsDefault)
         {
@@ -21,8 +21,8 @@ namespace Test.Utility.Signing
 #if NET5_0_OR_GREATER
             if (tryUseAsDefault && !RuntimeEnvironmentHelper.IsWindows)
             {
-                codeSigningFactory = new TestFallbackCertificateBundleX509ChainFactory("codesignctl.pem");
-                timestampingFactory = new TestFallbackCertificateBundleX509ChainFactory("timestampctl.pem");
+                codeSigningFactory = Instance.CodeSigningX509ChainFactory;
+                timestampingFactory = Instance.TimestampingX509ChainFactory;
             }
 #endif
 

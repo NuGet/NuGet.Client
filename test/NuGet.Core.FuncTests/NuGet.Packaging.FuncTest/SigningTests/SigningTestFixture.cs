@@ -207,7 +207,7 @@ namespace NuGet.Packaging.FuncTest
 
             _trustedServerRoot = TrustedTestCert.Create(
                 rootCertificate,
-                X509StorePurpose.CodeSigning,
+                new X509StorePurpose[] { X509StorePurpose.CodeSigning, X509StorePurpose.Timestamping },
                 StoreName.Root,
                 storeLocation);
 
