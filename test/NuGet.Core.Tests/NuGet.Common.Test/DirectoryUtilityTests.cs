@@ -10,6 +10,22 @@ namespace NuGet.Common.Test
 {
     public class DirectoryUtilityTests
     {
+        [PlatformTheory(Platform.Darwin, Platform.Linux)]
+        [InlineData("áéíóúäëïöü")]
+        [InlineData("ഔ")]
+        public void CreateSharedDirectory_WithUnicodeChars_CreatesDirectory(string dirPath)
+        {
+            // Arrange
+            using TestDirectory testDirectory = TestDirectory.Create();
+            string dirWithUnicode = Path.Combine(testDirectory, dirPath);
+
+            // Act
+            DirectoryUtility.CreateSharedDirectory(dirWithUnicode);
+
+            // Assert
+            Assert.Equal("777", StatPermissions(dirWithUnicode));
+        }
+
         [Fact]
         public void DirectoryUtility_CreateSharedDirectory_BasicSuccess()
         {
