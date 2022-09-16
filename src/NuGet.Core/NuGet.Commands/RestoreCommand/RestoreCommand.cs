@@ -478,7 +478,7 @@ namespace NuGet.Commands
                 return false;
             }
 
-            if (!restoreRequest.PackageSourceMapping.IsEnabled && httpSourcesCount > 0)
+            if (!restoreRequest.PackageSourceMapping.IsEnabled && httpSourcesCount > 1)
             {
                 // Log a warning if there are more than one configured source and package source mapping is not enabled
                 await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1507, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping, httpSourcesCount, string.Join(", ", restoreRequest.DependencyProviders.RemoteProviders.Where(i => i.IsHttp).Select(i => i.Source.Name)))));
