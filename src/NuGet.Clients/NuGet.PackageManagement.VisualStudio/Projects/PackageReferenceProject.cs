@@ -217,10 +217,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <inheritdoc/>
-        public virtual async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token)
-        {
-            return await GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, token);
-        }
+        public virtual async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(CancellationToken token) => await GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, token);
 
         protected abstract IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages);
 
