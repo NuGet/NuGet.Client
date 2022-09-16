@@ -46,7 +46,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public void CreateForTimestamping_Always_ReturnsRootCertificatesValidForCodeSigning()
+        public void CreateForTimestamping_Always_ReturnsRootCertificatesValidForTimestamping()
         {
             FileInfo codeSigningCertificateBundle = new(
                 Path.Combine(
@@ -54,7 +54,7 @@ namespace Dotnet.Integration.Test
                     FallbackCertificateBundleX509ChainFactory.SubdirectoryName,
                     FallbackCertificateBundleX509ChainFactory.TimestampingFileName));
 
-            using (X509ChainHolder chainHolder = X509ChainHolder.CreateForCodeSigning())
+            using (X509ChainHolder chainHolder = X509ChainHolder.CreateForTimestamping())
             {
                 X509ChainPolicy policy = chainHolder.Chain.ChainPolicy;
 
