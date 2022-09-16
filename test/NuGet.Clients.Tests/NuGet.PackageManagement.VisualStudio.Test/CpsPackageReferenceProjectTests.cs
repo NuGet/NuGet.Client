@@ -3918,35 +3918,35 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsParamSetToTrue_ReturnsTransitiveOriginsAsync()
         {
-            using (var rootDir = new SimpleTestPathContext())
-            {
-                IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
+            using SimpleTestPathContext rootDir = new();
 
-                // Act
-                ProjectPackages packages = await project.GetInstalledAndTransitivePackagesAsync(true, CancellationToken.None);
+            // Arrange
+            IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
 
-                // Assert
-                Assert.NotEmpty(packages.InstalledPackages);
-                Assert.NotEmpty(packages.TransitivePackages);
-                Assert.All(packages.TransitivePackages, pkg => Assert.NotEmpty(pkg.TransitiveOrigins));
-            }
+            // Act
+            ProjectPackages packages = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert
+            Assert.NotEmpty(packages.InstalledPackages);
+            Assert.NotEmpty(packages.TransitivePackages);
+            Assert.All(packages.TransitivePackages, pkg => Assert.NotEmpty(pkg.TransitiveOrigins));
         }
 
         [Fact]
         public async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsParamSetToFalse_ReturnsInstalledAndTransitivePackagesOnlyAsync()
         {
-            using (var rootDir = new SimpleTestPathContext())
-            {
-                IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
+            using SimpleTestPathContext rootDir = new();
 
-                // Act
-                ProjectPackages packages = await project.GetInstalledAndTransitivePackagesAsync(true, CancellationToken.None);
+            // Arrange
+            IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
 
-                // Assert
-                Assert.NotEmpty(packages.InstalledPackages);
-                Assert.NotEmpty(packages.TransitivePackages);
-                Assert.All(packages.TransitivePackages, pkg => Assert.Empty(pkg.TransitiveOrigins));
-            }
+            // Act
+            ProjectPackages packages = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, CancellationToken.None);
+
+            // Assert
+            Assert.NotEmpty(packages.InstalledPackages);
+            Assert.NotEmpty(packages.TransitivePackages);
+            Assert.All(packages.TransitivePackages, pkg => Assert.Empty(pkg.TransitiveOrigins));
         }
 
         [Fact]
