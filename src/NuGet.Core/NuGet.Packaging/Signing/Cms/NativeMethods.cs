@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Signing
         internal const uint CERT_KEY_IDENTIFIER_PROP_ID = 20;
         internal const uint CERT_ID_KEY_IDENTIFIER = 2;
 
-        [DllImport("crypt32.dll", SetLastError = true)]
+        [DllImport("crypt32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern SafeCryptMsgHandle CryptMsgOpenToEncode(
             CMSG_ENCODING dwMsgEncodingType,
             uint dwFlags,

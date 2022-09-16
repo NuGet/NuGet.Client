@@ -73,7 +73,7 @@ namespace NuGet.Common
 
         private const int UGO_RWX = 0x1ff; // 0777
 
-        [DllImport("libc", SetLastError = true)]
+        [DllImport("libc", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern int chmod(string pathname, int mode);
     }
 }

@@ -86,12 +86,12 @@ namespace NuGet.Packaging.Signing
         }
 
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        [DllImport("crypt32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        [DllImport("crypt32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern bool CryptRetrieveTimeStamp(
             [MarshalAs(UnmanagedType.LPWStr)] string wszUrl,
             CryptRetrieveTimeStampFlags dwRetrievalFlags,
             int dwTimeout,
-            [MarshalAs(UnmanagedType.LPStr)] string pszHashId,
+            [MarshalAs(UnmanagedType.LPWStr)] string pszHashId,
             ref CRYPT_TIMESTAMP_PARA pPara,
             [In] byte[] pbData,
             int cbData,

@@ -158,13 +158,13 @@ namespace NuGet.Packaging
         }
 
 
-        [DllImport("libc", EntryPoint = "creat")]
-        private static extern int PosixCreate([MarshalAs(UnmanagedType.LPStr)] string pathname, int mode);
+        [DllImport("libc", EntryPoint = "creat", CharSet = CharSet.Unicode)]
+        private static extern int PosixCreate([MarshalAs(UnmanagedType.LPWStr)] string pathname, int mode);
 
-        [DllImport("libc", EntryPoint = "chmod")]
-        private static extern int PosixChmod([MarshalAs(UnmanagedType.LPStr)] string pathname, int mode);
+        [DllImport("libc", EntryPoint = "chmod", CharSet = CharSet.Unicode)]
+        private static extern int PosixChmod([MarshalAs(UnmanagedType.LPWStr)] string pathname, int mode);
 
-        [DllImport("libc", EntryPoint = "umask")]
+        [DllImport("libc", EntryPoint = "umask", CharSet = CharSet.Unicode)]
         private static extern int PosixUMask(int mask);
     }
 }
