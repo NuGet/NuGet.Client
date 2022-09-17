@@ -45,3 +45,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Build", "CA2237:Add [Serializable] to CommandLineArgumentCombinationException as this type implements ISerializable", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.Common.CommandLineArgumentCombinationException")]
 [assembly: SuppressMessage("Build", "CA1012:Abstract type LoggerBase should not have constructors", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.Common.LoggerBase")]
 [assembly: SuppressMessage("Build", "CA1815:SearchPathResult should override Equals.", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.Common.PathResolver.SearchPathResult")]
+[assembly: SuppressMessage("Globalization", "CA2101:Specify marshaling for P/Invoke string arguments", Justification = "Paths managed by NuGet should only contain alphanumeric chars", Scope = "member", Target = "~M:NuGet.Common.DirectoryUtility.chmod(System.String,System.Int32)~System.Int32")]

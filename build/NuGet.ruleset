@@ -82,7 +82,7 @@
     <Rule Id="CA2008" Action="None" />
     <Rule Id="CA2009" Action="None" />
     <Rule Id="CA2100" Action="None" />
-    <Rule Id="CA2101" Action="None" />
+    <Rule Id="CA2101" Action="Warning" />
     <Rule Id="CA2216" Action="None" />
     <Rule Id="CA2229" Action="None" />
     <Rule Id="CA2235" Action="None" />
