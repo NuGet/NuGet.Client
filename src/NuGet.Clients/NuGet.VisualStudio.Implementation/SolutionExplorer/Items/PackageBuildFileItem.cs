@@ -71,11 +71,10 @@ namespace NuGet.VisualStudio.SolutionExplorer
                     result = true;
                 }
             }
-
             return result;
         }
 
-        private sealed class BrowseObject : BrowseObjectBase
+        private sealed class BrowseObject : LocalizableProperties
         {
             private readonly PackageBuildFileItem _item;
 

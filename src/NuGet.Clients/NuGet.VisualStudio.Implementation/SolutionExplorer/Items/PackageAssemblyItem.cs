@@ -8,6 +8,7 @@ using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
+using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
 
@@ -46,7 +47,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         public override object? GetBrowseObject() => new BrowseObject(this);
 
-        private sealed class BrowseObject : BrowseObjectBase
+        private sealed class BrowseObject : LocalizableProperties
         {
             private readonly PackageAssemblyItem _item;
 
