@@ -530,8 +530,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var projectManagerService = new Mock<INuGetProjectManagerService>();
 
+            projectManagerService.Setup(x => x.GetInstalledPackagesAsync(
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IReadOnlyCollection<IPackageReferenceContextInfo>>(_installedPackages.ToList()));
             projectManagerService.Setup(x => x.GetInstalledAndTransitivePackagesAsync(
                     It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<IInstalledAndTransitivePackages>(new InstalledAndTransitivePackages(_installedPackages.ToList(), _transitivePackages.ToList())));
+            projectManagerService.Setup(x => x.GetInstalledAndTransitivePackagesAsync(
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(new ValueTask<IInstalledAndTransitivePackages>(new InstalledAndTransitivePackages(_installedPackages.ToList(), _transitivePackages.ToList())));
             projectManagerService.Setup(x => x.GetPackageFoldersAsync(

@@ -381,10 +381,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageReferences.SelectMany(e => e).ToList();
         }
 
-        private async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, CancellationToken cancellationToken)
+        private async ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, bool includeTransitiveOrigins, CancellationToken cancellationToken)
         {
             IEnumerable<Task<IInstalledAndTransitivePackages>> tasks = projectContextInfos
-                .Select(project => project.GetInstalledAndTransitivePackagesAsync(_serviceBroker, cancellationToken).AsTask());
+                .Select(project => project.GetInstalledAndTransitivePackagesAsync(_serviceBroker, includeTransitiveOrigins, cancellationToken).AsTask());
             IInstalledAndTransitivePackages[] installedAndTransitivePackagesArray = await Task.WhenAll(tasks);
             if (installedAndTransitivePackagesArray.Length == 1)
             {
@@ -454,11 +454,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 return packageFeeds;
             }
 
-            IInstalledAndTransitivePackages installedAndTransitivePackages = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, cancellationToken);
-
-            PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.InstalledPackages);
-            PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.TransitivePackages);
-
             IEnumerable<SourceRepository> globalPackageFolderRepositories = await GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
             var metadataProvider = new MultiSourcePackageMetadataProvider(
@@ -469,10 +464,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.All)
             {
+                // Browse Tab, Project or Solution View: no need of transitive origins data.
+                IInstalledAndTransitivePackages browseTabPackages = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, includeTransitiveOrigins: false, cancellationToken);
+                PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(browseTabPackages.InstalledPackages);
+                PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(browseTabPackages.TransitivePackages);
+
                 // if we get here, recommendPackages == true
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(sourceRepositories, uiLogger, TelemetryActivity.NuGetTelemetryService);
                 try
                 {
+                    // Recommender needs installed and transitive package lists, but it does not need transitive origins data.
                     packageFeeds.recommenderFeed = new RecommenderPackageFeed(
                         sourceRepositories,
                         installedPackageCollection,
@@ -493,6 +494,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (isSolution)
                 {
+                    // Installed Tab, Solution View: only needs installed packages.
+                    IReadOnlyCollection<IPackageReferenceContextInfo> installedSolutionTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
+                    PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedSolutionTabPackages);
                     packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider);
                 }
                 else // is Project
@@ -500,10 +504,18 @@ namespace NuGet.PackageManagement.VisualStudio
                     CounterfactualLoggers.PMUITransitiveDependencies.EmitIfNeeded();
                     if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
                     {
+                        // Installed Tab, Project View, Experiment On: needs installed, transitive packages and transitive origins data
+                        IInstalledAndTransitivePackages installedTabWithTransitiveOrigins = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, includeTransitiveOrigins: true, cancellationToken);
+                        PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.InstalledPackages);
+                        PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.TransitivePackages);
+
                         packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
                     }
                     else
                     {
+                        // Installed Tab, Project View, Experiment Off: only needs installed packages
+                        IReadOnlyCollection<IPackageReferenceContextInfo> installedTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
+                        PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabPackages);
                         packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider);
                     }
                 }
@@ -513,6 +525,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.Consolidate)
             {
+                // Consolidate tab, Solution View only: only needs installed packages
+                IReadOnlyCollection<IPackageReferenceContextInfo> installedTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
+                PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabPackages);
+
                 packageFeeds.mainFeed = new ConsolidatePackageFeed(installedPackageCollection, metadataProvider, logger);
                 return packageFeeds;
             }
@@ -525,6 +541,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.UpdatesAvailable)
             {
+                // Updates tab, Project or Solution View: only needs installed packages
+                IReadOnlyCollection<IPackageReferenceContextInfo> updatedTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
+                PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(updatedTabPackages);
+
                 packageFeeds.mainFeed = new UpdatePackageFeed(
                     _serviceBroker,
                     installedPackageCollection,
