@@ -766,7 +766,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_StaticGraphEvaluation_HandlesInvalidProjectFileExceptionn()
+        public void MsbuildRestore_StaticGraphEvaluation_HandlesInvalidProjectFileExceptionn()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -793,29 +793,10 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 };
                 projectA.Frameworks.Add(projectAFrameworkContext);
 
-                packageX.Files.Clear();
                 projectA.AddPackageToAllFrameworks(packageX);
-                packageX.AddFile("lib/net461/a.dll");
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
-
-                var configAPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "NuGet.Config");
-                var configText =
-$@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-    <packageSources>
-        <add key=""LocalSource"" value=""{pathContext.PackageSource}"" />
-    </packageSources>
-</configuration>";
-                using (var writer = new StreamWriter(configAPath))
-                {
-                    writer.Write(configText);
-                }
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    packageX);
 
                 File.Delete(projectB.ProjectPath);
                 File.Delete(projectC.ProjectPath);
