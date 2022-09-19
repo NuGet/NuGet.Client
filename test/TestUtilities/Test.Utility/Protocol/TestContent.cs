@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -11,10 +12,9 @@ namespace Test.Utility
 {
     public class TestContent : HttpContent
     {
-#pragma warning disable CA2213
-        // TODO: https://github.com/NuGet/Home/issues/12116
-        private MemoryStream _stream;
-#pragma warning restore CA2213
+        private readonly MemoryStream _stream;
+        internal bool _isDisposed = false; // internal for testing purposes
+
         public TestContent(string s)
         {
             _stream = new MemoryStream(Encoding.UTF8.GetBytes(s));
@@ -30,6 +30,24 @@ namespace Test.Utility
         {
             length = _stream.Length;
             return true;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // free managed resources
+                _stream.Dispose();
+            }
+
+            _isDisposed = true;
         }
     }
 }

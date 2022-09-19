@@ -534,6 +534,22 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
+        [Fact]
+        public void Dispose_CallingDisposeWithoutArguments_DisposesInstance()
+        {
+            // Arrange
+            var packageSource = new PackageSource("http://package.source.test");
+            var clientHandler = new HttpClientHandler();
+            var credentialService = Mock.Of<ICredentialService>();
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+
+            // Act
+            handler.Dispose();
+
+            // Assert
+            Assert.True(handler._isDisposed);
+        }
+
         private static LambdaMessageHandler GetLambdaMessageHandler(HttpStatusCode statusCode)
         {
             return new LambdaMessageHandler(
