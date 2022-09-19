@@ -1,1 +1,1 @@
-NuGet.Protocol.HttpSourceAuthenticationHandler.Dispose(bool disposing) -> void
+override NuGet.Protocol.HttpSourceAuthenticationHandler.Dispose(bool disposing) -> void
