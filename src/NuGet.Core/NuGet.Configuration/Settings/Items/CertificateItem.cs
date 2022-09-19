@@ -37,7 +37,7 @@ namespace NuGet.Configuration
                     throw new ArgumentException(Resources.UnknownHashAlgorithmNotSupported);
                 }
 
-                UpdateAttribute(ConfigurationConstants.HashAlgorithm, value.ToString().ToUpper(CultureInfo.CurrentCulture));
+                UpdateAttribute(ConfigurationConstants.HashAlgorithm, value.ToString().ToUpper(CultureInfo.InvariantCulture));
             }
         }
 
@@ -72,7 +72,7 @@ namespace NuGet.Configuration
             }
 
             AddAttribute(ConfigurationConstants.Fingerprint, fingerprint);
-            AddAttribute(ConfigurationConstants.HashAlgorithm, hashAlgorithm.ToString().ToUpper(CultureInfo.CurrentCulture));
+            AddAttribute(ConfigurationConstants.HashAlgorithm, hashAlgorithm.ToString().ToUpper(CultureInfo.InvariantCulture));
             AddAttribute(ConfigurationConstants.AllowUntrustedRoot, allowUntrustedRoot.ToString(CultureInfo.CurrentCulture).ToLower(CultureInfo.CurrentCulture));
         }
 
@@ -87,7 +87,7 @@ namespace NuGet.Configuration
             }
 
             // Update attributes with propert casing
-            UpdateAttribute(ConfigurationConstants.HashAlgorithm, HashAlgorithm.ToString().ToUpper(CultureInfo.CurrentCulture));
+            UpdateAttribute(ConfigurationConstants.HashAlgorithm, HashAlgorithm.ToString().ToUpper(CultureInfo.InvariantCulture));
             UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, AllowUntrustedRoot.ToString(CultureInfo.CurrentCulture).ToLower(CultureInfo.CurrentCulture));
         }
 
