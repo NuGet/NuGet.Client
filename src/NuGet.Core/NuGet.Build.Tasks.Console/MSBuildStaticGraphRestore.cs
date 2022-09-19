@@ -1044,7 +1044,7 @@ namespace NuGet.Build.Tasks.Console
             switch (exception)
             {
                 case AggregateException aggregateException:
-                    foreach (Exception innerException in aggregateException.InnerExceptions)
+                    foreach (Exception innerException in aggregateException.Flatten().InnerExceptions)
                     {
                         LogErrorFromException(innerException);
                     }
