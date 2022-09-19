@@ -24,6 +24,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio.Etw;
+using NuGet.VisualStudio.Implementation.Exceptions;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
@@ -166,6 +167,11 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
                 return outputPathContext != null;
             }
+            catch (ProjectNotRestoredException e)
+            {
+                outputPathContext = null;
+                throw new InvalidOperationException(e.Message, e);
+            }
             catch (Exception exception)
             {
                 _telemetryProvider.PostFault(exception, typeof(VsPathContextProvider).FullName);
@@ -270,12 +276,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                     }
                 }
             }
-            catch (Exception e) when (e is KeyNotFoundException || e is InvalidOperationException)
+            catch (ProjectNotRestoredException e)
             {
                 var projectUniqueName = NuGetProject.GetUniqueNameOrName(nuGetProject);
                 var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_CreateContextError, projectUniqueName, e.Message);
                 _logger.Value.LogError(errorMessage);
-                throw new InvalidOperationException(errorMessage, e);
+                throw new ProjectNotRestoredException(errorMessage, e);
             }
 
             return context;
@@ -295,7 +301,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             if ((lockFile?.PackageFolders?.Count ?? 0) == 0)
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_LockFileError));
+                throw new ProjectNotRestoredException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_LockFileError));
             }
 
             // The user packages folder is always the first package folder. Subsequent package folders are always
@@ -326,7 +332,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 var packageInstallPath = fppr.GetPackageDirectory(pid.Id, pid.Version);
                 if (string.IsNullOrEmpty(packageInstallPath))
                 {
-                    throw new KeyNotFoundException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid));
+                    throw new ProjectNotRestoredException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid));
                 }
 
                 trie[packageInstallPath] = packageInstallPath;
@@ -354,7 +360,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 var packageInstallPath = msbuildNuGetProject.FolderNuGetProject.GetInstalledPath(pid);
                 if (string.IsNullOrEmpty(packageInstallPath))
                 {
-                    throw new KeyNotFoundException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid));
+                    throw new ProjectNotRestoredException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid));
                 }
 
                 trie[packageInstallPath] = packageInstallPath;
