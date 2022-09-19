@@ -15,6 +15,7 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
+using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
@@ -130,7 +131,7 @@ namespace NuGet.Build.Tasks.Console
             }
             catch (Exception e)
             {
-                LoggingQueue.TaskLoggingHelper.LogErrorFromException(e, showStackTrace: true);
+                LogErrorFromException(e);
 
                 return false;
             }
@@ -167,7 +168,7 @@ namespace NuGet.Build.Tasks.Console
             }
             catch (Exception e)
             {
-                LoggingQueue.TaskLoggingHelper.LogErrorFromException(e, showStackTrace: true);
+                LogErrorFromException(e);
             }
             return false;
         }
@@ -690,13 +691,9 @@ namespace NuGet.Build.Tasks.Console
                         }
                     });
                 }
-                catch (AggregateException e)
+                catch (Exception e)
                 {
-                    // Log exceptions thrown while creating PackageSpec objects
-                    foreach (var exception in e.Flatten().InnerExceptions)
-                    {
-                        LoggingQueue.TaskLoggingHelper.LogErrorFromException(exception);
-                    }
+                    LogErrorFromException(e);
 
                     return null;
                 }
@@ -724,7 +721,7 @@ namespace NuGet.Build.Tasks.Console
             }
             catch (Exception e)
             {
-                LoggingQueue.TaskLoggingHelper.LogErrorFromException(e, showStackTrace: true);
+                LogErrorFromException(e);
             }
 
             return null;
@@ -997,7 +994,7 @@ namespace NuGet.Build.Tasks.Console
             }
             catch (Exception e)
             {
-                LoggingQueue.TaskLoggingHelper.LogErrorFromException(e, showStackTrace: true);
+                LogErrorFromException(e);
 
                 return null;
             }
@@ -1036,6 +1033,43 @@ namespace NuGet.Build.Tasks.Console
         private static IEnumerable<IMSBuildItem> GetDistinctItemsOrEmpty(IMSBuildProject project, string itemName)
         {
             return project.GetItems(itemName)?.Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance) ?? Enumerable.Empty<IMSBuildItem>();
+        }
+
+        /// <summary>
+        /// Logs an error from the specified exception.
+        /// </summary>
+        /// <param name="exception">The <see cref="Exception" /> with details to be logged.</param>
+        private void LogErrorFromException(Exception exception)
+        {
+            switch (exception)
+            {
+                case AggregateException aggregateException:
+                    foreach (Exception innerException in aggregateException.InnerExceptions)
+                    {
+                        LogErrorFromException(innerException);
+                    }
+                    break;
+
+                case InvalidProjectFileException invalidProjectFileException:
+                    // Special case the InvalidProjectFileException since it has extra information about what project file couldn't be loaded
+                    LoggingQueue.TaskLoggingHelper.LogError(
+                        invalidProjectFileException.ErrorSubcategory,
+                        invalidProjectFileException.ErrorCode,
+                        invalidProjectFileException.HelpKeyword,
+                        invalidProjectFileException.ProjectFile,
+                        invalidProjectFileException.LineNumber,
+                        invalidProjectFileException.ColumnNumber,
+                        invalidProjectFileException.EndLineNumber,
+                        invalidProjectFileException.EndColumnNumber,
+                        invalidProjectFileException.Message);
+                    break;
+
+                default:
+                    LoggingQueue.TaskLoggingHelper.LogErrorFromException(
+                        exception,
+                        showStackTrace: true);
+                    break;
+            }
         }
     }
 }
