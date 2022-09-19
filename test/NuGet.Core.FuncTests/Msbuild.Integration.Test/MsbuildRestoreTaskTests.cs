@@ -765,6 +765,72 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             return Task.CompletedTask;
         }
 
+        [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore_StaticGraphEvaluation_HandlesInvalidProjectFileExceptionn()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = new SimpleTestProjectContext("a", ProjectStyle.PackageReference, pathContext.SolutionRoot);
+
+                var projectB = new SimpleTestProjectContext("b", ProjectStyle.PackageReference, pathContext.SolutionRoot);
+                var projectC = new SimpleTestProjectContext("c", ProjectStyle.PackageReference, pathContext.SolutionRoot);
+
+                var projectAFrameworkContext = new SimpleTestProjectFrameworkContext(net461);
+
+                projectAFrameworkContext.ProjectReferences.Add(projectB);
+                projectAFrameworkContext.ProjectReferences.Add(projectC);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                projectA.Frameworks.Add(projectAFrameworkContext);
+
+                packageX.Files.Clear();
+                projectA.AddPackageToAllFrameworks(packageX);
+                packageX.AddFile("lib/net461/a.dll");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var configAPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "NuGet.Config");
+                var configText =
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""LocalSource"" value=""{pathContext.PackageSource}"" />
+    </packageSources>
+</configuration>";
+                using (var writer = new StreamWriter(configAPath))
+                {
+                    writer.Write(configText);
+                }
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                File.Delete(projectB.ProjectPath);
+                File.Delete(projectC.ProjectPath);
+
+                // Restore the project with a PackageReference which generates assets
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore /p:RestoreUseStaticGraphEvaluation=true {projectA.ProjectPath}", ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.ExitCode == 1, result.AllOutput);
+
+                result.AllOutput.Should().Contain($"error MSB4025: The project file could not be loaded. Could not find file '{projectB.ProjectPath}'");
+                result.AllOutput.Should().Contain($"error MSB4025: The project file could not be loaded. Could not find file '{projectC.ProjectPath}'");
+            }
+        }
+
         [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
         [InlineData(false)]
