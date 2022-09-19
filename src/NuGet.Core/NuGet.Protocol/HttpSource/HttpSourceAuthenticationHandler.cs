@@ -20,6 +20,7 @@ namespace NuGet.Protocol
 
         // Only one source may prompt at a time
         private readonly static SemaphoreSlim _credentialPromptLock = new SemaphoreSlim(1, 1);
+        private bool _isDisposed = false;
 
         private readonly PackageSource _packageSource;
         private readonly HttpClientHandler _clientHandler;
@@ -290,6 +291,24 @@ namespace NuGet.Protocol
         private void CredentialsSuccessfullyUsed(Uri uri, ICredentials credentials)
         {
             HttpHandlerResourceV3.CredentialsSuccessfullyUsed?.Invoke(uri, credentials);
+        }
+
+        protected new void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // free managed resources
+                _httpClientLock.Dispose();
+            }
+
+            _isDisposed = true;
         }
     }
 }
