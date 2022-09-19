@@ -12,7 +12,7 @@ steps:
 - task: PowerShell@1
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
-    arguments: "-BuildRTM $(BuildRTM)"
+    arguments: "-BuildRTM $(BuildRTM) -RepositoryPath $(Build.Repository.LocalPath) -BranchName $(Build.SourceBranchName) -CommitHash $(Build.SourceVersion) -BuildNumber $(Build.BuildNumber)"
   displayName: "Configure VSTS CI Environment"
 
 - task: PublishBuildArtifacts@1
