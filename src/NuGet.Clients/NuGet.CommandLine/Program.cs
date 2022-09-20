@@ -228,20 +228,21 @@ namespace NuGet.CommandLine
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             AssemblyName name = new AssemblyName(args.Name);
+            Assembly customLoadedAssembly = null;
 
             if (string.Equals(name.Name, ThisExecutableName, StringComparison.OrdinalIgnoreCase))
             {
-                return NuGetExeAssembly;
+                customLoadedAssembly = NuGetExeAssembly;
             }
             // .NET Framework 4.x now triggers AssemblyResolve event for resource assemblies
-            // Catch this event for nuget.exe (NuGet.CommandLine) and NuGet.Command resource assemblies only
-            if (name.Name == "NuGet.resources" || name.Name == "NuGet.Commands.resources")
+            // We want to catch failed NuGet.resources.dll assembly load to look for it in embedded resoruces
+            else if (name.Name == "NuGet.resources")
             {
                 // Load satellite resource assembly from embedded resources
-                return GetNuGetResourcesAssembly(name.Name, name.CultureInfo);
+                customLoadedAssembly = GetNuGetResourcesAssembly(name.Name, name.CultureInfo);
             }
 
-            return null;
+            return customLoadedAssembly;
         }
 
         private static Assembly GetNuGetResourcesAssembly(string name, CultureInfo culture)
@@ -263,14 +264,19 @@ namespace NuGet.CommandLine
             Assembly resourceAssembly = null;
             using (var stream = NuGetExeAssembly.GetManifestResourceStream(resourceName))
             {
-                if (stream == null)
+                if (stream != null)
                 {
-                    return null;
+                    byte[] assemblyData = new byte[stream.Length];
+                    stream.Read(assemblyData, offset: 0, assemblyData.Length);
+                    try
+                    {
+                        resourceAssembly = Assembly.Load(assemblyData);
+                    }
+                    catch (BadImageFormatException)
+                    {
+                        resourceAssembly = null;
+                    }
                 }
-
-                byte[] assemblyData = new byte[stream.Length];
-                stream.Read(assemblyData, offset: 0, assemblyData.Length);
-                resourceAssembly = Assembly.Load(assemblyData);
             }
 
             return resourceAssembly;

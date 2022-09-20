@@ -86,8 +86,6 @@
     </Compile>
     <!-- nuget.exe localized assemblies -->
     <EmbeddedResource Include="$(OutputPath)\**\$(AssemblyName).resources.dll" Exclude="@(MergeExclude)" />
-    <!-- NuGet.Commands localized assemblies -->
-    <EmbeddedResource Include="$(OutputPath)\**\NuGet.Commands.resources.dll" Exclude="@(MergeExclude)" />
   </ItemGroup>
 
   <ItemGroup>

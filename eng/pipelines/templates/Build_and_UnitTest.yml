@@ -113,7 +113,7 @@ steps:
   inputs:
     solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:Build /bl:$(Build.StagingDirectory)\\binlog\\04.BuildNuGetExe.binlog"
+    msbuildArguments: "/t:Build /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\04.BuildNuGetExe.binlog"
 
 - task: MSBuild@1
   displayName: "ILMerge NuGet.exe"
