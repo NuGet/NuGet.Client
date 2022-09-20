@@ -13,7 +13,11 @@ namespace Test.Utility
 {
     public class TestContent : HttpContent
     {
+#pragma warning disable CA2213
+        // Need to disable this rule because the analyzer thinks We are not disposing _stream
+        // when in reality, it is
         private readonly MemoryStream _stream;
+#pragma warning restore CA2213
         private bool _isDisposed = false; // internal for testing purposes
 
         public TestContent(string s)
