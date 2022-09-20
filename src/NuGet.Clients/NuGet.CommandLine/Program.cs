@@ -256,7 +256,6 @@ namespace NuGet.CommandLine
             AssemblyName name = new AssemblyName(args.Name);
             Assembly customLoadedAssembly = null;
 
-            Assembly customLoadedAssembly = null;
             if (string.Equals(name.Name, ThisExecutableName, StringComparison.OrdinalIgnoreCase))
             {
                 customLoadedAssembly = NuGetExeAssembly;
