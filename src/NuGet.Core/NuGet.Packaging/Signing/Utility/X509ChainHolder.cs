@@ -31,15 +31,13 @@ namespace NuGet.Packaging.Signing
         {
             if (!_isDisposed)
             {
-#if !NET45
-                //.NET 4.6 added Dispose method to X509Certificate and X509Chain
                 foreach (var chainElement in Chain.ChainElements)
                 {
                     chainElement.Certificate.Dispose();
                 }
 
                 Chain.Dispose();
-#endif
+
                 GC.SuppressFinalize(this);
 
                 _isDisposed = true;
