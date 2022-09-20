@@ -15,13 +15,13 @@ namespace NuGet.Packaging.Signing
         internal const uint CERT_KEY_IDENTIFIER_PROP_ID = 20;
         internal const uint CERT_ID_KEY_IDENTIFIER = 2;
 
-        [DllImport("crypt32.dll", SetLastError = true)]
+        [DllImport("crypt32.dll", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true, ThrowOnUnmappableChar = true)]
         public static extern SafeCryptMsgHandle CryptMsgOpenToEncode(
             CMSG_ENCODING dwMsgEncodingType,
             uint dwFlags,
             uint dwMsgType,
             ref CMSG_SIGNED_ENCODE_INFO pvMsgEncodeInfo,
-            string pszInnerContentObjID,
+            [MarshalAs(UnmanagedType.LPStr)] byte[] pszInnerContentObjID, // param not used, optional, keeping ordering
             IntPtr pStreamInfo
         );
 
