@@ -30,6 +30,9 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /bl:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
 
+- task: ComponentGovernanceComponentDetection@0
+  displayName: 'Component Detection'
+
 - task: MSBuild@1
   displayName: "Run Functional Tests (continue on error)"
   continueOnError: "true"

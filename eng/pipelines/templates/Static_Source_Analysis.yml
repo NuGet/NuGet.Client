@@ -69,3 +69,6 @@ steps:
     artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
     targetPath: $(Build.StagingDirectory)\binlog
   condition: " failed() "
+
+- task: ComponentGovernanceComponentDetection@0
+  displayName: 'Component Detection'
