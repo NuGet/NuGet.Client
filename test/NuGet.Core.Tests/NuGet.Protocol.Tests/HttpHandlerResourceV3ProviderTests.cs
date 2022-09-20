@@ -13,7 +13,7 @@ namespace NuGet.Protocol.Tests
     {
 #if IS_DESKTOP
         [PlatformFact(Platform.Windows)]
-        public void MaxConnectionsPerServerIsSetToDefaultValue_Success()
+        public void DefaultMaxHttpRequestsPerSourceForwardedToV3HttpClientHandler_Success()
         {
             // Arrange
             var packageSource = new PackageSource("https://contoso.com/v3/index.json");
@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Tests
         [PlatformTheory(Platform.Windows)]
         [InlineData(128)]
         [InlineData(256)]
-        public void MaxConnectionsPerServerIsSetToMaxHttpRequestsPerSourceValue_Success(int maxHttpRequestsPerSource)
+        public void PackageSourceMaxHttpRequestsPerSourceForwardedToV3HttpClientHandler_Success(int maxHttpRequestsPerSource)
         {
             // Arrange
             var packageSource = new PackageSource("https://contoso.com/v3/index.json") { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };
@@ -52,9 +52,9 @@ namespace NuGet.Protocol.Tests
 #if IS_CORECLR
         [Theory]
         [InlineData(64)]
-        [InlineData(0)]
+        [InlineData(128)]
         [InlineData(2)]
-        public void MaxConnectionsPerServerIsNotEqualToMaxHttpRequestsPerSourceValue_Success(int maxHttpRequestsPerSource)
+        public void PackageSourceMaxHttpRequestsPerSourceNotForwardedToV3HttpClientHandler_Success(int maxHttpRequestsPerSource)
         {
             // Arrange
             var packageSource = new PackageSource("https://contoso.com/v3/index.json") { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };

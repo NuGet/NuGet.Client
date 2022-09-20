@@ -13,7 +13,7 @@ namespace NuGet.Protocol.Tests
 
 #if IS_DESKTOP
         [PlatformFact(Platform.Windows)]
-        public void EnsurePackageSourceClientCertificatesForwardedToV3HttpClientHandler()
+        public void MaxHttpRequestsPerSourceIsToDefaultValue_Success()
         {
             // Arrange
             var packageSource = new PackageSource("https://contoso.com/v3/index.json");
@@ -30,7 +30,7 @@ namespace NuGet.Protocol.Tests
 
 #if IS_CORECLR
         [Fact]
-        public void EnsurePackageSourceClientCertificatesForwardedToV3HttpClientHandler()
+        public void MaxHttpRequestsPerSourceIsSetToDefaultValue_Success()
         {
             // Arrange
             var packageSource = new PackageSource("https://contoso.com/v3/index.json");
