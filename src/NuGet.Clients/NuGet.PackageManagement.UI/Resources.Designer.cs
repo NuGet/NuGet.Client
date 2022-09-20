@@ -466,15 +466,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Upgrade.
-        /// </summary>
-        public static string Button_Upgrade {
-            get {
-                return ResourceManager.GetString("Button_Upgrade", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to _Yes.
         /// </summary>
         public static string Button_Yes {
@@ -1024,15 +1015,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Filter:.
-        /// </summary>
-        public static string Label_Filter {
-            get {
-                return ResourceManager.GetString("Label_Filter", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Installed.
         /// </summary>
         public static string Label_Installed {
@@ -1209,15 +1191,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Repository {
             get {
                 return ResourceManager.GetString("Label_Repository", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Solution &apos;{0}&apos;.
-        /// </summary>
-        public static string Label_Solution {
-            get {
-                return ResourceManager.GetString("Label_Solution", resourceCulture);
             }
         }
         
