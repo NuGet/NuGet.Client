@@ -17,11 +17,10 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("https://contoso.com/v3/index.json");
-
             var sourceRepository = new SourceRepository(packageSource, new List<INuGetResourceProvider>() { new HttpSourceResourceProvider(), new HttpHandlerResourceV3Provider() });
+            _ = sourceRepository.GetResource<HttpSourceResource>();
 
             // Act
-            _ = sourceRepository.GetResource<HttpSourceResource>();
             HttpHandlerResource httpHandlerResource = sourceRepository.GetResource<HttpHandlerResource>();
 
             // Assert
@@ -36,11 +35,10 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("https://contoso.com/v3/index.json") { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };
-
             var sourceRepository = new SourceRepository(packageSource, new List<INuGetResourceProvider>() { new HttpSourceResourceProvider(), new HttpHandlerResourceV3Provider() });
-
-            // Act
             _ = sourceRepository.GetResource<HttpSourceResource>();
+
+            // Act            
             HttpHandlerResource httpHandlerResource = sourceRepository.GetResource<HttpHandlerResource>();
 
             // Assert
@@ -58,11 +56,10 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("https://contoso.com/v3/index.json") { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };
-
             var sourceRepository = new SourceRepository(packageSource, new[] { new HttpHandlerResourceV3Provider() });
-
-            // Act
             _ = sourceRepository.GetResource<HttpSourceResource>();
+
+            // Act            
             HttpHandlerResource httpHandlerResource = sourceRepository.GetResource<HttpHandlerResource>();
 
             // Assert
