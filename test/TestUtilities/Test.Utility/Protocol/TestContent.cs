@@ -1,7 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+#nullable enable
+
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -13,7 +14,7 @@ namespace Test.Utility
     public class TestContent : HttpContent
     {
         private readonly MemoryStream _stream;
-        internal bool _isDisposed = false; // internal for testing purposes
+        private bool _isDisposed = false; // internal for testing purposes
 
         public TestContent(string s)
         {
@@ -21,7 +22,7 @@ namespace Test.Utility
             _stream.Seek(0, SeekOrigin.Begin);
         }
 
-        protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
         {
             return _stream.CopyToAsync(stream);
         }
