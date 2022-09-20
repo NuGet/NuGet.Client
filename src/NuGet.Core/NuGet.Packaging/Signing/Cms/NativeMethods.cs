@@ -21,7 +21,7 @@ namespace NuGet.Packaging.Signing
             uint dwFlags,
             uint dwMsgType,
             ref CMSG_SIGNED_ENCODE_INFO pvMsgEncodeInfo,
-            [MarshalAs(UnmanagedType.LPStr)] byte[] pszInnerContentObjID, // param not used, optional, keeping ordering
+            [MarshalAs(UnmanagedType.LPWStr)] string pszInnerContentObjID, // optional param treating as unicode but, only expected to have number and colon chars. C# are unicode strings, hence the marshalling as LPWString
             IntPtr pStreamInfo
         );
 
