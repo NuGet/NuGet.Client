@@ -766,7 +766,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [PlatformFact(Platform.Windows)]
-        public void MsbuildRestore_StaticGraphEvaluation_HandlesInvalidProjectFileExceptionn()
+        public void MsbuildRestore_StaticGraphEvaluation_HandlesInvalidProjectFileException()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -779,12 +779,10 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 var projectA = new SimpleTestProjectContext("a", ProjectStyle.PackageReference, pathContext.SolutionRoot);
 
                 var projectB = new SimpleTestProjectContext("b", ProjectStyle.PackageReference, pathContext.SolutionRoot);
-                var projectC = new SimpleTestProjectContext("c", ProjectStyle.PackageReference, pathContext.SolutionRoot);
 
                 var projectAFrameworkContext = new SimpleTestProjectFrameworkContext(net461);
 
                 projectAFrameworkContext.ProjectReferences.Add(projectB);
-                projectAFrameworkContext.ProjectReferences.Add(projectC);
 
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -799,16 +797,13 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 solution.Create(pathContext.SolutionRoot);
 
                 File.Delete(projectB.ProjectPath);
-                File.Delete(projectC.ProjectPath);
 
-                // Restore the project with a PackageReference which generates assets
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore /p:RestoreUseStaticGraphEvaluation=true {projectA.ProjectPath}", ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 1, result.AllOutput);
 
                 result.AllOutput.Should().Contain($"error MSB4025: The project file could not be loaded. Could not find file '{projectB.ProjectPath}'");
-                result.AllOutput.Should().Contain($"error MSB4025: The project file could not be loaded. Could not find file '{projectC.ProjectPath}'");
             }
         }
 
