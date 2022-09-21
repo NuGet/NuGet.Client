@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -13,15 +14,19 @@ namespace NuGet.Protocol.Tests
     {
 #if IS_DESKTOP
         [PlatformFact(Platform.Windows)]
-        public void DefaultMaxHttpRequestsPerSourceForwardedToV3HttpClientHandler_Success()
+        public async Task DefaultMaxHttpRequestsPerSourceIsForwardedToV3HttpClientHandler_SuccessAsync()
         {
             // Arrange
             var packageSource = new PackageSource("https://contoso.com/v3/index.json");
             var sourceRepository = new SourceRepository(packageSource, new List<INuGetResourceProvider>() { new HttpSourceResourceProvider(), new HttpHandlerResourceV3Provider() });
-            _ = sourceRepository.GetResource<HttpSourceResource>();
+
+            // HttpSourceResourceProvider updates PackageSource.MaxHttpRequestsPerSource value for .NET Framework code paths
+            // HttpSource constructor accepts a delegate that creates HttpHandlerResource and it stores the delegate in a private variable.
+            // Hence used discard to ignore the return value and fetched HttpHandlerResource from the source repository to verify behavior. 
+            _ = await sourceRepository.GetResourceAsync<HttpSourceResource>();
 
             // Act
-            HttpHandlerResource httpHandlerResource = sourceRepository.GetResource<HttpHandlerResource>();
+            HttpHandlerResource httpHandlerResource = await sourceRepository.GetResourceAsync<HttpHandlerResource>();
 
             // Assert
             Assert.NotNull(httpHandlerResource);
@@ -31,36 +36,43 @@ namespace NuGet.Protocol.Tests
         [PlatformTheory(Platform.Windows)]
         [InlineData(128)]
         [InlineData(256)]
-        public void PackageSourceMaxHttpRequestsPerSourceForwardedToV3HttpClientHandler_Success(int maxHttpRequestsPerSource)
+        public async Task PackageSourceMaxHttpRequestsPerSourceIsForwardedToV3HttpClientHandler_SuccessAsync(int maxHttpRequestsPerSource)
         {
             // Arrange
             var packageSource = new PackageSource("https://contoso.com/v3/index.json") { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };
             var sourceRepository = new SourceRepository(packageSource, new List<INuGetResourceProvider>() { new HttpSourceResourceProvider(), new HttpHandlerResourceV3Provider() });
-            _ = sourceRepository.GetResource<HttpSourceResource>();
+
+            // HttpSourceResourceProvider updates PackageSource.MaxHttpRequestsPerSource value for .NET Framework code paths
+            // HttpSource constructor accepts a delegate that creates HttpHandlerResource and it stores the delegate in a private variable.
+            // Hence used discard to ignore the return value and fetched HttpHandlerResource from the source repository to verify behavior.
+            _ = await sourceRepository.GetResourceAsync<HttpSourceResource>();
 
             // Act            
-            HttpHandlerResource httpHandlerResource = sourceRepository.GetResource<HttpHandlerResource>();
+            HttpHandlerResource httpHandlerResource = await sourceRepository.GetResourceAsync<HttpHandlerResource>();
 
             // Assert
             Assert.NotNull(httpHandlerResource);
             Assert.Equal(maxHttpRequestsPerSource, httpHandlerResource.ClientHandler.MaxConnectionsPerServer);
         }
-#endif
+#elif IS_CORECLR
 
-#if IS_CORECLR
         [Theory]
         [InlineData(64)]
         [InlineData(128)]
         [InlineData(2)]
-        public void PackageSourceMaxHttpRequestsPerSourceNotForwardedToV3HttpClientHandler_Success(int maxHttpRequestsPerSource)
+        public async Task PackageSourceMaxHttpRequestsPerSourceIsNotForwardedToV3HttpClientHandler_SuccessAsync(int maxHttpRequestsPerSource)
         {
             // Arrange
             var packageSource = new PackageSource("https://contoso.com/v3/index.json") { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };
             var sourceRepository = new SourceRepository(packageSource, new[] { new HttpHandlerResourceV3Provider() });
-            _ = sourceRepository.GetResource<HttpSourceResource>();
+
+            // HttpSourceResourceProvider updates PackageSource.MaxHttpRequestsPerSource value for .NET Framework code paths
+            // HttpSource constructor accepts a delegate that creates HttpHandlerResource and it stores the delegate in a private variable.
+            // Hence used discard to ignore the return value and fetched HttpHandlerResource from the source repository to verify behavior.
+            _ = await sourceRepository.GetResourceAsync<HttpSourceResource>();
 
             // Act            
-            HttpHandlerResource httpHandlerResource = sourceRepository.GetResource<HttpHandlerResource>();
+            HttpHandlerResource httpHandlerResource = await sourceRepository.GetResourceAsync<HttpHandlerResource>();
 
             // Assert
             Assert.NotNull(httpHandlerResource);
