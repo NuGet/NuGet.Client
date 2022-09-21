@@ -121,6 +121,9 @@ stages:
         testRunTitle: "NuGet.Client EndToEnd Tests On Windows"
       condition: "succeededOrFailed()"
 
+    - task: ComponentGovernanceComponentDetection@0
+      displayName: 'Component Detection'
+
     - task: PowerShell@1
       displayName: "Initialize Git Commit Status on GitHub"
       inputs:

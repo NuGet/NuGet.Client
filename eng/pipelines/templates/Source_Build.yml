@@ -16,3 +16,5 @@ steps:
     ArtifactName: "Source-build log"
     ArtifactType: Container
 
+- task: ComponentGovernanceComponentDetection@0
+  displayName: 'Component Detection'

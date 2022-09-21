@@ -49,3 +49,6 @@ steps:
     inlineScript: |
       Write-Host "##vso[build.addbuildtag]${env:BUILD_SOURCEVERSIONAUTHOR}"
       Write-Host "##vso[build.addbuildtag]${env:BUILD_SOURCEBRANCHNAME}"
+
+- task: ComponentGovernanceComponentDetection@0
+  displayName: 'Component Detection'
