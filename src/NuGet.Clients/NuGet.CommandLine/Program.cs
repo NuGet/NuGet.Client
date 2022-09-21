@@ -32,8 +32,8 @@ namespace NuGet.CommandLine
         private const string DotNetSetupRegistryKey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
         private const int Net462ReleasedVersion = 394802;
 
-
-        private static readonly string ThisExecutableName = typeof(Program).Assembly.GetName().Name;
+        internal static readonly Assembly NuGetExeAssembly = typeof(Program).Assembly;
+        private static readonly string ThisExecutableName = NuGetExeAssembly.GetName().Name;
 
         [Import]
         public HelpCommand HelpCommand { get; set; }
@@ -227,20 +227,65 @@ namespace NuGet.CommandLine
         // This method acts as a binding redirect
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            var name = new AssemblyName(args.Name);
+            AssemblyName name = new AssemblyName(args.Name);
+            Assembly customLoadedAssembly = null;
 
             if (string.Equals(name.Name, ThisExecutableName, StringComparison.OrdinalIgnoreCase))
             {
-                return typeof(Program).Assembly;
+                customLoadedAssembly = NuGetExeAssembly;
+            }
+            // .NET Framework 4.x now triggers AssemblyResolve event for resource assemblies
+            // We want to catch failed NuGet.resources.dll assembly load to look for it in embedded resoruces
+            else if (name.Name == "NuGet.resources")
+            {
+                // Load satellite resource assembly from embedded resources
+                customLoadedAssembly = GetNuGetResourcesAssembly(name.Name, name.CultureInfo);
             }
 
-            return null;
+            return customLoadedAssembly;
+        }
+
+        private static Assembly GetNuGetResourcesAssembly(string name, CultureInfo culture)
+        {
+            string resourceName = $"NuGet.CommandLine.{culture.Name}.{name}.dll";
+            Assembly resourceAssembly = LoadAssemblyFromEmbeddedResources(resourceName);
+            if (resourceAssembly == null)
+            {
+                // Sometimes, embedded assembly names have dashes replaced by underscores
+                string altResourceName = $"NuGet.CommandLine.{culture.Name.Replace("-", "_")}.{name}.dll";
+                resourceAssembly = LoadAssemblyFromEmbeddedResources(altResourceName);
+            }
+
+            return resourceAssembly;
+        }
+
+        private static Assembly LoadAssemblyFromEmbeddedResources(string resourceName)
+        {
+            Assembly resourceAssembly = null;
+            using (var stream = NuGetExeAssembly.GetManifestResourceStream(resourceName))
+            {
+                if (stream != null)
+                {
+                    byte[] assemblyData = new byte[stream.Length];
+                    stream.Read(assemblyData, offset: 0, assemblyData.Length);
+                    try
+                    {
+                        resourceAssembly = Assembly.Load(assemblyData);
+                    }
+                    catch (BadImageFormatException)
+                    {
+                        resourceAssembly = null;
+                    }
+                }
+            }
+
+            return resourceAssembly;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to block the exe from usage if anything failed")]
         internal static void RemoveOldFile(CoreV2.NuGet.IFileSystem fileSystem)
         {
-            var oldFile = typeof(Program).Assembly.Location + ".old";
+            var oldFile = NuGetExeAssembly.Location + ".old";
             try
             {
                 if (fileSystem.FileExists(oldFile))
