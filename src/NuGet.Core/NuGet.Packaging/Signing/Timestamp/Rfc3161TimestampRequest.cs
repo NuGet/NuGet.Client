@@ -221,7 +221,7 @@ namespace NuGet.Packaging.Signing
                         timestampUri.AbsoluteUri,
                         flags,
                         (int)timeout.TotalMilliseconds,
-                        Data._hashAlgorithm.Value,
+                        System.Text.ASCIIEncoding.ASCII.GetBytes(Data._hashAlgorithm.Value),
                         ref para,
                         Data._hash,
                         Data._hash.Length,
@@ -232,6 +232,7 @@ namespace NuGet.Packaging.Signing
                         throw new CryptographicException(Marshal.GetLastWin32Error());
                     }
                 }
+
 
                 var content = (Rfc3161TimestampWin32.CRYPT_TIMESTAMP_CONTEXT)Marshal.PtrToStructure(pTsContext, typeof(Rfc3161TimestampWin32.CRYPT_TIMESTAMP_CONTEXT));
                 byte[] encoded = new byte[content.cbEncoded];
