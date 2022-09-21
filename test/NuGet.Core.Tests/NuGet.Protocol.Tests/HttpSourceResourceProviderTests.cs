@@ -11,12 +11,14 @@ namespace NuGet.Protocol.Tests
 {
     public class HttpSourceResourceProviderTests
     {
+        private readonly string _testPackageSourceURL = "https://contoso.test/v3/index.json";
+
 #if IS_DESKTOP
         [PlatformFact(Platform.Windows)]
         public async Task WhenMaxHttpRequestsPerSourceIsNotConfiguredThenItsValueIsSetToDefault_SuccessAsync()
         {
             // Arrange
-            var packageSource = new PackageSource("https://contoso.com/v3/index.json");
+            var packageSource = new PackageSource(_testPackageSourceURL);
             var sourceRepository = new SourceRepository(packageSource, new[] { new HttpSourceResourceProvider() });
 
             // Act
@@ -31,7 +33,7 @@ namespace NuGet.Protocol.Tests
         public async Task WhenMaxHttpRequestsPerSourceIsNotConfiguredThenItsValueWillNotBeUpdated_SuccessAsync()
         {
             // Arrange
-            var packageSource = new PackageSource("https://contoso.com/v3/index.json");
+            var packageSource = new PackageSource(_testPackageSourceURL);
             var sourceRepository = new SourceRepository(packageSource, new[] { new HttpSourceResourceProvider() });
 
             // Act
@@ -49,7 +51,7 @@ namespace NuGet.Protocol.Tests
         public async Task WhenMaxHttpRequestsPerSourceIsConfiguredThenItsValueWillNotBeUpdated_SuccessAsync(int maxHttpRequestsPerSource)
         {
             // Arrange
-            var packageSource = new PackageSource("https://contoso.com/v3/index.json") { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };
+            var packageSource = new PackageSource(_testPackageSourceURL) { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };
             var sourceRepository = new SourceRepository(packageSource, new[] { new HttpSourceResourceProvider() });
 
             // Act

@@ -12,12 +12,14 @@ namespace NuGet.Protocol.Tests
 {
     public class HttpHandlerResourceV3ProviderTests
     {
+        private readonly string _testPackageSourceURL = "https://contoso.test/v3/index.json";
+
 #if IS_DESKTOP
         [PlatformFact(Platform.Windows)]
         public async Task DefaultMaxHttpRequestsPerSourceIsForwardedToV3HttpClientHandler_SuccessAsync()
         {
             // Arrange
-            var packageSource = new PackageSource("https://contoso.com/v3/index.json");
+            var packageSource = new PackageSource(_testPackageSourceURL);
             var sourceRepository = new SourceRepository(packageSource, new List<INuGetResourceProvider>() { new HttpSourceResourceProvider(), new HttpHandlerResourceV3Provider() });
 
             // HttpSourceResourceProvider updates PackageSource.MaxHttpRequestsPerSource value for .NET Framework code paths
@@ -39,7 +41,7 @@ namespace NuGet.Protocol.Tests
         public async Task PackageSourceMaxHttpRequestsPerSourceIsForwardedToV3HttpClientHandler_SuccessAsync(int maxHttpRequestsPerSource)
         {
             // Arrange
-            var packageSource = new PackageSource("https://contoso.com/v3/index.json") { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };
+            var packageSource = new PackageSource(_testPackageSourceURL) { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };
             var sourceRepository = new SourceRepository(packageSource, new List<INuGetResourceProvider>() { new HttpSourceResourceProvider(), new HttpHandlerResourceV3Provider() });
 
             // HttpSourceResourceProvider updates PackageSource.MaxHttpRequestsPerSource value for .NET Framework code paths
@@ -63,7 +65,7 @@ namespace NuGet.Protocol.Tests
         public async Task PackageSourceMaxHttpRequestsPerSourceIsNotForwardedToV3HttpClientHandler_SuccessAsync(int maxHttpRequestsPerSource)
         {
             // Arrange
-            var packageSource = new PackageSource("https://contoso.com/v3/index.json") { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };
+            var packageSource = new PackageSource(_testPackageSourceURL) { MaxHttpRequestsPerSource = maxHttpRequestsPerSource };
             var sourceRepository = new SourceRepository(packageSource, new[] { new HttpHandlerResourceV3Provider() });
 
             // HttpSourceResourceProvider updates PackageSource.MaxHttpRequestsPerSource value for .NET Framework code paths
