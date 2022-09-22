@@ -166,15 +166,14 @@ stages:
     - template: Functional_Tests_On_Windows.yml
 
   - job: Tests_On_Linux
-    timeoutInMinutes: 45
-    condition: false
+    timeoutInMinutes: 45    
     variables:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
       MSBUILDDISABLENODEREUSE: 1
       # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
-    condition: "and(succeeded(), eq(variables['RunTestsOnLinux'], 'true'))"
+    condition: false
     pool:
       vmImage: ubuntu-latest
     steps:
