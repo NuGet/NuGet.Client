@@ -420,20 +420,20 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Arrange project file
             string projectContent =
-@$"<Project Sdk=""Microsoft.NET.Sdk"">    
-	<PropertyGroup>                   
-	<TargetFramework>net6.0</TargetFramework>
-	</PropertyGroup>
-    <ItemGroup>
-    <PackageReference Include=""X"" VersionOverride=""2.0.0""/>
-    </ItemGroup>
+@$"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include=""X"" VersionOverride=""3.0.0"" />
+  </ItemGroup>
 </Project>";
             File.WriteAllText(Path.Combine(testDirectory, "projectA.csproj"), projectContent);
             var project = Project.FromFile(Path.Combine(testDirectory, "projectA.csproj"), projectOptions);
 
             var msObject = new MSBuildAPIUtility(logger: new TestLogger());
             // Get package version if it already exists in the props file. Returns null if there is no matching package version.
-            ProjectItem packageVersionInProps = project.Items.LastOrDefault(i => i.ItemType == "PackageVersion" && i.EvaluatedInclude.Equals("X"));
+            ProjectItem packageVersionInProps = project.Items.LastOrDefault(i => i.ItemType == "PackageReference" && i.EvaluatedInclude.Equals("X"));
 
             var libraryDependency = new LibraryDependency
             {
