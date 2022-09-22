@@ -20,7 +20,7 @@ namespace NuGet.Protocol
 
         // Only one source may prompt at a time
         private readonly static SemaphoreSlim _credentialPromptLock = new SemaphoreSlim(1, 1);
-        internal bool _isDisposed = false; // internal for testing purposes
+        private bool _isDisposed = false;
 
         private readonly PackageSource _packageSource;
         private readonly HttpClientHandler _clientHandler;
@@ -306,6 +306,8 @@ namespace NuGet.Protocol
             {
                 // free managed resources
                 _httpClientLock.Dispose();
+                _credentials = null;
+                _authStates = null;
             }
 
             _isDisposed = true;
