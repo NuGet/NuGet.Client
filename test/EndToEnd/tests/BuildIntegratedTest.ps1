@@ -266,6 +266,9 @@ function Test-BuildIntegratedMixedLegacyProjectsProjectJsonOnly {
 }
 
 function Test-BuildIntegratedMixedLegacyProjectsPackagesFolderOnly {
+    [SkipTest('https://github.com/NuGet/Home/issues/12104')]
+    param ()
+    
     # Arrange
     $project1 = New-ClassLibrary
     $project1 | Install-Package Newtonsoft.Json -Version 13.0.1
