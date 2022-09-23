@@ -73,7 +73,17 @@ namespace NuGet.Common
 
         private const int UGO_RWX = 0x1ff; // 0777
 
-        [DllImport("libc", SetLastError = true)]
+#if NETSTANDARD2_0
+#pragma warning disable CA2101
+        // netstandard2.0 does not have a definition for UnmanagedType.LPUTF8Str
+        // Let the marshaller decide on the best encoding. If we set UnmanagedType.LPWStr, the call will not work
+        // because most Unix-like systems expect UTF-8 encoded string by default
+        [DllImport("libc", SetLastError = true, CharSet = CharSet.Ansi, ThrowOnUnmappableChar = true)]
         private static extern int chmod(string pathname, int mode);
+#pragma warning restore CA2101
+#else
+        [DllImport("libc", SetLastError = true, CharSet = CharSet.Ansi, ThrowOnUnmappableChar = true)]
+        private static extern int chmod([MarshalAs(UnmanagedType.LPUTF8Str)] string pathname, int mode);
+#endif
     }
 }

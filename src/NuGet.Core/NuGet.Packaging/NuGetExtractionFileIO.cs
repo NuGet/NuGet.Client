@@ -157,12 +157,21 @@ namespace NuGet.Packaging
             _unixPermissions = _unixPermissions & ~mask;
         }
 
-
-        [DllImport("libc", EntryPoint = "creat")]
+#if NETSTANDARD2_0
+#pragma warning disable CA2101
+        // netstandard2.0 does not have a definition for UnmanagedType.LPUTF8Str
+        // Let the marshaller decide on the best encoding. If we set UnmanagedType.LPWStr, the call will not work
+        // because most Unix-like systems expect UTF-8 encoded string by default
+        [DllImport("libc", EntryPoint = "creat", CharSet = CharSet.Unicode, ThrowOnUnmappableChar = true)]
         private static extern int PosixCreate([MarshalAs(UnmanagedType.LPStr)] string pathname, int mode);
+#pragma warning restore CA2101
+#else
+        [DllImport("libc", EntryPoint = "creat", CharSet = CharSet.Unicode, ThrowOnUnmappableChar = true)]
+        private static extern int PosixCreate([MarshalAs(UnmanagedType.LPWStr)] string pathname, int mode);
+#endif
 
-        [DllImport("libc", EntryPoint = "chmod")]
-        private static extern int PosixChmod([MarshalAs(UnmanagedType.LPStr)] string pathname, int mode);
+        [DllImport("libc", EntryPoint = "chmod", CharSet = CharSet.Unicode, ThrowOnUnmappableChar = true)]
+        private static extern int PosixChmod([MarshalAs(UnmanagedType.LPWStr)] string pathname, int mode);
 
         [DllImport("libc", EntryPoint = "umask")]
         private static extern int PosixUMask(int mask);
