@@ -402,11 +402,38 @@ namespace NuGet.CommandLine.XPlat {
             }
         }
         
+        ///   Looks up a localized string similar to The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs.
+        /// </summary>
+        internal static string Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed {
+            get {
+                return ResourceManager.GetString("Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Centrally defined floating package versions are not allowed..
+        /// </summary>
+        internal static string Error_CentralPackageVersions_FloatingVersionsAreNotAllowed {
+            get {
+                return ResourceManager.GetString("Error_CentralPackageVersions_FloatingVersionsAreNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The PackageReference items {0} do not have corresponding PackageVersion..
+        /// </summary>
+        internal static string Error_CentralPackageVersions_MissingPackageVersion {
+            get {
+                return ResourceManager.GetString("Error_CentralPackageVersions_MissingPackageVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}.
         /// </summary>
-        internal static string Error_CPM_AddPkg_VersionsNotAllowed {
+        internal static string Error_CentralPackageVersions_VersionsNotAllowed {
             get {
-                return ResourceManager.GetString("Error_CPM_AddPkg_VersionsNotAllowed", resourceCulture);
+                return ResourceManager.GetString("Error_CentralPackageVersions_VersionsNotAllowed", resourceCulture);
             }
         }
         

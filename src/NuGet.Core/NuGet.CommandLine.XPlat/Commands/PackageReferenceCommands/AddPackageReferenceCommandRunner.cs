@@ -103,13 +103,9 @@ namespace NuGet.CommandLine.XPlat
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
 
             // Check if the project files are correct for CPM
-            if (originalPackageSpec.RestoreMetadata.CentralPackageVersionsEnabled)
+            if (originalPackageSpec.RestoreMetadata.CentralPackageVersionsEnabled && !msBuild.AreCentralVersionRequirementsSatisfied(packageReferenceArgs, originalPackageSpec))
             {
-                var isValid = msBuild.AreCentralVersionRequirementsSatisfied(packageReferenceArgs);
-                if (!isValid)
-                {
-                    return 1;
-                }
+                return 1;
             }
 
             // 2. Determine the version
