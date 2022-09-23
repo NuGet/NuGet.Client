@@ -757,7 +757,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>PackageReference for package '{0}' added to '{1}' and PackageVersion added to central package management file '{2}'.</value>
     <comment>0 - The package ID. 1 - Directory.Packages.props file path. 2 - Project file path.</comment>
   </data>
-  <data name="Error_CPM_AddPkg_VersionsNotAllowed" xml:space="preserve">
+  <data name="Error_CentralPackageVersions_VersionsNotAllowed" xml:space="preserve">
     <value>Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}</value>
     <comment>0 - package id</comment>
   </data>
@@ -772,5 +772,14 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="Error_AddPkg_CentralPackageVersions_PackageVersion_WrongLocation" xml:space="preserve">
     <value>PackageVersion for package '{0}' defined in incorrect location, PackageVersion should be defined in Directory.Package.props.</value>
     <comment>0 - package id</comment>
+  </data>
+  <data name="Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed" xml:space="preserve">
+    <value>The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs</value>
+  </data>
+  <data name="Error_CentralPackageVersions_FloatingVersionsAreNotAllowed" xml:space="preserve">
+    <value>Centrally defined floating package versions are not allowed.</value>
+  </data>
+  <data name="Error_CentralPackageVersions_MissingPackageVersion" xml:space="preserve">
+    <value>The PackageReference items {0} do not have corresponding PackageVersion.</value>
   </data>
 </root>
