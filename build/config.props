@@ -26,7 +26,7 @@
     <!-- Visual Studio Insertion Logic -->
     <VsTargetMajorVersion>$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
     <VsTargetBranch>main</VsTargetBranch>
-    <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
+    <VsTargetChannel>IntPreview</VsTargetChannel>
 
     <!-- NuGet SDK VS package Semantic Version -->
     <NuGetSdkVsSemanticVersion>$(VsTargetMajorVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</NuGetSdkVsSemanticVersion>
