@@ -125,7 +125,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(expected, actual);
         }
 
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/10926")]
+        [Fact]
         public void IsVsOfflineFeed_WhenSourceIsNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(() => TelemetryUtility.IsVsOfflineFeed(source: null));
@@ -133,7 +133,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal("source", exception.ParamName);
         }
 
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/10926")]
+        [Fact]
         public void IsVsOfflineFeed_WhenSourceIsNotLocal_ReturnsFalse()
         {
             var source = new PackageSource("https://nuget.test");
@@ -171,6 +171,16 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var source = new PackageSource(packageSourcePath);
             var expectedVsOfflinePackagesPath = vsOfflinePackagesPath;
             bool actualResult = TelemetryUtility.IsVsOfflineFeed(source, expectedVsOfflinePackagesPath);
+
+            Assert.True(actualResult);
+        }
+
+        [Theory]
+        [InlineData(@"C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\")]
+        [InlineData(@"C:\Program Files\Microsoft SDKs\NuGetPackages\")]
+        public void IsVSOfflineFeed_WithValidOfflineFeed_ReturnsTrue(string expectedOfflineFeed)
+        {
+            bool actualResult = TelemetryUtility.IsVsOfflineFeed(new PackageSource(expectedOfflineFeed));
 
             Assert.True(actualResult);
         }
