@@ -66,10 +66,11 @@ stages:
       displayName: 'Print Environment Variables'
     - powershell: |
         $branch = "$(Resources.Pipeline.ComponentBuildUnderTest.SourceBranch)"
-        $refsHead = "refs/head/"
+        $refsHead = "refs/heads/"
         if ($branch.StartsWith($refsHead)) {
           $branch = $branch.SubString($refsHead.Length)
         }
+        $branch = $branch.Replace('/', '_')
         $commit = "$(Resources.Pipeline.ComponentBuildUnderTest.SourceCommit)"
 
         $BuildName = "${branch}_${commit}"
