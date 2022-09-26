@@ -45,7 +45,7 @@ function Test-UpdatingPackageWithPackageSaveModeNuspec {
         $setting.AddOrUpdate('config', [NuGet.Configuration.AddItem]::new('PackageSaveMode', 'nuspec'))
 
         Install-Package Castle.Core -Version 1.2.0 -Project $p.Name
-        Assert-Package $p Castle.Core 1.2.0
+        Assert-Package $p Castle.Core 1.2.0 -Version 4.4.1
 
         # Act
         Update-Package Castle.Core
