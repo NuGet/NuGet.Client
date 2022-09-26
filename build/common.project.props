@@ -58,7 +58,8 @@
   <!-- Defaults -->
   <PropertyGroup>
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">true</TreatWarningsAsErrors>
-    <MSBuildTreatWarningsAsErrors Condition=" '$(MSBuildTreatWarningsAsErrors)' == '' ">true</MSBuildTreatWarningsAsErrors>
+    <!-- Treat all warnings as errors, except on official builds since we don't want new warnings to break servicing branches -->
+    <MSBuildTreatWarningsAsErrors Condition=" '$(MSBuildTreatWarningsAsErrors)' == '' And '$(IsOfficialBuild)' != 'true' ">true</MSBuildTreatWarningsAsErrors>
   </PropertyGroup>
 
   <!-- Default project configuration -->
