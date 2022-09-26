@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Security.Principal;
@@ -11,6 +12,7 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
+using FileSystemUtils = NuGet.Test.Utility.TestFileSystemUtility;
 using Test.Utility;
 using Xunit;
 
@@ -19,7 +21,11 @@ namespace NuGet.CommandLine.Test
     public class NuGetPushCommandTest
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
+        private const string Param_ConfigFile = "-ConfigFile";
+        private const string Param_Source = "-Source";
+        private const string Command_Push = "push";
         private static readonly string NuGetExePath = Util.GetNuGetExePath();
+        private static readonly string CurrentDirectoryPath = Directory.GetCurrentDirectory();
 
         // Tests pushing to a source that is a v2 file system directory.
         [Fact]
@@ -34,7 +40,7 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
 
                 // Act
-                string[] args = new string[] { "push", packageFileName, "-Source", source };
+                string[] args = new string[] { Command_Push, packageFileName, Param_Source, source };
                 var result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
@@ -70,7 +76,7 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage(packageId, version, packageDirectory);
 
                 // Act
-                string[] args = new string[] { "push", packageFileName, "-Source", source };
+                string[] args = new string[] { Command_Push, packageFileName, Param_Source, source };
                 var result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
@@ -109,7 +115,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(configFileName, config);
 
                 // Act
-                string[] args = new string[] { "push", packageFileName };
+                string[] args = new string[] { Command_Push, packageFileName };
                 var result = CommandRunner.Run(
                     nugetexe,
                     packageDirectory,
@@ -149,7 +155,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(configFileName, config);
 
                 // Act
-                string[] args = new string[] { "push", packageFileName };
+                string[] args = new string[] { Command_Push, packageFileName };
                 var result = CommandRunner.Run(
                     nugetexe,
                     packageDirectory,
@@ -186,7 +192,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(configFileName, config);
 
                 // Act
-                string[] args = new string[] { "push", packageFileName };
+                string[] args = new string[] { Command_Push, packageFileName };
                 var result = CommandRunner.Run(
                     nugetexe,
                     packageDirectory,
@@ -215,7 +221,7 @@ namespace NuGet.CommandLine.Test
                 var source = ((string)windowsSource).Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
                 // Act
-                string[] args = new string[] { "push", packageFileName, "-Source", source };
+                string[] args = new string[] { Command_Push, packageFileName, Param_Source, source };
                 var result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
@@ -243,7 +249,7 @@ namespace NuGet.CommandLine.Test
                 var uncSource = @"\\localhost\" + ((string)source).Replace(':', '$');
 
                 // Act
-                string[] args = new string[] { "push", packageFileName, "-Source", uncSource };
+                string[] args = new string[] { Command_Push, packageFileName, Param_Source, uncSource };
                 var result = CommandRunner.Run(
                                 nugetexe,
                                 Directory.GetCurrentDirectory(),
@@ -322,7 +328,7 @@ namespace NuGet.CommandLine.Test
 
                     // Act
                     var args = new string[]
-                    {"push", packageFileName, "-Source", server.Uri + "push", "-Apikey", "token"};
+                    {Command_Push, packageFileName, Param_Source, server.Uri + Command_Push, "-Apikey", "token"};
                     var result = CommandRunner.Run(
                         nugetexe,
                         Directory.GetCurrentDirectory(),
@@ -559,7 +565,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    string[] args = new string[] { "push", packageFileName, "-Source", server.Uri + "redirect" };
+                    string[] args = new string[] { Command_Push, packageFileName, Param_Source, server.Uri + "redirect" };
                     var result = CommandRunner.Run(
                         nugetexe,
                         Directory.GetCurrentDirectory(),
@@ -600,7 +606,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    string[] args = new string[] { "push", packageFileName, "-Source", server.Uri + "redirect" };
+                    string[] args = new string[] { Command_Push, packageFileName, Param_Source, server.Uri + "redirect" };
                     var result = CommandRunner.Run(
                         nugetexe,
                         Directory.GetCurrentDirectory(),
@@ -633,7 +639,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    string[] args = new string[] { "push", packageFileName, "-Source", server.Uri + "redirect" };
+                    string[] args = new string[] { Command_Push, packageFileName, Param_Source, server.Uri + "redirect" };
                     var result = CommandRunner.Run(
                         nugetexe,
                         Directory.GetCurrentDirectory(),
@@ -1343,9 +1349,9 @@ namespace NuGet.CommandLine.Test
                         // Act
                         string[] args = new string[]
                         {
-                            "push",
+                            Command_Push,
                             packageFileName,
-                            "-Source",
+                            Param_Source,
                             serverV3.Uri + "index.json"
                         };
 
@@ -1465,9 +1471,9 @@ namespace NuGet.CommandLine.Test
                     // Act
                     string[] args = new string[]
                     {
-                            "push",
+                            Command_Push,
                             packageFileName,
-                            "-Source",
+                            Param_Source,
                             serverV3.Uri + "index.json"
                     };
 
@@ -1585,10 +1591,10 @@ namespace NuGet.CommandLine.Test
                     // Act
                     var args = new[]
                     {
-                        "push",
+                        Command_Push,
                         packageFileName,
                         "should-be-ignored", // The named argument is preferred over the positional argument.
-                        "-Source",
+                        Param_Source,
                         serverV3.Uri + "index.json",
                         "-ApiKey",
                         testApiKey,
@@ -1674,9 +1680,9 @@ namespace NuGet.CommandLine.Test
                     // Act
                     var args = new[]
                     {
-                        "push",
+                        Command_Push,
                         packageFileName,
-                        "-Source",
+                        Param_Source,
                         "nuget.org",
                         "-ConfigFile",
                         settings.ConfigPath,
@@ -2078,6 +2084,339 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData(">")]
+        public void PushCommand_ConfigFile_BadName(string configFileName)
+        {
+            var args = new string[]
+            {
+                Command_Push,
+                "testPackage1",
+                Param_ConfigFile,
+                configFileName
+            };
+
+            var result = CommandRunner.Run(
+                            NuGetExePath,
+                            CurrentDirectoryPath,
+                            string.Join(" ", args),
+                            true);
+
+            Assert.True(
+                result.ExitCode != 0,
+                "The run did not fail as desired. Simply got this output:" + result.Output);
+
+            Assert.True(
+                result.Errors.Contains("Illegal characters in path."),
+                "Expected error message not found in " + result.Errors);
+        }
+
+        [Fact]
+        public void PushCommand_ConfigFile_MissingName()
+        {
+            var args = new string[]
+            {
+                Command_Push,
+                "testPackage1",
+                Param_ConfigFile
+            };
+
+            var result = CommandRunner.Run(
+                            NuGetExePath,
+                            CurrentDirectoryPath,
+                            string.Join(" ", args),
+                            true);
+
+            Assert.True(
+                result.ExitCode != 0,
+                "The run did not fail as desired. Simply got this output:" + result.Output);
+
+            Assert.True(
+                result.Errors.Contains(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Missing option value for: '{0}'",
+                        Param_ConfigFile)),
+                "Expected error message not found in " + result.Errors);
+        }
+
+        [Fact]
+        public void PushCommand_ConfigFile_NotFound()
+        {
+            var configFileName = "My.Config";
+
+            // Act
+            var args = new string[]
+            {
+                Command_Push,
+                "testPackage1",
+                Param_ConfigFile,
+                configFileName
+            };
+
+            var result = CommandRunner.Run(
+                            NuGetExePath,
+                            CurrentDirectoryPath,
+                            string.Join(" ", args),
+                            true);
+
+            // Assert
+            Assert.True(
+                result.ExitCode != 0,
+                "The run did not fail as desired. Simply got this output:" + result.Output);
+
+            var expectedError = string.Format(
+                                    CultureInfo.InvariantCulture,
+                                    "File '{0}' does not exist.",
+                                    Path.Combine(CurrentDirectoryPath, configFileName).ToString());
+
+            Assert.True(
+                result.Errors.Contains(expectedError),
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Expected error: {0} \r\nActual error: {1}",
+                    expectedError, result.Errors));
+        }
+
+        [Fact]
+        public void PushCommand_ConfigFile_BadFormat()
+        {
+            var configFileName = "My.Config";
+            var repositoryKey = "MySource";
+
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var repositoryPath = Path.Combine(testDirectory, "repository");
+                var configFilePath = Path.Combine(testDirectory, "config");
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(configFilePath);
+
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", testDirectory);
+
+                FileSystemUtils.CreateFile(
+                    configFilePath,
+                    configFileName,
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"Not XML!"));
+
+                var args = new string[]
+                {
+                    Command_Push,
+                    packageFileName,
+                    Param_Source,
+                    repositoryKey,
+                    Param_ConfigFile,
+                    Path.Combine(configFilePath, configFileName)
+                };
+
+                var result = CommandRunner.Run(
+                                NuGetExePath,
+                                testDirectory,
+                                string.Join(" ", args),
+                                true);
+
+                // TODO: The bad config file is ignored, so I need to confirm this is expected behavior.
+                // This test needs to be updated before merging since it is failing 100%.
+                Assert.True(
+                   result.ExitCode != 0,
+                   "The run did not fail as desired. Simply got this output:" + result.Output);
+
+                var expectedError = string.Format(
+                                    CultureInfo.InvariantCulture,
+                                    "Invalid file '{0}'",
+                                    Path.Combine(CurrentDirectoryPath, configFileName).ToString());
+
+                Assert.True(
+                    result.Errors.Contains("NuGet.Config is not valid XML."),
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Error was expected to contain: {0} \r\nActual error: {1}",
+                        expectedError, result.Errors));
+
+                Assert.False(
+                    File.Exists(Path.Combine(repositoryPath, packageFileName)),
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"The package {0} was found in {1}",
+                        packageFileName, repositoryPath));
+            }
+        }
+
+        [Fact]
+        public void PushCommand_ConfigFile_ExpectedFormat()
+        {
+            var configFileName = "My.Config";
+            var repositoryKey = "MySource";
+
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var repositoryPath = Path.Combine(testDirectory, "repository");
+                var configFilePath = Path.Combine(testDirectory, "config");
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(configFilePath);
+
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", testDirectory);
+
+                FileSystemUtils.CreateFile(
+                    configFilePath,
+                    configFileName,
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <configuration>
+                            <packageSources>
+                                <add key=""{0}"" value=""{1}"" />
+                            </packageSources>
+                        </configuration>",
+                        repositoryKey, repositoryPath));
+
+                var args = new string[]
+                {
+                    Command_Push,
+                    packageFileName,
+                    Param_Source,
+                    repositoryKey,
+                    Param_ConfigFile,
+                    Path.Combine(configFilePath, configFileName)
+                };
+
+                var result = CommandRunner.Run(
+                                NuGetExePath,
+                                testDirectory,
+                                string.Join(" ", args),
+                                true);
+
+                // Assert
+                Assert.True(
+                   result.ExitCode == 0,
+                   "Execution failed with:" + result.Output);
+
+                Assert.True(
+                    File.Exists(Path.Combine(repositoryPath, packageFileName)),
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"The package {0} was not found in {1}",
+                        packageFileName, repositoryPath));
+            }
+        }
+
+        [Fact]
+        public void PushCommand_ConfigFile_ParamsOverrideConfigFile()
+        {
+            var configFileName = "My.Config";
+            var testRepository1 = "repository1";
+            var testRepository2 = "repository2";
+
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var repository1Path = Path.Combine(testDirectory, testRepository1);
+                var repository2Path = Path.Combine(testDirectory, testRepository2);
+                var configFilePath = Path.Combine(testDirectory, "config");
+                Directory.CreateDirectory(repository1Path);
+                Directory.CreateDirectory(repository2Path);
+                Directory.CreateDirectory(configFilePath);
+
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", testDirectory);
+
+                FileSystemUtils.CreateFile(
+                    configFilePath,
+                    configFileName,
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <configuration>
+                            <config>
+                                <add key=""defaultPushSource"" value=""{0}"" />
+                            </config>
+                        </configuration>",
+                        repository1Path));
+
+                var args = new string[]
+                {
+                    Command_Push,
+                    packageFileName,
+                    Param_Source,
+                    repository2Path,
+                    Param_ConfigFile,
+                    Path.Combine(configFilePath, configFileName)
+                };
+
+                var result = CommandRunner.Run(
+                                NuGetExePath,
+                                testDirectory,
+                                string.Join(" ", args),
+                                true);
+
+                // Assert
+                Assert.True(
+                   result.ExitCode == 0,
+                   "Execution failed with:" + result.Output);
+
+                Assert.True(
+                    File.Exists(Path.Combine(repository2Path, packageFileName)),
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"The package {0} was not found in {1}",
+                        packageFileName, repository2Path));
+            }
+        }
+
+        [Fact]
+        public void PushCommand_ConfigFile_NoSourceParam()
+        {
+            var configFileName = "My.Config";
+            var testRepository = "repository";
+
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var repositoryPath = Path.Combine(testDirectory, testRepository);
+                var configFilePath = Path.Combine(testDirectory, "config");
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(configFilePath);
+
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", testDirectory);
+
+                FileSystemUtils.CreateFile(
+                    configFilePath,
+                    configFileName,
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <configuration>
+                            <config>
+                                <add key=""defaultPushSource"" value=""{0}"" />
+                            </config>
+                        </configuration>",
+                        repositoryPath));
+
+                var args = new string[]
+                {
+                    Command_Push,
+                    packageFileName,
+                    Param_ConfigFile,
+                    Path.Combine(configFilePath, configFileName)
+                };
+
+                var result = CommandRunner.Run(
+                                NuGetExePath,
+                                testDirectory,
+                                string.Join(" ", args),
+                                true);
+
+                Assert.True(
+                   result.ExitCode == 0,
+                   "Execution failed with:" + result.Output);
+
+                Assert.True(
+                    File.Exists(Path.Combine(repositoryPath, packageFileName)),
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"The package {0} was not found in {1}",
+                        packageFileName, repositoryPath));
+            }
+        }
+
         [Fact]
         public void PushCommand_FailWhenNoSourceSpecified()
         {
@@ -2093,7 +2432,7 @@ namespace NuGet.CommandLine.Test
                 // Act
                 string[] args = new string[]
                 {
-                        "push",
+                        Command_Push,
                         packageFileName,
                         "-ApiKey",
                         "blah-blah"
@@ -2171,9 +2510,9 @@ namespace NuGet.CommandLine.Test
                     // Act
                     string[] args = new string[]
                     {
-                        "push",
+                        Command_Push,
                         packageFileName,
-                        "-Source",
+                        Param_Source,
                         server.Uri + "api/v2/Package"
                     };
 
@@ -2207,9 +2546,9 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var args = new string[]
                 {
-                        "push",
+                        Command_Push,
                         packageFileName,
-                        "-Source",
+                        Param_Source,
                         invalidInput
                 };
 
@@ -2251,9 +2590,9 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var args = new string[]
                 {
-                        "push",
+                        Command_Push,
                         packageFileName,
-                        "-Source",
+                        Param_Source,
                         invalidInput
                 };
 
@@ -2301,9 +2640,9 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var args = new string[]
                 {
-                        "push",
+                        Command_Push,
                         packageFileName,
-                        "-Source",
+                        Param_Source,
                         invalidInput
                 };
 
@@ -2339,9 +2678,9 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var args = new string[]
                 {
-                        "push",
+                        Command_Push,
                         packageFileName,
-                        "-Source",
+                        Param_Source,
                         invalidInput
                 };
 
@@ -2385,9 +2724,9 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var args = new string[]
                 {
-                        "push",
+                        Command_Push,
                         packageFileName,
-                        "-Source",
+                        Param_Source,
                         invalidInput
                 };
 
@@ -2410,7 +2749,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("push")]
+        [InlineData(Command_Push)]
         [InlineData("push a b c")]
         [InlineData("push a b c -Timeout 2")]
         public void PushCommand_Failure_InvalidArguments(string cmd)
@@ -2557,9 +2896,9 @@ namespace NuGet.CommandLine.Test
                         // Act
                         string[] args = new string[]
                         {
-                            "push",
+                            Command_Push,
                             packageFileName,
-                            "-Source",
+                            Param_Source,
                             serverV3.Uri + "index.json"
                         };
 

@@ -1,20 +1,24 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
+using FileSystemUtils = NuGet.Test.Utility.TestFileSystemUtility;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
 {
     public class XPlatPushTests
     {
+        private const string Command_Push = "push";
+        private const string Param_ApiKey = "--api-key";
+        private const string Param_ConfigFile = "--config-file";
+        private const string Param_Source = "--source";
+
         [PackageSourceTheory]
         [PackageSourceData(TestSources.MyGet)]
         [PackageSourceData(TestSources.ProGet, Skip = "No such host is known")]
@@ -22,7 +26,7 @@ namespace NuGet.XPlat.FuncTest
         [PackageSourceData(TestSources.NuGetServer, Skip = "No such host is known")]
         public async Task PushToServerSucceeds(PackageSource packageSource)
         {
-            // Arrange
+            // Setup
             using (var packageDir = TestDirectory.Create())
             using (TestFileSystemUtility.SetCurrentDirectory(packageDir))
             {
@@ -35,23 +39,23 @@ namespace NuGet.XPlat.FuncTest
                 var apiKey = XPlatTestUtils.ReadApiKey(packageSource.Name);
                 Assert.False(string.IsNullOrEmpty(apiKey));
 
-                var pushArgs = new List<string>
+                var pushArgs = new string[]
                 {
-                    "push",
+                    Command_Push,
                     packageFile.FullName,
-                    "--source",
+                    Param_Source,
                     packageSource.Source,
-                    "--api-key",
+                    Param_ApiKey,
                     apiKey,
                     "--interactive"
                 };
 
                 // Act
-                var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log);
+                var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs, log);
 
-                // Assert
-                Assert.Equal(string.Empty, log.ShowErrors());
-                Assert.Equal(0, exitCode);
+                // Validate
+                ValidateSuccessfulRun(log);
+
                 Assert.Contains($"PUT {packageSource.Source}", log.ShowMessages());
                 Assert.Contains("Your package was pushed.", log.ShowMessages());
             }
@@ -64,7 +68,7 @@ namespace NuGet.XPlat.FuncTest
         [PackageSourceData(TestSources.NuGetServer, Skip = "No such host is known")]
         public async Task PushToServerWhichRejectsDuplicates_SkipDuplicate_Succeeds(PackageSource packageSource)
         {
-            // Arrange
+            // Setup
             using (var packageDir = TestDirectory.Create())
             using (TestFileSystemUtility.SetCurrentDirectory(packageDir))
             {
@@ -77,31 +81,29 @@ namespace NuGet.XPlat.FuncTest
 
                 var apiKey = XPlatTestUtils.ReadApiKey(packageSource.Name);
                 Assert.False(string.IsNullOrEmpty(apiKey));
-                var pushArgs = new List<string>
+
+                var pushArgs = new string[]
                 {
-                    "push",
+                    Command_Push,
                     packageFile.FullName,
-                    "--source",
+                    Param_Source,
                     packageSource.Source,
-                    "--api-key",
+                    Param_ApiKey,
                     apiKey,
                     "--skip-duplicate"
                 };
 
                 // Act
-                var exitCodeFirstPush = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), logFirstPush);
-                var exitCodeSecondPush = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), logSecondPush);
+                var exitCodeFirstPush = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs, logFirstPush);
+                NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs, logSecondPush);
 
-                // Assert First Push - it should happen without error.
-                var outputMessagesFirstPush = logFirstPush.ShowMessages();
-                Assert.Equal(string.Empty, logFirstPush.ShowErrors());
-                Assert.Equal(0, exitCodeFirstPush);
+                // Validate First Push - it should happen without error.
+                ValidateSuccessfulRun(logFirstPush);
 
-                // Assert Second Push - it should happen without error, even though a duplicate is present.
+                // Validate Second Push - it should happen without error, even though a duplicate is present.
                 var outputMessagesSecondPush = logSecondPush.ShowMessages();
 
-                Assert.Equal(string.Empty, logSecondPush.ShowErrors());
-                Assert.Equal(0, exitCodeSecondPush);
+                ValidateSuccessfulRun(logSecondPush);
                 Assert.Contains($"PUT {packageSource.Source}", outputMessagesSecondPush);
                 Assert.DoesNotContain("already exists at feed", outputMessagesSecondPush);
                 Assert.Contains("Your package was pushed.", outputMessagesSecondPush);
@@ -113,7 +115,7 @@ namespace NuGet.XPlat.FuncTest
         [PackageSourceData(TestSources.Nexus, Skip = "No such host is known")]
         public async Task PushToServerSucceeds_DeleteFirst(PackageSource packageSource)
         {
-            // Arrange
+            // Setup
             using (var packageDir = TestDirectory.Create())
             using (TestFileSystemUtility.SetCurrentDirectory(packageDir))
             {
@@ -128,22 +130,22 @@ namespace NuGet.XPlat.FuncTest
 
                 DeletePackageBeforePush(packageId, packageVersion, packageSource.Source, apiKey);
 
-                var pushArgs = new List<string>
+                var pushArgs = new string[]
                 {
-                    "push",
+                    Command_Push,
                     packageFile.FullName,
-                    "--source",
+                    Param_Source,
                     packageSource.Source,
-                    "--api-key",
+                    Param_ApiKey,
                     apiKey
                 };
 
                 // Act
-                var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log);
+                NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs, log);
 
-                // Assert
-                Assert.Equal(string.Empty, log.ShowErrors());
-                Assert.Equal(0, exitCode);
+                // Validate
+                ValidateSuccessfulRun(log);
+
                 Assert.Contains($"PUT {packageSource.Source}", log.ShowMessages());
                 Assert.Contains("Your package was pushed.", log.ShowMessages());
             }
@@ -156,7 +158,7 @@ namespace NuGet.XPlat.FuncTest
             using (var packageDirectory = TestDirectory.Create())
             using (var source = TestDirectory.Create())
             {
-                // Arrange
+                // Setup
                 var log = new TestCommandOutputLogger();
                 var packageInfoCollection = new[]
                 {
@@ -164,21 +166,20 @@ namespace NuGet.XPlat.FuncTest
                     await TestPackagesCore.GetRuntimePackageAsync(packageDirectory, "testPackageB", "1.1.0"),
                 };
 
-                var pushArgs = new List<string>
+                var pushArgs = new string[]
                 {
-                    "push",
+                    Command_Push,
                     packageInfoCollection[0].FullName,
                     packageInfoCollection[1].FullName,
-                    "--source",
+                    Param_Source,
                     source,
                 };
 
                 // Act
-                var exitCode = CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log);
+                CommandLine.XPlat.Program.MainInternal(pushArgs, log);
 
-                // Assert
-                Assert.Equal(string.Empty, log.ShowErrors());
-                Assert.Equal(0, exitCode);
+                // Validate
+                ValidateSuccessfulRun(log);
 
                 foreach (var packageInfo in packageInfoCollection)
                 {
@@ -186,6 +187,90 @@ namespace NuGet.XPlat.FuncTest
                     Assert.True(File.Exists(Path.Combine(source, packageInfo.Name)));
                 }
             }
+        }
+
+        [Fact]
+        public async Task PushCommand_ConfigFile_ExpectedFormat()
+        {
+            var log = new TestCommandOutputLogger();
+            var configFileName = "My.Config";
+            var repositoryKey = "MySource";
+
+            using (var testDirectory = TestDirectory.Create())
+            {
+                FileInfo testPackageInfo = await TestPackagesCore.GetRuntimePackageAsync(testDirectory, "testPackageA", "1.1.0");
+                var repositoryPath = Path.Combine(testDirectory, "repository");
+                var configFilePath = Path.Combine(testDirectory, "config");
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(configFilePath);
+
+                FileSystemUtils.CreateFile(
+                    configFilePath,
+                    configFileName,
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <configuration>
+                            <packageSources>
+                                <add key=""{0}"" value=""{1}"" />
+                            </packageSources>
+                        </configuration>",
+                        repositoryKey, repositoryPath));
+
+                var pushArgs = new List<string>
+                {
+                    Command_Push,
+                    testPackageInfo.FullName,
+                    Param_Source,
+                    repositoryKey,
+                    Param_ConfigFile,
+                    Path.Combine(configFilePath, configFileName)
+                };
+
+                CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log);
+
+                ValidateSuccessfulRun(log);
+
+                Assert.True(
+                    File.Exists(Path.Combine(repositoryPath, testPackageInfo.FullName)),
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"The package {0} was not found in {1}",
+                        testPackageInfo.FullName, repositoryPath));
+            }
+        }
+
+        [Fact]
+        public void PushCommand_ConfigFile_MissingName()
+        {
+            var log = new TestCommandOutputLogger();
+
+            var pushArgs = new string[]
+            {
+                Command_Push,
+                "testPackage1",
+                Param_ConfigFile
+            };
+
+            var exitCode = CommandLine.XPlat.Program.MainInternal(pushArgs, log);
+
+            Assert.True(
+                exitCode != 0,
+                "The run did not fail as desired. Simply got this output:" + log.ShowMessages());
+
+            string actualErrors = log.ShowErrors();
+            Assert.True(
+                actualErrors.Contains(@"Missing value for option 'config-file'"),
+                "Expected error message not found in " + actualErrors);
+        }
+
+        private void ValidateSuccessfulRun(TestCommandOutputLogger log)
+        {
+            Assert.True(
+                log.Errors == 0,
+                "Run was not successful. Errors:" + log.ShowErrors());
+
+            Assert.Equal(string.Empty, log.ShowErrors());
         }
 
         /// <summary>
@@ -201,9 +286,9 @@ namespace NuGet.XPlat.FuncTest
                 "delete",
                 packageId,
                 packageVersion,
-                "--source",
+                Param_Source,
                 sourceUri,
-                "--api-key",
+                Param_ApiKey,
                 apiKey,
                 "--non-interactive"
             };
