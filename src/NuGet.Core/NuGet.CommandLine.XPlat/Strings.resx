@@ -782,4 +782,8 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="Error_CentralPackageVersions_MissingPackageVersion" xml:space="preserve">
     <value>The PackageReference items {0} do not have corresponding PackageVersion.</value>
   </data>
+  <data name="Error_CentralPackageVersions_VersionOverrideDisabled" xml:space="preserve">
+    <value>The package reference {0} specifies a VersionOverride but the ability to override a centrally defined version is currently disabled.</value>
+    <comment>0 - packagereference name</comment>
+  </data>
 </root>
