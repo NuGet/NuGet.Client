@@ -139,10 +139,9 @@ namespace NuGet.CommandLine.XPlat
                 // Emit a error if VersionOverride was specified for a package reference but that functionality is disabled
                 foreach (var item in dependenciesWithVersionOverride)
                 {
-                    //await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1013, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionOverrideDisabled, item.Name)));
+                    packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionOverrideDisabled, string.Join(";", dependenciesWithVersionOverride.Select(d => d.Name))));
+                    return false;
                 }
-
-                return false;
             }
 
             // The dependencies should not have versions explicitly defined if cpvm is enabled.
