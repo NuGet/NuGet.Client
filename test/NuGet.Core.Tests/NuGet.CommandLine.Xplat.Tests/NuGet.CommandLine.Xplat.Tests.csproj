@@ -21,7 +21,7 @@
       <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
       <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
       <PackageReference Include="Microsoft.Build.Locator" />
-      <PackageReference Include="System.Memory" Version="4.5.5" />
+      <PackageReference Include="System.Memory" />
   </ItemGroup>
   
   <Import Project="$(BuildCommonDirectory)common.targets" />
