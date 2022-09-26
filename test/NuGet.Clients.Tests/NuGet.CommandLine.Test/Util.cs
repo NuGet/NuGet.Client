@@ -310,6 +310,7 @@ namespace NuGet.CommandLine.Test
             return projectFile;
         }
 
+        // TODO: Remove CreateFile methods from this utility class. Will require changes to all classes in NuGet.CommandLine.Test.
         /// <summary>
         /// Creates a file with the specified content.
         /// </summary>

@@ -95,7 +95,8 @@ namespace NuGet.Commands
             bool skipDuplicate,
             ILogger logger)
         {
-            return Run(settings: settings,
+            return Run(
+                settings: settings,
                 sourceProvider: sourceProvider,
                 packagePaths: new[] { packagePath },
                 source: source,

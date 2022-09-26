@@ -129,6 +129,31 @@ namespace NuGet.Test.Utility
             return Path.Combine(ArtifactDir, "VS15");
         }
 
+        /// <summary>
+        /// Creates a file with the specified content.
+        /// </summary>
+        /// <param name="directory">The directory of the created file.</param>
+        /// <param name="fileName">The name of the created file.</param>
+        /// <param name="fileContent">The content of the created file.</param>
+        public static void CreateFile(string directory, string fileName, string fileContent)
+        {
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var fileFullName = Path.Combine(directory, fileName);
+            CreateFile(fileFullName, fileContent);
+        }
+
+        public static void CreateFile(string fileFullName, string fileContent)
+        {
+            using (var writer = new StreamWriter(fileFullName))
+            {
+                writer.Write(fileContent);
+            }
+        }
+
         public static bool DeleteRandomTestFolder(string randomTestPath)
         {
             // Avoid cleaning up test folders if 
