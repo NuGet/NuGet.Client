@@ -146,7 +146,7 @@ namespace NuGet.VisualStudio.Telemetry
         /// </summary>
         public static bool IsVsOfflineFeed(PackageSource source)
         {
-            return IsVsOfflineFeed(source, ExpectedVsOfflinePackagesPath.Value);
+            return IsVsOfflineFeed(source, ExpectedVsOfflinePackagesPathX86.Value) || IsVsOfflineFeed(source, ExpectedVsOfflinePackagesPath.Value);
         }
 
         internal static bool IsVsOfflineFeed(PackageSource source, string expectedVsOfflinePackagesPath)
@@ -167,6 +167,16 @@ namespace NuGet.VisualStudio.Telemetry
 
         private static readonly Lazy<string> ExpectedVsOfflinePackagesPath = new Lazy<string>(() =>
         {
+            return ComputeVSOfflineFeedPath(Environment.SpecialFolder.ProgramFiles);
+        });
+
+        private static readonly Lazy<string> ExpectedVsOfflinePackagesPathX86 = new Lazy<string>(() =>
+        {
+            return ComputeVSOfflineFeedPath(Environment.SpecialFolder.ProgramFilesX86);
+        });
+
+        private static string ComputeVSOfflineFeedPath(Environment.SpecialFolder folderPath)
+        {
             if (!RuntimeEnvironmentHelper.IsWindows)
             {
                 return null;
@@ -174,7 +184,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             try
             {
-                var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                var programFiles = Environment.GetFolderPath(folderPath);
                 return Path.Combine(programFiles, "Microsoft SDKs", "NuGetPackages");
             }
             catch
@@ -182,7 +192,7 @@ namespace NuGet.VisualStudio.Telemetry
                 // Ignore this check if we fail for any reason to generate the path.
                 return null;
             }
-        });
+        }
 
         /// <summary>
         /// Converts a collection of timings to a json array formatted string.
