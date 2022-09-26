@@ -1,7 +1,6 @@
 # NuGet OptProf profiling pipeline
 
 trigger: none # Prevents this pipeline from triggering on check-ins
-name: $(Resources.Pipeline.ComponentBuildUnderTest.SourceBranch)_$(Resources.Pipeline.ComponentBuildUnderTest.SourceCommit)
 
 resources:
   pipelines:
@@ -65,6 +64,18 @@ stages:
     preTestMachineConfigurationStepList:
     - powershell: "Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize"
       displayName: 'Print Environment Variables'
+    - powershell: |
+        $branch = $(Resources.Pipeline.ComponentBuildUnderTest.SourceBranch)
+        $refsHead = "refs/head/"
+        if ($branch.StartsWith($refsHead)) {
+          $branch = $branch.SubString($refsHead.Length)
+        }
+        $commit = $(Resources.Pipeline.ComponentBuildUnderTest.SourceCommit)
+
+        $BuildName = "${branch}_${commit}"
+        Write-Host "Settings build name = $BuildName"
+        Write-Host "##vso[build.updatebuildnumber]$BuildName"
+      displayName: 'Set Build Name'
     - download: ComponentBuildUnderTest
       artifact: BuildInfo
       displayName: 'Download buildinfo.json'
