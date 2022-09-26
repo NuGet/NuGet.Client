@@ -1,6 +1,7 @@
 # NuGet OptProf profiling pipeline
 
 trigger: none # Prevents this pipeline from triggering on check-ins
+name: $(Resources.Pipeline.ComponentBuildUnderTest.SourceBranch)_$(Resources.Pipeline.ComponentBuildUnderTest.SourceCommit)
 
 resources:
   pipelines:
