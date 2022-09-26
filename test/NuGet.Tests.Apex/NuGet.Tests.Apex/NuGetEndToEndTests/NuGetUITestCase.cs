@@ -3,10 +3,13 @@
 
 using System;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.Test.Apex.VisualStudio.Solution;
+using NuGet.StaFact;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
@@ -508,6 +511,39 @@ namespace NuGet.Tests.Apex
                 Timeout,
                 Interval,
                 $"{file.FullName} still existed after {Timeout}.");
+        }
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetWebSiteTemplates))]
+        public void InstallPackageToWebSiteFromUI(ProjectTemplate projectTemplate, ProjectTargetFramework targetFramework, string packageName, string packageVersion)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, targetFramework, packageName);
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var nugetTestService = GetNuGetTestService();
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(packageName, packageVersion);
+
+            // Assert
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, packageName, packageVersion, XunitLogger);
+        }
+
+        public static IEnumerable<object[]> GetWebSiteTemplates()
+        {
+            yield return new object[] { ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "log4net", "2.0.13" };
+            yield return new object[] { ProjectTemplate.WebSite, ProjectTargetFramework.V48, "Log4Net.Async", "2.0.3" };
+            yield return new object[] { ProjectTemplate.WebSiteWCF, ProjectTargetFramework.V48, "log4net.Ext.Json", "2.0.9.1" };
+            yield return new object[] { ProjectTemplate.WebSiteDynamicDataEntityFramework, ProjectTargetFramework.V48, "log4net", "2.0.13" };
+            yield return new object[] { ProjectTemplate.WebSiteDynamicDataLinqToSql, ProjectTargetFramework.V45, "Log4Net.Async", "2.0.3" };
         }
     }
 }
