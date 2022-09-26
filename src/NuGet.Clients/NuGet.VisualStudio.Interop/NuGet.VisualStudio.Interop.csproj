@@ -4,7 +4,6 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Shipping>true</Shipping>
-    <Pack>true</Pack>
     <IncludeInVsix>true</IncludeInVsix>
     <Description>NuGet's Visual Studio client Template Wizard interop implementation.</Description>
     <RootNamespace>NuGet.VisualStudio</RootNamespace>
