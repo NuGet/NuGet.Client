@@ -13,7 +13,8 @@ namespace NuGet.Protocol.Plugins.Tests
     {
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings()
         {
-            DateParseHandling = DateParseHandling.None
+            DateParseHandling = DateParseHandling.None,
+            MaxDepth = 128
         };
 
         internal JObject VerifyOuterMessageAndReturnInnerMessage(IPluginLogMessage logMessage, DateTimeOffset expectedNow, string expectedType)

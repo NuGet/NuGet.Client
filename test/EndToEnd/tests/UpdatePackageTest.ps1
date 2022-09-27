@@ -48,7 +48,7 @@ function Test-UpdatingPackageWithPackageSaveModeNuspec {
         Assert-Package $p Castle.Core 1.2.0
 
         # Act
-        Update-Package Castle.Core
+        Update-Package Castle.Core -Version 4.4.1
 
         # Assert
         # Assert-Package $p Castle.Core 2.5.1

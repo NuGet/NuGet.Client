@@ -20,6 +20,7 @@ namespace NuGet.Build.Tasks
         {
             DefaultValueHandling = DefaultValueHandling.Ignore,
             NullValueHandling = NullValueHandling.Ignore,
+            MaxDepth = 128
         };
 
         /// <inheritdoc cref="BuildMessageEventArgs.Code" />

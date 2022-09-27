@@ -282,7 +282,7 @@ function Test-TabExpansionForVersionForUninstallPackage {
     # Arrange
     $p = New-WebApplication
     $p | Install-Package elmah -Version 1.1
-    $p | Install-Package Moq
+    $p | Install-Package Moq -Version 4.17.2
 
     # Act
     $suggestion = TabExpansion "Uninstall-Package elmah -Version "
