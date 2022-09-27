@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
@@ -13,6 +14,9 @@ namespace NuGet.Protocol
 {
     public class HttpSourceResourceProvider : ResourceProvider
     {
+#if IS_DESKTOP
+        private const int DefaultMaxHttpRequestsPerSource = 64;
+#endif
         // Only one HttpSource per source should exist. This is to reduce the number of TCP connections.
         private readonly ConcurrentDictionary<PackageSource, HttpSourceResource> _cache
             = new ConcurrentDictionary<PackageSource, HttpSourceResource>();
@@ -47,6 +51,12 @@ namespace NuGet.Protocol
                 {
                     throttle = SemaphoreSlimThrottle.CreateSemaphoreThrottle(source.PackageSource.MaxHttpRequestsPerSource);
                 }
+#if IS_DESKTOP
+                else if (ServicePointManager.DefaultConnectionLimit == ServicePointManager.DefaultPersistentConnectionLimit)
+                {
+                    source.PackageSource.MaxHttpRequestsPerSource = DefaultMaxHttpRequestsPerSource;
+                }
+#endif
 
                 curResource = _cache.GetOrAdd(
                     source.PackageSource,

@@ -48,6 +48,13 @@ namespace NuGet.Protocol
                 AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
             };
 
+#if IS_DESKTOP
+            if (packageSource.MaxHttpRequestsPerSource > 0)
+            {
+                clientHandler.MaxConnectionsPerServer = packageSource.MaxHttpRequestsPerSource;
+            }
+#endif
+
             // Setup http client handler client certificates
             if (packageSource.ClientCertificates != null)
             {
