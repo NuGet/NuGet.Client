@@ -11,8 +11,9 @@ namespace Test.Utility
 {
     public class TestContent : HttpContent
     {
+#pragma warning disable CA2213
         private MemoryStream _stream;
-
+#pragma warning restore CA2213
         public TestContent(string s)
         {
             _stream = new MemoryStream(Encoding.UTF8.GetBytes(s));
