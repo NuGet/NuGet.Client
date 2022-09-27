@@ -63,8 +63,9 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                UILanguageOverride.Setup();
+                UILanguageOverride.Setup(log);
             }
+            log.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Debug_CurrentUICulture, CultureInfo.DefaultThreadCurrentUICulture));
 
             var app = InitializeApp(args, log);
 

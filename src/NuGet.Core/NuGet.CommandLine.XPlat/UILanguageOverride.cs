@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -14,9 +15,15 @@ namespace NuGet.CommandLine.XPlat
         private const string DOTNET_CLI_UI_LANGUAGE = nameof(DOTNET_CLI_UI_LANGUAGE);
         private const string VSLANG = nameof(VSLANG);
         private const string PreferredUILang = nameof(PreferredUILang);
+        private static ILogger Logger;
 
-        public static void Setup()
+        public static void Setup(ILogger logger)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+            Logger = logger;
             CultureInfo language = GetOverriddenUILanguage();
             if (language != null)
             {
@@ -48,7 +55,10 @@ namespace NuGet.CommandLine.XPlat
                 {
                     return new CultureInfo(dotnetCliLanguage);
                 }
-                catch (CultureNotFoundException) { }
+                catch (CultureNotFoundException)
+                {
+                    Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidCultureInfo, DOTNET_CLI_UI_LANGUAGE, dotnetCliLanguage));
+                }
             }
 
             // VSLANG=<lcid> is set by VS and we respect that as well so that we will respect the VS 
@@ -60,8 +70,10 @@ namespace NuGet.CommandLine.XPlat
                 {
                     return new CultureInfo(vsLcid);
                 }
-                catch (ArgumentOutOfRangeException) { }
-                catch (CultureNotFoundException) { }
+                catch (Exception e) when (e is CultureNotFoundException || e is ArgumentOutOfRangeException)
+                {
+                    Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidCultureInfo, VSLANG, vsLang));
+                }
             }
 
             return null;

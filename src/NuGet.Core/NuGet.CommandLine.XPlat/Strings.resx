@@ -753,4 +753,12 @@ The search is a case-insensitive string comparison using the supplied value, whi
 Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.</value>
     <comment>0 - The command name. Ex. Push/Delete. 1 - list of server uris</comment>
   </data>
+  <data name="Debug_CurrentUICulture" xml:space="preserve">
+    <value>DefaultThreadCurrentUICulture value: {0}</value>
+    <comment>0 - Value of CultureInfo.DefaultThreadCurrentUICulture</comment>
+  </data>
+  <data name="Error_InvalidCultureInfo" xml:space="preserve">
+    <value>Invalid culture in {0} environment variable. Value read is '{1}'</value>
+    <comment>0 - Environment variable name, 1 - value set in environment variable</comment>
+  </data>
 </root>
