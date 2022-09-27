@@ -25,7 +25,10 @@ namespace NuGet.Protocol
         private readonly HttpClientHandler _clientHandler;
         private readonly ICredentialService _credentialService;
 
+#pragma warning disable CA2213
+        // TODO: https://github.com/NuGet/Home/issues/12116
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
+#pragma warning restore CA2213
         private Dictionary<string, AmbientAuthenticationState> _authStates = new Dictionary<string, AmbientAuthenticationState>();
         private HttpSourceCredentials _credentials;
 
