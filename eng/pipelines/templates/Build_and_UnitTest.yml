@@ -325,7 +325,7 @@ steps:
 - task: MicroBuildBuildVSBootstrapper@2
   displayName: 'Build a Visual Studio bootstrapper'
   inputs:
-    channelName: "$(VsTargetChannel)"
+    channelName: "$(VsTargetChannelForTests)"
     vsMajorVersion: "$(VsTargetMajorVersion)"
     manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
     outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
@@ -340,7 +340,7 @@ steps:
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PowerShell@1
-  displayName: "Set Bootstrapper URL variable"
+  displayName: "Set Bootstrapper URL variable for tests"
   name: "vsbootstrapper"
   inputs:
     scriptType: "inlineScript"

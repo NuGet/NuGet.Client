@@ -173,6 +173,8 @@ else
     $newBuildCounter = $BuildNumber
     $VsTargetBranch = & dotnet msbuild $RepositoryPath\build\config.props /v:m /nologo /t:GetVsTargetBranch
     $NuGetSdkVsVersion = & dotnet msbuild $RepositoryPath\build\config.props /v:m /nologo /t:GetNuGetSdkVsSemanticVersion
+    $VsTargetChannel = & dotnet msbuild $RepositoryPath\build\config.props /v:m /nologo /t:GetVsTargetChannel
+    $VsTargetMajorVersion = & dotnet msbuild $RepositoryPath\build\config.props /v:m /nologo /t:GetVsTargetMajorVersion
     Write-Host "VS target branch: $VsTargetBranch"
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
@@ -181,6 +183,8 @@ else
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
         LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
         VsTargetBranch = $VsTargetBranch.Trim()
+        VsTargetChannel = $VstargetChannel.Trim()
+        VsTargetMajorVersion = $VsTargetMajorVersion.Trim()
         NuGetSdkVsVersion = $NuGetSdkVsVersion.Trim()
     }
 
