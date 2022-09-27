@@ -98,7 +98,8 @@ namespace NuGet.Packaging
         {
             var settings = new JsonSerializerSettings()
             {
-                Formatting = Formatting.Indented
+                Formatting = Formatting.Indented,
+                MaxDepth = 128
             };
             settings.Converters.Add(NupkgMetadataConverter.Default);
             return settings;

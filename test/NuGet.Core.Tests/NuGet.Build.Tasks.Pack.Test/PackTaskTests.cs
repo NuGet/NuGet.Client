@@ -366,7 +366,8 @@ namespace NuGet.Build.Tasks.Pack.Test
             var settings = new JsonSerializerSettings
             {
                 ContractResolver = new OrderedContractResolver(),
-                Formatting = Formatting.Indented
+                Formatting = Formatting.Indented,
+                MaxDepth = 128
             };
 
             var jsonModelBefore = JObject.FromObject(target, JsonSerializer.Create(settings));

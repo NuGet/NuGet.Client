@@ -30,7 +30,8 @@ namespace NuGet.Protocol.Plugins
                     new VersionRangeConverter()
                 },
                 Formatting = Formatting.None,
-                NullValueHandling = NullValueHandling.Ignore
+                NullValueHandling = NullValueHandling.Ignore,
+                MaxDepth = 128
             });
         }
 
