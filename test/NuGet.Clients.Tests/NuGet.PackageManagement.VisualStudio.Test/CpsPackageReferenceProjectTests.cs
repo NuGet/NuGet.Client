@@ -3810,59 +3810,46 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (var rootDir = new SimpleTestPathContext())
             {
                 // Setup
-                var projectName = "project1";
-                string projectFullPath = Path.Combine(rootDir.SolutionRoot, projectName + ".csproj");
-
-                // Project
-                var projectCache = new ProjectSystemCache();
-                IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
-                CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
-
-                ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
-                PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
-
-                // Restore info
-                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-                projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-                projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
-
-                // Package directories
-                var sources = new List<PackageSource>();
-                var packagesDir = new DirectoryInfo(Path.Combine(rootDir.SolutionRoot, "globalPackages"));
-                var packageSource = new DirectoryInfo(rootDir.PackageSource);
-                packagesDir.Create();
-                packageSource.Create();
-                sources.Add(new PackageSource(packageSource.FullName));
-
-                var logger = new TestLogger();
-                var request = new TestRestoreRequest(packageSpec, sources, packagesDir.FullName, logger)
-                {
-                    LockFilePath = Path.Combine(rootDir.SolutionRoot, "project.assets.json")
-                };
-
-                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageB", "1.0.0");
-                await SimpleTestPackageUtility.CreateFullPackageAsync(
-                    packageSource.FullName,
-                    "packageA",
-                    "2.15.3",
-                    new Packaging.Core.PackageDependency[]
-                    {
-                        new Packaging.Core.PackageDependency("packageB", VersionRange.Parse("1.0.0"))
-                    });
-
-                var command = new RestoreCommand(request);
-                RestoreResult result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
 
                 // Act
                 ProjectPackages packages = await project.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
 
                 // Assert
-                Assert.True(result.Success);
                 Assert.NotEmpty(packages.InstalledPackages);
                 Assert.NotEmpty(packages.TransitivePackages);
                 Assert.All(packages.TransitivePackages, pkg => Assert.Empty(pkg.TransitiveOrigins));
             }
+        }
+
+        [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_SimulateBrowseAndSwitchToInstalledTab_InstalledTabCallHasTransitiveOriginsDataAsync()
+        {
+            using var rootDir = new SimpleTestPathContext();
+
+            // Setup
+            IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
+
+            // Act I: Browse Tab: No need of transitive origins data
+            ProjectPackages packagesBrowseTab = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, CancellationToken.None);
+
+            // Assert I: No need of transitive origins data
+            Assert.NotEmpty(packagesBrowseTab.InstalledPackages);
+            Assert.NotEmpty(packagesBrowseTab.TransitivePackages);
+            Assert.All(packagesBrowseTab.TransitivePackages, pkg => Assert.Empty(pkg.TransitiveOrigins));
+
+            // Act II: Suppose we switched to Installed tab, now we need transitive origins data
+            ProjectPackages packagesInstalledTab = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert II: We need transitive data
+            Assert.NotEmpty(packagesInstalledTab.InstalledPackages);
+            Assert.NotEmpty(packagesInstalledTab.TransitivePackages);
+            Assert.All(packagesInstalledTab.TransitivePackages, pkg => Assert.NotEmpty(pkg.TransitiveOrigins));
+        }
+
+        public async Task GetInstalledAndTransitivePackagesAsync_WithNetStandardProjectWithImplicitPackages_ReturnsTransitivePackagesAsync()
+        {
+
         }
 
         private static async Task<IPackageReferenceProject> PrepareTestProjectAsync(SimpleTestPathContext rootDir)
