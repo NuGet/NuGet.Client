@@ -82,7 +82,7 @@ stages:
       displayName: 'Download buildinfo.json'
     - powershell: |
         try {
-          Write-Host "Set VSBranch variable"
+          Write-Host "Set VSBranch, VsTargetChannel &  VsTargetMajorVersion variables"
           $buildInfoJsonFilePath = "$(Pipeline.Workspace)\ComponentBuildUnderTest\BuildInfo\buildinfo.json"
 
           Write-Host "buildinfo.json drop URI:  $buildInfoJsonFilePath"
@@ -105,10 +105,18 @@ stages:
 
           Write-Host "Target Visual Studio branch: $VSBranch"
           Set-AzurePipelinesVariable 'VSBranch' $VSBranch
+
+          $VsTargetChannel = $buildInfoJson.VsTargetChannel
+          Write-Host "Visual Studio target channel: $VsTargetChannel"
+          Set-AzurePipelinesVariable 'VsTargetChannel' $VsTargetChannel
+
+          $VsTargetMajorVersion = $buildInfoJson.VsTargetMajorVersion
+          Write-Host "Visual Studio major version: $VsTargetMajorVersion"
+          Set-AzurePipelinesVariable 'VsTargetMajorVersion' $VsTargetMajorVersion
         }
         catch {
           Write-Host $_
-          Write-Error "Failed to set VSBranch pipeline variable"
+          Write-Error "Failed to set VSBranch, VsTargetChannel &  VsTargetMajorVersion pipeline variables"
           throw
         }
       displayName: 'Set VSBranch variable'
@@ -131,15 +139,23 @@ stages:
         }
       displayName: 'Set RunSettingsURI variable'
       name: SetRunSettingsURI
-    - download: ComponentBuildUnderTest
-      artifact: MicroBuildOutputs
-      patterns: '**\BootstrapperInfo.json'
-      displayName: Download Bootstrapper Information
+    - task: MicroBuildBuildVSBootstrapper@2
+      displayName: 'Build a Visual Studio bootstrapper'
+      inputs:
+        channelName: "$(VsTargetChannel)"
+        vsMajorVersion: "$(VsTargetMajorVersion)"
+        manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
+        outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish BootstrapperInfo.json as a pipeline artifact'
+      inputs:
+        publishLocation: $(Pipeline.Workspace)\MicroBuild\Output
+      condition: succeeded()    
     - task: PowerShell@2
       displayName: Set 'VisualStudio.InstallationUnderTest.BootstrapperURL'
       inputs:
         filePath: $(DartLab.Path)\Scripts\VisualStudio\Bootstrapper\Get-BootstrapperURL.ps1
-        arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\BootstrapperInfo.json' -VSBranch '$(VSBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
+        arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\MicroBuild\Output\MicroBuildOutputs\BootstrapperInfo.json' -VSBranch '$(VSBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
     # Remove this step hook and it's task if you don't want LKG support
     prePublishOptimizationInputsDropStepList:
     # Set parameter for PreviousOptimizationInputsDropName 
