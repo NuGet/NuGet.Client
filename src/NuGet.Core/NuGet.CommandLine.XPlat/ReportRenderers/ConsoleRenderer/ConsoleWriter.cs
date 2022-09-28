@@ -2,63 +2,57 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
+using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
+using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
 {
     internal class ConsoleWriter : IReportRenderer
     {
-        private int _problemCount;
+        protected ListPackageReportModel _listPackageReportModel;
+
+        internal string Parameters { get; private set; }
+
         private ConsoleWriter()
         { }
 
-        public void WriteErrorLine(string errorText, string _)
+        public static ConsoleWriter Instance { get; } = new ConsoleWriter();
+
+        public void AddProblem(string errorText, ProblemType problemType)
         {
-            _problemCount++;
-            Console.Error.WriteLine(errorText);
+            switch (problemType)
+            {
+                case ProblemType.Information:
+                    Console.WriteLine(errorText);
+                    break;
+                case ProblemType.Debug:
+                    Console.WriteLine(errorText);
+                    break;
+                case ProblemType.Warning:
+                    Console.WriteLine(errorText);
+                    break;
+                case ProblemType.Error:
+                    Console.Error.WriteLine(errorText);
+                    break;
+                default:
+                    break;
+            }
         }
 
-        public void Write(string value)
+        public void Write(ListPackageReportModel listPackageReportModel)
         {
-            Console.Write(value);
-        }
-
-        public void WriteLine()
-        {
-            Console.WriteLine();
-        }
-
-        public void WriteLine(string value)
-        {
-            Console.WriteLine(value);
-        }
-
-        public void SetForegroundColor(ConsoleColor consoleColor)
-        {
-            Console.ForegroundColor = consoleColor;
-        }
-
-        public void ResetColor()
-        {
-            Console.ResetColor();
-        }
-
-        public void LogParameters(string parameters)
-        {
-            // do nothing, cli no need to log parameters.
-        }
-
-        public void Write(ReportProject reportProject)
-        {
-            // do nothing, cli already writes data as it goes
+            _listPackageReportModel = listPackageReportModel;
         }
 
         public void End()
         {
-            // do nothing, cli already writes data as it goes
+            //DisplayMessages(_listPackageReportModel.ListPackageArgs);
         }
 
-        public static ConsoleWriter Instance { get; } = new ConsoleWriter();
-
-        public int ExitCode() => _problemCount > 0 ? 1 : 0;
+        public void SetParameters(string parametersText)
+        {
+            Parameters = parametersText;
+        }
     }
 }

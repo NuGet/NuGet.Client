@@ -4,30 +4,29 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
-using NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer;
+using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
     internal static class TableParser
     {
-        internal static (IEnumerable<FormattedCell>, ListPackageReportFrameworkPackage) ToStringTable<T>(
+        internal static IEnumerable<FormattedCell> ToStringTable<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
-          string framework,
+          ListPackageReportFrameworkPackage targetFrameworkPackageMetaData,
           bool printingTransitive,
           ReportOutputFormat reportOutputFormat,
           Func<T, FormattedCell>[] valueSelectors,
           List<Func<T, IEnumerable<FormattedCell>>> vulnerabilityValueSelectors)
         {
-            return ToFormattedStringTable(values.ToArray(), columnHeaders, framework, printingTransitive, reportOutputFormat, valueSelectors, vulnerabilityValueSelectors);
+            return ToFormattedStringTable(values.ToArray(), columnHeaders, targetFrameworkPackageMetaData, printingTransitive, reportOutputFormat, valueSelectors, vulnerabilityValueSelectors);
         }
 
-        internal static (IEnumerable<FormattedCell>, ListPackageReportFrameworkPackage) ToFormattedStringTable<T>(
+        internal static IEnumerable<FormattedCell> ToFormattedStringTable<T>(
           this T[] values,
           string[] columnHeaders,
-          string framework,
+          ListPackageReportFrameworkPackage targetFrameworkPackageMetaData,
           bool printingTransitive,
           ReportOutputFormat reportOutputFormat,
           Func<T, FormattedCell>[] valueSelectors,
@@ -117,8 +116,6 @@ namespace NuGet.CommandLine.XPlat.Utility
                                 break;
                             case ReportPackageColumn.AlternatePackage:
                                 break;
-                            case ReportPackageColumn.Vulnerabilities:
-                                break;
                             case ReportPackageColumn.VulnerabilitySeverity:
                                 break;
                             case ReportPackageColumn.VulnerabilityAdvisoryurl:
@@ -155,8 +152,6 @@ namespace NuGet.CommandLine.XPlat.Utility
                             case ReportPackageColumn.Deprecated:
                                 break;
                             case ReportPackageColumn.AlternatePackage:
-                                break;
-                            case ReportPackageColumn.Vulnerabilities:
                                 break;
                             case ReportPackageColumn.VulnerabilitySeverity:
                                 break;
@@ -198,7 +193,16 @@ namespace NuGet.CommandLine.XPlat.Utility
                 }
             }
 
-            return (ToPaddedStringTable(stringTable), new ListPackageReportFrameworkPackage(framework, topLevelPackages, transitivePackages));
+            if (printingTransitive)
+            {
+                targetFrameworkPackageMetaData.TransitivePackages = transitivePackages;
+            }
+            else
+            {
+                targetFrameworkPackageMetaData.TopLevelPackages = topLevelPackages;
+            }
+
+            return ToPaddedStringTable(stringTable);
         }
 
         internal static IEnumerable<FormattedCell> ToPaddedStringTable(IEnumerable<ICollection<FormattedCell>> values)

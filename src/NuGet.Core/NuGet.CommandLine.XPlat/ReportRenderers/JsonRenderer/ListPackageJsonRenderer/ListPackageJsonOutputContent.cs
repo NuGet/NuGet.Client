@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 {
@@ -9,8 +10,8 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
     {
         internal int Version { get; set; } = ListPackageJsonOutputSerializer.Version;
         internal string Parameters { get; set; }
+        internal ListPackageArgs ListPackageArgs { get; set; }
         internal List<ReportProblem> Problems { get; set; }
-        internal List<string> Sources { get; set; }
-        internal List<ListPackageReportProject> Projects { get; set; }
+        internal List<ListPackageProjectDetails> Projects { get; set; }
     }
 }

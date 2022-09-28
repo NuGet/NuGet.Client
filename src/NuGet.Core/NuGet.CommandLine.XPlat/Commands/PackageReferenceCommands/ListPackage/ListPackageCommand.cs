@@ -10,6 +10,8 @@ using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.CommandLine.XPlat.Enums;
 using NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer;
+using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
+using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
 using NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer;
 using NuGet.Commands;
 using NuGet.Common;
@@ -133,6 +135,8 @@ namespace NuGet.CommandLine.XPlat
 
                     (IReportRenderer reportRenderer, ReportOutputFormat reportOutputFormat) = GetOutputType(outputFormat.Value(), outputVersionOption: outputVersion.Value());
 
+                    reportRenderer.SetParameters(string.Join(" ", args).Trim());
+
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
                         packageSources,
@@ -147,16 +151,12 @@ namespace NuGet.CommandLine.XPlat
                         logger,
                         CancellationToken.None);
 
-                    DisplayMessages(packageRefArgs);
-
-                    if (reportOutputFormat == ReportOutputFormat.Json)
-                    {
-                        JsonRendererLogParameters(reportRenderer, args);
-                    }
+                    DisplayMessages(packageRefArgs, reportRenderer);
 
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
                     var listPackageCommandRunner = getCommandRunner();
+
                     return await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
                 });
             });
@@ -209,7 +209,7 @@ namespace NuGet.CommandLine.XPlat
             if (!string.IsNullOrEmpty(outputVersionOption) && !currentlySupportedReportVersions.Contains(outputVersionOption))
             {
                 jsonReportRenderer = new ListPackageJsonRendererV1();
-                jsonReportRenderer.WriteErrorLine(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions), project: null);
+                jsonReportRenderer.AddProblem(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions), ProblemType.Warning);
             }
             else
             {
@@ -219,13 +219,12 @@ namespace NuGet.CommandLine.XPlat
             return (jsonReportRenderer, ReportOutputFormat.Json);
         }
 
-
-        private static void DisplayMessages(ListPackageArgs packageRefArgs)
+        private static void DisplayMessages(ListPackageArgs packageRefArgs, IReportRenderer reportRenderer)
         {
             if (packageRefArgs.ReportType != ReportType.Outdated &&
                 (packageRefArgs.Prerelease || packageRefArgs.HighestMinor || packageRefArgs.HighestPatch))
             {
-                packageRefArgs.Renderer.WriteLine(Strings.ListPkg_VulnerableIgnoredOptions);
+                reportRenderer.AddProblem(Strings.ListPkg_VulnerableIgnoredOptions, ProblemType.Warning);
             }
         }
 
@@ -277,17 +276,6 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return packageSources;
-        }
-
-        private static void JsonRendererLogParameters(
-            IReportRenderer reportRenderer,
-            string[] args)
-        {
-            if (reportRenderer is ListPackageJsonRenderer jsonRenderer)
-            {
-                // Do we need to escape args?
-                jsonRenderer.LogParameters(parameters: string.Join(" ", args));
-            }
         }
     }
 }

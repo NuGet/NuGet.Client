@@ -3,90 +3,51 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
+using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
+using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 {
     internal abstract class ListPackageJsonRenderer : IReportRenderer
     {
         protected readonly List<ReportProblem> _problems = new();
-        protected readonly List<string> _sources = new();
-        protected readonly List<ListPackageReportProject> _projects = new();
+        protected ListPackageReportModel _listPackageReportModel;
         protected ReportOutputVersion OutputVersion { get; private set; }
-
-        protected string _parameters = string.Empty;
+        internal string Parameters { get; private set; }
 
         protected ListPackageJsonRenderer(ReportOutputVersion outputVersion)
         {
             OutputVersion = outputVersion;
         }
 
-        public void WriteErrorLine(string errorText, string project)
+        public void AddProblem(string errorText, ProblemType problemType)
         {
-            _problems.Add(new ReportProblem(project, errorText));
+            _problems.Add(new ReportProblem(string.Empty, errorText, problemType));
         }
 
-        public void Write(string value)
+        public void Write(ListPackageReportModel listPackageReportModel)
         {
-            // do nothing
-        }
-
-        public void WriteLine()
-        {
-            // do nothing
-        }
-
-        public void WriteLine(string value)
-        {
-            // do nothing
-        }
-
-        public void SetForegroundColor(ConsoleColor consoleColor)
-        {
-            // do nothing
-        }
-
-        public void ResetColor()
-        {
-            // do nothing
-        }
-
-        public void LogParameters(string parameters)
-        {
-            if (string.IsNullOrEmpty(parameters))
-            {
-                _parameters = parameters;
-            }
-        }
-
-        public void Write(ReportProject reportProject)
-        {
-            if (reportProject is ListPackageReportProject listPackageReportProject)
-            {
-                _projects.Add(listPackageReportProject);
-            }
+            _listPackageReportModel = listPackageReportModel;
         }
 
         public void End()
         {
-            try
+            string jsonRenderedOutput = ListPackageJsonOutputSerializer.Render(new ListPackageJsonOutputContent()
             {
-                string jsonRenderedOutput = ListPackageJsonOutputSerializer.Render(new ListPackageJsonOutputContent()
-                {
-                    Parameters = _parameters,
-                    Problems = _problems,
-                    Projects = _projects,
-                    Sources = _sources
-                });
+                ListPackageArgs = _listPackageReportModel.ListPackageArgs,
+                Parameters = Parameters,
+                // Todo
+                //Problems = _listPackageReportModel.Errors,
+                Projects = _listPackageReportModel.Projects,
+            });
 
-                Console.WriteLine(jsonRenderedOutput);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                _problems.Add(new ReportProblem(string.Empty, ex.Message));
-            }
+            Console.WriteLine(jsonRenderedOutput);
         }
 
-        public int ExitCode() => _problems.Count > 0 ? 1 : 0;
+        public void SetParameters(string parametersText)
+        {
+            Parameters = parametersText;
+        }
     }
 }

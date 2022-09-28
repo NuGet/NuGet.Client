@@ -2,35 +2,32 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Security.Permissions;
 using NuGet.Protocol;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
+namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
 {
     internal class ListPackageReportFrameworkPackage
     {
         internal string FrameWork { get; set; }
+        internal bool AutoReference { get; set; }
         internal List<TopLevelPackage> TopLevelPackages { get; set; }
         internal List<TransitivePackage> TransitivePackages { get; set; }
-        public ListPackageReportFrameworkPackage(string frameWork, List<TopLevelPackage> topLevelPackages, List<TransitivePackage> transitivePackages)
+        public ListPackageReportFrameworkPackage(string frameWork)
         {
             FrameWork = frameWork;
-            TopLevelPackages = topLevelPackages;
-            TransitivePackages = transitivePackages;
         }
     }
 
     internal class TopLevelPackage
     {
         internal string PackageId { get; set; }
-        internal string AutoReference { get; set; }
         internal string RequestedVersion { get; set; }
         internal string ResolvedVersion { get; set; }
         internal string LatestVersion { get; set; }
-        internal List<string> DeprecationReasons { get; set; }
-        //public TopLevelPackage(string packageId)
-        //{
-        //    PackageId = packageId;
-        //}
+        public List<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
+        internal string DeprecationReasons { get; set; }
+        internal string AlternativePackage { get; set; }
     }
 
     internal class TransitivePackage
@@ -38,7 +35,8 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
         internal string PackageId { get; set; }
         internal string ResolvedVersion { get; set; }
         internal string LatestVersion { get; set; }
+        public List<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
         internal string DeprecationReasons { get; set; }
-        internal AlternatePackageMetadata AlternativePackage { get; set; }
+        internal string AlternativePackage { get; set; }
     }
 }

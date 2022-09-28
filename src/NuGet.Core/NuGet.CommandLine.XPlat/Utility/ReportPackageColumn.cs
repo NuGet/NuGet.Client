@@ -23,8 +23,6 @@ namespace NuGet.CommandLine.XPlat.Utility
         Deprecated,
         [Description("Alternate Package")]
         AlternatePackage,
-        [Description("Vulnerabilities")]
-        Vulnerabilities,
         [Description("Severity")]
         VulnerabilitySeverity,
         [Description("Advisoryurl")]

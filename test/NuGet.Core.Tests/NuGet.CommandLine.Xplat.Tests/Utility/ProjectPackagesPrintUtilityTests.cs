@@ -8,6 +8,7 @@ using System.Threading;
 using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer;
+using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -32,7 +33,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             {
                 // Act
                 var autoReferenceFound = false;
-                (IEnumerable<FormattedCell> report, _) = ProjectPackagesPrintUtility.BuildPackagesTable(packageRefs, "net5.0", printingTransitive, ReportOutputFormat.Console, pkgArgs, ref autoReferenceFound);
+                IEnumerable<FormattedCell> report = ProjectPackagesPrintUtility.BuildPackagesTable(packageRefs, printingTransitive, ReportOutputFormat.Console, pkgArgs, new ListPackageReportFrameworkPackage("net5.0"), ref autoReferenceFound);
 
                 // Assert
                 var reportArr = report.ToArray();
