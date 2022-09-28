@@ -38,6 +38,7 @@ namespace NuGet.ProjectManagement
         public const string RestoreAdditionalProjectFallbackFoldersExcludes = nameof(RestoreAdditionalProjectFallbackFoldersExcludes);
         public const string NoWarn = nameof(NoWarn);
         public const string WarningsAsErrors = nameof(WarningsAsErrors);
+        public const string WarningsNotAsErrors = nameof(WarningsNotAsErrors);
         public const string TreatWarningsAsErrors = nameof(TreatWarningsAsErrors);
         public const string DotnetCliToolTargetFramework = nameof(DotnetCliToolTargetFramework);
         public const string RestorePackagesWithLockFile = nameof(RestorePackagesWithLockFile);

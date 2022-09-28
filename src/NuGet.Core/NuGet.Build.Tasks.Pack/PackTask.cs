@@ -70,6 +70,7 @@ namespace NuGet.Build.Tasks.Pack
         public string NoWarn { get; set; }
         public string TreatWarningsAsErrors { get; set; }
         public string WarningsAsErrors { get; set; }
+        public string WarningsNotAsErrors { get; set; }
         public string PackageLicenseExpression { get; set; }
         public string PackageLicenseFile { get; set; }
         public string PackageLicenseExpressionVersion { get; set; }
@@ -202,6 +203,7 @@ namespace NuGet.Build.Tasks.Pack
                 TreatWarningsAsErrors = MSBuildStringUtility.TrimAndGetNullForEmpty(TreatWarningsAsErrors),
                 NoWarn = MSBuildStringUtility.TrimAndGetNullForEmpty(NoWarn),
                 WarningsAsErrors = MSBuildStringUtility.TrimAndGetNullForEmpty(WarningsAsErrors),
+                WarningsNotAsErrors = MSBuildStringUtility.TrimAndGetNullForEmpty(WarningsNotAsErrors),
                 PackageLicenseExpression = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseExpression),
                 PackageLicenseFile = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseFile),
                 PackageLicenseExpressionVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseExpressionVersion),

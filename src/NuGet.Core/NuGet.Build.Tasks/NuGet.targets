@@ -209,6 +209,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       MSBuildProjectFullPath="$(MSBuildProjectFullPath)"
       TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
       WarningsAsErrors="$(WarningsAsErrors)"
+      WarningsNotAsErrors="$(WarningsNotAsErrors)"
       NoWarn="$(NoWarn)"
       ContinueOnError="$(CollectPackageReferencesContinueOnError)"
       >
@@ -252,6 +253,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       MSBuildProjectFullPath="$(MSBuildProjectFullPath)"
       TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
       WarningsAsErrors="$(WarningsAsErrors)"
+      WarningsNotAsErrors="$(WarningsNotAsErrors)"
       NoWarn="$(NoWarn)"
       ContinueOnError="$(CollectCentralPackageVersionsContinueOnError)"
       >
@@ -288,6 +290,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       MSBuildProjectFullPath="$(MSBuildProjectFullPath)"
       TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
       WarningsAsErrors="$(WarningsAsErrors)"
+      WarningsNotAsErrors="$(WarningsNotAsErrors)"
       NoWarn="$(NoWarn)"
       ContinueOnError="$(CollectPackageDownloadsContinueOnError)"
       >
@@ -839,6 +842,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
         <TreatWarningsAsErrors>$(TreatWarningsAsErrors)</TreatWarningsAsErrors>
         <WarningsAsErrors>$(WarningsAsErrors)</WarningsAsErrors>
+        <WarningsNotAsErrors>$(WarningsNotAsErrors)</WarningsNotAsErrors>
         <NoWarn>$(NoWarn)</NoWarn>
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>

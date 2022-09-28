@@ -39,7 +39,7 @@ namespace NuGet.Commands
             if (!IsWarningSuppressed(message))
             {
                 // if the message is not suppressed then check if it needs to be upgraded to an error
-                UpgradeWarningToErrorIfNeeded(message);
+                UpgradeWarningToErrorIfNeeded(message); // What's the precedence for WarnAsError and WarnNotAsError in other components?
 
                 if (CollectMessage(message.Level))
                 {
