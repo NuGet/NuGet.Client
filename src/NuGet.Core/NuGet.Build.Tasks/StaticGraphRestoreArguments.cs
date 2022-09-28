@@ -85,7 +85,7 @@ namespace NuGet.Build.Tasks
 
             fileInfo.Directory.Create();
 
-            using FileStream stream = File.OpenWrite(argumentFilePath);
+            using FileStream stream = File.Create(argumentFilePath);
 
             Write(stream);
         }
