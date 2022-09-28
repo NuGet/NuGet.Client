@@ -3913,7 +3913,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             await CreatePackagesAsync(rootDir);
             IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
             List<Task> tasks = new List<Task>();
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 5; i++)
             {
                 tasks.Add(TestTransitiveOriginsAlternateAsync(project));
             }
