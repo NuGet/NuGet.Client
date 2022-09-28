@@ -132,10 +132,11 @@ namespace NuGet.CommandLine.XPlat
             string directoryPackagesPropsPath = project.GetPropertyValue(DirectoryPackagesPropsPathPropertyName);
 
             // Get VersionOverride if it exisits in the package reference.
-            IEnumerable<LibraryDependency> dependenciesWithVersionOverride = packageSpec.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.AutoReferenced && d.VersionOverride != null));
+            IEnumerable<LibraryDependency> dependenciesWithVersionOverride = null;
 
             if (packageSpec.RestoreMetadata.CentralPackageVersionOverrideDisabled)
             {
+                dependenciesWithVersionOverride = packageSpec.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.AutoReferenced && d.VersionOverride != null));
                 // Emit a error if VersionOverride was specified for a package reference but that functionality is disabled
                 foreach (var item in dependenciesWithVersionOverride)
                 {
@@ -188,7 +189,7 @@ namespace NuGet.CommandLine.XPlat
 
             ProjectItem packageReference = project.Items.Where(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.PackageId)).LastOrDefault();
             ProjectItem packageVersionInProps = packageVersions.LastOrDefault();
-            var versionOverride = dependenciesWithVersionOverride.FirstOrDefault(d => d.Name.Equals(packageReferenceArgs.PackageId));
+            var versionOverride = dependenciesWithVersionOverride?.FirstOrDefault(d => d.Name.Equals(packageReferenceArgs.PackageId));
 
             // If package reference exists and the user defined a VersionOverride or PackageVersions but didn't specified a version, no-op
             if (packageReference != null && (versionOverride != null || packageVersionInProps != null) && packageReferenceArgs.NoVersion)
