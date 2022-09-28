@@ -50,7 +50,7 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/12122")]
         public async Task GetOrCreateAsync_WithUnhandledExceptionInPlugin_Throws()
         {
             using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
