@@ -32,6 +32,7 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common.Test;
 using Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -3810,24 +3811,148 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (var rootDir = new SimpleTestPathContext())
             {
                 // Setup
-                IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
+                var projectName = "project1";
+                string projectFullPath = Path.Combine(rootDir.SolutionRoot, projectName + ".csproj");
+
+                // Project
+                var projectCache = new ProjectSystemCache();
+                IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
+                CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+
+                ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+                PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
+
+                // Restore info
+                DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+                projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+                projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+
+                // Package directories
+                var sources = new List<PackageSource>();
+                var packagesDir = new DirectoryInfo(Path.Combine(rootDir.SolutionRoot, "globalPackages"));
+                var packageSource = new DirectoryInfo(rootDir.PackageSource);
+                packagesDir.Create();
+                packageSource.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(packageSpec, sources, packagesDir.FullName, logger)
+                {
+                    LockFilePath = Path.Combine(rootDir.SolutionRoot, "project.assets.json")
+                };
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageB", "1.0.0");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(
+                    packageSource.FullName,
+                    "packageA",
+                    "2.15.3",
+                    new Packaging.Core.PackageDependency[]
+                    {
+                        new Packaging.Core.PackageDependency("packageB", VersionRange.Parse("1.0.0"))
+                    });
+
+                var command = new RestoreCommand(request);
+                RestoreResult result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Act
                 ProjectPackages packages = await project.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
 
                 // Assert
+                Assert.True(result.Success);
                 Assert.NotEmpty(packages.InstalledPackages);
                 Assert.NotEmpty(packages.TransitivePackages);
                 Assert.All(packages.TransitivePackages, pkg => Assert.Empty(pkg.TransitiveOrigins));
             }
         }
 
+        internal static async Task<IPackageReferenceProject> PrepareTestProjectAsync(SimpleTestPathContext rootDir, ITestOutputHelper output = null, string projectName = "project1")
+        {
+            // Setup
+            string projectDir = Path.Combine(rootDir.SolutionRoot, projectName);
+            string projectFullPath = Path.Combine(projectDir, projectName + ".csproj");
+            Directory.CreateDirectory(projectDir);
+
+            // Project
+            var projectCache = new ProjectSystemCache();
+            CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+
+            ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+            PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.15.3, )");
+
+            // Restore info
+            DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+            projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+            IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
+            projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+
+            var logger = output == null ? new TestLogger() : new TestLogger(output);
+            // Package sources
+            var sources = new List<PackageSource>
+            {
+                new PackageSource(rootDir.PackageSource)
+            };
+            var request = new TestRestoreRequest(packageSpec, sources, rootDir.UserPackagesFolder, logger)
+            {
+                LockFilePath = Path.Combine(projectDir, "project.assets.json")
+            };
+
+            var command = new RestoreCommand(request);
+            RestoreResult result = await command.ExecuteAsync();
+            await result.CommitAsync(logger, CancellationToken.None);
+
+            return project;
+        }
+
         [Fact]
-        public async Task GetInstalledAndTransitivePackagesAsync_SimulateBrowseAndSwitchToInstalledTab_InstalledTabCallHasTransitiveOriginsDataAsync()
+        public async Task GetInstalledAndTransitivePackagesAsync_AlternateCallsToExcludeAndIncludeTransitiveOriginsInParallel_ReturnsCorrectDataAsync()
+        {
+            using var rootDir = new SimpleTestPathContext();
+
+            // Arrange
+            await CreatePackagesAsync(rootDir);
+            IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
+            List<Task> tasks = new List<Task>();
+            for (int i = 0; i < 20; i++)
+            {
+                tasks.Add(TestTransitiveOriginsAlternateAsync(project));
+            }
+
+            // Act
+            Parallel.ForEach(tasks, t =>
+            {
+                if (t.Status == TaskStatus.Created)
+                {
+                    t.Start();
+                }
+            });
+
+            // Assert inside tasks
+            await Task.WhenAll(tasks);
+        }
+
+        [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_AlternateCallsToExcludeAndIncludeTransitiveOriginsMultipleTimes_ReturnsCorrectDataAsync()
+        {
+            using var rootDir = new SimpleTestPathContext();
+
+            // Arrange
+            await CreatePackagesAsync(rootDir);
+            IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
+
+            for (int i = 0; i < 20; i++)
+            {
+                await TestTransitiveOriginsAlternateAsync(project);
+            }
+        }
+
+        [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_SimulateBrowseTabAndSwitchToInstalledTab_InstalledTabCallHasTransitiveOriginsDataAsync()
         {
             using var rootDir = new SimpleTestPathContext();
 
             // Setup
+            await CreatePackagesAsync(rootDir);
             IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
 
             // Act I: Browse Tab: No need of transitive origins data
@@ -3838,7 +3963,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.NotEmpty(packagesBrowseTab.TransitivePackages);
             Assert.All(packagesBrowseTab.TransitivePackages, pkg => Assert.Empty(pkg.TransitiveOrigins));
 
-            // Act II: Suppose we switched to Installed tab, now we need transitive origins data
+            // Act II: Suppose we switch to Installed tab. Then, we need transitive origins data
             ProjectPackages packagesInstalledTab = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
 
             // Assert II: We need transitive data
@@ -3847,59 +3972,95 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.All(packagesInstalledTab.TransitivePackages, pkg => Assert.NotEmpty(pkg.TransitiveOrigins));
         }
 
-        public async Task GetInstalledAndTransitivePackagesAsync_WithNetStandardProjectWithImplicitPackages_ReturnsTransitivePackagesAsync()
+        [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_ProjectReferenceWithPackageWithDependencies_ReturnsTransitivePackagesAsync()
         {
+            // Project2 -> Project1 -> PackageA (1.0.0)
+            // PackageA (1.0.0) -> PackageB (1.0.0)
 
+            // Arrange
+            using var rootDir = new SimpleTestPathContext();
+
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+
+            PackageSpec prj1Spec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "net6.0", dependencyName: "PackageA");
+            PackageSpec prj2Spec = ProjectTestHelpers.GetPackageSpec("Project2", rootDir.SolutionRoot, framework: "net6.0").WithTestProjectReference(prj1Spec);
+
+            await RestorePackageSpecsAsync(rootDir, output: null, prj1Spec, prj2Spec);
+
+            CpsPackageReferenceProject project2 = PrepareCpsRestoredProject(prj2Spec);
+
+            // Act
+            ProjectPackages result = await project2.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert
+            Assert.Empty(result.InstalledPackages); // No installed packages
+            // Transitive packages have dependency data
+            // This algorithm will consider them as transitive packages, since some transitive packages contain dependencies
+            // Those transitive packages are filtered out in PM UI
+            Assert.NotEmpty(result.TransitivePackages);
         }
 
-        private static async Task<IPackageReferenceProject> PrepareTestProjectAsync(SimpleTestPathContext rootDir)
+        [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_ProjectReferenceWithSinglePackage_EmptyInstalledAndTransitivePackagesAsync()
         {
-            // Setup
-            var projectName = "project1";
-            string projectFullPath = Path.Combine(rootDir.SolutionRoot, projectName + ".csproj");
+            // Project2 -> Project1 -> PackageB (1.0.0)
+            // PackageA (1.0.0) -> PackageB (1.0.0)
 
-            // Project
-            var projectCache = new ProjectSystemCache();
-            IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
-            CpsPackageReferenceProject project = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+            // Arrange
+            using var rootDir = new SimpleTestPathContext();
 
-            ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
-            PackageSpec packageSpec = GetPackageSpec(projectName, projectFullPath, "[2.0.0, )");
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
 
-            // Restore info
-            DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
-            projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
-            projectCache.AddProject(projectNames, projectAdapter, project).Should().BeTrue();
+            PackageSpec prj1Spec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "netstandard2.0", dependencyName: "PackageB");
+            PackageSpec prj2Spec = ProjectTestHelpers.GetPackageSpec("Project2", rootDir.SolutionRoot, framework: "netstandard2.0").WithTestProjectReference(prj1Spec);
 
-            // Package directories
-            var sources = new List<PackageSource>();
-            var packagesDir = new DirectoryInfo(Path.Combine(rootDir.SolutionRoot, "globalPackages"));
-            var packageSource = new DirectoryInfo(rootDir.PackageSource);
-            packagesDir.Create();
-            packageSource.Create();
-            sources.Add(new PackageSource(packageSource.FullName));
+            await RestorePackageSpecsAsync(rootDir, output: null, prj1Spec, prj2Spec);
 
-            var logger = new TestLogger();
-            var request = new TestRestoreRequest(packageSpec, sources, packagesDir.FullName, logger)
-            {
-                LockFilePath = Path.Combine(rootDir.SolutionRoot, "project.assets.json")
-            };
+            CpsPackageReferenceProject project2 = PrepareCpsRestoredProject(prj2Spec);
 
-            await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, "packageB", "1.0.0");
-            await SimpleTestPackageUtility.CreateFullPackageAsync(
-                packageSource.FullName,
-                "packageA",
-                "2.15.3",
-                new Packaging.Core.PackageDependency[]
-                {
-                    new Packaging.Core.PackageDependency("packageB", VersionRange.Parse("1.0.0"))
-                });
+            // Act
+            ProjectPackages result = await project2.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
 
-            var command = new RestoreCommand(request);
-            RestoreResult result = await command.ExecuteAsync();
-            await result.CommitAsync(logger, CancellationToken.None);
+            // Assert
+            Assert.Empty(result.InstalledPackages); // No installed packages
+            // Foreign transitive packages in assets file don't have dependencies.
+            // Those are not considered transitive packages
+            Assert.Empty(result.TransitivePackages);
+        }
 
-            return project;
+        [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_SimulatePackageInstallation_UpdatesDataAsync()
+        {
+            using var rootDir = new SimpleTestPathContext();
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+            IProjectSystemCache cache = new ProjectSystemCache();
+
+            // Arrange I: A project with no packages
+            PackageSpec initialProjectSpec = ProjectTestHelpers.GetPackageSpec("MyProject", rootDir.SolutionRoot, framework: "net472");
+            await RestorePackageSpecsAsync(rootDir, output: null, initialProjectSpec);
+
+            CpsPackageReferenceProject project = PrepareCpsRestoredProject(initialProjectSpec, cache);
+
+            // Act I
+            ProjectPackages result = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert I
+            Assert.Empty(result.InstalledPackages);
+            Assert.Empty(result.TransitivePackages);
+
+            // Arrange II: Simulate package install by changing the package spec
+            PackageSpec projectSpec = ProjectTestHelpers.GetPackageSpec("MyProject", rootDir.SolutionRoot, framework: "net472", dependencyName: "PackageA");
+            await RestorePackageSpecsAsync(rootDir, output: null, projectSpec);
+            UpdateProjectSystemCache(cache, projectSpec, project);
+
+            // Act II
+            ProjectPackages result2 = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert II
+            Assert.NotEmpty(result2.InstalledPackages);
+            Assert.NotEmpty(result2.TransitivePackages);
+            Assert.All(result2.TransitivePackages, pkg => Assert.NotEmpty(pkg.TransitiveOrigins));
         }
 
         [Fact]
@@ -3908,6 +4069,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using SimpleTestPathContext rootDir = new();
 
             // Arrange
+            await CreatePackagesAsync(rootDir);
             IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
 
             // Act
@@ -3925,6 +4087,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using SimpleTestPathContext rootDir = new();
 
             // Arrange
+            await CreatePackagesAsync(rootDir);
             IPackageReferenceProject project = await PrepareTestProjectAsync(rootDir);
 
             // Act
@@ -4204,6 +4367,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
         }
 
+        private static async Task TestTransitiveOriginsAlternateAsync(IPackageReferenceProject project)
+        {
+            // Act I: Transitive packages without transitive origins
+            ProjectPackages packagesWithoutOrigins = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, CancellationToken.None);
+            // Assert I
+            Assert.NotEmpty(packagesWithoutOrigins.InstalledPackages);
+            Assert.NotEmpty(packagesWithoutOrigins.TransitivePackages);
+            Assert.All(packagesWithoutOrigins.TransitivePackages, pkg => Assert.Empty(pkg.TransitiveOrigins));
+            // Act II: Transitive packages with transi
+            ProjectPackages packagesWithOrigins = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+            // Assert II
+            Assert.NotEmpty(packagesWithOrigins.InstalledPackages);
+            Assert.NotEmpty(packagesWithOrigins.TransitivePackages);
+            Assert.All(packagesWithOrigins.TransitivePackages, pkg => Assert.NotEmpty(pkg.TransitiveOrigins));
+        }
+
         private class TestCpsPackageReferenceProject
             : CpsPackageReferenceProject
             , IProjectScriptHostService
@@ -4289,7 +4468,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 throw new NotImplementedException();
             }
 
-            public Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(ILogger logger, CancellationToken token)
+            public Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(Common.ILogger logger, CancellationToken token)
             {
                 var projectRefs = ProjectReferences.Select(e => new ProjectRestoreReference()
                 {
