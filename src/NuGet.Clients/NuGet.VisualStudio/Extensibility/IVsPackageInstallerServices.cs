@@ -31,6 +31,8 @@ namespace NuGet.VisualStudio
         /// <param name="project">The project to check for NuGet package.</param>
         /// <param name="id">The id of the package to check.</param>
         /// <returns><c>true</c> if the package is install. <c>false</c> otherwise.</returns>
+        /// <exception cref="InvalidOperationException">A "project not nominated" exception will be thrown if the project system has not yet told NuGet about the project.
+        /// You can use <see cref="IVsNuGetProjectUpdateEvents"/> or Microsoft.VisualStudio.OperationProgress to be notified when the project is ready.</exception>
         [Obsolete("This method can cause UI delays if called on the UI thread. Use INuGetProjectService.GetInstalledPackagesAsync in the NuGet.VisualStudio.Contracts package instead, and check the specific package you're interested in")]
         bool IsPackageInstalled(Project project, string id);
 
@@ -41,6 +43,8 @@ namespace NuGet.VisualStudio
         /// <param name="id">The id of the package to check.</param>
         /// <param name="version">The version of the package to check.</param>
         /// <returns><c>true</c> if the package is install. <c>false</c> otherwise.</returns>
+        /// <exception cref="InvalidOperationException">A "project not nominated" exception will be thrown if the project system has not yet told NuGet about the project.
+        /// You can use <see cref="IVsNuGetProjectUpdateEvents"/> or Microsoft.VisualStudio.OperationProgress to be notified when the project is ready.</exception>
         [Obsolete("This method can cause UI delays if called on the UI thread. Use INuGetProjectService.GetInstalledPackagesAsync in the NuGet.VisualStudio.Contracts package instead, and check the specific package you're interested in")]
         bool IsPackageInstalled(Project project, string id, SemanticVersion version);
 
@@ -56,6 +60,8 @@ namespace NuGet.VisualStudio
         /// when client project compiles against this assembly, the compiler would attempt to bind against
         /// the other overload which accepts SemanticVersion and would require client project to reference NuGet.Core.
         /// </remarks>
+        /// <exception cref="InvalidOperationException">A "project not nominated" exception will be thrown if the project system has not yet told NuGet about the project.
+        /// You can use <see cref="IVsNuGetProjectUpdateEvents"/> or Microsoft.VisualStudio.OperationProgress to be notified when the project is ready.</exception>
         [Obsolete("This method can cause UI delays if called on the UI thread. Use INuGetProjectService.GetInstalledPackagesAsync in the NuGet.VisualStudio.Contracts package instead, and check the specific package you're interested in")]
         bool IsPackageInstalledEx(Project project, string id, string versionString);
 
@@ -63,6 +69,8 @@ namespace NuGet.VisualStudio
         /// Get the list of NuGet packages installed in the specified project.
         /// </summary>
         /// <param name="project">The project to get NuGet packages from.</param>
+        /// <exception cref="InvalidOperationException">A "project not nominated" exception will be thrown if the project system has not yet told NuGet about the project.
+        /// You can use <see cref="IVsNuGetProjectUpdateEvents"/> or Microsoft.VisualStudio.OperationProgress to be notified when the project is ready.</exception>
         [Obsolete("This method can cause UI delays if called on the UI thread. Use INuGetProjectService.GetInstalledPackagesAsync in the NuGet.VisualStudio.Contracts package instead")]
         IEnumerable<IVsPackageMetadata> GetInstalledPackages(Project project);
     }
