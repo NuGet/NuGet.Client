@@ -1078,7 +1078,7 @@ namespace NuGet.ProjectModel
                                     ReadNuGetLogCodes(jsonReader, warnAsError);
                                     break;
 
-                                case "warningsNotAsErrors":
+                                case "warnNotAsError":
                                     ReadNuGetLogCodes(jsonReader, warningsNotAsErrors);
                                     break;
                             }

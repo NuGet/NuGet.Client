@@ -3176,7 +3176,8 @@ namespace NuGet.ProjectModel.Test
             var expectedResult = new WarningProperties(
                 new HashSet<NuGetLogCode>() { NuGetLogCode.NU3000 },
                 new HashSet<NuGetLogCode>() { NuGetLogCode.NU3001 },
-                allWarningsAsErrors: true);
+                allWarningsAsErrors: true,
+                new HashSet<NuGetLogCode>());
             var json = $"{{\"restore\":{{\"warningProperties\":{{\"allWarningsAsErrors\":{expectedResult.AllWarningsAsErrors.ToString().ToLowerInvariant()}," +
                 $"\"warnAsError\":[\"{expectedResult.WarningsAsErrors.Single()}\"],\"noWarn\":[\"{expectedResult.NoWarn.Single()}\"]}}}}}}";
             PackageSpec packageSpec = GetPackageSpec(json);
