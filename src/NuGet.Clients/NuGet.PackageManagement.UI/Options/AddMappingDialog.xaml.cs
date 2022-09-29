@@ -24,10 +24,6 @@ namespace NuGet.Options
 
         private IReadOnlyList<PackageSourceContextInfo> _originalPackageSources;
 
-#pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
-        private INuGetSourcesService _nugetSourcesService;
-#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
-
         private PackageSourceMappingOptionsControl _parent;
 
         public AddMappingDialog(PackageSourceMappingOptionsControl parent)
@@ -46,14 +42,15 @@ namespace NuGet.Options
         {
             IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
             IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
-#pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
-            _nugetSourcesService = await serviceBroker.GetProxyAsync<INuGetSourcesService>(
-                    NuGetServices.SourceProviderService,
-                    cancellationToken: cancellationToken);
-#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
 
-            //show package sources on open
-            _originalPackageSources = await _nugetSourcesService.GetPackageSourcesAsync(cancellationToken);
+            using (INuGetSourcesService _nugetSourcesService = await serviceBroker.GetProxyAsync<INuGetSourcesService>(
+                    NuGetServices.SourceProviderService,
+                    cancellationToken: cancellationToken))
+            {
+                //show package sources on open
+                _originalPackageSources = await _nugetSourcesService.GetPackageSourcesAsync(cancellationToken);
+            }
+
             SourcesCollection.Clear();
             foreach (PackageSourceContextInfo source in _originalPackageSources)
             {
