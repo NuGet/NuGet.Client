@@ -328,10 +328,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Theory]
-        [InlineData("packages.config")]
-        [InlineData("packages.proj2.config")]
-        public void RestoreCommand_FromFilteredSolutionFile(string configFileName)
+        [Fact]
+        public void RestoreCommand_FromFilteredSolutionFile()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -339,7 +337,7 @@ namespace NuGet.CommandLine.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
-                var repositoryPath = Util.CreateBasicTwoProjectSolutionWithSolutionFilters(workingPath, "packages.config", configFileName);
+                var repositoryPath = Util.CreateBasicTwoProjectSolutionWithSolutionFilters(workingPath, "packages.config", "packages.config");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -359,7 +357,7 @@ namespace NuGet.CommandLine.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
-                var repositoryPath = Util.CreateBasicTwoProjectSolutionWithSolutionFilters(workingPath, "packages.config", configFileName);
+                var repositoryPath = Util.CreateBasicTwoProjectSolutionWithSolutionFilters(workingPath, "packages.config", "packages.config");
 
                 // Act
                 var r = CommandRunner.Run(

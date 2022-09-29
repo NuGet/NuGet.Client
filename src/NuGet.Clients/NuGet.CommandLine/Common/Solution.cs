@@ -114,7 +114,13 @@ namespace NuGet.Common
             var isSolutionFilter = solutionFileName.EndsWith(".slnf", StringComparison.OrdinalIgnoreCase);
             var solutionFileType = msbuildAssembly.GetType("Microsoft.Build.Construction.SolutionFile");
             var parseMethod = solutionFileType.GetMethod("Parse", BindingFlags.Static | BindingFlags.Public);
-            var projectShouldBuildMethod = isSolutionFilter ? solutionFileType.GetMethod("ProjectShouldBuild", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new InvalidOperationException("ProjectShouldBuild method not found") : null;
+            var projectShouldBuildMethod = isSolutionFilter ? solutionFileType.GetMethod("ProjectShouldBuild", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?? throw new InvalidOperationException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    LocalizedResourceManager.GetString(nameof(NuGet.CommandLine.NuGetResources.Error_UnsupportedMsBuildForSolutionFilter)),
+                    msbuildAssembly.FullName))
+                : null;
+
             dynamic solutionFile = parseMethod.Invoke(null, new object[] { solutionFileName });
 
             // load projects
