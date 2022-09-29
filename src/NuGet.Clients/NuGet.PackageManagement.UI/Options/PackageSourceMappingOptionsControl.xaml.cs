@@ -22,16 +22,7 @@ namespace NuGet.Options
 {
     public partial class PackageSourceMappingOptionsControl : UserControl
     {
-        public ItemsChangeObservableCollection<SourceMappingViewModel> SourceMappingsCollection { get; private set; }
-
         private IReadOnlyList<PackageSourceMappingSourceItem> _originalPackageSourceMappings;
-
-        public ICommand ShowButtonCommand { get; set; }
-
-        public ICommand RemoveButtonCommand { get; set; }
-
-        public ICommand ClearButtonCommand { get; set; }
-
         private AddMappingDialog _addMappingDialog;
 
         public PackageSourceMappingOptionsControl()
@@ -45,21 +36,26 @@ namespace NuGet.Options
             (ShowButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
         }
 
+        public ItemsChangeObservableCollection<SourceMappingViewModel> SourceMappingsCollection { get; private set; }
+        public ICommand ShowButtonCommand { get; set; }
+        public ICommand RemoveButtonCommand { get; set; }
+        public ICommand ClearButtonCommand { get; set; }
+
         internal async Task InitializeOnActivatedAsync(CancellationToken cancellationToken)
         {
             IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
             IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
 
-            //show package source mappings on open
+            // Show package source mappings on open.
             var componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModelMapping.GetService<ISettings>();
             PackageSourceMappingProvider packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
             _originalPackageSourceMappings = packageSourceMappingProvider.GetPackageSourceMappingItems();
-            IReadOnlyList<SourceMappingViewModel> SourceMappingsCollectiontemp = ReadMappingsFromConfigToUI(_originalPackageSourceMappings);
-            //clear sourcemappings so that they don't repeat
+
             SourceMappingsCollection.Clear();
-            SourceMappingsCollection.AddRange(SourceMappingsCollectiontemp);
-            //make sure all buttons show on open if there are already sourcemappings
+            SourceMappingsCollection.AddRange(ReadMappingsFromConfigToUI(_originalPackageSourceMappings));
+
+            // Make sure all buttons show on open if there are already source mappings.
             (ClearButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
             (RemoveButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
         }
@@ -77,7 +73,7 @@ namespace NuGet.Options
 
         private void ExecuteRemoveButtonCommand(object parameter)
         {
-            SourceMappingsCollection.Remove((SourceMappingViewModel)packageList.SelectedItem);
+            SourceMappingsCollection.Remove((SourceMappingViewModel)_packageList.SelectedItem);
             (ClearButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
         }
 
@@ -104,7 +100,7 @@ namespace NuGet.Options
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModel.GetService<ISettings>();
             PackageSourceMappingProvider packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
-            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems = ReadMappingsFromUIToConfig(SourceMappingsCollection);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems = ConvertViewModelToSourceMappingsSourceItems(SourceMappingsCollection);
             try
             {
                 if (SourceMappingsChanged(_originalPackageSourceMappings, packageSourceMappingsSourceItems))
@@ -170,7 +166,6 @@ namespace NuGet.Options
             return false;
         }
 
-        //converts from list of packagesourcemappingsourceItems to a dictonary that can be read by UI
         private IReadOnlyList<SourceMappingViewModel> ReadMappingsFromConfigToUI(IReadOnlyList<PackageSourceMappingSourceItem> originalMappings)
         {
             var uiSourceMappings = new Dictionary<string, List<PackageSourceContextInfo>>();
@@ -188,28 +183,27 @@ namespace NuGet.Options
             var mappingsCollection = new List<SourceMappingViewModel>();
             foreach (string packageID in uiSourceMappings.Keys)
             {
-                SourceMappingViewModel temp = new SourceMappingViewModel(packageID, uiSourceMappings[packageID]);
-                mappingsCollection.Add(temp);
+                var viewModel = new SourceMappingViewModel(packageID, uiSourceMappings[packageID]);
+                mappingsCollection.Add(viewModel);
             }
             return mappingsCollection.AsReadOnly();
         }
 
-        //converts from dictonary created by UI to list of packageSourceMappingSourceItems
-        private IReadOnlyList<PackageSourceMappingSourceItem> ReadMappingsFromUIToConfig(ItemsChangeObservableCollection<SourceMappingViewModel> uiSourceMappings)
+        private IReadOnlyList<PackageSourceMappingSourceItem> ConvertViewModelToSourceMappingsSourceItems(ItemsChangeObservableCollection<SourceMappingViewModel> sourceMappingViewModels)
         {
             Dictionary<string, List<PackagePatternItem>> mappingsDictonary = new Dictionary<string, List<PackagePatternItem>>();
-            foreach (SourceMappingViewModel mappingUIDisplay in uiSourceMappings)
+            foreach (SourceMappingViewModel viewModel in sourceMappingViewModels)
             {
-                foreach (PackageSourceContextInfo source in mappingUIDisplay.Sources)
+                foreach (PackageSourceContextInfo source in viewModel.Sources)
                 {
                     if (!mappingsDictonary.Keys.Contains(source.Name))
                     {
                         mappingsDictonary[source.Name] = new List<PackagePatternItem>();
                     }
-                    PackagePatternItem tempID = new PackagePatternItem(mappingUIDisplay.ID);
-                    if (!mappingsDictonary[source.Name].Any(id => id.Pattern == tempID.Pattern))
+                    var packagePatternItem = new PackagePatternItem(viewModel.ID);
+                    if (!mappingsDictonary[source.Name].Any(id => id.Pattern == packagePatternItem.Pattern))
                     {
-                        mappingsDictonary[source.Name].Add(tempID);
+                        mappingsDictonary[source.Name].Add(packagePatternItem);
                     }
                 }
             }
@@ -218,8 +212,7 @@ namespace NuGet.Options
             List<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems = new List<PackageSourceMappingSourceItem>();
             foreach (string source in mappingsDictonary.Keys)
             {
-                PackageSourceMappingSourceItem temp = new PackageSourceMappingSourceItem(source, mappingsDictonary[source]);
-                packageSourceMappingsSourceItems.Add(temp);
+                packageSourceMappingsSourceItems.Add(new PackageSourceMappingSourceItem(source, mappingsDictonary[source]));
             }
             return packageSourceMappingsSourceItems.AsReadOnly();
         }

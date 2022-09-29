@@ -69,7 +69,7 @@
         </Grid.RowDefinitions>
         <vsui:WatermarkedTextBox Grid.Row="0"
                                  AutomationProperties.Name="Package ID"
-                                 x:Name="packageID"
+                                 x:Name="_packageID"
                                  MaxLength="100"
                                  Margin="12,6,12,6"
                                  Watermark="{x:Static nuget:Resources.VSOptions_Watermark_AddPackageNamespace}"
@@ -78,7 +78,7 @@
                                  TextChanged="PackageID_TextChanged"/>
         <StackPanel Orientation="Vertical"  Grid.Row="1">
           <ListView AutomationProperties.Name="Sources List"
-                    x:Name="sourcesListBox"
+                    x:Name="_sourcesListBox"
                     ItemsSource="{Binding SourcesCollection}"
                     Margin="12,0,12,12"
                     Height="184">
@@ -97,7 +97,7 @@
                   </GridViewColumn.CellTemplate>
                 </GridViewColumn>
                 <!-- the text column -->
-                <GridViewColumn x:Name="_projectColumn">
+                <GridViewColumn>
                   <GridViewColumnHeader Content="{x:Static nuget:Resources.VSOptions_Label_Source}" HorizontalContentAlignment="Left"/>
                   <GridViewColumn.CellTemplate>
                     <DataTemplate>
@@ -120,8 +120,8 @@
         <ColumnDefinition Width="190"/>
       </Grid.ColumnDefinitions>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"  Grid.Column="1">
-        <Button Name="AddCloud" Height="24" Width="86" Command="{Binding AddButtonCommand}" Margin="0,0,3,12" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
-        <Button Name="CancelClose" Height="24" Width="86"  Command ="{Binding HideButtonCommand}" Margin="3,0,12,12" Content="{x:Static nuget:Resources.VSOptions_Button_Cancel}"/>
+        <Button Height="24" Width="86" Command="{Binding AddButtonCommand}" Margin="0,0,3,12" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
+        <Button Height="24" Width="86"  Command ="{Binding HideButtonCommand}" Margin="3,0,12,12" Content="{x:Static nuget:Resources.VSOptions_Button_Cancel}"/>
       </StackPanel>
     </Grid>
   </Grid>

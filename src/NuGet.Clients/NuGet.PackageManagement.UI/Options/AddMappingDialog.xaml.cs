@@ -54,8 +54,8 @@ namespace NuGet.Options
             SourcesCollection.Clear();
             foreach (PackageSourceContextInfo source in _originalPackageSources)
             {
-                var tempSource = new PackageSourceViewModel(source, false);
-                SourcesCollection.Add(tempSource);
+                var viewModel = new PackageSourceViewModel(source, false);
+                SourcesCollection.Add(viewModel);
             }
         }
 
@@ -74,19 +74,19 @@ namespace NuGet.Options
         {
             Close();
             //does not add mapping if package ID is null
-            if (!string.IsNullOrEmpty(packageID.Text))
+            if (!string.IsNullOrWhiteSpace(_packageID.Text))
             {
-                string tempPkgID = packageID.Text;
-                List<PackageSourceContextInfo> tempSources = new List<PackageSourceContextInfo>();
-                foreach (PackageSourceViewModel source in sourcesListBox.Items)
+                string packageId = _packageID.Text;
+                List<PackageSourceContextInfo> packageSources = new List<PackageSourceContextInfo>();
+                foreach (PackageSourceViewModel source in _sourcesListBox.Items)
                 {
                     if (source.IsChecked)
                     {
-                        tempSources.Add(source.SourceInfo);
+                        packageSources.Add(source.SourceInfo);
                     }
                 }
-                var tempPkg = new SourceMappingViewModel(tempPkgID, tempSources);
-                _parent.SourceMappingsCollection.Add(tempPkg);
+                var viewModel = new SourceMappingViewModel(packageId, packageSources);
+                _parent.SourceMappingsCollection.Add(viewModel);
             }
             (_parent.ShowButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
             (_parent.RemoveButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
@@ -95,11 +95,11 @@ namespace NuGet.Options
 
         private bool CanExecuteAddButtonCommand(object parameter)
         {
-            foreach (PackageSourceViewModel source in sourcesListBox.Items)
+            foreach (PackageSourceViewModel source in _sourcesListBox.Items)
             {
                 if (source.IsChecked)
                 {
-                    if (!string.IsNullOrEmpty(packageID.Text))
+                    if (!string.IsNullOrWhiteSpace(_packageID.Text))
                     {
                         return true;
                     }
