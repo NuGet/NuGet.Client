@@ -149,13 +149,12 @@ stages:
     - task: PublishPipelineArtifact@1
       displayName: 'Publish BootstrapperInfo.json as a pipeline artifact'
       inputs:
-        publishLocation: $(Pipeline.Workspace)\MicroBuild\Output
-      condition: succeeded()    
+        publishLocation: $(Pipeline.Workspace)\MicroBuild\Output          
     - task: PowerShell@2
       displayName: Set 'VisualStudio.InstallationUnderTest.BootstrapperURL'
       inputs:
         filePath: $(DartLab.Path)\Scripts\VisualStudio\Bootstrapper\Get-BootstrapperURL.ps1
-        arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\MicroBuild\Output\MicroBuildOutputs\BootstrapperInfo.json' -VSBranch '$(VSBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
+        arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\MicroBuild\Output\BootstrapperInfo.json' -VSBranch '$(VSBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
     # Remove this step hook and it's task if you don't want LKG support
     prePublishOptimizationInputsDropStepList:
     # Set parameter for PreviousOptimizationInputsDropName 
