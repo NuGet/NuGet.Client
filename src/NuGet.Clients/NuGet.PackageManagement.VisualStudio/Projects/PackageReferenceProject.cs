@@ -162,7 +162,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // Compute Transitive Origins
                 Dictionary<string, TransitiveEntry> transitiveOrigins;
-                if (IsInstalledAndTransitiveComputationNeeded || TransitiveOriginsCache == null)
+                if (IsInstalledAndTransitiveComputationNeeded // Cache invalidation
+                    || TransitiveOriginsCache == null // If any data race left the cache as null
+                    || (!TransitiveOriginsCache.Any() && calculatedTransitivePackages.Any())) // We have transitive packages, but no transitive origins and the call is requesting transitive origins
                 {
                     // Special case: Installed and Transitive lists (<see cref="InstalledPackages" />, <see cref="TransitivePackages" /> respectively) are populated,
                     // but Transitive Origins Cache <see cref="TransitiveOriginsCache" /> is not populated.
@@ -241,7 +243,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyList<LockFileTarget> targets)
         {
             return libraries
-                .Where(library => library.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
+                .Where(library => (library.LibraryRange.TypeConstraint & LibraryDependencyTarget.Package) != 0)
                 .Select(library => new BuildIntegratedPackageReference(library, targetFramework, GetPackageReferenceUtility.UpdateResolvedVersion(library, targetFramework, targets, installedPackages)));
         }
 
