@@ -186,6 +186,7 @@ namespace NuGet.Options
                 var viewModel = new SourceMappingViewModel(packageID, uiSourceMappings[packageID]);
                 mappingsCollection.Add(viewModel);
             }
+            mappingsCollection.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.ID, b.ID));
             return mappingsCollection.AsReadOnly();
         }
 
