@@ -9,8 +9,6 @@ using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
-    // TODO NK - Ensure WarningsNotAsErrors is created.
-
     /// <summary>
     /// Class to hold warning properties given by project system.
     /// </summary>
@@ -46,18 +44,15 @@ namespace NuGet.ProjectModel
 
         [Obsolete("Use the constructor with 4 instead.")]
         public WarningProperties(ISet<NuGetLogCode> warningsAsErrors, ISet<NuGetLogCode> noWarn, bool allWarningsAsErrors)
+            : this(warningsAsErrors, noWarn, allWarningsAsErrors, new HashSet<NuGetLogCode>())
+        {
+        }
+
+        public WarningProperties(ISet<NuGetLogCode> warningsAsErrors, ISet<NuGetLogCode> noWarn, bool allWarningsAsErrors, ISet<NuGetLogCode> warningsNotAsErrors)
         {
             WarningsAsErrors = warningsAsErrors ?? throw new ArgumentNullException(nameof(warningsAsErrors));
             NoWarn = noWarn ?? throw new ArgumentNullException(nameof(noWarn));
             AllWarningsAsErrors = allWarningsAsErrors;
-        }
-
-        // internal?
-        public WarningProperties(ISet<NuGetLogCode> warningsAsErrors, ISet<NuGetLogCode> noWarn, bool allWarningsAsErrors, ISet<NuGetLogCode> warningsNotAsErrors)
-#pragma warning disable CS0618 // Type or member is obsolete
-            : this(warningsAsErrors, noWarn, allWarningsAsErrors)
-#pragma warning restore CS0618 // Type or member is obsolete
-        {
             WarningsNotAsErrors = warningsNotAsErrors ?? throw new ArgumentNullException(nameof(warningsNotAsErrors));
         }
 
