@@ -1,0 +1,11 @@
+# Banned APIs across the project.
+
+# Syntax:
+#
+#       E:Event
+#       M:Method
+#       F:Field
+#       P:Property
+#       T:Type
+
+M:System.IO.Path.GetTempPath(); Use NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp)
