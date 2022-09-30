@@ -61,6 +61,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 CultureUtility.DisableLocalization();
             }
+            else
+            {
+                UILanguageOverride.Setup(log);
+            }
+            log.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Debug_CurrentUICulture, CultureInfo.DefaultThreadCurrentUICulture));
 
             var app = InitializeApp(args, log);
 

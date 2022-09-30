@@ -241,6 +241,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DefaultThreadCurrentUICulture value: {0}.
+        /// </summary>
+        internal static string Debug_CurrentUICulture {
+            get {
+                return ResourceManager.GetString("Debug_CurrentUICulture", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Deletes a package from the server..
         /// </summary>
         internal static string Delete_Description {
@@ -354,6 +363,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_AssetsFileNotFound {
             get {
                 return ResourceManager.GetString("Error_AssetsFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid culture identifier in {0} environment variable. Value read is &apos;{1}&apos;.
+        /// </summary>
+        internal static string Error_InvalidCultureInfo {
+            get {
+                return ResourceManager.GetString("Error_InvalidCultureInfo", resourceCulture);
             }
         }
         

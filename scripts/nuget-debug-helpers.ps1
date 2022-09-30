@@ -79,6 +79,8 @@ Function Add-NuGetToCLI {
     }
     $sdk_path = $sdkLocation
 
+    $locFolders = @('cs', 'de', 'es', 'fr', 'it', 'ja', 'ko', 'pl', 'pt-BR', 'ru', 'tr', 'zh-Hans', 'zh-Hant')
+
     $nugetXplatArtifactsPath = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.CommandLine.XPlat', 'bin', $Configuration, $NETCoreApp)
     $nugetBuildTasks = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.Build.Tasks', 'bin', $Configuration, $NETCoreApp, 'NuGet.Build.Tasks.dll')
     $nugetBuildTasksConsole = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.Build.Tasks.Console', 'bin', $Configuration, $NETCoreApp, 'NuGet.Build.Tasks.Console.dll')
@@ -142,10 +144,21 @@ Function Add-NuGetToCLI {
 
     ## Copy the xplat artifacts
 
-    Get-ChildItem $nugetXplatArtifactsPath -Filter NuGet*.dll |
+    Write-Debug "Artifacts: $nugetXplatArtifactsPath"
+    Get-ChildItem -Recurse $nugetXplatArtifactsPath -Filter NuGet*.dll |
         Foreach-Object {
-            $new_position = "$($sdk_path)\$($_.BaseName )$($_.Extension )"
+            $currDir = $_.Directory.BaseName
+            Write-Debug "Parent $currDir" 
+            if ($locFolders -contains $currDir)
+            {
+                $new_position = "$($sdk_path)\$($currDir)\$($_.BaseName )$($_.Extension )"
+            }
+            else
+            {
+                $new_position = "$($sdk_path)\$($_.BaseName )$($_.Extension )"
+            }
 
+            Write-Debug "Moving $($_.FullName) to - $($new_position)"
             Write-Host "Moving to - $($new_position)"
             Copy-Item $_.FullName $new_position
         }
