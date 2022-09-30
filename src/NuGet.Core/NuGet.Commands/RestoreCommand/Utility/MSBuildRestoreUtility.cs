@@ -809,7 +809,7 @@ namespace NuGet.Commands
                         NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
                         "nuget-dg",
                         $"{Guid.NewGuid()}.dg");
-                    DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(path));
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
                 }
 
                 log.LogMinimal(

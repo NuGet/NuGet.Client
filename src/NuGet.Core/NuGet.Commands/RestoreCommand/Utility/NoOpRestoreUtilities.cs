@@ -253,7 +253,7 @@ namespace NuGet.Commands
                         NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
                         "nuget-dg",
                         $"{spec.GetProjectSpec(spec.Restore.FirstOrDefault()).RestoreMetadata.ProjectName}-{DateTime.Now.ToString("yyyyMMddHHmmss")}.dg");
-                    DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(path));
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
                 }
 
                 log.LogMinimal($"Persisting no-op dg to {path}");
