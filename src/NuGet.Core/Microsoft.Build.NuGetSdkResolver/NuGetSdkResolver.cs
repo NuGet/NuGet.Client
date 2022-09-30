@@ -60,6 +60,8 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return null;
             }
 
+            NuGet.Common.Migrations.MigrationRunner.Run();
+
             return NuGetAbstraction.GetSdkResult(sdkReference, parsedSdkVersion, resolverContext, factory);
         }
 
