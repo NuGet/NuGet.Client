@@ -8,12 +8,11 @@
              Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-  <Grid Margin="12">
+  <Grid>
     <Grid.RowDefinitions>
-      <RowDefinition Height="24"/>
-      <RowDefinition Height="144*"/>
-      <RowDefinition Height="223*"/>
-      <RowDefinition Height="36"/>
+      <RowDefinition Height="Auto"></RowDefinition>
+      <RowDefinition Height="*"></RowDefinition>
+      <RowDefinition Height="Auto"></RowDefinition>
     </Grid.RowDefinitions>
     <Grid.Resources>
       <!-- Data Template for list items -->
@@ -32,7 +31,7 @@
         </StackPanel>
       </DataTemplate>
     </Grid.Resources>
-    <TextBlock  Grid.Row="0" Margin="6,0,0,0" Text="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}"/>
+    <TextBlock Grid.Row="0" Text="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}"/>
     <ListBox Name="_packageList"
              ItemsSource="{Binding SourceMappingsCollection}"
              Grid.Row="1"
@@ -40,7 +39,7 @@
              ItemTemplate="{StaticResource MappingItemTemplate}"
              IsSynchronizedWithCurrentItem="True"
              ScrollViewer.VerticalScrollBarVisibility="Auto"
-             AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}" Grid.RowSpan="2"/>
+             AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}" />
     <Grid Grid.Row="3">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="101"/>

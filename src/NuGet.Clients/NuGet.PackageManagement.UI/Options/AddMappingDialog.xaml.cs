@@ -70,27 +70,27 @@ namespace NuGet.Options
 
         private void ExecuteAddMapping(object parameter)
         {
-            Close();
-
-            // Does not add mapping if package ID is null.
-            if (!string.IsNullOrWhiteSpace(_packageID.Text))
+            if (string.IsNullOrWhiteSpace(_packageID.Text))
             {
-                string packageId = _packageID.Text;
-                List<PackageSourceContextInfo> packageSources = new List<PackageSourceContextInfo>();
-                foreach (PackageSourceViewModel source in _sourcesListBox.Items)
-                {
-                    if (source.IsChecked)
-                    {
-                        packageSources.Add(source.SourceInfo);
-                    }
-                }
-                var viewModel = new SourceMappingViewModel(packageId, packageSources);
-                _parent.SourceMappingsCollection.Add(viewModel);
+                return;
             }
+
+            string packageId = _packageID.Text;
+            List<PackageSourceContextInfo> packageSources = new List<PackageSourceContextInfo>();
+            foreach (PackageSourceViewModel source in _sourcesListBox.Items)
+            {
+                if (source.IsChecked)
+                {
+                    packageSources.Add(source.SourceInfo);
+                }
+            }
+            var viewModel = new SourceMappingViewModel(packageId, packageSources);
+            _parent.SourceMappingsCollection.Add(viewModel);
 
             (_parent.ShowAddDialogCommand as DelegateCommand).RaiseCanExecuteChanged();
             (_parent.RemoveMappingCommand as DelegateCommand).RaiseCanExecuteChanged();
             (_parent.ClearMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
+            Close();
         }
 
         private bool CanExecuteAddMapping(object parameter)
