@@ -218,6 +218,10 @@ namespace NuGet.ProjectModel.Test
       ""warnAsError"": [
         ""NU1500"",
         ""NU1501""
+      ],
+      ""warnNotAsError"": [
+        ""NU1801"",
+        ""NU1802""
       ]
     }
   }
@@ -286,8 +290,8 @@ namespace NuGet.ProjectModel.Test
     ""NU1501""
   ],
   ""warnNotAsError"": [
-    ""NU1500"",
-    ""NU1501""
+    ""NU1801"",
+    ""NU1802""
   ]
 }";
             var allWarningsAsErrors = true;
@@ -318,10 +322,9 @@ namespace NuGet.ProjectModel.Test
     ""NU1501""
   ],
   ""warnNotAsError"": [
-    ""NU1801"",
-    ""NU1802""
-  ],
-
+    ""NU1802"",
+    ""NU1803""
+  ]
 }";
             var allWarningsAsErrors = false;
             var warningsAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1501 };

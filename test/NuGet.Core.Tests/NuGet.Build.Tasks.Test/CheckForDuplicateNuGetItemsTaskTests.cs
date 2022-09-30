@@ -382,5 +382,49 @@ namespace NuGet.Build.Tasks.Test
             buildEngine.TestLogger.WarningMessages.Should().HaveCount(0);
             buildEngine.TestLogger.ErrorMessages.Should().HaveCount(1);
         }
+
+        [Fact]
+        public void Execute_WithWarningsNotAsErrors_RaisesWarning()
+        {
+            // Arrange
+            var buildEngine = new TestBuildEngine();
+
+            var packageX1 = new TaskItem
+            {
+                ItemSpec = "x"
+            };
+            packageX1.SetMetadata("Version", "[1.0.0]");
+
+            var packageX2 = new TaskItem
+            {
+                ItemSpec = "x",
+            };
+            packageX2.SetMetadata("Version", "2.0.0");
+
+            var items = new ITaskItem[]
+            {
+                packageX1,
+                packageX2,
+            };
+
+            var task = new CheckForDuplicateNuGetItemsTask()
+            {
+                BuildEngine = buildEngine,
+                ItemName = "PackageReference",
+                Items = items,
+                LogCode = "NU1504",
+                NoWarn = "1234;5678;NU1505",
+                WarningsNotAsErrors = "NU1504"
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().BeTrue();
+            task.DeduplicatedItems.Length.Should().Be(1);
+            buildEngine.TestLogger.WarningMessages.Should().HaveCount(1);
+            buildEngine.TestLogger.ErrorMessages.Should().HaveCount(0);
+        }
     }
 }

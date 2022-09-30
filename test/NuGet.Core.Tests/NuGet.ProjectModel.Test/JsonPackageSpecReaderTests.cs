@@ -606,6 +606,10 @@ namespace NuGet.ProjectModel.Test
       ""warnAsError"": [
         ""NU1500"",
         ""NU1501""
+      ],
+      ""warnNotAsError"": [
+        ""NU1801"",
+        ""NU1802""
       ]
     }
   }
@@ -625,6 +629,9 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(2, warningProperties.WarningsAsErrors.Count);
             Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1500));
             Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1501));
+            Assert.Equal(2, warningProperties.WarningsNotAsErrors.Count);
+            Assert.True(warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1801));
+            Assert.True(warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1802));
         }
 
         [Fact]
