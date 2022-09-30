@@ -5,7 +5,7 @@
     <IsEscrowMode>true</IsEscrowMode>
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">4</MajorNuGetVersion>
     <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">9</MinorNuGetVersion>
-    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">5</PatchNuGetVersion>
+    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">6</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <VsTargetBranch>lab/d15.$(MinorNuGetVersion)stg</VsTargetBranch>
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d15.$(MinorNuGetVersion)</VsTargetBranch>
