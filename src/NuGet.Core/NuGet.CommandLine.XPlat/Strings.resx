@@ -758,7 +758,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>0 - Value of CultureInfo.DefaultThreadCurrentUICulture</comment>
   </data>
   <data name="Error_InvalidCultureInfo" xml:space="preserve">
-    <value>Invalid culture in {0} environment variable. Value read is '{1}'</value>
+    <value>Invalid culture identifier in {0} environment variable. Value read is '{1}'</value>
     <comment>0 - Environment variable name, 1 - value set in environment variable</comment>
   </data>
 </root>
