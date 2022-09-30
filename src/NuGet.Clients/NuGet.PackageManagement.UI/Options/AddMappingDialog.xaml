@@ -43,7 +43,7 @@
                        HorizontalAlignment="Left"
                        VerticalAlignment="Top"
                        Margin="0,6,6,0"
-                       Command="{Binding HideButtonCommand}"
+                       Command="{Binding HideDialogCommand}"
                        AutomationProperties.Name="Close"
                        IsCancel="True"
                        BorderBrush="Transparent"
@@ -120,8 +120,8 @@
         <ColumnDefinition Width="190"/>
       </Grid.ColumnDefinitions>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"  Grid.Column="1">
-        <Button Height="24" Width="86" Command="{Binding AddButtonCommand}" Margin="0,0,3,12" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
-        <Button Height="24" Width="86"  Command ="{Binding HideButtonCommand}" Margin="3,0,12,12" Content="{x:Static nuget:Resources.VSOptions_Button_Cancel}"/>
+        <Button Height="24" Width="86" Command="{Binding AddMappingCommand}" Margin="0,0,3,12" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
+        <Button Height="24" Width="86"  Command ="{Binding HideDialogCommand}" Margin="3,0,12,12" Content="{x:Static nuget:Resources.VSOptions_Button_Cancel}"/>
       </StackPanel>
     </Grid>
   </Grid>

@@ -86,7 +86,6 @@
     <Compile Include="Models\LicenseFileText.cs" />
     <Compile Include="Models\PackageItemDeprecationLabelState.cs" />
     <Compile Include="OptionsViewModel.cs" />
-    <Compile Include="Options\ButtonCommand.cs" />
     <Compile Include="Options\AddMappingDialog.xaml.cs">
       <DependentUpon>AddMappingDialog.xaml</DependentUpon>
     </Compile>

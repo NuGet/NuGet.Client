@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
@@ -27,19 +28,21 @@ namespace NuGet.Options
 
         public PackageSourceMappingOptionsControl()
         {
-            ShowButtonCommand = new ButtonCommand(ExecuteShowButtonCommand, CanExecuteShowButtonCommand);
-            RemoveButtonCommand = new ButtonCommand(ExecuteRemoveButtonCommand, CanExecuteRemoveButtonCommand);
-            ClearButtonCommand = new ButtonCommand(ExecuteClearButtonCommand, CanExecuteClearButtonCommand);
+            // The use of a `JoinableTaskFactory` is not relevant as `CanExecuteChanged` will never be raised on this command.
+#pragma warning disable VSTHRD012 // Provide JoinableTaskFactory where allowed
+            ShowAddDialogCommand = new DelegateCommand(ExecuteShowAddDialog);
+#pragma warning restore VSTHRD012 // Provide JoinableTaskFactory where allowed
+            RemoveMappingCommand = new DelegateCommand(ExecuteRemoveMapping, CanExecuteRemoveMapping, NuGetUIThreadHelper.JoinableTaskFactory);
+            ClearMappingsCommand = new DelegateCommand(ExecuteClearMappings, CanExecuteClearMappings, NuGetUIThreadHelper.JoinableTaskFactory);
             SourceMappingsCollection = new ItemsChangeObservableCollection<SourceMappingViewModel>();
             DataContext = this;
             InitializeComponent();
-            (ShowButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
         }
 
         public ItemsChangeObservableCollection<SourceMappingViewModel> SourceMappingsCollection { get; private set; }
-        public ICommand ShowButtonCommand { get; set; }
-        public ICommand RemoveButtonCommand { get; set; }
-        public ICommand ClearButtonCommand { get; set; }
+        public ICommand ShowAddDialogCommand { get; set; }
+        public ICommand RemoveMappingCommand { get; set; }
+        public ICommand ClearMappingsCommand { get; set; }
 
         internal async Task InitializeOnActivatedAsync(CancellationToken cancellationToken)
         {
@@ -56,39 +59,34 @@ namespace NuGet.Options
             SourceMappingsCollection.AddRange(ReadMappingsFromConfigToUI(_originalPackageSourceMappings));
 
             // Make sure all buttons show on open if there are already source mappings.
-            (ClearButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
-            (RemoveButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
+            (ClearMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
+            (RemoveMappingCommand as DelegateCommand).RaiseCanExecuteChanged();
         }
-        private void ExecuteShowButtonCommand(object parameter)
+        private void ExecuteShowAddDialog(object parameter)
         {
             _addMappingDialog = new AddMappingDialog(this);
             IntPtr parent = WindowHelper.GetDialogOwnerHandle();
             WindowHelper.ShowModal(_addMappingDialog, parent);
         }
 
-        private bool CanExecuteShowButtonCommand(object parameter)
-        {
-            return true;
-        }
-
-        private void ExecuteRemoveButtonCommand(object parameter)
+        private void ExecuteRemoveMapping(object parameter)
         {
             SourceMappingsCollection.Remove((SourceMappingViewModel)_packageList.SelectedItem);
-            (ClearButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
+            (ClearMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
         }
 
-        private bool CanExecuteRemoveButtonCommand(object parameter)
+        private bool CanExecuteRemoveMapping(object parameter)
         {
             return SourceMappingsCollection.Count > 0;
         }
 
-        private void ExecuteClearButtonCommand(object parameter)
+        private void ExecuteClearMappings(object parameter)
         {
             SourceMappingsCollection.Clear();
-            (RemoveButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
+            (RemoveMappingCommand as DelegateCommand).RaiseCanExecuteChanged();
         }
 
-        private bool CanExecuteClearButtonCommand(object parameter)
+        private bool CanExecuteClearMappings(object parameter)
         {
             return SourceMappingsCollection.Count > 0;
         }

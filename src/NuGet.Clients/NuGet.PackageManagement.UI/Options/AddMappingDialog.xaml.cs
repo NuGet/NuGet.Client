@@ -16,9 +16,9 @@ namespace NuGet.Options
 {
     public partial class AddMappingDialog : DialogWindow
     {
-        public ICommand HideButtonCommand { get; set; }
+        public ICommand HideDialogCommand { get; set; }
 
-        public ICommand AddButtonCommand { get; set; }
+        public ICommand AddMappingCommand { get; set; }
 
         public ItemsChangeObservableCollection<PackageSourceViewModel> SourcesCollection { get; private set; }
 
@@ -29,8 +29,12 @@ namespace NuGet.Options
         public AddMappingDialog(PackageSourceMappingOptionsControl parent)
         {
             _parent = parent;
-            HideButtonCommand = new ButtonCommand(ExecuteHideButtonCommand, CanExecuteHideButtonCommand);
-            AddButtonCommand = new ButtonCommand(ExecuteAddButtonCommand, CanExecuteAddButtonCommand);
+
+            // The use of a `JoinableTaskFactory` is not relevant as `CanExecuteChanged` will never be raised on this command.
+#pragma warning disable VSTHRD012 // Provide JoinableTaskFactory where allowed
+            HideDialogCommand = new DelegateCommand(ExecuteHideDialog);
+#pragma warning restore VSTHRD012 // Provide JoinableTaskFactory where allowed
+            AddMappingCommand = new DelegateCommand(ExecuteAddMapping, CanExecuteAddMapping, NuGetUIThreadHelper.JoinableTaskFactory);
             SourcesCollection = new ItemsChangeObservableCollection<PackageSourceViewModel>();
             DataContext = this;
             InitializeComponent();
@@ -59,21 +63,16 @@ namespace NuGet.Options
             }
         }
 
-        private void ExecuteHideButtonCommand(object parameter)
+        private void ExecuteHideDialog(object parameter)
         {
             Close();
-            (_parent.ShowButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
         }
 
-        private bool CanExecuteHideButtonCommand(object parameter)
-        {
-            return true;
-        }
-
-        private void ExecuteAddButtonCommand(object parameter)
+        private void ExecuteAddMapping(object parameter)
         {
             Close();
-            //does not add mapping if package ID is null
+
+            // Does not add mapping if package ID is null.
             if (!string.IsNullOrWhiteSpace(_packageID.Text))
             {
                 string packageId = _packageID.Text;
@@ -88,21 +87,24 @@ namespace NuGet.Options
                 var viewModel = new SourceMappingViewModel(packageId, packageSources);
                 _parent.SourceMappingsCollection.Add(viewModel);
             }
-            (_parent.ShowButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
-            (_parent.RemoveButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
-            (_parent.ClearButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
+
+            (_parent.ShowAddDialogCommand as DelegateCommand).RaiseCanExecuteChanged();
+            (_parent.RemoveMappingCommand as DelegateCommand).RaiseCanExecuteChanged();
+            (_parent.ClearMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
         }
 
-        private bool CanExecuteAddButtonCommand(object parameter)
+        private bool CanExecuteAddMapping(object parameter)
         {
+            if (string.IsNullOrWhiteSpace(_packageID.Text))
+            {
+                return false;
+            }
+
             foreach (PackageSourceViewModel source in _sourcesListBox.Items)
             {
                 if (source.IsChecked)
                 {
-                    if (!string.IsNullOrWhiteSpace(_packageID.Text))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
             return false;
@@ -117,12 +119,12 @@ namespace NuGet.Options
 
         private void CheckBox_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            (AddButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
+            (AddMappingCommand as DelegateCommand).RaiseCanExecuteChanged();
         }
 
         private void PackageID_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            (AddButtonCommand as ButtonCommand).InvokeCanExecuteChanged();
+            (AddMappingCommand as DelegateCommand).RaiseCanExecuteChanged();
         }
     }
 }
