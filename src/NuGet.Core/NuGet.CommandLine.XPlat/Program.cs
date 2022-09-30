@@ -57,6 +57,8 @@ namespace NuGet.CommandLine.XPlat
                 .Where(e => e != "package")
                 .ToArray();
 
+            NuGet.Common.Migrations.MigrationRunner.Run();
+
             var verbosity = app.Option(XPlatUtility.VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
 
             // Options aren't parsed until we call app.Execute(), so look directly for the verbosity option ourselves

@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -201,7 +200,7 @@ namespace NuGet.Common
 
                 _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
 
-                DirectoryUtility.CreateSharedDirectory(_basePath);
+                Directory.CreateDirectory(_basePath);
 
                 return _basePath;
             }
@@ -211,7 +210,7 @@ namespace NuGet.Common
         {
             // In case the directory was cleaned up, we can choose to fix it (at a cost of another roundtrip to disk
             // or fail, starting with the more expensive path, and we might have to get rid of it if it becomes too hot.
-            DirectoryUtility.CreateSharedDirectory(BasePath);
+            Directory.CreateDirectory(BasePath);
 
             return Path.Combine(BasePath, FilePathToLockName(filePath));
         }

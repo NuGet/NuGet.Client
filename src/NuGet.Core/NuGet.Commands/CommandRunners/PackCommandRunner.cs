@@ -157,10 +157,14 @@ namespace NuGet.Commands
                 throw new PackagingException(NuGetLogCode.NU5001, string.Format(CultureInfo.CurrentCulture, Strings.Error_WriteResolvedNuSpecOverwriteOriginal, _packArgs.Path));
             }
 
-            // We must use the Path.GetTempPath() which NuGetFolderPath.Temp uses as a root because writing temp files to the package directory with a guid would break some build tools caching
-            var manifest = new Manifest(new ManifestMetadata(builder), null);
-            var tempOutputPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetFileName(resolvedNuSpecOutputPath));
-            using (Stream stream = new FileStream(tempOutputPath, FileMode.Create))
+            // We must use the Path.GetTempPath() which NuGetFolderPath.Temp uses as a root because writing temp files
+            // to the package directory with a guid would break some build tools caching
+            var manifest = new Manifest(new ManifestMetadata(builder), files: null);
+            string tempOutputPath = Path.Combine(
+                NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
+                Path.GetRandomFileName());
+
+            using (var stream = new FileStream(tempOutputPath, FileMode.Create))
             {
                 manifest.Save(stream);
             }
@@ -179,8 +183,11 @@ namespace NuGet.Commands
 
             var sha512OutputPath = Path.Combine(outputPath + ".sha512");
 
-            // We must use the Path.GetTempPath() which NuGetFolderPath.Temp uses as a root because writing temp files to the package directory with a guid would break some build tools caching
-            var tempOutputPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetFileName(sha512OutputPath));
+            // We must use the Path.GetTempPath() which NuGetFolderPath.Temp uses as a root because writing temp files
+            // to the package directory with a guid would break some build tools caching
+            string tempOutputPath = Path.Combine(
+                NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
+                Path.GetRandomFileName());
 
             _packArgs.Logger.Log(PackagingLogMessage.CreateMessage(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandInstallPackageToOutputPath, "SHA512", sha512OutputPath), LogLevel.Minimal));
 

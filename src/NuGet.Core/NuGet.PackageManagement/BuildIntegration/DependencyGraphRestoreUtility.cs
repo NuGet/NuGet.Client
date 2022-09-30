@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement
                         "nugetSpec.dg");
 
                 // create nuget temp folder if not exists
-                DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(filePath));
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
                 // delete existing dg spec file (if exists) then replace it with new file.
                 await FileUtility.ReplaceWithLock(

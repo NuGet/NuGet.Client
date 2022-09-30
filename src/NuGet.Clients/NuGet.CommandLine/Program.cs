@@ -60,6 +60,8 @@ namespace NuGet.CommandLine
             }
 #endif
 
+            NuGet.Common.Migrations.MigrationRunner.Run();
+
 #if IS_DESKTOP
             // Find any response files and resolve the args
             if (!RuntimeEnvironmentHelper.IsMono)
