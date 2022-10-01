@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Configuration;
@@ -46,17 +47,14 @@ namespace NuGet.Options
 
         internal async Task InitializeOnActivatedAsync(CancellationToken cancellationToken)
         {
-            IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
-            IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
-
             // Show package source mappings on open.
-            var componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
+            IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModelMapping.GetService<ISettings>();
-            PackageSourceMappingProvider packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
+            var packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
             _originalPackageSourceMappings = packageSourceMappingProvider.GetPackageSourceMappingItems();
 
             SourceMappingsCollection.Clear();
-            SourceMappingsCollection.AddRange(ReadMappingsFromConfigToUI(_originalPackageSourceMappings));
+            SourceMappingsCollection.AddRange(CreateViewModels(_originalPackageSourceMappings));
 
             // Make sure all buttons show on open if there are already source mappings.
             (ClearMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
@@ -164,7 +162,7 @@ namespace NuGet.Options
             return false;
         }
 
-        private IReadOnlyList<SourceMappingViewModel> ReadMappingsFromConfigToUI(IReadOnlyList<PackageSourceMappingSourceItem> originalMappings)
+        private IReadOnlyList<SourceMappingViewModel> CreateViewModels(IReadOnlyList<PackageSourceMappingSourceItem> originalMappings)
         {
             var uiSourceMappings = new Dictionary<string, List<PackageSourceContextInfo>>();
             foreach (PackageSourceMappingSourceItem sourceItem in originalMappings)
