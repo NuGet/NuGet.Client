@@ -10,9 +10,8 @@ namespace NuGet.Options
     public class SourceMappingViewModel
     {
         public string ID { get; set; }
-        public List<PackageSourceContextInfo> Sources { get; private set; }
+        public IReadOnlyList<PackageSourceContextInfo> Sources { get; private set; }
 
-        //View binds to this string
         public string SourcesString
         {
             get
