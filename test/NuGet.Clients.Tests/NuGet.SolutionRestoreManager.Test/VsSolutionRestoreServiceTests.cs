@@ -1722,14 +1722,18 @@ namespace NuGet.SolutionRestoreManager.Test
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
                         new[] {
-                            new VsProjectProperty("TreatWarningsAsErrors", "true")
+                            new VsProjectProperty("TreatWarningsAsErrors", "true"),
+                            new VsProjectProperty("WarningsAsErrors", "NU1603;NU1604"),
+                            new VsProjectProperty("WarningsNotAsErrors", "NU1801;NU1802")
                         }) :
                 new VsTargetFrameworkInfo(
                         "netcoreapp1.0",
                         new IVsReferenceItem[] { packageReference },
                         Enumerable.Empty<IVsReferenceItem>(),
                         new[] {
-                            new VsProjectProperty("TreatWarningsAsErrors", "true")
+                            new VsProjectProperty("TreatWarningsAsErrors", "true"),
+                            new VsProjectProperty("WarningsAsErrors", "NU1603;NU1604"),
+                            new VsProjectProperty("WarningsNotAsErrors", "NU1801;NU1802")l
                         });
 
             var cps = NewCpsProject("{ }");
@@ -1749,7 +1753,12 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.True(actualProjectSpec.RestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors);
             Assert.True(actualProjectSpec.TargetFrameworks.First().Dependencies.First().NoWarn.First().Equals(NuGetLogCode.NU1605));
             Assert.Null(actualProjectSpec.TargetFrameworks.First().RuntimeIdentifierGraphPath);
-
+            Assert.True(actualProjectSpec.RestoreMetadata.ProjectWideWarningProperties.WarningsAsErrors.Count.Equals(2));
+            Assert.True(actualProjectSpec.RestoreMetadata.ProjectWideWarningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1603));
+            Assert.True(actualProjectSpec.RestoreMetadata.ProjectWideWarningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1604));
+            Assert.True(actualProjectSpec.RestoreMetadata.ProjectWideWarningProperties.WarningsNotAsErrors.Count.Equals(2));
+            Assert.True(actualProjectSpec.RestoreMetadata.ProjectWideWarningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1801));
+            Assert.True(actualProjectSpec.RestoreMetadata.ProjectWideWarningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1802));
         }
 
         [Theory]
