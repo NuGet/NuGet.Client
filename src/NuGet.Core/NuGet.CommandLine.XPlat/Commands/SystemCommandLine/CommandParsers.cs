@@ -15,7 +15,12 @@ namespace NuGet.CommandLine.XPlat.Commands
     {
         public static void Register(Command app, Func<ILogger> getLogger)
         {
+            AddVerbParser.Register(app, getLogger);
+            DisableVerbParser.Register(app, getLogger);
+            EnableVerbParser.Register(app, getLogger);
             ListVerbParser.Register(app, getLogger);
+            RemoveVerbParser.Register(app, getLogger);
+            UpdateVerbParser.Register(app, getLogger);
         }
     }
 }
