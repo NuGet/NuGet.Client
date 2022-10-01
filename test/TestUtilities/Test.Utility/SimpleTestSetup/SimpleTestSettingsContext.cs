@@ -35,6 +35,12 @@ namespace NuGet.Test.Utility
             ConfigPath = path ?? throw new ArgumentNullException(nameof(path));
         }
 
+        public SimpleTestSettingsContext(string path)
+            : this(path, GetEmptyConfig())
+        {
+
+        }
+
         /// <summary>
         /// Save to disk
         /// </summary>
@@ -84,8 +90,7 @@ namespace NuGet.Test.Utility
             var doc = new XDocument();
             var configuration = new XElement(XName.Get("configuration"));
             doc.Add(configuration);
-
-            var config = GetOrAddSection(doc, "config");
+            _ = GetOrAddSection(doc, "config");
             var packageSources = GetOrAddSection(doc, "packageSources");
             var disabledSources = GetOrAddSection(doc, "disabledPackageSources");
             var fallbackFolders = GetOrAddSection(doc, "fallbackPackageFolders");
