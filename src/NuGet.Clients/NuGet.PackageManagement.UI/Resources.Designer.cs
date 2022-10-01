@@ -1474,6 +1474,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Getting Package Source Mappings....
+        /// </summary>
+        public static string PackageSourceMappingOptions_OnActivated {
+            get {
+                return ResourceManager.GetString("PackageSourceMappingOptions_OnActivated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Getting Package Sources....
         /// </summary>
         public static string PackageSourceOptions_OnActivated {

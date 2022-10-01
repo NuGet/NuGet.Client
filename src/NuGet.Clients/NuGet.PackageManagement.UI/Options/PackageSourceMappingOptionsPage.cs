@@ -62,15 +62,14 @@ namespace NuGet.Options
             base.OnActivate(e);
             DoCancelableOperationWithProgressUI(() =>
             {
-                // Normally we shouldn't wrap JTF around BrokeredCalls but this is in a cancelable operation already
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await OnActivateAsync(e, CancellationToken));
+                OnActivateAsync(e, CancellationToken);
 
-            }, Resources.PackageSourceOptions_OnActivated);
+            }, Resources.PackageSourceMappingOptions_OnActivated);
         }
 
-        private async Task OnActivateAsync(CancelEventArgs e, CancellationToken cancellationToken)
+        private void OnActivateAsync(CancelEventArgs e, CancellationToken cancellationToken)
         {
-            await _packageSourceMappingOptionsControl.Value.InitializeOnActivatedAsync(cancellationToken);
+            _packageSourceMappingOptionsControl.Value.InitializeOnActivated(cancellationToken);
         }
 
         private PackageSourceMappingOptionsControl PackageSourceMappingControl => _packageSourceMappingOptionsControl.Value;

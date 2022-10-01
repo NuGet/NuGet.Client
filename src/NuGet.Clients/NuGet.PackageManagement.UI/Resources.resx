@@ -965,4 +965,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="VSOptions_Watermark_AddPackageNamespace" xml:space="preserve">
     <value>Add Valid Package ID</value>
   </data>
+  <data name="PackageSourceMappingOptions_OnActivated" xml:space="preserve">
+    <value>Getting Package Source Mappings...</value>
+  </data>
 </root>

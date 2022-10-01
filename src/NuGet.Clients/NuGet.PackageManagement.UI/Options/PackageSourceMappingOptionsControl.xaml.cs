@@ -45,7 +45,7 @@ namespace NuGet.Options
         public ICommand RemoveMappingCommand { get; set; }
         public ICommand ClearMappingsCommand { get; set; }
 
-        internal async Task InitializeOnActivatedAsync(CancellationToken cancellationToken)
+        internal void InitializeOnActivated(CancellationToken cancellationToken)
         {
             // Show package source mappings on open.
             IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
