@@ -11,6 +11,133 @@ using NuGet.Commands;
 
 namespace NuGet.CommandLine.XPlat.Commands
 {
+    internal partial class AddSourceCustomBinder : BinderBase<AddSourceArgs>
+    {
+        private readonly Argument<string> _source;
+        private readonly Option<string> _name;
+        private readonly Option<string> _username;
+        private readonly Option<string> _password;
+        private readonly Option<bool> _storePasswordInClearText;
+        private readonly Option<string> _validAuthenticationTypes;
+        private readonly Option<string> _configfile;
+
+        public AddSourceCustomBinder(Argument<string> source, Option<string> name, Option<string> username, Option<string> password, Option<bool> storePasswordInClearText, Option<string> validAuthenticationTypes, Option<string> configfile)
+        {
+            _source = source;
+            _name = name;
+            _username = username;
+            _password = password;
+            _storePasswordInClearText = storePasswordInClearText;
+            _validAuthenticationTypes = validAuthenticationTypes;
+            _configfile = configfile;
+        }
+
+        protected override AddSourceArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new AddSourceArgs()
+            {
+                Source = bindingContext.ParseResult.GetValueForArgument(_source),
+                Name = bindingContext.ParseResult.GetValueForOption(_name),
+                Username = bindingContext.ParseResult.GetValueForOption(_username),
+                Password = bindingContext.ParseResult.GetValueForOption(_password),
+                StorePasswordInClearText = bindingContext.ParseResult.GetValueForOption(_storePasswordInClearText),
+                ValidAuthenticationTypes = bindingContext.ParseResult.GetValueForOption(_validAuthenticationTypes),
+                Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
+    internal partial class AddClientCertCustomBinder : BinderBase<AddClientCertArgs>
+    {
+        private readonly Option<string> _packageSource;
+        private readonly Option<string> _path;
+        private readonly Option<string> _password;
+        private readonly Option<bool> _storePasswordInClearText;
+        private readonly Option<string> _storeLocation;
+        private readonly Option<string> _storeName;
+        private readonly Option<string> _findBy;
+        private readonly Option<string> _findValue;
+        private readonly Option<bool> _force;
+        private readonly Option<string> _configfile;
+
+        public AddClientCertCustomBinder(Option<string> packageSource, Option<string> path, Option<string> password, Option<bool> storePasswordInClearText, Option<string> storeLocation, Option<string> storeName, Option<string> findBy, Option<string> findValue, Option<bool> force, Option<string> configfile)
+        {
+            _packageSource = packageSource;
+            _path = path;
+            _password = password;
+            _storePasswordInClearText = storePasswordInClearText;
+            _storeLocation = storeLocation;
+            _storeName = storeName;
+            _findBy = findBy;
+            _findValue = findValue;
+            _force = force;
+            _configfile = configfile;
+        }
+
+        protected override AddClientCertArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new AddClientCertArgs()
+            {
+                PackageSource = bindingContext.ParseResult.GetValueForOption(_packageSource),
+                Path = bindingContext.ParseResult.GetValueForOption(_path),
+                Password = bindingContext.ParseResult.GetValueForOption(_password),
+                StorePasswordInClearText = bindingContext.ParseResult.GetValueForOption(_storePasswordInClearText),
+                StoreLocation = bindingContext.ParseResult.GetValueForOption(_storeLocation),
+                StoreName = bindingContext.ParseResult.GetValueForOption(_storeName),
+                FindBy = bindingContext.ParseResult.GetValueForOption(_findBy),
+                FindValue = bindingContext.ParseResult.GetValueForOption(_findValue),
+                Force = bindingContext.ParseResult.GetValueForOption(_force),
+                Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
+    internal partial class DisableSourceCustomBinder : BinderBase<DisableSourceArgs>
+    {
+        private readonly Argument<string> _name;
+        private readonly Option<string> _configfile;
+
+        public DisableSourceCustomBinder(Argument<string> name, Option<string> configfile)
+        {
+            _name = name;
+            _configfile = configfile;
+        }
+
+        protected override DisableSourceArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new DisableSourceArgs()
+            {
+                Name = bindingContext.ParseResult.GetValueForArgument(_name),
+                Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
+    internal partial class EnableSourceCustomBinder : BinderBase<EnableSourceArgs>
+    {
+        private readonly Argument<string> _name;
+        private readonly Option<string> _configfile;
+
+        public EnableSourceCustomBinder(Argument<string> name, Option<string> configfile)
+        {
+            _name = name;
+            _configfile = configfile;
+        }
+
+        protected override EnableSourceArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new EnableSourceArgs()
+            {
+                Name = bindingContext.ParseResult.GetValueForArgument(_name),
+                Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
     internal partial class ListSourceCustomBinder : BinderBase<ListSourceArgs>
     {
         private readonly Option<string> _format;
@@ -27,6 +154,152 @@ namespace NuGet.CommandLine.XPlat.Commands
             var returnValue = new ListSourceArgs()
             {
                 Format = bindingContext.ParseResult.GetValueForOption(_format),
+                Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
+    internal partial class ListClientCertCustomBinder : BinderBase<ListClientCertArgs>
+    {
+        private readonly Option<string> _configfile;
+
+        public ListClientCertCustomBinder(Option<string> configfile)
+        {
+            _configfile = configfile;
+        }
+
+        protected override ListClientCertArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new ListClientCertArgs()
+            {
+                Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
+    internal partial class RemoveSourceCustomBinder : BinderBase<RemoveSourceArgs>
+    {
+        private readonly Argument<string> _name;
+        private readonly Option<string> _configfile;
+
+        public RemoveSourceCustomBinder(Argument<string> name, Option<string> configfile)
+        {
+            _name = name;
+            _configfile = configfile;
+        }
+
+        protected override RemoveSourceArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new RemoveSourceArgs()
+            {
+                Name = bindingContext.ParseResult.GetValueForArgument(_name),
+                Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
+    internal partial class RemoveClientCertCustomBinder : BinderBase<RemoveClientCertArgs>
+    {
+        private readonly Option<string> _packageSource;
+        private readonly Option<string> _configfile;
+
+        public RemoveClientCertCustomBinder(Option<string> packageSource, Option<string> configfile)
+        {
+            _packageSource = packageSource;
+            _configfile = configfile;
+        }
+
+        protected override RemoveClientCertArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new RemoveClientCertArgs()
+            {
+                PackageSource = bindingContext.ParseResult.GetValueForOption(_packageSource),
+                Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
+    internal partial class UpdateSourceCustomBinder : BinderBase<UpdateSourceArgs>
+    {
+        private readonly Argument<string> _name;
+        private readonly Option<string> _source;
+        private readonly Option<string> _username;
+        private readonly Option<string> _password;
+        private readonly Option<bool> _storePasswordInClearText;
+        private readonly Option<string> _validAuthenticationTypes;
+        private readonly Option<string> _configfile;
+
+        public UpdateSourceCustomBinder(Argument<string> name, Option<string> source, Option<string> username, Option<string> password, Option<bool> storePasswordInClearText, Option<string> validAuthenticationTypes, Option<string> configfile)
+        {
+            _name = name;
+            _source = source;
+            _username = username;
+            _password = password;
+            _storePasswordInClearText = storePasswordInClearText;
+            _validAuthenticationTypes = validAuthenticationTypes;
+            _configfile = configfile;
+        }
+
+        protected override UpdateSourceArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new UpdateSourceArgs()
+            {
+                Name = bindingContext.ParseResult.GetValueForArgument(_name),
+                Source = bindingContext.ParseResult.GetValueForOption(_source),
+                Username = bindingContext.ParseResult.GetValueForOption(_username),
+                Password = bindingContext.ParseResult.GetValueForOption(_password),
+                StorePasswordInClearText = bindingContext.ParseResult.GetValueForOption(_storePasswordInClearText),
+                ValidAuthenticationTypes = bindingContext.ParseResult.GetValueForOption(_validAuthenticationTypes),
+                Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
+    internal partial class UpdateClientCertCustomBinder : BinderBase<UpdateClientCertArgs>
+    {
+        private readonly Option<string> _packageSource;
+        private readonly Option<string> _path;
+        private readonly Option<string> _password;
+        private readonly Option<bool> _storePasswordInClearText;
+        private readonly Option<string> _storeLocation;
+        private readonly Option<string> _storeName;
+        private readonly Option<string> _findBy;
+        private readonly Option<string> _findValue;
+        private readonly Option<bool> _force;
+        private readonly Option<string> _configfile;
+
+        public UpdateClientCertCustomBinder(Option<string> packageSource, Option<string> path, Option<string> password, Option<bool> storePasswordInClearText, Option<string> storeLocation, Option<string> storeName, Option<string> findBy, Option<string> findValue, Option<bool> force, Option<string> configfile)
+        {
+            _packageSource = packageSource;
+            _path = path;
+            _password = password;
+            _storePasswordInClearText = storePasswordInClearText;
+            _storeLocation = storeLocation;
+            _storeName = storeName;
+            _findBy = findBy;
+            _findValue = findValue;
+            _force = force;
+            _configfile = configfile;
+        }
+
+        protected override UpdateClientCertArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new UpdateClientCertArgs()
+            {
+                PackageSource = bindingContext.ParseResult.GetValueForOption(_packageSource),
+                Path = bindingContext.ParseResult.GetValueForOption(_path),
+                Password = bindingContext.ParseResult.GetValueForOption(_password),
+                StorePasswordInClearText = bindingContext.ParseResult.GetValueForOption(_storePasswordInClearText),
+                StoreLocation = bindingContext.ParseResult.GetValueForOption(_storeLocation),
+                StoreName = bindingContext.ParseResult.GetValueForOption(_storeName),
+                FindBy = bindingContext.ParseResult.GetValueForOption(_findBy),
+                FindValue = bindingContext.ParseResult.GetValueForOption(_findValue),
+                Force = bindingContext.ParseResult.GetValueForOption(_force),
                 Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
             };
             return returnValue;
