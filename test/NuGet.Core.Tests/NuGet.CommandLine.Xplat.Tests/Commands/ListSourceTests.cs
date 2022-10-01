@@ -26,13 +26,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             NuGet.CommandLine.XPlat.Commands.ListVerbParser.Register(newCli, () => testLoggerNew);
 
             // Act
-            currentCli.Execute(cmd);
-            newCli.Invoke(cmd);
+            int statusCurrent = currentCli.Execute(cmd);
+            int statusNew = newCli.Invoke(cmd);
 
             // Assert
-            Assert.False(testLoggerCurrent.Messages.IsEmpty);
-            Assert.False(testLoggerNew.Messages.IsEmpty);
-            Assert.Equal(testLoggerCurrent.Messages, testLoggerNew.Messages);
+            CommandTestUtils.AssertBothCommandSuccessfulExecution(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.CommandLine;
+using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.CommandLine.XPlat;
 using NuGet.Test.Utility;
@@ -14,9 +15,11 @@ namespace NuGet.CommandLine.Xplat.Tests
         [Fact]
         public void AddSource_RunSameCommandInBothCommandLineInterfaces_CommandOutputEqual()
         {
+            string file1 = Path.GetTempFileName();
+            string file2 = Path.GetTempFileName();
             
-            using var root1 = new SimpleTestPathContext();
-            using var root2 = new SimpleTestPathContext();
+            File.WriteAllText(file1, "<configuration></configuration>");
+            File.WriteAllText(file2, "<configuration></configuration>");
 
             // Arrange
             var currentCli = new CommandLineApplication();
@@ -28,14 +31,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             NuGet.CommandLine.XPlat.Commands.AddVerbParser.Register(newCli, () => testLoggerNew);
 
             // Act
-            currentCli.Execute(new[] { "add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", root1.NuGetConfig });
-            newCli.Invoke(new[] { "add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", root2.NuGetConfig });
+            int statusCurrent = currentCli.Execute(new[] { "add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", file1 });
+            int statusNew = newCli.Invoke(new[] { "add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", file2 });
 
             // Assert
-            Assert.False(testLoggerCurrent.Messages.IsEmpty);
-            Assert.False(testLoggerNew.Messages.IsEmpty);
-            Assert.Equal(testLoggerCurrent.Messages, testLoggerNew.Messages);
-
+            CommandTestUtils.AssertBothCommandSuccessfulExecution(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);
         }
     }
 }
