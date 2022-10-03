@@ -751,10 +751,12 @@ namespace Dotnet.Integration.Test
                 Directory.CreateDirectory(pkgsPath);
                 Directory.CreateDirectory(basePackagePath);
 
+                string tfm = Constants.DefaultTargetFramework.GetShortFolderName();
+
                 // Base Package
-                var basePackageProjectContent = @"<Project Sdk='Microsoft.NET.Sdk'>
+                var basePackageProjectContent = @$"<Project Sdk='Microsoft.NET.Sdk'>
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{tfm}</TargetFramework>
     <PackageOutputPath>$(MSBuildThisFileDirectory)..\pkgs</PackageOutputPath>
   </PropertyGroup>
   <ItemGroup>
@@ -780,9 +782,9 @@ namespace Dotnet.Integration.Test
 
                 File.WriteAllText(Path.Combine(topPath, "NuGet.Config"), customNuGetConfigContent);
 
-                var topProjectContent = @"<Project Sdk='Microsoft.NET.Sdk'>
+                var topProjectContent = @$"<Project Sdk='Microsoft.NET.Sdk'>
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{tfm}</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include='BasePackage' Version='1.0.0' />
@@ -5767,7 +5769,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
     <Version>1.2.3</Version>
   </PropertyGroup>
 
@@ -5809,7 +5811,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
     <Version>1.2.3</Version>
   </PropertyGroup>
   <ItemGroup>
@@ -5879,7 +5881,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
     <Version>1.2.3</Version>
   </PropertyGroup>
 
@@ -5924,7 +5926,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>NU5104</NoWarn>
@@ -6145,7 +6147,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net48</TargetFrameworks>
+    <TargetFrameworks>{Constants.DefaultTargetFramework.GetShortFolderName()};net48</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>NU5104</NoWarn>
