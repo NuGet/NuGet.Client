@@ -4,10 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
-using NuGet.Shared;
 
 namespace NuGet.Packaging
 {
@@ -58,26 +56,16 @@ namespace NuGet.Packaging
 
         public bool Equals(PackageDependencyGroup other)
         {
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            if (ReferenceEquals(other, null))
-            {
-                return false;
-            }
-
-            return GetHashCode() == other.GetHashCode();
+            return PackageDependencyGroupComparer.Default.Equals(this, other);
         }
 
         public override bool Equals(object obj)
         {
-            var other = obj as PackageDependencyGroup;
+            var dependency = obj as PackageDependencyGroup;
 
-            if (other != null)
+            if (dependency != null)
             {
-                return Equals(other);
+                return Equals(dependency);
             }
 
             return false;
@@ -85,19 +73,7 @@ namespace NuGet.Packaging
 
         public override int GetHashCode()
         {
-            var combiner = new HashCodeCombiner();
-
-            combiner.AddObject(TargetFramework);
-
-            if (Packages != null)
-            {
-                foreach (var hash in Packages.Select(e => e.GetHashCode()).OrderBy(e => e))
-                {
-                    combiner.AddObject(hash);
-                }
-            }
-
-            return combiner.CombinedHash;
+            return PackageDependencyGroupComparer.Default.GetHashCode(this);
         }
 
         public override string ToString()
