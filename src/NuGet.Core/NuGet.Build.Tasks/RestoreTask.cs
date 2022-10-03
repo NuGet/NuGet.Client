@@ -102,7 +102,9 @@ namespace NuGet.Build.Tasks
 #endif
             var log = new MSBuildLogger(Log);
 
+#if IS_DESKTOP
             NuGet.Common.Migrations.MigrationRunner.Run();
+#endif
 
             // Log inputs
             log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");

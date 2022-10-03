@@ -57,7 +57,9 @@ namespace NuGet.CommandLine.XPlat
                 .Where(e => e != "package")
                 .ToArray();
 
+#if IS_DESKTOP
             NuGet.Common.Migrations.MigrationRunner.Run();
+#endif
 
             var verbosity = app.Option(XPlatUtility.VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
 

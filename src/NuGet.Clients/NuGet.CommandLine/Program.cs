@@ -58,11 +58,11 @@ namespace NuGet.CommandLine
                 args = args.Where(arg => !string.Equals(arg, DebugOption, StringComparison.OrdinalIgnoreCase)).ToArray();
                 System.Diagnostics.Debugger.Launch();
             }
-#endif
-
-            NuGet.Common.Migrations.MigrationRunner.Run();
+#endif            
 
 #if IS_DESKTOP
+            NuGet.Common.Migrations.MigrationRunner.Run();
+            
             // Find any response files and resolve the args
             if (!RuntimeEnvironmentHelper.IsMono)
             {

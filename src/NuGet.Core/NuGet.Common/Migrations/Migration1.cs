@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-#endif
 
 namespace NuGet.Common.Migrations
 {
@@ -19,7 +18,6 @@ namespace NuGet.Common.Migrations
                 return;
             }
 
-#if IS_DESKTOP
             // Since these paths have changed, we can't use NuGetEnvironment.GetFolderPath, since that will
             // return us the new path, not the old.
             string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -31,10 +29,8 @@ namespace NuGet.Common.Migrations
             EnsureExpectedPermissions(pathsToCheck: pathsToCheck, umask: umask);
 
             EnsureConfigFilePermissions();
-#endif
         }
 
-#if IS_DESKTOP
         internal static void DeleteMigratedDirectories(string nugetBaseDirectory)
         {
             var v3cachePath = Path.Combine(nugetBaseDirectory, "v3-cache");
@@ -214,6 +210,6 @@ namespace NuGet.Common.Migrations
                 return output;
             }
         }
-#endif
     }
 }
+#endif

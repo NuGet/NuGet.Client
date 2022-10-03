@@ -57,7 +57,9 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return null;
             }
 
+#if IS_DESKTOP
             NuGet.Common.Migrations.MigrationRunner.Run();
+#endif
 
             return NuGetAbstraction.GetSdkResult(sdkReference, parsedSdkVersion, resolverContext, factory);
         }

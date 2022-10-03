@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if IS_DESKTOP
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Common.Migrations;
@@ -72,26 +73,6 @@ namespace NuGet.Common.Test
                 Assert.Equal(Migration1.GetPermissions(v3cacheSubDirectoryInfo.FullName).ToString(), expectedPermissions);
             }
         }
-
-        [PlatformFact(Platform.Darwin, Platform.Linux)]
-        public void EnsureConfigFilePermissions_NuGetConfig_Success()
-        {
-            using (var testDirectory = TestDirectory.Create())
-            {
-                string testDirectoryConfigPath = Path.Combine(testDirectory.Path, "NuGet.Config");
-                File.WriteAllText(testDirectoryConfigPath, string.Empty);
-                Migration1.Exec("chmod", "666" + " " + testDirectoryConfigPath);
-                var subDirectory = Directory.CreateDirectory(Path.Combine(testDirectory.Path, "config"));
-                string subDirectoryConfigPath = Path.Combine(subDirectory.FullName, "NuGet.Config");
-                File.WriteAllText(subDirectoryConfigPath, string.Empty);
-                Migration1.Exec("chmod", "666" + " " + subDirectoryConfigPath);
-
-                Migration1.EnsureConfigFilePermissions(testDirectory.Path, PosixPermissions.Parse("077"));
-
-                string expectedPermissions = PosixPermissions.Parse("600").ToString();
-                Assert.Equal(Migration1.GetPermissions(testDirectoryConfigPath).ToString(), expectedPermissions);
-                Assert.Equal(Migration1.GetPermissions(subDirectoryConfigPath).ToString(), expectedPermissions);
-            }
-        }
     }
 }
+#endif
