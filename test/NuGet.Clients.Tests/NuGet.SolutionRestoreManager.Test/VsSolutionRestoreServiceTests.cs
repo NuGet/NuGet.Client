@@ -1733,7 +1733,7 @@ namespace NuGet.SolutionRestoreManager.Test
                         new[] {
                             new VsProjectProperty("TreatWarningsAsErrors", "true"),
                             new VsProjectProperty("WarningsAsErrors", "NU1603;NU1604"),
-                            new VsProjectProperty("WarningsNotAsErrors", "NU1801;NU1802")l
+                            new VsProjectProperty("WarningsNotAsErrors", "NU1801;NU1802")
                         });
 
             var cps = NewCpsProject("{ }");
