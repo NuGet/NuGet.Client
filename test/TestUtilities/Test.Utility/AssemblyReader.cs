@@ -26,25 +26,19 @@ namespace NuGet.Test.Utility
 
         private static CustomAttribute GetTargetFrameworkAttribute(MetadataReader metadataReader)
         {
-            foreach (var customAttributeHandle in metadataReader.CustomAttributes)
+            foreach (CustomAttributeHandle customAttributeHandle in metadataReader.CustomAttributes)
             {
-                var customAttribute = metadataReader.GetCustomAttribute(customAttributeHandle);
-                switch (customAttribute.Constructor.Kind)
+                CustomAttribute customAttribute = metadataReader.GetCustomAttribute(customAttributeHandle);
+
+                if (customAttribute.Constructor.Kind == HandleKind.MemberReference)
                 {
-                    case HandleKind.MemberReference:
-                        {
-                            var memberReference = metadataReader.GetMemberReference((MemberReferenceHandle)customAttribute.Constructor);
-                            var name = GetMemberName(memberReference, metadataReader);
+                    MemberReference memberReference = metadataReader.GetMemberReference((MemberReferenceHandle)customAttribute.Constructor);
+                    string name = GetMemberName(memberReference, metadataReader);
 
-                            if (name == "System.Runtime.Versioning.TargetFrameworkAttribute..ctor")
-                            {
-                                return customAttribute;
-                            }
-                        }
-                        break;
-
-                    default:
-                        throw new NotSupportedException(customAttribute.Constructor.Kind.ToString());
+                    if (name == "System.Runtime.Versioning.TargetFrameworkAttribute..ctor")
+                    {
+                        return customAttribute;
+                    }
                 }
             }
 
