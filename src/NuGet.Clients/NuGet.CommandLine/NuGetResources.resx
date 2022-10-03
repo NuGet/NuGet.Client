@@ -724,7 +724,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>Don't localize 'SourceProvider'</comment>
   </data>
   <data name="Error_AttemptingToPackSDKproject" xml:space="preserve">
-    <value>The `pack` command for SDK-style projects is not supported, use `dotnet pack` to pack this project instead. To force `nuget pack` command through, you can set the '{0}' environment variable to 'true' but this is not recommended.</value>
+    <value>The `pack` command for SDK-style projects is not supported, use `dotnet pack` to pack this project instead. To force nuget to run `pack` command, you can set the '{0}' environment variable to 'true' but this is not recommended.</value>
     <comment>0 - environment variable name. 
 Do not localize `SDK`, `dotnet pack` and 'true'.</comment>
   </data>
