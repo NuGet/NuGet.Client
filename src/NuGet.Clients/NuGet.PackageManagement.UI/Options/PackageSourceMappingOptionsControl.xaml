@@ -18,16 +18,8 @@
       <!-- Data Template for list items -->
       <DataTemplate x:Uid="MappingItemTemplate" x:Key="MappingItemTemplate">
         <StackPanel x:Uid="ListItemStackPanel" Margin="0,3,0,3">
-          <TextBlock FontWeight="Bold">
-            <TextBlock.Text>
-              <Binding Path="ID"/>
-            </TextBlock.Text>
-          </TextBlock>
-          <TextBlock>
-            <TextBlock.Text>
-              <Binding Path="SourcesString"/>
-            </TextBlock.Text>
-          </TextBlock>
+          <TextBlock FontWeight="Bold" Text="{Binding ID}"/>
+          <TextBlock Text="{Binding SourcesString}"/>
         </StackPanel>
       </DataTemplate>
     </Grid.Resources>
@@ -39,7 +31,13 @@
              ItemTemplate="{StaticResource MappingItemTemplate}"
              IsSynchronizedWithCurrentItem="True"
              ScrollViewer.VerticalScrollBarVisibility="Auto"
-             AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}" />
+             AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}">
+      <ListBox.ItemContainerStyle>
+        <Style>
+          <Setter Property="AutomationProperties.Name" Value="{Binding ID}"/>
+        </Style>
+      </ListBox.ItemContainerStyle>
+    </ListBox>
     <Grid Grid.Row="3">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="101"/>
