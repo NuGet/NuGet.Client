@@ -130,34 +130,34 @@ steps:
     msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath /bl:$(Build.StagingDirectory)\\binlog\\05.CopyFinalNuGetExeToOutputPath.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
-- task: MSBuild@1
-  displayName: "Run unit tests (stop on error)"
-  continueOnError: "false"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\06.RunUnitTests.binlog"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
+# - task: MSBuild@1
+#   displayName: "Run unit tests (stop on error)"
+#   continueOnError: "false"
+#   inputs:
+#     solution: "build\\build.proj"
+#     configuration: "$(BuildConfiguration)"
+#     msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\06.RunUnitTests.binlog"
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
 
-- task: MSBuild@1
-  displayName: "Run unit tests (continue on error)"
-  continueOnError: "true"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\06.RunUnitTests.binlog"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
+# - task: MSBuild@1
+#   displayName: "Run unit tests (continue on error)"
+#   continueOnError: "true"
+#   inputs:
+#     solution: "build\\build.proj"
+#     configuration: "$(BuildConfiguration)"
+#     msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\06.RunUnitTests.binlog"
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: PublishTestResults@2
-  displayName: "Publish Test Results"
-  inputs:
-    testRunner: "VSTest"
-    testResultsFiles: "*.trx"
-    testRunTitle: "NuGet.Client Unit Tests On Windows"
-    searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
-    mergeTestResults: "true"
-    publishRunAttachments: "false"
-  condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
+# - task: PublishTestResults@2
+#   displayName: "Publish Test Results"
+#   inputs:
+#     testRunner: "VSTest"
+#     testResultsFiles: "*.trx"
+#     testRunTitle: "NuGet.Client Unit Tests On Windows"
+#     searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
+#     mergeTestResults: "true"
+#     publishRunAttachments: "false"
+#   condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
