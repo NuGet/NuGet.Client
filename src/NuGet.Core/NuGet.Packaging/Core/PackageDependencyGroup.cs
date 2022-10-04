@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Shared;
 
 namespace NuGet.Packaging
 {
@@ -54,26 +56,40 @@ namespace NuGet.Packaging
             get { return _packages; }
         }
 
-        public bool Equals(PackageDependencyGroup other)
-        {
-            return PackageDependencyGroupComparer.Default.Equals(this, other);
-        }
-
         public override bool Equals(object obj)
         {
-            var dependency = obj as PackageDependencyGroup;
+            return Equals(obj as PackageDependencyGroup);
+        }
 
-            if (dependency != null)
+        public bool Equals(PackageDependencyGroup other)
+        {
+            if (other == null)
             {
-                return Equals(dependency);
+                return false;
             }
 
-            return false;
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return EqualityComparer<NuGetFramework>.Default.Equals(TargetFramework, other.TargetFramework)
+                && Packages.OrderedEquals(other.Packages, p => p.Id, StringComparer.OrdinalIgnoreCase);
         }
 
         public override int GetHashCode()
         {
-            return PackageDependencyGroupComparer.Default.GetHashCode(this);
+            var combiner = new HashCodeCombiner();
+
+            combiner.AddObject(TargetFramework.GetHashCode());
+
+            // order the dependencies by hash code to make this consistent
+            foreach (int hash in Packages.Select(p => p.GetHashCode()).OrderBy(h => h))
+            {
+                combiner.AddObject(hash);
+            }
+
+            return combiner.CombinedHash;
         }
 
         public override string ToString()

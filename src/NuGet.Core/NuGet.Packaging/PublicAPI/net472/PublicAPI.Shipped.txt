@@ -177,10 +177,6 @@ NuGet.Packaging.Core.PackageDependencyComparer.Equals(NuGet.Packaging.Core.Packa
 NuGet.Packaging.Core.PackageDependencyComparer.GetHashCode(NuGet.Packaging.Core.PackageDependency obj) -> int
 NuGet.Packaging.Core.PackageDependencyComparer.PackageDependencyComparer() -> void
 NuGet.Packaging.Core.PackageDependencyComparer.PackageDependencyComparer(NuGet.Versioning.IVersionRangeComparer versionRangeComparer) -> void
-NuGet.Packaging.Core.PackageDependencyGroupComparer
-NuGet.Packaging.Core.PackageDependencyGroupComparer.Equals(NuGet.Packaging.PackageDependencyGroup x, NuGet.Packaging.PackageDependencyGroup y) -> bool
-NuGet.Packaging.Core.PackageDependencyGroupComparer.GetHashCode(NuGet.Packaging.PackageDependencyGroup obj) -> int
-NuGet.Packaging.Core.PackageDependencyGroupComparer.PackageDependencyGroupComparer() -> void
 NuGet.Packaging.Core.PackageDependencyInfo
 NuGet.Packaging.Core.PackageDependencyInfo.Dependencies.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependency>
 NuGet.Packaging.Core.PackageDependencyInfo.Equals(NuGet.Packaging.Core.PackageDependencyInfo other) -> bool
@@ -1546,7 +1542,6 @@ static NuGet.Packaging.CollectionExtensions.AddRange<T>(this System.Collections.
 static NuGet.Packaging.Core.NuspecUtility.GetPackageTypes(System.Xml.Linq.XElement metadataNode, bool useMetadataNamespace) -> System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Core.PackageType>
 static NuGet.Packaging.Core.NuspecUtility.IsServiceable(System.Xml.Linq.XElement metadataNode) -> bool
 static NuGet.Packaging.Core.PackageDependencyInfoComparer.Default.get -> NuGet.Packaging.Core.PackageDependencyInfoComparer
-static NuGet.Packaging.Core.PackageDependencyGroupComparer.Default.get -> NuGet.Packaging.Core.PackageDependencyGroupComparer
 static NuGet.Packaging.Core.PackageIdentity.Comparer.get -> NuGet.Packaging.Core.PackageIdentityComparer
 static NuGet.Packaging.Core.PackageIdentityComparer.Default.get -> NuGet.Packaging.Core.PackageIdentityComparer
 static NuGet.Packaging.Core.PackageType.operator !=(NuGet.Packaging.Core.PackageType a, NuGet.Packaging.Core.PackageType b) -> bool
