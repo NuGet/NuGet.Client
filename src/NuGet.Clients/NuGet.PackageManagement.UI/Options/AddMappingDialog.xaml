@@ -77,9 +77,10 @@
                                  Background="{Binding Path=(Window.Background), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                  TextChanged="PackageID_TextChanged"/>
         <StackPanel Orientation="Vertical"  Grid.Row="1">
-          <ListView AutomationProperties.Name="Sources List"
+          <nuget:ProjectsListView AutomationProperties.Name="Sources List"
                     x:Name="_sourcesListBox"
                     ItemsSource="{Binding SourcesCollection}"
+                    PreviewKeyUp="SourcesListBox_PreviewKeyUp"
                     Margin="12,0,12,12"
                     Height="184">
             <ListView.View>
@@ -90,7 +91,7 @@
                     <DataTemplate>
                       <CheckBox AutomationProperties.Name="SourcesCheckBox"
                                 IsTabStop="False"
-                                IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"
+                                IsChecked="{Binding Path=IsSelected}"
                                 Checked="CheckBox_Checked"
                                 Unchecked="CheckBox_Checked"/>
                     </DataTemplate>
@@ -110,7 +111,7 @@
                 </GridViewColumn>
               </GridView>
             </ListView.View>
-          </ListView>
+          </nuget:ProjectsListView>
         </StackPanel>
       </Grid>
     </StackPanel>
