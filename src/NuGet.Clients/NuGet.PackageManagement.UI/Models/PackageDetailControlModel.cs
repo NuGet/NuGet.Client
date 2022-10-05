@@ -318,7 +318,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return SelectedVersion != null
                     && InstalledVersion != null
-                    && ((IsProjectPackageReference && InstalledVersionRange?.OriginalString != null) ? SelectedVersion?.Range?.OriginalString == InstalledVersionRange?.OriginalString : true)
+                    && ((IsProjectPackageReference && InstalledVersionRange?.OriginalString != null) ? SelectedVersion?.Range?.OriginalString == InstalledVersionRange.OriginalString : true)
                     && SelectedVersion.Version == InstalledVersion;
             }
         }
