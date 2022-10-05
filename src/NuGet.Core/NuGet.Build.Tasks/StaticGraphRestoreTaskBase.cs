@@ -94,68 +94,57 @@ namespace NuGet.Build.Tasks
 #endif
                 DirectoryInfo tempDirectory = Directory.CreateDirectory(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
 
-                FileInfo responseFile = new FileInfo(Path.Combine(tempDirectory.FullName, Path.GetRandomFileName()));
+                MSBuildLogger logger = new MSBuildLogger(Log);
 
-                try
+                using (var semaphore = new SemaphoreSlim(initialCount: 0, maxCount: 1))
+                using (var loggingQueue = new TaskLoggingQueue(Log))
+                using (var process = new Process())
                 {
-                    WriteResponseFile(responseFile.FullName);
-
-                    MSBuildLogger logger = new MSBuildLogger(Log);
-
-                    using (var semaphore = new SemaphoreSlim(initialCount: 0, maxCount: 1))
-                    using (var loggingQueue = new TaskLoggingQueue(Log))
-                    using (var process = new Process())
+                    process.EnableRaisingEvents = true;
+                    process.StartInfo = new ProcessStartInfo
                     {
-                        process.EnableRaisingEvents = true;
-                        process.StartInfo = new ProcessStartInfo
+                        Arguments = $"\"{string.Join("\" \"", GetCommandLineArguments(MSBuildBinPath))}\"",
+                        CreateNoWindow = true,
+                        FileName = GetProcessFileName(ProcessFileName),
+                        RedirectStandardInput = true,
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        WorkingDirectory = Environment.CurrentDirectory,
+                    };
+
+                    // Place the output in the queue which handles logging messages coming through on StdOut
+                    process.OutputDataReceived += (sender, args) => loggingQueue.Enqueue(args?.Data);
+
+                    process.Exited += (sender, args) => semaphore.Release();
+
+                    try
+                    {
+                        Log.LogMessage(MessageImportance.Low, "Running command: \"{0}\" {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+                        process.Start();
+
+                        WriteArguments(process.StandardInput);
+
+                        process.BeginOutputReadLine();
+
+                        semaphore.Wait(_cancellationTokenSource.Token);
+
+                        if (!process.HasExited)
                         {
-                            Arguments = $"\"{string.Join("\" \"", GetCommandLineArguments(responseFile))}\"",
-                            CreateNoWindow = true,
-                            FileName = GetProcessFileName(ProcessFileName),
-                            RedirectStandardOutput = true,
-                            UseShellExecute = false,
-                            WorkingDirectory = Environment.CurrentDirectory,
-                        };
-
-                        // Place the output in the queue which handles logging messages coming through on StdOut
-                        process.OutputDataReceived += (sender, args) => loggingQueue.Enqueue(args?.Data);
-
-                        process.Exited += (sender, args) => semaphore.Release();
-
-                        try
-                        {
-                            Log.LogMessage(MessageImportance.Low, "Running command: \"{0}\" {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
-
-                            process.Start();
-
-                            process.BeginOutputReadLine();
-
-                            semaphore.Wait(_cancellationTokenSource.Token);
-
-                            if (!process.HasExited)
+                            try
                             {
-                                try
-                                {
-                                    process.Kill();
-                                }
-                                catch (InvalidOperationException)
-                                {
-                                    // The process may have exited, in this case ignore the exception
-                                }
+                                process.Kill();
+                            }
+                            catch (InvalidOperationException)
+                            {
+                                // The process may have exited, in this case ignore the exception
                             }
                         }
-                        catch (Exception e) when (
-                            e is OperationCanceledException
-                            || (e is AggregateException aggregateException && aggregateException.InnerException is OperationCanceledException))
-                        {
-                        }
                     }
-                }
-                finally
-                {
-                    if (!string.Equals(Environment.GetEnvironmentVariable("RESTORE_TASK_DELETE_ARGUMENT_FILE"), bool.FalseString, StringComparison.OrdinalIgnoreCase))
+                    catch (Exception e) when (
+                        e is OperationCanceledException
+                        || (e is AggregateException aggregateException && aggregateException.InnerException is OperationCanceledException))
                     {
-                        FileUtility.Delete(responseFile.FullName);
                     }
                 }
             }
@@ -170,21 +159,17 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Gets the command-line arguments to use when launching the process that executes the restore.
         /// </summary>
-        /// <returns>A <see cref="List{String}" /> containing the command-line arguments that need to be separated by spaces and surrounded by quotes.</returns>
-        internal List<string> GetCommandLineArguments(FileInfo responseFile)
+        internal IEnumerable<string> GetCommandLineArguments(string msbuildBinPath)
         {
-            return new List<string>(
 #if IS_CORECLR
-                capacity: 2)
-            {
-                // The full path to the executable for dotnet core
-                Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.dll")),
+
+            yield return Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.dll"));
+
+            yield return Path.Combine(msbuildBinPath, "MSBuild.dll");
 #else
-                capacity: 1)
-            {
+            yield return Path.Combine(msbuildBinPath, "MSBuild.exe");
 #endif
-                responseFile.FullName
-            };
+            yield return IsSolutionPathDefined ? SolutionPath : ProjectFullPath;
         }
 
         /// <summary>
@@ -276,31 +261,15 @@ namespace NuGet.Build.Tasks
             };
         }
 
-        internal void WriteResponseFile(string responseFilePath)
+        internal void WriteArguments(TextWriter writer)
         {
-            Log.LogMessage(MessageImportance.Low, "Writing response file '{0}'", responseFilePath);
-
-            try
+            var arguments = new StaticGraphRestoreArguments
             {
-                var responseFile = new StaticGraphRestoreArguments
-                {
-                    EntryProjectFilePath = IsSolutionPathDefined ? SolutionPath : ProjectFullPath,
-                    GlobalProperties = GetGlobalProperties(),
-#if IS_CORECLR
-                    MSBuildExeFilePath = Path.Combine(MSBuildBinPath, "MSBuild.dll"),
-#else
-                    MSBuildExeFilePath = Path.Combine(MSBuildBinPath, "MSBuild.exe"),
-#endif
-                    Options = GetOptions().ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase),
-                };
+                GlobalProperties = GetGlobalProperties(),
+                Options = GetOptions().ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase),
+            };
 
-                responseFile.Write(responseFilePath);
-            }
-            catch (Exception e)
-            {
-                Log.LogError("Failed to write response file '{0}'. {1}", responseFilePath, e);
-                throw;
-            }
+            arguments.Write(writer);
         }
     }
 }

@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -30,22 +29,21 @@ namespace NuGet.Build.Tasks.Console
             }
 
             NuGet.Common.Migrations.MigrationRunner.Run();
-
-            // Parse command-line arguments
-            if (!TryParseArguments(args, out StaticGraphRestoreArguments arguments))
+            if (args.Length != 2)
             {
                 return 1;
             }
 
+            var msbuildFilePath = new FileInfo(args[0]);
+            var entryProjectPath = new FileInfo(args[1]);
+
             // Enable MSBuild feature flags
-            MSBuildFeatureFlags.MSBuildExeFilePath = arguments.MSBuildExeFilePath;
+            MSBuildFeatureFlags.MSBuildExeFilePath = msbuildFilePath.FullName;
             MSBuildFeatureFlags.EnableCacheFileEnumerations = true;
             MSBuildFeatureFlags.LoadAllFilesAsReadonly = true;
             MSBuildFeatureFlags.SkipEagerWildcardEvaluations = true;
+
 #if NETFRAMEWORK
-
-            var msbuildFilePath = new FileInfo(arguments.MSBuildExeFilePath);
-
             if (AppDomain.CurrentDomain.IsDefaultAppDomain())
             {
                 // MSBuild.exe.config has binding redirects that change from time to time and its very hard to make sure that NuGet.Build.Tasks.Console.exe.config is correct.
@@ -63,6 +61,9 @@ namespace NuGet.Build.Tasks.Console
                         ConfigurationFile = Path.Combine(msbuildFilePath.DirectoryName, "MSBuild.exe.config")
                     });
 
+                // Save the arguments as a string in the AppDomain to be parsed later since they can't be read from StandardInput again
+                //appDomain.SetData(nameof(StaticGraphRestoreArguments), argumentsJson);
+
                 return appDomain
                     .ExecuteAssembly(
                         thisAssembly.Location,
@@ -70,19 +71,25 @@ namespace NuGet.Build.Tasks.Console
             }
 #endif
 
+            // Parse command-line arguments
+            if (!TryGetArguments(out StaticGraphRestoreArguments arguments))
+            {
+                return 1;
+            }
+
             // Check whether the ask is to generate the restore graph file.
             if (MSBuildStaticGraphRestore.IsOptionTrue("GenerateRestoreGraphFile", arguments.Options))
             {
                 using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore(debug: debug))
                 {
-                    return dependencyGraphSpecGenerator.WriteDependencyGraphSpec(arguments.EntryProjectFilePath, arguments.GlobalProperties, arguments.Options) ? 0 : 1;
+                    return dependencyGraphSpecGenerator.WriteDependencyGraphSpec(entryProjectPath.FullName, arguments.GlobalProperties, arguments.Options) ? 0 : 1;
                 }
             }
 
             // Otherwise run restore!
             using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore(debug: debug))
             {
-                return await dependencyGraphSpecGenerator.RestoreAsync(arguments.EntryProjectFilePath, arguments.GlobalProperties, arguments.Options) ? 0 : 1;
+                return await dependencyGraphSpecGenerator.RestoreAsync(entryProjectPath.FullName, arguments.GlobalProperties, arguments.Options) ? 0 : 1;
             }
         }
 
@@ -98,23 +105,20 @@ namespace NuGet.Build.Tasks.Console
         /// <summary>
         /// Parses command-line arguments.
         /// </summary>
-        /// <param name="args">A <see cref="T:string[]" /> containing the process command-line arguments.</param>
-        /// <param name="arguments">A <see cref="T:Tuple&lt;Dictionary&lt;string, string&gt;, FileInfo, string, Dictionary&lt;string, string&gt;&gt;" /> that receives the parsed command-line arguments.</param>
+        /// <param name="staticGraphRestoreArguments">Receives the arguments as a <see cref="StaticGraphRestoreArguments" />.</param>
         /// <returns><code>true</code> if the arguments were successfully parsed, otherwise <code>false</code>.</returns>
-        private static bool TryParseArguments(string[] args, out StaticGraphRestoreArguments arguments)
+        private static bool TryGetArguments(out StaticGraphRestoreArguments staticGraphRestoreArguments)
         {
-            arguments = null;
+            staticGraphRestoreArguments = null;
 
             try
             {
-                arguments = StaticGraphRestoreArguments.Read(args);
+                staticGraphRestoreArguments = StaticGraphRestoreArguments.Read(System.Console.In);
 
-                return arguments != null;
+                return staticGraphRestoreArguments != null;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                System.Console.Error.WriteLine("Failed to read reponse file. {0}", e);
-
                 return false;
             }
         }

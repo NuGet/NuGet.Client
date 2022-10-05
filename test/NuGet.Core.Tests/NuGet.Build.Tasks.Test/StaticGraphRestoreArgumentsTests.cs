@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using FluentAssertions;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Build.Tasks.Test
@@ -13,15 +13,11 @@ namespace NuGet.Build.Tasks.Test
     public class StaticGraphRestoreArgumentsTests
     {
         /// <summary>
-        /// Verifies that the <see cref="StaticGraphRestoreArguments.Write(FileStream)" /> and <see cref="StaticGraphRestoreArguments.Read(Stream)" /> support global properties with complex characters like line breaks, XML, and JSON.
+        /// Verifies that the <see cref="StaticGraphRestoreArguments.Write(TextWriter)" /> and <see cref="StaticGraphRestoreArguments.Read(TextReader)" /> support global properties with complex characters like line breaks, XML, and JSON.
         /// </summary>
         [Fact]
         public void Read_WhenGLobalPropertiesContainComplexCharacters_CanBeRead()
         {
-            using TestDirectory testDirectory = TestDirectory.Create();
-
-            FileInfo responseFile = new FileInfo(Path.Combine(testDirectory.Path, Path.GetRandomFileName()));
-
             var expected = new StaticGraphRestoreArguments
             {
                 GlobalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -295,17 +291,19 @@ namespace NuGet.Build.Tasks.Test
                     [nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects)] = bool.TrueString,
                     [nameof(RestoreTaskEx.Recursive)] = bool.TrueString,
                 },
-                MSBuildExeFilePath = @"C:\Program Files\Microsoft Visual Studio\2022\Preview\MSBuild\Current\Bin\amd64\MSBuild.exe",
-                EntryProjectFilePath = @"E:\TFS\IPIPE\IPIPE.sln",
             };
 
-            expected.Write(responseFile.FullName);
+            StringBuilder stringBuilder = new StringBuilder();
 
-            var actual = StaticGraphRestoreArguments.Read(responseFile.FullName);
+            using var writer = new StringWriter(stringBuilder);
 
-            actual.EntryProjectFilePath.Should().Be(expected.EntryProjectFilePath);
+            expected.Write(writer);
+
+            using var reader = new StringReader(stringBuilder.ToString());
+
+            StaticGraphRestoreArguments actual = StaticGraphRestoreArguments.Read(reader);
+
             actual.GlobalProperties.Should().BeEquivalentTo(expected.GlobalProperties);
-            actual.MSBuildExeFilePath.Should().Be(expected.MSBuildExeFilePath);
             actual.Options.Should().BeEquivalentTo(expected.Options);
         }
 
@@ -315,10 +313,6 @@ namespace NuGet.Build.Tasks.Test
         [Fact]
         public void Write_WithBasicInformation_WritesExpectedJson()
         {
-            using TestDirectory testDirectory = TestDirectory.Create();
-
-            FileInfo responseFile = new FileInfo(Path.Combine(testDirectory.Path, Path.GetRandomFileName()));
-
             var arguments = new StaticGraphRestoreArguments
             {
                 GlobalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -330,17 +324,17 @@ namespace NuGet.Build.Tasks.Test
                     [nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects)] = bool.TrueString,
                     [nameof(RestoreTaskEx.Recursive)] = bool.TrueString,
                 },
-                MSBuildExeFilePath = @"C:\Program Files\Microsoft Visual Studio\2022\Preview\MSBuild\Current\Bin\amd64\MSBuild.exe",
-                EntryProjectFilePath = @"C:\Projects\Solution.sln",
             };
 
-            arguments.Write(responseFile.FullName);
+            StringBuilder stringBuilder = new StringBuilder();
 
-            string actual = File.ReadAllText(responseFile.FullName);
+            using var writer = new StringWriter(stringBuilder);
+
+            arguments.Write(writer);
+
+            string actual = stringBuilder.ToString();
 
             actual.Should().Be(@"{
-  ""EntryProjectFilePath"": ""C:\\Projects\\Solution.sln"",
-  ""MSBuildExeFilePath"": ""C:\\Program Files\\Microsoft Visual Studio\\2022\\Preview\\MSBuild\\Current\\Bin\\amd64\\MSBuild.exe"",
   ""GlobalProperties"": {
     ""Property1"": ""Value""
   },

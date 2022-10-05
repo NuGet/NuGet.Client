@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
@@ -48,29 +50,26 @@ namespace NuGet.Build.Tasks.Test
                     RestoreGraphOutputPath = restoreGraphOutputPath,
                 })
                 {
-                    FileInfo responseFile = new FileInfo(Path.Combine(testDirectory, Path.GetRandomFileName()));
+                    StringBuilder stringBuilder = new StringBuilder();
 
-                    task.WriteResponseFile(responseFile.FullName);
+                    using var writer = new StringWriter(stringBuilder);
 
-                    List<string> commandLineArguments = task.GetCommandLineArguments(responseFile);
+                    task.WriteArguments(writer);
+
+                    List<string> commandLineArguments = task.GetCommandLineArguments(msbuildBinPath).ToList();
 
                     commandLineArguments.Should().BeEquivalentTo(
 #if IS_CORECLR
-                    Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
-#endif
-                    responseFile.FullName);
-
-                    var arguments = StaticGraphRestoreArguments.Read(responseFile.FullName);
-
-                    arguments.MSBuildExeFilePath.Should().Be(
-#if IS_CORECLR
-                    Path.Combine(msbuildBinPath, "MSBuild.dll")
+                        Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
+                        Path.Combine(msbuildBinPath, "MSBuild.dll"),
 #else
-                    Path.Combine(msbuildBinPath, "MSBuild.exe")
+                        Path.Combine(msbuildBinPath, "MSBuild.exe"),
 #endif
-                    );
+                        projectPath);
 
-                    arguments.EntryProjectFilePath.Should().Be(projectPath);
+                    using var reader = new StringReader(stringBuilder.ToString());
+
+                    var arguments = StaticGraphRestoreArguments.Read(reader);
 
                     arguments.Options.Should().BeEquivalentTo(new Dictionary<string, string>()
                     {
