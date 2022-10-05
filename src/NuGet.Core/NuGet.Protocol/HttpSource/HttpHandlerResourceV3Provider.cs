@@ -45,7 +45,8 @@ namespace NuGet.Protocol
             var clientHandler = new HttpClientHandler
             {
                 Proxy = proxy,
-                AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
+                AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate),
+                PreAuthenticate = true
             };
 
 #if IS_DESKTOP
