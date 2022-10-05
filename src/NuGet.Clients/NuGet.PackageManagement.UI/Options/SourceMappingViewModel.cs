@@ -21,6 +21,11 @@ namespace NuGet.Options
             }
         }
 
+        public override string ToString()
+        {
+            return ID + " " + SourcesString;
+        }
+
         public SourceMappingViewModel(string packageId, List<PackageSourceContextInfo> packageSources)
         {
 

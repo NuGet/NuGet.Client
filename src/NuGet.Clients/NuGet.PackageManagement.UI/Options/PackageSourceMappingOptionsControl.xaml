@@ -32,11 +32,7 @@
              IsSynchronizedWithCurrentItem="True"
              ScrollViewer.VerticalScrollBarVisibility="Auto"
              AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}">
-      <ListBox.ItemContainerStyle>
-        <Style>
-          <Setter Property="AutomationProperties.Name" Value="{Binding ID}"/>
-        </Style>
-      </ListBox.ItemContainerStyle>
+
     </ListBox>
     <Grid Grid.Row="3">
       <Grid.ColumnDefinitions>
