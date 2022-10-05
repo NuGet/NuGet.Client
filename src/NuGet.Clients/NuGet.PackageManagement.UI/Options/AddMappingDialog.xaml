@@ -83,6 +83,11 @@
                     PreviewKeyUp="SourcesListBox_PreviewKeyUp"
                     Margin="12,0,12,12"
                     Height="184">
+            <ListView.ItemContainerStyle>
+              <Style>
+                <Setter Property="AutomationProperties.Name" Value="{Binding SourceInfo.Name}"/>
+              </Style>
+            </ListView.ItemContainerStyle>
             <ListView.View>
               <GridView>
                 <!-- checkbox column -->
@@ -103,8 +108,7 @@
                   <GridViewColumn.CellTemplate>
                     <DataTemplate>
                       <StackPanel Orientation="Horizontal">
-                        <TextBlock Name="SourceInfo"
-                                Text="{Binding SourceInfo.Name}"/>
+                        <TextBlock Name="SourceInfo" Text="{Binding SourceInfo.Name}"/>
                       </StackPanel>
                     </DataTemplate>
                   </GridViewColumn.CellTemplate>
