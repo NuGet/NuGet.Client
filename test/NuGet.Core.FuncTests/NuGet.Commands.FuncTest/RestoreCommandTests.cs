@@ -3896,6 +3896,47 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.LogMessages.Should().HaveCount(0);
         }
 
+        [Fact]
+        public async Task RestoreCommand_WithWarningsNotAsErrorsAndTreatWarningsAsErrors_SucceedsAndWarns()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            packageA.AddFile("lib/net472/a.dll");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA);
+
+            var project1spec = ProjectTestHelpers.GetPackageSpec("Project1",
+                pathContext.SolutionRoot,
+                framework: "net5.0",
+                dependencyName: "a",
+                useAssetTargetFallback: true,
+                assetTargetFallbackFrameworks: "net472",
+                asAssetTargetFallback: false);
+            project1spec.RestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors = true;
+            project1spec.RestoreMetadata.ProjectWideWarningProperties.WarningsNotAsErrors.Add(NuGetLogCode.NU1701);
+
+            var logger = new TestLogger();
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, pathContext, logger));
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.GetAllInstalled().Should().HaveCount(1, because: logger.ShowMessages());
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1701);
+            result.LockFile.LogMessages.Select(e => e.Message).First().Should().
+                Be("Package 'a 1.0.0' was restored using '.NETFramework,Version=v4.7.2' instead of the project target framework 'net5.0'. This package may not be fully compatible with your project.");
+            result.LockFile.LogMessages.Single(e => e.LibraryId == "a");
+            logger.Errors.Should().Be(0, because: logger.ShowErrors());
+            logger.Warnings.Should().Be(1, because: logger.ShowWarnings());
+        }
+
         static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource> sources, ILogger logger)
         {
             var dgSpec = new DependencyGraphSpec();

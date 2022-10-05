@@ -6198,5 +6198,31 @@ namespace ClassLibrary
                 }
             }
         }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_WithAllWarningsAsErrorsAndWarningsNotAsErrors_SucceedsAndWarns()
+        {
+            using var testDirectory = msbuildFixture.CreateTestDirectory();
+            var projectName = "ClassLibrary1";
+            var workingDirectory = Path.Combine(testDirectory, projectName);
+            Directory.CreateDirectory(workingDirectory);
+            var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+            msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+            using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.AddProperty(xml, "TreatWarningsAsErrors", "true");
+                ProjectFileUtils.AddProperty(xml, "WarningsNotAsErrors", "NU5125");
+                ProjectFileUtils.AddProperty(xml, "PackageLicenseUrl", "http://contoso.com/license.html");
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+            Assert.True(File.Exists(Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg")), "The output .nupkg is not in the expected place");
+            Assert.True(File.Exists(Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec")), "The intermediate nuspec file is not in the expected place");
+            var expectedWarning = string.Format("warning " + NuGetLogCode.NU5125 + ": " + NuGet.Packaging.Rules.AnalysisResources.LicenseUrlDeprecationWarning);
+            result.AllOutput.Should().Contain(expectedWarning);
+        }
     }
 }
