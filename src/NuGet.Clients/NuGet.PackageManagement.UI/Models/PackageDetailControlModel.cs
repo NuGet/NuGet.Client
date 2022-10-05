@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.UI
             var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.version.IsPrerelease);
 
             // Add installed version if the project is PackageReference
-            if (_nugetProjects.Any() && installedDependency != null && installedDependency.VersionRange != null && _nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
+            if (_nugetProjects.Any() && installedDependency != null && installedDependency.VersionRange.OriginalString != null && _nugetProjects.First().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference))
             {
                 VersionRange installedVersionRange = VersionRange.Parse(installedDependency.VersionRange.OriginalString, true);
                 NuGetVersion bestVersion = installedVersionRange.FindBestMatch(allVersionsAllowed.Select(v => v.version));
@@ -311,13 +311,14 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(IsInstalledVersionTopLevel));
         }
 
+
         public bool IsSelectedVersionInstalled
         {
             get
             {
                 return SelectedVersion != null
                     && InstalledVersion != null
-                    && (IsProjectPackageReference ? SelectedVersion?.Range?.OriginalString == InstalledVersionRange?.OriginalString : true)
+                    && ((IsProjectPackageReference && InstalledVersionRange?.OriginalString != null) ? SelectedVersion?.Range?.OriginalString == InstalledVersionRange?.OriginalString : true)
                     && SelectedVersion.Version == InstalledVersion;
             }
         }
