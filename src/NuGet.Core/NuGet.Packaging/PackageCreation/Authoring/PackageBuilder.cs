@@ -830,7 +830,7 @@ namespace NuGet.Packaging
             };
             var warnPaths = new HashSet<string>();
 
-            var frameworksMissingPlatformVersion = new HashSet<string>();
+            var itemsWithFrameworkMissingPlatformVersion = new HashSet<string>();
             List<ContentItemGroup> targetedItemGroups = new();
             foreach (var pattern in frameworkPatterns)
             {
@@ -848,15 +848,15 @@ namespace NuGet.Packaging
 
                         if (framework.HasPlatform && framework.PlatformVersion == FrameworkConstants.EmptyVersion)
                         {
-                            frameworksMissingPlatformVersion.Add(framework.GetShortFolderName());
+                            itemsWithFrameworkMissingPlatformVersion.Add(item.Path);
                         }
                     }
                 }
             }
 
-            if (frameworksMissingPlatformVersion.Any())
+            if (itemsWithFrameworkMissingPlatformVersion.Any())
             {
-                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromIncludedFiles, string.Join(", ", frameworksMissingPlatformVersion.OrderBy(str => str))));
+                throw new PackagingException(NuGetLogCode.NU1012, string.Format(CultureInfo.CurrentCulture, Strings.MissingTargetPlatformVersionsFromIncludedFiles, string.Join(", ", itemsWithFrameworkMissingPlatformVersion.OrderBy(str => str))));
             }
         }
 
