@@ -6218,7 +6218,7 @@ namespace ClassLibrary
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
 
-            var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+            CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
             Assert.True(File.Exists(Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg")), "The output .nupkg is not in the expected place");
             Assert.True(File.Exists(Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec")), "The intermediate nuspec file is not in the expected place");
             var expectedWarning = string.Format("warning " + NuGetLogCode.NU5125 + ": " + NuGet.Packaging.Rules.AnalysisResources.LicenseUrlDeprecationWarning);

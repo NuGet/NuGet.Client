@@ -3923,7 +3923,7 @@ namespace NuGet.Commands.FuncTest
             var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, pathContext, logger));
 
             // Act
-            var result = await command.ExecuteAsync();
+            RestoreResult result = await command.ExecuteAsync();
 
             // Assert
             result.Success.Should().BeTrue();
