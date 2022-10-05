@@ -1530,6 +1530,60 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(expected, string.Join(";", actual.Select(e => e.Name.ToString())));
         }
 
+        [Fact]
+        public async Task GetPackageSpecs_WithWarningProperties()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+
+            var projectBuildProperties = new Mock<IProjectBuildProperties>();
+            var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
+
+            projectBuildProperties
+                .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.NoWarn))))
+                .Returns("NU1504");
+            projectBuildProperties
+               .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.TreatWarningsAsErrors))))
+               .Returns("true");
+            projectBuildProperties
+                .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.WarningsNotAsErrors))))
+                .Returns("NU1801");
+            projectBuildProperties
+                .Setup(x => x.GetPropertyValue(It.Is<string>(x => x.Equals(ProjectBuildProperties.WarningsAsErrors))))
+                .Returns("NU1803");
+
+            var projectServices = new TestProjectSystemServices();
+
+            var testProject = new LegacyPackageReferenceProject(
+                projectAdapter,
+                Guid.NewGuid().ToString(),
+                projectServices,
+                _threadingService);
+
+            var settings = NullSettings.Instance;
+            var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+            // Act
+            var packageSpecs = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+            // Assert
+            Assert.NotNull(packageSpecs);
+            var actualRestoreSpec = packageSpecs.Single();
+            SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
+
+            var warningProperties = actualRestoreSpec.RestoreMetadata.ProjectWideWarningProperties;
+            warningProperties.AllWarningsAsErrors.Should().BeTrue();
+            warningProperties.NoWarn.Contains(NuGetLogCode.NU1504);
+            warningProperties.NoWarn.Should().HaveCount(1);
+            warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1801);
+            warningProperties.WarningsNotAsErrors.Should().HaveCount(1);
+            warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1803);
+            warningProperties.WarningsAsErrors.Should().HaveCount(1);
+            // Verify
+            projectBuildProperties.VerifyAll();
+        }
+
         private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string range)
         {
             return ProjectFactories.CreateLegacyPackageReferenceProject(testDirectory, Guid.NewGuid().ToString(), range, _threadingService);
