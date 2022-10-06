@@ -842,7 +842,7 @@ namespace NuGet.PackageManagement.UI
             // add all the versions blocked to disable the update button
             foreach (var version in blockedVersions)
             {
-                _versions.Add(new DisplayVersion(version, string.Empty, isValidVersion: false));
+                _versions.Add(new DisplayVersion(version, additionalInfo: null, isValidVersion: false));
             }
         }
 
