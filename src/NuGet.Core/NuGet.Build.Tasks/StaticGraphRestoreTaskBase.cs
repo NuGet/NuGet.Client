@@ -92,8 +92,6 @@ namespace NuGet.Build.Tasks
                     Debugger.Launch();
                 }
 #endif
-                DirectoryInfo tempDirectory = Directory.CreateDirectory(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
-
                 MSBuildLogger logger = new MSBuildLogger(Log);
 
                 using (var semaphore = new SemaphoreSlim(initialCount: 0, maxCount: 1))
