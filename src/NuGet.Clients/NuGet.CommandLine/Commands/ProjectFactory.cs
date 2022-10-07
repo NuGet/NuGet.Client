@@ -30,6 +30,7 @@ namespace NuGet.CommandLine
     public class ProjectFactory : MSBuildUser, IProjectFactory, CoreV2.NuGet.IPropertyProvider
     {
         private const string NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK = nameof(NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK);
+        private const string NUGET_ENABLE_LEGACY_CSPROJ_PACK = nameof(NUGET_ENABLE_LEGACY_CSPROJ_PACK);
 
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
@@ -65,7 +66,7 @@ namespace NuGet.CommandLine
         private const string TransformFileExtension = ".transform";
 
         [Import]
-        public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
+        public IMachineWideSettings MachineWideSettings { get; set; }
 
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
@@ -221,7 +222,7 @@ namespace NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        public PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded, Packaging.PackageBuilder builder = null)
+        public PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded, PackageBuilder builder = null)
         {
             if (buildIfNeeded)
             {
@@ -234,6 +235,19 @@ namespace NuGet.CommandLine
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("PackagingFilesFromOutputPath"),
                         Path.GetFullPath(Path.GetDirectoryName(TargetPath))), LogLevel.Minimal));
+            }
+
+            string usingNETSDK = _project.GetPropertyValue("UsingMicrosoftNETSDK");
+            if (!string.IsNullOrEmpty(usingNETSDK)) // NuGet.exe cannot correctly pack SDK based projects.
+            {
+                _ = bool.TryParse(_environmentVariableReader.GetEnvironmentVariable(NUGET_ENABLE_LEGACY_CSPROJ_PACK),
+                    out bool enableLegacyCsprojPack);
+
+                if (!enableLegacyCsprojPack)
+                {
+                    Logger.Log(PackagingLogMessage.CreateError(string.Format(NuGetResources.Error_AttemptingToPackSDKproject, NUGET_ENABLE_LEGACY_CSPROJ_PACK, CultureInfo.CurrentCulture), NuGetLogCode.NU5049));
+                    return null;
+                }
             }
 
             builder = new PackageBuilder(false, Logger);

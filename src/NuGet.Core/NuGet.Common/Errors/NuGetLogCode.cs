@@ -783,6 +783,11 @@ namespace NuGet.Common
         NU5048 = 5048,
 
         /// <summary>
+        /// Packing an SDK-based project with NuGet.exe error
+        /// </summary>
+        NU5049 = 5049,
+
+        /// <summary>
         /// Attempted to write files from multiple sources into the same location
         /// </summary>
         NU5050 = 5050,

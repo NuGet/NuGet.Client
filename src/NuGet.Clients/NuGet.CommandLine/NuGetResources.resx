@@ -723,4 +723,9 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Property SourceProvider is null.</value>
     <comment>Don't localize 'SourceProvider'</comment>
   </data>
+  <data name="Error_AttemptingToPackSDKproject" xml:space="preserve">
+    <value>The `pack` command for SDK-style projects is not supported, use `dotnet pack` or `msbuild -t:pack` to pack this project instead. You can override this behavior by setting the '{0}' environment variable to 'true'.</value>
+    <comment>0 - environment variable name. 
+Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</comment>
+  </data>
 </root>

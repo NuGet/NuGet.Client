@@ -268,6 +268,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The `pack` command for SDK-style projects is not supported, use `dotnet pack` or `msbuild -t:pack` to pack this project instead. You can override this behavior by setting the &apos;{0}&apos; environment variable to &apos;true&apos;..
+        /// </summary>
+        public static string Error_AttemptingToPackSDKproject {
+            get {
+                return ResourceManager.GetString("Error_AttemptingToPackSDKproject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot find the specified version of msbuild: &apos;{0}&apos;.
         /// </summary>
         public static string Error_CannotFindMsbuild {
