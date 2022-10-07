@@ -10,14 +10,34 @@ namespace NuGet.DependencyResolver
 {
     public class GraphNode<TItem>
     {
-        public GraphNode(LibraryRange key)
+        public GraphNode(LibraryRange key, bool hasEmptyInnerNodes = false, bool hasEmptyParentNodes = false)
         {
             Key = key;
-            InnerNodes = new List<GraphNode<TItem>>();
             Disposition = Disposition.Acceptable;
-            ParentNodes = new List<GraphNode<TItem>>();
+
+            //Create nonEmpty InnerNodes only when it's nessecery (InnerNodes is empty when it has no dependencies, including runtime dependencies).
+            if (hasEmptyInnerNodes)
+            {
+                InnerNodes = EmptyList;
+            }
+            else
+            {
+                InnerNodes = new List<GraphNode<TItem>>();
+            }
+
+            //Create nonEmpty ParentNodes only when it's nessecery (ParentNodes is nonEmpty only for certain nodes when Central Package Management is enabled).
+            if (hasEmptyParentNodes)
+            {
+                ParentNodes = EmptyList;
+            }
+            else
+            {
+                ParentNodes = new List<GraphNode<TItem>>();
+            }
         }
 
+        //All empty ParentNodes and InnerNodes point to this immutable EmptyList, to reduce the memory allocation for empty ParentNodes and InnerNodes
+        internal static readonly IList<GraphNode<TItem>> EmptyList = new List<GraphNode<TItem>>(0).AsReadOnly();
         public LibraryRange Key { get; set; }
         public GraphItem<TItem> Item { get; set; }
         public GraphNode<TItem> OuterNode { get; set; }

@@ -1881,6 +1881,179 @@ namespace NuGet.DependencyResolver.Tests
             AssertPath(d.DowngradedTo, "A 1.0", "D 1.0");
         }
 
+        /// <summary>
+        /// A -> B 1.0.0 -> C 1.0.0 -> D 1.0.0 (this will be rejected)-> E 1.0.0
+        ///
+        ///  D has version defined centrally 2.0.0
+        ///  D 2.0.0 -> I 2.0.0 (this will be downgraded due to central I 1.0.0)
+        ///  (D 2.0.0 should have parentNode C 1.0.0)
+        ///  
+        ///  I has version defined centrally 1.0.0
+        ///  I 1.0.0 -> G 1.0.0
+        ///  (I 1.0.0 should have parentNode D 2.0.0)
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task WalkAsync_WithCentralTransitiveDependency_InnerNodesAndParentNodesCreatedCorrectly()
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            var version100 = "1.0.0";
+            var version200 = "2.0.0";
+
+            // A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 1.0.0 -> E 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("B", version100);
+            provider.Package("B", version100)
+                   .DependsOn("C", version100);
+            provider.Package("C", version100)
+                    .DependsOn("D", version100);
+            provider.Package("D", version100)
+                    .DependsOn("E", version100);
+
+            // D 2.0.0 -> I 2.0.0
+            provider.Package("D", version200)
+                   .DependsOn("I", version200);
+            provider.Package("I", version200);
+
+            // I 1.0.0 -> G 2.0.0
+            provider.Package("I", version100)
+                   .DependsOn("G", version100);
+            provider.Package("I", version100);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", version100)
+                     .DependsOn("D", version200, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", version100)
+                     .DependsOn("I", version100, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+
+            // Assert
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+            var allNodes = GetAllNodes(rootNode);
+            Assert.Equal(3, rootNode.InnerNodes.Count);
+
+            //check if ParentNodes of centralTranstiveNodes are added correctly
+            var centralTransitiveNodes = allNodes.Where(n => n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(2, centralTransitiveNodes.Count);
+            Assert.True(centralTransitiveNodes.Any(n => n.Item.Key.Name == "D"));
+            Assert.True(centralTransitiveNodes.Any(n => n.Item.Key.Name == "I"));
+
+            foreach (var node in centralTransitiveNodes)
+            {
+                Assert.Equal(Disposition.Accepted, node.Disposition);
+                if (node.Key.Name == "D")
+                {
+                    Assert.Equal("2.0.0", node.Key.VersionRange.OriginalString);
+                    Assert.Equal(1, node.ParentNodes.Count);
+                    Assert.Equal("C (>= 1.0.0)", node.ParentNodes.First().Key.ToString());
+                }
+                if (node.Key.Name == "I")
+                {
+                    Assert.Equal("1.0.0", node.Key.VersionRange.OriginalString);
+                    Assert.Equal(1, node.ParentNodes.Count);
+                    Assert.Equal("D (>= 2.0.0)", node.ParentNodes.First().Key.ToString());
+                }
+            }
+
+            //check if ParentNodes of nonCentralTransitiveNodes are empty and pointing to the static empty list correctly
+            var nonCentralTransitiveNodes = allNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(4, nonCentralTransitiveNodes.Count);
+            Assert.True(nonCentralTransitiveNodes.Any(n => n.Item.Key.Name == "A"));
+            Assert.True(nonCentralTransitiveNodes.Any(n => n.Item.Key.Name == "B"));
+            Assert.True(nonCentralTransitiveNodes.Any(n => n.Item.Key.Name == "C"));
+            Assert.True(nonCentralTransitiveNodes.Any(n => n.Item.Key.Name == "G"));
+            var staticEmptyList = nonCentralTransitiveNodes.First().ParentNodes;
+            foreach (var node in nonCentralTransitiveNodes)
+            {
+                Assert.Equal(0, node.ParentNodes.Count);
+                Assert.True(staticEmptyList == node.ParentNodes); //All nonCentralTransitiveNodes have ParentNodes pointing to the same empty list.
+            }
+
+            //check if InnerNodes of nodesWithEmptyInnerNodes are pointing to the static empty list correctly
+            var nodesWithEmptyInnerNodes = allNodes.Where(n => n.InnerNodes.Count == 0).ToList();
+            Assert.Equal(3, nodesWithEmptyInnerNodes.Count);
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "C"));
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "D"));
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "G"));
+            Assert.True(nodesWithEmptyInnerNodes.Where(n => n.Item.Key.Name == "G").Single().InnerNodes == staticEmptyList);
+
+            Assert.Equal(1, result.Downgrades.Count);
+        }
+
+        /// <summary>
+        ///   -> B 1.0.0 -> C 1.0.0 
+        /// A -> C 2.0.0
+        ///   -> D 1.0.0 -> E 1.0.0
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task WalkAsync_WithNoCPM_InnerNodesAndParentNodesCreatedCorrectly()
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            var version100 = "1.0.0";
+            var version200 = "2.0.0";
+
+            // A -> B 1.0.0 -> C 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("B", version100);
+            provider.Package("B", version100)
+                   .DependsOn("C", version100);
+
+            // A -> C 2.0.0
+            provider.Package("A", version100)
+                    .DependsOn("C", version200);
+
+            // A -> D 1.0.0 -> E 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("D", version100);
+            provider.Package("D", version100)
+                    .DependsOn("E", version100);
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+            var allNodes = GetAllNodes(rootNode);
+            Assert.Equal(5, allNodes.Count);
+            Assert.Equal(3, rootNode.InnerNodes.Count);
+
+            //check if ParentNodes of allnodes are pointing to the static empty list correctly
+            var staticEmptyList = allNodes.First().ParentNodes;
+            foreach (var node in allNodes)
+            {
+                Assert.Equal(0, node.ParentNodes.Count);
+                Assert.True(staticEmptyList == node.ParentNodes);
+            }
+
+            //check if InnerNodes of  are pointing to the static empty list correctly
+            var nodesWithEmptyInnerNodes = allNodes.Where(n => n.InnerNodes.Count == 0).ToList();
+            Assert.Equal(3, nodesWithEmptyInnerNodes.Count);
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "B"));
+            Assert.True(nodesWithEmptyInnerNodes.Where(n => n.Item.Key.Name == "B").Single().InnerNodes != staticEmptyList);
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "C"));
+            Assert.True(nodesWithEmptyInnerNodes.Where(n => n.Item.Key.Name == "C").Single().InnerNodes == staticEmptyList);
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "E"));
+            Assert.True(nodesWithEmptyInnerNodes.Where(n => n.Item.Key.Name == "E").Single().InnerNodes == staticEmptyList);
+        }
+
         private void AssertPath<TItem>(GraphNode<TItem> node, params string[] items)
         {
             var matches = new List<string>();
@@ -1909,6 +2082,28 @@ namespace NuGet.DependencyResolver.Tests
 
             return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
 
+        }
+
+        private List<GraphNode<RemoteResolveResult>> GetAllNodes(GraphNode<RemoteResolveResult> rootNode)
+        {
+            var allNodes = new Dictionary<string, GraphNode<RemoteResolveResult>>();
+            allNodes.Add(rootNode.Key.ToString(), rootNode);
+
+            Queue<GraphNode<RemoteResolveResult>> queue = new Queue<GraphNode<RemoteResolveResult>>();
+            queue.Enqueue(rootNode);
+            while (queue.Count > 0)
+            {
+                var currNode = queue.Dequeue();
+                foreach (var innerNode in currNode.InnerNodes)
+                {
+                    if (!allNodes.TryGetValue(innerNode.Key.ToString(), out _))
+                    {
+                        allNodes.Add(innerNode.Key.ToString(), innerNode);
+                        queue.Enqueue(innerNode);
+                    }
+                }
+            }
+            return allNodes.Values.ToList();
         }
     }
 }
