@@ -50,7 +50,7 @@ namespace NuGet.Build.Tasks.Console
                 // It also can be different per instance of Visual Studio so when running unit tests it always needs to match that instance of MSBuild
                 // The code below runs this EXE in an AppDomain as if its MSBuild.exe so the assembly search location is next to MSBuild.exe and all binding redirects are used
                 // allowing this process to evaluate MSBuild projects as if it is MSBuild.exe
-                var thisAssembly = Assembly.GetExecutingAssembly();
+                Assembly thisAssembly = Assembly.GetExecutingAssembly();
 
                 AppDomain appDomain = AppDomain.CreateDomain(
                     thisAssembly.FullName,
@@ -60,9 +60,6 @@ namespace NuGet.Build.Tasks.Console
                         ApplicationBase = msbuildFilePath.DirectoryName,
                         ConfigurationFile = Path.Combine(msbuildFilePath.DirectoryName, "MSBuild.exe.config")
                     });
-
-                // Save the arguments as a string in the AppDomain to be parsed later since they can't be read from StandardInput again
-                //appDomain.SetData(nameof(StaticGraphRestoreArguments), argumentsJson);
 
                 return appDomain
                     .ExecuteAssembly(
