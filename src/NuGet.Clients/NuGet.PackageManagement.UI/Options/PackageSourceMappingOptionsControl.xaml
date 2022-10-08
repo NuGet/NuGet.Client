@@ -24,7 +24,7 @@
       </DataTemplate>
     </Grid.Resources>
     <TextBlock Grid.Row="0" Text="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}"/>
-    <ListBox Name="_packageList"
+    <ListBox Name="_mappingList"
              ItemsSource="{Binding SourceMappingsCollection}"
              Grid.Row="1"
              Margin="6,6,6,6"

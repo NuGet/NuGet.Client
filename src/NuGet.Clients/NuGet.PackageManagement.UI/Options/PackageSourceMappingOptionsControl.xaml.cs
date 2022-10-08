@@ -69,7 +69,7 @@ namespace NuGet.Options
 
         private void ExecuteRemoveMapping(object parameter)
         {
-            SourceMappingsCollection.Remove((SourceMappingViewModel)_packageList.SelectedItem);
+            SourceMappingsCollection.Remove((SourceMappingViewModel)_mappingList.SelectedItem);
             (ClearMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
         }
 
