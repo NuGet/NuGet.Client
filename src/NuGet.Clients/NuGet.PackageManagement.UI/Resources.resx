@@ -963,7 +963,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Source</value>
   </data>
   <data name="VSOptions_Watermark_AddPackageNamespace" xml:space="preserve">
-    <value>Add Valid Package ID</value>
+    <value>Enter a valid Package ID pattern (Example: Contoso.Contracts or System.*)</value>
+    <comment>"Contoso.Contracts" and "System.*" are examples of an ID and an ID Pattern, respectively, so these two specific examples should not be translated.</comment>
   </data>
   <data name="PackageSourceMappingOptions_OnActivated" xml:space="preserve">
     <value>Getting Package Source Mappings...</value>
