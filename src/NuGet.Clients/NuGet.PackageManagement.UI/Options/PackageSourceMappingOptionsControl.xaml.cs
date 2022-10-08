@@ -188,28 +188,27 @@ namespace NuGet.Options
 
         private IReadOnlyList<PackageSourceMappingSourceItem> ConvertViewModelToSourceMappingsSourceItems(ItemsChangeObservableCollection<SourceMappingViewModel> sourceMappingViewModels)
         {
-            Dictionary<string, List<PackagePatternItem>> mappingsDictonary = new Dictionary<string, List<PackagePatternItem>>();
+            var sourceNamesToPackagePatterns = new Dictionary<string, List<PackagePatternItem>>();
             foreach (SourceMappingViewModel viewModel in sourceMappingViewModels)
             {
                 foreach (PackageSourceContextInfo source in viewModel.Sources)
                 {
-                    if (!mappingsDictonary.Keys.Contains(source.Name))
+                    if (!sourceNamesToPackagePatterns.Keys.Contains(source.Name))
                     {
-                        mappingsDictonary[source.Name] = new List<PackagePatternItem>();
+                        sourceNamesToPackagePatterns[source.Name] = new List<PackagePatternItem>();
                     }
                     var packagePatternItem = new PackagePatternItem(viewModel.ID);
-                    if (!mappingsDictonary[source.Name].Any(id => id.Pattern == packagePatternItem.Pattern))
+                    if (!sourceNamesToPackagePatterns[source.Name].Any(id => id.Pattern == packagePatternItem.Pattern))
                     {
-                        mappingsDictonary[source.Name].Add(packagePatternItem);
+                        sourceNamesToPackagePatterns[source.Name].Add(packagePatternItem);
                     }
                 }
             }
 
-            //turn dictonary to observable collection of packageSourceMappingSourceItem
-            List<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems = new List<PackageSourceMappingSourceItem>();
-            foreach (string source in mappingsDictonary.Keys)
+            var packageSourceMappingsSourceItems = new List<PackageSourceMappingSourceItem>();
+            foreach (string source in sourceNamesToPackagePatterns.Keys)
             {
-                packageSourceMappingsSourceItems.Add(new PackageSourceMappingSourceItem(source, mappingsDictonary[source]));
+                packageSourceMappingsSourceItems.Add(new PackageSourceMappingSourceItem(source, sourceNamesToPackagePatterns[source]));
             }
             return packageSourceMappingsSourceItems.AsReadOnly();
         }
