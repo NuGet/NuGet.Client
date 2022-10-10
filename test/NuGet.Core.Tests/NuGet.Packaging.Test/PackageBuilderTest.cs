@@ -1509,15 +1509,15 @@ namespace NuGet.Packaging.Test
             ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()),
                 "Some included files are included under TFMs which are missing a platform version: " + string.Join(", ", new string[]
                 {
-                  "net5.0-windows",
-                  "net6.0-windows",
-                  "net7.0-windows",
-                  "net8.0-windows",
-                  "net9.0-windows",
-                  "net10.0-windows",
-                  "net11.0-windows",
-                  "net12.0-windows",
-                  "net13.0-windows"
+                  "lib/net5.0-windows/Foo.dll",
+                  "ref/net6.0-windows/Foo.dll",
+                  "runtimes/win7-x64/lib/net7.0-windows/Foo.dll",
+                  "runtimes/win7-x64/nativeassets/net8.0-windows/Foo.dll",
+                  "build/net9.0-windows/foo.props",
+                  "contentFiles/csharp/net10.0-windows/Foo.txt",
+                  "tools/net11.0-windows/win7-x64/Foo.exe",
+                  "embed/net12.0-windows/Foo.dll",
+                  "buildTransitive/net13.0-windows/foo.props"
                 }.OrderBy(str => str)));
         }
 
