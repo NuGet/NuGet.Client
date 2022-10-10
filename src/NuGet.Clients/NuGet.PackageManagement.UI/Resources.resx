@@ -947,8 +947,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="VSOptions_Button_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="VSOptions_Button_Clear" xml:space="preserve">
-    <value>Clear</value>
+  <data name="VSOptions_Button_RemoveAll" xml:space="preserve">
+    <value>Remove All</value>
   </data>
   <data name="VSOptions_Button_Remove" xml:space="preserve">
     <value>Remove</value>

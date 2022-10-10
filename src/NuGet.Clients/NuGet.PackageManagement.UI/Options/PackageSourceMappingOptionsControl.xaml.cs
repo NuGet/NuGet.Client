@@ -34,7 +34,7 @@ namespace NuGet.Options
             ShowAddDialogCommand = new DelegateCommand(ExecuteShowAddDialog);
 #pragma warning restore VSTHRD012 // Provide JoinableTaskFactory where allowed
             RemoveMappingCommand = new DelegateCommand(ExecuteRemoveMapping, CanExecuteRemoveMapping, NuGetUIThreadHelper.JoinableTaskFactory);
-            ClearMappingsCommand = new DelegateCommand(ExecuteClearMappings, CanExecuteClearMappings, NuGetUIThreadHelper.JoinableTaskFactory);
+            RemoveAllMappingsCommand = new DelegateCommand(ExecuteClearMappings, CanExecuteClearMappings, NuGetUIThreadHelper.JoinableTaskFactory);
             SourceMappingsCollection = new ItemsChangeObservableCollection<SourceMappingViewModel>();
             DataContext = this;
             InitializeComponent();
@@ -43,7 +43,7 @@ namespace NuGet.Options
         public ItemsChangeObservableCollection<SourceMappingViewModel> SourceMappingsCollection { get; private set; }
         public ICommand ShowAddDialogCommand { get; set; }
         public ICommand RemoveMappingCommand { get; set; }
-        public ICommand ClearMappingsCommand { get; set; }
+        public ICommand RemoveAllMappingsCommand { get; set; }
 
         internal void InitializeOnActivated(CancellationToken cancellationToken)
         {
@@ -57,7 +57,7 @@ namespace NuGet.Options
             SourceMappingsCollection.AddRange(CreateViewModels(_originalPackageSourceMappings));
 
             // Make sure all buttons show on open if there are already source mappings.
-            (ClearMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
+            (RemoveAllMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
             (RemoveMappingCommand as DelegateCommand).RaiseCanExecuteChanged();
         }
         private void ExecuteShowAddDialog(object parameter)
@@ -70,7 +70,7 @@ namespace NuGet.Options
         private void ExecuteRemoveMapping(object parameter)
         {
             SourceMappingsCollection.Remove((SourceMappingViewModel)_mappingList.SelectedItem);
-            (ClearMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
+            (RemoveAllMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
         }
 
         private bool CanExecuteRemoveMapping(object parameter)

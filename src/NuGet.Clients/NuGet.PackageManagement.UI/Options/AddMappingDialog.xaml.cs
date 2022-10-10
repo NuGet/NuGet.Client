@@ -93,7 +93,7 @@ namespace NuGet.Options
 
             (_parent.ShowAddDialogCommand as DelegateCommand).RaiseCanExecuteChanged();
             (_parent.RemoveMappingCommand as DelegateCommand).RaiseCanExecuteChanged();
-            (_parent.ClearMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
+            (_parent.RemoveAllMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
             Close();
         }
 

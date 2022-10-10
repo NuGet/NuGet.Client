@@ -2304,20 +2304,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clear.
-        /// </summary>
-        public static string VSOptions_Button_Clear {
-            get {
-                return ResourceManager.GetString("VSOptions_Button_Clear", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Remove.
         /// </summary>
         public static string VSOptions_Button_Remove {
             get {
                 return ResourceManager.GetString("VSOptions_Button_Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove All.
+        /// </summary>
+        public static string VSOptions_Button_RemoveAll {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_RemoveAll", resourceCulture);
             }
         }
         

@@ -43,7 +43,7 @@
       </Grid.ColumnDefinitions>
       <Button Grid.Column="0" Width="86" Height="24" Command="{Binding ShowAddDialogCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
       <Button Grid.Column="1" Width="86" Height="24" Margin = "3,0,0,0" Command="{Binding RemoveMappingCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Remove}"/>
-      <Button Grid.Column="3" Width="86" Height="24"  Command="{Binding ClearMappingsCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Clear}"/>
+      <Button Grid.Column="3" Width="86" Height="24"  Command="{Binding RemoveAllMappingsCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_RemoveAll}"/>
     </Grid>
   </Grid>
 </UserControl>
