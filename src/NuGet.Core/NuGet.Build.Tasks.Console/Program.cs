@@ -110,7 +110,9 @@ namespace NuGet.Build.Tasks.Console
 
             try
             {
-                staticGraphRestoreArguments = StaticGraphRestoreArguments.Read(System.Console.In);
+                using Stream stream = System.Console.OpenStandardInput();
+
+                staticGraphRestoreArguments = StaticGraphRestoreArguments.Read(stream);
 
                 return staticGraphRestoreArguments != null;
             }

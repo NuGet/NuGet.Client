@@ -4,81 +4,53 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using Newtonsoft.Json;
+using System.Text;
+
+#pragma warning disable CA2227 // Collection properties should be read only
 
 namespace NuGet.Build.Tasks
 {
     /// <summary>
     /// Represents arguments to the out-of-proc static graph-based restore which can be written to disk by <see cref="RestoreTaskEx" /> and then read by NuGet.Build.Tasks.Console.
     /// </summary>
+    [Serializable]
     public sealed class StaticGraphRestoreArguments
     {
         /// <summary>
         /// Gets or sets a <see cref="Dictionary{TKey, TValue}" /> representing the global properties.
         /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
+
         public Dictionary<string, string> GlobalProperties { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Gets or sets an <see cref="Dictionary{TKey, TValue}" /> containing option names and values.
         /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
         public Dictionary<string, string> Options { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Reads arguments from the specified <see cref="Stream" />.
         /// </summary>
-        /// <param name="reader">A <see cref="TextReader" /> to read arguments from as JSON.</param>
-        /// <returns>A <see cref="StaticGraphRestoreArguments" /> object if the specified stream contained a valid argument file, otherwise <c>null</c>.</returns>
-        public static StaticGraphRestoreArguments Read(TextReader reader)
+        /// <param name="stream">A <see cref="Stream" /> to read arguments from.</param>
+        /// <returns>A <see cref="StaticGraphRestoreArguments" /> object read from the specified stream.</returns>
+        public static StaticGraphRestoreArguments Read(Stream stream)
         {
-            using var jsonTextReader = new JsonTextReader(reader);
+            using var reader = new BinaryReader(stream, Encoding.Default, leaveOpen: true);
 
-            while (jsonTextReader.Read() && jsonTextReader.TokenType != JsonToken.StartObject)
+            return new StaticGraphRestoreArguments
             {
-                // Find the first StartObject
-            }
+                GlobalProperties = ReadDictionary(count: reader.ReadInt32()),
+                Options = ReadDictionary(count: reader.ReadInt32())
+            };
 
-            if (jsonTextReader.TokenType != JsonToken.StartObject)
+            Dictionary<string, string> ReadDictionary(int count)
             {
-                return null;
-            }
+                var dictionary = new Dictionary<string, string>(capacity: count, StringComparer.OrdinalIgnoreCase);
 
-            var arguments = new StaticGraphRestoreArguments();
-
-            while (jsonTextReader.Read())
-            {
-                // Read to each property and then read the property's contents
-                if (jsonTextReader.TokenType == JsonToken.PropertyName && jsonTextReader.Value is string propertyName)
+                for (int i = 0; i < count; i++)
                 {
-                    if (string.Equals(propertyName, nameof(GlobalProperties), StringComparison.Ordinal))
-                    {
-                        arguments.GlobalProperties = ReadDictionary(jsonTextReader);
-                    }
-                    else if (string.Equals(propertyName, nameof(Options), StringComparison.Ordinal))
-                    {
-                        arguments.Options = ReadDictionary(jsonTextReader);
-                    }
-                }
-            }
-
-            return arguments;
-
-            Dictionary<string, string> ReadDictionary(JsonReader reader)
-            {
-                if (!reader.Read() || reader.TokenType != JsonToken.StartObject)
-                {
-                    return null;
-                }
-
-                Dictionary<string, string> dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-                while (reader.Read() && reader.TokenType == JsonToken.PropertyName && reader.Value is string key && reader.Read() && reader.TokenType == JsonToken.String && reader.Value is string value)
-                {
-                    dictionary[key] = value;
+                    dictionary.Add(
+                        key: reader.ReadString(),
+                        value: reader.ReadString());
                 }
 
                 return dictionary;
@@ -88,32 +60,23 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Writes the current arguments to the specified stream.
         /// </summary>
-        /// <param name="writer">The <see cref="TextWriter" /> to write the arguments to.</param>
-        public void Write(TextWriter writer)
+        /// <param name="stream">A <see cref="Stream" /> to write the arguments to.</param>
+        public void Write(Stream stream)
         {
-            using (var jsonTextWriter = new JsonTextWriter(writer))
+            using BinaryWriter writer = new BinaryWriter(stream, Encoding.Default, leaveOpen: true);
+
+            WriteDictionary(GlobalProperties);
+            WriteDictionary(Options);
+
+            void WriteDictionary(Dictionary<string, string> dictionary)
             {
-                jsonTextWriter.Formatting = Formatting.Indented;
+                writer.Write(dictionary.Count);
 
-                jsonTextWriter.WriteStartObject();
+                foreach (var item in dictionary)
                 {
-                    WriteDictionary(jsonTextWriter, nameof(GlobalProperties), GlobalProperties);
-                    WriteDictionary(jsonTextWriter, nameof(Options), Options);
+                    writer.Write(item.Key);
+                    writer.Write(item.Value);
                 }
-                jsonTextWriter.WriteEndObject();
-            }
-
-            void WriteDictionary(JsonTextWriter writer, string propertyName, Dictionary<string, string> dictionary)
-            {
-                writer.WritePropertyName(propertyName);
-
-                writer.WriteStartObject();
-                foreach (KeyValuePair<string, string> option in dictionary)
-                {
-                    writer.WritePropertyName(option.Key, escape: true);
-                    writer.WriteValue(option.Value);
-                }
-                writer.WriteEndObject();
             }
         }
     }

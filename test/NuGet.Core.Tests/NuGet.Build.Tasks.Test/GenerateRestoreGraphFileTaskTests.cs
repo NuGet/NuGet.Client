@@ -50,11 +50,9 @@ namespace NuGet.Build.Tasks.Test
                     RestoreGraphOutputPath = restoreGraphOutputPath,
                 })
                 {
-                    StringBuilder stringBuilder = new StringBuilder();
+                    using var stream = new MemoryStream();
 
-                    using var writer = new StringWriter(stringBuilder);
-
-                    task.WriteArguments(writer);
+                    task.WriteArguments(stream);
 
                     string actualArguments = task.GetCommandLineArguments(msbuildBinPath);
 
@@ -71,9 +69,9 @@ namespace NuGet.Build.Tasks.Test
 
                     actualArguments.Should().Be($"\"{string.Join("\" \"", expectedArguments)}\"");
 
-                    using var reader = new StringReader(stringBuilder.ToString());
+                    stream.Position = 0;
 
-                    var arguments = StaticGraphRestoreArguments.Read(reader);
+                    var arguments = StaticGraphRestoreArguments.Read(stream);
 
                     arguments.Options.Should().BeEquivalentTo(new Dictionary<string, string>()
                     {

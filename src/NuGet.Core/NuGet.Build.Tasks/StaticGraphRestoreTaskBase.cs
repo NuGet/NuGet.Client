@@ -86,8 +86,7 @@ namespace NuGet.Build.Tasks
             try
             {
 #if DEBUG
-                var debugRestoreTask = Environment.GetEnvironmentVariable(DebugEnvironmentVariableName);
-                if (!string.IsNullOrEmpty(debugRestoreTask) && debugRestoreTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(Environment.GetEnvironmentVariable(DebugEnvironmentVariableName), bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {
                     Debugger.Launch();
                 }
@@ -121,7 +120,7 @@ namespace NuGet.Build.Tasks
 
                         process.Start();
 
-                        WriteArguments(process.StandardInput);
+                        WriteArguments(process.StandardInput.BaseStream);
 
                         process.BeginOutputReadLine();
 
@@ -162,11 +161,11 @@ namespace NuGet.Build.Tasks
             return string.Concat(
 #if IS_CORECLR
                 "\"", Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.dll")), "\"",
-                " ", "\"", Path.Combine(msbuildBinPath, "MSBuild.dll"), "\"",
+                " \"", Path.Combine(msbuildBinPath, "MSBuild.dll"), "\"",
 #else
                 "\"", Path.Combine(msbuildBinPath, "MSBuild.exe"), "\"",
 #endif
-                " ", "\"", IsSolutionPathDefined ? SolutionPath : ProjectFullPath, "\"");
+                " \"", IsSolutionPathDefined ? SolutionPath : ProjectFullPath, "\"");
         }
 
         /// <summary>
@@ -230,6 +229,7 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Gets the file name of the process.
         /// </summary>
+        /// <param name="processFileName">An optional process filename to use as an override.</param>
         /// <returns>The full path to the file for the process.</returns>
         internal string GetProcessFileName(string processFileName)
         {
@@ -258,15 +258,15 @@ namespace NuGet.Build.Tasks
             };
         }
 
-        internal void WriteArguments(TextWriter writer)
+        internal void WriteArguments(Stream stream)
         {
             var arguments = new StaticGraphRestoreArguments
             {
                 GlobalProperties = GetGlobalProperties(),
-                Options = GetOptions().ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase),
+                Options = GetOptions(),
             };
 
-            arguments.Write(writer);
+            arguments.Write(stream);
         }
     }
 }

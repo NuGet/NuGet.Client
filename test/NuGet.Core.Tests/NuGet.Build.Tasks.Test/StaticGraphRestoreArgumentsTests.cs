@@ -293,56 +293,16 @@ namespace NuGet.Build.Tasks.Test
                 },
             };
 
-            StringBuilder stringBuilder = new StringBuilder();
+            using var stream = new MemoryStream();
 
-            using var writer = new StringWriter(stringBuilder);
+            expected.Write(stream);
 
-            expected.Write(writer);
+            stream.Position = 0;
 
-            using var reader = new StringReader(stringBuilder.ToString());
-
-            StaticGraphRestoreArguments actual = StaticGraphRestoreArguments.Read(reader);
+            StaticGraphRestoreArguments actual = StaticGraphRestoreArguments.Read(stream);
 
             actual.GlobalProperties.Should().BeEquivalentTo(expected.GlobalProperties);
             actual.Options.Should().BeEquivalentTo(expected.Options);
-        }
-
-        /// <summary>
-        /// Verifies that the <see cref="StaticGraphRestoreArguments.Write(FileStream)" /> method writes a file in the expected JSON format.
-        /// </summary>
-        [Fact]
-        public void Write_WithBasicInformation_WritesExpectedJson()
-        {
-            var arguments = new StaticGraphRestoreArguments
-            {
-                GlobalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["Property1"] = "Value",
-                },
-                Options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    [nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects)] = bool.TrueString,
-                    [nameof(RestoreTaskEx.Recursive)] = bool.TrueString,
-                },
-            };
-
-            StringBuilder stringBuilder = new StringBuilder();
-
-            using var writer = new StringWriter(stringBuilder);
-
-            arguments.Write(writer);
-
-            string actual = stringBuilder.ToString();
-
-            actual.Should().Be(@"{
-  ""GlobalProperties"": {
-    ""Property1"": ""Value""
-  },
-  ""Options"": {
-    ""CleanupAssetsForUnsupportedProjects"": ""True"",
-    ""Recursive"": ""True""
-  }
-}");
         }
     }
 }
