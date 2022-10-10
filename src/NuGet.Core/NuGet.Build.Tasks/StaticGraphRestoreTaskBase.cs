@@ -101,7 +101,7 @@ namespace NuGet.Build.Tasks
                     process.EnableRaisingEvents = true;
                     process.StartInfo = new ProcessStartInfo
                     {
-                        Arguments = $"\"{string.Join("\" \"", GetCommandLineArguments(MSBuildBinPath))}\"",
+                        Arguments = GetCommandLineArguments(MSBuildBinPath),
                         CreateNoWindow = true,
                         FileName = GetProcessFileName(ProcessFileName),
                         RedirectStandardInput = true,
@@ -157,17 +157,16 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Gets the command-line arguments to use when launching the process that executes the restore.
         /// </summary>
-        internal IEnumerable<string> GetCommandLineArguments(string msbuildBinPath)
+        internal string GetCommandLineArguments(string msbuildBinPath)
         {
+            return string.Concat(
 #if IS_CORECLR
-
-            yield return Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.dll"));
-
-            yield return Path.Combine(msbuildBinPath, "MSBuild.dll");
+                "\"", Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.dll")), "\"",
+                " ", "\"", Path.Combine(msbuildBinPath, "MSBuild.dll"), "\"",
 #else
-            yield return Path.Combine(msbuildBinPath, "MSBuild.exe");
+                "\"", Path.Combine(msbuildBinPath, "MSBuild.exe"), "\"",
 #endif
-            yield return IsSolutionPathDefined ? SolutionPath : ProjectFullPath;
+                " ", "\"", IsSolutionPathDefined ? SolutionPath : ProjectFullPath, "\"");
         }
 
         /// <summary>

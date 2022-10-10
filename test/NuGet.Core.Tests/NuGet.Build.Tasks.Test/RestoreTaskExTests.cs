@@ -64,16 +64,20 @@ namespace NuGet.Build.Tasks.Test
 
                     task.WriteArguments(writer);
 
-                    List<string> commandLineArguments = task.GetCommandLineArguments(msbuildBinPath).ToList();
+                    string actualArguments = task.GetCommandLineArguments(msbuildBinPath);
 
-                    commandLineArguments.Should().BeEquivalentTo(
+                    string[] expectedArguments = new[]
+                    {
 #if IS_CORECLR
                         Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
                         Path.Combine(msbuildBinPath, "MSBuild.dll"),
 #else
                         Path.Combine(msbuildBinPath, "MSBuild.exe"),
 #endif
-                        projectPath);
+                        projectPath
+                    };
+
+                    actualArguments.Should().Be($"\"{string.Join("\" \"", expectedArguments)}\"");
 
                     using var reader = new StringReader(stringBuilder.ToString());
 
