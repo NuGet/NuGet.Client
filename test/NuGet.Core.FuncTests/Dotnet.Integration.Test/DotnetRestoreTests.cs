@@ -340,7 +340,8 @@ EndGlobal";
             }
         }
 
-        [Theory]
+        // Skipped on macOS due to https://github.com/NuGet/Home/issues/12147
+        [PlatformTheory(Platform.Windows, Platform.Linux)]
         [InlineData("TRUE")]
         [InlineData("true")]
         public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_WithEnvVarTrue_Fails(string envVarValue)
@@ -422,7 +423,8 @@ EndGlobal";
             }
         }
 
-        [PlatformFact(Platform.Darwin)]
+        // Skipped on macOS due to https://github.com/NuGet/Home/issues/12147
+        [PlatformFact(Platform.Darwin, SkipPlatform = Platform.Darwin)]
         public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_WithEnvVarNameCaseSensitive_Succeed()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
@@ -504,7 +506,8 @@ EndGlobal";
             }
         }
 
-        [PlatformFact(Platform.Linux, Platform.Darwin)]
+        // Skipped on macOS due to https://github.com/NuGet/Home/issues/12147
+        [PlatformFact(Platform.Linux, Platform.Darwin, SkipPlatform = Platform.Darwin)]
         public async Task DotnetRestore_WithUnSignedPackageAndSignatureValidationModeAsRequired_WithEnvVarValueCaseInsensitive_Fails()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
