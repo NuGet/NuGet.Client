@@ -5729,13 +5729,13 @@ namespace ClassLibrary
         public void Dotnet_New_Template_Restore_Pack_Success(string template)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = msbuildFixture.CreateSimpleTestPathContext())
             {
                 var projectName = "ClassLibrary1";
-                var workDirectory = Path.Combine(testDirectory);
-                var projectFile = Path.Combine(workDirectory, $"{projectName}.csproj");
-                var solutionDirectory = Path.Combine(testDirectory, projectName);
-                var nupkgPath = Path.Combine(solutionDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
+                string workDirectory = pathContext.SolutionRoot;
+                string projectFile = Path.Combine(workDirectory, $"{projectName}.csproj");
+                string solutionDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                string nupkgPath = Path.Combine(solutionDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
                 msbuildFixture.CreateDotnetNewProject(workDirectory, projectName, template);
