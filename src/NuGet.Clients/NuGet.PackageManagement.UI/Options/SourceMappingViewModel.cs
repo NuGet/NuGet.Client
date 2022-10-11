@@ -13,13 +13,7 @@ namespace NuGet.Options
         public string ID { get; private set; }
         public IReadOnlyList<PackageSourceContextInfo> Sources { get; private set; }
 
-        public string SourcesString
-        {
-            get
-            {
-                return string.Join(", ", Sources.Select(s => s.Name));
-            }
-        }
+        public string SourcesString => string.Join(", ", Sources.Select(s => s.Name));
 
         public override string ToString()
         {

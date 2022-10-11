@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI
 
         public void AddRange(IEnumerable<T> newItems)
         {
-            foreach (var item in newItems)
+            foreach (T item in newItems)
             {
                 Items.Add(item);
             }

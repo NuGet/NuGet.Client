@@ -2286,6 +2286,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package sources list.
+        /// </summary>
+        public static string VSOptions_Accessibility_SourcesList {
+            get {
+                return ResourceManager.GetString("VSOptions_Accessibility_SourcesList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add.
         /// </summary>
         public static string VSOptions_Button_Add {
