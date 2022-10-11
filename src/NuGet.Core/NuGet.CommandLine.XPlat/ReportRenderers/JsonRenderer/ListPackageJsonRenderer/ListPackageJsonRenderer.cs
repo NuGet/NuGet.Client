@@ -35,13 +35,12 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 
         public void End()
         {
-            List<ReportProblem> allReportProblems = _listPackageReportModel.Errors;
-            allReportProblems.AddRange(_listPackageReportModel.Projects.SelectMany(p => p.ProjectProblems));
+            _problems.AddRange(_listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems));
             string jsonRenderedOutput = ListPackageJsonOutputSerializer.Render(new ListPackageJsonOutputContent()
             {
                 ListPackageArgs = _listPackageReportModel.ListPackageArgs,
                 Parameters = Parameters,
-                Problems = allReportProblems,
+                Problems = _problems,
                 Projects = _listPackageReportModel.Projects,
             });
 

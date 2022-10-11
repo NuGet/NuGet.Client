@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Policy;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
+using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
 using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 using NuGet.CommandLine.XPlat.Utility;
@@ -52,9 +53,9 @@ namespace NuGet.CommandLine.XPlat
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
             if (!File.Exists(listPackageArgs.Path))
             {
-                listPackageReportModel.AddSolutionError(error: string.Format(CultureInfo.CurrentCulture,
+                listPackageArgs.Renderer.AddProblem(errorText: string.Format(CultureInfo.CurrentCulture,
                         Strings.ListPkg_ErrorFileNotFound,
-                        listPackageArgs.Path));
+                        listPackageArgs.Path), problemType: ProblemType.Error);
                 return (GenericExitErrorCode, listPackageReportModel);
             }
 

@@ -94,6 +94,12 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 
         private static void WriteSourcesArray(JsonWriter writer, IEnumerable<PackageSource> packageSources)
         {
+            if (ListPackageArgs.ReportType == ReportType.Default)
+            {
+                // Currently don't print sources for default list.
+                return;
+            }
+
             writer.WritePropertyName(SourcesProperty);
             writer.WriteStartArray();
 
