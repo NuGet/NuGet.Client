@@ -1488,7 +1488,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
+        [PlatformTheory(Platform.Windows, Skip = "https://github.com/dotnet/sdk/issues/28131")]
         // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;tags=tag1;description="hello world"\"
         [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;tags=tag1;description=\"hello world\"\\\"", "MyPackage",
             "1.2.3", "hello world", "tag1")]
