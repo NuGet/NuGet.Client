@@ -61,9 +61,17 @@
     <Compile Include="NuGetPackageSigningTests\RepositorySignedPackageTestCase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Test.Apex.VisualStudio" />
+    <PackageReference Include="Microsoft.Test.Apex.VisualStudio" ExcludeAssets="Compile" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="Xunit.StaFact" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Manually consuming compile-time assets from Microsoft.Test.Apex.VisualStudio and excluding ones that cause compile warnings -->
+    <Reference Include="$(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\*.dll"
+               Exclude="$(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.PrismIntegration.dll;
+                        $(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.RemoteCodeInjector.dll;
+                        $(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.RemoteCodeInjector.x64.dll"
+               Name="%(Filename)" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

@@ -91,21 +91,24 @@
     <ItemGroup>
         <PackageReference Update="FluentAssertions" Version="6.6.0" />
         <PackageReference Update="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
-        <PackageReference Update="Microsoft.CSharp" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="Microsoft.CodeAnalysis" Version="3.0.0" />
         <PackageReference Update="Microsoft.CodeAnalysis.Build.Tasks" Version="3.0.0-dev-61717-03" />
         <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.0.0-dev-61717-03" />
         <PackageReference Update="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.0.0" />
+        <PackageReference Update="Microsoft.CSharp" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="Microsoft.Net.Compilers.netcore" Version="3.0.0-dev-61717-03" />
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.1.0" />
-        <PackageReference Update="Microsoft.TestPlatform.Portable" Version="17.1.0" />
         <PackageReference Update="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
-        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="17.1.0-preview-2-31918-026" />
+        <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="17.3.32913.221" />
+        <PackageReference Update="Microsoft.TestPlatform.Portable" Version="17.1.0" />
         <PackageReference Update="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" Version="17.2.7" />
         <PackageReference Update="Moq" Version="4.18.1" />
+        <PackageReference Update="MSTest.TestAdapter" Version="2.2.10" />
+        <PackageReference Update="MSTest.TestFramework" Version="2.2.10" />
         <PackageReference Update="NuGet.Core" Version="$(NuGetCoreV2Version)" />
         <PackageReference Update="Portable.BouncyCastle" Version="1.8.10" />
         <PackageReference Update="System.Collections" Version="$(SystemPackagesVersion)" />
+        <PackageReference Update="System.Configuration.ConfigurationManager" Version="4.4.0" />
         <PackageReference Update="System.IO.FileSystem.Primitives" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.Memory" Version="4.5.5" />
         <PackageReference Update="System.Resources.ResourceManager" Version="$(SystemPackagesVersion)" />

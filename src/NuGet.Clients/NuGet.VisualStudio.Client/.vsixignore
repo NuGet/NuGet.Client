@@ -75,8 +75,6 @@ Microsoft.TeamFoundation.WorkItemTracking.Proxy.resources.dll
 Microsoft.TeamFoundation.WorkItemTracking.WebApi.dll
 Microsoft.VisualStudio.Debugger.Interop.16.0.dll
 Microsoft.VisualStudio.Interop.dll
-Microsoft.VisualStudio.LanguageServer.Protocol.dll
-Microsoft.VisualStudio.LanguageServer.Protocol.resources.dll
 Microsoft.VisualStudio.RpcContracts.dll
 Microsoft.VisualStudio.Services.Client.Interactive.dll
 Microsoft.VisualStudio.Services.Client.Interactive.resources.dll

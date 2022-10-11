@@ -1,6 +1,5 @@
 <Project DefaultTargets="AfterBuild">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.props"/>
 
   <!-- Configuration/global properties -->
   <PropertyGroup>
