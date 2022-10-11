@@ -56,45 +56,37 @@ namespace NuGet.Packaging
             get { return _packages; }
         }
 
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as PackageDependencyGroup);
+        }
+
         public bool Equals(PackageDependencyGroup other)
         {
+            if (other == null)
+            {
+                return false;
+            }
+
             if (ReferenceEquals(this, other))
             {
                 return true;
             }
 
-            if (ReferenceEquals(other, null))
-            {
-                return false;
-            }
-
-            return GetHashCode() == other.GetHashCode();
-        }
-
-        public override bool Equals(object obj)
-        {
-            var other = obj as PackageDependencyGroup;
-
-            if (other != null)
-            {
-                return Equals(other);
-            }
-
-            return false;
+            return EqualityComparer<NuGetFramework>.Default.Equals(TargetFramework, other.TargetFramework)
+                && Packages.OrderedEquals(other.Packages, p => p.Id, StringComparer.OrdinalIgnoreCase);
         }
 
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(TargetFramework);
+            combiner.AddObject(TargetFramework.GetHashCode());
 
-            if (Packages != null)
+            // order the dependencies by hash code to make this consistent
+            foreach (int hash in Packages.Select(p => p.GetHashCode()).OrderBy(h => h))
             {
-                foreach (var hash in Packages.Select(e => e.GetHashCode()).OrderBy(e => e))
-                {
-                    combiner.AddObject(hash);
-                }
+                combiner.AddObject(hash);
             }
 
             return combiner.CombinedHash;
