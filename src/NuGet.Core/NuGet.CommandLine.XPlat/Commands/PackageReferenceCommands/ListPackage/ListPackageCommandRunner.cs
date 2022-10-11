@@ -52,7 +52,7 @@ namespace NuGet.CommandLine.XPlat
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
             if (!File.Exists(listPackageArgs.Path))
             {
-                listPackageReportModel.AddError(error: string.Format(CultureInfo.CurrentCulture,
+                listPackageReportModel.AddSolutionError(error: string.Format(CultureInfo.CurrentCulture,
                         Strings.ListPkg_ErrorFileNotFound,
                         listPackageArgs.Path));
                 return (GenericExitErrorCode, listPackageReportModel);
@@ -85,7 +85,7 @@ namespace NuGet.CommandLine.XPlat
 
                 if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
                 {
-                    projectModel.AddError(error: string.Format(CultureInfo.CurrentCulture,
+                    projectModel.AddProjectProblem(error: string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_NotPRProject,
                         projectPath));
                     //Console.WriteLine();
@@ -97,7 +97,7 @@ namespace NuGet.CommandLine.XPlat
                 // If the file was not found, print an error message and continue to next project
                 if (!File.Exists(assetsPath))
                 {
-                    projectModel.AddError(error: string.Format(CultureInfo.CurrentCulture,
+                    projectModel.AddProjectProblem(error: string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_AssetsFileNotFound,
                         projectPath));
                     //Console.WriteLine();

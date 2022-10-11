@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
 using NuGet.CommandLine.XPlat.ReportRenderers.Models;
+using NuGet.Packaging;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 {
@@ -33,12 +35,13 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 
         public void End()
         {
+            List<ReportProblem> allReportProblems = _listPackageReportModel.Errors;
+            allReportProblems.AddRange(_listPackageReportModel.Projects.SelectMany(p => p.ProjectProblems));
             string jsonRenderedOutput = ListPackageJsonOutputSerializer.Render(new ListPackageJsonOutputContent()
             {
                 ListPackageArgs = _listPackageReportModel.ListPackageArgs,
                 Parameters = Parameters,
-                // Todo
-                //Problems = _listPackageReportModel.Errors,
+                Problems = allReportProblems,
                 Projects = _listPackageReportModel.Projects,
             });
 

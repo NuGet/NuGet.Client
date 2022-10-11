@@ -16,8 +16,8 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
     {
         private const string ProjectNameMSbuildProperty = "MSBuildProjectName";
 
-        internal List<string> _errors;
-        internal string ProjectPath { get; set; }
+        internal List<ReportProblem> ProjectProblems { get; private set; }
+        internal string ProjectPath { get; private set; }
         public ListPackageReportModel ReportModel { get; }
         internal List<ListPackageReportFrameworkPackage> TargetFrameworkPackages { get; private set; }
         internal IEnumerable<FrameworkPackages> Packages { get; private set; }
@@ -37,34 +37,24 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
             ProjectName = Project.GetPropertyValue(ProjectNameMSbuildProperty);
         }
 
-        public void SetFrameworkPackageMetaData(List<ListPackageReportFrameworkPackage> frameworkPackages)
+        internal void SetFrameworkPackageMetaData(List<ListPackageReportFrameworkPackage> frameworkPackages)
         {
             TargetFrameworkPackages = frameworkPackages;
         }
 
-        public void AddError(string error)
+        internal void AddProjectProblem(string error)
         {
-            _errors ??= new List<string> { };
-            _errors.Add(error);
+            ProjectProblems ??= new List<ReportProblem> { };
+            ProjectProblems.Add(new ReportProblem(project: ProjectPath, message: error, problemType: Enums.ProblemType.Error));
         }
 
-        public IEnumerable<FrameworkPackages> GetAssetFilePackages(LockFile assetsFile)
+        internal IEnumerable<FrameworkPackages> GetAssetFilePackages(LockFile assetsFile)
         {
             if (Packages == null)
             {
                 Packages = ReportModel.MSBuildAPIUtility.GetResolvedVersions(Project.FullPath, ReportModel.ListPackageArgs.Frameworks, assetsFile, ReportModel.ListPackageArgs.IncludeTransitive, includeProjects: ReportModel.ListPackageArgs.ReportType == ReportType.Default);
             }
             return Packages;
-        }
-
-        public bool AnyPackages()
-        {
-            // No packages means that no package references at all were found in the current framework
-            //if (!packages.Any())
-            //{
-            //    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, projectName));
-            //}
-            return Packages.Any();
         }
 
         internal string WarnForHttpSources()

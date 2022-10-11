@@ -19,24 +19,21 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
         }
     }
 
-    internal class TopLevelPackage
+    internal class ListPackage
     {
         internal string PackageId { get; set; }
-        internal string RequestedVersion { get; set; }
         internal string ResolvedVersion { get; set; }
         internal string LatestVersion { get; set; }
         public List<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
-        internal string DeprecationReasons { get; set; }
-        internal string AlternativePackage { get; set; }
+        internal PackageDeprecationMetadata DeprecationReasons { get; set; }
+        internal AlternatePackageMetadata AlternativePackage { get; set; }
     }
 
-    internal class TransitivePackage
+    internal class TopLevelPackage : ListPackage
     {
-        internal string PackageId { get; set; }
-        internal string ResolvedVersion { get; set; }
-        internal string LatestVersion { get; set; }
-        public List<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
-        internal string DeprecationReasons { get; set; }
-        internal string AlternativePackage { get; set; }
+        internal string RequestedVersion { get; set; }
     }
+
+    internal class TransitivePackage : ListPackage
+    { }
 }

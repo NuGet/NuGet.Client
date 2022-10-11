@@ -7,9 +7,9 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using NuGet.CommandLine.XPlat.ReportRenderers.Models;
-using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Configuration;
 using NuGet.Protocol;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 {
@@ -21,6 +21,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
         private const string ParametersProperty = "parameters";
         private const string ProblemsProperty = "problems";
         private const string SourcesProperty = "sources";
+        private const string ProjectProperty = "project";
         private const string ProjectsProperty = "projects";
         private const string FrameworksProperty = "frameworks";
         private const string FrameworkProperty = "framework";
@@ -34,11 +35,15 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
         private const string AdvisoryUrlProperty = "advisoryurl";
         private const string VulnerabilitiesProperty = "vulnerabilities";
         private const string LatestVersionProperty = "latestVersion";
+        private const string DeprecationReasonsProperty = "deprecationReasons";
+        private const string AlternativePackageProperty = "alternativePackage";
+        private const string VersionRangeProperty = "versionRange";
+        private const string MessageProperty = "message";
 
         private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(GetSerializerSettings());
         internal static ListPackageArgs ListPackageArgs;
 
-        public static string Render(ListPackageJsonOutputContent jsonOutputContent)
+        internal static string Render(ListPackageJsonOutputContent jsonOutputContent)
         {
             using (var writer = new StringWriter())
             {
@@ -64,33 +69,54 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
             return settings;
         }
 
+        private static void WriteProblems(JsonWriter writer, IEnumerable<ReportProblem> reportProblems)
+        {
+            writer.WritePropertyName(ProblemsProperty);
+            writer.WriteStartArray();
+
+            foreach (ReportProblem reportProblem in reportProblems)
+            {
+                writer.WriteStartObject();
+
+                if (!string.IsNullOrEmpty(reportProblem.Project))
+                {
+                    writer.WritePropertyName(ProjectProperty);
+                    writer.WriteValue(NormalizeFilePath(reportProblem.Project));
+                }
+
+                writer.WritePropertyName(MessageProperty);
+                writer.WriteValue(NormalizeFilePath(reportProblem.Message));
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+        }
+
         private static void WriteSourcesArray(JsonWriter writer, IEnumerable<PackageSource> packageSources)
         {
             writer.WritePropertyName(SourcesProperty);
-
             writer.WriteStartArray();
+
             foreach (PackageSource packageSource in packageSources)
             {
                 writer.WriteValue(packageSource.Source);
             }
+
             writer.WriteEndArray();
         }
 
         private static void WriteProjectArray(JsonWriter writer, List<ListPackageProjectDetails> reportProjects)
         {
             writer.WritePropertyName(ProjectsProperty);
-
             writer.WriteStartArray();
+
             foreach (ListPackageProjectDetails reportProject in reportProjects)
             {
                 writer.WriteStartObject();
+
                 writer.WritePropertyName(PathProperty);
-                // Normalize the project path.
-#if NETCOREAPP
-                writer.WriteValue(reportProject.ProjectPath.Replace("\\", "/", StringComparison.Ordinal));
-#else
-                writer.WriteValue(reportProject.ProjectPath.Replace("\\", "/"));
-#endif
+                writer.WriteValue(NormalizeFilePath(reportProject.ProjectPath));
+
                 if (reportProject.TargetFrameworkPackages?.Count > 0)
                 {
                     writer.WritePropertyName(FrameworksProperty);
@@ -101,12 +127,14 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 
                 writer.WriteEndObject();
             }
+
             writer.WriteEndArray();
         }
 
         private static void WriteFrameworkPackage(JsonWriter writer, List<ListPackageReportFrameworkPackage> reportFrameworkPackages)
         {
             writer.WriteStartArray();
+
             foreach (ListPackageReportFrameworkPackage reportFrameworkPackage in reportFrameworkPackages)
             {
                 writer.WriteStartObject();
@@ -116,6 +144,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
                 WriteTransitivePackages(writer, TransitivePackagesProperty, reportFrameworkPackage.TransitivePackages);
                 writer.WriteEndObject();
             }
+
             writer.WriteEndArray();
         }
 
@@ -138,15 +167,20 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
                     writer.WritePropertyName(ResolvedVersionProperty);
                     writer.WriteValue(topLevelPackage.ResolvedVersion);
 
-                    if (ListPackageArgs.ReportType == ReportType.Outdated)
+                    switch (ListPackageArgs.ReportType)
                     {
-                        writer.WritePropertyName(LatestVersionProperty);
-                        writer.WriteValue(topLevelPackage.LatestVersion);
-                    }
-
-                    if (ListPackageArgs.ReportType == ReportType.Vulnerable)
-                    {
-                        WriteVulnerabilities(writer, topLevelPackage.Vulnerabilities);
+                        case ReportType.Outdated:
+                            writer.WritePropertyName(LatestVersionProperty);
+                            writer.WriteValue(topLevelPackage.LatestVersion);
+                            break;
+                        case ReportType.Deprecated:
+                            WriteDeprecations(writer, topLevelPackage);
+                            break;
+                        case ReportType.Vulnerable:
+                            WriteVulnerabilities(writer, topLevelPackage.Vulnerabilities);
+                            break;
+                        default:
+                            break;
                     }
 
                     writer.WriteEndObject();
@@ -174,20 +208,59 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
                     writer.WritePropertyName(ResolvedVersionProperty);
                     writer.WriteValue(transitivePackage.ResolvedVersion);
 
-                    if (ListPackageArgs.ReportType == ReportType.Outdated)
+                    switch (ListPackageArgs.ReportType)
                     {
-                        writer.WritePropertyName(LatestVersionProperty);
-                        writer.WriteValue(transitivePackage.LatestVersion);
+                        case ReportType.Outdated:
+                            writer.WritePropertyName(LatestVersionProperty);
+                            writer.WriteValue(transitivePackage.LatestVersion);
+                            break;
+                        case ReportType.Deprecated:
+                            WriteDeprecations(writer, transitivePackage);
+                            break;
+                        case ReportType.Vulnerable:
+                            WriteVulnerabilities(writer, transitivePackage.Vulnerabilities);
+                            break;
+                        default:
+                            break;
                     }
 
-                    if (ListPackageArgs.ReportType == ReportType.Vulnerable)
-                    {
-                        WriteVulnerabilities(writer, transitivePackage.Vulnerabilities);
-                    }
 
                     writer.WriteEndObject();
                 }
                 writer.WriteEndArray();
+            }
+        }
+
+        private static void WriteDeprecations(JsonWriter writer, ListPackage listPackage)
+        {
+            if (listPackage.DeprecationReasons != null)
+            {
+                writer.WritePropertyName(DeprecationReasonsProperty);
+                writer.WriteStartArray();
+
+                foreach (string deprecationReason in listPackage.DeprecationReasons?.Reasons)
+                {
+                    writer.WriteValue(deprecationReason);
+                }
+
+                writer.WriteEndArray();
+            }
+
+            if (listPackage.AlternativePackage != null)
+            {
+                writer.WritePropertyName(AlternativePackageProperty);
+                writer.WriteStartObject();
+                writer.WritePropertyName(IdProperty);
+                writer.WriteValue(listPackage.AlternativePackage.PackageId);
+                writer.WritePropertyName(VersionRangeProperty);
+
+                var versionRangeString = VersionRangeFormatter.Instance.Format(
+                    "p",
+                    listPackage.AlternativePackage.Range,
+                    VersionRangeFormatter.Instance);
+
+                writer.WriteValue(versionRangeString);
+                writer.WriteEndObject();
             }
         }
 
@@ -224,6 +297,20 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
             writer.WriteEndArray();
         }
 
+        private static string NormalizeFilePath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return string.Empty;
+            }
+
+#if NETCOREAPP
+            return path.Replace("\\", "/", StringComparison.Ordinal);
+#else
+            return path.Replace("\\", "/");
+#endif
+        }
+
         private class JsonOutputConverter : JsonConverter
         {
             internal static JsonOutputConverter Default { get; } = new JsonOutputConverter();
@@ -252,19 +339,11 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
                 writer.WriteValue(jsonOutputContent.Version);
 
                 writer.WritePropertyName(ParametersProperty);
-
-                // Normalize the path in parameters
-#if NETCOREAPP
-                writer.WriteValue(jsonOutputContent.Parameters.Replace("\\", "/", StringComparison.Ordinal));
-#else
-                writer.WriteValue(jsonOutputContent.Parameters.Replace("\\", "/"));
-#endif
+                writer.WriteValue(NormalizeFilePath(jsonOutputContent.Parameters));
 
                 if (jsonOutputContent.Problems?.Count > 0)
                 {
-                    writer.WritePropertyName(ProblemsProperty);
-                    // Not implemented yet
-                    //JsonUtility.WriteObject(writer, jsonOutputContent.Problems, WriteProblem);
+                    WriteProblems(writer, jsonOutputContent.Problems);
                 }
 
                 if (ListPackageArgs.PackageSources.Any())

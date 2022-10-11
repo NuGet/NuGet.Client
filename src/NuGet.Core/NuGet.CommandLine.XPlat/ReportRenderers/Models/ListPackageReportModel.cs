@@ -2,15 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer;
+using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
 {
     internal class ListPackageReportModel
     {
-        internal List<string> Errors { get; } = new();
+        internal List<ReportProblem> Errors { get; } = new();
         internal ListPackageArgs ListPackageArgs { get; }
         internal List<ListPackageProjectDetails> Projects { get; } = new();
 
@@ -19,27 +17,22 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
         private ListPackageReportModel()
         { }
 
-        public ListPackageReportModel(ListPackageArgs listPackageArgs)
+        internal ListPackageReportModel(ListPackageArgs listPackageArgs)
         {
             ListPackageArgs = listPackageArgs;
             MSBuildAPIUtility = new MSBuildAPIUtility(listPackageArgs.Logger);
         }
 
-        public ListPackageProjectDetails CreateProjectReportData(string projectPath)
+        internal ListPackageProjectDetails CreateProjectReportData(string projectPath)
         {
             var projectModel = new ListPackageProjectDetails(projectPath, this);
             Projects.Add(projectModel);
             return projectModel;
         }
 
-        public void AddError(string error)
+        internal void AddSolutionError(string error)
         {
-            Errors.Add(error);
+            Errors.Add(new ReportProblem(project: string.Empty, message: error, problemType: ProblemType.Error));
         }
-
-        //public string GetReportHeader()
-        //{
-        //    return string.Empty;
-        //}
     }
 }

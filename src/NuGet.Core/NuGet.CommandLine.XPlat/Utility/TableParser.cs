@@ -112,7 +112,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                                 transitivePackage.LatestVersion = formattedCell.Value;
                                 break;
                             case ReportPackageColumn.Deprecated:
-                                transitivePackage.DeprecationReasons = formattedCell.Value;
+                                //transitivePackage.DeprecationReasons = formattedCell.Value;
                                 break;
                             case ReportPackageColumn.AlternatePackage:
                                 break;
