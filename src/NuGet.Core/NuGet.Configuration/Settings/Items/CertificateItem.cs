@@ -37,7 +37,7 @@ namespace NuGet.Configuration
                     throw new ArgumentException(Resources.UnknownHashAlgorithmNotSupported);
                 }
 
-                UpdateAttribute(ConfigurationConstants.HashAlgorithm, value.ToString().ToUpper());
+                UpdateAttribute(ConfigurationConstants.HashAlgorithm, value.ToString().ToUpper(CultureInfo.InvariantCulture));
             }
         }
 
@@ -52,7 +52,7 @@ namespace NuGet.Configuration
 
                 return false;
             }
-            set => UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, value.ToString(CultureInfo.CurrentCulture).ToLower());
+            set => UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, value.ToString(CultureInfo.CurrentCulture).ToLower(CultureInfo.InvariantCulture));
         }
 
         protected override IReadOnlyCollection<string> RequiredAttributes { get; }
@@ -72,8 +72,8 @@ namespace NuGet.Configuration
             }
 
             AddAttribute(ConfigurationConstants.Fingerprint, fingerprint);
-            AddAttribute(ConfigurationConstants.HashAlgorithm, hashAlgorithm.ToString().ToUpper());
-            AddAttribute(ConfigurationConstants.AllowUntrustedRoot, allowUntrustedRoot.ToString(CultureInfo.CurrentCulture).ToLower());
+            AddAttribute(ConfigurationConstants.HashAlgorithm, hashAlgorithm.ToString().ToUpper(CultureInfo.InvariantCulture));
+            AddAttribute(ConfigurationConstants.AllowUntrustedRoot, allowUntrustedRoot.ToString(CultureInfo.CurrentCulture).ToLower(CultureInfo.InvariantCulture));
         }
 
         internal CertificateItem(XElement element, SettingsFile origin)
@@ -87,8 +87,8 @@ namespace NuGet.Configuration
             }
 
             // Update attributes with propert casing
-            UpdateAttribute(ConfigurationConstants.HashAlgorithm, HashAlgorithm.ToString().ToUpper());
-            UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, AllowUntrustedRoot.ToString(CultureInfo.CurrentCulture).ToLower());
+            UpdateAttribute(ConfigurationConstants.HashAlgorithm, HashAlgorithm.ToString().ToUpper(CultureInfo.InvariantCulture));
+            UpdateAttribute(ConfigurationConstants.AllowUntrustedRoot, AllowUntrustedRoot.ToString(CultureInfo.CurrentCulture).ToLower(CultureInfo.InvariantCulture));
         }
 
         public override SettingBase Clone()

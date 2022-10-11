@@ -180,7 +180,7 @@ namespace NuGet.Credentials
             // since normal is default
             if (PassVerbosityFlag(request))
             {
-                argumentString += $" -verbosity {request.Verbosity.ToLower()}";
+                argumentString += $" -verbosity {request.Verbosity.ToLower(CultureInfo.InvariantCulture)}";
             }
 
             var startInfo = new ProcessStartInfo
