@@ -143,4 +143,8 @@
   <data name="Error_NoSdkVersion" xml:space="preserve">
     <value>The NuGetSdkResolver did not resolve this SDK because there was no version specified in the project or global.json.</value>
   </data>
+  <data name="Error_FailedToReadSettings" xml:space="preserve">
+    <value>Failed to load NuGet settings. {0}</value>
+    <comment>{0} is exception message.</comment>
+  </data>
 </root>
