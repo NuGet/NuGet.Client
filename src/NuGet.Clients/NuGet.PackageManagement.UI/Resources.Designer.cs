@@ -2358,7 +2358,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enter a valid Package ID pattern (Example: Contoso.Contracts or System.*).
+        ///   Looks up a localized string similar to Enter a valid Package pattern (Example: Contoso.Contracts or System.*).
         /// </summary>
         public static string VSOptions_Watermark_AddPackageNamespace {
             get {
