@@ -12,5 +12,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
         internal ListPackageArgs ListPackageArgs { get; set; }
         internal List<ReportProblem> Problems { get; set; }
         internal List<ListPackageProjectModel> Projects { get; set; }
+        internal bool AutoReferenceFound { get; set; }
     }
 }

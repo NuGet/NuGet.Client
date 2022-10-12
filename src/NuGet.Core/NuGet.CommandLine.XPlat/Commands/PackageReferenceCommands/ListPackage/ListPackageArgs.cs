@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using NuGet.CommandLine.XPlat.ReportRenderers;
 using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
 using NuGet.Common;

@@ -40,6 +40,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
                 ListPackageArgs = _listPackageReportModel.ListPackageArgs,
                 Problems = _problems,
                 Projects = _listPackageReportModel.Projects,
+                AutoReferenceFound = _listPackageReportModel.AutoReferenceFound
             });
 
             Console.WriteLine(jsonRenderedOutput);

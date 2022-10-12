@@ -88,6 +88,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
 
             frameworkPackages = frameworkPackages.OrderBy(p => p.Name);
+
             if (printingTransitive)
             {
                 targetFrameworkPackageMetaData.TransitivePackages = frameworkPackages.Select(p => new ListReportTransitivePackage()
@@ -106,6 +107,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 {
                     PackageId = p.Name,
                     OriginalRequestedVersion = p.OriginalRequestedVersion,
+                    AutoReference = p.AutoReference,
                     ResolvedVersion = GetPackageVersion(p),
                     LatestVersion = listPackageArgs.ReportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null,
                     Vulnerabilities = listPackageArgs.ReportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
@@ -113,10 +115,8 @@ namespace NuGet.CommandLine.XPlat.Utility
                     AlternativePackage = listPackageArgs.ReportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null
                 }).ToList();
 
-                targetFrameworkPackageMetaData.AutoReference = frameworkPackages.Any(p => p.AutoReference);
+                tableHasAutoReference = frameworkPackages.Any(p => p.AutoReference);
             }
-
-            tableHasAutoReference = targetFrameworkPackageMetaData.AutoReference;
 
             return true;
         }
@@ -141,8 +141,6 @@ namespace NuGet.CommandLine.XPlat.Utility
             {
                 return null;
             }
-
-            //packages = packages.OrderBy(p => p.Name); Already sorted
 
             var headers = BuildTableHeaders(printingTransitive, listPackageArgs);
 

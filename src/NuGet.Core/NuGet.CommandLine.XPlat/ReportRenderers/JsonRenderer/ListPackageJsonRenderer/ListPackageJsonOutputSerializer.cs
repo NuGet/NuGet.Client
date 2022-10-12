@@ -31,6 +31,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
         private const string IdProperty = "id";
         private const string RequestedVersionProperty = "requestedVersion";
         private const string ResolvedVersionProperty = "resolvedVersion";
+        private const string AutoReferencedProperty = "autoReferenced";
         private const string SeverityProperty = "severity";
         private const string AdvisoryUrlProperty = "advisoryurl";
         private const string VulnerabilitiesProperty = "vulnerabilities";
@@ -172,6 +173,12 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 
                     writer.WritePropertyName(ResolvedVersionProperty);
                     writer.WriteValue(topLevelPackage.ResolvedVersion);
+
+                    if (topLevelPackage.AutoReference)
+                    {
+                        writer.WritePropertyName(AutoReferencedProperty);
+                        writer.WriteValue("true");
+                    }
 
                     switch (ListPackageArgs.ReportType)
                     {
@@ -346,6 +353,11 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 
                 writer.WritePropertyName(ParametersProperty);
                 writer.WriteValue(NormalizeFilePath(ListPackageArgs.ArgumentText));
+
+                if (jsonOutputContent.AutoReferenceFound)
+                {
+                    jsonOutputContent.Problems.Add(new ReportProblem(string.Empty, Strings.ListPkg_AutoReferenceDescription, ProblemType.Information));
+                }
 
                 if (jsonOutputContent.Problems?.Count > 0)
                 {

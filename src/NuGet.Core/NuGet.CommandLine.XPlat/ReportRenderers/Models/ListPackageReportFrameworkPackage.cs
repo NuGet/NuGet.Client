@@ -9,7 +9,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
     internal class ListPackageReportFrameworkPackage
     {
         internal string Framework { get; set; }
-        internal bool AutoReference { get; set; }
         internal List<ListReportTopPackage> TopLevelPackages { get; set; }
         internal List<ListReportTransitivePackage> TransitivePackages { get; set; }
         public ListPackageReportFrameworkPackage(string frameWork)

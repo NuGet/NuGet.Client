@@ -25,27 +25,25 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private Dictionary<PackageSource, SourceRepository> _sourceRepositoryCache;
-        private const int GenericExitSuccessCode = 0;
 
         public ListPackageCommandRunner()
         {
             _sourceRepositoryCache = new Dictionary<PackageSource, SourceRepository>();
         }
 
-        public async Task<int> ExecuteCommandAsync(ListPackageArgs listPackageArgs)
+        public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
             IReportRenderer reportRenderer = listPackageArgs.Renderer;
 
-            (int exitCode, ListPackageReportModel reportModel) = await GetReportDataAsync(listPackageArgs);
+            ListPackageReportModel reportModel = await GetReportDataAsync(listPackageArgs);
             // set renderer data
             reportRenderer.Write(reportModel);
             // render report Model data in requested format
             // todo? Maybe unify Write + End methods.
             reportRenderer.End();
-            return exitCode;
         }
 
-        private async Task<(int, ListPackageReportModel)> GetReportDataAsync(ListPackageArgs listPackageArgs)
+        private async Task<ListPackageReportModel> GetReportDataAsync(ListPackageArgs listPackageArgs)
         {
             // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs, use logger instead.
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
@@ -57,7 +55,7 @@ namespace NuGet.CommandLine.XPlat
                         problemType: ProblemType.Error);
 
                 // Currently return code's success even though there's error, changing this would break CI pipelines. 
-                return (GenericExitSuccessCode, listPackageReportModel);
+                return listPackageReportModel;
             }
 
             //If the given file is a solution, get the list of projects
@@ -165,15 +163,12 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
-            // Print a legend message for auto-reference markers used
             if (autoReferenceFound)
             {
-                //Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
-
-                // Should log into json output ?
+                listPackageReportModel.AutoReferenceFound = true;
             }
 
-            return (GenericExitSuccessCode, listPackageReportModel);
+            return listPackageReportModel;
         }
 
         private static void WarnForHttpSources(ListPackageArgs listPackageArgs, ListPackageProjectModel projectModel)

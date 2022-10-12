@@ -156,7 +156,8 @@ namespace NuGet.CommandLine.XPlat
 
                     var listPackageCommandRunner = getCommandRunner();
 
-                    return await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
+                    await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
+                    return 0;
                 });
             });
         }

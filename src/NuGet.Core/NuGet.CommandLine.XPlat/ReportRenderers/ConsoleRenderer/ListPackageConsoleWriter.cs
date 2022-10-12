@@ -31,6 +31,12 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
             WriteSources(jsonOutputContent.ListPackageArgs.PackageSources);
 
             WriteProjects(jsonOutputContent.Projects);
+
+            // Print a legend message for auto-reference markers used
+            if (jsonOutputContent.AutoReferenceFound)
+            {
+                Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
+            }
         }
 
         private static void WriteSources(IEnumerable<PackageSource> packageSources)
@@ -67,7 +73,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
 
                     // If no packages exist for this framework, print the
                     // appropriate message
-                    if (frameworkTopLevelPackages?.Any() == false && frameworkTransitivePackages?.Any() == false)
+                    if (frameworkTopLevelPackages?.Any() != true && frameworkTransitivePackages?.Any() != true)
                     {
                         Console.ForegroundColor = ConsoleColor.Blue;
 

@@ -9,7 +9,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
     {
         internal ListPackageArgs ListPackageArgs { get; }
         internal List<ListPackageProjectModel> Projects { get; } = new();
-
+        internal bool AutoReferenceFound { get; set; }
         internal MSBuildAPIUtility MSBuildAPIUtility { get; }
 
         private ListPackageReportModel()

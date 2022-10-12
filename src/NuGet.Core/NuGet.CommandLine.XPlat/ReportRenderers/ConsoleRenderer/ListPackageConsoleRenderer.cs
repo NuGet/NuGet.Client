@@ -35,9 +35,9 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
             ListPackageConsoleWriter.Render(new ListPackageOutputContent()
             {
                 ListPackageArgs = _listPackageReportModel.ListPackageArgs,
-                //Parameters = Parameters,
                 Problems = _problems,
                 Projects = _listPackageReportModel.Projects,
+                AutoReferenceFound = _listPackageReportModel.AutoReferenceFound
             });
         }
 
