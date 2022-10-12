@@ -14,7 +14,8 @@ namespace NuGet.Packaging.Signing
     {
         // These constants are dictated by the .NET SDK.
         internal const string SubdirectoryName = "trustedroots";
-        internal const string FileName = "codesignctl.pem";
+        internal const string CodeSigningFileName = "codesignctl.pem";
+        internal const string TimestampingFileName = "timestampctl.pem";
 
         private static readonly Lazy<string> ThisAssemblyDirectoryPath = new(GetThisAssemblyDirectoryPath, LazyThreadSafetyMode.ExecutionAndPublication);
 
@@ -23,14 +24,27 @@ namespace NuGet.Packaging.Signing
         {
         }
 
-        internal static bool TryCreate(out FallbackCertificateBundleX509ChainFactory factory, string fileName = FileName)
+        internal static bool TryCreate(
+            X509StorePurpose storePurpose,
+            string fileName,
+            out FallbackCertificateBundleX509ChainFactory factory)
         {
             factory = null;
+
+            if (string.IsNullOrEmpty(fileName))
+            {
+                fileName = storePurpose switch
+                {
+                    X509StorePurpose.CodeSigning => CodeSigningFileName,
+                    X509StorePurpose.Timestamping => TimestampingFileName,
+                    _ => throw new ArgumentException(Strings.InvalidX509StorePurpose, nameof(storePurpose))
+                };
+            }
 
             string fullFilePath = Path.Combine(
                 ThisAssemblyDirectoryPath.Value,
                 SubdirectoryName,
-                fileName ?? FileName);
+                fileName);
 
             if (TryImportFromPemFile(fullFilePath, out X509Certificate2Collection certificates))
             {

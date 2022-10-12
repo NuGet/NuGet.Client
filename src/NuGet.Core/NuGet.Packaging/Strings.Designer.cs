@@ -763,6 +763,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid X.509 store purpose..
+        /// </summary>
+        internal static string InvalidX509StorePurpose {
+            get {
+                return ResourceManager.GetString("InvalidX509StorePurpose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installed {0} {1} from {2} with content hash {3}..
         /// </summary>
         internal static string Log_InstalledPackage {

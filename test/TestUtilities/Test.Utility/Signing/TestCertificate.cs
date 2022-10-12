@@ -3,15 +3,17 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using NuGet.Common;
+using NuGet.Packaging.Signing;
 
 namespace Test.Utility.Signing
 {
     /// <summary>
     /// Test certificate pair.
     /// </summary>
-    public class TestCertificate
+    public sealed class TestCertificate
     {
+        private readonly X509StorePurpose _storePurpose;
+
         /// <summary>
         /// Cert
         /// </summary>
@@ -33,6 +35,11 @@ namespace Test.Utility.Signing
         /// </summary>
         public CertificateRevocationList Crl { get; set; }
 
+        public TestCertificate(X509StorePurpose storePurpose)
+        {
+            _storePurpose = storePurpose;
+        }
+
         /// <summary>
         /// Trust the PublicCert cert for the life of the object.
         /// </summary>
@@ -43,7 +50,12 @@ namespace Test.Utility.Signing
         {
             StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
-            return new TrustedTestCert<TestCertificate>(this, e => PublicCert, StoreName.Root, storeLocation);
+            return new TrustedTestCert<TestCertificate>(
+                this,
+                e => PublicCert,
+                _storePurpose,
+                StoreName.Root,
+                storeLocation);
         }
 
         /// <summary>
@@ -54,7 +66,12 @@ namespace Test.Utility.Signing
         {
             StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
-            return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
+            return new TrustedTestCert<TestCertificate>(
+                this,
+                e => PublicCertWithPrivateKey,
+                _storePurpose,
+                storeName,
+                storeLocation);
         }
 
         /// <summary>
@@ -67,7 +84,12 @@ namespace Test.Utility.Signing
             StoreName storeName = CertificateStoreUtilities.GetCertificateAuthorityStoreName();
             StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
-            return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
+            return new TrustedTestCert<TestCertificate>(
+                this,
+                e => PublicCertWithPrivateKey,
+                _storePurpose,
+                storeName,
+                storeLocation);
         }
 
         /// <summary>
@@ -81,7 +103,12 @@ namespace Test.Utility.Signing
             StoreName storeName = CertificateStoreUtilities.GetTrustedCertificateStoreNameForLeafOrSelfIssuedCertificate();
             StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocationForLeafOrSelfIssuedCertificate();
 
-            return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
+            return new TrustedTestCert<TestCertificate>(
+                this,
+                e => PublicCertWithPrivateKey,
+                _storePurpose,
+                storeName,
+                storeLocation);
         }
 
         public static string GenerateCertificateName()
@@ -89,10 +116,16 @@ namespace Test.Utility.Signing
             return "NuGetTest-" + Guid.NewGuid().ToString();
         }
 
-        public static TestCertificate Generate(Action<TestCertificateGenerator> modifyGenerator = null, ChainCertificateRequest chainCertificateRequest = null)
+        public static TestCertificate Generate(
+            X509StorePurpose storePurpose,
+            Action<TestCertificateGenerator> modifyGenerator = null,
+            ChainCertificateRequest chainCertificateRequest = null)
         {
-            var certName = GenerateCertificateName();
-            var cert = SigningTestUtility.GenerateCertificateWithKeyInfo(certName, modifyGenerator, chainCertificateRequest: chainCertificateRequest);
+            string certName = GenerateCertificateName();
+            X509CertificateWithKeyInfo cert = SigningTestUtility.GenerateCertificateWithKeyInfo(
+                certName,
+                modifyGenerator,
+                chainCertificateRequest: chainCertificateRequest);
             CertificateRevocationList crl = null;
 
             // create a crl only if the certificate is part of a chain and it is a CA and ConfigureCrl is true
@@ -101,7 +134,7 @@ namespace Test.Utility.Signing
                 crl = CertificateRevocationList.CreateCrl(cert, chainCertificateRequest.CrlLocalBaseUri);
             }
 
-            var testCertificate = new TestCertificate
+            var testCertificate = new TestCertificate(storePurpose)
             {
                 Cert = cert.Certificate,
                 Crl = crl

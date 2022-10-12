@@ -53,7 +53,8 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentException(Strings.InvalidArgument, nameof(certificateType));
             }
 
-            using (var chainHolder = new X509ChainHolder())
+            using (X509ChainHolder chainHolder = certificateType == CertificateType.Signature
+                ? X509ChainHolder.CreateForCodeSigning() : X509ChainHolder.CreateForTimestamping())
             {
                 var chain = chainHolder.Chain;
 

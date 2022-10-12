@@ -16,6 +16,8 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
+    using X509StorePurpose = global::Test.Utility.Signing.X509StorePurpose;
+
     [Collection(SigningTestCollection.Name)]
     public class TimestampTests
     {
@@ -49,6 +51,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var trustedServerRoot = TrustedTestCert.Create(
                     new X509Certificate2(rootCa.Certificate.GetEncoded()),
+                    X509StorePurpose.Timestamping,
                     StoreName.Root,
                     storeLocation))
                 {

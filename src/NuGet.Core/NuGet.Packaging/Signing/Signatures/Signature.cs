@@ -190,7 +190,7 @@ namespace NuGet.Packaging.Signing
             else
             {
                 timestamp = timestamp ?? new Timestamp();
-                using (var chainHolder = new X509ChainHolder())
+                using (X509ChainHolder chainHolder = X509ChainHolder.CreateForCodeSigning())
                 {
                     var chain = chainHolder.Chain;
 
