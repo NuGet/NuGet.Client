@@ -23,6 +23,7 @@ namespace NuGet.Commands.Test
 
             _trustedDefaultCertificate = TrustedTestCert.Create(
                 new X509Certificate2(_defaultCertificateForTrust),
+                X509StorePurpose.CodeSigning,
                 StoreName.My,
                 StoreLocation.CurrentUser);
         }

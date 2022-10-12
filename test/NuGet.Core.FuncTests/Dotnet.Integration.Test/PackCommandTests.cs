@@ -332,6 +332,7 @@ namespace Dotnet.Integration.Test
                     tfmProps["TargetFrameworkIdentifier"] = ".NETCoreApp";
                     tfmProps["TargetFrameworkVersion"] = "v3.1";
                     tfmProps["TargetFrameworkMoniker"] = ".NETCoreApp,Version=v3.1";
+                    tfmProps["RuntimeFrameworkVersion"] = "6.0";
                     ProjectFileUtils.AddProperties(xml, tfmProps, " '$(TargetFramework)' == 'myalias' ");
 
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
@@ -751,10 +752,12 @@ namespace Dotnet.Integration.Test
                 Directory.CreateDirectory(pkgsPath);
                 Directory.CreateDirectory(basePackagePath);
 
+                string tfm = Constants.DefaultTargetFramework.GetShortFolderName();
+
                 // Base Package
-                var basePackageProjectContent = @"<Project Sdk='Microsoft.NET.Sdk'>
+                var basePackageProjectContent = @$"<Project Sdk='Microsoft.NET.Sdk'>
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{tfm}</TargetFramework>
     <PackageOutputPath>$(MSBuildThisFileDirectory)..\pkgs</PackageOutputPath>
   </PropertyGroup>
   <ItemGroup>
@@ -780,9 +783,9 @@ namespace Dotnet.Integration.Test
 
                 File.WriteAllText(Path.Combine(topPath, "NuGet.Config"), customNuGetConfigContent);
 
-                var topProjectContent = @"<Project Sdk='Microsoft.NET.Sdk'>
+                var topProjectContent = @$"<Project Sdk='Microsoft.NET.Sdk'>
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{tfm}</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include='BasePackage' Version='1.0.0' />
@@ -1485,7 +1488,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
+        [PlatformTheory(Platform.Windows, Skip = "https://github.com/dotnet/sdk/issues/28131")]
         // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;tags=tag1;description="hello world"\"
         [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;tags=tag1;description=\"hello world\"\\\"", "MyPackage",
             "1.2.3", "hello world", "tag1")]
@@ -5727,13 +5730,13 @@ namespace ClassLibrary
         public void Dotnet_New_Template_Restore_Pack_Success(string template)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = msbuildFixture.CreateSimpleTestPathContext())
             {
                 var projectName = "ClassLibrary1";
-                var workDirectory = Path.Combine(testDirectory);
-                var projectFile = Path.Combine(workDirectory, $"{projectName}.csproj");
-                var solutionDirectory = Path.Combine(testDirectory, projectName);
-                var nupkgPath = Path.Combine(solutionDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
+                string workDirectory = pathContext.SolutionRoot;
+                string projectFile = Path.Combine(workDirectory, $"{projectName}.csproj");
+                string solutionDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
+                string nupkgPath = Path.Combine(solutionDirectory, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
 
                 // Act
                 msbuildFixture.CreateDotnetNewProject(workDirectory, projectName, template);
@@ -5767,7 +5770,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
     <Version>1.2.3</Version>
   </PropertyGroup>
 
@@ -5809,7 +5812,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
     <Version>1.2.3</Version>
   </PropertyGroup>
   <ItemGroup>
@@ -5879,7 +5882,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
     <Version>1.2.3</Version>
   </PropertyGroup>
 
@@ -5924,7 +5927,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>NU5104</NoWarn>
@@ -6145,7 +6148,7 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net48</TargetFrameworks>
+    <TargetFrameworks>{Constants.DefaultTargetFramework.GetShortFolderName()};net48</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>NU5104</NoWarn>

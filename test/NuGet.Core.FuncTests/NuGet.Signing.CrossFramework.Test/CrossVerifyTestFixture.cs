@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
+using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1.X509;
 using Test.Utility.Signing;
@@ -20,7 +18,7 @@ namespace NuGet.Signing.CrossFramework.Test
         private const string DotnetExe = "dotnet.exe";
         //In net472 code path, the SDK version and TFM could not be detected automatically, so we manually specified according to the sdk version we're testing against.
         //https://github.com/NuGet/Client.Engineering/issues/1094
-        private const string SdkVersion = "6";
+        private const string SdkVersion = "7";
         private const string SdkTfm = "net5.0";
         internal string _dotnetExePath;
 #else
@@ -29,7 +27,7 @@ namespace NuGet.Signing.CrossFramework.Test
 #endif
         private TrustedTestCert<X509Certificate2> _trustedTimestampRoot;
         private Lazy<Task<SigningTestServer>> _testServer;
-        private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
+        private Lazy<Task<CertificateAuthority>> _defaultTrustedTimestampingRootCertificateAuthority;
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
         private readonly DisposableList<IDisposable> _responders;
         private Lazy<Task<X509Certificate2>> _defaultAuthorSigningCertficate;
@@ -46,7 +44,7 @@ namespace NuGet.Signing.CrossFramework.Test
             _nugetExePath = Path.Combine(nugetExeFolder, NuGetExe);
 #endif
             _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
-            _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
+            _defaultTrustedTimestampingRootCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedTimestampingRootCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
             _responders = new DisposableList<IDisposable>();
             _defaultAuthorSigningCertficate = new Lazy<Task<X509Certificate2>>(CreateDefaultAuthorSigningCertificateAsync);
@@ -60,7 +58,7 @@ namespace NuGet.Signing.CrossFramework.Test
 
         public async Task<CertificateAuthority> GetDefaultTrustedCertificateAuthorityAsync()
         {
-            return await _defaultTrustedCertificateAuthority.Value;
+            return await _defaultTrustedTimestampingRootCertificateAuthority.Value;
         }
 
         public async Task<TimestampService> GetDefaultTrustedTimestampServiceAsync()
@@ -91,7 +89,7 @@ namespace NuGet.Signing.CrossFramework.Test
             }
         }
 
-        private async Task<CertificateAuthority> CreateDefaultTrustedCertificateAuthorityAsync()
+        private async Task<CertificateAuthority> CreateDefaultTrustedTimestampingRootCertificateAuthorityAsync()
         {
             var testServer = await _testServer.Value;
             var rootCa = CertificateAuthority.Create(testServer.Url);
@@ -100,6 +98,7 @@ namespace NuGet.Signing.CrossFramework.Test
 
             _trustedTimestampRoot = TrustedTestCert.Create(
                 rootCertificate,
+                X509StorePurpose.Timestamping,
                 StoreName.Root,
                 StoreLocation.LocalMachine);
 
@@ -119,7 +118,7 @@ namespace NuGet.Signing.CrossFramework.Test
         private async Task<TimestampService> CreateDefaultTrustedTimestampServiceAsync()
         {
             var testServer = await _testServer.Value;
-            var ca = await _defaultTrustedCertificateAuthority.Value;
+            var ca = await _defaultTrustedTimestampingRootCertificateAuthority.Value;
             var timestampService = TimestampService.Create(ca);
 
             _responders.Add(testServer.RegisterResponder(timestampService));
@@ -129,7 +128,7 @@ namespace NuGet.Signing.CrossFramework.Test
 
         private async Task<X509Certificate2> CreateDefaultAuthorSigningCertificateAsync()
         {
-            var ca = await CreateDefaultTrustedCertificateAuthorityAsync();
+            var ca = await CreateDefaultTrustedTimestampingRootCertificateAuthorityAsync();
             var keyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
             var issueOptions = new IssueCertificateOptions()
             {
@@ -144,7 +143,7 @@ namespace NuGet.Signing.CrossFramework.Test
 
         private async Task<X509Certificate2> CreateDefaultRepositorySigningCertificateAsync()
         {
-            var ca = await CreateDefaultTrustedCertificateAuthorityAsync();
+            var ca = await CreateDefaultTrustedTimestampingRootCertificateAuthorityAsync();
             var keyPair = SigningTestUtility.GenerateKeyPair(publicKeyLength: 2048);
             var issueOptions = new IssueCertificateOptions()
             {
