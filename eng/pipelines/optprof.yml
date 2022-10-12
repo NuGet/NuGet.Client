@@ -170,6 +170,6 @@ stages:
     - template: \steps\powershell\execute-script.yml@DartLabTemplates
       parameters:
         displayName: Create OptimizationInputs Tag in Repository
-        condition: or(and(succeeded(), in(variables['Build.Reason'], 'ResourceTrigger')), eq('${{parameters.optEnableOptProfTagging}}', 'true'))
+        condition: and(succeeded(), in(variables['Build.Reason'], 'ResourceTrigger'), eq('${{parameters.optEnableOptProfTagging}}', 'true'))
         filePath: $(DartLab.Path)\Scripts\AzureDevOps\Repos\New-GitAnnotatedTag.ps1
         arguments: -InstanceURL '$(System.CollectionUri)' -ProjectName '$(System.TeamProject)' -RepositoryName '$(Build.Repository.Name)' -CommitID '$(resources.pipeline.ComponentBuildUnderTest.sourceCommit)' -TagName '$(optDropName)' -JSON @{ releaseWebURL = "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" } -OAuthAccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force)
