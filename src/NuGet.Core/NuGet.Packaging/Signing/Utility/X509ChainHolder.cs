@@ -22,9 +22,26 @@ namespace NuGet.Packaging.Signing
 
         public X509ChainHolder()
         {
-            IX509ChainFactory creator = X509TrustStore.GetX509ChainFactory(NullLogger.Instance);
+            IX509ChainFactory creator = X509TrustStore.GetX509ChainFactory(X509StorePurpose.CodeSigning, NullLogger.Instance);
 
             Chain = creator.Create();
+        }
+
+        private X509ChainHolder(X509StorePurpose storePurpose)
+        {
+            IX509ChainFactory creator = X509TrustStore.GetX509ChainFactory(storePurpose, NullLogger.Instance);
+
+            Chain = creator.Create();
+        }
+
+        internal static X509ChainHolder CreateForCodeSigning()
+        {
+            return new X509ChainHolder(X509StorePurpose.CodeSigning);
+        }
+
+        internal static X509ChainHolder CreateForTimestamping()
+        {
+            return new X509ChainHolder(X509StorePurpose.Timestamping);
         }
 
         public void Dispose()

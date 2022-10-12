@@ -34,11 +34,12 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void TryCreate_WhenFilePathDoesNotExist_ReturnsFalse()
         {
-            string nonexistentFilePath = Path.Combine(_directory.Path, FallbackCertificateBundleX509ChainFactory.FileName);
+            string nonexistentFilePath = Path.Combine(_directory.Path, FallbackCertificateBundleX509ChainFactory.CodeSigningFileName);
 
             bool wasCreated = FallbackCertificateBundleX509ChainFactory.TryCreate(
-                out FallbackCertificateBundleX509ChainFactory factory,
-                nonexistentFilePath);
+                X509StorePurpose.CodeSigning,
+                nonexistentFilePath,
+                out FallbackCertificateBundleX509ChainFactory factory);
 
             Assert.False(wasCreated);
             Assert.Null(factory);
@@ -60,8 +61,9 @@ namespace NuGet.Packaging.Test
                     string relativePath = ".." + bundleFile.FullName.Substring(currentDirectory.Length);
 
                     bool wasCreated = FallbackCertificateBundleX509ChainFactory.TryCreate(
-                        out FallbackCertificateBundleX509ChainFactory factory,
-                        relativePath);
+                        X509StorePurpose.CodeSigning,
+                        relativePath,
+                        out FallbackCertificateBundleX509ChainFactory factory);
 
                     string absoluteActualPath = Path.GetFullPath(factory.FilePath);
 
@@ -83,8 +85,9 @@ namespace NuGet.Packaging.Test
                 FileInfo bundleFile = CreateBundleFile(_directory.Path, certificate);
 
                 bool wasCreated = FallbackCertificateBundleX509ChainFactory.TryCreate(
-                    out FallbackCertificateBundleX509ChainFactory factory,
-                    bundleFile.FullName);
+                    X509StorePurpose.CodeSigning,
+                    bundleFile.FullName,
+                    out FallbackCertificateBundleX509ChainFactory factory);
 
                 Assert.True(wasCreated);
                 Assert.Equal(bundleFile.FullName, factory.FilePath);
@@ -94,13 +97,14 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Create_WhenFileIsEmpty_ReturnsInstance()
         {
-            FileInfo emptyFile = new(Path.Combine(_directory.Path, FallbackCertificateBundleX509ChainFactory.FileName));
+            FileInfo emptyFile = new(Path.Combine(_directory.Path, FallbackCertificateBundleX509ChainFactory.CodeSigningFileName));
 
             File.WriteAllBytes(emptyFile.FullName, Array.Empty<byte>());
 
             bool wasCreated = FallbackCertificateBundleX509ChainFactory.TryCreate(
-                out FallbackCertificateBundleX509ChainFactory factory,
-                emptyFile.FullName);
+                X509StorePurpose.CodeSigning,
+                emptyFile.FullName,
+                out FallbackCertificateBundleX509ChainFactory factory);
 
             Assert.True(wasCreated);
 
@@ -118,8 +122,9 @@ namespace NuGet.Packaging.Test
             {
                 FileInfo bundleFile = CreateBundleFile(_directory, certificate);
                 bool wasCreated = FallbackCertificateBundleX509ChainFactory.TryCreate(
-                    out FallbackCertificateBundleX509ChainFactory factory,
-                    bundleFile.FullName);
+                    X509StorePurpose.CodeSigning,
+                    bundleFile.FullName,
+                    out FallbackCertificateBundleX509ChainFactory factory);
 
                 Assert.True(wasCreated);
 
@@ -134,7 +139,7 @@ namespace NuGet.Packaging.Test
 
         private static FileInfo CreateBundleFile(string directoryPath, X509Certificate2 certificate)
         {
-            FileInfo file = new(Path.Combine(directoryPath, FallbackCertificateBundleX509ChainFactory.FileName));
+            FileInfo file = new(Path.Combine(directoryPath, FallbackCertificateBundleX509ChainFactory.CodeSigningFileName));
             char[] pem = PemEncoding.Write("CERTIFICATE", certificate.RawData);
 
             File.WriteAllText(file.FullName, new string(pem));

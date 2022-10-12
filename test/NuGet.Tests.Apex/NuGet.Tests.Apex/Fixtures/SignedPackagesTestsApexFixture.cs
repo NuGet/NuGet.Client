@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
-using Xunit;
 
 namespace NuGet.Tests.Apex
 {
@@ -26,14 +23,14 @@ namespace NuGet.Tests.Apex
         private SimpleTestPackageContext _repoCountersignedTestPackageV1;
 
         private Lazy<Task<SigningTestServer>> _testServer;
-        private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
+        private Lazy<Task<CertificateAuthority>> _defaultTrustedTimestampRootCertificateAuthority;
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
         private readonly DisposableList<IDisposable> _responders;
 
         public SignedPackagesTestsApexFixture()
         {
             _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
-            _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
+            _defaultTrustedTimestampRootCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedTimestampRootCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
             _responders = new DisposableList<IDisposable>();
         }
@@ -123,7 +120,7 @@ namespace NuGet.Tests.Apex
         private async Task<TimestampService> CreateDefaultTrustedTimestampServiceAsync()
         {
             var testServer = await _testServer.Value;
-            var ca = await _defaultTrustedCertificateAuthority.Value;
+            var ca = await _defaultTrustedTimestampRootCertificateAuthority.Value;
             var timestampService = TimestampService.Create(ca);
 
             _responders.Add(testServer.RegisterResponder(timestampService));
@@ -131,7 +128,7 @@ namespace NuGet.Tests.Apex
             return timestampService;
         }
 
-        private async Task<CertificateAuthority> CreateDefaultTrustedCertificateAuthorityAsync()
+        private async Task<CertificateAuthority> CreateDefaultTrustedTimestampRootCertificateAuthorityAsync()
         {
             var testServer = await _testServer.Value;
             var rootCa = CertificateAuthority.Create(testServer.Url);
@@ -140,6 +137,7 @@ namespace NuGet.Tests.Apex
 
             _trustedServerRoot = TrustedTestCert.Create(
                 rootCertificate,
+                X509StorePurpose.Timestamping,
                 StoreName.Root,
                 StoreLocation.LocalMachine);
 

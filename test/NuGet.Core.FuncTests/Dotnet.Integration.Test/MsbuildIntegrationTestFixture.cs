@@ -48,18 +48,27 @@ namespace Dotnet.Integration.Test
             // .NET Core SDK 3.0 and later no longer ship these packages in a NuGetFallbackFolder. Therefore, we need
             // to be able to download these packages. We'll download it once into the template cache's global packages
             // folder, and then use that as a local source for individual tests, to minimise network access.
-            var addSourceArgs = new AddSourceArgs()
-            {
-                Configfile = _templateDirectory.NuGetConfig,
-                Name = "nuget.org",
-                Source = "https://api.nuget.org/v3/index.json"
-            };
-            AddSourceRunner.Run(addSourceArgs, () => NullLogger.Instance);
+            AddPackageSource("nuget.org", "https://api.nuget.org/v3/index.json");
+
+            // This is for pre-release packages.
+            AddPackageSource("dotnet", Constants.DotNetPackageSource.AbsoluteUri);
 
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
             _processEnvVars.Add("UseSharedCompilation", "false");
             _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
             _processEnvVars.Add("MSBUILDDISABLENODEREUSE ", "true");
+        }
+
+        private void AddPackageSource(string name, string source)
+        {
+            AddSourceArgs addSourceArgs = new()
+            {
+                Configfile = _templateDirectory.NuGetConfig,
+                Name = name,
+                Source = source
+            };
+
+            AddSourceRunner.Run(addSourceArgs, () => NullLogger.Instance);
         }
 
         /// <summary>

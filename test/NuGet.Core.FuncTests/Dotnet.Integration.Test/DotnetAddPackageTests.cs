@@ -621,7 +621,7 @@ namespace Dotnet.Integration.Test
             using (SimpleTestPathContext pathContext = new())
             {
                 var projectName = "project";
-                var targetFrameworks = "net6.0";
+                string targetFrameworks = Constants.DefaultTargetFramework.GetShortFolderName();
                 SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
 
                 // This package is important because:

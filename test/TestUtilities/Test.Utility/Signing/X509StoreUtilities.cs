@@ -4,16 +4,23 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
+using NuGet.Packaging.Signing;
 
 namespace Test.Utility.Signing
 {
     internal static class X509StoreUtilities
     {
-        internal static IRootX509Store RootX509Store { get; set; } =
-            RuntimeEnvironmentHelper.IsWindows ? PlatformX509Store.Instance : CustomRootX509Store.Instance;
-        internal static IX509Store OtherX509Store { get; set; } = PlatformX509Store.Instance;
+        private static readonly IRootX509Store CodeSigningRootX509Store =
+            RuntimeEnvironmentHelper.IsWindows ? PlatformX509Store.Instance : new CodeSigningRootX509Store();
+        private static readonly IRootX509Store TimestampingRootX509Store =
+            RuntimeEnvironmentHelper.IsWindows ? PlatformX509Store.Instance : new TimestampingRootX509Store();
+        private static readonly IX509Store OtherX509Store = PlatformX509Store.Instance;
 
-        internal static void AddCertificateToStore(StoreLocation storeLocation, StoreName storeName, X509Certificate2 certificate)
+        internal static void AddCertificateToStore(
+            StoreLocation storeLocation,
+            StoreName storeName,
+            X509Certificate2 certificate,
+            X509StorePurpose storePurpose)
         {
             if (certificate is null)
             {
@@ -22,7 +29,19 @@ namespace Test.Utility.Signing
 
             if (storeName == StoreName.Root)
             {
-                RootX509Store.Add(storeLocation, certificate);
+                switch (storePurpose)
+                {
+                    case X509StorePurpose.CodeSigning:
+                        CodeSigningRootX509Store.Add(storeLocation, certificate);
+                        break;
+
+                    case X509StorePurpose.Timestamping:
+                        TimestampingRootX509Store.Add(storeLocation, certificate);
+                        break;
+
+                    default:
+                        throw new ArgumentException("Invalid value", nameof(storePurpose));
+                }
             }
             else
             {
@@ -30,7 +49,11 @@ namespace Test.Utility.Signing
             }
         }
 
-        internal static void RemoveCertificateFromStore(StoreLocation storeLocation, StoreName storeName, X509Certificate2 certificate)
+        internal static void RemoveCertificateFromStore(
+            StoreLocation storeLocation,
+            StoreName storeName,
+            X509Certificate2 certificate,
+            X509StorePurpose storePurpose)
         {
             if (certificate is null)
             {
@@ -39,7 +62,19 @@ namespace Test.Utility.Signing
 
             if (storeName == StoreName.Root)
             {
-                RootX509Store.Remove(storeLocation, certificate);
+                switch (storePurpose)
+                {
+                    case X509StorePurpose.CodeSigning:
+                        CodeSigningRootX509Store.Remove(storeLocation, certificate);
+                        break;
+
+                    case X509StorePurpose.Timestamping:
+                        TimestampingRootX509Store.Remove(storeLocation, certificate);
+                        break;
+
+                    default:
+                        throw new ArgumentException("Invalid value", nameof(storePurpose));
+                }
             }
             else
             {
