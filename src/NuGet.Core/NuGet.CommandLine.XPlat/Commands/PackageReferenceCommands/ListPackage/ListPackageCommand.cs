@@ -133,9 +133,8 @@ namespace NuGet.CommandLine.XPlat
                         isDeprecated: deprecatedReport.HasValue(),
                         isVulnerable: vulnerableReport.HasValue());
 
-                    (IReportRenderer reportRenderer, ReportOutputFormat reportOutputFormat) = GetOutputType(outputFormat.Value(), outputVersionOption: outputVersion.Value());
+                    IReportRenderer reportRenderer = GetOutputType(outputFormat.Value(), outputVersionOption: outputVersion.Value());
 
-                    reportRenderer.SetParameters(string.Join(" ", args).Trim());
 
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
@@ -143,7 +142,7 @@ namespace NuGet.CommandLine.XPlat
                         framework.Values,
                         reportType,
                         reportRenderer,
-                        reportOutputFormat,
+                        string.Join(" ", args).Trim(),
                         includeTransitive.HasValue(),
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
@@ -151,7 +150,7 @@ namespace NuGet.CommandLine.XPlat
                         logger,
                         CancellationToken.None);
 
-                    DisplayMessages(packageRefArgs, reportRenderer);
+                    WarnAboutIncompatibleOptions(packageRefArgs, reportRenderer);
 
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
@@ -180,7 +179,7 @@ namespace NuGet.CommandLine.XPlat
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_InvalidOptions));
         }
 
-        private static (IReportRenderer, ReportOutputFormat) GetOutputType(string outputFormatOption, string outputVersionOption)
+        private static IReportRenderer GetOutputType(string outputFormatOption, string outputVersionOption)
         {
             ReportOutputFormat outputFormat = ReportOutputFormat.Console;
             if (!string.IsNullOrEmpty(outputFormatOption))
@@ -198,7 +197,7 @@ namespace NuGet.CommandLine.XPlat
 
             if (outputFormat == ReportOutputFormat.Console)
             {
-                return (ConsoleWriter.Instance, ReportOutputFormat.Console);
+                return ListPackageConsoleRenderer.Instance;
             }
 
             // currently only version 1 is available, so default to latest available version 1.
@@ -209,22 +208,22 @@ namespace NuGet.CommandLine.XPlat
             if (!string.IsNullOrEmpty(outputVersionOption) && !currentlySupportedReportVersions.Contains(outputVersionOption))
             {
                 jsonReportRenderer = new ListPackageJsonRendererV1();
-                jsonReportRenderer.AddProblem(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions), ProblemType.Warning);
+                jsonReportRenderer.AddProblem(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions), ProblemType.Information);
             }
             else
             {
                 jsonReportRenderer = new ListPackageJsonRendererV1();
             }
 
-            return (jsonReportRenderer, ReportOutputFormat.Json);
+            return jsonReportRenderer;
         }
 
-        private static void DisplayMessages(ListPackageArgs packageRefArgs, IReportRenderer reportRenderer)
+        private static void WarnAboutIncompatibleOptions(ListPackageArgs packageRefArgs, IReportRenderer reportRenderer)
         {
             if (packageRefArgs.ReportType != ReportType.Outdated &&
                 (packageRefArgs.Prerelease || packageRefArgs.HighestMinor || packageRefArgs.HighestPatch))
             {
-                reportRenderer.AddProblem(Strings.ListPkg_VulnerableIgnoredOptions, ProblemType.Warning);
+                reportRenderer.AddProblem(Strings.ListPkg_VulnerableIgnoredOptions, ProblemType.Information);
             }
         }
 
@@ -252,7 +251,6 @@ namespace NuGet.CommandLine.XPlat
                 directory,
                 configFileName,
                 machineWideSettings: new XPlatMachineWideSetting());
-
         }
 
         private static IEnumerable<PackageSource> GetPackageSources(ISettings settings, IEnumerable<string> sources, CommandOption config)

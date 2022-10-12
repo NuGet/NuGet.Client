@@ -8,7 +8,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Interfaces
 {
     internal interface IReportRenderer
     {
-        void SetParameters(string parametersText);
         void AddProblem(string errorText, ProblemType problemType);
         void Write(ListPackageReportModel reportProject);
         void End();

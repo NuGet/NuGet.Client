@@ -6,12 +6,11 @@ using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 {
-    internal class ListPackageJsonOutputContent
+    internal class ListPackageOutputContent
     {
         internal int Version { get; set; } = ListPackageJsonOutputSerializer.Version;
-        internal string Parameters { get; set; }
         internal ListPackageArgs ListPackageArgs { get; set; }
         internal List<ReportProblem> Problems { get; set; }
-        internal List<ListPackageProjectDetails> Projects { get; set; }
+        internal List<ListPackageProjectModel> Projects { get; set; }
     }
 }

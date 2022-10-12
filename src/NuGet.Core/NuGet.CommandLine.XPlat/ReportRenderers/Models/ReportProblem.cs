@@ -3,7 +3,7 @@
 
 using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers
+namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
 {
     internal class ReportProblem
     {

@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
-using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
@@ -14,38 +14,27 @@ namespace NuGet.CommandLine.XPlat.Utility
         internal static IEnumerable<FormattedCell> ToStringTable<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
-          ListPackageReportFrameworkPackage targetFrameworkPackageMetaData,
-          bool printingTransitive,
-          ReportOutputFormat reportOutputFormat,
-          Func<T, FormattedCell>[] valueSelectors,
-          List<Func<T, IEnumerable<FormattedCell>>> vulnerabilityValueSelectors)
+          params Func<T, object>[] valueSelectors)
         {
-            return ToFormattedStringTable(values.ToArray(), columnHeaders, targetFrameworkPackageMetaData, printingTransitive, reportOutputFormat, valueSelectors, vulnerabilityValueSelectors);
+            return ToFormattedStringTable(values.ToArray(), columnHeaders, valueSelectors);
         }
 
         internal static IEnumerable<FormattedCell> ToFormattedStringTable<T>(
           this T[] values,
           string[] columnHeaders,
-          ListPackageReportFrameworkPackage targetFrameworkPackageMetaData,
-          bool printingTransitive,
-          ReportOutputFormat reportOutputFormat,
-          Func<T, FormattedCell>[] valueSelectors,
-          List<Func<T, IEnumerable<FormattedCell>>> vulnerabilityValueSelectors)
+          params Func<T, object>[] valueSelectors)
         {
             var stringTable = new List<List<FormattedCell>>();
 
             // Fill headers
             if (columnHeaders != null)
             {
-                Debug.Assert(columnHeaders.Length == valueSelectors.Length + (vulnerabilityValueSelectors == null ? 0 : vulnerabilityValueSelectors.Count));
+                Debug.Assert(columnHeaders.Length == valueSelectors.Length);
 
                 var headers = new List<FormattedCell>();
-                headers.AddRange(columnHeaders.Select(h => new FormattedCell(h, printingTransitive ? ReportPackageColumn.TransitivePackage : ReportPackageColumn.TopLevelPackage)));
+                headers.AddRange(columnHeaders.Select(h => new FormattedCell(h)));
                 stringTable.Add(headers);
             }
-
-            List<TopLevelPackage> topLevelPackages = new();
-            List<TransitivePackage> transitivePackages = printingTransitive ? new() : null;
 
             // Fill table rows - we need a queue for multi-line values
             var columnQueues = new Dictionary<int, Queue<FormattedCell>>();
@@ -55,125 +44,57 @@ namespace NuGet.CommandLine.XPlat.Utility
                 var row = new List<FormattedCell>();
                 for (var colIndex = 0; colIndex < valueSelectors.Length; colIndex++)
                 {
-                    FormattedCell formattedDataCell = valueSelectors[colIndex](values[rowIndex]);
-                    // the normal case
-                    formattedDataCell.Value = (reportOutputFormat == ReportOutputFormat.Console && colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString() ?? string.Empty;
-                    row.Add(formattedDataCell);
-                }
-
-                for (var colIndex = 0; colIndex < vulnerabilityValueSelectors?.Count; colIndex++)
-                {
-                    IEnumerable<FormattedCell> dataEnum = vulnerabilityValueSelectors[colIndex](values[rowIndex]);
-                    // we have a potential multi-line value--we need to add the first line and store remainder
-                    var firstLine = true;
-                    var queue = new Queue<FormattedCell>();
-                    foreach (FormattedCell formattedDataCell in dataEnum)
+                    var data = valueSelectors[colIndex](values[rowIndex]);
+                    if (data is IEnumerable<object> dataEnum)
                     {
-                        formattedDataCell.Value = formattedDataCell.Value?.ToString() ?? string.Empty;
-                        if (firstLine)
+                        // we have a potential multi-line value--we need to add the first line and store remainder
+                        var firstLine = true;
+                        var queue = new Queue<FormattedCell>();
+                        foreach (var dataCell in dataEnum)
                         {
-                            // print it
-                            row.Add(formattedDataCell);
-                            firstLine = false;
+                            if (dataCell is FormattedCell formattedDataCell)
+                            {
+                                formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+                                if (firstLine)
+                                {
+                                    // print it
+                                    row.Add(formattedDataCell);
+                                    firstLine = false;
+                                }
+                                else
+                                {
+                                    // store the rest
+                                    queue.Enqueue(formattedDataCell);
+                                }
+                            }
                         }
-                        else
+
+                        if (queue.Count > 0) // only add a queue when there's something to store
                         {
-                            // store the rest
-                            queue.Enqueue(formattedDataCell);
+                            columnQueues[colIndex] = queue;
                         }
                     }
-
-                    if (queue.Count > 0) // only add a queue when there's something to store
+                    else
                     {
-                        columnQueues[valueSelectors.Length + colIndex] = queue;
+                        // the normal case
+                        if (data is FormattedCell formattedDataCell)
+                        {
+                            formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+                            row.Add(formattedDataCell);
+                        }
                     }
                 }
 
                 stringTable.Add(row);
 
-                if (printingTransitive)
-                {
-                    TransitivePackage transitivePackage = new();
-                    foreach (FormattedCell formattedCell in row)
-                    {
-                        switch (formattedCell.ReportPackageColumn)
-                        {
-                            case ReportPackageColumn.EmptyColumn:
-                                break;
-                            case ReportPackageColumn.Requested:
-                                break;
-                            case ReportPackageColumn.Resolved:
-                                transitivePackage.ResolvedVersion = formattedCell.Value;
-                                break;
-                            case ReportPackageColumn.TransitivePackage:
-                                transitivePackage.PackageId = formattedCell.Value;
-                                break;
-                            case ReportPackageColumn.Latest:
-                                transitivePackage.LatestVersion = formattedCell.Value;
-                                break;
-                            case ReportPackageColumn.Deprecated:
-                                //transitivePackage.DeprecationReasons = formattedCell.Value;
-                                break;
-                            case ReportPackageColumn.AlternatePackage:
-                                break;
-                            case ReportPackageColumn.VulnerabilitySeverity:
-                                break;
-                            case ReportPackageColumn.VulnerabilityAdvisoryurl:
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                    Debug.Assert(transitivePackage.PackageId != null);
-                    transitivePackages.Add(transitivePackage);
-                }
-                else
-                {
-                    TopLevelPackage topLevelPackage = new();
-
-                    foreach (FormattedCell formattedCell in row)
-                    {
-                        switch (formattedCell.ReportPackageColumn)
-                        {
-                            case ReportPackageColumn.TopLevelPackage:
-                                topLevelPackage.PackageId = formattedCell.Value;
-                                break;
-                            case ReportPackageColumn.EmptyColumn:
-                                break;
-                            case ReportPackageColumn.Requested:
-                                topLevelPackage.RequestedVersion = formattedCell.Value;
-                                break;
-                            case ReportPackageColumn.Resolved:
-                                topLevelPackage.ResolvedVersion = formattedCell.Value;
-                                break;
-                            case ReportPackageColumn.Latest:
-                                break;
-                            case ReportPackageColumn.Deprecated:
-                                break;
-                            case ReportPackageColumn.AlternatePackage:
-                                break;
-                            case ReportPackageColumn.VulnerabilitySeverity:
-                                break;
-                            case ReportPackageColumn.VulnerabilityAdvisoryurl:
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                    Debug.Assert(topLevelPackage.PackageId != null);
-                    topLevelPackages.Add(topLevelPackage);
-                }
-
                 // clear column queues (strings for subsequent rows for this value) before proceeding with next row
                 while (columnQueues.Count > 0)
                 {
                     var subsequentRow = new List<FormattedCell>();
-                    for (var colIndex = 0; colIndex < valueSelectors.Length + vulnerabilityValueSelectors?.Count; colIndex++)
+                    for (var colIndex = 0; colIndex < valueSelectors.Length; colIndex++)
                     {
-                        FormattedCell formattedDataCell = null;
-                        if (columnQueues.TryGetValue(colIndex, out Queue<FormattedCell> thisColumnQueue)) // we have at least one remaining value for this column
+                        var formattedDataCell = (FormattedCell)null;
+                        if (columnQueues.TryGetValue(colIndex, out var thisColumnQueue)) // we have at least one remaining value for this column
                         {
                             formattedDataCell = thisColumnQueue.Dequeue();
                             if (thisColumnQueue.Count == 0)
@@ -183,7 +104,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                         }
                         else
                         {
-                            formattedDataCell = new FormattedCell(string.Empty, ReportPackageColumn.EmptyColumn);
+                            formattedDataCell = new FormattedCell();
                         }
 
                         subsequentRow.Add(formattedDataCell);
@@ -191,15 +112,6 @@ namespace NuGet.CommandLine.XPlat.Utility
 
                     stringTable.Add(subsequentRow);
                 }
-            }
-
-            if (printingTransitive)
-            {
-                targetFrameworkPackageMetaData.TransitivePackages = transitivePackages;
-            }
-            else
-            {
-                targetFrameworkPackageMetaData.TopLevelPackages = topLevelPackages;
             }
 
             return ToPaddedStringTable(stringTable);
@@ -210,7 +122,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             var maxColumnsWidth = GetMaxColumnsWidth(values);
             var stringTable = new List<FormattedCell>();
 
-            foreach (ICollection<FormattedCell> row in values)
+            foreach (var row in values)
             {
                 int colIndex = 0;
                 foreach (var dataCell in row)
@@ -220,7 +132,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     colIndex++;
                 }
 
-                stringTable.Add(new FormattedCell(Environment.NewLine, ReportPackageColumn.EmptyColumn));
+                stringTable.Add(new FormattedCell(Environment.NewLine));
             }
 
             return stringTable;

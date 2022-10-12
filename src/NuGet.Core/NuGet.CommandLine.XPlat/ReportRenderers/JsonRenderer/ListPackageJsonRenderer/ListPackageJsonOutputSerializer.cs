@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Newtonsoft.Json;
+using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 using NuGet.Configuration;
 using NuGet.Protocol;
@@ -41,14 +41,14 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
         private const string MessageProperty = "message";
 
         private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(GetSerializerSettings());
-        internal static ListPackageArgs ListPackageArgs;
+        private static ListPackageArgs ListPackageArgs;
 
-        internal static string Render(ListPackageJsonOutputContent jsonOutputContent)
+        internal static string Render(ListPackageOutputContent jsonOutputContent)
         {
+            ListPackageArgs = jsonOutputContent.ListPackageArgs;
+
             using (var writer = new StringWriter())
             {
-                ListPackageArgs = jsonOutputContent.ListPackageArgs;
-
                 using (var jsonWriter = new JsonTextWriter(writer))
                 {
                     jsonWriter.Formatting = Formatting.Indented;
@@ -85,18 +85,18 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
                 }
 
                 writer.WritePropertyName(MessageProperty);
-                writer.WriteValue(NormalizeFilePath(reportProblem.Message));
+                writer.WriteValue((reportProblem.ProblemType == ProblemType.Warning ? "warn : " : string.Empty) + NormalizeFilePath(reportProblem.Message));
                 writer.WriteEndObject();
             }
 
             writer.WriteEndArray();
         }
 
-        private static void WriteSourcesArray(JsonWriter writer, IEnumerable<PackageSource> packageSources)
+        private static void WriteSources(JsonWriter writer, IEnumerable<PackageSource> packageSources)
         {
             if (ListPackageArgs.ReportType == ReportType.Default)
             {
-                // Currently don't print sources for default list.
+                // generic list is offline.
                 return;
             }
 
@@ -111,12 +111,12 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
             writer.WriteEndArray();
         }
 
-        private static void WriteProjectArray(JsonWriter writer, List<ListPackageProjectDetails> reportProjects)
+        private static void WriteProjects(JsonWriter writer, List<ListPackageProjectModel> reportProjects)
         {
             writer.WritePropertyName(ProjectsProperty);
             writer.WriteStartArray();
 
-            foreach (ListPackageProjectDetails reportProject in reportProjects)
+            foreach (ListPackageProjectModel reportProject in reportProjects)
             {
                 writer.WriteStartObject();
 
@@ -145,7 +145,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
             {
                 writer.WriteStartObject();
                 writer.WritePropertyName(FrameworkProperty);
-                writer.WriteValue(reportFrameworkPackage.FrameWork);
+                writer.WriteValue(reportFrameworkPackage.Framework);
                 WriteTopLevelPackages(writer, TopLevelPackagesProperty, reportFrameworkPackage.TopLevelPackages);
                 WriteTransitivePackages(writer, TransitivePackagesProperty, reportFrameworkPackage.TransitivePackages);
                 writer.WriteEndObject();
@@ -154,21 +154,21 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
             writer.WriteEndArray();
         }
 
-        private static void WriteTopLevelPackages(JsonWriter writer, string property, List<TopLevelPackage> topLevelPackages)
+        private static void WriteTopLevelPackages(JsonWriter writer, string property, List<ListReportTopPackage> topLevelPackages)
         {
             if (topLevelPackages?.Count > 0)
             {
                 writer.WritePropertyName(property);
 
                 writer.WriteStartArray();
-                foreach (TopLevelPackage topLevelPackage in topLevelPackages)
+                foreach (ListReportTopPackage topLevelPackage in topLevelPackages)
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName(IdProperty);
                     writer.WriteValue(topLevelPackage.PackageId);
 
                     writer.WritePropertyName(RequestedVersionProperty);
-                    writer.WriteValue(topLevelPackage.RequestedVersion);
+                    writer.WriteValue(topLevelPackage.OriginalRequestedVersion);
 
                     writer.WritePropertyName(ResolvedVersionProperty);
                     writer.WriteValue(topLevelPackage.ResolvedVersion);
@@ -195,14 +195,14 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
             }
         }
 
-        private static void WriteTransitivePackages(JsonWriter writer, string property, List<TransitivePackage> transitivePackages)
+        private static void WriteTransitivePackages(JsonWriter writer, string property, List<ListReportTransitivePackage> transitivePackages)
         {
             if (transitivePackages?.Count > 0)
             {
                 writer.WritePropertyName(property);
 
                 writer.WriteStartArray();
-                foreach (TransitivePackage transitivePackage in transitivePackages)
+                foreach (ListReportTransitivePackage transitivePackage in transitivePackages)
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName(IdProperty);
@@ -237,7 +237,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
             }
         }
 
-        private static void WriteDeprecations(JsonWriter writer, ListPackage listPackage)
+        private static void WriteDeprecations(JsonWriter writer, ListReportPackage listPackage)
         {
             if (listPackage.DeprecationReasons != null)
             {
@@ -321,7 +321,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
         {
             internal static JsonOutputConverter Default { get; } = new JsonOutputConverter();
 
-            private static readonly Type TargetType = typeof(ListPackageJsonOutputContent);
+            private static readonly Type TargetType = typeof(ListPackageOutputContent);
             public override bool CanConvert(Type objectType)
             {
                 return objectType == TargetType;
@@ -334,7 +334,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
-                if (!(value is ListPackageJsonOutputContent jsonOutputContent))
+                if (!(value is ListPackageOutputContent jsonOutputContent))
                 {
                     throw new ArgumentException(message: "value is not of type JsonOutputContent", paramName: nameof(value));
                 }
@@ -345,22 +345,16 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
                 writer.WriteValue(jsonOutputContent.Version);
 
                 writer.WritePropertyName(ParametersProperty);
-                writer.WriteValue(NormalizeFilePath(jsonOutputContent.Parameters));
+                writer.WriteValue(NormalizeFilePath(ListPackageArgs.ArgumentText));
 
                 if (jsonOutputContent.Problems?.Count > 0)
                 {
                     WriteProblems(writer, jsonOutputContent.Problems);
                 }
 
-                if (ListPackageArgs.PackageSources.Any())
-                {
-                    WriteSourcesArray(writer, ListPackageArgs.PackageSources);
-                }
+                WriteSources(writer, ListPackageArgs.PackageSources);
 
-                if (jsonOutputContent.Projects.Count > 0)
-                {
-                    WriteProjectArray(writer, jsonOutputContent.Projects);
-                }
+                WriteProjects(writer, jsonOutputContent.Projects);
 
                 writer.WriteEndObject();
             }

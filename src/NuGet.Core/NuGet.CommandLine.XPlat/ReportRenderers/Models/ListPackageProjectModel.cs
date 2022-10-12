@@ -6,13 +6,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Build.Evaluation;
+using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
 {
-    internal class ListPackageProjectDetails
+    internal class ListPackageProjectModel
     {
         private const string ProjectNameMSbuildProperty = "MSBuildProjectName";
 
@@ -26,7 +27,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
 
         public Project Project { get; }
 
-        public ListPackageProjectDetails(string projectPath, ListPackageReportModel reportModel)
+        public ListPackageProjectModel(string projectPath, ListPackageReportModel reportModel)
         {
             ProjectPath = projectPath;
             ReportModel = reportModel;
@@ -42,10 +43,10 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
             TargetFrameworkPackages = frameworkPackages;
         }
 
-        internal void AddProjectProblem(string error)
+        internal void AddProjectProblem(string error, ProblemType problemType)
         {
             ProjectProblems ??= new List<ReportProblem> { };
-            ProjectProblems.Add(new ReportProblem(project: ProjectPath, message: error, problemType: Enums.ProblemType.Error));
+            ProjectProblems.Add(new ReportProblem(project: ProjectPath, message: error, problemType: problemType));
         }
 
         internal IEnumerable<FrameworkPackages> GetAssetFilePackages(LockFile assetsFile)
@@ -95,9 +96,9 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
             return string.Empty;
         }
 
-        public bool PrintPackagesFlag => FilterPackages(Packages, ReportModel.ListPackageArgs);
+        internal bool PrintPackagesFlag => FilterPackages(Packages, ReportModel.ListPackageArgs);
 
-        public bool FilterPackages(IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)
+        internal static bool FilterPackages(IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)
         {
             switch (listPackageArgs.ReportType)
             {
@@ -132,7 +133,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
         /// <param name="packages">The <see cref="FrameworkPackages"/> to filter.</param>
         /// <param name="topLevelPackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TopLevelPackages"/>.</param>
         /// <param name="transitivePackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TransitivePackages"/>.</param>
-        private void FilterPackages(
+        private static void FilterPackages(
             IEnumerable<FrameworkPackages> packages,
             Func<InstalledPackageReference, bool> topLevelPackagesFilter,
             Func<InstalledPackageReference, bool> transitivePackagesFilter)
@@ -182,7 +183,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
             return string.Empty;
         }
 
-        public string GetProjectHeader()
+        internal string GetProjectHeader()
         {
             switch (ReportModel.ListPackageArgs.ReportType)
             {
@@ -197,23 +198,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
             }
 
             return string.Format(Strings.ListPkg_ProjectHeaderLog, ProjectName);
-        }
-
-        private string NoPackagesToPrintForGivenFramework(FrameworkPackages frameworkPackages)
-        {
-            switch (ReportModel.ListPackageArgs.ReportType)
-            {
-                case ReportType.Outdated:
-                    return string.Format(CultureInfo.CurrentCulture, "   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, frameworkPackages.Framework);
-                case ReportType.Deprecated:
-                    return string.Format(CultureInfo.CurrentCulture, "   [{0}]: " + Strings.ListPkg_NoDeprecationsForFramework, frameworkPackages.Framework);
-                case ReportType.Vulnerable:
-                    return string.Format(CultureInfo.CurrentCulture, "   [{0}]: " + Strings.ListPkg_NoVulnerabilitiesForFramework, frameworkPackages.Framework);
-                case ReportType.Default:
-                    break;
-            }
-
-            return string.Format(CultureInfo.CurrentCulture, "   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework);
         }
     }
 }

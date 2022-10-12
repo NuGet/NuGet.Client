@@ -2,24 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Security.Permissions;
 using NuGet.Protocol;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
 {
     internal class ListPackageReportFrameworkPackage
     {
-        internal string FrameWork { get; set; }
+        internal string Framework { get; set; }
         internal bool AutoReference { get; set; }
-        internal List<TopLevelPackage> TopLevelPackages { get; set; }
-        internal List<TransitivePackage> TransitivePackages { get; set; }
+        internal List<ListReportTopPackage> TopLevelPackages { get; set; }
+        internal List<ListReportTransitivePackage> TransitivePackages { get; set; }
         public ListPackageReportFrameworkPackage(string frameWork)
         {
-            FrameWork = frameWork;
+            Framework = frameWork;
         }
     }
 
-    internal class ListPackage
+    internal class ListReportPackage
     {
         internal string PackageId { get; set; }
         internal string ResolvedVersion { get; set; }
@@ -29,11 +28,12 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
         internal AlternatePackageMetadata AlternativePackage { get; set; }
     }
 
-    internal class TopLevelPackage : ListPackage
+    internal class ListReportTopPackage : ListReportPackage
     {
-        internal string RequestedVersion { get; set; }
+        internal string OriginalRequestedVersion { get; set; }
+        internal bool AutoReference { get; set; }
     }
 
-    internal class TransitivePackage : ListPackage
+    internal class ListReportTransitivePackage : ListReportPackage
     { }
 }

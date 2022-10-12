@@ -6,21 +6,19 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
+using NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer;
 using NuGet.CommandLine.XPlat.ReportRenderers.Models;
-using NuGet.Packaging;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
+namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
 {
-    internal abstract class ListPackageJsonRenderer : IReportRenderer
+    internal class ListPackageConsoleRenderer : IReportRenderer
     {
         protected readonly List<ReportProblem> _problems = new();
         protected ListPackageReportModel _listPackageReportModel;
-        protected ReportOutputVersion OutputVersion { get; private set; }
+        private ListPackageConsoleRenderer()
+        { }
 
-        protected ListPackageJsonRenderer(ReportOutputVersion outputVersion)
-        {
-            OutputVersion = outputVersion;
-        }
+        public static ListPackageConsoleRenderer Instance { get; } = new ListPackageConsoleRenderer();
 
         public void AddProblem(string errorText, ProblemType problemType)
         {
@@ -34,15 +32,18 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 
         public void End()
         {
-            _problems.AddRange(_listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems));
-            string jsonRenderedOutput = ListPackageJsonOutputSerializer.Render(new ListPackageOutputContent()
+            ListPackageConsoleWriter.Render(new ListPackageOutputContent()
             {
                 ListPackageArgs = _listPackageReportModel.ListPackageArgs,
+                //Parameters = Parameters,
                 Problems = _problems,
                 Projects = _listPackageReportModel.Projects,
             });
+        }
 
-            Console.WriteLine(jsonRenderedOutput);
+        public void SetParameters(string parametersText)
+        {
+            //not needed for console
         }
     }
 }

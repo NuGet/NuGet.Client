@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using NuGet.CommandLine.XPlat.ReportRenderers;
+using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -20,6 +21,7 @@ namespace NuGet.CommandLine.XPlat
         public ReportType ReportType { get; }
         public IReportRenderer Renderer { get; }
         public ReportOutputFormat ReportOutputFormat { get; }
+        public string ArgumentText { get; }
         public bool IncludeTransitive { get; }
         public bool Prerelease { get; }
         public bool HighestPatch { get; }
@@ -36,7 +38,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="frameworks"> The user inputed frameworks to look up for their packages </param>
         /// <param name="reportType"> Which report we're producing (e.g. --outdated) </param>
         /// <param name="renderer">The report output renderer (e.g. console, json)</param>
-        /// <param name="outputFormat"> The report format (e.g. console, json)</param>
+        /// <param name="argumentText">Arguments passed to command line as text</param>
         /// <param name="includeTransitive"> Bool for --include-transitive present </param>
         /// <param name="prerelease"> Bool for --include-prerelease present </param>
         /// <param name="highestPatch"> Bool for --highest-patch present </param>
@@ -49,7 +51,7 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<string> frameworks,
             ReportType reportType,
             IReportRenderer renderer,
-            ReportOutputFormat outputFormat,
+            string argumentText,
             bool includeTransitive,
             bool prerelease,
             bool highestPatch,
@@ -61,7 +63,7 @@ namespace NuGet.CommandLine.XPlat
             PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
             ReportType = reportType;
-            ReportOutputFormat = outputFormat;
+            ArgumentText = argumentText;
             Renderer = renderer;
             IncludeTransitive = includeTransitive;
             Prerelease = prerelease;

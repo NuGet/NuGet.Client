@@ -8,20 +8,14 @@ namespace NuGet.CommandLine.XPlat.Utility
 {
     internal class FormattedCell : IEquatable<FormattedCell>
     {
-        public ReportPackageColumn ReportPackageColumn { get; set; }
         public string Value { get; set; }
         public ConsoleColor? ForegroundColor { get; set; }
 
-        private FormattedCell()
-        {
+        public FormattedCell() : this(string.Empty) { }
 
-        }
-        //public FormattedCell() : this(string.Empty) { }
-
-        public FormattedCell(string value, ReportPackageColumn reportPackageColumn, ConsoleColor? foregroundColor = null)
+        public FormattedCell(string value, ConsoleColor? foregroundColor = null)
         {
             Value = value ?? string.Empty;
-            ReportPackageColumn = reportPackageColumn;
             ForegroundColor = foregroundColor;
         }
 

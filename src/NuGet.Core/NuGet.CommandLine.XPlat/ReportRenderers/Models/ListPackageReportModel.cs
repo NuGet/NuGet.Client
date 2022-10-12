@@ -8,7 +8,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
     internal class ListPackageReportModel
     {
         internal ListPackageArgs ListPackageArgs { get; }
-        internal List<ListPackageProjectDetails> Projects { get; } = new();
+        internal List<ListPackageProjectModel> Projects { get; } = new();
 
         internal MSBuildAPIUtility MSBuildAPIUtility { get; }
 
@@ -21,9 +21,9 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
             MSBuildAPIUtility = new MSBuildAPIUtility(listPackageArgs.Logger);
         }
 
-        internal ListPackageProjectDetails CreateProjectReportData(string projectPath)
+        internal ListPackageProjectModel CreateProjectReportData(string projectPath)
         {
-            var projectModel = new ListPackageProjectDetails(projectPath, this);
+            var projectModel = new ListPackageProjectModel(projectPath, this);
             Projects.Add(projectModel);
             return projectModel;
         }

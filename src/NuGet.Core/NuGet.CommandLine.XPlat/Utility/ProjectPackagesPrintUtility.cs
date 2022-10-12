@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 using NuGet.CommandLine.XPlat.ReportRenderers.Models;
+using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
@@ -16,125 +18,42 @@ namespace NuGet.CommandLine.XPlat.Utility
     internal static class ProjectPackagesPrintUtility
     {
         /// <summary>
-        /// A function that prints all the package references of a project
-        /// </summary>
-        /// <param name="packages">A list of framework packages. Check <see cref="FrameworkPackages"/></param>
-        /// <param name="listPackageProjectDetails">The project name</param>
-        /// <param name="listPackageArgs">Command line options</param>
-        /// <param name="hasAutoReference">At least one discovered package is autoreference</param>
-        /// <returns>The list of package metadata</returns>
-        internal static List<ListPackageReportFrameworkPackage> BuildPackageMetaData(
-            IEnumerable<FrameworkPackages> packages, ListPackageProjectDetails listPackageProjectDetails, ListPackageArgs listPackageArgs, ref bool hasAutoReference)
-        {
-            // Todo listPackageProjectDetails.GetProjectHeader
-
-            var projectFrameworkPackages = new List<ListPackageReportFrameworkPackage>();
-
-            hasAutoReference = false;
-            foreach (FrameworkPackages frameworkPackages in packages)
-            {
-                string frameWork = frameworkPackages.Framework;
-                var frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
-                var frameworkTransitivePackages = frameworkPackages.TransitivePackages;
-
-                // If no packages exist for this framework, print the
-                // appropriate message
-                if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
-                {
-                    //Console.ForegroundColor = ConsoleColor.Blue;
-                    // Todo listPackageProjectDetails.NoPackagesToPrintForGivenFramework(frameworkPackages)
-                    //Console.ResetColor();
-                }
-                else
-                {
-                    // Print name of the framework
-                    //Console.ForegroundColor = ConsoleColor.Blue;
-                    //Console.WriteLine(string.Format(CultureInfo.CurrentCulture, "   [{0}]: ", frameworkPackages.Framework));
-                    //Console.ResetColor();
-
-                    ListPackageReportFrameworkPackage targetFrameworkPackageMetaData = new ListPackageReportFrameworkPackage(frameWork);
-                    // Print top-level packages
-                    if (frameworkTopLevelPackages.Any())
-                    {
-                        var tableHasAutoReference = false;
-                        IEnumerable<FormattedCell> tableToPrint = BuildPackagesTable(
-                            frameworkTopLevelPackages, printingTransitive: false, listPackageArgs.ReportOutputFormat, listPackageArgs, targetFrameworkPackageMetaData, ref tableHasAutoReference);
-
-                        if (tableToPrint != null)
-                        {
-                            // Todo: PrintPackagesTable(tableToPrint, listPackageArgs);
-                            hasAutoReference = hasAutoReference || tableHasAutoReference;
-                        }
-                    }
-
-                    // Print transitive packages
-                    if (listPackageArgs.IncludeTransitive && frameworkTransitivePackages.Any())
-                    {
-                        var tableHasAutoReference = false;
-                        IEnumerable<FormattedCell> tableToPrint = BuildPackagesTable(
-                            frameworkTransitivePackages, printingTransitive: true, ReportOutputFormat.Console, listPackageArgs, targetFrameworkPackageMetaData, ref tableHasAutoReference);
-                        if (tableToPrint != null)
-                        {
-                            // Todo: PrintPackagesTable(tableToPrint, listPackageArgs);
-                            hasAutoReference = hasAutoReference || tableHasAutoReference;
-                        }
-                    }
-
-                    projectFrameworkPackages.Add(targetFrameworkPackageMetaData);
-                }
-            }
-
-            return projectFrameworkPackages;
-        }
-
-        /// <summary>
         /// Given a list of packages, this function will print them in a table
         /// </summary>
         /// <param name="packages">The list of packages</param>
         /// <param name="listPackageArgs">Command line options</param>
+        /// <param name="projectModel">Data model for a project</param>
         /// <param name="hasAutoReference">At least one discovered package is autoreference</param>
         /// <returns>The list of package metadata</returns>
         internal static List<ListPackageReportFrameworkPackage> GetPackageMetaData(
             IEnumerable<FrameworkPackages> packages,
             ListPackageArgs listPackageArgs,
+            ListPackageProjectModel projectModel,
             ref bool hasAutoReference)
         {
-            // Todo listPackageProjectDetails.GetProjectHeader
-
             var projectFrameworkPackages = new List<ListPackageReportFrameworkPackage>();
 
             hasAutoReference = false;
             foreach (FrameworkPackages frameworkPackages in packages)
             {
                 string frameWork = frameworkPackages.Framework;
+                ListPackageReportFrameworkPackage targetFrameworkPackageMetaData = new ListPackageReportFrameworkPackage(frameWork);
+                projectFrameworkPackages.Add(targetFrameworkPackageMetaData);
                 var frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
                 var frameworkTransitivePackages = frameworkPackages.TransitivePackages;
 
                 // If no packages exist for this framework, print the
                 // appropriate message
-                if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
+                if (frameworkTopLevelPackages.Any() || frameworkTransitivePackages.Any())
                 {
-                    //Console.ForegroundColor = ConsoleColor.Blue;
-                    // Todo listPackageProjectDetails.NoPackagesToPrintForGivenFramework(frameworkPackages)
-                    //Console.ResetColor();
-                }
-                else
-                {
-                    // Print name of the framework
-                    //Console.ForegroundColor = ConsoleColor.Blue;
-                    //Console.WriteLine(string.Format(CultureInfo.CurrentCulture, "   [{0}]: ", frameworkPackages.Framework));
-                    //Console.ResetColor();
-
-                    ListPackageReportFrameworkPackage targetFrameworkPackageMetaData = new ListPackageReportFrameworkPackage(frameWork);
                     // Print top-level packages
                     if (frameworkTopLevelPackages.Any())
                     {
                         var tableHasAutoReference = false;
 
                         if (GetFrameworkPackageMetaData(
-                            frameworkTopLevelPackages, printingTransitive: false, listPackageArgs.ReportOutputFormat, listPackageArgs, targetFrameworkPackageMetaData, ref tableHasAutoReference))
+                            frameworkTopLevelPackages, printingTransitive: false, listPackageArgs, targetFrameworkPackageMetaData, ref tableHasAutoReference))
                         {
-                            // Todo: PrintPackagesTable(tableToPrint, listPackageArgs);
                             hasAutoReference = hasAutoReference || tableHasAutoReference;
                         }
                     }
@@ -145,14 +64,11 @@ namespace NuGet.CommandLine.XPlat.Utility
                         var tableHasAutoReference = false;
 
                         if (GetFrameworkPackageMetaData(
-                            frameworkTransitivePackages, printingTransitive: true, ReportOutputFormat.Console, listPackageArgs, targetFrameworkPackageMetaData, ref tableHasAutoReference))
+                            frameworkTransitivePackages, printingTransitive: true, listPackageArgs, targetFrameworkPackageMetaData, ref tableHasAutoReference))
                         {
-                            // Todo: PrintPackagesTable(tableToPrint, listPackageArgs);
                             hasAutoReference = hasAutoReference || tableHasAutoReference;
                         }
                     }
-
-                    projectFrameworkPackages.Add(targetFrameworkPackageMetaData);
                 }
             }
 
@@ -162,7 +78,6 @@ namespace NuGet.CommandLine.XPlat.Utility
         private static bool GetFrameworkPackageMetaData(
             IEnumerable<InstalledPackageReference> frameworkPackages,
             bool printingTransitive,
-            ReportOutputFormat reportOutputFormat,
             ListPackageArgs listPackageArgs,
             ListPackageReportFrameworkPackage targetFrameworkPackageMetaData,
             ref bool tableHasAutoReference)
@@ -175,7 +90,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             frameworkPackages = frameworkPackages.OrderBy(p => p.Name);
             if (printingTransitive)
             {
-                targetFrameworkPackageMetaData.TransitivePackages = frameworkPackages.Select(p => new TransitivePackage()
+                targetFrameworkPackageMetaData.TransitivePackages = frameworkPackages.Select(p => new ListReportTransitivePackage()
                 {
                     PackageId = p.Name,
                     ResolvedVersion = GetPackageVersion(p),
@@ -187,10 +102,10 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
             else
             {
-                targetFrameworkPackageMetaData.TopLevelPackages = frameworkPackages.Select(p => new TopLevelPackage()
+                targetFrameworkPackageMetaData.TopLevelPackages = frameworkPackages.Select(p => new ListReportTopPackage()
                 {
                     PackageId = p.Name,
-                    RequestedVersion = p.OriginalRequestedVersion,
+                    OriginalRequestedVersion = p.OriginalRequestedVersion,
                     ResolvedVersion = GetPackageVersion(p),
                     LatestVersion = listPackageArgs.ReportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null,
                     Vulnerabilities = listPackageArgs.ReportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
@@ -211,17 +126,13 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// </summary>
         /// <param name="packages">The list of packages</param>
         /// <param name="printingTransitive">Whether the function is printing transitive packages information.</param>
-        /// <param name="reportOutputFormat">Report output format (e.g json, console etc).</param>
         /// <param name="listPackageArgs">Command line options.</param>
-        /// <param name="targetFrameworkPackageMetaData">Meta data for package in targetframework</param>
         /// <param name="tableHasAutoReference">Flagged if an autoreference marker was printer</param>
-        /// <returns>The table as a string and list of ReportFrameworkPackage</returns>
+        /// <returns>The table as a string</returns>
         internal static IEnumerable<FormattedCell> BuildPackagesTable(
-            IEnumerable<InstalledPackageReference> packages,
+            IEnumerable<ListReportPackage> packages,
             bool printingTransitive,
-            ReportOutputFormat reportOutputFormat,
             ListPackageArgs listPackageArgs,
-            ListPackageReportFrameworkPackage targetFrameworkPackageMetaData,
             ref bool tableHasAutoReference)
         {
             var autoReferenceFlagged = false;
@@ -231,75 +142,70 @@ namespace NuGet.CommandLine.XPlat.Utility
                 return null;
             }
 
-            packages = packages.OrderBy(p => p.Name);
+            //packages = packages.OrderBy(p => p.Name); Already sorted
 
             var headers = BuildTableHeaders(printingTransitive, listPackageArgs);
 
-            var valueSelectors = new List<Func<InstalledPackageReference, FormattedCell>>
+            var valueSelectors = new List<Func<ListReportPackage, object>>
             {
-                p => new FormattedCell(p.Name, printingTransitive ? ReportPackageColumn.TransitivePackage : ReportPackageColumn.TopLevelPackage),
-                p => new FormattedCell(GetAutoReferenceMarker(p, printingTransitive, ref autoReferenceFlagged), ReportPackageColumn.EmptyColumn),
+                p => new FormattedCell(p.PackageId),
+                p => new FormattedCell(GetAutoReferenceMarker(p, printingTransitive, ref autoReferenceFlagged)),
             };
-
-            List<Func<InstalledPackageReference, IEnumerable<FormattedCell>>> vulnerabilityValueSelectors = null;
 
             // Include "Requested" version column for top level package list
             if (!printingTransitive)
             {
-                valueSelectors.Add(p => new FormattedCell(p.OriginalRequestedVersion, ReportPackageColumn.Requested));
+                valueSelectors.Add(p => new FormattedCell((p as ListReportTopPackage)?.OriginalRequestedVersion));
             }
 
             // "Resolved" version
-            valueSelectors.Add(p => new FormattedCell(GetPackageVersion(p), ReportPackageColumn.Resolved));
+            valueSelectors.Add(p => new FormattedCell(p.ResolvedVersion));
 
             switch (listPackageArgs.ReportType)
             {
                 case ReportType.Outdated:
                     // "Latest" version
-                    valueSelectors.Add(p => new FormattedCell(GetPackageVersion(p, useLatest: true), ReportPackageColumn.Latest));
+                    valueSelectors.Add(p => new FormattedCell(p.LatestVersion));
                     break;
                 case ReportType.Deprecated:
                     valueSelectors.Add(p => new FormattedCell(
-                        PrintDeprecationReasons(p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result), ReportPackageColumn.Deprecated));
+                        PrintDeprecationReasons(p.DeprecationReasons)));
                     valueSelectors.Add(p => new FormattedCell(
-                        PrintAlternativePackage((p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage), ReportPackageColumn.AlternatePackage));
+                        PrintAlternativePackage(p.AlternativePackage)));
                     break;
                 case ReportType.Vulnerable:
-                    vulnerabilityValueSelectors = new()
-                    {
-                        p => PrintVulnerabilitiesSeverities(p.ResolvedPackageMetadata.Vulnerabilities),
-                        p => PrintVulnerabilitiesAdvisoryUrls(p.ResolvedPackageMetadata.Vulnerabilities)
-                    };
+                    valueSelectors.Add(p => PrintVulnerabilitiesSeverities(p.Vulnerabilities));
+                    valueSelectors.Add(p => PrintVulnerabilitiesAdvisoryUrls(p.Vulnerabilities));
                     break;
             }
 
-            IEnumerable<FormattedCell> tableToPrint = packages.ToStringTable(headers, targetFrameworkPackageMetaData, printingTransitive, reportOutputFormat, valueSelectors.ToArray(), vulnerabilityValueSelectors);
+            var tableToPrint = packages.ToStringTable(headers, valueSelectors.ToArray());
 
             tableHasAutoReference = autoReferenceFlagged;
             return tableToPrint;
         }
 
-        //internal static void PrintPackagesTable(IEnumerable<FormattedCell> tableToPrint, ListPackageArgs listPackageArgs)
-        //{
-        //    foreach (var formattedCell in tableToPrint)
-        //    {
-        //        if (formattedCell.ForegroundColor.HasValue)
-        //        {
-        //            Console.ForegroundColor = formattedCell.ForegroundColor.Value;
-        //        }
+        internal static void PrintPackagesTable(IEnumerable<FormattedCell> tableToPrint)
+        {
+            foreach (var formattedCell in tableToPrint)
+            {
+                if (formattedCell.ForegroundColor.HasValue)
+                {
+                    Console.ForegroundColor = formattedCell.ForegroundColor.Value;
+                }
 
-        //        Console.Write(formattedCell.Value);
-        //        Console.ResetColor();
-        //    }
+                Console.Write(formattedCell.Value);
+                Console.ResetColor();
+            }
 
-        //    Console.WriteLine();
-        //}
+            Console.WriteLine();
+        }
 
         internal static IEnumerable<FormattedCell> PrintVulnerabilitiesSeverities(
             IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata)
         {
             return vulnerabilityMetadata == null || !vulnerabilityMetadata.Any()
-                ? new List<FormattedCell> { new FormattedCell(string.Empty, ReportPackageColumn.VulnerabilitySeverity, foregroundColor: null) }
+                ? new List<FormattedCell> { new FormattedCell(string.Empty) }
                 : vulnerabilityMetadata.Select(VulnerabilityToSeverityFormattedCell);
         }
 
@@ -307,25 +213,25 @@ namespace NuGet.CommandLine.XPlat.Utility
             IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata)
         {
             return vulnerabilityMetadata == null || !vulnerabilityMetadata.Any()
-                ? new List<FormattedCell> { new FormattedCell(string.Empty, ReportPackageColumn.VulnerabilityAdvisoryurl, foregroundColor: null) }
-                : vulnerabilityMetadata.Select(v => new FormattedCell(v.AdvisoryUrl?.ToString() ?? string.Empty, ReportPackageColumn.VulnerabilityAdvisoryurl, foregroundColor: null));
+                ? new List<FormattedCell> { new FormattedCell(string.Empty) }
+                : vulnerabilityMetadata.Select(v => new FormattedCell(v.AdvisoryUrl?.ToString() ?? string.Empty));
         }
 
         private static FormattedCell VulnerabilityToSeverityFormattedCell(PackageVulnerabilityMetadata vulnerability)
         {
             switch (vulnerability?.Severity ?? -1)
             {
-                case 0: return new FormattedCell("Low", ReportPackageColumn.VulnerabilitySeverity, foregroundColor: null); // default color for low severity
-                case 1: return new FormattedCell("Moderate", ReportPackageColumn.VulnerabilitySeverity, foregroundColor: ConsoleColor.Yellow);
-                case 2: return new FormattedCell("High", ReportPackageColumn.VulnerabilitySeverity, foregroundColor: ConsoleColor.Red);
-                case 3: return new FormattedCell("Critical", ReportPackageColumn.VulnerabilitySeverity, foregroundColor: ConsoleColor.Red);
+                case 0: return new FormattedCell("Low"); // default color for low severity
+                case 1: return new FormattedCell("Moderate");
+                case 2: return new FormattedCell("High");
+                case 3: return new FormattedCell("Critical");
             }
 
-            return new FormattedCell(string.Empty, ReportPackageColumn.VulnerabilitySeverity, foregroundColor: null);
+            return new FormattedCell(string.Empty);
         }
 
         private static string GetAutoReferenceMarker(
-            InstalledPackageReference package,
+            ListReportPackage package,
             bool printingTransitive,
             ref bool autoReferenceFound)
         {
@@ -334,7 +240,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 return string.Empty;
             }
 
-            if (package.AutoReference)
+            if ((package as ListReportTopPackage)?.AutoReference == true)
             {
                 autoReferenceFound = true;
                 return "(A)";
@@ -430,13 +336,5 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             return result.ToArray();
         }
-
-        //internal static void PrintSources(IEnumerable<PackageSource> packageSources)
-        //{
-        //    foreach (var source in packageSources)
-        //    {
-        //        Console.WriteLine("   " + source.Source);
-        //    }
-        //}
     }
 }
