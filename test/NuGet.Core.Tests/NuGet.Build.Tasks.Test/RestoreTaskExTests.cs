@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
@@ -57,19 +58,44 @@ namespace NuGet.Build.Tasks.Test
                     MSBuildStartupDirectory = testDirectory,
                 })
                 {
-                    var arguments = task.GetCommandLineArguments().ToList();
-                    arguments.Should().BeEquivalentTo(
+                    using MemoryStream stream = new MemoryStream();
+
+                    task.WriteArguments(stream);
+
+                    string actualArguments = task.GetCommandLineArguments(msbuildBinPath);
+
+                    string[] expectedArguments = new[]
+                    {
 #if IS_CORECLR
-                    Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
-#endif
-                    "CleanupAssetsForUnsupportedProjects=True;DisableParallel=True;Force=True;ForceEvaluate=True;HideWarningsAndErrors=True;IgnoreFailedSources=True;Interactive=True;NoCache=True;Recursive=True;RestorePackagesConfig=True",
-#if IS_CORECLR
-                    Path.Combine(msbuildBinPath, "MSBuild.dll"),
+                        Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
+                        Path.Combine(msbuildBinPath, "MSBuild.dll"),
 #else
-                    Path.Combine(msbuildBinPath, "MSBuild.exe"),
+                        Path.Combine(msbuildBinPath, "MSBuild.exe"),
 #endif
-                    projectPath,
-                        $"Property1=Value1;Property2=  Value2  ;ExcludeRestorePackageImports=True;OriginalMSBuildStartupDirectory={testDirectory}");
+                        projectPath
+                    };
+
+                    actualArguments.Should().Be($"\"{string.Join("\" \"", expectedArguments)}\"");
+
+                    stream.Position = 0;
+
+                    StaticGraphRestoreArguments arguments = StaticGraphRestoreArguments.Read(stream);
+
+                    arguments.Options.Should().BeEquivalentTo(new Dictionary<string, string>()
+                    {
+                        [nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects)] = task.CleanupAssetsForUnsupportedProjects.ToString(),
+                        [nameof(RestoreTaskEx.DisableParallel)] = task.DisableParallel.ToString(),
+                        [nameof(RestoreTaskEx.Force)] = task.Force.ToString(),
+                        [nameof(RestoreTaskEx.ForceEvaluate)] = task.ForceEvaluate.ToString(),
+                        [nameof(RestoreTaskEx.HideWarningsAndErrors)] = task.HideWarningsAndErrors.ToString(),
+                        [nameof(RestoreTaskEx.IgnoreFailedSources)] = task.IgnoreFailedSources.ToString(),
+                        [nameof(RestoreTaskEx.Interactive)] = task.Interactive.ToString(),
+                        [nameof(RestoreTaskEx.NoCache)] = task.NoCache.ToString(),
+                        [nameof(RestoreTaskEx.Recursive)] = task.Recursive.ToString(),
+                        [nameof(RestoreTaskEx.RestorePackagesConfig)] = task.RestorePackagesConfig.ToString(),
+                    });
+
+                    arguments.GlobalProperties.Should().Contain(globalProperties);
                 }
             }
         }
