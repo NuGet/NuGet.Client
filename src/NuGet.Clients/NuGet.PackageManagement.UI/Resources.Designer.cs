@@ -1474,6 +1474,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Getting Package Source Mappings....
+        /// </summary>
+        public static string PackageSourceMappingOptions_OnActivated {
+            get {
+                return ResourceManager.GetString("PackageSourceMappingOptions_OnActivated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Getting Package Sources....
         /// </summary>
         public static string PackageSourceOptions_OnActivated {
@@ -2273,6 +2282,87 @@ namespace NuGet.PackageManagement.UI {
         public static string Version_LatestStable {
             get {
                 return ResourceManager.GetString("Version_LatestStable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package sources list.
+        /// </summary>
+        public static string VSOptions_Accessibility_SourcesList {
+            get {
+                return ResourceManager.GetString("VSOptions_Accessibility_SourcesList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add.
+        /// </summary>
+        public static string VSOptions_Button_Add {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string VSOptions_Button_Cancel {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove.
+        /// </summary>
+        public static string VSOptions_Button_Remove {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove All.
+        /// </summary>
+        public static string VSOptions_Button_RemoveAll {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_RemoveAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add New Package Source Mapping.
+        /// </summary>
+        public static string VSOptions_Label_AddPackageNamespace {
+            get {
+                return ResourceManager.GetString("VSOptions_Label_AddPackageNamespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package Source Mappings:.
+        /// </summary>
+        public static string VSOptions_Label_PackageSourceMappings {
+            get {
+                return ResourceManager.GetString("VSOptions_Label_PackageSourceMappings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source.
+        /// </summary>
+        public static string VSOptions_Label_Source {
+            get {
+                return ResourceManager.GetString("VSOptions_Label_Source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter a valid Package pattern (Example: Contoso.Contracts or System.*).
+        /// </summary>
+        public static string VSOptions_Watermark_AddPackageNamespace {
+            get {
+                return ResourceManager.GetString("VSOptions_Watermark_AddPackageNamespace", resourceCulture);
             }
         }
         

@@ -32,6 +32,7 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -84,6 +85,18 @@
     <Compile Include="Models\LicenseText.cs" />
     <Compile Include="Models\LicenseFileText.cs" />
     <Compile Include="Models\PackageItemDeprecationLabelState.cs" />
+    <Compile Include="OptionsViewModel.cs" />
+    <Compile Include="Options\AddMappingDialog.xaml.cs">
+      <DependentUpon>AddMappingDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Options\SourceMappingViewModel.cs" />
+    <Compile Include="Options\PackageSourceViewModel.cs" />
+    <Compile Include="Options\PackageSourceMappingOptionsControl.xaml.cs">
+      <DependentUpon>PackageSourceMappingOptionsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Options\PackageSourceMappingOptionsPage.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Utility\IReconnectingNuGetSearchService.cs" />
     <Compile Include="Utility\NuGetSearchServiceReconnector.cs" />
     <Compile Include="ViewModels\LoadingStatusViewModel.cs" />
@@ -221,7 +234,6 @@
     <Compile Include="Models\PackageLicenseInfo.cs" />
     <Compile Include="Models\DetailedPackageMetadata.cs" />
     <Compile Include="Models\PackageDependencyMetadata.cs" />
-    <Compile Include="Options.cs" />
     <Compile Include="Models\PackageDetailControlModel.cs" />
     <Compile Include="PackageManagerControlCommands.cs" />
     <Compile Include="Models\PackageManagerModel.cs" />
@@ -301,6 +313,14 @@
     <DesignDataWithDesignTimeCreatableTypes Include="Design\PackageItemListViewSampleData.xaml">
       <SubType>Designer</SubType>
     </DesignDataWithDesignTimeCreatableTypes>
+    <Page Include="Options\AddMappingDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Options\PackageSourceMappingOptionsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Themes\generic.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

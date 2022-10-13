@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.UI
         {
             _nugetProjects = projects;
             ServiceBroker = serviceBroker;
-            _options = new Options();
+            _options = new OptionsViewModel();
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
             _options.ShowClassicOptions = projects.Any(project => project.ProjectKind == NuGetProjectKind.PackagesConfig);
@@ -802,9 +802,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private Options _options;
+        private OptionsViewModel _options;
 
-        public Options Options
+        public OptionsViewModel Options
         {
             get { return _options; }
             set
