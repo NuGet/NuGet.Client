@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -16,6 +17,11 @@ namespace NuGet.CommandLine.XPlat
         public void AddProblem(string errorText, ProblemType problemType)
         {
             _problems.Add(new ReportProblem(string.Empty, errorText, problemType));
+        }
+
+        public IEnumerable<ReportProblem> GetProblems(ProblemType problemType)
+        {
+            return _problems.Where(p => p.ProblemType == problemType);
         }
 
         public void End(ListPackageReportModel listPackageReportModel)

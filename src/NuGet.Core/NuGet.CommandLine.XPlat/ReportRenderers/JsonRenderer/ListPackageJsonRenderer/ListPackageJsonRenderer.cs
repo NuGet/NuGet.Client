@@ -22,6 +22,11 @@ namespace NuGet.CommandLine.XPlat
             _problems.Add(new ReportProblem(string.Empty, errorText, problemType));
         }
 
+        public IEnumerable<ReportProblem> GetProblems(ProblemType problemType)
+        {
+            return _problems.Where(p => p.ProblemType == problemType);
+        }
+
         public void End(ListPackageReportModel listPackageReportModel)
         {
             // Aggregate problems from projects.

@@ -111,7 +111,7 @@ namespace NuGet.XPlat.FuncTest
                 var mockCommandRunner = new Mock<IListPackageCommandRunner>();
                 mockCommandRunner
                     .Setup(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()))
-                    .Returns(Task.CompletedTask);
+                    .Returns(Task.FromResult(0));
 
                 testApp.Name = "dotnet nuget_test";
                 ListPackageCommand.Register(testApp,

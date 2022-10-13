@@ -21,6 +21,8 @@ namespace NuGet.CommandLine.XPlat
     internal class ListPackageCommandRunner : IListPackageCommandRunner
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
+        private const int GenericSuccessExitCode = 0;
+        private const int GenericFailureExitCode = 1;
         private Dictionary<PackageSource, SourceRepository> _sourceRepositoryCache;
 
         public ListPackageCommandRunner()
@@ -28,15 +30,16 @@ namespace NuGet.CommandLine.XPlat
             _sourceRepositoryCache = new Dictionary<PackageSource, SourceRepository>();
         }
 
-        public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
+        public async Task<int> ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
             IReportRenderer reportRenderer = listPackageArgs.Renderer;
-            ListPackageReportModel reportModel = await GetReportDataAsync(listPackageArgs);
+            (int exitCode, ListPackageReportModel reportModel) = await GetReportDataAsync(listPackageArgs);
             // set renderer data
             reportRenderer.End(reportModel);
+            return exitCode;
         }
 
-        private async Task<ListPackageReportModel> GetReportDataAsync(ListPackageArgs listPackageArgs)
+        private async Task<(int, ListPackageReportModel)> GetReportDataAsync(ListPackageArgs listPackageArgs)
         {
             // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs.
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
@@ -46,7 +49,7 @@ namespace NuGet.CommandLine.XPlat
                         Strings.ListPkg_ErrorFileNotFound,
                         listPackageArgs.Path),
                         problemType: ProblemType.Error);
-                return listPackageReportModel;
+                return (GenericFailureExitCode, listPackageReportModel);
             }
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
@@ -159,7 +162,13 @@ namespace NuGet.CommandLine.XPlat
                 listPackageReportModel.AutoReferenceFound = true;
             }
 
-            return listPackageReportModel;
+            // if there is any error then return failure code.
+            int exitCode = (
+                listPackageArgs.Renderer.GetProblems(ProblemType.Error).Any()
+                || listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems).Where(p => p.ProblemType == ProblemType.Error).Any())
+                ? GenericFailureExitCode : GenericSuccessExitCode;
+
+            return (exitCode, listPackageReportModel);
         }
 
         private static void WarnForHttpSources(ListPackageArgs listPackageArgs, ListPackageProjectModel projectModel)
