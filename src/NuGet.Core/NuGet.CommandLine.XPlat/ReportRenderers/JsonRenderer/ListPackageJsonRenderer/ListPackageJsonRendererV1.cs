@@ -5,6 +5,7 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class ListPackageJsonRendererV1 : ListPackageJsonRenderer
     {
+        internal static ListPackageJsonRenderer Instance { get; } = new ListPackageJsonRendererV1();
         internal ListPackageJsonRendererV1()
             : base(ReportOutputVersion.V1)
         {

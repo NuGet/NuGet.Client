@@ -3,7 +3,7 @@
 
 using System;
 
-namespace NuGet.CommandLine.XPlat.Enums
+namespace NuGet.CommandLine.XPlat
 {
     internal static class EnumExtensions
     {

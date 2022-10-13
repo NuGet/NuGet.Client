@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.CommandLine.XPlat.Enums;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -148,7 +147,6 @@ namespace NuGet.CommandLine.XPlat
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
                     var listPackageCommandRunner = getCommandRunner();
-
                     await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
                     return 0;
                 });
@@ -201,12 +199,12 @@ namespace NuGet.CommandLine.XPlat
             // If customer pass unsupported version then default to latest available version and error about unsupported version.
             if (!string.IsNullOrEmpty(outputVersionOption) && !currentlySupportedReportVersions.Contains(outputVersionOption))
             {
-                jsonReportRenderer = new ListPackageJsonRendererV1();
+                jsonReportRenderer = ListPackageJsonRendererV1.Instance;
                 jsonReportRenderer.AddProblem(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions), ProblemType.Information);
             }
             else
             {
-                jsonReportRenderer = new ListPackageJsonRendererV1();
+                jsonReportRenderer = ListPackageJsonRendererV1.Instance;
             }
 
             return jsonReportRenderer;
@@ -245,6 +243,7 @@ namespace NuGet.CommandLine.XPlat
                 directory,
                 configFileName,
                 machineWideSettings: new XPlatMachineWideSetting());
+
         }
 
         private static IEnumerable<PackageSource> GetPackageSources(ISettings settings, IEnumerable<string> sources, CommandOption config)

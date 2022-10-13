@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class ListPackageOutputContent
+    internal class ListPackageOutputContentV1
     {
-        internal int Version { get; set; } = ListPackageJsonOutputSerializer.Version;
+        internal int Version { get; set; } = (int)ReportOutputVersion.V1;
         internal ListPackageArgs ListPackageArgs { get; set; }
         internal List<ReportProblem> Problems { get; set; }
         internal List<ListPackageProjectModel> Projects { get; set; }

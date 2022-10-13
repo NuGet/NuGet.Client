@@ -15,17 +15,15 @@ namespace NuGet.CommandLine.XPlat.Utility
     internal static class ProjectPackagesPrintUtility
     {
         /// <summary>
-        /// Given a list of packages, this function will print them in a table
+        /// A function that return the metadata for list package report
         /// </summary>
-        /// <param name="packages">The list of packages</param>
+        /// <param name="packages">A list of framework packages. Check <see cref="FrameworkPackages"/></param>
         /// <param name="listPackageArgs">Command line options</param>
-        /// <param name="projectModel">Data model for a project</param>
         /// <param name="hasAutoReference">At least one discovered package is autoreference</param>
         /// <returns>The list of package metadata</returns>
-        internal static List<ListPackageReportFrameworkPackage> GetPackageMetaData(
+        internal static List<ListPackageReportFrameworkPackage> GetPackagesMetaData(
             IEnumerable<FrameworkPackages> packages,
             ListPackageArgs listPackageArgs,
-            ListPackageProjectModel projectModel,
             ref bool hasAutoReference)
         {
             var projectFrameworkPackages = new List<ListPackageReportFrameworkPackage>();
@@ -200,7 +198,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata)
         {
             return vulnerabilityMetadata == null || !vulnerabilityMetadata.Any()
-                ? new List<FormattedCell> { new FormattedCell(string.Empty) }
+                ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
                 : vulnerabilityMetadata.Select(VulnerabilityToSeverityFormattedCell);
         }
 
@@ -208,21 +206,21 @@ namespace NuGet.CommandLine.XPlat.Utility
             IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata)
         {
             return vulnerabilityMetadata == null || !vulnerabilityMetadata.Any()
-                ? new List<FormattedCell> { new FormattedCell(string.Empty) }
-                : vulnerabilityMetadata.Select(v => new FormattedCell(v.AdvisoryUrl?.ToString() ?? string.Empty));
+                ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
+                : vulnerabilityMetadata.Select(v => new FormattedCell(v.AdvisoryUrl?.ToString() ?? string.Empty, foregroundColor: null));
         }
 
         private static FormattedCell VulnerabilityToSeverityFormattedCell(PackageVulnerabilityMetadata vulnerability)
         {
             switch (vulnerability?.Severity ?? -1)
             {
-                case 0: return new FormattedCell("Low"); // default color for low severity
-                case 1: return new FormattedCell("Moderate");
-                case 2: return new FormattedCell("High");
-                case 3: return new FormattedCell("Critical");
+                case 0: return new FormattedCell("Low", foregroundColor: null); // default color for low severity
+                case 1: return new FormattedCell("Moderate", foregroundColor: ConsoleColor.Yellow);
+                case 2: return new FormattedCell("High", foregroundColor: ConsoleColor.Red);
+                case 3: return new FormattedCell("Critical", foregroundColor: ConsoleColor.Red);
             }
 
-            return new FormattedCell(string.Empty);
+            return new FormattedCell(string.Empty, foregroundColor: null);
         }
 
         private static string GetAutoReferenceMarker(

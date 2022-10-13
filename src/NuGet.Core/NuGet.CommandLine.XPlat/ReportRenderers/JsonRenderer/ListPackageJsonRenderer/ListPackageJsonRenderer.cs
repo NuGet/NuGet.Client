@@ -24,8 +24,9 @@ namespace NuGet.CommandLine.XPlat
 
         public void End(ListPackageReportModel listPackageReportModel)
         {
+            // Aggregate problems from projects.
             _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems));
-            string jsonRenderedOutput = ListPackageJsonOutputSerializer.Render(new ListPackageOutputContent()
+            string jsonRenderedOutput = ListPackageJsonOutputSerializerV1.Render(new ListPackageOutputContentV1()
             {
                 ListPackageArgs = listPackageReportModel.ListPackageArgs,
                 Problems = _problems,

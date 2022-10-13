@@ -11,10 +11,8 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal static class ListPackageJsonOutputSerializer
+    internal static class ListPackageJsonOutputSerializerV1
     {
-        public const int Version = 1;
-
         private const string VersionProperty = "version";
         private const string ParametersProperty = "parameters";
         private const string ProblemsProperty = "problems";
@@ -42,7 +40,7 @@ namespace NuGet.CommandLine.XPlat
         private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(GetSerializerSettings());
         private static ListPackageArgs ListPackageArgs;
 
-        internal static string Render(ListPackageOutputContent jsonOutputContent)
+        internal static string Render(ListPackageOutputContentV1 jsonOutputContent)
         {
             ListPackageArgs = jsonOutputContent.ListPackageArgs;
 
@@ -326,7 +324,7 @@ namespace NuGet.CommandLine.XPlat
         {
             internal static JsonOutputConverter Default { get; } = new JsonOutputConverter();
 
-            private static readonly Type TargetType = typeof(ListPackageOutputContent);
+            private static readonly Type TargetType = typeof(ListPackageOutputContentV1);
             public override bool CanConvert(Type objectType)
             {
                 return objectType == TargetType;
@@ -339,7 +337,7 @@ namespace NuGet.CommandLine.XPlat
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
-                if (!(value is ListPackageOutputContent jsonOutputContent))
+                if (!(value is ListPackageOutputContentV1 jsonOutputContent))
                 {
                     throw new ArgumentException(message: "value is not of type JsonOutputContent", paramName: nameof(value));
                 }

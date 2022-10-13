@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.XPlat
 
         public void End(ListPackageReportModel listPackageReportModel)
         {
-            ListPackageConsoleWriter.Render(new ListPackageOutputContent()
+            ListPackageConsoleWriter.Render(new ListPackageOutputContentV1()
             {
                 ListPackageArgs = listPackageReportModel.ListPackageArgs,
                 Problems = _problems,

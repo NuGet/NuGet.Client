@@ -14,19 +14,17 @@ namespace NuGet.CommandLine.XPlat
     {
         private static ListPackageArgs ListPackageArgs;
 
-        internal static void Render(ListPackageOutputContent jsonOutputContent)
+        internal static void Render(ListPackageOutputContentV1 jsonOutputContent)
         {
             ListPackageArgs = jsonOutputContent.ListPackageArgs;
             WriteToConsole(jsonOutputContent);
         }
 
-        private static void WriteToConsole(ListPackageOutputContent jsonOutputContent)
+        private static void WriteToConsole(ListPackageOutputContentV1 jsonOutputContent)
         {
             // Print non-project related problems first.
             PrintProblems(jsonOutputContent.Problems);
-
             WriteSources(jsonOutputContent.ListPackageArgs.PackageSources);
-
             WriteProjects(jsonOutputContent.Projects);
 
             // Print a legend message for auto-reference markers used
@@ -38,7 +36,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static void WriteSources(IEnumerable<PackageSource> packageSources)
         {
-            //Print sources, but not for generic list (which is offline)
+            // Print sources, but not for generic list (which is offline)
             if (ListPackageArgs.ReportType != ReportType.Default)
             {
                 Console.WriteLine();
@@ -52,9 +50,8 @@ namespace NuGet.CommandLine.XPlat
         {
             foreach (ListPackageProjectModel project in projects)
             {
+                // Print projects specific problems
                 PrintProblems(project.ProjectProblems);
-
-                // e.g. if no deprecated packages then it's null.
                 if (project.TargetFrameworkPackages == null)
                 {
                     continue;
@@ -157,8 +154,6 @@ namespace NuGet.CommandLine.XPlat
                     default:
                         break;
                 }
-
-                Console.WriteLine();
             }
         }
     }

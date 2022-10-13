@@ -5,9 +5,12 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class ReportProblem
     {
-        public string Project { get; private set; }
-        public string Message { get; private set; }
-        public ProblemType ProblemType { get; }
+        internal string Project { get; private set; }
+        internal string Message { get; private set; }
+        internal ProblemType ProblemType { get; }
+
+        private ReportProblem()
+        { }
 
         public ReportProblem(string project, string message, ProblemType problemType)
         {

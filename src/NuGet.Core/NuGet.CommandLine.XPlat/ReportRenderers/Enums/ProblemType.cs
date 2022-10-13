@@ -6,7 +6,7 @@ namespace NuGet.CommandLine.XPlat
     internal enum ProblemType
     {
         Information,
-        Warning, // This one is used for logger.
+        Warning,
         Error
     }
 }

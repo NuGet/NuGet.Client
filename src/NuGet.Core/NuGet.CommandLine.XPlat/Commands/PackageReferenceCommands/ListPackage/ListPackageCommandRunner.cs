@@ -38,7 +38,7 @@ namespace NuGet.CommandLine.XPlat
 
         private async Task<ListPackageReportModel> GetReportDataAsync(ListPackageArgs listPackageArgs)
         {
-            // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs, use logger instead.
+            // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs.
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
             if (!File.Exists(listPackageArgs.Path))
             {
@@ -46,11 +46,8 @@ namespace NuGet.CommandLine.XPlat
                         Strings.ListPkg_ErrorFileNotFound,
                         listPackageArgs.Path),
                         problemType: ProblemType.Error);
-
-                // Currently return code's success even though there's error, changing this would break CI pipelines. 
                 return listPackageReportModel;
             }
-
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
             var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln") ?
@@ -118,6 +115,7 @@ namespace NuGet.CommandLine.XPlat
 
                                 bool printPackages = projectModel.PrintPackagesFlag;
 
+                                // Filter packages for dedicated reports, inform user if none
                                 if (listPackageArgs.ReportType != ReportType.Default && !printPackages)
                                 {
                                     switch (listPackageArgs.ReportType)
@@ -138,7 +136,7 @@ namespace NuGet.CommandLine.XPlat
                                 if (printPackages)
                                 {
                                     var hasAutoReference = false;
-                                    List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackageMetaData(packages, listPackageArgs, projectModel, ref hasAutoReference);
+                                    List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetaData(packages, listPackageArgs, ref hasAutoReference);
                                     projectModel.SetFrameworkPackageMetaData(projectFrameworkPackages);
                                     autoReferenceFound = autoReferenceFound || hasAutoReference;
                                 }

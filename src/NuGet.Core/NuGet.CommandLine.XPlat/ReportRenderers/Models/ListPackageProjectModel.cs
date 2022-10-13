@@ -15,16 +15,15 @@ namespace NuGet.CommandLine.XPlat
     internal class ListPackageProjectModel
     {
         private const string ProjectNameMSbuildProperty = "MSBuildProjectName";
-
         internal List<ReportProblem> ProjectProblems { get; private set; }
         internal string ProjectPath { get; private set; }
-        public ListPackageReportModel ReportModel { get; }
         internal List<ListPackageReportFrameworkPackage> TargetFrameworkPackages { get; private set; }
         internal IEnumerable<FrameworkPackages> Packages { get; private set; }
         internal string HttpSourceWarning { get; private set; }
         internal string ProjectName { get; private set; }
+        internal Project Project { get; }
+        internal ListPackageReportModel ReportModel { get; }
 
-        public Project Project { get; }
 
         public ListPackageProjectModel(string projectPath, ListPackageReportModel reportModel)
         {
@@ -55,44 +54,6 @@ namespace NuGet.CommandLine.XPlat
                 Packages = ReportModel.MSBuildAPIUtility.GetResolvedVersions(Project.FullPath, ReportModel.ListPackageArgs.Frameworks, assetsFile, ReportModel.ListPackageArgs.IncludeTransitive, includeProjects: ReportModel.ListPackageArgs.ReportType == ReportType.Default);
             }
             return Packages;
-        }
-
-        internal string WarnForHttpSources()
-        {
-            List<PackageSource> httpPackageSources = null;
-            foreach (PackageSource packageSource in ReportModel.ListPackageArgs.PackageSources)
-            {
-                if (packageSource.IsHttp && !packageSource.IsHttps)
-                {
-                    if (httpPackageSources == null)
-                    {
-                        httpPackageSources = new();
-                    }
-                    httpPackageSources.Add(packageSource);
-                }
-            }
-
-            if (httpPackageSources != null && httpPackageSources.Count != 0)
-            {
-                if (httpPackageSources.Count == 1)
-                {
-                    //listPackageArgs.Logger.LogWarning(
-                    return string.Format(CultureInfo.CurrentCulture,
-                        Strings.Warning_HttpServerUsage,
-                        "list package",
-                        httpPackageSources[0]);
-                }
-                else
-                {
-                    //listPackageArgs.Logger.LogWarning(
-                    return string.Format(CultureInfo.CurrentCulture,
-                        Strings.Warning_HttpServerUsage_MultipleSources,
-                        "list package",
-                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name)));
-                }
-            }
-
-            return string.Empty;
         }
 
         internal bool PrintPackagesFlag => FilterPackages(Packages, ReportModel.ListPackageArgs);
@@ -161,25 +122,6 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return filteredReferences;
-        }
-
-        internal string NoPackagesToPrintForDedicatedReports()
-        {
-            // Filter packages for dedicated reports, inform user if none
-            if (ReportModel.ListPackageArgs.ReportType != ReportType.Default && !PrintPackagesFlag)
-            {
-                switch (ReportModel.ListPackageArgs.ReportType)
-                {
-                    case ReportType.Outdated:
-                        return string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoUpdatesForProject, ProjectName);
-                    case ReportType.Deprecated:
-                        return string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoDeprecatedPackagesForProject, ProjectName);
-                    case ReportType.Vulnerable:
-                        return string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, ProjectName);
-                }
-            }
-
-            return string.Empty;
         }
 
         internal string GetProjectHeader()
