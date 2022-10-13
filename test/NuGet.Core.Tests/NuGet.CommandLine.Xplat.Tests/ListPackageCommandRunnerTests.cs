@@ -141,7 +141,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Outdated,
                     ListPackageConsoleRenderer.Instance,
-                    string.Empty,
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
                     logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
@@ -217,7 +216,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Deprecated,
                     ListPackageConsoleRenderer.Instance,
-                    string.Empty,
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
@@ -292,7 +290,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Vulnerable,
                     ListPackageConsoleRenderer.Instance,
-                    string.Empty,
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 

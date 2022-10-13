@@ -25,7 +25,6 @@ namespace NuGet.CommandLine.XPlat
     {
         public static void Register(
             CommandLineApplication app,
-            string[] args,
             Func<ILogger> getLogger,
             Action<LogLevel> setLogLevel,
             Func<IListPackageCommandRunner> getCommandRunner)
@@ -135,14 +134,12 @@ namespace NuGet.CommandLine.XPlat
 
                     IReportRenderer reportRenderer = GetOutputType(outputFormat.Value(), outputVersionOption: outputVersion.Value());
 
-
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
                         packageSources,
                         framework.Values,
                         reportType,
                         reportRenderer,
-                        string.Join(" ", args).Trim(),
                         includeTransitive.HasValue(),
                         prerelease.HasValue(),
                         highestPatch.HasValue(),

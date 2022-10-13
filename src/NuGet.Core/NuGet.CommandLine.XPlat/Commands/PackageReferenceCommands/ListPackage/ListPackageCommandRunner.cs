@@ -34,13 +34,9 @@ namespace NuGet.CommandLine.XPlat
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
             IReportRenderer reportRenderer = listPackageArgs.Renderer;
-
             ListPackageReportModel reportModel = await GetReportDataAsync(listPackageArgs);
             // set renderer data
-            reportRenderer.Write(reportModel);
-            // render report Model data in requested format
-            // todo? Maybe unify Write + End methods.
-            reportRenderer.End();
+            reportRenderer.End(reportModel);
         }
 
         private async Task<ListPackageReportModel> GetReportDataAsync(ListPackageArgs listPackageArgs)

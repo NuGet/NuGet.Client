@@ -7,14 +7,12 @@ using System.Linq;
 using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
 using NuGet.CommandLine.XPlat.ReportRenderers.Models;
-using NuGet.Packaging;
 
 namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
 {
     internal abstract class ListPackageJsonRenderer : IReportRenderer
     {
         protected readonly List<ReportProblem> _problems = new();
-        protected ListPackageReportModel _listPackageReportModel;
         protected ReportOutputVersion OutputVersion { get; private set; }
 
         protected ListPackageJsonRenderer(ReportOutputVersion outputVersion)
@@ -27,20 +25,15 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
             _problems.Add(new ReportProblem(string.Empty, errorText, problemType));
         }
 
-        public void Write(ListPackageReportModel listPackageReportModel)
+        public void End(ListPackageReportModel listPackageReportModel)
         {
-            _listPackageReportModel = listPackageReportModel;
-        }
-
-        public void End()
-        {
-            _problems.AddRange(_listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems));
+            _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems));
             string jsonRenderedOutput = ListPackageJsonOutputSerializer.Render(new ListPackageOutputContent()
             {
-                ListPackageArgs = _listPackageReportModel.ListPackageArgs,
+                ListPackageArgs = listPackageReportModel.ListPackageArgs,
                 Problems = _problems,
-                Projects = _listPackageReportModel.Projects,
-                AutoReferenceFound = _listPackageReportModel.AutoReferenceFound
+                Projects = listPackageReportModel.Projects,
+                AutoReferenceFound = listPackageReportModel.AutoReferenceFound
             });
 
             Console.WriteLine(jsonRenderedOutput);

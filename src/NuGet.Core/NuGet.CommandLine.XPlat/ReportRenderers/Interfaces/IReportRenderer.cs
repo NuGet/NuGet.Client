@@ -9,7 +9,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.Interfaces
     internal interface IReportRenderer
     {
         void AddProblem(string errorText, ProblemType problemType);
-        void Write(ListPackageReportModel reportProject);
-        void End();
+        void End(ListPackageReportModel reportProject);
     }
 }
