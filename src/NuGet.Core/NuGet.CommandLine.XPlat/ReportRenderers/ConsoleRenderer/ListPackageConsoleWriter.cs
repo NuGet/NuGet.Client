@@ -5,13 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
-using NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer;
-using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Configuration;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
+namespace NuGet.CommandLine.XPlat
 {
     internal static class ListPackageConsoleWriter
     {
@@ -44,7 +41,6 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
             //Print sources, but not for generic list (which is offline)
             if (ListPackageArgs.ReportType != ReportType.Default)
             {
-                //Todo
                 Console.WriteLine();
                 Console.WriteLine(Strings.ListPkg_SourcesUsedDescription);
                 PrintSources(packageSources);

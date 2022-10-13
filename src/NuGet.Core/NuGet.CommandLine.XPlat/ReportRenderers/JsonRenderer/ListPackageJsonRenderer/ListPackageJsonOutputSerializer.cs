@@ -5,13 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
-using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
+namespace NuGet.CommandLine.XPlat
 {
     internal static class ListPackageJsonOutputSerializer
     {
@@ -365,9 +363,7 @@ namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
                 }
 
                 WriteSources(writer, ListPackageArgs.PackageSources);
-
                 WriteProjects(writer, jsonOutputContent.Projects);
-
                 writer.WriteEndObject();
             }
         }

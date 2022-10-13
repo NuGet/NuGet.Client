@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
+namespace NuGet.CommandLine.XPlat
 {
     internal class ListPackageReportModel
     {

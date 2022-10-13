@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
 using NuGet.Common;
 using NuGet.Configuration;
 

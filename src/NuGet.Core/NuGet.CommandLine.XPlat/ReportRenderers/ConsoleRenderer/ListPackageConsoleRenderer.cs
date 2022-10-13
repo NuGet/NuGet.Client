@@ -2,12 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
-using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
-using NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer;
-using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.ConsoleRenderer
+namespace NuGet.CommandLine.XPlat
 {
     internal class ListPackageConsoleRenderer : IReportRenderer
     {

@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using NuGet.Protocol;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
+namespace NuGet.CommandLine.XPlat
 {
     internal class ListPackageReportFrameworkPackage
     {

@@ -4,11 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
-using NuGet.CommandLine.XPlat.ReportRenderers.Interfaces;
-using NuGet.CommandLine.XPlat.ReportRenderers.Models;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.ListPackageJsonRenderer
+namespace NuGet.CommandLine.XPlat
 {
     internal abstract class ListPackageJsonRenderer : IReportRenderer
     {

@@ -6,12 +6,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Build.Evaluation;
-using NuGet.CommandLine.XPlat.ReportRenderers.Enums;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
 
-namespace NuGet.CommandLine.XPlat.ReportRenderers.Models
+namespace NuGet.CommandLine.XPlat
 {
     internal class ListPackageProjectModel
     {

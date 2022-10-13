@@ -115,7 +115,6 @@ namespace NuGet.XPlat.FuncTest
 
                 testApp.Name = "dotnet nuget_test";
                 ListPackageCommand.Register(testApp,
-                    Array.Empty<string>(),
                     () => logger,
                     ll => logLevel = ll,
                     () => mockCommandRunner.Object);
