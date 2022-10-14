@@ -79,7 +79,8 @@ namespace NuGet.Common.Migrations
             {
                 pathsToCheck.Add(path);
 
-                if (!path.StartsWith(homePath, StringComparison.Ordinal))
+                // Unix-based systems support only the forward slash which is returned by Path.AltDirectorySeparatorChar
+                if (!path.StartsWith(homePath + Path.AltDirectorySeparatorChar, StringComparison.Ordinal))
                 {
                     return;
                 }
@@ -156,13 +157,13 @@ namespace NuGet.Common.Migrations
             {
                 PosixPermissions correctedPermissions = permissions.Value.WithUmask(umask);
                 string correctedPermissionsString = correctedPermissions.ToString();
-                Exec("chmod", correctedPermissionsString + " " + path);
+                Exec("chmod", correctedPermissionsString + " " + "" + path + "");
             }
         }
 
         internal static PosixPermissions? GetPermissions(string path)
         {
-            string output = Exec("ls", "-ld " + path);
+            string output = Exec("ls", "-ld " + "" + path + "");
             if (output == null)
             {
                 return null;

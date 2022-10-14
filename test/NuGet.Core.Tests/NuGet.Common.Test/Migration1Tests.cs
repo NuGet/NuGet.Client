@@ -49,19 +49,19 @@ namespace NuGet.Common.Test
         }
 
         [PlatformTheory(Platform.Darwin, Platform.Linux)]
-        [InlineData("777", "022", "755")]
-        [InlineData("775", "002", "775")]
-        [InlineData("700", "022", "700")]
-        [InlineData("700", "002", "700")]
-        public void EnsureExpectedPermissions_Directories_Success(string currentPermissions, string umask, string newPermissions)
+        [InlineData("777", "022", "755", "v3-cache")]
+        [InlineData("775", "002", "775", "v3 cache")]
+        [InlineData("700", "022", "700", "v3-cache")]
+        [InlineData("700", "002", "700", "v3 cache")]
+        public void EnsureExpectedPermissions_Directories_Success(string currentPermissions, string umask, string newPermissions, string path)
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var v3cachePath = Path.Combine(testDirectory, "v3-cache");
+                var v3cachePath = Path.Combine(testDirectory, path);
                 var v3cacheSubDirectoryInfo = Directory.CreateDirectory(Path.Combine(v3cachePath, "subDirectory"));
                 Migration1.Exec("chmod", currentPermissions + " " + testDirectory.Path);
-                Migration1.Exec("chmod", currentPermissions + " " + v3cachePath);
-                Migration1.Exec("chmod", currentPermissions + " " + v3cacheSubDirectoryInfo.FullName);
+                Migration1.Exec("chmod", currentPermissions + " " + "" + v3cachePath + "");
+                Migration1.Exec("chmod", currentPermissions + " " + "" + v3cacheSubDirectoryInfo.FullName + "");
                 HashSet<string> pathsToCheck = new HashSet<string>() { testDirectory.Path, v3cachePath, v3cacheSubDirectoryInfo.FullName };
 
                 Migration1.EnsureExpectedPermissions(pathsToCheck, PosixPermissions.Parse(umask));
