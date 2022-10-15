@@ -45,9 +45,6 @@ resources:
 
 variables:
   DOTNET_NOLOGO: 1
-  Codeql.Enabled: ${{ parameters.isOfficialBuild }}
-  Codeql.TSAEnabled: ${{ parameters.isOfficialBuild }}
-  Codeql.TSAOptionsPath: $(Build.SourcesDirectory)\eng\pipelines\TSAOptions.json
 
 stages:
 - stage: Initialize
