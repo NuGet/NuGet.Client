@@ -108,8 +108,7 @@ steps:
 - task: CodeQL3000Finalize@0
   displayName: Finalize CodeQL
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-  continueOnError: "true"
-
+  
 - task: MSBuild@1
   displayName: "Localize Assemblies"
   inputs:
