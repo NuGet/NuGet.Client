@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Versioning;
@@ -35,7 +36,9 @@ namespace NuGet.CommandLine.XPlat
         private const string DeprecationReasonsProperty = "deprecationReasons";
         private const string AlternativePackageProperty = "alternativePackage";
         private const string VersionRangeProperty = "versionRange";
-        private const string MessageProperty = "message";
+        private const string InformationProperty = "information";
+        private const string WarningProperty = "warning";
+        private const string ErrorProperty = "error";
 
         private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(GetSerializerSettings());
         private static ListPackageArgs ListPackageArgs;
@@ -78,11 +81,11 @@ namespace NuGet.CommandLine.XPlat
                 if (!string.IsNullOrEmpty(reportProblem.Project))
                 {
                     writer.WritePropertyName(ProjectProperty);
-                    writer.WriteValue(NormalizeFilePath(reportProblem.Project));
+                    writer.WriteValue(reportProblem.Project.NormalizeFilePath());
                 }
 
-                writer.WritePropertyName(MessageProperty);
-                writer.WriteValue((reportProblem.ProblemType == ProblemType.Warning ? "warn : " : string.Empty) + NormalizeFilePath(reportProblem.Message));
+                writer.WritePropertyName(reportProblem.ProblemType == ProblemType.Warning ? WarningProperty : reportProblem.ProblemType == ProblemType.Error ? ErrorProperty : InformationProperty);
+                writer.WriteValue(reportProblem.Message.NormalizeFilePath());
                 writer.WriteEndObject();
             }
 
@@ -102,7 +105,7 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (PackageSource packageSource in packageSources)
             {
-                writer.WriteValue(packageSource.Source);
+                writer.WriteValue(packageSource.Source.NormalizeFilePath());
             }
 
             writer.WriteEndArray();
@@ -118,7 +121,7 @@ namespace NuGet.CommandLine.XPlat
                 writer.WriteStartObject();
 
                 writer.WritePropertyName(PathProperty);
-                writer.WriteValue(NormalizeFilePath(reportProject.ProjectPath));
+                writer.WriteValue(reportProject.ProjectPath.NormalizeFilePath());
 
                 if (reportProject.TargetFrameworkPackages?.Count > 0)
                 {
@@ -151,21 +154,21 @@ namespace NuGet.CommandLine.XPlat
             writer.WriteEndArray();
         }
 
-        private static void WriteTopLevelPackages(JsonWriter writer, string property, List<ListReportTopPackage> topLevelPackages)
+        private static void WriteTopLevelPackages(JsonWriter writer, string property, List<ListReportPackage> topLevelPackages)
         {
-            if (topLevelPackages?.Count > 0)
+            if (topLevelPackages != null)
             {
                 writer.WritePropertyName(property);
 
                 writer.WriteStartArray();
-                foreach (ListReportTopPackage topLevelPackage in topLevelPackages)
+                foreach (ListReportPackage topLevelPackage in topLevelPackages)
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName(IdProperty);
                     writer.WriteValue(topLevelPackage.PackageId);
 
                     writer.WritePropertyName(RequestedVersionProperty);
-                    writer.WriteValue(topLevelPackage.OriginalRequestedVersion);
+                    writer.WriteValue(topLevelPackage.RequestedVersion);
 
                     writer.WritePropertyName(ResolvedVersionProperty);
                     writer.WriteValue(topLevelPackage.ResolvedVersion);
@@ -198,21 +201,23 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static void WriteTransitivePackages(JsonWriter writer, string property, List<ListReportTransitivePackage> transitivePackages)
+        private static void WriteTransitivePackages(JsonWriter writer, string property, List<ListReportPackage> transitivePackages)
         {
+            if (!ListPackageArgs.IncludeTransitive)
+            {
+                return;
+            }
+
             if (transitivePackages?.Count > 0)
             {
                 writer.WritePropertyName(property);
 
                 writer.WriteStartArray();
-                foreach (ListReportTransitivePackage transitivePackage in transitivePackages)
+                foreach (ListReportPackage transitivePackage in transitivePackages)
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName(IdProperty);
-                    // Here for ReportType.Vulnerable: Substring(s) removes "> " from front.
-                    string packageId = ListPackageArgs.ReportType == ReportType.Vulnerable ?
-                        transitivePackage.PackageId.Substring(2) : transitivePackage.PackageId;
-                    writer.WriteValue(packageId);
+                    writer.WriteValue(transitivePackage.PackageId);
 
                     writer.WritePropertyName(ResolvedVersionProperty);
                     writer.WriteValue(transitivePackage.ResolvedVersion);
@@ -306,20 +311,6 @@ namespace NuGet.CommandLine.XPlat
             writer.WriteEndArray();
         }
 
-        private static string NormalizeFilePath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                return string.Empty;
-            }
-
-#if NETCOREAPP
-            return path.Replace("\\", "/", StringComparison.Ordinal);
-#else
-            return path.Replace("\\", "/");
-#endif
-        }
-
         private class JsonOutputConverter : JsonConverter
         {
             internal static JsonOutputConverter Default { get; } = new JsonOutputConverter();
@@ -348,11 +339,11 @@ namespace NuGet.CommandLine.XPlat
                 writer.WriteValue(jsonOutputContent.Version);
 
                 writer.WritePropertyName(ParametersProperty);
-                writer.WriteValue(NormalizeFilePath(ListPackageArgs.ArgumentText));
+                writer.WriteValue(ListPackageArgs.ArgumentText.NormalizeFilePath());
 
                 if (jsonOutputContent.AutoReferenceFound)
                 {
-                    jsonOutputContent.Problems.Add(new ReportProblem(string.Empty, Strings.ListPkg_AutoReferenceDescription, ProblemType.Information));
+                    jsonOutputContent.Problems.Add(new ReportProblem(string.Empty, Strings.ListPkg_AutoReferenceDescription, ProblemType.Warning));
                 }
 
                 if (jsonOutputContent.Problems?.Count > 0)

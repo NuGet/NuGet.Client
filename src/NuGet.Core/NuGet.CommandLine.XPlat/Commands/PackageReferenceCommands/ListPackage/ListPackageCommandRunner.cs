@@ -34,12 +34,11 @@ namespace NuGet.CommandLine.XPlat
         {
             IReportRenderer reportRenderer = listPackageArgs.Renderer;
             (int exitCode, ListPackageReportModel reportModel) = await GetReportDataAsync(listPackageArgs);
-            // set renderer data
             reportRenderer.End(reportModel);
             return exitCode;
         }
 
-        private async Task<(int, ListPackageReportModel)> GetReportDataAsync(ListPackageArgs listPackageArgs)
+        internal async Task<(int, ListPackageReportModel)> GetReportDataAsync(ListPackageArgs listPackageArgs)
         {
             // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs.
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
@@ -164,8 +163,8 @@ namespace NuGet.CommandLine.XPlat
 
             // if there is any error then return failure code.
             int exitCode = (
-                listPackageArgs.Renderer.GetProblems(ProblemType.Error).Any()
-                || listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems).Where(p => p.ProblemType == ProblemType.Error).Any())
+                listPackageArgs.Renderer.GetProblems().Any(p => p.ProblemType == ProblemType.Error)
+                || listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems).Any(p => p.ProblemType == ProblemType.Error))
                 ? GenericFailureExitCode : GenericSuccessExitCode;
 
             return (exitCode, listPackageReportModel);

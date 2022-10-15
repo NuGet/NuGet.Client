@@ -39,81 +39,55 @@ namespace NuGet.CommandLine.XPlat.Utility
 
                 // If no packages exist for this framework, print the
                 // appropriate message
-                if (frameworkTopLevelPackages.Any() || frameworkTransitivePackages.Any())
+                var tableHasAutoReference = false;
+                // Print top-level packages
+                if (frameworkTopLevelPackages.Any())
                 {
-                    // Print top-level packages
-                    if (frameworkTopLevelPackages.Any())
-                    {
-                        var tableHasAutoReference = false;
 
-                        if (GetFrameworkPackageMetaData(
-                            frameworkTopLevelPackages, printingTransitive: false, listPackageArgs, targetFrameworkPackageMetaData, ref tableHasAutoReference))
-                        {
-                            hasAutoReference = hasAutoReference || tableHasAutoReference;
-                        }
-                    }
+                    targetFrameworkPackageMetaData.TopLevelPackages = GetFrameworkPackageMetaData(
+                        frameworkTopLevelPackages, printingTransitive: false, listPackageArgs.ReportType, ref tableHasAutoReference).ToList();
+                    hasAutoReference = hasAutoReference || tableHasAutoReference;
+                }
 
-                    // Print transitive packages
-                    if (listPackageArgs.IncludeTransitive && frameworkTransitivePackages.Any())
-                    {
-                        var tableHasAutoReference = false;
-
-                        if (GetFrameworkPackageMetaData(
-                            frameworkTransitivePackages, printingTransitive: true, listPackageArgs, targetFrameworkPackageMetaData, ref tableHasAutoReference))
-                        {
-                            hasAutoReference = hasAutoReference || tableHasAutoReference;
-                        }
-                    }
+                // Print transitive packages
+                if (listPackageArgs.IncludeTransitive && frameworkTransitivePackages.Any())
+                {
+                    targetFrameworkPackageMetaData.TransitivePackages = GetFrameworkPackageMetaData(
+                        frameworkTransitivePackages, printingTransitive: true, listPackageArgs.ReportType, ref tableHasAutoReference).ToList();
                 }
             }
 
             return projectFrameworkPackages;
         }
 
-        private static bool GetFrameworkPackageMetaData(
+        internal static IEnumerable<ListReportPackage> GetFrameworkPackageMetaData(
             IEnumerable<InstalledPackageReference> frameworkPackages,
             bool printingTransitive,
-            ListPackageArgs listPackageArgs,
-            ListPackageReportFrameworkPackage targetFrameworkPackageMetaData,
+            ReportType reportType,
             ref bool tableHasAutoReference)
         {
             if (!frameworkPackages.Any())
             {
-                return false;
+                return Enumerable.Empty<ListReportPackage>();
             }
 
             frameworkPackages = frameworkPackages.OrderBy(p => p.Name);
 
-            if (printingTransitive)
+            var packages = frameworkPackages.Select(p => new ListReportPackage()
             {
-                targetFrameworkPackageMetaData.TransitivePackages = frameworkPackages.Select(p => new ListReportTransitivePackage()
-                {
-                    PackageId = p.Name,
-                    ResolvedVersion = GetPackageVersion(p),
-                    LatestVersion = listPackageArgs.ReportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null,
-                    Vulnerabilities = listPackageArgs.ReportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
-                    DeprecationReasons = listPackageArgs.ReportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null,
-                    AlternativePackage = listPackageArgs.ReportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null
-                }).ToList();
-            }
-            else
-            {
-                targetFrameworkPackageMetaData.TopLevelPackages = frameworkPackages.Select(p => new ListReportTopPackage()
-                {
-                    PackageId = p.Name,
-                    OriginalRequestedVersion = p.OriginalRequestedVersion,
-                    AutoReference = p.AutoReference,
-                    ResolvedVersion = GetPackageVersion(p),
-                    LatestVersion = listPackageArgs.ReportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null,
-                    Vulnerabilities = listPackageArgs.ReportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
-                    DeprecationReasons = listPackageArgs.ReportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null,
-                    AlternativePackage = listPackageArgs.ReportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null
-                }).ToList();
+                PackageId = p.Name,
+                RequestedVersion = printingTransitive ? string.Empty : p.OriginalRequestedVersion,
+                AutoReference = printingTransitive ? false : p.AutoReference,
+                ResolvedVersion = GetPackageVersion(p),
+                LatestVersion = reportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null,
+                Vulnerabilities = reportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
+                DeprecationReasons = reportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null,
+                AlternativePackage = reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null
+            });
 
-                tableHasAutoReference = frameworkPackages.Any(p => p.AutoReference);
-            }
+            tableHasAutoReference = frameworkPackages.Any(p => p.AutoReference);
 
-            return true;
+            return packages;
         }
 
         /// <summary>
@@ -148,7 +122,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             // Include "Requested" version column for top level package list
             if (!printingTransitive)
             {
-                valueSelectors.Add(p => new FormattedCell((p as ListReportTopPackage)?.OriginalRequestedVersion));
+                valueSelectors.Add(p => new FormattedCell((p as ListReportPackage)?.RequestedVersion));
             }
 
             // "Resolved" version
@@ -233,7 +207,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 return string.Empty;
             }
 
-            if ((package as ListReportTopPackage)?.AutoReference == true)
+            if ((package as ListReportPackage)?.AutoReference == true)
             {
                 autoReferenceFound = true;
                 return "(A)";

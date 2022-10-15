@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace NuGet.CommandLine.XPlat
@@ -11,10 +12,15 @@ namespace NuGet.CommandLine.XPlat
     {
         protected readonly List<ReportProblem> _problems = new();
         protected ReportOutputVersion OutputVersion { get; private set; }
+        private TextWriter _writer;
 
-        protected ListPackageJsonRenderer(ReportOutputVersion outputVersion)
+        private ListPackageJsonRenderer()
+        { }
+
+        protected ListPackageJsonRenderer(ReportOutputVersion outputVersion, TextWriter textWriter)
         {
             OutputVersion = outputVersion;
+            _writer = textWriter != null ? textWriter : Console.Out;
         }
 
         public void AddProblem(string errorText, ProblemType problemType)
@@ -22,15 +28,15 @@ namespace NuGet.CommandLine.XPlat
             _problems.Add(new ReportProblem(string.Empty, errorText, problemType));
         }
 
-        public IEnumerable<ReportProblem> GetProblems(ProblemType problemType)
+        public IEnumerable<ReportProblem> GetProblems()
         {
-            return _problems.Where(p => p.ProblemType == problemType);
+            return _problems;
         }
 
         public void End(ListPackageReportModel listPackageReportModel)
         {
             // Aggregate problems from projects.
-            _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems));
+            _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems).Where(p => p.ProblemType != ProblemType.Information));
             string jsonRenderedOutput = ListPackageJsonOutputSerializerV1.Render(new ListPackageOutputContentV1()
             {
                 ListPackageArgs = listPackageReportModel.ListPackageArgs,
@@ -39,7 +45,7 @@ namespace NuGet.CommandLine.XPlat
                 AutoReferenceFound = listPackageReportModel.AutoReferenceFound
             });
 
-            Console.WriteLine(jsonRenderedOutput);
+            _writer.WriteLine(jsonRenderedOutput);
         }
     }
 }

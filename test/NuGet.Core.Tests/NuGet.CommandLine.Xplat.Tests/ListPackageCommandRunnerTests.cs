@@ -137,7 +137,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 var listPackageArgs = new ListPackageArgs(path: "", packageSources: Enumerable.Empty<PackageSource>(),
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Outdated,
-                    ListPackageConsoleRenderer.Instance,
+                    ListPackageConsoleRenderer.GetInstance(),
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
                     logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
@@ -212,7 +212,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 var listPackageArgs = new ListPackageArgs(path: "", packageSources: Enumerable.Empty<PackageSource>(),
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Deprecated,
-                    ListPackageConsoleRenderer.Instance,
+                    ListPackageConsoleRenderer.GetInstance(),
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
@@ -286,7 +286,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 var listPackageArgs = new ListPackageArgs(path: "", packageSources: Enumerable.Empty<PackageSource>(),
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Vulnerable,
-                    ListPackageConsoleRenderer.Instance,
+                    ListPackageConsoleRenderer.GetInstance(),
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 

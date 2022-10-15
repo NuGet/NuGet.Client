@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Moq;
 using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -72,6 +74,25 @@ namespace NuGet.CommandLine.Xplat.Tests
             };
 
             return installedPackageReference;
+        }
+
+        internal static ListReportPackage CreateListReportPackageReference(
+            string packageId = "Package.Id",
+            bool autoReference = false,
+            bool isDeprecated = false,
+            int vulnerabilityCount = 0,
+            string resolvedPackageVersionString = "1.0.0",
+            string latestPackageVersionString = "2.0.0")
+        {
+            InstalledPackageReference installedPackage = CreateInstalledPackageReference(
+                packageId,
+                autoReference,
+                isDeprecated,
+                vulnerabilityCount,
+                resolvedPackageVersionString,
+                latestPackageVersionString);
+
+            return ProjectPackagesPrintUtility.GetFrameworkPackageMetaData(new List<InstalledPackageReference> { installedPackage }, printingTransitive: false, ReportType.Default, ref autoReference).First();
         }
     }
 }

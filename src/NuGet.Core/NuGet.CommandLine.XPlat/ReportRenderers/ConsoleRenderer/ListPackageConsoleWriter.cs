@@ -61,8 +61,8 @@ namespace NuGet.CommandLine.XPlat
 
                 foreach (ListPackageReportFrameworkPackage frameworkPackages in project.TargetFrameworkPackages)
                 {
-                    List<ListReportTopPackage> frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
-                    List<ListReportTransitivePackage> frameworkTransitivePackages = frameworkPackages.TransitivePackages;
+                    List<ListReportPackage> frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
+                    List<ListReportPackage> frameworkTransitivePackages = frameworkPackages.TransitivePackages;
 
                     // If no packages exist for this framework, print the
                     // appropriate message

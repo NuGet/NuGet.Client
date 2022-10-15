@@ -9,8 +9,8 @@ namespace NuGet.CommandLine.XPlat
     internal class ListPackageReportFrameworkPackage
     {
         internal string Framework { get; set; }
-        internal List<ListReportTopPackage> TopLevelPackages { get; set; }
-        internal List<ListReportTransitivePackage> TransitivePackages { get; set; }
+        internal List<ListReportPackage> TopLevelPackages { get; set; }
+        internal List<ListReportPackage> TransitivePackages { get; set; }
         public ListPackageReportFrameworkPackage(string frameWork)
         {
             Framework = frameWork;
@@ -25,14 +25,7 @@ namespace NuGet.CommandLine.XPlat
         public List<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
         internal PackageDeprecationMetadata DeprecationReasons { get; set; }
         internal AlternatePackageMetadata AlternativePackage { get; set; }
+        internal string RequestedVersion { get; set; } // not needed for transitive package
+        internal bool AutoReference { get; set; } // not needed for transitive package
     }
-
-    internal class ListReportTopPackage : ListReportPackage
-    {
-        internal string OriginalRequestedVersion { get; set; }
-        internal bool AutoReference { get; set; }
-    }
-
-    internal class ListReportTransitivePackage : ListReportPackage
-    { }
 }

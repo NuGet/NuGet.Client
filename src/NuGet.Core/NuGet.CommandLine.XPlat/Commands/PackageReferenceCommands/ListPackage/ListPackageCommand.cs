@@ -188,22 +188,22 @@ namespace NuGet.CommandLine.XPlat
 
             if (outputFormat == ReportOutputFormat.Console)
             {
-                return ListPackageConsoleRenderer.Instance;
+                return ListPackageConsoleRenderer.GetInstance();
             }
 
             // currently only version 1 is available, so default to latest available version 1.
             IReportRenderer jsonReportRenderer;
 
             var currentlySupportedReportVersions = new List<string> { "1" };
-            // If customer pass unsupported version then default to latest available version and error about unsupported version.
+            // If customer pass unsupported version then default to latest available version and warn about unsupported version.
             if (!string.IsNullOrEmpty(outputVersionOption) && !currentlySupportedReportVersions.Contains(outputVersionOption))
             {
-                jsonReportRenderer = ListPackageJsonRendererV1.Instance;
-                jsonReportRenderer.AddProblem(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions), ProblemType.Information);
+                jsonReportRenderer = ListPackageJsonRendererV1.GetInstance();
+                jsonReportRenderer.AddProblem(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions), ProblemType.Warning);
             }
             else
             {
-                jsonReportRenderer = ListPackageJsonRendererV1.Instance;
+                jsonReportRenderer = ListPackageJsonRendererV1.GetInstance();
             }
 
             return jsonReportRenderer;
@@ -214,7 +214,7 @@ namespace NuGet.CommandLine.XPlat
             if (packageRefArgs.ReportType != ReportType.Outdated &&
                 (packageRefArgs.Prerelease || packageRefArgs.HighestMinor || packageRefArgs.HighestPatch))
             {
-                reportRenderer.AddProblem(Strings.ListPkg_VulnerableIgnoredOptions, ProblemType.Information);
+                reportRenderer.AddProblem(Strings.ListPkg_VulnerableIgnoredOptions, ProblemType.Warning);
             }
         }
 

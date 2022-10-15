@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using NuGet.Common;
@@ -78,13 +79,13 @@ namespace NuGet.CommandLine.XPlat
                 case ReportType.Default:
                     break;
                 case ReportType.Deprecated:
-                    sb.AppendLine(" --deprecated");
+                    sb.Append(" --deprecated");
                     break;
                 case ReportType.Outdated:
-                    sb.AppendLine(" --outdated");
+                    sb.Append(" --outdated");
                     break;
                 case ReportType.Vulnerable:
-                    sb.AppendLine(" --vulnerable");
+                    sb.Append(" --vulnerable");
                     break;
                 default:
                     break;
@@ -92,27 +93,27 @@ namespace NuGet.CommandLine.XPlat
 
             if (IncludeTransitive)
             {
-                sb.AppendLine(" --include-transitive");
+                sb.Append(" --include-transitive");
             }
 
-            if (Frameworks != null)
+            if (Frameworks != null && Frameworks.Any())
             {
-                sb.AppendLine(string.Join(" ", Frameworks));
+                sb.Append(" --framework " + string.Join(" ", Frameworks));
             }
 
             if (Prerelease)
             {
-                sb.AppendLine(" --include-prerelease");
+                sb.Append(" --include-prerelease");
             }
 
             if (HighestMinor)
             {
-                sb.AppendLine(" --highest-minor");
+                sb.Append(" --highest-minor");
             }
 
             if (HighestPatch)
             {
-                sb.AppendLine("--highest-patch");
+                sb.Append("--highest-patch");
             }
 
             return sb.ToString().Trim();
