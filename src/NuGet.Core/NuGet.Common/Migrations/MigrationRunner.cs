@@ -64,7 +64,7 @@ namespace NuGet.Common.Migrations
             }
         }
 
-        private static string GetMigrationsDirectory()
+        internal static string GetMigrationsDirectory()
         {
             string migrationsDirectory;
             if (RuntimeEnvironmentHelper.IsWindows)
