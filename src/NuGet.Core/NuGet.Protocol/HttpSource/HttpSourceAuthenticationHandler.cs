@@ -20,7 +20,6 @@ namespace NuGet.Protocol
 
         // Only one source may prompt at a time
         private readonly static SemaphoreSlim _credentialPromptLock = new SemaphoreSlim(1, 1);
-        private bool _isDisposed = false;
 
         private readonly PackageSource _packageSource;
         private readonly HttpClientHandler _clientHandler;
@@ -29,6 +28,7 @@ namespace NuGet.Protocol
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
         private Dictionary<string, AmbientAuthenticationState> _authStates = new Dictionary<string, AmbientAuthenticationState>();
         private HttpSourceCredentials _credentials;
+        private bool _isDisposed = false;
 
         public HttpSourceAuthenticationHandler(
             PackageSource packageSource,
@@ -67,6 +67,11 @@ namespace NuGet.Protocol
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(objectName: null); // we don't know the caller name
+            }
+
             HttpResponseMessage response = null;
             ICredentials promptCredentials = null;
 
@@ -303,8 +308,8 @@ namespace NuGet.Protocol
             {
                 // free managed resources
                 _httpClientLock.Dispose();
-                _credentials = null;
                 _authStates = null;
+                _credentials = null;
             }
 
             _isDisposed = true;
