@@ -106,7 +106,7 @@ steps:
   inputs:
     solution: "build\\loc.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild /bl:$(Build.StagingDirectory)\\binlog\\03.Localize.binlog"
+    msbuildArguments: "/t:AfterBuild /bl:$(Build.StagingDirectory)\\binlog\\03.Localize.binlog /p:LocType=$(NuGetLocType)"
 
 - task: MSBuild@1
   displayName: "Build NuGet.exe Localized"
