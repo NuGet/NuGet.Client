@@ -19,7 +19,7 @@ namespace Test.Utility
         // See https://github.com/dotnet/roslyn-analyzers/issues/6172
         private readonly MemoryStream _stream;
 #pragma warning restore CA2213
-        private bool _isDisposed = false; // internal for testing purposes
+        private bool _isDisposed = false;
 
         public TestContent(string s)
         {
