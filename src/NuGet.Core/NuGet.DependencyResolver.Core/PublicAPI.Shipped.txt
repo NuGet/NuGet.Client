@@ -36,6 +36,7 @@ NuGet.DependencyResolver.GraphItemKeyComparer<T>.GetHashCode(NuGet.DependencyRes
 NuGet.DependencyResolver.GraphNode<TItem>
 NuGet.DependencyResolver.GraphNode<TItem>.Disposition.get -> NuGet.DependencyResolver.Disposition
 NuGet.DependencyResolver.GraphNode<TItem>.Disposition.set -> void
+NuGet.DependencyResolver.GraphNode<TItem>.GraphNode(NuGet.LibraryModel.LibraryRange key) -> void
 NuGet.DependencyResolver.GraphNode<TItem>.InnerNodes.get -> System.Collections.Generic.IList<NuGet.DependencyResolver.GraphNode<TItem>>
 NuGet.DependencyResolver.GraphNode<TItem>.InnerNodes.set -> void
 NuGet.DependencyResolver.GraphNode<TItem>.Item.get -> NuGet.DependencyResolver.GraphItem<TItem>

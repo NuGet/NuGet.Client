@@ -35,7 +35,8 @@ namespace NuGet.DependencyResolver
                 runtimeGraph: runtimeGraph,
                 predicate: _ => (recursive ? DependencyResult.Acceptable : DependencyResult.Eclipsed, null),
                 outerEdge: null,
-                transitiveCentralPackageVersions: transitiveCentralPackageVersions);
+                transitiveCentralPackageVersions: transitiveCentralPackageVersions,
+                hasParentNodes: false);
 
             // do not calculate the hashset of the direct dependencies for cases when there are not any elements in the transitiveCentralPackageVersions queue
             var indexedDirectDependenciesKeyNames = new Lazy<HashSet<string>>(
@@ -71,7 +72,7 @@ namespace NuGet.DependencyResolver
             Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate,
             GraphEdge<RemoteResolveResult> outerEdge,
             TransitiveCentralPackageVersions transitiveCentralPackageVersions,
-            bool hasEmptyParentNodes = true)
+            bool hasParentNodes)
         {
             List<LibraryDependency> dependencies = null;
             HashSet<string> runtimeDependencies = null;
@@ -120,7 +121,7 @@ namespace NuGet.DependencyResolver
             }
 
             // Resolve the dependency from the cache or sources
-            var item = await ResolverUtility.FindLibraryCachedAsync(
+            GraphItem<RemoteResolveResult> item = await ResolverUtility.FindLibraryCachedAsync(
                 _context.FindLibraryEntryCache,
                 libraryRange,
                 framework,
@@ -128,9 +129,9 @@ namespace NuGet.DependencyResolver
                 _context,
                 CancellationToken.None);
 
-            int innodesSize = item.Data.Dependencies.Count + (dependencies == null ? 0 : dependencies.Count);
-            bool hasEmptyInnerNodes = innodesSize == 0;
-            GraphNode<RemoteResolveResult> node = new GraphNode<RemoteResolveResult>(libraryRange, hasEmptyInnerNodes, hasEmptyParentNodes)
+            int innerNodesSize = item.Data.Dependencies.Count + (dependencies == null ? 0 : dependencies.Count);
+            bool hasInnerNodes = innerNodesSize > 0;
+            GraphNode<RemoteResolveResult> node = new GraphNode<RemoteResolveResult>(libraryRange, hasInnerNodes, hasParentNodes)
             {
                 Item = item
             };
@@ -201,7 +202,8 @@ namespace NuGet.DependencyResolver
                             runtimeGraph,
                             predicate,
                             innerEdge,
-                            transitiveCentralPackageVersions));
+                            transitiveCentralPackageVersions,
+                            hasParentNodes: false));
                     }
                     else
                     {
@@ -486,7 +488,7 @@ namespace NuGet.DependencyResolver
                     predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode, centralPackageVersionDependency),
                     outerEdge: null,
                     transitiveCentralPackageVersions: transitiveCentralPackageVersions,
-                    hasEmptyParentNodes: false);
+                    hasParentNodes: true);
 
             node.OuterNode = rootNode;
             node.Item.IsCentralTransitive = true;

@@ -1892,7 +1892,6 @@ namespace NuGet.DependencyResolver.Tests
         ///  I 1.0.0 -> G 1.0.0
         ///  (I 1.0.0 should have parentNode D 2.0.0)
         /// </summary>
-        /// <returns></returns>
         [Fact]
         public async Task WalkAsync_WithCentralTransitiveDependency_InnerNodesAndParentNodesCreatedCorrectly()
         {
@@ -1944,7 +1943,7 @@ namespace NuGet.DependencyResolver.Tests
             Assert.Equal(3, rootNode.InnerNodes.Count);
 
             //check if ParentNodes of centralTranstiveNodes are added correctly
-            var centralTransitiveNodes = allNodes.Where(n => n.Item.IsCentralTransitive).ToList();
+            List<GraphNode<RemoteResolveResult>> centralTransitiveNodes = allNodes.Where(n => n.Item.IsCentralTransitive).ToList();
             Assert.Equal(2, centralTransitiveNodes.Count);
             Assert.True(centralTransitiveNodes.Any(n => n.Item.Key.Name == "D"));
             Assert.True(centralTransitiveNodes.Any(n => n.Item.Key.Name == "I"));
@@ -1996,7 +1995,6 @@ namespace NuGet.DependencyResolver.Tests
         /// A -> C 2.0.0
         ///   -> D 1.0.0 -> E 1.0.0
         /// </summary>
-        /// <returns></returns>
         [Fact]
         public async Task WalkAsync_WithNoCPM_InnerNodesAndParentNodesCreatedCorrectly()
         {
@@ -2089,7 +2087,7 @@ namespace NuGet.DependencyResolver.Tests
             var allNodes = new Dictionary<string, GraphNode<RemoteResolveResult>>();
             allNodes.Add(rootNode.Key.ToString(), rootNode);
 
-            Queue<GraphNode<RemoteResolveResult>> queue = new Queue<GraphNode<RemoteResolveResult>>();
+            var queue = new Queue<GraphNode<RemoteResolveResult>>();
             queue.Enqueue(rootNode);
             while (queue.Count > 0)
             {
