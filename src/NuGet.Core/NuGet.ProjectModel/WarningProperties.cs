@@ -118,9 +118,13 @@ namespace NuGet.ProjectModel
         /// </summary>
         public static WarningProperties GetWarningProperties(string treatWarningsAsErrors, IEnumerable<NuGetLogCode> warningsAsErrors, IEnumerable<NuGetLogCode> noWarn, IEnumerable<NuGetLogCode> warningsNotAsErrors)
         {
-#pragma warning disable CS0612 // Type or member is obsolete
-            WarningProperties props = GetWarningProperties(treatWarningsAsErrors, warningsAsErrors, noWarn);
-#pragma warning restore CS0612 // Type or member is obsolete
+            var props = new WarningProperties()
+            {
+                AllWarningsAsErrors = MSBuildStringUtility.IsTrue(treatWarningsAsErrors)
+            };
+
+            props.WarningsAsErrors.UnionWith(warningsAsErrors);
+            props.NoWarn.UnionWith(noWarn);
             props.WarningsNotAsErrors.UnionWith(warningsNotAsErrors);
             return props;
         }
@@ -131,15 +135,7 @@ namespace NuGet.ProjectModel
         [Obsolete]
         public static WarningProperties GetWarningProperties(string treatWarningsAsErrors, IEnumerable<NuGetLogCode> warningsAsErrors, IEnumerable<NuGetLogCode> noWarn)
         {
-            var props = new WarningProperties()
-            {
-                AllWarningsAsErrors = MSBuildStringUtility.IsTrue(treatWarningsAsErrors)
-            };
-
-            props.WarningsAsErrors.UnionWith(warningsAsErrors);
-            props.NoWarn.UnionWith(noWarn);
-
-            return props;
+            return GetWarningProperties(treatWarningsAsErrors, warningsAsErrors, noWarn, Enumerable.Empty<NuGetLogCode>());
         }
     }
 }

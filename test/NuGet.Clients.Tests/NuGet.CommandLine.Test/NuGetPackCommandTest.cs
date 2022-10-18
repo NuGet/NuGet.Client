@@ -4936,11 +4936,11 @@ namespace Proj1
 
                 var nupkgPath = Path.Combine(workingDirectory, "proj1", "proj1.1.0.0-rtm.nupkg");
 
-                var expectedMessage = "Warning " + NuGetLogCode.NU5115.ToString();
+                var expectedMessage = "WARNING: " + NuGetLogCode.NU5115.ToString();
 
-                    Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place..");
-                    r.AllOutput.Should().NotContain(expectedMessage);
-                    r.ExitCode.Should().Be(0);
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place..");
+                r.AllOutput.Should().Contain(expectedMessage);
+                r.ExitCode.Should().Be(0);
             }
         }
 
