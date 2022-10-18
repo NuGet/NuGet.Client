@@ -3,6 +3,9 @@
 
 namespace NuGet.CommandLine.XPlat
 {
+    /// <summary>
+    /// Report problem message with problem type for a project
+    /// </summary>
     internal class ReportProblem
     {
         internal string Project { get; private set; }

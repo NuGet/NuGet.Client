@@ -8,6 +8,9 @@ using System.Linq;
 
 namespace NuGet.CommandLine.XPlat
 {
+    /// <summary>
+    /// json format renderer for dotnet list package command
+    /// </summary>
     internal abstract class ListPackageJsonRenderer : IReportRenderer
     {
         protected readonly List<ReportProblem> _problems = new();

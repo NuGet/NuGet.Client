@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
@@ -94,6 +95,60 @@ namespace NuGet.XPlat.FuncTest
                     // Assert
                     Assert.Equal(LogLevel.Minimal, getLogLevel());
                     Assert.Equal(0, result);
+                });
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("--format json")]
+        [InlineData("--format JSON")]
+        [InlineData("--format json --output-version 1")]
+        [InlineData("--format console")]
+        [InlineData("--format console --output-version 1")]
+        public void BasicListPackage_OutputFormat_CorrectInput_Parsing_Succeeds(string outputFormatCommmand)
+        {
+            VerifyCommand(
+                (projectPath, mockCommandRunner, testApp, getLogLevel) =>
+                {
+                    // Arrange
+                    var argList = new List<string>() { "list" };
+
+                    if (!string.IsNullOrEmpty(outputFormatCommmand))
+                    {
+                        argList.AddRange(outputFormatCommmand.Split(' ').ToList());
+                    }
+
+                    argList.Add(projectPath);
+
+                    // Act
+                    var result = testApp.Execute(argList.ToArray());
+
+                    // Assert
+                    mockCommandRunner.Verify();
+                    Assert.Equal(0, result);
+                });
+        }
+
+        [Theory]
+        [InlineData("--format xml")]
+        [InlineData("--format json --output-version 2")]
+        public void BasicListPackage_OutputFormat_BadInput_Parsing_Fails(string outputFormatCommmand)
+        {
+            VerifyCommand(
+                (projectPath, mockCommandRunner, testApp, getLogLevel) =>
+                {
+                    // Arrange
+                    var argList = new List<string>() { "list" };
+
+                    if (!string.IsNullOrEmpty(outputFormatCommmand))
+                    {
+                        argList.AddRange(outputFormatCommmand.Split(' ').ToList());
+                    }
+
+                    argList.Add(projectPath);
+
+                    // Act & Assert
+                    Assert.Throws<AggregateException>(() => testApp.Execute(argList.ToArray()));
                 });
         }
 

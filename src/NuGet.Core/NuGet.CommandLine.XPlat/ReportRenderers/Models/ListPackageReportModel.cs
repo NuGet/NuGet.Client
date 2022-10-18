@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace NuGet.CommandLine.XPlat
 {
+    /// <summary>
+    /// Calculated solution/projects data model for list report
+    /// </summary>
     internal class ListPackageReportModel
     {
         internal ListPackageArgs ListPackageArgs { get; }

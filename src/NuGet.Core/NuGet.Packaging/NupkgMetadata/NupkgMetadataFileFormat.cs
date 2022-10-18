@@ -86,6 +86,7 @@ namespace NuGet.Packaging
             using (var jsonWriter = new JsonTextWriter(textWriter))
             {
                 jsonWriter.Formatting = Formatting.Indented;
+
                 JsonSerializer.Serialize(jsonWriter, hashFile);
             }
         }

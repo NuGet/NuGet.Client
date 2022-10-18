@@ -66,7 +66,6 @@ namespace NuGet.CommandLine.XPlat
             HighestMinor = highestMinor;
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             CancellationToken = cancellationToken;
-
             ArgumentText = GetReportParameters();
         }
 

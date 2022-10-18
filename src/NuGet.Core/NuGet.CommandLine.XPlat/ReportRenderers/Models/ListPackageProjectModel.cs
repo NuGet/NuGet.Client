@@ -10,19 +10,24 @@ using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine.XPlat
 {
+    /// <summary>
+    /// Calculated project data model for list report
+    /// </summary>
     internal class ListPackageProjectModel
     {
         private const string ProjectNameMSbuildProperty = "MSBuildProjectName";
         internal List<ReportProblem> ProjectProblems { get; private set; }
         internal string ProjectPath { get; private set; }
-        internal List<ListPackageReportFrameworkPackage> TargetFrameworkPackages { get; private set; }
+        // Original packages
         internal IEnumerable<FrameworkPackages> Packages { get; private set; }
+        // Calculated project model data for each targetframeworks
+        internal List<ListPackageReportFrameworkPackage> TargetFrameworkPackages { get; private set; }
         internal string HttpSourceWarning { get; private set; }
         internal string ProjectName { get; private set; }
         internal Project Project { get; }
         internal ListPackageReportModel ReportModel { get; }
 
-        internal ListPackageProjectModel(string projectPath, ListPackageReportModel reportModel)
+        public ListPackageProjectModel(string projectPath, ListPackageReportModel reportModel)
         {
             ProjectPath = projectPath;
             ReportModel = reportModel;

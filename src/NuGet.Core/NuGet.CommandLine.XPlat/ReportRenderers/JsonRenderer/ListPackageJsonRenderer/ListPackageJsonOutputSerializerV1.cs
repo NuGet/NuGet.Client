@@ -12,6 +12,9 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
+    /// <summary>
+    /// Create json serialized output for string writer
+    /// </summary>
     internal static class ListPackageJsonOutputSerializerV1
     {
         private const string VersionProperty = "version";

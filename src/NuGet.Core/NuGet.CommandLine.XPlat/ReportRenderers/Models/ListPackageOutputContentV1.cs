@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace NuGet.CommandLine.XPlat
 {
+    /// <summary>
+    /// List package json output version 1
+    /// </summary>
     internal class ListPackageOutputContentV1
     {
         internal int Version { get; set; } = (int)ReportOutputVersion.V1;

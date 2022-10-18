@@ -15,7 +15,7 @@ namespace NuGet.CommandLine.XPlat.Utility
     internal static class ProjectPackagesPrintUtility
     {
         /// <summary>
-        /// A function that return the metadata for list package report
+        /// Returns the metadata for list package report
         /// </summary>
         /// <param name="packages">A list of framework packages. Check <see cref="FrameworkPackages"/></param>
         /// <param name="listPackageArgs">Command line options</param>

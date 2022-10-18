@@ -5,9 +5,12 @@ using System.IO;
 
 namespace NuGet.CommandLine.XPlat
 {
+    /// <summary>
+    /// V1 of json format output renderer
+    /// </summary>
     internal class ListPackageJsonRendererV1 : ListPackageJsonRenderer
     {
-        internal static ListPackageJsonRenderer GetInstance(TextWriter textWriter = null)
+        public static ListPackageJsonRenderer GetInstance(TextWriter textWriter = null)
         {
             return new ListPackageJsonRendererV1(textWriter);
         }

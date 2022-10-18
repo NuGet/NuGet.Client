@@ -10,6 +10,9 @@ using NuGet.Configuration;
 
 namespace NuGet.CommandLine.XPlat
 {
+    /// <summary>
+    /// Implementation of actual output to console writer
+    /// </summary>
     internal static class ListPackageConsoleWriter
     {
         private static ListPackageArgs ListPackageArgs;
@@ -146,10 +149,11 @@ namespace NuGet.CommandLine.XPlat
                         Console.WriteLine(problem.Message);
                         break;
                     case ProblemType.Warning:
-                        ListPackageArgs.Logger.LogWarning(problem.Message);
+                        Console.WriteLine(problem.Message);
                         break;
                     case ProblemType.Error:
                         Console.Error.WriteLine(problem.Message);
+                        Console.WriteLine();
                         break;
                     default:
                         break;

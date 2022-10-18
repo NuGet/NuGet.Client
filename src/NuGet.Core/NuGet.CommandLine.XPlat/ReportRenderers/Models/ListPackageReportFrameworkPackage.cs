@@ -6,6 +6,9 @@ using NuGet.Protocol;
 
 namespace NuGet.CommandLine.XPlat
 {
+    /// <summary>
+    /// Calculated project model data for a targetframework
+    /// </summary>
     internal class ListPackageReportFrameworkPackage
     {
         internal string Framework { get; set; }
