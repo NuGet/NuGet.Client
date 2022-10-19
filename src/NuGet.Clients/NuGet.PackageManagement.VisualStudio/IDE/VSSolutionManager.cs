@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -67,6 +66,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool _initialized;
         private bool _cacheInitialized;
+        private string _solutionDirectory;
 
         //add solutionOpenedRasied to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
         private bool _solutionOpenedRaised;
@@ -205,6 +205,15 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
             _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
 
+            if (ErrorHandler.Succeeded(_vsSolution.GetProperty((int)__VSPROPID.VSPROPID_SolutionDirectory, out object solutionDirectory)))
+            {
+                _solutionDirectory = (string)solutionDirectory;
+            }
+            else
+            {
+                _solutionDirectory = null;
+            }
+
             var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out _selectionEventsCookie);
             ErrorHandler.ThrowOnFailure(hr);
             hr = _vsSolution.AdviseSolutionEvents(this, out _solutionEventsCookie);
@@ -342,19 +351,32 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                if (_solutionEventsCookie != 0)
                 {
-                    return await IsSolutionOpenAsync();
-                });
+                    return _solutionDirectory != null;
+                }
+                else
+                {
+                    return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                    {
+                        return await IsSolutionOpenAsync();
+                    });
+                }
             }
         }
 
         public async Task<bool> IsSolutionOpenAsync()
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var vsSolution = await _asyncVSSolution.GetValueAsync();
-            return IsSolutionOpenFromVSSolution(vsSolution);
+            if (_solutionEventsCookie != 0)
+            {
+                return _solutionDirectory != null;
+            }
+            else
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var vsSolution = await _asyncVSSolution.GetValueAsync();
+                return IsSolutionOpenFromVSSolution(vsSolution);
+            }
         }
 
         public async Task<bool> IsSolutionAvailableAsync()
@@ -434,17 +456,37 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
-        public string SolutionDirectory => NuGetUIThreadHelper.JoinableTaskFactory.Run(GetSolutionDirectoryAsync);
+        public string SolutionDirectory
+        {
+            get
+            {
+                if (_solutionEventsCookie != 0)
+                {
+                    return _solutionDirectory;
+                }
+                else
+                {
+                    return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetSolutionDirectoryAsync);
+                }
+            }
+        }
 
         public async Task<string> GetSolutionDirectoryAsync()
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            var vsSolution = await _asyncVSSolution.GetValueAsync();
-            if (IsSolutionOpenFromVSSolution(vsSolution))
+            if (_solutionEventsCookie != 0)
             {
-                return (string)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_SolutionDirectory);
+                return _solutionDirectory;
             }
-            return null;
+            else
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var vsSolution = await _asyncVSSolution.GetValueAsync();
+                if (IsSolutionOpenFromVSSolution(vsSolution))
+                {
+                    return (string)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_SolutionDirectory);
+                }
+                return null;
+            }
         }
 
         private static bool IsSolutionOpenFromVSSolution(IVsSolution vsSolution)
@@ -459,7 +501,6 @@ namespace NuGet.PackageManagement.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var vsSolution = await _asyncVSSolution.GetValueAsync();
             return (string)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_SolutionFileName);
-
         }
 
         /// <summary>
@@ -685,13 +726,13 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                IVsSolution ivsSolution = await _asyncVSSolution.GetValueAsync();
-                if (!_cacheInitialized && IsSolutionOpenFromVSSolution(ivsSolution))
+                if (!_cacheInitialized && IsSolutionOpen)
                 {
                     try
                     {
                         if (await _featureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.NuGetSolutionCacheInitilization))
                         {
+                            IVsSolution ivsSolution = await _asyncVSSolution.GetValueAsync();
                             foreach (var hierarchy in VsHierarchyUtility.GetAllLoadedProjects(ivsSolution))
                             {
                                 try
@@ -1080,6 +1121,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            _solutionDirectory = (string)GetVSSolutionProperty((int)__VSPROPID.VSPROPID_SolutionDirectory);
+
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 await OnSolutionExistsAndFullyLoadedAsync()).PostOnFailure(nameof(OnAfterOpenSolution));
             return VSConstants.S_OK;
@@ -1092,6 +1137,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public int OnBeforeCloseSolution(object pUnkReserved)
         {
+            _solutionDirectory = null;
             return VSConstants.S_OK;
         }
 
