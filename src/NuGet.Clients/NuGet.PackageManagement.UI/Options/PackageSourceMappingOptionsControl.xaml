@@ -35,7 +35,7 @@
     <ListBox Name="_mappingList"
              ItemsSource="{Binding SourceMappingsCollection}"
              Grid.Row="1"
-             Margin="6,6,6,6"
+             Margin="0,12,0,12"
              ItemTemplate="{StaticResource MappingItemTemplate}"
              IsSynchronizedWithCurrentItem="True"
              ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -47,7 +47,7 @@
         <ColumnDefinition Width="*"/>
         <ColumnDefinition Width="Auto"/>
       </Grid.ColumnDefinitions>
-      <Button Grid.Column="0" Style="{StaticResource PackageSourceMappingButtonStyle}" Command="{Binding ShowAddDialogCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
+      <Button Grid.Column="0" Style="{StaticResource PackageSourceMappingFirstRowButtonStyle}" Command="{Binding ShowAddDialogCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
       <Button Grid.Column="1" Style="{StaticResource PackageSourceMappingButtonStyle}" Command="{Binding RemoveMappingCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Remove}"/>
       <!-- The `Grid.Column="2"` is missing in order to push the next column to the far right of the grid. -->
       <Button Grid.Column="3" Style="{StaticResource PackageSourceMappingButtonStyle}" Command="{Binding RemoveAllMappingsCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_RemoveAll}"/>
