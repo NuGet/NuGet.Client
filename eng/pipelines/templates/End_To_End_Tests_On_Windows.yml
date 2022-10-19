@@ -30,9 +30,13 @@ stages:
 - template: stages\visual-studio\agent.yml@DartLabTemplates
   parameters:
     name: ${{parameters.stageName}}
-    displayName: ${{parameters.stageDisplayName}}
+    displayName: 'E2E Tests ${{parameters.stageDisplayName}}'
     condition: ${{parameters.condition}}
     dependsOn: ${{parameters.dependsOn}}
+    testMachineConfigurationJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Machine Configuration'
+    testMachineDeploymentJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Machine Deployment'
+    testExecutionJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Test Execution'
+    testMachineCleanUpJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Machine Clean Up'
     testMachineDeploymentJobTimeoutInMinutes: 240
     testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
     variables:
