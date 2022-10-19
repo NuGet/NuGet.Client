@@ -535,13 +535,16 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void Dispose_CalledMultipleTimes_DisposesInstance()
+        public async Task Dispose_CalledMultipleTimes_DisposesInstanceAsync()
         {
             // Arrange
             var packageSource = new PackageSource("http://package.source.test");
             var clientHandler = new HttpClientHandler();
             var credentialService = Mock.Of<ICredentialService>();
             var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+
+            // Simulate some work
+            await SendAsync(handler);
 
             // Act and Assert: Nothing should throw
             handler.Dispose();
@@ -567,7 +570,6 @@ namespace NuGet.Protocol.Tests
                         It.IsAny<CredentialRequestType>(),
                         It.IsAny<string>(),
                         It.IsAny<CancellationToken>()))
-                .Callback(() => Task.Delay(5000))
                 .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
 
             var handler1 = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
@@ -576,24 +578,42 @@ namespace NuGet.Protocol.Tests
 
             var workTasks = new Task[]
             {
-                new Task(async () => { try { await SendAsync(handler1); } catch { Assert.True(false); } }),
-                new Task(async () => { try { await SendAsync(handler1); } catch { Assert.True(false); } }),
-                new Task(async () => { try { await SendAsync(handler1); } catch { Assert.True(false); } }),
-                new Task(async () => { await Task.Delay(3000); handler1.Dispose(); }),
-                new Task(async () => { await Task.Delay(3000); handler2.Dispose(); }),
-                new Task(async () => { await Task.Delay(3000); handler3.Dispose(); }),
+                new Task(async () => { try { await SendAsync(handler1); } catch { throw; } }),
+                new Task(async () => { try { await SendAsync(handler2); } catch { throw; } }),
+                new Task(async () => { try { await SendAsync(handler3); } catch { throw; } }),
             };
 
+            var disposeTasks = new Task[]
+            {
+                new Task(() => { try { handler1.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler2.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler3.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler1.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler2.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler3.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler1.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler2.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler3.Dispose(); } catch { throw; } }),
+            };
+
+            StartTasks(workTasks);
+            await Task.WhenAll(workTasks);
+
+            // Act and Assert: Nothing should throw
+            StartTasks(disposeTasks);
+            await Task.WhenAll(disposeTasks);
+        }
+
+        private static void StartTasks(IEnumerable<Task> tasks)
+        {
             // Act and Assert, nothing should throw
-            Parallel.ForEach(workTasks, t =>
+            Parallel.ForEach(tasks, t =>
             {
                 if (t.Status == TaskStatus.Created)
                 {
                     t.Start();
                 }
             });
-
-            await Task.WhenAll(workTasks);
         }
 
         [Fact]
