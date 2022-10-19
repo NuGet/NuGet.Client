@@ -4,10 +4,18 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:options="clr-namespace:NuGet.Options"
              Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
              Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <options:SharedResources />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto"></RowDefinition>
@@ -31,19 +39,18 @@
              ItemTemplate="{StaticResource MappingItemTemplate}"
              IsSynchronizedWithCurrentItem="True"
              ScrollViewer.VerticalScrollBarVisibility="Auto"
-             AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}">
-
-    </ListBox>
-    <Grid Grid.Row="3">
+             AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_PackageSourceMappings}" />
+    <Grid Grid.Row="2">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="101"/>
-        <ColumnDefinition Width="89"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
         <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="101"/>
+        <ColumnDefinition Width="Auto"/>
       </Grid.ColumnDefinitions>
-      <Button Grid.Column="0" Width="86" Height="24" Command="{Binding ShowAddDialogCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
-      <Button Grid.Column="1" Width="86" Height="24" Margin = "3,0,0,0" Command="{Binding RemoveMappingCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Remove}"/>
-      <Button Grid.Column="3" Width="86" Height="24"  Command="{Binding RemoveAllMappingsCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_RemoveAll}"/>
+      <Button Grid.Column="0" Style="{StaticResource PackageSourceMappingButtonStyle}" Command="{Binding ShowAddDialogCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
+      <Button Grid.Column="1" Style="{StaticResource PackageSourceMappingButtonStyle}" Command="{Binding RemoveMappingCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Remove}"/>
+      <!-- The `Grid.Column="2"` is missing in order to push the next column to the far right of the grid. -->
+      <Button Grid.Column="3" Style="{StaticResource PackageSourceMappingButtonStyle}" Command="{Binding RemoveAllMappingsCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_RemoveAll}"/>
     </Grid>
   </Grid>
 </UserControl>

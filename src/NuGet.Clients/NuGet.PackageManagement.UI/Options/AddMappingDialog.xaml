@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:vsui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:options="clr-namespace:NuGet.Options"
              mc:Ignorable="d" 
              x:Uid="AddMappingDialogWindow"
              Height="304"
@@ -17,6 +18,13 @@
              BorderBrush="{DynamicResource {x:Static vsui:EnvironmentColors.PanelBorderBrushKey}}"
              BorderThickness="1"
              Foreground="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}">
+  <vsui:DialogWindow.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <options:SharedResources />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </vsui:DialogWindow.Resources>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="30"/>
@@ -166,8 +174,8 @@
         <ColumnDefinition Width="190"/>
       </Grid.ColumnDefinitions>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"  Grid.Column="1">
-        <Button Height="24" Width="86" Command="{Binding AddMappingCommand}" Margin="0,0,3,12" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
-        <Button Height="24" Width="86"  Command ="{Binding HideDialogCommand}" Margin="3,0,12,12" Content="{x:Static nuget:Resources.VSOptions_Button_Cancel}"/>
+        <Button Style="{StaticResource PackageSourceMappingButtonStyle}" Command="{Binding AddMappingCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
+        <Button Style="{StaticResource PackageSourceMappingButtonStyle}" Command ="{Binding HideDialogCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Cancel}"/>
       </StackPanel>
     </Grid>
   </Grid>
