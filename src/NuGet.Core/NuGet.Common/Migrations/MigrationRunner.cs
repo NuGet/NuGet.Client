@@ -28,12 +28,12 @@ namespace NuGet.Common.Migrations
 
             if (!File.Exists(expectedMigrationFilename))
             {
+                // Multiple processes or threads might be trying to call this concurrently (especially via NuGetSdkResolver)
+                // so use a global mutex and then check if someone else already did the work.
                 using (var mutex = new Mutex(false, "NuGet-Migrations"))
                 {
                     try
                     {
-                        // Multiple processes or threads might be trying to call this concurrently (especially via NuGetSdkResolver)
-                        // so use a global mutex and then check if someone else already did the work.
                         if (mutex.WaitOne(TimeSpan.FromMinutes(1), false))
                         {
                             if (!File.Exists(expectedMigrationFilename))
