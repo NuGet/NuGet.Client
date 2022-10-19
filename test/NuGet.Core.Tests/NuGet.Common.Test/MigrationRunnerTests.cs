@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using NuGet.Common.Migrations;
+using NuGet.PackageManagement;
 using Xunit;
 
 namespace NuGet.Common.Test
@@ -13,7 +15,7 @@ namespace NuGet.Common.Test
     public class MigrationRunnerTests
     {
         [Fact]
-        public async Task WhenMigrationsAreExecutedInParallelThenNoThreadSynchronizationIssuesAreIdentified_SuccessAsync()
+        public async Task WhenExecutedInParallelOnlyOneFileIsCreatedForEveryMigration_SuccessAsync()
         {
             var tasks = new List<Task>();
 
@@ -23,7 +25,7 @@ namespace NuGet.Common.Test
                 Directory.Delete(path: directory, recursive: true);
 
             // Act
-            for(int count = 0; count < 10; count++)           
+            for(int count = 0; count < 5; count++)           
                 tasks.Add(Task.Run(() => MigrationRunner.Run()));  
 
             Task t = Task.WhenAll(tasks);
