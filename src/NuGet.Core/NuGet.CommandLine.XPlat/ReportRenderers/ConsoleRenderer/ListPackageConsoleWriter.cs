@@ -151,6 +151,9 @@ namespace NuGet.CommandLine.XPlat
                     case ProblemType.Warning:
                         Console.WriteLine(problem.Message);
                         break;
+                    case ProblemType.LoggerWarning:
+                        ListPackageArgs.Logger.LogWarning(problem.Message);
+                        break;
                     case ProblemType.Error:
                         Console.Error.WriteLine(problem.Message);
                         Console.WriteLine();

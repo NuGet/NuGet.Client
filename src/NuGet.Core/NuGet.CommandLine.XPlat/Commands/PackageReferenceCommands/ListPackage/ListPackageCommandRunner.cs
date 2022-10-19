@@ -194,7 +194,7 @@ namespace NuGet.CommandLine.XPlat
                         Strings.Warning_HttpServerUsage,
                         "list package",
                         httpPackageSources[0]),
-                        problemType: ProblemType.Warning);
+                        problemType: ProblemType.LoggerWarning);
                 }
                 else
                 {
@@ -203,7 +203,7 @@ namespace NuGet.CommandLine.XPlat
                         Strings.Warning_HttpServerUsage_MultipleSources,
                         "list package",
                         Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))),
-                        problemType: ProblemType.Warning);
+                        problemType: ProblemType.LoggerWarning);
                 }
             }
 
