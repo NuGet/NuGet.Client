@@ -541,7 +541,22 @@ namespace NuGet.Protocol.Tests
             var packageSource = new PackageSource("http://package.source.test");
             var clientHandler = new HttpClientHandler();
             var credentialService = Mock.Of<ICredentialService>();
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+            Mock.Get(credentialService)
+                .Setup(x => x.HandlesDefaultCredentials)
+                .Returns(true);
+            Mock.Get(credentialService)
+                .Setup(
+                    x => x.GetCredentialsAsync(
+                        It.IsAny<Uri>(),
+                        It.IsAny<IWebProxy>(),
+                        It.IsAny<CredentialRequestType>(),
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK) // avoid a network call
+            };
 
             // Simulate some work
             await SendAsync(handler);
