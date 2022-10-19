@@ -168,15 +168,9 @@
         </StackPanel>
       </Grid>
     </StackPanel>
-    <Grid Grid.Row="2">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="190"/>
-      </Grid.ColumnDefinitions>
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"  Grid.Column="1">
-        <Button Style="{StaticResource PackageSourceMappingButtonStyle}" Command="{Binding AddMappingCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
-        <Button Style="{StaticResource PackageSourceMappingButtonStyle}" Command ="{Binding HideDialogCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Cancel}"/>
-      </StackPanel>
-    </Grid>
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button Style="{StaticResource PackageSourceMappingButtonStyle}" Command="{Binding AddMappingCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
+      <Button Style="{StaticResource PackageSourceMappingButtonStyle}" Command ="{Binding HideDialogCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Cancel}"/>
+    </StackPanel>
   </Grid>
 </vsui:DialogWindow>
