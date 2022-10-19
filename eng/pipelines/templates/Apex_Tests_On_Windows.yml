@@ -26,8 +26,8 @@ parameters:
 stages:
   - template: stages\visual-studio\single-runsettings.yml@DartLabTemplates
     parameters:
-      stageName: VS_Apex_Tests
-      stageDisplayName: Apex Tests On Windows
+      name: VS_Apex_Tests
+      displayName: Apex Tests On Windows
       condition: ${{parameters.condition}}
       dependsOn: ${{parameters.dependsOn}}
       variables:
