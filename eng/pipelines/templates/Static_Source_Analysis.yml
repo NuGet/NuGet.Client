@@ -55,14 +55,6 @@ steps:
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
 
-- task: MSBuild@1
-  displayName: "Ensure package versions are declared in packages.targets"
-  inputs:
-    solution: "build\\build.proj"
-    msbuildArguments: "/restore:false /target:EnsurePackageReferenceVersionsInSolution /binarylogger:$(Build.StagingDirectory)\\binlog\\02.EnsurePackageReferenceVersionsInSolution.binlog"
-  continueOnError: ${{ parameters.isOfficialBuild }}
-  condition: succeededOrFailed()
-
 - task: PublishPipelineArtifact@1
   displayName: "Publish binlogs"
   inputs:
