@@ -74,6 +74,8 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         [InlineData("{  } ")] // Empty object
         public void GetMSBuildSdkVersions_IgnoresInvalidVersions_WhenMSBuildSdksSectionContainsInvalidValues(string objectValue)
         {
+            // sample change
+            
             var expectedVersions = new Dictionary<string, string>
             {
                 {"Sdk1", "1.0.0"},
