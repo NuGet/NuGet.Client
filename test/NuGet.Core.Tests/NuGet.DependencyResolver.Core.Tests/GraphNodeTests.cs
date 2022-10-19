@@ -17,8 +17,8 @@ namespace NuGet.DependencyResolver.Core.Tests
         [InlineData(true, true)]
         public void GraphNode_WithDifferentHasEmptyParentNodes_CreateParentNodesCorrectly(bool? hasParentNodes, bool parentNodesHasNode)
         {
-            LibraryRange libraryRangeA = GetLibraryRange("A", "1.0.0", "1.0.0");
-            LibraryRange libraryRangeB = GetLibraryRange("B", "1.0.0", "1.0.0");
+            LibraryRange libraryRangeA = GetLibraryRange("A", "1.0.0");
+            LibraryRange libraryRangeB = GetLibraryRange("B", "1.0.0");
 
             GraphNode<RemoteResolveResult> nodeA, nodeB;
 
@@ -33,11 +33,11 @@ namespace NuGet.DependencyResolver.Core.Tests
                 nodeB = new GraphNode<RemoteResolveResult>(libraryRangeB, hasInnerNodes:true, hasParentNodes.Value);
             }
 
-            bool sameParentNodes = (nodeA.ParentNodes == nodeB.ParentNodes);
             if (!parentNodesHasNode)
             {
                 //The ParentNodes should be pointing to the static EmptyList.
-                sameParentNodes.Should().BeTrue(because: "nodeA.ParentNodes and nodeB.ParentNodes should both point to the static EmptyList");
+                Assert.True(nodeA.ParentNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeA.ParentNodes should point to the static EmptyList");
+                Assert.True(nodeB.ParentNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeB.ParentNodes should point to the static EmptyList");
 
                 //EmptyList is immutable.
                 var exception = Assert.ThrowsAny<NotSupportedException>(
@@ -46,7 +46,8 @@ namespace NuGet.DependencyResolver.Core.Tests
             }
             else
             {
-                sameParentNodes.Should().BeFalse(because: "nodeA.ParentNodes and nodeB.ParentNodes should not point to the static EmptyList");
+                Assert.False(nodeA.ParentNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeA.ParentNodes should NOT point to the static EmptyList");
+                Assert.False(nodeB.ParentNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeB.ParentNodes should NOT point to the static EmptyList");
             }
         }
 
@@ -56,8 +57,8 @@ namespace NuGet.DependencyResolver.Core.Tests
         [InlineData(true, true)]
         public void GraphNode_WithDifferentHasEmptyInnerNodes_CreateInnerNodesCorrectly(bool? hasInnerNodes, bool innerNodesHasNode)
         {
-            LibraryRange libraryRangeA = GetLibraryRange("A", "1.0.0", "1.0.0");
-            LibraryRange libraryRangeB = GetLibraryRange("B", "1.0.0", "1.0.0");
+            LibraryRange libraryRangeA = GetLibraryRange("A", "1.0.0");
+            LibraryRange libraryRangeB = GetLibraryRange("B", "1.0.0");
 
             GraphNode<RemoteResolveResult> nodeA, nodeB;
 
@@ -72,11 +73,11 @@ namespace NuGet.DependencyResolver.Core.Tests
                 nodeB = new GraphNode<RemoteResolveResult>(libraryRangeB, hasInnerNodes.Value, hasParentNodes : true);
             }
 
-            bool sameInnerNodes = (nodeA.InnerNodes == nodeB.InnerNodes);
             if (!innerNodesHasNode)
             {
                 //The InnerNodes should be pointing to the static EmptyList.
-                sameInnerNodes.Should().BeTrue(because: "nodeA.InnerNodes and nodeB.InnerNodes should be the same as they both point to the static EmptyList");
+                Assert.True(nodeA.InnerNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeA.InnerNodes should point to the static EmptyList");
+                Assert.True(nodeB.InnerNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeB.InnerNodes should point to the static EmptyList");
 
                 //EmptyList is immutable.
                 var exception = Assert.ThrowsAny<NotSupportedException>(
@@ -85,11 +86,12 @@ namespace NuGet.DependencyResolver.Core.Tests
             }
             else
             {
-                sameInnerNodes.Should().BeFalse(because: "nodeA.InnerNodes and nodeB.InnerNodes should not be the same");
+                Assert.False(nodeA.InnerNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeA.InnerNodes should NOT point to the static EmptyList");
+                Assert.False(nodeB.InnerNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeB.InnerNodes should NOT point to the static EmptyList");
             }
         }
 
-        public LibraryRange GetLibraryRange(string id, string range, string version)
+        public LibraryRange GetLibraryRange(string id, string range)
         {
             return new LibraryRange(id.ToUpperInvariant(), VersionRange.Parse(range), LibraryDependencyTarget.Package);
         }
