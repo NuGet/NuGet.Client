@@ -587,9 +587,18 @@ namespace NuGet.Protocol.Tests
                         It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
 
-            var handler1 = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
-            var handler2 = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
-            var handler3 = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+            var handler1 = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK) // avoid a network call
+            };
+            var handler2 = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK) // avoid a network call
+            };
+            var handler3 = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK) // avoid a network call
+            };
 
             var workTasks = new Task[]
             {
@@ -614,9 +623,19 @@ namespace NuGet.Protocol.Tests
             StartTasks(workTasks);
             await Task.WhenAll(workTasks);
 
-            // Act and Assert: Nothing should throw
+            // Act
             StartTasks(disposeTasks);
             await Task.WhenAll(disposeTasks);
+
+            // Assert: Nothing should throw
+            Assert.All(workTasks, tsk => AssertTask(tsk));
+            Assert.All(disposeTasks, tsk => AssertTask(tsk));
+        }
+
+        private static void AssertTask(Task task)
+        {
+            Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+            Assert.Null(task.Exception);
         }
 
         private static void StartTasks(IEnumerable<Task> tasks)
