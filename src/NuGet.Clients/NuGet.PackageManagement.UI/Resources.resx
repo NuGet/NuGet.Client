@@ -963,7 +963,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Source</value>
   </data>
   <data name="VSOptions_Watermark_AddPackageNamespace" xml:space="preserve">
-    <value>Enter a valid Package pattern (Example: Contoso.Contracts or System.*)</value>
+    <value>Example: Contoso.Contracts or System.*</value>
     <comment>"Contoso.Contracts" and "System.*" are examples of a package ID pattern and a package prefix pattern, respectively, so these two specific examples should not be translated.</comment>
   </data>
   <data name="PackageSourceMappingOptions_OnActivated" xml:space="preserve">
@@ -971,5 +971,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="VSOptions_Accessibility_SourcesList" xml:space="preserve">
     <value>Package sources list</value>
+  </data>
+  <data name="VSOptions_Label_PackagePattern" xml:space="preserve">
+    <value>Package pattern:</value>
   </data>
 </root>

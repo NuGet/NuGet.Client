@@ -2340,6 +2340,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package pattern:.
+        /// </summary>
+        public static string VSOptions_Label_PackagePattern {
+            get {
+                return ResourceManager.GetString("VSOptions_Label_PackagePattern", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package Source Mappings:.
         /// </summary>
         public static string VSOptions_Label_PackageSourceMappings {
@@ -2358,7 +2367,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enter a valid Package pattern (Example: Contoso.Contracts or System.*).
+        ///   Looks up a localized string similar to Example: Contoso.Contracts or System.*.
         /// </summary>
         public static string VSOptions_Watermark_AddPackageNamespace {
             get {

@@ -9,7 +9,7 @@
              xmlns:options="clr-namespace:NuGet.Options"
              mc:Ignorable="d" 
              x:Uid="AddMappingDialogWindow"
-             Height="324"
+             Height="348"
              Width="480"
              ShowInTaskbar="False"
              WindowStyle="None"
@@ -110,8 +110,10 @@
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
       </Grid.RowDefinitions>
-      <vsui:WatermarkedTextBox Grid.Row="0"
+      <TextBlock Grid.Row="0" Text="{x:Static nuget:Resources.VSOptions_Label_PackagePattern}" Margin="12,0,12,9"/>
+      <vsui:WatermarkedTextBox Grid.Row="1"
                                  BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}"
                                  BorderThickness="1"
                                  AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Watermark_AddPackageNamespace}"
@@ -120,7 +122,7 @@
                                  Margin="12,0,12,0"
                                  Watermark="{x:Static nuget:Resources.VSOptions_Watermark_AddPackageNamespace}"
                                  TextChanged="PackageID_TextChanged"/>
-      <nuget:ProjectsListView Grid.Row="1"
+      <nuget:ProjectsListView Grid.Row="2"
                     x:Name="_sourcesListBox"
                     AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Accessibility_SourcesList}"
                     ItemsSource="{Binding SourcesCollection}"
@@ -165,7 +167,7 @@
         </ListView.View>
       </nuget:ProjectsListView>
     </Grid>
-    <Grid Grid.Row="2" Margin="12,0,12,12">
+    <Grid Grid.Row="3" Margin="12,0,12,12">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="Auto" />
