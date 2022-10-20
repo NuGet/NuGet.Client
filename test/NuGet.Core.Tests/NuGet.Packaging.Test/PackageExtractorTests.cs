@@ -5114,9 +5114,9 @@ namespace NuGet.Packaging.Test
         {
             var directoryPath = Path.GetDirectoryName(expectedFilePath);
 
-            return Directory.GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly)
-                .Where(filePath => string.Equals(filePath, expectedFilePath, StringComparison.Ordinal))
-                .Any();
+            return Directory
+                .GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly)
+                .Any(filePath => string.Equals(filePath, expectedFilePath, StringComparison.Ordinal));
         }
 
         private sealed class ExtractPackageAsyncTest : IDisposable

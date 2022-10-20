@@ -796,7 +796,7 @@ namespace Test.Utility.Signing
             bool isOfflineRevocation = issues.Any(issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message.Split(new[] { ' ', ':' }).Where(WORDEXTFLAGS => WORDEXTFLAGS == offlineRevocation).Any());
+                issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == offlineRevocation));
 
             Assert.True(isOfflineRevocation);
         }
@@ -841,7 +841,7 @@ namespace Test.Utility.Signing
             bool isRevocationStatusUnknown = issues.Any(issue =>
                 issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Split(new[] { ' ', ':' }).Where(WORDEXTFLAGS => WORDEXTFLAGS == revocationStatusUnknown).Any());
+                issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == revocationStatusUnknown));
 
             Assert.True(isRevocationStatusUnknown);
         }
@@ -854,7 +854,7 @@ namespace Test.Utility.Signing
                 issue.Code == code &&
                 issue.Level == logLevel &&
                 (issue.Message.Contains("certificate is not trusted by the trust provider") ||
-                    issue.Message.Split(new[] { ' ', ':' }).Where(WORDEXTFLAGS => WORDEXTFLAGS == untrustedRoot).Any()));
+                 issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == untrustedRoot)));
 
             Assert.True(isUntrustedRoot);
         }
@@ -871,7 +871,7 @@ namespace Test.Utility.Signing
             bool isNotTimeValid = issues.Any(issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message.Split(new[] { ' ', ':' }).Where(WORDEXTFLAGS => WORDEXTFLAGS == notTimeValid).Any());
+                issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == notTimeValid));
 
             Assert.True(isNotTimeValid);
         }

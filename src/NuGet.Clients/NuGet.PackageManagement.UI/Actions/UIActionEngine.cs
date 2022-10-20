@@ -230,8 +230,7 @@ namespace NuGet.PackageManagement.UI
             CancellationToken token)
         {
             bool includePrerelease = packagesToUpdate
-                .Where(package => package.Version.IsPrerelease)
-                .Any();
+                .Any(package => package.Version.IsPrerelease);
 
             string[] projectIds = uiService.Projects.Select(project => project.ProjectId).ToArray();
 

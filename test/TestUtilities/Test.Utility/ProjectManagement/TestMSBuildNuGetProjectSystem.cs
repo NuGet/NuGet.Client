@@ -135,7 +135,7 @@ namespace Test.Utility
 
         public bool FileExistsInProject(string path)
         {
-            return Files.Where(c => path.Equals(c, StringComparison.OrdinalIgnoreCase)).Any();
+            return Files.Any(c => path.Equals(c, StringComparison.OrdinalIgnoreCase));
         }
 
         public void SetPropertyValue(string propertyName, dynamic value)
