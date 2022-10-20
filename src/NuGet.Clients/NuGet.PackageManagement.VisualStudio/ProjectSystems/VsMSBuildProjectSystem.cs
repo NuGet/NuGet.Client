@@ -405,7 +405,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                return VsProjectAdapter.BuildProperties.GetPropertyValue(propertyName);
+                return await VsProjectAdapter.BuildProperties.GetPropertyValueAsync(propertyName);
 
             });
         }

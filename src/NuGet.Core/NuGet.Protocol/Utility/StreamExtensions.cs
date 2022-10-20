@@ -76,7 +76,7 @@ namespace NuGet.Protocol
             {
                 if (!leaveStreamOpen)
                 {
-                    stream.Dispose();
+                    await stream.DisposeAsync();
                 }
             }
 

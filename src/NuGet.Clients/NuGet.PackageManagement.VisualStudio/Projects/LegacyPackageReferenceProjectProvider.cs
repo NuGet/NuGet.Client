@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Check for RestoreProjectStyle property
-            var restoreProjectStyle = vsProjectAdapter.BuildProperties.GetPropertyValue(
+            var restoreProjectStyle = await vsProjectAdapter.BuildProperties.GetPropertyValueAsync(
                 ProjectBuildProperties.RestoreProjectStyle);
 
             // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or

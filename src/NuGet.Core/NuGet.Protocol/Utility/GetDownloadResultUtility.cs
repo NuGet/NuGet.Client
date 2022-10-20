@@ -212,7 +212,7 @@ namespace NuGet.Protocol
             }
             catch
             {
-                fileStream?.Dispose();
+                await fileStream?.DisposeAsync();
 
                 throw;
             }

@@ -230,13 +230,13 @@ namespace NuGet.PackageManagement.VisualStudio
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var projectPath = FullName;
-            var platformIdentifier = BuildProperties.GetPropertyValue(
+            var platformIdentifier = await BuildProperties.GetPropertyValueAsync(
                 ProjectBuildProperties.TargetPlatformIdentifier);
-            var platformVersion = BuildProperties.GetPropertyValue(
+            var platformVersion = await BuildProperties.GetPropertyValueAsync(
                 ProjectBuildProperties.TargetPlatformVersion);
-            var platformMinVersion = BuildProperties.GetPropertyValue(
+            var platformMinVersion = await BuildProperties.GetPropertyValueAsync(
                 ProjectBuildProperties.TargetPlatformMinVersion);
-            var targetFrameworkMoniker = BuildProperties.GetPropertyValue(
+            var targetFrameworkMoniker = await BuildProperties.GetPropertyValueAsync(
                 ProjectBuildProperties.TargetFrameworkMoniker);
 
             // Projects supporting TargetFramework and TargetFrameworks are detected before

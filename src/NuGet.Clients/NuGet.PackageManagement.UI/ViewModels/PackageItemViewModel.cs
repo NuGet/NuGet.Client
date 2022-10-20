@@ -616,7 +616,7 @@ namespace NuGet.PackageManagement.UI
                     using (var memoryStream = new MemoryStream())
                     {
                         // Cannot call CopyToAsync as we'll get an InvalidOperationException due to CheckAccess() in next line.
-                        stream.CopyTo(memoryStream);
+                        await stream.CopyToAsync(memoryStream);
                         memoryStream.Seek(0, SeekOrigin.Begin);
                         iconBitmapImage.StreamSource = memoryStream;
 

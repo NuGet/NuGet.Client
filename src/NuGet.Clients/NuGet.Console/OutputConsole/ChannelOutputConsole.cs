@@ -127,7 +127,7 @@ namespace NuGetConsole
                 try
                 {
                     _channelPipeWriter?.CancelPendingFlush();
-                    _channelPipeWriter?.Complete();
+                    await _channelPipeWriter?.CompleteAsync();
                     _channelPipeWriter = null;
                 }
                 catch

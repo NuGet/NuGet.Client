@@ -255,7 +255,7 @@ namespace NuGet.PackageManagement.UI
         public async Task<bool> UIRestorePackagesAsync(CancellationToken token)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            ShowProgressUI();
+            await ShowProgressUIAsync();
             OperationId = Guid.NewGuid();
 
             try

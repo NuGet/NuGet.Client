@@ -121,7 +121,7 @@ namespace NuGet.CommandLine
 
                         using (Stream fromStream = await downloadResourceResult.PackageReader.GetStreamAsync(nugetExeInPackageFilePath, cancellationToken), toStream = File.Create(exePath))
                         {
-                            fromStream.CopyTo(toStream);
+                            await fromStream.CopyToAsync(toStream);
                         }
                     }
                     finally

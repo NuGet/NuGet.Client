@@ -390,7 +390,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectName = ProjectName ?? ProjectUniqueName;
 
-            string specifiedPackageId = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.PackageId);
+            string specifiedPackageId = await _vsProjectAdapter.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.PackageId);
 
             if (!string.IsNullOrWhiteSpace(specifiedPackageId))
             {
@@ -398,7 +398,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                string specifiedAssemblyName = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.AssemblyName);
+                string specifiedAssemblyName = await _vsProjectAdapter.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.AssemblyName);
 
                 if (!string.IsNullOrWhiteSpace(specifiedAssemblyName))
                 {

@@ -296,7 +296,7 @@ namespace NuGet.SolutionRestoreManager
             if (_operationSource == RestoreOperationSource.Explicit)
             {
                 // Write to the error window and console
-                Log(LogMessage.Create(LogLevel.Error, message));
+                await LogAsync(LogMessage.Create(LogLevel.Error, message));
             }
             else
             {

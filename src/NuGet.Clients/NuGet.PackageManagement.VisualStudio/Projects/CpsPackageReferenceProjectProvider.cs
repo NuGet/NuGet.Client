@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var buildProperties = vsProject.BuildProperties;
 
             // read MSBuild property RestoreProjectStyle
-            var restoreProjectStyle = buildProperties.GetPropertyValue(ProjectBuildProperties.RestoreProjectStyle);
+            var restoreProjectStyle = await buildProperties.GetPropertyValueAsync(ProjectBuildProperties.RestoreProjectStyle);
 
             // check for RestoreProjectStyle property is set and if not set to PackageReference then return false
             if (!(string.IsNullOrEmpty(restoreProjectStyle) ||

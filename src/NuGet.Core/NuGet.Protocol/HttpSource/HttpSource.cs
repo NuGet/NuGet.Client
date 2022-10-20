@@ -102,7 +102,7 @@ namespace NuGet.Protocol
                         }
                         catch (Exception e)
                         {
-                            cacheResult.Stream.Dispose();
+                            await cacheResult.Stream.DisposeAsync();
                             cacheResult.Stream = null;
 
                             string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_InvalidCacheEntry, request.Uri)

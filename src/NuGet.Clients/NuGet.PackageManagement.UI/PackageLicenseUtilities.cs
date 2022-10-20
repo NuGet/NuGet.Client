@@ -171,7 +171,7 @@ namespace NuGet.PackageManagement.UI
                         {
                             using (var reader = new StreamReader(stream))
                             {
-                                content = reader.ReadToEnd();
+                                content = await reader.ReadToEndAsync();
                             }
                         }
                     }

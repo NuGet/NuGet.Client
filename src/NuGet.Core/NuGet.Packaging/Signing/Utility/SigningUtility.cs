@@ -272,7 +272,7 @@ namespace NuGet.Packaging.Signing
             {
                 if (unsignedPackageStream != null && !ReferenceEquals(unsignedPackageStream, options.InputPackageStream))
                 {
-                    unsignedPackageStream.Dispose();
+                    await unsignedPackageStream.DisposeAsync();
                 }
 
                 FileUtility.Delete(tempPackageFile.FullName);

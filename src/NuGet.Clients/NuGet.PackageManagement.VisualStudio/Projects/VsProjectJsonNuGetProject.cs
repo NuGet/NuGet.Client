@@ -71,17 +71,17 @@ namespace NuGet.PackageManagement.VisualStudio
                 var jsonTargetFramework = targetFramework as NuGetFramework;
                 if (IsUAPFramework(jsonTargetFramework))
                 {
-                    var platformMinVersionString = _vsProjectAdapter
+                    var platformMinVersionString = await _vsProjectAdapter
                         .BuildProperties
-                        .GetPropertyValue(ProjectBuildProperties.TargetPlatformMinVersion);
+                        .GetPropertyValueAsync(ProjectBuildProperties.TargetPlatformMinVersion);
 
                     var platformMinVersion = !string.IsNullOrEmpty(platformMinVersionString)
                         ? new Version(platformMinVersionString)
                         : null;
 
-                    var targetFrameworkMonikerString = _vsProjectAdapter
+                    var targetFrameworkMonikerString = await _vsProjectAdapter
                         .BuildProperties
-                        .GetPropertyValue(ProjectBuildProperties.TargetFrameworkMoniker);
+                        .GetPropertyValueAsync(ProjectBuildProperties.TargetFrameworkMoniker);
 
                     var targetFrameworkMoniker = !string.IsNullOrWhiteSpace(targetFrameworkMonikerString)
                         ? NuGetFramework.Parse(targetFrameworkMonikerString)

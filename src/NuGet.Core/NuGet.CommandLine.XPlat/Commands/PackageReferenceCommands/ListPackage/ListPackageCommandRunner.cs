@@ -33,9 +33,9 @@ namespace NuGet.CommandLine.XPlat
         {
             if (!File.Exists(listPackageArgs.Path))
             {
-                Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.ListPkg_ErrorFileNotFound,
-                        listPackageArgs.Path));
+                await Console.Error.WriteLineAsync(string.Format(CultureInfo.CurrentCulture,
+                    Strings.ListPkg_ErrorFileNotFound,
+                    listPackageArgs.Path));
                 return;
             }
             //If the given file is a solution, get the list of projects
@@ -64,7 +64,7 @@ namespace NuGet.CommandLine.XPlat
 
                 if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
                 {
-                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                    await Console.Error.WriteLineAsync(string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_NotPRProject,
                         projectPath));
                     Console.WriteLine();
@@ -78,7 +78,7 @@ namespace NuGet.CommandLine.XPlat
                 // If the file was not found, print an error message and continue to next project
                 if (!File.Exists(assetsPath))
                 {
-                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                    await Console.Error.WriteLineAsync(string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_AssetsFileNotFound,
                         projectPath));
                     Console.WriteLine();
