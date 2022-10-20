@@ -78,16 +78,20 @@
     <Grid Grid.Row="0">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"/>
-          <ColumnDefinition Width="24"/>
+          <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
         <TextBlock AutomationProperties.Name="AddNewPackageNamespace"
                    Grid.Column="0"
                    Text="{x:Static nuget:Resources.VSOptions_Label_AddPackageNamespace}"
                    Margin="12"/>
         <Button x:Uid="ButtonClose"
+                       Height="25"
+                       Width="25"
                        Grid.Column="1"
                        HorizontalAlignment="Left"
+                       HorizontalContentAlignment="Stretch"
                        VerticalAlignment="Top"
+                       VerticalContentAlignment="Center"
                        Margin="0,6,6,0"
                        Command="{Binding HideDialogCommand}"
                        AutomationProperties.Name="Close"
