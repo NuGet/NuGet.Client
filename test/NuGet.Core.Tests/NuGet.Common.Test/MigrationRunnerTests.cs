@@ -1,12 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
+using System.Threading;
 using NuGet.Common.Migrations;
-using NuGet.PackageManagement;
 using Xunit;
 
 namespace NuGet.Common.Test
@@ -15,9 +13,9 @@ namespace NuGet.Common.Test
     public class MigrationRunnerTests
     {
         [Fact]
-        public async Task WhenExecutedInParallelOnlyOneFileIsCreatedForEveryMigration_SuccessAsync()
+        public void WhenExecutedInParallelOnlyOneFileIsCreatedForEveryMigration_Success()
         {
-            var tasks = new List<Task>();
+            var threads = new List<Thread>();
 
             // Arrange
             string directory = MigrationRunner.GetMigrationsDirectory();
@@ -25,15 +23,19 @@ namespace NuGet.Common.Test
                 Directory.Delete(path: directory, recursive: true);
 
             // Act
-            for(int count = 0; count < 5; count++)           
-                tasks.Add(Task.Run(() => MigrationRunner.Run()));  
+            for (int count = 0; count < 5; count++)
+            {
+                var thread = new Thread(MigrationRunner.Run);
+                thread.Start();
+                threads.Add(thread);
+            }
 
-            Task t = Task.WhenAll(tasks);
-            await t;
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
 
             // Assert
-            Assert.True(t.IsCompleted);
-            Assert.Equal(TaskStatus.RanToCompletion, t.Status);
             Assert.True(Directory.Exists(directory));
             Assert.Equal(1, Directory.GetFiles(directory).Length);
         }

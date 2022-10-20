@@ -79,8 +79,7 @@ namespace NuGet.Common.Migrations
             {
                 pathsToCheck.Add(path);
 
-                // Unix-based systems support only the forward slash which is returned by Path.AltDirectorySeparatorChar
-                if (!path.StartsWith(homePath + Path.AltDirectorySeparatorChar, StringComparison.Ordinal))
+                if (!path.StartsWith(homePath + Path.DirectorySeparatorChar, StringComparison.Ordinal))
                 {
                     return;
                 }

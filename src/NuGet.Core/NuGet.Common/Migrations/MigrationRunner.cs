@@ -32,33 +32,36 @@ namespace NuGet.Common.Migrations
                 // so use a global mutex and then check if someone else already did the work.
                 using (var mutex = new Mutex(false, "NuGet-Migrations"))
                 {
+                    bool captured;
                     try
                     {
-                        if (mutex.WaitOne(TimeSpan.FromMinutes(1), false))
-                        {
-                            if (!File.Exists(expectedMigrationFilename))
-                            {
-                                // Only run migrations that have not already been run
-                                int highestMigrationRun = GetHighestMigrationRun(migrationsDirectory);
-                                for (int i = highestMigrationRun + 1; i < Migrations.Count; i++)
-                                {
-                                    try
-                                    {
-                                        Migrations[i]();
-                                        // Create file for every migration run, so that if an older version of NuGet is run, it doesn't try to run
-                                        // migrations again.
-                                        string migrationFile = Path.Combine(migrationsDirectory, (i + 1).ToString(CultureInfo.InvariantCulture));
-                                        File.WriteAllText(migrationFile, string.Empty);
-                                    }
-                                    catch { }
-                                }
-                            }
-                            mutex.ReleaseMutex();
-                        }
+                        captured = mutex.WaitOne(TimeSpan.FromMinutes(1), false);
                     }
                     catch (AbandonedMutexException ex)
                     {
                         ex.Mutex?.ReleaseMutex();
+                        captured = true;
+                    }
+                    if (captured)
+                    {
+                        if (!File.Exists(expectedMigrationFilename))
+                        {
+                            // Only run migrations that have not already been run
+                            int highestMigrationRun = GetHighestMigrationRun(migrationsDirectory);
+                            for (int i = highestMigrationRun + 1; i < Migrations.Count; i++)
+                            {
+                                try
+                                {
+                                    Migrations[i]();
+                                    // Create file for every migration run, so that if an older version of NuGet is run, it doesn't try to run
+                                    // migrations again.
+                                    string migrationFile = Path.Combine(migrationsDirectory, (i + 1).ToString(CultureInfo.InvariantCulture));
+                                    File.WriteAllText(migrationFile, string.Empty);
+                                }
+                                catch { }
+                            }
+                        }
+                        mutex.ReleaseMutex();
                     }
                 }
             }
