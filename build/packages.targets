@@ -32,12 +32,12 @@
         <PackageReference Update="Microsoft.Build.Locator" Version="1.4.1" />
         <PackageReference Update="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
         <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
-        <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.2" />
-        <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
+        <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.3" />
+        <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.2" />
         <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
         <PackageReference Update="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
         <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
-        <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
+        <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
         <PackageReference Update="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSServicesVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.ProjectSystem" Version="17.0.77-pre-g62a6cb5699" />
         <PackageReference Update="Microsoft.VisualStudio.SDK" Version="$(VSFrameworkVersion)" />
@@ -58,7 +58,7 @@
         <PackageReference Update="System.Diagnostics.Debug" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.Cng" Version="$(CryptographyPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.Pkcs" Version="$(CryptographyPackagesVersion)" />
-        <PackageReference Update="System.Security.Cryptography.ProtectedData" Version="4.4.0" />
+        <PackageReference Update="System.Security.Cryptography.ProtectedData" Version="6.0.0" />
         <PackageReference Update="System.Threading.Tasks.Dataflow" Version="4.9.0" />
         <PackageReference Update="VSSDK.TemplateWizardInterface" Version="12.0.4" />
         <PackageReference Update="VsWebSite.Interop" Version="$(VSFrameworkVersion)" />
@@ -94,7 +94,7 @@
         <PackageReference Update="Microsoft.CodeAnalysis" Version="3.0.0" />
         <PackageReference Update="Microsoft.CodeAnalysis.Build.Tasks" Version="3.0.0-dev-61717-03" />
         <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.0.0-dev-61717-03" />
-        <PackageReference Update="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.0.0" />
+        <PackageReference Update="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.3" />
         <PackageReference Update="Microsoft.CSharp" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="Microsoft.Net.Compilers.netcore" Version="3.0.0-dev-61717-03" />
         <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.1.0" />
