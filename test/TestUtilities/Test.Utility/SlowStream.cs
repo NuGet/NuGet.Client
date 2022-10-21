@@ -10,11 +10,9 @@ namespace Test.Utility
 {
     public class SlowStream : Stream
     {
-#pragma warning disable CA2213
-        // TODO: https://github.com/NuGet/Home/issues/12116
         private readonly Stream _innerStream;
-#pragma warning restore CA2213
         private readonly CancellationToken _cancellationToken;
+        internal bool _isDisposed = false; // internal for testing purposes
 
         public SlowStream(Stream innerStream)
             : this(innerStream, CancellationToken.None)
@@ -80,6 +78,24 @@ namespace Test.Utility
         {
             get { throw new NotSupportedException(); }
             set { throw new NotSupportedException(); }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // free managed resources
+                _innerStream.Dispose();
+            }
+
+            _isDisposed = true;
         }
     }
 }
