@@ -95,7 +95,7 @@ namespace NuGet.Commands
             string currentValue = Environment.GetEnvironmentVariable(environmentVariableName);
             if (currentValue == null)
             {
-                Environment.SetEnvironmentVariable(environmentVariableName, value);
+                Environment.SetEnvironmentVariable(environmentVariableName, value, EnvironmentVariableTarget.Process);
             }
         }
     }
