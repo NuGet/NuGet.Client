@@ -61,10 +61,23 @@ namespace NuGet.Tests.Apex
                     // Use the same environment to avoid elevation
                     _visualStudioHostConfiguration.InheritProcessEnvironment = true;
 
-                    // Launch in the experimental instance of VS
-                    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_TEST_APEX_EXP")))
+                    // If test is being run in VS, "Developer PowerShell" , or "Developer Command Prompt", use the same install of VS.
+                    // But don't override Apex's env vars if they have already been set.
+                    const string vsUnderTestVariableName = "VisualStudio.InstallationUnderTest.Path";
+                    if (Environment.GetEnvironmentVariable(vsUnderTestVariableName) == null)
                     {
-                        _visualStudioHostConfiguration.CommandLineArguments += " /rootSuffix Exp";
+                        string vsInstallDir = Environment.GetEnvironmentVariable("VSAPPIDDIR") ?? Environment.GetEnvironmentVariable("DevEnvDir");
+                        if (!string.IsNullOrEmpty(vsInstallDir))
+                        {
+                            var devenvPath = Path.Combine(vsInstallDir, "devenv.exe");
+                            Environment.SetEnvironmentVariable(vsUnderTestVariableName, devenvPath);
+
+                            const string rootSuffixVariableName = "VisualStudio.InstallationUnderTest.RootSuffix";
+                            if (Environment.GetEnvironmentVariable(rootSuffixVariableName) == null)
+                            {
+                                _visualStudioHostConfiguration.RootSuffix = "Exp";
+                            }
+                        }
                     }
                 }
                 return _visualStudioHostConfiguration;

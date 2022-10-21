@@ -98,6 +98,12 @@
     <RuntimeIdentifier>x86</RuntimeIdentifier>
   </PropertyGroup>
 
+  <Target Name="MakeNuGetApexTestDebuggable" AfterTargets="PostBuildEvent">
+    <Delete Files="$(OutDir)\NuGet.PackageManagement.UI.dll" />
+    <Delete Files="$(OutDir)\NuGet.VisualStudio.dll" />
+    <Delete Files="$(OutDir)\NuGet.VisualStudio.Contracts.dll" />
+  </Target>
+
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
