@@ -7,8 +7,10 @@ using System.Globalization;
 namespace NuGet.Commands
 {
     /// <summary>Represents an environment variable to control culture in NuGet CLIs</summary>
-    // This type is public because it's the only way to call it from NuGet.CommandLine.XPlat (dotnet.exe) and NuGet.CommandLine (nuget.exe) projects
-    // without introducing a new assembly
+    /// <remarks>
+    /// This type is public because it's the only way to call it from NuGet.CommandLine.XPlat (dotnet.exe) and NuGet.CommandLine (nuget.exe) projects
+    /// without introducing a new assembly
+    /// </remarks>
     public class LanguageEnvironmentVariable
     {
         public string VariableName { get; }
