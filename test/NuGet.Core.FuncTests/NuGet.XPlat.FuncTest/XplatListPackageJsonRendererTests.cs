@@ -1,21 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.CommandLine.XPlat;
-using NuGet.CommandLine.XPlat.Utility;
-using NuGet.Test.Utility;
-using Xunit;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using FluentAssertions;
-using NuGet.Configuration.Test;
-using NuGet.Configuration;
-using NuGet.Common;
-using System.Threading;
-using NuGet.Protocol;
 using System.Linq;
+using System.Threading;
+using FluentAssertions;
+using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.Utility;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Configuration.Test;
+using NuGet.Protocol;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
-using System;
+using Xunit;
 
 namespace NuGet.XPlat.FuncTest
 {
@@ -627,7 +627,7 @@ namespace NuGet.XPlat.FuncTest
                                     { }
                                 }
                             },
-                            new List<ReportProblem>() { new ReportProblem(projectAPath, $"The given project `MyProjectD` has no vulnerable packages given the current sources.", ProblemType.Information)}
+                            new List<ReportProblem>() { new ReportProblem(projectAPath, $"The given project `MyProjectD` has no vulnerable packages given the current sources.", ProblemType.Information) }
                        )
                     );
 
@@ -1225,7 +1225,7 @@ namespace NuGet.XPlat.FuncTest
 
         internal ListPackageReportModel CreateListReportModel(ListPackageArgs packageRefArgs,
             params (string projectPath, List<ListPackageReportFrameworkPackage> projectPackages, List<ReportProblem> projectProblems)[] projects)
-            
+
         {
             var listPackageReportModel = new ListPackageReportModel(packageRefArgs);
             foreach ((string projectPath, List<ListPackageReportFrameworkPackage> listPackageReportFrameworks, List<ReportProblem> projectProblems) project in projects)
