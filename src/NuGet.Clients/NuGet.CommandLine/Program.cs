@@ -86,7 +86,7 @@ namespace NuGet.CommandLine
             }
             else
             {
-                CLILanguageOverrider languageOverrider = new CLILanguageOverrider(console, new LanguageEnvironmentVariable[]
+                var languageOverrider = new CLILanguageOverrider(console, new LanguageEnvironmentVariable[]
                 {
                     new LanguageEnvironmentVariable("NUGET_CLI_LANGUAGE", LanguageEnvironmentVariable.GetCultureFromName, LanguageEnvironmentVariable.CultureToName),
                 }, flowEnvvarsToChildProcess: false); // nuget.exe does not invoke child processes

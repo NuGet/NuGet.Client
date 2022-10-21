@@ -63,7 +63,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                CLILanguageOverrider languageOverrider = new CLILanguageOverrider(log, new LanguageEnvironmentVariable[]
+                var languageOverrider = new CLILanguageOverrider(log, new LanguageEnvironmentVariable[]
                 {
                     // DOTNET_CLI_UI_LANGUAGE=<culture name> is the main way for users to customize the CLI's UI language.
                     new LanguageEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", LanguageEnvironmentVariable.GetCultureFromName, LanguageEnvironmentVariable.CultureToName),
