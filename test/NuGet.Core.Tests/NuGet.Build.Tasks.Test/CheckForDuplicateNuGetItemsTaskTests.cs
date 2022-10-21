@@ -414,7 +414,8 @@ namespace NuGet.Build.Tasks.Test
                 Items = items,
                 LogCode = "NU1504",
                 NoWarn = "1234;5678;NU1505",
-                WarningsNotAsErrors = "NU1504"
+                TreatWarningsAsErrors = "true",
+                WarningsNotAsErrors = "NU1504",
             };
 
             // Act

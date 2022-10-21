@@ -4880,7 +4880,7 @@ namespace Proj1
         }
 
         [PlatformFact(Platform.Windows)]
-        public void PackCommand_WithTreatWarningsAsErrors_AndWarnNotAsError_PrintsWarnings()
+        public void PackCommand_WithTreatWarningsAsErrors_AndWarnNotAsError_SucceedsAndPrintsWarnings()
         {
             var nugetexe = Util.GetNuGetExePath();
 
