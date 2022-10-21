@@ -156,13 +156,13 @@ namespace NuGet.Common.Migrations
             {
                 PosixPermissions correctedPermissions = permissions.Value.WithUmask(umask);
                 string correctedPermissionsString = correctedPermissions.ToString();
-                Exec("chmod", correctedPermissionsString + " " + "\"" + path + "\"");
+                Exec("chmod", correctedPermissionsString + " " + path.FormatWithDoubleQuotes());
             }
         }
 
         internal static PosixPermissions? GetPermissions(string path)
         {
-            string output = Exec("ls", "-ld " + "\"" + path + "\"");
+            string output = Exec("ls", "-ld " + path.FormatWithDoubleQuotes());
             if (output == null)
             {
                 return null;
