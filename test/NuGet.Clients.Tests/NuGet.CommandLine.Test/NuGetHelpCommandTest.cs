@@ -1,4 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using System.Collections.Generic;
 using System.IO;
 using NuGet.Test.Utility;
 using Xunit;
@@ -85,6 +89,30 @@ namespace NuGet.CommandLine.Test
             // Assert
             Assert.Equal(0, r.ExitCode);
             Assert.Contains("Show command help and usage information.", r.Output);
+        }
+
+        [CIOnlyFact] // This test needs a fully localized build
+        public void HelpCommand_OverridesLanguageInSpanish_PrintsOutputInSpanish()
+        {
+            string clientCertsDescriptionSpanish = "Proporciona la capacidad de administrar la lista de certificados de cliente ubicados en archivos NuGet.config";
+
+            // Arrange
+            string nugetexe = Util.GetNuGetExePath();
+
+            // Act
+            CommandRunnerResult r = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                "help help",
+                waitForExit: true,
+                environmentVariables: new Dictionary<string, string>()
+                {
+                    { "NUGET_CLI_LANGUAGE", "es-es" }
+                });
+
+            // Assert
+            Assert.Equal(0, r.ExitCode);
+            Assert.Contains(clientCertsDescriptionSpanish, r.Output);
         }
     }
 }
