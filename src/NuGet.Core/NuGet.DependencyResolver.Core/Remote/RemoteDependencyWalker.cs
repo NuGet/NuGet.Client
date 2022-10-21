@@ -129,8 +129,7 @@ namespace NuGet.DependencyResolver
                 _context,
                 CancellationToken.None);
 
-            int innerNodesSize = item.Data.Dependencies.Count + (dependencies == null ? 0 : dependencies.Count);
-            bool hasInnerNodes = innerNodesSize > 0;
+            bool hasInnerNodes = (item.Data.Dependencies.Count + (dependencies == null ? 0 : dependencies.Count)) > 0;
             GraphNode<RemoteResolveResult> node = new GraphNode<RemoteResolveResult>(libraryRange, hasInnerNodes, hasParentNodes)
             {
                 Item = item
