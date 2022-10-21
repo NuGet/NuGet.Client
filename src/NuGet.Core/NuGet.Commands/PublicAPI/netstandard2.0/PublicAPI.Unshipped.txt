@@ -1,0 +1,12 @@
+NuGet.Commands.CLILanguageOverrider
+NuGet.Commands.CLILanguageOverrider.CLILanguageOverrider(NuGet.Common.ILogger logger, System.Collections.Generic.IEnumerable<NuGet.Commands.LanguageEnvironmentVariable> varsToProbe, bool flowEnvvarsToChildProcess = false) -> void
+NuGet.Commands.CLILanguageOverrider.Setup() -> void
+NuGet.Commands.LanguageEnvironmentVariable
+NuGet.Commands.LanguageEnvironmentVariable.EnvVarValueFunc.get -> System.Func<System.Globalization.CultureInfo, string>
+NuGet.Commands.LanguageEnvironmentVariable.GeneratorFunc.get -> System.Func<string, System.Globalization.CultureInfo>
+NuGet.Commands.LanguageEnvironmentVariable.LanguageEnvironmentVariable(string variableName, System.Func<string, System.Globalization.CultureInfo> generatorFunc, System.Func<System.Globalization.CultureInfo, string> valueFunc) -> void
+NuGet.Commands.LanguageEnvironmentVariable.VariableName.get -> string
+static NuGet.Commands.LanguageEnvironmentVariable.CultureToLCID(System.Globalization.CultureInfo culture) -> string
+static NuGet.Commands.LanguageEnvironmentVariable.CultureToName(System.Globalization.CultureInfo culture) -> string
+static NuGet.Commands.LanguageEnvironmentVariable.GetCultureFromLCID(string envvarValue) -> System.Globalization.CultureInfo
+static NuGet.Commands.LanguageEnvironmentVariable.GetCultureFromName(string envvarValue) -> System.Globalization.CultureInfo

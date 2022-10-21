@@ -457,6 +457,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid culture identifier in {0} environment variable. Value read is &apos;{1}&apos;.
+        /// </summary>
+        internal static string Error_InvalidCultureInfo {
+            get {
+                return ResourceManager.GetString("Error_InvalidCultureInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package version constraints for &apos;{0}&apos; return a version range that is empty..
         /// </summary>
         internal static string Error_InvalidDependencyVersionConstraints {

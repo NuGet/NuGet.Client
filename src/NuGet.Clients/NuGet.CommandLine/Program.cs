@@ -15,6 +15,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using Microsoft.Win32;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.PackageManagement;
 
@@ -76,10 +77,20 @@ namespace NuGet.CommandLine
 
         public static int MainCore(string workingDirectory, string[] args)
         {
+            var console = new Console();
+
             // First, optionally disable localization in resources.
             if (args.Any(arg => string.Equals(arg, ForceEnglishOutputOption, StringComparison.OrdinalIgnoreCase)))
             {
                 CultureUtility.DisableLocalization();
+            }
+            else
+            {
+                CLILanguageOverrider languageOverrider = new CLILanguageOverrider(console, new LanguageEnvironmentVariable[]
+                {
+                    new LanguageEnvironmentVariable("NUGET_CLI_LANGUAGE", LanguageEnvironmentVariable.GetCultureFromName, LanguageEnvironmentVariable.CultureToName),
+                }, flowEnvvarsToChildProcess: false); // nuget.exe does not invoke child processes
+                languageOverrider.Setup();
             }
 
             // set output encoding to UTF8 if -utf8 is specified
@@ -101,7 +112,6 @@ namespace NuGet.CommandLine
                 ServicePointManager.DefaultConnectionLimit = 1;
             }
 
-            var console = new Console();
             var fileSystem = new CoreV2.NuGet.PhysicalFileSystem(workingDirectory);
 
             try

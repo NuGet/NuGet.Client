@@ -367,15 +367,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid culture identifier in {0} environment variable. Value read is &apos;{1}&apos;.
-        /// </summary>
-        internal static string Error_InvalidCultureInfo {
-            get {
-                return ResourceManager.GetString("Error_InvalidCultureInfo", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to MsBuild was unable to open Project &apos;{0}&apos;..
         /// </summary>
         internal static string Error_MsBuildUnableToOpenProject {

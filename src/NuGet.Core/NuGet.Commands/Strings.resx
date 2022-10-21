@@ -1037,4 +1037,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
 Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.</value>
     <comment>0 - The command name. Ex. Push/Delete. 1 - list of server URIs</comment>
   </data>
+  <data name="Error_InvalidCultureInfo" xml:space="preserve">
+    <value>Invalid culture identifier in {0} environment variable. Value read is '{1}'</value>
+    <comment>0 - Environment variable name, 1 - value set in environment variable</comment>
+  </data>
 </root>

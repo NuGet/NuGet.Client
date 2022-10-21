@@ -8,8 +8,8 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.Common;
 using NuGet.Commands;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -63,7 +63,16 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                UILanguageOverride.Setup(log);
+                CLILanguageOverrider languageOverrider = new CLILanguageOverrider(log, new LanguageEnvironmentVariable[]
+                {
+                    // DOTNET_CLI_UI_LANGUAGE=<culture name> is the main way for users to customize the CLI's UI language.
+                    new LanguageEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", LanguageEnvironmentVariable.GetCultureFromName, LanguageEnvironmentVariable.CultureToName),
+                    // for tools following VS guidelines to just work in CLI
+                    new LanguageEnvironmentVariable("VSLANG", LanguageEnvironmentVariable.GetCultureFromLCID, LanguageEnvironmentVariable.CultureToLCID),
+                    // for C#/VB targets that pass $(PreferredUILang) to compiler
+                    new LanguageEnvironmentVariable("PreferredUILang", LanguageEnvironmentVariable.GetCultureFromName, LanguageEnvironmentVariable.CultureToName),
+                }, flowEnvvarsToChildProcess: true);
+                languageOverrider.Setup();
             }
             log.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Debug_CurrentUICulture, CultureInfo.DefaultThreadCurrentUICulture));
 
