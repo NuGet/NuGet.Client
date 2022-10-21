@@ -68,7 +68,7 @@ namespace NuGet.Commands
             foreach (LanguageEnvironmentVariable langEnvvar in _envVarDefs)
             {
                 envvarValue = Environment.GetEnvironmentVariable(langEnvvar.VariableName);
-                if (envvarValue != null)
+                if (!string.IsNullOrEmpty(envvarValue))
                 {
                     try
                     {
