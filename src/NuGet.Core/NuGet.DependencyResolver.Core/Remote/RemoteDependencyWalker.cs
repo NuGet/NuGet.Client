@@ -35,7 +35,8 @@ namespace NuGet.DependencyResolver
                 runtimeGraph: runtimeGraph,
                 predicate: _ => (recursive ? DependencyResult.Acceptable : DependencyResult.Eclipsed, null),
                 outerEdge: null,
-                transitiveCentralPackageVersions: transitiveCentralPackageVersions);
+                transitiveCentralPackageVersions: transitiveCentralPackageVersions,
+                hasParentNodes: false);
 
             // do not calculate the hashset of the direct dependencies for cases when there are not any elements in the transitiveCentralPackageVersions queue
             var indexedDirectDependenciesKeyNames = new Lazy<HashSet<string>>(
@@ -70,7 +71,8 @@ namespace NuGet.DependencyResolver
             RuntimeGraph runtimeGraph,
             Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate,
             GraphEdge<RemoteResolveResult> outerEdge,
-            TransitiveCentralPackageVersions transitiveCentralPackageVersions)
+            TransitiveCentralPackageVersions transitiveCentralPackageVersions,
+            bool hasParentNodes)
         {
             List<LibraryDependency> dependencies = null;
             HashSet<string> runtimeDependencies = null;
@@ -118,16 +120,19 @@ namespace NuGet.DependencyResolver
                 }
             }
 
-            var node = new GraphNode<RemoteResolveResult>(libraryRange)
+            // Resolve the dependency from the cache or sources
+            GraphItem<RemoteResolveResult> item = await ResolverUtility.FindLibraryCachedAsync(
+                _context.FindLibraryEntryCache,
+                libraryRange,
+                framework,
+                runtimeName,
+                _context,
+                CancellationToken.None);
+
+            bool hasInnerNodes = (item.Data.Dependencies.Count + (dependencies == null ? 0 : dependencies.Count)) > 0;
+            GraphNode<RemoteResolveResult> node = new GraphNode<RemoteResolveResult>(libraryRange, hasInnerNodes, hasParentNodes)
             {
-                // Resolve the dependency from the cache or sources
-                Item = await ResolverUtility.FindLibraryCachedAsync(
-                    _context.FindLibraryEntryCache,
-                    libraryRange,
-                    framework,
-                    runtimeName,
-                    _context,
-                    CancellationToken.None)
+                Item = item
             };
 
             Debug.Assert(node.Item != null, "FindLibraryCached should return an unresolved item instead of null");
@@ -196,7 +201,8 @@ namespace NuGet.DependencyResolver
                             runtimeGraph,
                             predicate,
                             innerEdge,
-                            transitiveCentralPackageVersions));
+                            transitiveCentralPackageVersions,
+                            hasParentNodes: false));
                     }
                     else
                     {
@@ -480,7 +486,8 @@ namespace NuGet.DependencyResolver
                     runtimeGraph: runtimeGraph,
                     predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode, centralPackageVersionDependency),
                     outerEdge: null,
-                    transitiveCentralPackageVersions: transitiveCentralPackageVersions);
+                    transitiveCentralPackageVersions: transitiveCentralPackageVersions,
+                    hasParentNodes: true);
 
             node.OuterNode = rootNode;
             node.Item.IsCentralTransitive = true;
