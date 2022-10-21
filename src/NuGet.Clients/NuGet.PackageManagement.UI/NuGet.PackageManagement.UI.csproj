@@ -89,6 +89,9 @@
     <Compile Include="Options\AddMappingDialog.xaml.cs">
       <DependentUpon>AddMappingDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Options\Resources.xaml.cs">
+      <DependentUpon>Resources.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Options\SourceMappingViewModel.cs" />
     <Compile Include="Options\PackageSourceViewModel.cs" />
     <Compile Include="Options\PackageSourceMappingOptionsControl.xaml.cs">
@@ -319,6 +322,9 @@
     </Page>
     <Page Include="Options\PackageSourceMappingOptionsControl.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Options\Resources.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\generic.xaml">
