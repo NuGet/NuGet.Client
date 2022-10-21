@@ -242,7 +242,7 @@ namespace NuGet.CommandLine
                 ManifestResourceInfo resource = NuGetExeAssembly.GetManifestResourceInfo(args.Name);
                 if (resource != null)
                 {
-                    // Return nuget.exe assembly, since it contains the requested resource by nuget.restources assembly
+                    // Return nuget.exe assembly, since it contains the requested resource by NuGet.Resources assembly
                     returnedResource = NuGetExeAssembly;
                 }
             }

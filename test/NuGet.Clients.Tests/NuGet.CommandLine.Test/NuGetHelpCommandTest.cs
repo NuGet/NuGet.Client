@@ -94,7 +94,7 @@ namespace NuGet.CommandLine.Test
         [CIOnlyFact] // This test needs a fully localized build
         public void HelpCommand_OverridesLanguageInSpanish_PrintsOutputInSpanish()
         {
-            string clientCertsDescriptionSpanish = "Proporciona la capacidad de administrar la lista de certificados de cliente ubicados en archivos NuGet.config";
+            var clientCertsDescriptionSpanish = "Proporciona la capacidad de administrar la lista de certificados de cliente ubicados en archivos NuGet.config";
 
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
