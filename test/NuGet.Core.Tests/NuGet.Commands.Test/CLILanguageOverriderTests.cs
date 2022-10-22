@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Moq;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -30,12 +31,19 @@ namespace NuGet.Commands.Test
 
         [Theory]
         [InlineData("fr-FR")]
+        [InlineData("es-ES")]
         public void SetUp_WithNewVariableAndFlowToProcessFlag_SetsValueToOtherVars(string overrideCultureInfo)
         {
             // Arrange
+            void testSetter(CultureInfo cultureInfo)
+            {
+                // Don't set cultureinfo to avoid side effects in other tets running aside in other threads. Just verify
+                Assert.Equal(cultureInfo.Name, overrideCultureInfo);
+            }
+
             var envvar1 = new LanguageEnvironmentVariable("LANG_VAR_TEST_FLOW_1", LanguageEnvironmentVariable.GetCultureFromName, LanguageEnvironmentVariable.CultureToName);
             var envvar2 = new LanguageEnvironmentVariable("LANG_VAR_TEST_FLOW_2", LanguageEnvironmentVariable.GetCultureFromName, LanguageEnvironmentVariable.CultureToName);
-            var cliLang = new CLILanguageOverrider(_logger, new[] { envvar1, envvar2 }, flowEnvvarsToChildProcess: true);
+            var cliLang = new CLILanguageOverrider(_logger, new[] { envvar1, envvar2 }, flowEnvvarsToChildProcess: true, cultureInfoSetter: testSetter);
 
             Environment.SetEnvironmentVariable(envvar1.VariableName, overrideCultureInfo, EnvironmentVariableTarget.Process);
 
@@ -54,10 +62,17 @@ namespace NuGet.Commands.Test
         public void SetUp_WithNewVariableAndWithoutFlowToProcessFlag_ChildEnvVarsAreNotSet()
         {
             // Arrange
+            var overrideCultureInfo = "fr-FR";
+            void testSetter(CultureInfo cultureInfo)
+            {
+                // Don't set cultureinfo to avoid side effects in other tets running aside in other threads
+                // Just verify
+                Assert.Equal(cultureInfo.Name, overrideCultureInfo);
+            }
+
             var envvar1 = new LanguageEnvironmentVariable("LANG_VAR_TEST_NOTSET_1", LanguageEnvironmentVariable.GetCultureFromName, LanguageEnvironmentVariable.CultureToName);
             var envvar2 = new LanguageEnvironmentVariable("LANG_VAR_TEST_NOTSET_2", LanguageEnvironmentVariable.GetCultureFromName, LanguageEnvironmentVariable.CultureToName);
-            var cliLang = new CLILanguageOverrider(_logger, new[] { envvar1, envvar2 }, flowEnvvarsToChildProcess: false);
-            var overrideCultureInfo = "fr-FR";
+            var cliLang = new CLILanguageOverrider(_logger, new[] { envvar1, envvar2 }, flowEnvvarsToChildProcess: false, cultureInfoSetter: testSetter);
 
             Environment.SetEnvironmentVariable(envvar1.VariableName, overrideCultureInfo, EnvironmentVariableTarget.Process);
 
@@ -77,9 +92,15 @@ namespace NuGet.Commands.Test
         public void SetUp_WithEmptyEnvvarsAndFlowToProcessFlag_ChildEnvVarsAreNotSet(string overrideCultureInfo)
         {
             // Arrange
+            static void testSetter(CultureInfo cultureInfo)
+            {
+                // This should never be called
+                Assert.False(true);
+            }
+
             var envvar1 = new LanguageEnvironmentVariable("LANG_VAR_TEST_NOTSET_1", LanguageEnvironmentVariable.GetCultureFromName, LanguageEnvironmentVariable.CultureToName);
             var envvar2 = new LanguageEnvironmentVariable("LANG_VAR_TEST_NOTSET_2", LanguageEnvironmentVariable.GetCultureFromName, LanguageEnvironmentVariable.CultureToName);
-            var cliLang = new CLILanguageOverrider(_logger, new[] { envvar1, envvar2 }, flowEnvvarsToChildProcess: true);
+            var cliLang = new CLILanguageOverrider(_logger, new[] { envvar1, envvar2 }, testSetter, flowEnvvarsToChildProcess: true);
 
             Environment.SetEnvironmentVariable(envvar1.VariableName, overrideCultureInfo, EnvironmentVariableTarget.Process);
 
