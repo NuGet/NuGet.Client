@@ -18,8 +18,15 @@ namespace NuGet.Commands
         private readonly ILogger _logger;
         private readonly IEnumerable<LanguageEnvironmentVariable> _envVarDefs;
         private readonly bool _flowToProcess;
+        private readonly Action<CultureInfo> _cultureInfoSetter;
 
         public CLILanguageOverrider(ILogger logger, IEnumerable<LanguageEnvironmentVariable> varsToProbe, bool flowEnvvarsToChildProcess = false)
+            : this(logger, varsToProbe, ApplyOverrideToCurrentProcess, flowEnvvarsToChildProcess)
+        {
+        }
+
+        /// <summary>Constructor for internal testing. Use public constructor for production code</summary>
+        internal CLILanguageOverrider(ILogger logger, IEnumerable<LanguageEnvironmentVariable> varsToProbe, Action<CultureInfo> cultureInfoSetter, bool flowEnvvarsToChildProcess = false)
         {
             if (logger == null)
             {
@@ -31,9 +38,15 @@ namespace NuGet.Commands
             {
                 throw new ArgumentNullException(nameof(varsToProbe));
             }
-
             _envVarDefs = varsToProbe;
+
+            if (cultureInfoSetter == null)
+            {
+                throw new ArgumentNullException(nameof(cultureInfoSetter));
+            }
             _flowToProcess = flowEnvvarsToChildProcess;
+
+            _cultureInfoSetter = cultureInfoSetter;
         }
 
         public void Setup()
@@ -41,7 +54,7 @@ namespace NuGet.Commands
             CultureInfo language = GetOverriddenUILanguage();
             if (language != null)
             {
-                ApplyOverrideToCurrentProcess(language);
+                _cultureInfoSetter(language);
                 if (_flowToProcess)
                 {
                     FlowOverrideToChildProcesses(language);
