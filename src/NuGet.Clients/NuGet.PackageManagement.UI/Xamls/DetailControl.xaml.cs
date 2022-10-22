@@ -113,7 +113,8 @@ namespace NuGet.PackageManagement.UI
             var model = (PackageDetailControlModel)DataContext;
             string newMappingSource = null;
             string newMappingID = null;
-            if (_solutionView.newMapping.IsChecked == true)
+
+            if (model.SelectMappingCheckBoxState == true && model.IsAllSourcesSelected == false)
             {
                 newMappingID = model.Id;
                 newMappingSource = Control.SelectedSource.SourceName;
@@ -148,7 +149,8 @@ namespace NuGet.PackageManagement.UI
             var model = (PackageSolutionDetailControlModel)DataContext;
             string newMappingSource = null;
             string newMappingID = null;
-            if (_solutionView.newMapping.IsChecked == true)
+
+            if (model.SelectMappingCheckBoxState == true && model.IsAllSourcesSelected == false)
             {
                 newMappingID = model.Id;
                 newMappingSource = Control.SelectedSource.SourceName;

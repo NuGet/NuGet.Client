@@ -101,6 +101,7 @@ namespace NuGet.PackageManagement.UI
                     Model.Context.ServiceBroker,
                     Model.Context.SolutionManagerService,
                     Model.Context.Projects,
+                    Model.UIController,
                     CancellationToken.None);
             }
             else
@@ -108,7 +109,8 @@ namespace NuGet.PackageManagement.UI
                 _detailModel = new PackageDetailControlModel(
                     Model.Context.ServiceBroker,
                     Model.Context.SolutionManagerService,
-                    Model.Context.Projects);
+                    Model.Context.Projects,
+                    Model.UIController);
             }
 
             if (_windowSearchHostFactory != null)
@@ -1100,64 +1102,64 @@ namespace NuGet.PackageManagement.UI
             //for install button binding
             _detailModel.IsAllSourcesSelected = SelectedSource.SourceName == "All";
             IReadOnlyList<string> configuredSources = packageSourceMapping.GetConfiguredPackageSources(packageID);
-            if (configuredSources == null)
-            {
-                if (_detailModel.IsSolution)
-                {
-                    _packageDetail._solutionView.existingMappings.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    _packageDetail._projectView.existingMappings.Visibility = Visibility.Collapsed;
-                    _packageDetail._projectView.PackageDetailControlModel.UpdateIsInstallorUpdateButtonEnabled();
-                }
-                _detailModel.IsExistingMappingsNull = true;
-            }
-            else
-            {
-                if (_detailModel.IsSolution)
-                {
-                    _packageDetail._solutionView.existingMappings.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    _packageDetail._projectView.existingMappings.Visibility = Visibility.Visible;
-                }
-                _detailModel.IsExistingMappingsNull = false;
-            }
-            //Hides mapping panel if All sources selected
-            if (SelectedSource.SourceName == "All")
-            {
-                if (_detailModel.IsSolution)
-                {
-                    _packageDetail._solutionView.mappingHeader.Visibility = Visibility.Collapsed;
-                    _packageDetail._solutionView.newMapping.Visibility = Visibility.Collapsed;
-                    _packageDetail._solutionView.existingMappings.Visibility = Visibility.Collapsed;
-                    _packageDetail._solutionView.settingsLink.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    _packageDetail._projectView.mappingHeader.Visibility = Visibility.Collapsed;
-                    _packageDetail._projectView.newMapping.Visibility = Visibility.Collapsed;
-                    _packageDetail._projectView.existingMappings.Visibility = Visibility.Collapsed;
-                    _packageDetail._projectView.settingsLink.Visibility = Visibility.Collapsed;
-                }
-            }
-            else
-            {
-                if (_detailModel.IsSolution)
-                {
-                    _packageDetail._solutionView.mappingHeader.Visibility = Visibility.Visible;
-                    _packageDetail._solutionView.newMapping.Visibility = Visibility.Visible;
-                    _packageDetail._solutionView.settingsLink.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    _packageDetail._projectView.mappingHeader.Visibility = Visibility.Visible;
-                    _packageDetail._projectView.newMapping.Visibility = Visibility.Visible;
-                    _packageDetail._projectView.settingsLink.Visibility = Visibility.Visible;
-                }
-            }
+            //if (configuredSources == null)
+            //{
+            //    if (_detailModel.IsSolution)
+            //    {
+            //        _packageDetail._solutionView.existingMappings.Visibility = Visibility.Collapsed;
+            //    }
+            //    else
+            //    {
+            //        _packageDetail._projectView.existingMappings.Visibility = Visibility.Collapsed;
+            //        _packageDetail._projectView.PackageDetailControlModel.UpdateIsInstallorUpdateButtonEnabled();
+            //    }
+            //    _detailModel.IsExistingMappingsNull = true;
+            //}
+            //else
+            //{
+            //    if (_detailModel.IsSolution)
+            //    {
+            //        _packageDetail._solutionView.existingMappings.Visibility = Visibility.Visible;
+            //    }
+            //    else
+            //    {
+            //        _packageDetail._projectView.existingMappings.Visibility = Visibility.Visible;
+            //    }
+            //    _detailModel.IsExistingMappingsNull = false;
+            //}
+            ////Hides mapping panel if All sources selected
+            //if (SelectedSource.SourceName == "All")
+            //{
+            //    if (_detailModel.IsSolution)
+            //    {
+            //        _packageDetail._solutionView.mappingHeader.Visibility = Visibility.Collapsed;
+            //        _packageDetail._solutionView.newMapping.Visibility = Visibility.Collapsed;
+            //        _packageDetail._solutionView.existingMappings.Visibility = Visibility.Collapsed;
+            //        _packageDetail._solutionView.settingsLink.Visibility = Visibility.Collapsed;
+            //    }
+            //    else
+            //    {
+            //        _packageDetail._projectView.mappingHeader.Visibility = Visibility.Collapsed;
+            //        _packageDetail._projectView.newMapping.Visibility = Visibility.Collapsed;
+            //        _packageDetail._projectView.existingMappings.Visibility = Visibility.Collapsed;
+            //        _packageDetail._projectView.settingsLink.Visibility = Visibility.Collapsed;
+            //    }
+            //}
+            //else
+            //{
+            //    if (_detailModel.IsSolution)
+            //    {
+            //        _packageDetail._solutionView.mappingHeader.Visibility = Visibility.Visible;
+            //        _packageDetail._solutionView.newMapping.Visibility = Visibility.Visible;
+            //        _packageDetail._solutionView.settingsLink.Visibility = Visibility.Visible;
+            //    }
+            //    else
+            //    {
+            //        _packageDetail._projectView.mappingHeader.Visibility = Visibility.Visible;
+            //        _packageDetail._projectView.newMapping.Visibility = Visibility.Visible;
+            //        _packageDetail._projectView.settingsLink.Visibility = Visibility.Visible;
+            //    }
+            //}
         }
 
         private void EmitSearchSelectionTelemetry(PackageItemViewModel selectedPackage)

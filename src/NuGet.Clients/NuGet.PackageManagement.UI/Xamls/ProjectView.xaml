@@ -164,27 +164,9 @@
       IsEnabled="{Binding IsInstallorUpdateButtonEnabled, Mode=OneWay}"
       Content="{x:Static local:Resources.Button_Update}" />
 
-
-    <TextBlock
-        Grid.Row="4"
-        Grid.Column="0"
-        FontWeight="Bold"
-        Text="Mapping:"
-        Name="mappingHeader"/>
-
-    <CheckBox Grid.Row="4" Grid.Column="2" Name="newMapping" Margin="0,0,0,10" IsChecked="{Binding SelectMappingCheckBoxState}" Checked="NewMapping_Checked" Unchecked="NewMapping_Checked">Add mapping to selected source</CheckBox>
-    <TextBlock Grid.Row="5" Grid.Column="2" Name="existingMappings" Margin="0,0,0,10">Package already has mappings</TextBlock>
-
-    <Button
-        Grid.Row="6"
-        Grid.Column="2"
-        Name="settingsLink"
-        Click="SettingsButtonClicked"
-        Background="Transparent"
-        BorderBrush="Transparent">
-      <Hyperlink>
-        <Run>Package Source Mapping Settings</Run>
-      </Hyperlink>
-    </Button>
+    <local:PackageSourceMappingActionControl
+      Grid.Row="4"
+      x:Name="_packageSourceMappingActionControl"
+      DataContext="{Binding}" />
   </Grid>
 </UserControl>
