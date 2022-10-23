@@ -85,7 +85,8 @@
     <ProjectReference Include="..\NuGet.PackageManagement.UI.TestContract\NuGet.PackageManagement.UI.TestContract.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <!-- Make sure VSIX is deployed to experimental instance -->
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Client\NuGet.VisualStudio.Client.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <None Update="xunit.runner.json">
