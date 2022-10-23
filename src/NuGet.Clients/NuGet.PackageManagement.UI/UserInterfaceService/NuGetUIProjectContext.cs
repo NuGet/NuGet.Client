@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.UI
                     Question = message
                 };
 
-                if (fileConflictDialog.ShowModal() == true)
+                if (fileConflictDialog.ShowModal())
                 {
                     return fileConflictDialog.UserSelection;
                 }

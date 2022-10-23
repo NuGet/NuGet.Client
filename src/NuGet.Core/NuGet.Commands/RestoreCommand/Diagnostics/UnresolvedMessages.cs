@@ -222,7 +222,7 @@ namespace NuGet.Commands
         internal static bool IsPrereleaseAllowed(VersionRange range)
         {
             return (range?.MaxVersion?.IsPrerelease == true
-                || range?.MinVersion?.IsPrerelease == true);
+                || range?.MinVersion?.IsPrerelease);
         }
 
         /// <summary>

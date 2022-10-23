@@ -285,7 +285,7 @@ namespace NuGet.Commands
                         var tfm = tfmObj as NuGetFramework;
 
                         // RID specific items should be ignored here since they are only used in the runtime assembly check
-                        if (ridObj == null && tfm?.IsSpecificFramework == true)
+                        if (ridObj == null && tfm?.IsSpecificFramework)
                         {
                             available.Add(tfm);
                         }
@@ -370,7 +370,7 @@ namespace NuGet.Commands
 
                     var tfm = tfmObj as NuGetFramework;
                     var rid = ridObj as string;
-                    if (tfm?.IsSpecificFramework == true)
+                    if (tfm?.IsSpecificFramework)
                     {
                         available.Add(new FrameworkRuntimePair(tfm, rid));
                     }

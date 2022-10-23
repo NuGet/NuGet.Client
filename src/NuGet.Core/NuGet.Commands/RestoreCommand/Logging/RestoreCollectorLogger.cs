@@ -216,7 +216,7 @@ namespace NuGet.Commands
             {
                 // If the ProjectWarningPropertiesCollection is present then test if the warning is suppressed in
                 // project wide no warn or package specific no warn
-                if (ProjectWarningPropertiesCollection?.ApplyNoWarnProperties(message) == true)
+                if (ProjectWarningPropertiesCollection?.ApplyNoWarnProperties(message))
                 {
                     return true;
                 }

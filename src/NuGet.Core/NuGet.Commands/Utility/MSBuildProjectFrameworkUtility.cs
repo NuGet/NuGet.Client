@@ -173,7 +173,7 @@ namespace NuGet.Commands
             bool isCppCliSet = clrSupport?.Equals("NetCore", StringComparison.OrdinalIgnoreCase) == true;
             bool isCppCli = false;
             // C++ check
-            if (projectFilePath?.EndsWith(".vcxproj", StringComparison.OrdinalIgnoreCase) == true)
+            if (projectFilePath?.EndsWith(".vcxproj", StringComparison.OrdinalIgnoreCase))
             {
                 if (!isCppCliSet)
                 {
@@ -203,7 +203,7 @@ namespace NuGet.Commands
             var effectivePlatformIdentifier = platformMonikerIdentifier ?? platformIdentifier;
 
             // Check for JS project
-            if (projectFilePath?.EndsWith(".jsproj", StringComparison.OrdinalIgnoreCase) == true)
+            if (projectFilePath?.EndsWith(".jsproj", StringComparison.OrdinalIgnoreCase))
             {
                 // JavaScript apps do not have a TargetFrameworkMoniker property set.
                 // We read the TargetPlatformIdentifier and targetPlatformMinVersion instead

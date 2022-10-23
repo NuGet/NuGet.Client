@@ -518,7 +518,7 @@ namespace NuGet.ProjectModel
 
         private static void SetImports(IObjectWriter writer, IList<NuGetFramework> frameworks)
         {
-            if (frameworks?.Any() == true)
+            if (frameworks?.Any())
             {
                 var imports = frameworks.Select(framework => framework.GetShortFolderName());
 
@@ -593,7 +593,7 @@ namespace NuGet.ProjectModel
 
         private static void SetFrameworkReferences(IObjectWriter writer, ISet<FrameworkDependency> frameworkReferences)
         {
-            if (frameworkReferences?.Any() == true)
+            if (frameworkReferences?.Any())
             {
                 writer.WriteObjectStart("frameworkReferences");
 

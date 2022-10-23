@@ -748,7 +748,7 @@ namespace NuGet.PackageManagement.UI
             ItemsView.Refresh();
             if (ItemsView.OfType<PackageItemViewModel>()
                     .Where(p => p.PackageLevel == PackageLevel.Transitive)
-                    .Any() == true)
+                    .Any())
             {
                 ItemsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PackageItemViewModel.PackageLevel)));
             }

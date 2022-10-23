@@ -88,7 +88,7 @@ namespace NuGet.Configuration
                 if (!_isHttps.HasValue)
                 {
                     _isHttps = Source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
-                    if (_isHttps == true)
+                    if (_isHttps)
                     {
                         _isHttp = true;
                     }

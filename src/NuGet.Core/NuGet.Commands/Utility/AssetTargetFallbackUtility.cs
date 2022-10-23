@@ -21,7 +21,7 @@ namespace NuGet.Commands
         /// </summary>
         public static void EnsureValidFallback(IEnumerable<NuGetFramework> packageTargetFallback, IEnumerable<NuGetFramework> assetTargetFallback, string filePath)
         {
-            if (packageTargetFallback?.Any() == true && assetTargetFallback?.Any() == true)
+            if (packageTargetFallback?.Any() == true && assetTargetFallback?.Any())
             {
                 var error = GetInvalidFallbackCombinationMessage(filePath);
                 throw new RestoreCommandException(error);
@@ -42,12 +42,12 @@ namespace NuGet.Commands
         /// </summary>
         public static NuGetFramework GetFallbackFramework(NuGetFramework projectFramework, IEnumerable<NuGetFramework> packageTargetFallback, IEnumerable<NuGetFramework> assetTargetFallback)
         {
-            if (assetTargetFallback?.Any() == true)
+            if (assetTargetFallback?.Any())
             {
                 // AssetTargetFallback
                 return new AssetTargetFallbackFramework(projectFramework, assetTargetFallback.AsList());
             }
-            else if (packageTargetFallback?.Any() == true)
+            else if (packageTargetFallback?.Any())
             {
                 // PackageTargetFallback
                 return new FallbackFramework(projectFramework, packageTargetFallback.AsList());
@@ -67,14 +67,14 @@ namespace NuGet.Commands
                 packageTargetFallback,
                 assetTargetFallback);
 
-            if (assetTargetFallback?.Any() == true)
+            if (assetTargetFallback?.Any())
             {
                 // AssetTargetFallback
                 targetFrameworkInfo.Imports = assetTargetFallback.AsList();
                 targetFrameworkInfo.AssetTargetFallback = true;
                 targetFrameworkInfo.Warn = true;
             }
-            else if (packageTargetFallback?.Any() == true)
+            else if (packageTargetFallback?.Any())
             {
                 // PackageTargetFallback
                 targetFrameworkInfo.Imports = packageTargetFallback.AsList();

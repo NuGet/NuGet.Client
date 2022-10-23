@@ -107,7 +107,7 @@ namespace NuGet.CommandLine.XPlat
             // Setup the Credential Service before making any potential http calls.
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageReferenceArgs.Logger, !packageReferenceArgs.Interactive);
 
-            if (packageReferenceArgs.Sources?.Any() == true)
+            if (packageReferenceArgs.Sources?.Any())
             {
                 // Convert relative path to absolute path if there is any
                 List<string> sources = new List<string>();

@@ -514,7 +514,7 @@ namespace NuGet.DependencyResolver
 
         private static void LogIfPackageSourceMappingIsEnabled(string packageName, RemoteWalkContext context, IList<IRemoteDependencyProvider> remoteDependencyProviders)
         {
-            if (context.PackageSourceMapping?.IsEnabled == true)
+            if (context.PackageSourceMapping?.IsEnabled)
             {
                 if (remoteDependencyProviders.Count == 0)
                     context.Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoMatchingSourceFoundForPackage, packageName));

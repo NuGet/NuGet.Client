@@ -70,7 +70,7 @@ namespace NuGet.ProjectManagement
 
             // If the group is null or it does not contain any items besides _._ then this is a no-op.
             // If it does have items create a new normalized group to replace it with.
-            if (group?.Items.Any() == true)
+            if (group?.Items.Any())
             {
                 // Filter out invalid files
                 var normalizedItems = GetValidPackageItems(group.Items)

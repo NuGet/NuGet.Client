@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void SearchSelectionTelemetryEvent_VulnerableAndDeprecationInfo_Succeeds(bool isPackageVulnerable, bool isPackageDeprecated, bool hasDeprecationAlternative)
         {
             // Assert params
-            Assert.False(isPackageDeprecated == false && hasDeprecationAlternative == true);
+            Assert.False(isPackageDeprecated == false && hasDeprecationAlternative);
 
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();

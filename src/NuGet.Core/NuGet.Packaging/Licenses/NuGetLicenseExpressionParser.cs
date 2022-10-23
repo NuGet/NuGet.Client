@@ -170,7 +170,7 @@ namespace NuGet.Packaging.Licenses
 
             if (op.TokenType == LicenseTokenType.WITH)
             {
-                if (!(rightOperand.Item1 == leftOperand.Item1 == true))
+                if (!(rightOperand.Item1 == leftOperand.Item1))
                 {
                     throw new NuGetLicenseExpressionParsingException(string.Format(CultureInfo.CurrentCulture, Strings.NuGetLicenseExpression_InvalidExpression));
 

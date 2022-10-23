@@ -427,7 +427,7 @@ namespace NuGet.Commands
             }
 
             // Add additional conditionals for multi targeting
-            var multiTargetingFromMetadata = (request.Project.RestoreMetadata?.CrossTargeting == true);
+            var multiTargetingFromMetadata = (request.Project.RestoreMetadata?.CrossTargeting);
 
             var isMultiTargeting = multiTargetingFromMetadata
                 || request.Project.TargetFrameworks.Count > 1;

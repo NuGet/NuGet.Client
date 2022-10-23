@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.UI
 
         public override object GetPattern(PatternInterface patternInterface)
         {
-            if (patternInterface == PatternInterface.Toggle && _ownerParent?.IsItemSelectionEnabled == true)
+            if (patternInterface == PatternInterface.Toggle && _ownerParent?.IsItemSelectionEnabled)
             {
                 return this;
             }

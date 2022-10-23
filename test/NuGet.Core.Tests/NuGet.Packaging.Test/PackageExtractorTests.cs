@@ -116,9 +116,9 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(limit, installedBag.Count);
                 Assert.Equal(limit, hashBag.Count);
                 Assert.Equal(limit, nupkgMetadataBag.Count);
-                Assert.Equal(1, installedBag.Count(b => b == true));
-                Assert.Equal(limit, hashBag.Count(b => b == true));
-                Assert.Equal(limit, nupkgMetadataBag.Count(b => b == true));
+                Assert.Equal(1, installedBag.Count(b => b));
+                Assert.Equal(limit, hashBag.Count(b => b));
+                Assert.Equal(limit, nupkgMetadataBag.Count(b => b));
             }
         }
 

@@ -11489,7 +11489,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // Assert
             r.Success.Should().Be(expectedSuccess, because: r.AllOutput);
 
-            if (expectedSuccess == false)
+            if (!expectedSuccess)
             {
                 r.Errors.Should().Contain(
                         "NU1109: Detected package downgrade: D from 2.0.0 to centrally defined 1.0.0. Update the centrally managed package version to a higher version.");

@@ -375,7 +375,7 @@ namespace NuGet.Commands
         /// </summary>
         public static bool ContainsClearKeyword(IEnumerable<string> values)
         {
-            return (values?.Contains(Clear, StringComparer.OrdinalIgnoreCase) == true);
+            return (values?.Contains(Clear, StringComparer.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -385,7 +385,7 @@ namespace NuGet.Commands
         public static bool HasInvalidClear(IEnumerable<string> values)
         {
             return ContainsClearKeyword(values)
-                    && (values?.Any(e => !StringComparer.OrdinalIgnoreCase.Equals(e, Clear)) == true);
+                    && (values?.Any(e => !StringComparer.OrdinalIgnoreCase.Equals(e, Clear)));
         }
 
         /// <summary>

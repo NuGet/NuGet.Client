@@ -1041,7 +1041,7 @@ namespace NuGet.PackageManagement.UI
             PackageItemViewModel selectedItem = _packageList.SelectedItem;
             IReadOnlyCollection<PackageSourceContextInfo> packageSources = SelectedSource.PackageSources;
             int selectedIndex = _packageList.SelectedIndex;
-            int recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
+            int recommendedCount = _packageList.PackageItems.Where(item => item.Recommended).Count();
 
             if (selectedItem == null)
             {
@@ -1070,7 +1070,7 @@ namespace NuGet.PackageManagement.UI
         {
             var operationId = _packageList.OperationId;
             var selectedIndex = _packageList.SelectedIndex;
-            var recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
+            var recommendedCount = _packageList.PackageItems.Where(item => item.Recommended).Count();
             var hasDeprecationAlternative = selectedPackage.DeprecationMetadata?.AlternatePackage != null;
 
             if (_topPanel.Filter == ItemFilter.All
@@ -1235,7 +1235,7 @@ namespace NuGet.PackageManagement.UI
 
             var sw = Stopwatch.StartNew();
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked == true);
+            RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _topPanel.CheckboxPrerelease.IsChecked);
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await RunAndEmitRefreshAsync(async () => await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false),
@@ -1603,7 +1603,7 @@ namespace NuGet.PackageManagement.UI
             var alternatePackageId = tupleParam?.Item1;
             if (tupleParam != null && !string.IsNullOrWhiteSpace(alternatePackageId))
             {
-                if (_windowSearchHost?.IsEnabled == true)
+                if (_windowSearchHost?.IsEnabled)
                 {
                     if (_windowSearchHost.SearchTask != null)
                     {

@@ -217,7 +217,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            if (encrypt == true)
+            if (encrypt)
             {
                 SetEncryptedValueForAddItem(settings, ConfigurationConstants.Config, key, value);
             }
@@ -374,7 +374,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            return PackageSourceProvider.LoadPackageSources(settings).Where(e => e.IsEnabled == true).ToList();
+            return PackageSourceProvider.LoadPackageSources(settings).Where(e => e.IsEnabled).ToList();
         }
 
         /// <summary>

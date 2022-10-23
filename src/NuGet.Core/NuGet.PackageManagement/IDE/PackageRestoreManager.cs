@@ -116,7 +116,7 @@ namespace NuGet.PackageManagement
         {
             var packages = new List<PackageRestoreData>();
 
-            if (packageReferencesDict?.Any() == true)
+            if (packageReferencesDict?.Any())
             {
                 var nuGetPackageManager = GetNuGetPackageManager(solutionDirectory);
 

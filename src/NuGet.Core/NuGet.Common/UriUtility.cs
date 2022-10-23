@@ -129,7 +129,7 @@ namespace NuGet.Common
 
             var absoluteUri = TryCreateSourceUri(local, UriKind.Absolute);
 
-            if (absoluteUri?.IsFile == true)
+            if (absoluteUri?.IsFile)
             {
                 return Path.GetFullPath(local);
             }

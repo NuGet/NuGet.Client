@@ -425,12 +425,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 bool? exists;
                 string errorMessage;
                 if (PSPathUtility.TryTranslatePSPath(SessionState, source, out outputPath, out exists, out errorMessage) &&
-                    exists == true)
+                    exists)
                 {
                     source = outputPath;
                     packageSource = new PackageSource(source);
                 }
-                else if (exists == false)
+                else if (!exists)
                 {
                     return SourceValidationResult.UnknownSource(source);
                 }

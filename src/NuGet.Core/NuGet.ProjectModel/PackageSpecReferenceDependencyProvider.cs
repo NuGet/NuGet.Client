@@ -242,7 +242,7 @@ namespace NuGet.ProjectModel
             }
 
             // Ensure that this project is compatible
-            if (referencesForFramework?.FrameworkName?.IsSpecificFramework == true)
+            if (referencesForFramework?.FrameworkName?.IsSpecificFramework)
             {
                 foreach (var reference in referencesForFramework.ProjectReferences)
                 {
@@ -359,7 +359,7 @@ namespace NuGet.ProjectModel
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
 
                 if (packageSpec.RestoreMetadata?.CentralPackageVersionsEnabled == true &&
-                    packageSpec.RestoreMetadata?.CentralPackageTransitivePinningEnabled == true)
+                    packageSpec.RestoreMetadata?.CentralPackageTransitivePinningEnabled)
                 {
                     var dependencyNamesSet = new HashSet<string>(targetFrameworkInfo.Dependencies.Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
                     dependencies.AddRange(targetFrameworkInfo.CentralPackageVersions

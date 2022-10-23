@@ -141,7 +141,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 return ErrorResult(InstalledPackageResultStatus.ProjectInvalid);
             }
 
-            if (messages?.Any(m => m.Level == LogLevel.Error) == true)
+            if (messages?.Any(m => m.Level == LogLevel.Error))
             {
                 // Although we know that the project will fail to restore, we may still know about some direct dependencies, so let's return the packages that we know about.
                 status = InstalledPackageResultStatus.ProjectInvalid;

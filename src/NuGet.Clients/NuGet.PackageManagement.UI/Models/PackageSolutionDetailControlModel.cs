@@ -515,7 +515,7 @@ namespace NuGet.PackageManagement.UI
 
             foreach (var project in _projects)
             {
-                if (project.IsSelected == false)
+                if (!project.IsSelected)
                 {
                     continue;
                 }

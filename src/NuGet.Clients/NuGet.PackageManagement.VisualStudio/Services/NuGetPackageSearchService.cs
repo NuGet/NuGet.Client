@@ -448,7 +448,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var uiLogger = await ServiceLocator.GetComponentModelServiceAsync<INuGetUILogger>();
             var packageFeeds = (mainFeed: (IPackageFeed?)null, recommenderFeed: (IPackageFeed?)null);
 
-            if (itemFilter == ItemFilter.All && recommendPackages == false)
+            if (itemFilter == ItemFilter.All && !recommendPackages)
             {
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(sourceRepositories, uiLogger, TelemetryActivity.NuGetTelemetryService);
                 return packageFeeds;

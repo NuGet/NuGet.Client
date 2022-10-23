@@ -490,7 +490,7 @@ namespace NuGet.Build.Tasks.Pack
                     targetPath = Path.GetFileName(finalOutputPath);
                 }
 
-                if (string.IsNullOrEmpty(targetFramework) || NuGetFramework.Parse(targetFramework).IsSpecificFramework == false)
+                if (string.IsNullOrEmpty(targetFramework) || !NuGetFramework.Parse(targetFramework).IsSpecificFramework)
                 {
                     throw new PackagingException(NuGetLogCode.NU5027, string.Format(CultureInfo.CurrentCulture, Strings.InvalidTargetFramework, finalOutputPath));
                 }

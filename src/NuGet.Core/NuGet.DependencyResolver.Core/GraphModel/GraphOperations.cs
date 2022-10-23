@@ -329,7 +329,7 @@ namespace NuGet.DependencyResolver
         /// </summary>
         public static bool IsPackage<TItem>(this GraphNode<TItem> node)
         {
-            if ((node.Item?.Key?.Type == LibraryType.Package) == true)
+            if ((node.Item?.Key?.Type == LibraryType.Package))
             {
                 // The resolved item is a package.
                 return true;

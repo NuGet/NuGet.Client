@@ -222,7 +222,7 @@ namespace NuGet.Protocol.Tests
 
             var repositorySignatureInfos = new List<RepositorySignatureInfo>() { repositorySignatureInfo1, repositorySignatureInfo2, repositorySignatureInfo3 };
 
-            Assert.True(repositorySignatureInfos.All(p => p.AllRepositorySigned == false));
+            Assert.True(repositorySignatureInfos.All(p => !p.AllRepositorySigned));
             Assert.True(repositorySignatureInfos.All(p => p.RepositoryCertificateInfos != null));
             Assert.True(repositorySignatureInfos.All(p => p.RepositoryCertificateInfos.Count() == 1));
 

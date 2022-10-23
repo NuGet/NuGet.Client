@@ -69,7 +69,7 @@ namespace NuGet.RuntimeModel
         {
             if (runtimeGraph != null)
             {
-                if (runtimeGraph.Runtimes.Any() == true)
+                if (runtimeGraph.Runtimes.Any())
                 {
                     writer.WriteObjectStart("runtimes");
 
@@ -84,7 +84,7 @@ namespace NuGet.RuntimeModel
                     writer.WriteObjectEnd();
                 }
 
-                if (runtimeGraph.Supports.Any() == true)
+                if (runtimeGraph.Supports.Any())
                 {
                     writer.WriteObjectStart("supports");
 

@@ -139,7 +139,7 @@ namespace NuGet.Commands
                         LockFileLibrary lockFileLib = null;
                         LockFileLibrary previousLibrary = null;
 
-                        if (previousLibraries?.TryGetValue(Tuple.Create(package.Id, package.Version), out previousLibrary) == true)
+                        if (previousLibraries?.TryGetValue(Tuple.Create(package.Id, package.Version), out previousLibrary))
                         {
                             // Check that the previous library is still valid
                             if (previousLibrary != null
@@ -518,7 +518,7 @@ namespace NuGet.Commands
             foreach (GraphNode<RemoteResolveResult> node in targetGraph.Graphs.SelectMany(i => i.InnerNodes))
             {
                 // Only consider nodes that are Accepted, IsCentralTransitive, and have a centrally defined package version
-                if (node?.Item == null || node.Disposition != Disposition.Accepted || !node.Item.IsCentralTransitive || !targetFrameworkInformation.CentralPackageVersions?.ContainsKey(node.Item.Key.Name) == true)
+                if (node?.Item == null || node.Disposition != Disposition.Accepted || !node.Item.IsCentralTransitive || !targetFrameworkInformation.CentralPackageVersions?.ContainsKey(node.Item.Key.Name))
                 {
                     continue;
                 }

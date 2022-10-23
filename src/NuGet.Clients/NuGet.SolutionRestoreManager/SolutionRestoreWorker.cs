@@ -242,7 +242,7 @@ namespace NuGet.SolutionRestoreManager
             // Make sure worker restore operation is cancelled
             _workerCts?.Cancel();
 
-            if (_backgroundJobRunner?.IsValueCreated == true)
+            if (_backgroundJobRunner?.IsValueCreated)
             {
                 // Await completion of the background work
                 JoinableTaskFactory.Run(
@@ -257,7 +257,7 @@ namespace NuGet.SolutionRestoreManager
             _pendingRestore?.Dispose();
             _workerCts?.Dispose();
 
-            if (_pendingRequests?.IsValueCreated == true)
+            if (_pendingRequests?.IsValueCreated)
             {
                 _pendingRequests.Value.Dispose();
             }

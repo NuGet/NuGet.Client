@@ -197,7 +197,7 @@ namespace NuGet.ProjectModel
             writer.WritePropertyName(ProjectFileDependencyGroupsProperty);
             JsonUtility.WriteObject(writer, lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
 
-            if (lockFile.PackageFolders?.Any() == true)
+            if (lockFile.PackageFolders?.Any())
             {
                 writer.WritePropertyName(PackageFoldersProperty);
                 JsonUtility.WriteObject(writer, lockFile.PackageFolders, WriteFileItem);
