@@ -160,7 +160,7 @@ namespace NuGet.Commands
                 {
                     // If the project wide AllWarningsAsErrors is true and the message has a valid code or
                     // Project wide WarningsAsErrors contains the message code then upgrade to error.
-                    message.Message = "(WarningsAsErrors) " + message.Message;
+                    message.Message = Strings.WarningAsError + ": " + message.Message;
                     message.Level = LogLevel.Error;
                 }
             }

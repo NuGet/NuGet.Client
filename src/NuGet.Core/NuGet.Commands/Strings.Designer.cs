@@ -2428,5 +2428,14 @@ namespace NuGet.Commands {
                 return ResourceManager.GetString("Warning_VersionAboveUpperBound", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warning As Error.
+        /// </summary>
+        internal static string WarningAsError {
+            get {
+                return ResourceManager.GetString("WarningAsError", resourceCulture);
+            }
+        }
     }
 }
