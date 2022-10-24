@@ -32,17 +32,7 @@ namespace NuGet.Common.Migrations
                 // so use a global mutex and then check if someone else already did the work.
                 using (var mutex = new Mutex(false, "NuGet-Migrations"))
                 {
-                    bool captured;
-                    try
-                    {
-                        captured = mutex.WaitOne(TimeSpan.FromMinutes(1), false);
-                    }
-                    catch (AbandonedMutexException ex)
-                    {
-                        ex.Mutex?.ReleaseMutex();
-                        captured = true;
-                    }
-                    if (captured)
+                    if (WaitForMutex(mutex))
                     {
                         if (!File.Exists(expectedMigrationFilename))
                         {
@@ -64,6 +54,22 @@ namespace NuGet.Common.Migrations
                         mutex.ReleaseMutex();
                     }
                 }
+            }
+
+            static bool WaitForMutex(Mutex mutex)
+            {
+                bool captured;
+
+                try
+                {
+                    captured = mutex.WaitOne(TimeSpan.FromMinutes(1), false);
+                }
+                catch (AbandonedMutexException)
+                {
+                    captured = true;
+                }
+
+                return captured;
             }
         }
 
