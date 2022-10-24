@@ -58,11 +58,11 @@ namespace NuGet.Common.Test
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var v3cachePath = Path.Combine(testDirectory, "v3-cache");
+                var v3cachePath = Path.Combine(testDirectory, "my documents", "v3-cache");
                 var v3cacheSubDirectoryInfo = Directory.CreateDirectory(Path.Combine(v3cachePath, "subDirectory"));
                 Migration1.Exec("chmod", currentPermissions + " " + testDirectory.Path);
-                Migration1.Exec("chmod", currentPermissions + " " + v3cachePath);
-                Migration1.Exec("chmod", currentPermissions + " " + v3cacheSubDirectoryInfo.FullName);
+                Migration1.Exec("chmod", currentPermissions + " " + v3cachePath.FormatWithDoubleQuotes());
+                Migration1.Exec("chmod", currentPermissions + " " + v3cacheSubDirectoryInfo.FullName.FormatWithDoubleQuotes());
                 HashSet<string> pathsToCheck = new HashSet<string>() { testDirectory.Path, v3cachePath, v3cacheSubDirectoryInfo.FullName };
 
                 Migration1.EnsureExpectedPermissions(pathsToCheck, PosixPermissions.Parse(umask));
