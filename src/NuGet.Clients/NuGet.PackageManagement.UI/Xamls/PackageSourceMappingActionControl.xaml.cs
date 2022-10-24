@@ -13,34 +13,34 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageSourceMappingActionControl : UserControl
     {
-        private PackageDetailControlModel _packageDetailControlModel;
+        private DetailControlModel _detailControlModel;
 
         public PackageSourceMappingActionControl()
         {
             InitializeComponent();
         }
 
-        internal PackageDetailControlModel PackageDetailControlModel
+        internal DetailControlModel DetailControlModel
         {
             get
             {
-                if (_packageDetailControlModel == null) _packageDetailControlModel = (PackageDetailControlModel)DataContext;
-                return _packageDetailControlModel;
+                if (_detailControlModel == null) _detailControlModel = (DetailControlModel)DataContext;
+                return _detailControlModel;
             }
             set
             {
-                _packageDetailControlModel = value;
+                _detailControlModel = value;
             }
         }
 
         private void NewMapping_Checked(object sender, RoutedEventArgs e)
         {
-            PackageDetailControlModel?.UpdateIsInstallorUpdateButtonEnabled();
+            //DetailControlModel?.UpdateIsInstallorUpdateButtonEnabled();
         }
 
         private void SettingsButtonClicked(object sender, EventArgs e)
         {
-            PackageDetailControlModel.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
+            DetailControlModel.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
         }
     }
 }
