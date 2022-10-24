@@ -439,6 +439,9 @@
 
       <local:PackageSourceMappingActionControl
         Grid.Row="4"
+        Grid.ColumnSpan="5"
+        HorizontalContentAlignment="Left"
+        VerticalContentAlignment="Top"
         x:Name="_packageSourceMappingActionControl"
         DataContext="{Binding}" />
     </Grid>
