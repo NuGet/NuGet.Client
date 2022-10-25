@@ -1038,6 +1038,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>0 - The command name. Ex. Push/Delete. 1 - list of server URIs</comment>
   </data>
   <data name="WarningAsError" xml:space="preserve">
-    <value>Warning As Error</value>
+    <value>Warning As Error: {0}</value>
+    <comment>{0} is a warning message</comment>
   </data>
 </root>

@@ -2430,7 +2430,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Warning As Error.
+        ///   Looks up a localized string similar to Warning As Error: {0}.
         /// </summary>
         internal static string WarningAsError {
             get {
