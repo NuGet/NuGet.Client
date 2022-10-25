@@ -31,7 +31,7 @@ namespace NuGet.Common.Migrations
                             {
                                 Migration1.Run();
                                 // Create file for the migration run, so that if an older version of NuGet is run, it doesn't try to run migrations again.
-                                File.Create(expectedMigrationFilename).Dispose();
+                                File.WriteAllText(expectedMigrationFilename, string.Empty);
                             }
                         }
                         catch { }
