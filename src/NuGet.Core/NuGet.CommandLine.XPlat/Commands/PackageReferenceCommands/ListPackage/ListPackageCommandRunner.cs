@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.XPlat
         {
             IReportRenderer reportRenderer = listPackageArgs.Renderer;
             (int exitCode, ListPackageReportModel reportModel) = await GetReportDataAsync(listPackageArgs);
-            reportRenderer.AddToRenderer(reportModel);
+            reportRenderer.AddProjectReport(reportModel);
             return exitCode;
         }
 
@@ -56,7 +56,6 @@ namespace NuGet.CommandLine.XPlat
                            MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path).Where(f => File.Exists(f)) :
                            new List<string>(new string[] { listPackageArgs.Path });
 
-            var autoReferenceFound = false;
             MSBuildAPIUtility msBuild = listPackageReportModel.MSBuildAPIUtility;
 
             foreach (string projectPath in projectsPaths)
@@ -70,7 +69,7 @@ namespace NuGet.CommandLine.XPlat
 
                 if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
                 {
-                    projectModel.AddProjectInformation(error: string.Format(CultureInfo.CurrentCulture,
+                    projectModel.AddProjectInformation(message: string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_NotPRProject, projectPath),
                         problemType: ProblemType.Error);
                     continue;
@@ -81,7 +80,7 @@ namespace NuGet.CommandLine.XPlat
                 // If the file was not found, print an error message and continue to next project
                 if (!File.Exists(assetsPath))
                 {
-                    projectModel.AddProjectInformation(error: string.Format(CultureInfo.CurrentCulture,
+                    projectModel.AddProjectInformation(message: string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_AssetsFileNotFound, projectPath),
                         problemType: ProblemType.Error);
                 }
@@ -106,7 +105,7 @@ namespace NuGet.CommandLine.XPlat
                             // No packages means that no package references at all were found in the current framework
                             if (!packages.Any())
                             {
-                                projectModel.AddProjectInformation(error: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, projectModel.ProjectName), problemType: ProblemType.Information);
+                                projectModel.AddProjectInformation(message: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, projectModel.ProjectName), problemType: ProblemType.Information);
                             }
                             else
                             {
@@ -143,25 +142,20 @@ namespace NuGet.CommandLine.XPlat
                                     var hasAutoReference = false;
                                     List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetaData(packages, listPackageArgs, ref hasAutoReference);
                                     projectModel.SetFrameworkPackageMetadata(projectFrameworkPackages);
-                                    autoReferenceFound = autoReferenceFound || hasAutoReference;
+                                    projectModel.SetAutoReferenceFound(hasAutoReference);
                                 }
                             }
                         }
                     }
                     else
                     {
-                        projectModel.AddProjectInformation(error: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingAssetsFile, assetsPath),
+                        projectModel.AddProjectInformation(message: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingAssetsFile, assetsPath),
                             problemType: ProblemType.Error);
                     }
 
                     // Unload project
                     ProjectCollection.GlobalProjectCollection.UnloadProject(project);
                 }
-            }
-
-            if (autoReferenceFound)
-            {
-                listPackageReportModel.AutoReferenceFound = true;
             }
 
             // if there is any error then return failure code.

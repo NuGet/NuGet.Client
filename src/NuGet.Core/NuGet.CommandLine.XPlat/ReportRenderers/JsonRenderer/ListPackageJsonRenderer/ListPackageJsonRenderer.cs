@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.XPlat
             return _problems;
         }
 
-        public void AddToRenderer(ListPackageReportModel listPackageReportModel)
+        public void AddProjectReport(ListPackageReportModel listPackageReportModel)
         {
             // Aggregate problems from projects.
             _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems).Where(p => p.ProblemType != ProblemType.Information));
@@ -44,8 +44,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 ListPackageArgs = listPackageReportModel.ListPackageArgs,
                 Problems = _problems,
-                Projects = listPackageReportModel.Projects,
-                AutoReferenceFound = listPackageReportModel.AutoReferenceFound
+                Projects = listPackageReportModel.Projects
             });
 
             _writer.WriteLine(jsonRenderedOutput);

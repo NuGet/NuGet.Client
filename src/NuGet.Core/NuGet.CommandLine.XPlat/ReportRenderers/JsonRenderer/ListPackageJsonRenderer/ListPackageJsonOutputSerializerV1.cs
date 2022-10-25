@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
@@ -345,7 +346,7 @@ namespace NuGet.CommandLine.XPlat
                 writer.WritePropertyName(ParametersProperty);
                 writer.WriteValue(PathUtility.GetPathWithForwardSlashes(ListPackageArgs.ArgumentText));
 
-                if (jsonOutputContent.AutoReferenceFound)
+                if (jsonOutputContent.Projects.Any(p => p.AutoReferenceFound))
                 {
                     jsonOutputContent.Problems.Add(new ReportProblem(string.Empty, Strings.ListPkg_AutoReferenceDescription, ProblemType.Warning));
                 }

@@ -31,7 +31,7 @@ namespace NuGet.CommandLine.XPlat
             WriteProjects(jsonOutputContent.Projects);
 
             // Print a legend message for auto-reference markers used
-            if (jsonOutputContent.AutoReferenceFound)
+            if (jsonOutputContent.Projects.Any(p => p.AutoReferenceFound))
             {
                 Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
             }

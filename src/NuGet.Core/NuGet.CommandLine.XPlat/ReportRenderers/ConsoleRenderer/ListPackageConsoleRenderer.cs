@@ -30,14 +30,13 @@ namespace NuGet.CommandLine.XPlat
             return _problems;
         }
 
-        public void AddToRenderer(ListPackageReportModel listPackageReportModel)
+        public void AddProjectReport(ListPackageReportModel listPackageReportModel)
         {
             ListPackageConsoleWriter.Render(new ListPackageOutputContentV1()
             {
                 ListPackageArgs = listPackageReportModel.ListPackageArgs,
                 Problems = _problems,
-                Projects = listPackageReportModel.Projects,
-                AutoReferenceFound = listPackageReportModel.AutoReferenceFound
+                Projects = listPackageReportModel.Projects
             });
         }
     }

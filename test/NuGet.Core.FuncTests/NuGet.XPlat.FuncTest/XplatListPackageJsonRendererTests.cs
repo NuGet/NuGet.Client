@@ -119,7 +119,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.AddToRenderer(listPackageReportModel);
+                    jsonRenderer.AddProjectReport(listPackageReportModel);
                 }
 
                 // Assert
@@ -238,7 +238,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.AddToRenderer(listPackageReportModel);
+                    jsonRenderer.AddProjectReport(listPackageReportModel);
                 }
 
                 // Assert
@@ -332,7 +332,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.AddToRenderer(listPackageReportModel);
+                    jsonRenderer.AddProjectReport(listPackageReportModel);
                 }
 
                 // Assert
@@ -431,7 +431,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.AddToRenderer(listPackageReportModel);
+                    jsonRenderer.AddProjectReport(listPackageReportModel);
                 }
 
                 // Assert
@@ -540,7 +540,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.AddToRenderer(listPackageReportModel);
+                    jsonRenderer.AddProjectReport(listPackageReportModel);
                 }
 
                 // Assert
@@ -632,7 +632,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.AddToRenderer(listPackageReportModel);
+                    jsonRenderer.AddProjectReport(listPackageReportModel);
                 }
 
                 // Assert
@@ -771,7 +771,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.AddToRenderer(listPackageReportModel);
+                    jsonRenderer.AddProjectReport(listPackageReportModel);
                 }
 
                 // Assert
@@ -922,7 +922,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.AddToRenderer(listPackageReportModel);
+                    jsonRenderer.AddProjectReport(listPackageReportModel);
                 }
 
                 // Assert
@@ -1062,7 +1062,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.AddToRenderer(listPackageReportModel);
+                    jsonRenderer.AddProjectReport(listPackageReportModel);
                 }
 
                 // Assert
@@ -1180,7 +1180,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.AddToRenderer(listPackageReportModel);
+                    jsonRenderer.AddProjectReport(listPackageReportModel);
                 }
 
                 // Assert

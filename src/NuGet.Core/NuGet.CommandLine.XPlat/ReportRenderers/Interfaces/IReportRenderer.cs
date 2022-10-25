@@ -10,6 +10,6 @@ namespace NuGet.CommandLine.XPlat
     {
         void AddProblem(string errorText, ProblemType problemType);
         IEnumerable<ReportProblem> GetProblems();
-        void AddToRenderer(ListPackageReportModel reportProject);
+        void AddProjectReport(ListPackageReportModel reportProject);
     }
 }

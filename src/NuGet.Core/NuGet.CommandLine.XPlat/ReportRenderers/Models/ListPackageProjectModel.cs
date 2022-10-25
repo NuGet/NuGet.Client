@@ -26,6 +26,7 @@ namespace NuGet.CommandLine.XPlat
         internal string ProjectName { get; private set; }
         internal Project Project { get; }
         internal ListPackageReportModel ReportModel { get; }
+        internal bool AutoReferenceFound { get; private set; }
 
         public ListPackageProjectModel(string projectPath, ListPackageReportModel reportModel, Project project)
         {
@@ -46,9 +47,14 @@ namespace NuGet.CommandLine.XPlat
             TargetFrameworkPackages = frameworkPackages;
         }
 
-        internal void AddProjectInformation(string error, ProblemType problemType)
+        internal void SetAutoReferenceFound(bool autoReferenceFound)
         {
-            ProjectProblems.Add(new ReportProblem(project: ProjectPath, message: error, problemType: problemType));
+            AutoReferenceFound = autoReferenceFound;
+        }
+
+        internal void AddProjectInformation(string message, ProblemType problemType)
+        {
+            ProjectProblems.Add(new ReportProblem(project: ProjectPath, message: message, problemType: problemType));
         }
 
         internal bool PrintPackagesFlag => FilterPackages(Packages, ReportModel.ListPackageArgs);
