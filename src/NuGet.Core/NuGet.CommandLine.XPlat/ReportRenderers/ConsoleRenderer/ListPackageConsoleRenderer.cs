@@ -30,7 +30,7 @@ namespace NuGet.CommandLine.XPlat
             return _problems;
         }
 
-        public void End(ListPackageReportModel listPackageReportModel)
+        public void AddToRenderer(ListPackageReportModel listPackageReportModel)
         {
             ListPackageConsoleWriter.Render(new ListPackageOutputContentV1()
             {

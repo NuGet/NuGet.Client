@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using NuGet.CommandLine.XPlat.Utility;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Versioning;
@@ -84,11 +85,11 @@ namespace NuGet.CommandLine.XPlat
                 if (!string.IsNullOrEmpty(reportProblem.Project))
                 {
                     writer.WritePropertyName(ProjectProperty);
-                    writer.WriteValue(reportProblem.Project.NormalizeFilePath());
+                    writer.WriteValue(PathUtility.GetPathWithForwardSlashes(reportProblem.Project));
                 }
 
                 writer.WritePropertyName(reportProblem.ProblemType == ProblemType.Warning ? WarningProperty : reportProblem.ProblemType == ProblemType.Error ? ErrorProperty : InformationProperty);
-                writer.WriteValue(reportProblem.Message.NormalizeFilePath());
+                writer.WriteValue(PathUtility.GetPathWithForwardSlashes(reportProblem.Message));
                 writer.WriteEndObject();
             }
 
@@ -108,7 +109,7 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (PackageSource packageSource in packageSources)
             {
-                writer.WriteValue(packageSource.Source.NormalizeFilePath());
+                writer.WriteValue(PathUtility.GetPathWithForwardSlashes(packageSource.Source));
             }
 
             writer.WriteEndArray();
@@ -124,7 +125,7 @@ namespace NuGet.CommandLine.XPlat
                 writer.WriteStartObject();
 
                 writer.WritePropertyName(PathProperty);
-                writer.WriteValue(reportProject.ProjectPath.NormalizeFilePath());
+                writer.WriteValue(PathUtility.GetPathWithForwardSlashes(reportProject.ProjectPath));
 
                 if (reportProject.TargetFrameworkPackages?.Count > 0)
                 {
@@ -339,10 +340,10 @@ namespace NuGet.CommandLine.XPlat
                 writer.WriteStartObject();
 
                 writer.WritePropertyName(VersionProperty);
-                writer.WriteValue(jsonOutputContent.Version);
+                writer.WriteValue(jsonOutputContent.ReportOutputVersion);
 
                 writer.WritePropertyName(ParametersProperty);
-                writer.WriteValue(ListPackageArgs.ArgumentText.NormalizeFilePath());
+                writer.WriteValue(PathUtility.GetPathWithForwardSlashes(ListPackageArgs.ArgumentText));
 
                 if (jsonOutputContent.AutoReferenceFound)
                 {

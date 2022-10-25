@@ -119,7 +119,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.End(listPackageReportModel);
+                    jsonRenderer.AddToRenderer(listPackageReportModel);
                 }
 
                 // Assert
@@ -171,10 +171,10 @@ namespace NuGet.XPlat.FuncTest
                     }}
                   ]
                 }}
-                ".Replace("'", "\"").NormalizeFilePath());
+                ".Replace("'", "\""));
 
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
-                actual.Should().Be(expected);
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
         }
 
@@ -238,7 +238,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.End(listPackageReportModel);
+                    jsonRenderer.AddToRenderer(listPackageReportModel);
                 }
 
                 // Assert
@@ -271,10 +271,10 @@ namespace NuGet.XPlat.FuncTest
                     }}
                   ]
                 }}
-                ".Replace("'", "\"").NormalizeFilePath());
+                ".Replace("'", "\""));
 
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
-                actual.Should().Be(expected);
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
         }
 
@@ -332,7 +332,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.End(listPackageReportModel);
+                    jsonRenderer.AddToRenderer(listPackageReportModel);
                 }
 
                 // Assert
@@ -362,10 +362,10 @@ namespace NuGet.XPlat.FuncTest
                     }}
                   ]
                 }}
-                ".Replace("'", "\"").NormalizeFilePath());
+                ".Replace("'", "\""));
 
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
-                actual.Should().Be(expected);
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
         }
 
@@ -431,7 +431,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.End(listPackageReportModel);
+                    jsonRenderer.AddToRenderer(listPackageReportModel);
                 }
 
                 // Assert
@@ -467,10 +467,10 @@ namespace NuGet.XPlat.FuncTest
                     }}
                   ]
                 }}
-                ".Replace("'", "\"").NormalizeFilePath());
+                ".Replace("'", "\""));
 
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
-                actual.Should().Be(expected);
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
         }
 
@@ -540,7 +540,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.End(listPackageReportModel);
+                    jsonRenderer.AddToRenderer(listPackageReportModel);
                 }
 
                 // Assert
@@ -579,10 +579,10 @@ namespace NuGet.XPlat.FuncTest
                     }}
                   ]
                 }}
-                ".Replace("'", "\"").NormalizeFilePath());
+                ".Replace("'", "\""));
 
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
-                actual.Should().Be(expected);
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
         }
 
@@ -632,7 +632,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.End(listPackageReportModel);
+                    jsonRenderer.AddToRenderer(listPackageReportModel);
                 }
 
                 // Assert
@@ -656,10 +656,10 @@ namespace NuGet.XPlat.FuncTest
                     }}
                   ]
                 }}
-                ".Replace("'", "\"").NormalizeFilePath());
+                ".Replace("'", "\""));
 
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
-                actual.Should().Be(expected);
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
         }
 
@@ -771,7 +771,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.End(listPackageReportModel);
+                    jsonRenderer.AddToRenderer(listPackageReportModel);
                 }
 
                 // Assert
@@ -835,10 +835,10 @@ namespace NuGet.XPlat.FuncTest
                     }}
                     ]
                 }}
-                ".Replace("'", "\"").NormalizeFilePath());
+                ".Replace("'", "\""));
 
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
-                actual.Should().Be(expected);
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
         }
 
@@ -922,7 +922,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.End(listPackageReportModel);
+                    jsonRenderer.AddToRenderer(listPackageReportModel);
                 }
 
                 // Assert
@@ -971,10 +971,10 @@ namespace NuGet.XPlat.FuncTest
                     }}
                   ]
                 }}
-                ".Replace("'", "\"").NormalizeFilePath());
+                ".Replace("'", "\""));
 
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
-                actual.Should().Be(expected);
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
         }
 
@@ -1062,7 +1062,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.End(listPackageReportModel);
+                    jsonRenderer.AddToRenderer(listPackageReportModel);
                 }
 
                 // Assert
@@ -1114,10 +1114,10 @@ namespace NuGet.XPlat.FuncTest
                     }}
                   ]
                 }}
-                ".Replace("'", "\"").NormalizeFilePath());
+                ".Replace("'", "\""));
 
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
-                actual.Should().Be(expected);
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
         }
 
@@ -1180,7 +1180,7 @@ namespace NuGet.XPlat.FuncTest
                     );
 
                     // Act
-                    jsonRenderer.End(listPackageReportModel);
+                    jsonRenderer.AddToRenderer(listPackageReportModel);
                 }
 
                 // Assert
@@ -1216,10 +1216,10 @@ namespace NuGet.XPlat.FuncTest
                         }}
                       ]
                     }}
-                ".Replace("'", "\"").NormalizeFilePath());
+                ".Replace("'", "\""));
 
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
-                actual.Should().Be(expected);
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
         }
 
@@ -1231,13 +1231,13 @@ namespace NuGet.XPlat.FuncTest
             foreach ((string projectPath, List<ListPackageReportFrameworkPackage> listPackageReportFrameworks, List<ReportProblem> projectProblems) project in projects)
             {
                 var projectModel = new ListPackageProjectModel(project.projectPath);
-                projectModel.SetFrameworkPackageMetaData(project.listPackageReportFrameworks);
+                projectModel.SetFrameworkPackageMetadata(project.listPackageReportFrameworks);
 
                 if (project.projectProblems != null)
                 {
                     foreach (var projectProblem in project.projectProblems)
                     {
-                        projectModel.AddProjectProblem(projectProblem.Message, projectProblem.ProblemType);
+                        projectModel.AddProjectInformation(projectProblem.Message, projectProblem.ProblemType);
                     }
                 }
 

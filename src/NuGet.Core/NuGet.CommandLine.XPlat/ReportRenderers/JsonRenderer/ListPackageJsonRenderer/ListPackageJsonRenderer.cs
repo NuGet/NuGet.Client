@@ -14,15 +14,15 @@ namespace NuGet.CommandLine.XPlat
     internal abstract class ListPackageJsonRenderer : IReportRenderer
     {
         protected readonly List<ReportProblem> _problems = new();
-        protected ReportOutputVersion OutputVersion { get; private set; }
+        protected int ReportOutputVersion { get; private set; }
         private TextWriter _writer;
 
         private ListPackageJsonRenderer()
         { }
 
-        protected ListPackageJsonRenderer(ReportOutputVersion outputVersion, TextWriter textWriter)
+        protected ListPackageJsonRenderer(int reportOutputVersion, TextWriter textWriter)
         {
-            OutputVersion = outputVersion;
+            ReportOutputVersion = reportOutputVersion;
             _writer = textWriter != null ? textWriter : Console.Out;
         }
 
@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.XPlat
             return _problems;
         }
 
-        public void End(ListPackageReportModel listPackageReportModel)
+        public void AddToRenderer(ListPackageReportModel listPackageReportModel)
         {
             // Aggregate problems from projects.
             _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems).Where(p => p.ProblemType != ProblemType.Information));

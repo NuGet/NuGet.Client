@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.XPlat
     internal class ListPackageProjectModel
     {
         private const string ProjectNameMSbuildProperty = "MSBuildProjectName";
-        internal List<ReportProblem> ProjectProblems { get; private set; }
+        internal List<ReportProblem> ProjectProblems { get; } = new List<ReportProblem>();
         internal string ProjectPath { get; private set; }
         // Original packages
         internal IEnumerable<FrameworkPackages> Packages { get; private set; }
@@ -27,14 +27,11 @@ namespace NuGet.CommandLine.XPlat
         internal Project Project { get; }
         internal ListPackageReportModel ReportModel { get; }
 
-        public ListPackageProjectModel(string projectPath, ListPackageReportModel reportModel)
+        public ListPackageProjectModel(string projectPath, ListPackageReportModel reportModel, Project project)
         {
             ProjectPath = projectPath;
             ReportModel = reportModel;
-
-            //Open project to evaluate properties for the assets
-            //file and the name of the project
-            Project = MSBuildAPIUtility.GetProject(projectPath);
+            Project = project;
             ProjectName = Project.GetPropertyValue(ProjectNameMSbuildProperty);
         }
 
@@ -44,24 +41,14 @@ namespace NuGet.CommandLine.XPlat
             ProjectPath = projectPath;
         }
 
-        internal void SetFrameworkPackageMetaData(List<ListPackageReportFrameworkPackage> frameworkPackages)
+        internal void SetFrameworkPackageMetadata(List<ListPackageReportFrameworkPackage> frameworkPackages)
         {
             TargetFrameworkPackages = frameworkPackages;
         }
 
-        internal void AddProjectProblem(string error, ProblemType problemType)
+        internal void AddProjectInformation(string error, ProblemType problemType)
         {
-            ProjectProblems ??= new();
             ProjectProblems.Add(new ReportProblem(project: ProjectPath, message: error, problemType: problemType));
-        }
-
-        internal IEnumerable<FrameworkPackages> GetAssetFilePackages(LockFile assetsFile)
-        {
-            if (Packages == null)
-            {
-                Packages = ReportModel.MSBuildAPIUtility.GetResolvedVersions(Project.FullPath, ReportModel.ListPackageArgs.Frameworks, assetsFile, ReportModel.ListPackageArgs.IncludeTransitive, includeProjects: ReportModel.ListPackageArgs.ReportType == ReportType.Default);
-            }
-            return Packages;
         }
 
         internal bool PrintPackagesFlag => FilterPackages(Packages, ReportModel.ListPackageArgs);

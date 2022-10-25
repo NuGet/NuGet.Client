@@ -10,7 +10,7 @@ namespace NuGet.CommandLine.XPlat
     /// </summary>
     internal class ListPackageOutputContentV1
     {
-        internal int Version { get; set; } = (int)ReportOutputVersion.V1;
+        internal int ReportOutputVersion { get; set; } = 1;
         internal ListPackageArgs ListPackageArgs { get; set; }
         internal List<ReportProblem> Problems { get; set; }
         internal List<ListPackageProjectModel> Projects { get; set; }

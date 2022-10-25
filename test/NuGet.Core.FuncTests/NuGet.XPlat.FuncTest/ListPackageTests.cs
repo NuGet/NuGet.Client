@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
@@ -184,6 +185,14 @@ namespace NuGet.XPlat.FuncTest
                     XPlatTestUtils.DisposeTemporaryFile(projectPath);
                 }
             }
+        }
+
+        [Fact]
+        public void JsonRenderer_ListPackageArgse_Verify_AllFields_Covered()
+        {
+            Type listPackageArgsType = typeof(ListPackageArgs);
+            FieldInfo[] fields = listPackageArgsType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            Assert.True(12 == fields.Length, "Number of fields are changed in ListPackageArgs.cs. Please make sure this change is accounted for GetReportParameters method in that file.");
         }
     }
 }

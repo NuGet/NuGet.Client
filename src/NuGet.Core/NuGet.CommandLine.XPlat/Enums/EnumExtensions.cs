@@ -2,21 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
+using System.Linq;
 
 namespace NuGet.CommandLine.XPlat
 {
     internal static class EnumExtensions
     {
-        public static T GetValueFromName<T>(string description) where T : Enum
+        public static string GetValueList<T>() where T : Enum
         {
-            description = description?.ToUpperInvariant();
-            foreach (var field in typeof(T).GetFields())
-            {
-                if (field.Name.ToUpperInvariant() == description)
-                    return (T)field.GetValue(null);
-            }
+            var enumValues = ((T[])Enum.GetValues(typeof(T)))
+               .Select(x => x.ToString());
 
-            throw new ArgumentException("Enum not found.", nameof(description));
+            return string.Join(", ", enumValues).ToLower(CultureInfo.CurrentCulture);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.XPlat
         {
             IReportRenderer reportRenderer = listPackageArgs.Renderer;
             (int exitCode, ListPackageReportModel reportModel) = await GetReportDataAsync(listPackageArgs);
-            reportRenderer.End(reportModel);
+            reportRenderer.AddToRenderer(reportModel);
             return exitCode;
         }
 
@@ -61,13 +61,16 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (string projectPath in projectsPaths)
             {
+                //Open project to evaluate properties for the assets
+                //file and the name of the project
+                Project project = MSBuildAPIUtility.GetProject(projectPath);
+
                 // Project specific data stored in below variable
-                ListPackageProjectModel projectModel = listPackageReportModel.CreateProjectReportData(projectPath: projectPath);
-                Project project = projectModel.Project;
+                ListPackageProjectModel projectModel = listPackageReportModel.CreateProjectReportData(projectPath: projectPath, project);
 
                 if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
                 {
-                    projectModel.AddProjectProblem(error: string.Format(CultureInfo.CurrentCulture,
+                    projectModel.AddProjectInformation(error: string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_NotPRProject, projectPath),
                         problemType: ProblemType.Error);
                     continue;
@@ -78,7 +81,7 @@ namespace NuGet.CommandLine.XPlat
                 // If the file was not found, print an error message and continue to next project
                 if (!File.Exists(assetsPath))
                 {
-                    projectModel.AddProjectProblem(error: string.Format(CultureInfo.CurrentCulture,
+                    projectModel.AddProjectInformation(error: string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_AssetsFileNotFound, projectPath),
                         problemType: ProblemType.Error);
                 }
@@ -93,7 +96,7 @@ namespace NuGet.CommandLine.XPlat
                         assetsFile.Targets.Count != 0)
                     {
                         // Get all the packages that are referenced in a project
-                        IEnumerable<FrameworkPackages> packages = projectModel.GetAssetFilePackages(assetsFile);
+                        IEnumerable<FrameworkPackages> packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive, includeProjects: listPackageArgs.ReportType == ReportType.Default);
 
                         // If packages equals null, it means something wrong happened
                         // with reading the packages and it was handled and message printed
@@ -103,7 +106,7 @@ namespace NuGet.CommandLine.XPlat
                             // No packages means that no package references at all were found in the current framework
                             if (!packages.Any())
                             {
-                                projectModel.AddProjectProblem(error: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, projectModel.ProjectName), problemType: ProblemType.Information);
+                                projectModel.AddProjectInformation(error: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, projectModel.ProjectName), problemType: ProblemType.Information);
                             }
                             else
                             {
@@ -123,13 +126,13 @@ namespace NuGet.CommandLine.XPlat
                                     switch (listPackageArgs.ReportType)
                                     {
                                         case ReportType.Outdated:
-                                            projectModel.AddProjectProblem(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoUpdatesForProject, projectModel.ProjectName), ProblemType.Information);
+                                            projectModel.AddProjectInformation(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoUpdatesForProject, projectModel.ProjectName), ProblemType.Information);
                                             break;
                                         case ReportType.Deprecated:
-                                            projectModel.AddProjectProblem(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoDeprecatedPackagesForProject, projectModel.ProjectName), ProblemType.Information);
+                                            projectModel.AddProjectInformation(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoDeprecatedPackagesForProject, projectModel.ProjectName), ProblemType.Information);
                                             break;
                                         case ReportType.Vulnerable:
-                                            projectModel.AddProjectProblem(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, projectModel.ProjectName), ProblemType.Information);
+                                            projectModel.AddProjectInformation(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, projectModel.ProjectName), ProblemType.Information);
                                             break;
                                     }
                                 }
@@ -139,7 +142,7 @@ namespace NuGet.CommandLine.XPlat
                                 {
                                     var hasAutoReference = false;
                                     List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetaData(packages, listPackageArgs, ref hasAutoReference);
-                                    projectModel.SetFrameworkPackageMetaData(projectFrameworkPackages);
+                                    projectModel.SetFrameworkPackageMetadata(projectFrameworkPackages);
                                     autoReferenceFound = autoReferenceFound || hasAutoReference;
                                 }
                             }
@@ -147,7 +150,7 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else
                     {
-                        projectModel.AddProjectProblem(error: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingAssetsFile, assetsPath),
+                        projectModel.AddProjectInformation(error: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingAssetsFile, assetsPath),
                             problemType: ProblemType.Error);
                     }
 
@@ -189,7 +192,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 if (httpPackageSources.Count == 1)
                 {
-                    projectModel.AddProjectProblem(
+                    projectModel.AddProjectInformation(
                         string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_HttpServerUsage,
                         "list package",
@@ -198,7 +201,7 @@ namespace NuGet.CommandLine.XPlat
                 }
                 else
                 {
-                    projectModel.AddProjectProblem(
+                    projectModel.AddProjectInformation(
                         string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_HttpServerUsage_MultipleSources,
                         "list package",

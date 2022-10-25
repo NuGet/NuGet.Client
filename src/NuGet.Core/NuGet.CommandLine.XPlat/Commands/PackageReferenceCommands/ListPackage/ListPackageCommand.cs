@@ -173,17 +173,11 @@ namespace NuGet.CommandLine.XPlat
         private static IReportRenderer GetOutputType(string outputFormatOption, string outputVersionOption)
         {
             ReportOutputFormat outputFormat = ReportOutputFormat.Console;
-            if (!string.IsNullOrEmpty(outputFormatOption))
+            if (!string.IsNullOrEmpty(outputFormatOption) &&
+                !Enum.TryParse(outputFormatOption, ignoreCase: true, out outputFormat))
             {
-                try
-                {
-                    outputFormat = EnumExtensions.GetValueFromName<ReportOutputFormat>(outputFormatOption);
-                }
-                catch (ArgumentException)
-                {
-                    string currentlySupportedFormat = "console, json";
-                    throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOutputFormat, outputFormatOption, currentlySupportedFormat));
-                }
+                string currentlySupportedFormat = EnumExtensions.GetValueList<ReportOutputFormat>();
+                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOutputFormat, outputFormatOption, currentlySupportedFormat));
             }
 
             if (outputFormat == ReportOutputFormat.Console)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.Build.Evaluation;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -24,9 +25,9 @@ namespace NuGet.CommandLine.XPlat
             MSBuildAPIUtility = new MSBuildAPIUtility(listPackageArgs.Logger);
         }
 
-        internal ListPackageProjectModel CreateProjectReportData(string projectPath)
+        internal ListPackageProjectModel CreateProjectReportData(string projectPath, Project project)
         {
-            var projectModel = new ListPackageProjectModel(projectPath, this);
+            var projectModel = new ListPackageProjectModel(projectPath, this, project);
             Projects.Add(projectModel);
             return projectModel;
         }

@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
         private ListPackageJsonRendererV1(TextWriter textWriter)
-            : base(ReportOutputVersion.V1, textWriter)
+            : base(reportOutputVersion: 1, textWriter)
         {
         }
     }
