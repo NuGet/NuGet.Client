@@ -64,6 +64,12 @@ namespace NuGet.VisualStudio.Telemetry
                 // IVsGlobalPackagesInitScriptExecutor
                 [nameof(IVsGlobalPackagesInitScriptExecutor) + "." + nameof(IVsGlobalPackagesInitScriptExecutor.ExecuteInitScriptAsync)] = new Count(),
 
+                // IVsNuGetProjectUpdateEvents
+                [nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(IVsNuGetProjectUpdateEvents.SolutionRestoreStarted)] = new Count(),
+                [nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(IVsNuGetProjectUpdateEvents.SolutionRestoreFinished)] = new Count(),
+                [nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(IVsNuGetProjectUpdateEvents.ProjectUpdateStarted)] = new Count(),
+                [nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(IVsNuGetProjectUpdateEvents.ProjectUpdateFinished)] = new Count(),
+
                 // IVsPackageInstaller
                 [nameof(IVsPackageInstaller) + "." + nameof(IVsPackageInstaller.InstallPackage) + ".1"] = new Count(),
                 [nameof(IVsPackageInstaller) + "." + nameof(IVsPackageInstaller.InstallPackage) + ".2"] = new Count(),
@@ -159,11 +165,8 @@ namespace NuGet.VisualStudio.Telemetry
                 // IVsSolutionRestoreService4
                 [nameof(IVsSolutionRestoreService4) + "." + nameof(IVsSolutionRestoreService4.RegisterRestoreInfoSourceAsync)] = new Count(),
 
-                // IVsNuGetProjectUpdateEvents
-                [nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(IVsNuGetProjectUpdateEvents.SolutionRestoreStarted)] = new Count(),
-                [nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(IVsNuGetProjectUpdateEvents.SolutionRestoreFinished)] = new Count(),
-                [nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(IVsNuGetProjectUpdateEvents.ProjectUpdateStarted)] = new Count(),
-                [nameof(IVsNuGetProjectUpdateEvents) + "." + nameof(IVsNuGetProjectUpdateEvents.ProjectUpdateFinished)] = new Count(),
+                // IVsSolutionRestoreStatusProvider
+                [nameof(IVsSolutionRestoreStatusProvider) + "." + nameof(IVsSolutionRestoreStatusProvider.IsRestoreCompleteAsync)] = new Count(),
             };
         }
 
