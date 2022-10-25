@@ -711,7 +711,8 @@ namespace NuGet.Commands
                 _packArgs.WarningProperties = WarningProperties.GetWarningProperties(
                 treatWarningsAsErrors: _packArgs.GetPropertyValue("TreatWarningsAsErrors") ?? string.Empty,
                 warningsAsErrors: _packArgs.GetPropertyValue("WarningsAsErrors") ?? string.Empty,
-                noWarn: _packArgs.GetPropertyValue("NoWarn") ?? string.Empty);
+                noWarn: _packArgs.GetPropertyValue("NoWarn") ?? string.Empty,
+                warningsNotAsErrors: _packArgs.GetPropertyValue("WarningsNotAsErrors") ?? string.Empty);
                 _packArgs.Logger = new PackCollectorLogger(_packArgs.Logger, _packArgs.WarningProperties);
             }
 

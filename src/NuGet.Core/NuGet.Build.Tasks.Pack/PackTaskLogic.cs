@@ -38,7 +38,7 @@ namespace NuGet.Build.Tasks.Pack
                 BasePath = request.NuspecBasePath,
                 NoPackageAnalysis = request.NoPackageAnalysis,
                 NoDefaultExcludes = request.NoDefaultExcludes,
-                WarningProperties = WarningProperties.GetWarningProperties(request.TreatWarningsAsErrors, request.WarningsAsErrors, request.NoWarn),
+                WarningProperties = WarningProperties.GetWarningProperties(request.TreatWarningsAsErrors, request.WarningsAsErrors, request.NoWarn, request.WarningsNotAsErrors),
                 PackTargetArgs = new MSBuildPackTargetArgs()
             };
 

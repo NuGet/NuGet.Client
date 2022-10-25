@@ -4879,6 +4879,71 @@ namespace Proj1
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_WithTreatWarningsAsErrors_AndWarnNotAsError_SucceedsAndPrintsWarnings()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+$@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>NU5115</WarningsNotAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj1_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file2.txt",
+                    "file2");
+
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
+                    waitForExit: true);
+
+                var nupkgPath = Path.Combine(workingDirectory, "proj1", "proj1.1.0.0-rtm.nupkg");
+
+                var expectedMessage = "WARNING: " + NuGetLogCode.NU5115.ToString();
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place..");
+                r.AllOutput.Should().Contain(expectedMessage);
+                r.ExitCode.Should().Be(0);
+            }
+        }
+
         [Theory]
         [InlineData("MIT", true)]
         [InlineData("MIT OR Apache-2.0", false)]

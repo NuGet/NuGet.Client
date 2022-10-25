@@ -137,7 +137,8 @@ namespace NuGet.ProjectModel.Test
             var allWarningsAsErrors = true;
             var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
             var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };
-            var warningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1802, NuGetLogCode.NU1803 };
+            var warningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn, warningsNotAsErrors: warningsNotAsErrors);
             var restoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile: "true", nuGetLockFilePath: null, restoreLockedMode: false);
             var originalProjectRestoreMetadata = new ProjectRestoreMetadata
             {
@@ -352,14 +353,15 @@ namespace NuGet.ProjectModel.Test
             var allWarningsAsErrors = true;
             var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
             var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1802, NuGetLogCode.NU1803 };
 
             var leftSide = new ProjectRestoreMetadata
             {
-                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn)
+                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn, warningsNotAsErrors: warningsNotAsErrors)
             };
             var rightSide = new ProjectRestoreMetadata
             {
-                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn)
+                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn, warningsNotAsErrors: warningsNotAsErrors)
             };
             AssertEquality(leftSide, rightSide);
         }
@@ -369,14 +371,15 @@ namespace NuGet.ProjectModel.Test
         {
             var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
             var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1802, NuGetLogCode.NU1803 };
 
             var leftSide = new ProjectRestoreMetadata
             {
-                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: true, warningsAsErrors: warningsAsErrors, noWarn: noWarn)
+                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: true, warningsAsErrors: warningsAsErrors, noWarn: noWarn, warningsNotAsErrors: warningsNotAsErrors)
             };
             var rightSide = new ProjectRestoreMetadata
             {
-                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: false, warningsAsErrors: warningsAsErrors, noWarn: noWarn)
+                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: false, warningsAsErrors: warningsAsErrors, noWarn: noWarn, warningsNotAsErrors: warningsNotAsErrors)
             };
             AssertEquality(expected: false, leftSide, rightSide);
         }
@@ -613,14 +616,15 @@ namespace NuGet.ProjectModel.Test
             var allWarningsAsErrors = true;
             var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
             var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1802, NuGetLogCode.NU1803 };
 
             var leftSide = new ProjectRestoreMetadata
             {
-                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn)
+                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn, warningsNotAsErrors: warningsNotAsErrors)
             };
             var rightSide = new ProjectRestoreMetadata
             {
-                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn)
+                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn, warningsNotAsErrors: warningsNotAsErrors)
             };
             AssertHashCode(leftSide, rightSide);
         }
@@ -630,14 +634,15 @@ namespace NuGet.ProjectModel.Test
         {
             var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
             var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1802, NuGetLogCode.NU1803 };
 
             var leftSide = new ProjectRestoreMetadata
             {
-                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: true, warningsAsErrors: warningsAsErrors, noWarn: noWarn)
+                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: true, warningsAsErrors: warningsAsErrors, noWarn: noWarn, warningsNotAsErrors: warningsNotAsErrors)
             };
             var rightSide = new ProjectRestoreMetadata
             {
-                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: false, warningsAsErrors: warningsAsErrors, noWarn: noWarn)
+                ProjectWideWarningProperties = new WarningProperties(allWarningsAsErrors: false, warningsAsErrors: warningsAsErrors, noWarn: noWarn, warningsNotAsErrors: warningsNotAsErrors)
             };
             AssertHashCode(expected: false, leftSide, rightSide);
         }

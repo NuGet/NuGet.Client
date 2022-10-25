@@ -1060,6 +1060,7 @@ namespace NuGet.ProjectModel
                         var allWarningsAsErrors = false;
                         var noWarn = new HashSet<NuGetLogCode>();
                         var warnAsError = new HashSet<NuGetLogCode>();
+                        var warningsNotAsErrors = new HashSet<NuGetLogCode>();
 
                         jsonReader.ReadObject(warningPropertiesPropertyName =>
                         {
@@ -1076,10 +1077,14 @@ namespace NuGet.ProjectModel
                                 case "warnAsError":
                                     ReadNuGetLogCodes(jsonReader, warnAsError);
                                     break;
+
+                                case "warnNotAsError":
+                                    ReadNuGetLogCodes(jsonReader, warningsNotAsErrors);
+                                    break;
                             }
                         });
 
-                        warningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors);
+                        warningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors, warningsNotAsErrors);
                         break;
                 }
             });

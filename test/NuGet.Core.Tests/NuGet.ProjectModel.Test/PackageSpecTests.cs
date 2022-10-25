@@ -362,7 +362,8 @@ namespace NuGet.ProjectModel.Test
             var allWarningsAsErrors = true;
             var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
             var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };
-            var warningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1005 };
+            var warningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn, warningsNotAsErrors: warningsNotAsErrors);
 
             var originalProjectRestoreMetadata = new ProjectRestoreMetadata();
             originalProjectRestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
@@ -734,7 +735,8 @@ namespace NuGet.ProjectModel.Test
             var allWarningsAsErrors = false;
             var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
             var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };
-            var originalWarningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1005 };
+            var originalWarningProperties = new WarningProperties(allWarningsAsErrors: allWarningsAsErrors, warningsAsErrors: warningsAsErrors, noWarn: noWarn, warningsNotAsErrors: warningsNotAsErrors);
 
             //Act
             var clone = originalWarningProperties.Clone();

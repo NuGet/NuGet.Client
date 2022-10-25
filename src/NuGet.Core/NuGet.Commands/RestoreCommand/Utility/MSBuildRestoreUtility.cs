@@ -878,7 +878,8 @@ namespace NuGet.Commands
             return WarningProperties.GetWarningProperties(
                 treatWarningsAsErrors: specItem.GetProperty("TreatWarningsAsErrors"),
                 warningsAsErrors: specItem.GetProperty("WarningsAsErrors"),
-                noWarn: specItem.GetProperty("NoWarn"));
+                noWarn: specItem.GetProperty("NoWarn"),
+                warningsNotAsErrors: specItem.GetProperty("WarningsNotAsErrors"));
         }
 
         private static RestoreLockProperties GetRestoreLockProperites(IMSBuildItem specItem)

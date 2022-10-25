@@ -11393,6 +11393,46 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             }
         }
 
+        [Fact]
+        public async Task NuGetRestoreRestore_WithWarningsNotAsErrors_SucceedsAndRaisesWarning()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    "a",
+                    pathContext.SolutionRoot,
+                    "net472");
+            // Add 1.0.0
+            projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext()
+            {
+                Id = "x",
+                Version = "1.0.0"
+            });
+            // But create only 2.0.0 on the server.
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, new SimpleTestPackageContext { Id = "x", Version = "2.0.0" });
+            projectA.Properties.Add("TreatWarningsAsErrors", "true");
+            projectA.Properties.Add("WarningsNotAsErrors", "NU1603");
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var args = new string[] {
+                    "restore",
+                    solution.SolutionPath,
+                    "-Verbosity",
+                    "detailed",
+                };
+            CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            result.Output.Should().Contain("WARNING: NU1603");
+        }
+
         /// <summary>
         /// A 1.0 -> D 1.0 (Central transitive)
         ///       -> B 1.0 -> D 3.0 (Central transitive - should be ignored because it is not at root)

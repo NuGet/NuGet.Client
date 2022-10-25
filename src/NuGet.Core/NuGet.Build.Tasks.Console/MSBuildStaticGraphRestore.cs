@@ -851,7 +851,7 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.ProjectPath = project.FullPath;
             restoreMetadata.ProjectStyle = projectStyle;
             restoreMetadata.ProjectUniqueName = project.FullPath;
-            restoreMetadata.ProjectWideWarningProperties = WarningProperties.GetWarningProperties(project.GetProperty("TreatWarningsAsErrors"), project.GetProperty("WarningsAsErrors"), project.GetProperty("NoWarn"));
+            restoreMetadata.ProjectWideWarningProperties = WarningProperties.GetWarningProperties(project.GetProperty("TreatWarningsAsErrors"), project.GetProperty("WarningsAsErrors"), project.GetProperty("NoWarn"), project.GetProperty("WarningsNotAsErrors"));
             restoreMetadata.RestoreLockProperties = new RestoreLockProperties(project.GetProperty("RestorePackagesWithLockFile"), project.GetProperty("NuGetLockFilePath"), project.IsPropertyTrue("RestoreLockedMode"));
             restoreMetadata.Sources = GetSources(project, innerNodes, settings);
             restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projectsByTargetFramework);

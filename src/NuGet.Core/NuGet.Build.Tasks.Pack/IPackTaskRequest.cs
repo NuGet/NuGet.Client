@@ -70,6 +70,7 @@ namespace NuGet.Build.Tasks.Pack
         string Title { get; }
         string TreatWarningsAsErrors { get; }
         string WarningsAsErrors { get; }
+        string WarningsNotAsErrors { get; }
         string PackageLicenseExpression { get; }
         string PackageLicenseExpressionVersion { get; }
         string PackageLicenseFile { get; }

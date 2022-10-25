@@ -439,7 +439,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     ProjectWideWarningProperties = WarningProperties.GetWarningProperties(
                         treatWarningsAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.TreatWarningsAsErrors),
                         noWarn: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.NoWarn),
-                        warningsAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.WarningsAsErrors)),
+                        warningsAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.WarningsAsErrors),
+                        warningsNotAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.WarningsNotAsErrors)),
                     RestoreLockProperties = new RestoreLockProperties(
                         GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestorePackagesWithLockFile),
                         GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.NuGetLockFilePath),

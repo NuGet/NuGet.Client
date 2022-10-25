@@ -317,7 +317,17 @@ namespace NuGet.ProjectModel
                         .OrderBy(c => c)
                         .Select(c => c.GetName())
                         .Where(c => !string.IsNullOrEmpty(c)));
+                }
 
+                if (msbuildMetadata.ProjectWideWarningProperties.WarningsNotAsErrors.Count > 0)
+                {
+                    SetArrayValue(writer, "warnNotAsError", msbuildMetadata
+                        .ProjectWideWarningProperties
+                        .WarningsNotAsErrors
+                        .ToArray()
+                        .OrderBy(c => c)
+                        .Select(c => c.GetName())
+                        .Where(c => !string.IsNullOrEmpty(c)));
                 }
 
                 writer.WriteObjectEnd();

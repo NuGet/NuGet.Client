@@ -33,6 +33,8 @@ namespace NuGet.Build.Tasks
 
         public string WarningsAsErrors { get; set; }
 
+        public string WarningsNotAsErrors { get; set; }
+
         public string NoWarn { get; set; }
 
         [Output]
@@ -48,7 +50,7 @@ namespace NuGet.Build.Tasks
             {
                 var logger = new PackCollectorLogger(
                     new MSBuildLogger(Log),
-                    EvaluateWarningProperties(WarningsAsErrors, NoWarn, TreatWarningsAsErrors)
+                    EvaluateWarningProperties(WarningsAsErrors, NoWarn, TreatWarningsAsErrors, WarningsNotAsErrors)
                     );
                 string duplicateItemsFormatted = string.Join("; ", duplicateItems.Select(d => string.Join(", ", d.Select(e => $"{e.ItemSpec} {e.GetMetadata("version")}"))));
                 NuGetLogCode logCode = (NuGetLogCode)Enum.Parse(typeof(NuGetLogCode), LogCode);
@@ -72,15 +74,17 @@ namespace NuGet.Build.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private WarningProperties EvaluateWarningProperties(string warningsAsErrors, string noWarn, string treatWarningsAsErrors)
+        private WarningProperties EvaluateWarningProperties(string warningsAsErrors, string noWarn, string treatWarningsAsErrors, string warningsNotAsErrors)
         {
             var warnAsErrorCodes = new HashSet<NuGetLogCode>();
             ReadNuGetLogCodes(warningsAsErrors, warnAsErrorCodes);
             var noWarnCodes = new HashSet<NuGetLogCode>();
             ReadNuGetLogCodes(noWarn, noWarnCodes);
             _ = bool.TryParse(treatWarningsAsErrors, out bool allWarningsAsErrors);
+            var warningNotAsErrorsCodes = new HashSet<NuGetLogCode>();
+            ReadNuGetLogCodes(warningsNotAsErrors, warningNotAsErrorsCodes);
 
-            return new WarningProperties(warnAsErrorCodes, noWarnCodes, allWarningsAsErrors);
+            return new WarningProperties(warnAsErrorCodes, noWarnCodes, allWarningsAsErrors, warningNotAsErrorsCodes);
         }
 
         private static void ReadNuGetLogCodes(string str, HashSet<NuGetLogCode> hashCodes)

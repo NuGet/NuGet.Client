@@ -169,7 +169,8 @@ namespace NuGet.CommandLine
             var treatWarningsAsErrors = GetPropertyValue("TreatWarningsAsErrors");
             return WarningProperties.GetWarningProperties(treatWarningsAsErrors: string.IsNullOrEmpty(treatWarningsAsErrors) ? "false" : treatWarningsAsErrors,
                 warningsAsErrors: GetPropertyValue("WarningsAsErrors"),
-                noWarn: GetPropertyValue("NoWarn"));
+                noWarn: GetPropertyValue("NoWarn"),
+                warningsNotAsErrors: GetPropertyValue("WarningsNotAsErrors"));
         }
 
         private string TargetPath

@@ -4442,7 +4442,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             warnAsError.Add(NuGetLogCode.NU1605);
                             noWarn.Remove(NuGetLogCode.NU1605);
 
-                            packageSpec.RestoreMetadata.ProjectWideWarningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors);
+                            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
+
+                            packageSpec.RestoreMetadata.ProjectWideWarningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors, warningsNotAsErrors);
 
                             packageSpec?.RestoreMetadata.Sources.AddRange(new List<PackageSource>(ProjectLocalSources));
                         }

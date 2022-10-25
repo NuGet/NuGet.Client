@@ -218,6 +218,10 @@ namespace NuGet.ProjectModel.Test
       ""warnAsError"": [
         ""NU1500"",
         ""NU1501""
+      ],
+      ""warnNotAsError"": [
+        ""NU1801"",
+        ""NU1802""
       ]
     }
   }
@@ -284,12 +288,17 @@ namespace NuGet.ProjectModel.Test
   ""warnAsError"": [
     ""NU1500"",
     ""NU1501""
+  ],
+  ""warnNotAsError"": [
+    ""NU1801"",
+    ""NU1802""
   ]
 }";
             var allWarningsAsErrors = true;
             var warningsAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1501 };
             var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
-            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1801, NuGetLogCode.NU1802 };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors, warningsNotAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
             var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
@@ -311,12 +320,17 @@ namespace NuGet.ProjectModel.Test
   ""warnAsError"": [
     ""NU1500"",
     ""NU1501""
+  ],
+  ""warnNotAsError"": [
+    ""NU1802"",
+    ""NU1803""
   ]
 }";
             var allWarningsAsErrors = false;
             var warningsAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1501 };
             var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
-            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1802, NuGetLogCode.NU1803 };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors, warningsNotAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
             var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
@@ -340,7 +354,8 @@ namespace NuGet.ProjectModel.Test
             var allWarningsAsErrors = true;
             var warningsAsErrors = new HashSet<NuGetLogCode> { };
             var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
-            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors, warningsNotAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
             var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
@@ -357,7 +372,8 @@ namespace NuGet.ProjectModel.Test
             var allWarningsAsErrors = false;
             var warningsAsErrors = new HashSet<NuGetLogCode> { };
             var noWarn = new HashSet<NuGetLogCode> { };
-            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors, warningsNotAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
             var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"];
@@ -380,7 +396,8 @@ namespace NuGet.ProjectModel.Test
             var allWarningsAsErrors = true;
             var warningsAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1501 };
             var noWarn = new HashSet<NuGetLogCode> { };
-            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors, warningsNotAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
             var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
