@@ -25,7 +25,7 @@ namespace Test.Utility
             CertificateStoreLocation = StoreLocation.CurrentUser;
             CertificateStoreName = StoreName.My;
             CertificateFindBy = X509FindType.FindByIssuerName;
-            CertificateFindValue = "Contoso";
+            CertificateFindValue = "Contoso" + Guid.NewGuid().ToString();
             Certificate = GetCertificate();
             WriteConfigFile();
         }

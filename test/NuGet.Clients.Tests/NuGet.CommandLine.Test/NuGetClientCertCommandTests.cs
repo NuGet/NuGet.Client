@@ -888,7 +888,7 @@ namespace NuGet.CommandLine.Test
                 CertificateStoreLocation = StoreLocation.CurrentUser;
                 CertificateStoreName = StoreName.My;
                 CertificateFindBy = X509FindType.FindByIssuerName;
-                CertificateFindValue = "Contoso";
+                CertificateFindValue = "Contoso" + Guid.NewGuid().ToString();
 
                 Util.CreateFile(Path.GetDirectoryName(ConfigFile),
                                 Path.GetFileName(ConfigFile),
