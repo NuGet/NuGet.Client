@@ -218,7 +218,7 @@ stages:
 - template: End_To_End_Tests_On_Windows.yml
   parameters:
     stageName: VS_EndToEnd_Part1
-    stageDisplayName: VS EndToEnd Tests Part 1
+    stageDisplayName: Part 1
     condition: "and(succeeded(), eq(variables['RunEndToEndTests'], 'true'))"
     dependsOn:
     - Initialize
@@ -239,7 +239,7 @@ stages:
 - template: End_To_End_Tests_On_Windows.yml
   parameters:
     stageName: VS_EndToEnd_Part2
-    stageDisplayName: VS EndToEnd Tests Part 2
+    stageDisplayName: Part 2
     condition: "and(succeeded(), eq(variables['RunEndToEndTests'], 'true'))"
     dependsOn:
     - Initialize
@@ -259,8 +259,6 @@ stages:
 # Dartlab's template defines this in its own stage
 - template: Apex_Tests_On_Windows.yml
   parameters:
-    stageName: Visual_Studio_Apex_Tests
-    stageDisplayName: Apex Tests On Windows
     condition: "and(succeeded(), eq(variables['RunApexTests'], 'true'))"
     dependsOn:
       - Initialize

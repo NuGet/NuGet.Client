@@ -1,8 +1,4 @@
 parameters:
-  - name: stageName
-    type: string
-  - name: stageDisplayName
-    type: string
   - name: dependsOn
     type: object
   - name: bootstrapperUrl
@@ -30,8 +26,8 @@ parameters:
 stages:
   - template: stages\visual-studio\single-runsettings.yml@DartLabTemplates
     parameters:
-      name: ${{parameters.stageName}}
-      displayName: ${{parameters.stageDisplayName}}
+      name: VS_Apex_Tests
+      displayName: Apex Tests On Windows
       condition: ${{parameters.condition}}
       dependsOn: ${{parameters.dependsOn}}
       variables:
@@ -44,6 +40,10 @@ stages:
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
       visualStudioSigning: Test
       testMachineDeploymentJobTimeoutInMinutes: 240
+      testMachineConfigurationJobDisplayName: 'Apex Test Machine Configuration'
+      testMachineDeploymentJobDisplayName: 'Apex Test Machine Deployment'
+      testExecutionJobDisplayName: 'Apex Test Execution'
+      testMachineCleanUpJobDisplayName: 'Apex Test Machine Clean Up'
       testRunContinueOnError: ${{ parameters.isOfficialBuild }}
       testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
       testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
