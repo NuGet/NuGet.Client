@@ -4457,7 +4457,7 @@ namespace NuGet.Test
                 // Check the number of packages and packages returned by PackagesConfigProject after the installation
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
-                Assert.True(packagesInPackagesConfig.Where(p => p.PackageIdentity.Equals(sharpDXDXGIv263Package)).Any());
+                Assert.True(packagesInPackagesConfig.Any(p => p.PackageIdentity.Equals(sharpDXDXGIv263Package)));
             }
         }
 

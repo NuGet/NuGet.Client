@@ -3598,7 +3598,7 @@ namespace NuGet.CommandLine.Test
                 // Find all non _._ compile assets
                 var flowingCompile = assetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries
                     .Where(e => e.Type == "project")
-                    .Where(e => e.CompileTimeAssemblies.Where(f => !f.Path.EndsWith("_._")).Any())
+                    .Where(e => e.CompileTimeAssemblies.Any(f => !f.Path.EndsWith("_._")))
                     .Select(e => e.Name)
                     .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
 
@@ -3607,7 +3607,7 @@ namespace NuGet.CommandLine.Test
                 // Runtime should always flow
                 var flowingRuntime = assetsFile.Targets.Single(target => string.IsNullOrEmpty(target.RuntimeIdentifier)).Libraries
                     .Where(e => e.Type == "project")
-                    .Where(e => e.RuntimeAssemblies.Where(f => !f.Path.EndsWith("_._")).Any())
+                    .Where(e => e.RuntimeAssemblies.Any(f => !f.Path.EndsWith("_._")))
                     .Select(e => e.Name)
                     .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
 
@@ -3702,7 +3702,7 @@ namespace NuGet.CommandLine.Test
                 // Find all non _._ compile assets
                 var flowingCompile = assetsFile.Targets.Single(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Libraries
                     .Where(e => e.Type == "project")
-                    .Where(e => e.CompileTimeAssemblies.Where(f => !f.Path.EndsWith("_._")).Any())
+                    .Where(e => e.CompileTimeAssemblies.Any(f => !f.Path.EndsWith("_._")))
                     .Select(e => e.Name)
                     .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
 
@@ -3711,7 +3711,7 @@ namespace NuGet.CommandLine.Test
                 // Runtime should always flow
                 var flowingRuntime = assetsFile.Targets.Single(e => string.IsNullOrEmpty(e.RuntimeIdentifier)).Libraries
                     .Where(e => e.Type == "project")
-                    .Where(e => e.RuntimeAssemblies.Where(f => !f.Path.EndsWith("_._")).Any())
+                    .Where(e => e.RuntimeAssemblies.Any(f => !f.Path.EndsWith("_._")))
                     .Select(e => e.Name)
                     .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
 

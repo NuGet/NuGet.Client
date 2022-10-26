@@ -746,9 +746,9 @@ namespace NuGet.PackageManagement.UI
         internal void AddPackageLevelGrouping()
         {
             ItemsView.Refresh();
-            if (ItemsView.OfType<PackageItemViewModel>()
-                    .Where(p => p.PackageLevel == PackageLevel.Transitive)
-                    .Any() == true)
+            if (ItemsView
+                    .OfType<PackageItemViewModel>()
+                    .Any(p => p.PackageLevel == PackageLevel.Transitive))
             {
                 ItemsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PackageItemViewModel.PackageLevel)));
             }

@@ -200,8 +200,7 @@ namespace NuGet.CommandLine
                 packageSaveMode = EffectivePackageSaveMode;
             }
 
-            var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode)).Any();
+            var missingPackageReferences = installedPackageReferences.Any(reference => !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode));
 
             if (!missingPackageReferences)
             {

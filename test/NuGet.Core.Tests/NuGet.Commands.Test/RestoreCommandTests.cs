@@ -2254,7 +2254,7 @@ namespace NuGet.Commands.Test
                 Assert.True(result.Success);
                 Assert.NotNull(targetLib);
                 Assert.Equal(1, targetLib.Dependencies.Count);
-                Assert.True(targetLib.Dependencies.Where(d => d.Id == packageName).Any());
+                Assert.True(targetLib.Dependencies.Any(d => d.Id == packageName));
             }
         }
 
