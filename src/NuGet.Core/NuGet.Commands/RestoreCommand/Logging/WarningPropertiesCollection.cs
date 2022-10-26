@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -165,6 +166,7 @@ namespace NuGet.Commands
                 {
                     // If the project wide AllWarningsAsErrors is true, the message has a valid code and warning not as error is not enabled or
                     // Project wide WarningsAsErrors contains the message code then upgrade to error.
+                    message.Message = string.Format(CultureInfo.CurrentCulture, Strings.WarningAsError, message.Message);
                     message.Level = LogLevel.Error;
                 }
             }

@@ -394,7 +394,7 @@ namespace NuGet.Commands.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once(), NuGetLogCode.NU1601);
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Once(), NuGetLogCode.NU1500);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning As Error: Warning", Times.Once(), NuGetLogCode.NU1500);
         }
 
 
@@ -428,7 +428,7 @@ namespace NuGet.Commands.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning As Error: Warning", Times.Once());
         }
 
         [Fact]
@@ -463,7 +463,7 @@ namespace NuGet.Commands.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Exactly(3));
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning As Error: Warning", Times.Exactly(3));
         }
 
         [Fact]
@@ -1056,7 +1056,7 @@ namespace NuGet.Commands.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Once(), NuGetLogCode.NU1107);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning As Error: Warning", Times.Once(), NuGetLogCode.NU1107);
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
         }
 
