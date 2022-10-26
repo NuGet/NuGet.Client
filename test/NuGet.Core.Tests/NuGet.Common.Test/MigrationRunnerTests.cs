@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using NuGet.Common.Migrations;
 using Xunit;
 
@@ -15,7 +14,25 @@ namespace NuGet.Common.Test
     public class MigrationRunnerTests
     {
         [Fact]
-        public void WhenExecutedInParallelOnlyOneFileIsCreatedForEveryMigration_Success()
+        public void Run_WhenExecutedOnSingleThreadThenOneMigrationFileIsCreated_Success()
+        {
+            // Arrange
+            string directory = MigrationRunner.GetMigrationsDirectory();
+            if (Directory.Exists(directory))
+                Directory.Delete(path: directory, recursive: true);
+
+            // Act
+            MigrationRunner.Run();
+
+            // Assert
+            Assert.True(Directory.Exists(directory));
+            var files = Directory.GetFiles(directory);
+            Assert.Equal(1, files.Length);
+            Assert.Equal(Path.Combine(directory, "1"), files[0]);
+        }
+
+        [Fact]
+        public void Run_WhenExecutedInParallelThenOnlyOneMigrationFileIsCreated_Success()
         {
             var threads = new List<Thread>();
             int numThreads = 5;
@@ -41,7 +58,9 @@ namespace NuGet.Common.Test
 
             // Assert
             Assert.True(Directory.Exists(directory));
-            Assert.Equal(1, Directory.GetFiles(directory).Length);
+            var files = Directory.GetFiles(directory);
+            Assert.Equal(1, files.Length);
+            Assert.Equal(Path.Combine(directory, "1"), files[0]);
         }
     }
 }
