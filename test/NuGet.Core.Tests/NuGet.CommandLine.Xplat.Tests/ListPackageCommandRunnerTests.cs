@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using Moq;
 using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.ListPackage;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -137,13 +138,13 @@ namespace NuGet.CommandLine.Xplat.Tests
                 var listPackageArgs = new ListPackageArgs(path: "", packageSources: Enumerable.Empty<PackageSource>(),
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Outdated,
-                    ListPackageConsoleRenderer.GetInstance(),
+                    new ListPackageConsoleRenderer(),
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
                     logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
                 // Act
-                var isFilteredSetNonEmpty = ListPackageProjectModel.FilterPackages(allPackages, listPackageArgs);
+                var isFilteredSetNonEmpty = ListPackageCommandRunner.FilterPackages(allPackages, listPackageArgs);
 
                 // Assert
                 Assert.Equal(includeTopLevelPositives || includeTransitivePositives, isFilteredSetNonEmpty);
@@ -212,12 +213,12 @@ namespace NuGet.CommandLine.Xplat.Tests
                 var listPackageArgs = new ListPackageArgs(path: "", packageSources: Enumerable.Empty<PackageSource>(),
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Deprecated,
-                    ListPackageConsoleRenderer.GetInstance(),
+                    new ListPackageConsoleRenderer(),
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
                 // Act
-                var isFilteredSetNonEmpty = ListPackageProjectModel.FilterPackages(allPackages, listPackageArgs);
+                var isFilteredSetNonEmpty = ListPackageCommandRunner.FilterPackages(allPackages, listPackageArgs);
 
                 // Assert
                 Assert.Equal(includeTopLevelPositives || includeTransitivePositives, isFilteredSetNonEmpty);
@@ -286,12 +287,12 @@ namespace NuGet.CommandLine.Xplat.Tests
                 var listPackageArgs = new ListPackageArgs(path: "", packageSources: Enumerable.Empty<PackageSource>(),
                     frameworks: Enumerable.Empty<string>(),
                     ReportType.Vulnerable,
-                    ListPackageConsoleRenderer.GetInstance(),
+                    new ListPackageConsoleRenderer(),
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, logger: new Mock<ILogger>().Object,
                     CancellationToken.None);
 
                 // Act
-                var isFilteredSetNonEmpty = ListPackageProjectModel.FilterPackages(allPackages, listPackageArgs);
+                var isFilteredSetNonEmpty = ListPackageCommandRunner.FilterPackages(allPackages, listPackageArgs);
 
                 // Assert
                 Assert.Equal(includeTopLevelPositives || includeTransitivePositives, isFilteredSetNonEmpty);

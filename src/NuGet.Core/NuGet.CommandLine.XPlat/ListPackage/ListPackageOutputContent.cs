@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.ListPackage
 {
     /// <summary>
     /// List package json output

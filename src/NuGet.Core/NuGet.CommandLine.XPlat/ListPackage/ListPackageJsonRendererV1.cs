@@ -11,7 +11,7 @@ using NuGet.Protocol;
 using NuGet.Configuration;
 using NuGet.Versioning;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.ListPackage
 {
     /// <summary>
     /// V1 of json format output renderer
@@ -48,12 +48,7 @@ namespace NuGet.CommandLine.XPlat
         private readonly JsonSerializer _jsonSerializer = JsonSerializer.Create(GetSerializerSettings());
         private static ListPackageArgs ListPackageArgs;
 
-        public static ListPackageJsonRenderer GetInstance(TextWriter textWriter = null)
-        {
-            return new ListPackageJsonRendererV1(textWriter);
-        }
-
-        private ListPackageJsonRendererV1(TextWriter textWriter)
+        public ListPackageJsonRendererV1(TextWriter textWriter = null)
             : base(reportOutputVersion: ReportVersion, textWriter)
         {
         }
@@ -62,7 +57,7 @@ namespace NuGet.CommandLine.XPlat
         {
             // Aggregate problems from projects.
             _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems).Where(p => p.ProblemType != ProblemType.Information));
-            string jsonRenderedOutput = WriteJson(new ListPackageOutputContent()
+            var jsonRenderedOutput = WriteJson(new ListPackageOutputContent()
             {
                 ListPackageArgs = listPackageReportModel.ListPackageArgs,
                 Problems = _problems,
@@ -281,7 +276,7 @@ namespace NuGet.CommandLine.XPlat
                 writer.WritePropertyName(DeprecationReasonsProperty);
                 writer.WriteStartArray();
 
-                foreach (string deprecationReason in listPackage.DeprecationReasons?.Reasons)
+                foreach (var deprecationReason in listPackage.DeprecationReasons?.Reasons)
                 {
                     writer.WriteValue(deprecationReason);
                 }
@@ -320,7 +315,7 @@ namespace NuGet.CommandLine.XPlat
             foreach (PackageVulnerabilityMetadata vulnerability in vulnerabilities)
             {
                 writer.WriteStartObject();
-                string severity = (vulnerability?.Severity ?? -1) switch
+                var severity = (vulnerability?.Severity ?? -1) switch
                 {
                     0 => "Low",
                     1 => "Moderate",

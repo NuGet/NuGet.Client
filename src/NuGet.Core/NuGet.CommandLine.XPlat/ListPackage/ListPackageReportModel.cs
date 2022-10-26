@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.Build.Evaluation;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.ListPackage
 {
     /// <summary>
     /// Calculated solution/projects data model for list report
@@ -24,9 +23,9 @@ namespace NuGet.CommandLine.XPlat
             MSBuildAPIUtility = new MSBuildAPIUtility(listPackageArgs.Logger);
         }
 
-        internal ListPackageProjectModel CreateProjectReportData(string projectPath, Project project)
+        internal ListPackageProjectModel CreateProjectReportData(string projectPath, string projectName)
         {
-            var projectModel = new ListPackageProjectModel(projectPath, project, ListPackageArgs);
+            var projectModel = new ListPackageProjectModel(projectPath, projectName, ListPackageArgs);
             Projects.Add(projectModel);
             return projectModel;
         }

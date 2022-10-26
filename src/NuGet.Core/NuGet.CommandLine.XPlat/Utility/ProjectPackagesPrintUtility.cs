@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.CommandLine.XPlat.ListPackage;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
@@ -32,8 +33,8 @@ namespace NuGet.CommandLine.XPlat.Utility
             foreach (FrameworkPackages frameworkPackages in packages)
             {
                 string frameWork = frameworkPackages.Framework;
-                ListPackageReportFrameworkPackage targetFrameworkPackageMetaData = new ListPackageReportFrameworkPackage(frameWork);
-                projectFrameworkPackages.Add(targetFrameworkPackageMetaData);
+                ListPackageReportFrameworkPackage targetFrameworkPackageMetadata = new ListPackageReportFrameworkPackage(frameWork);
+                projectFrameworkPackages.Add(targetFrameworkPackageMetadata);
                 var frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
                 var frameworkTransitivePackages = frameworkPackages.TransitivePackages;
 
@@ -44,7 +45,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 if (frameworkTopLevelPackages.Any())
                 {
 
-                    targetFrameworkPackageMetaData.TopLevelPackages = GetFrameworkPackageMetadata(
+                    targetFrameworkPackageMetadata.TopLevelPackages = GetFrameworkPackageMetadata(
                         frameworkTopLevelPackages, printingTransitive: false, listPackageArgs.ReportType, ref tableHasAutoReference).ToList();
                     hasAutoReference = hasAutoReference || tableHasAutoReference;
                 }
@@ -52,7 +53,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 // Print transitive packages
                 if (listPackageArgs.IncludeTransitive && frameworkTransitivePackages.Any())
                 {
-                    targetFrameworkPackageMetaData.TransitivePackages = GetFrameworkPackageMetadata(
+                    targetFrameworkPackageMetadata.TransitivePackages = GetFrameworkPackageMetadata(
                         frameworkTransitivePackages, printingTransitive: true, listPackageArgs.ReportType, ref tableHasAutoReference).ToList();
                 }
             }

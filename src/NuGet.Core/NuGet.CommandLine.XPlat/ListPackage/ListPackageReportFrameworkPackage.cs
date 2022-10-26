@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using NuGet.Protocol;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.ListPackage
 {
     /// <summary>
     /// Calculated project model data for a targetframework

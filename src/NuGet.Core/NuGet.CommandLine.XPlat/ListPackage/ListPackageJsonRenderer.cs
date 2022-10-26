@@ -4,9 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.ListPackage
 {
     /// <summary>
     /// json format renderer for dotnet list package command

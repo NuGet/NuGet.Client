@@ -8,27 +8,45 @@ using System.Linq;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Configuration;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.ListPackage
 {
     /// <summary>
-    /// Implementation of actual output to console writer
+    /// Console output renderer for dotnet list package command
     /// </summary>
-    internal static class ListPackageConsoleWriter
+    internal class ListPackageConsoleRenderer : IReportRenderer
     {
-        private static ListPackageArgs ListPackageArgs;
+        protected List<ReportProblem> _problems = new();
 
-        internal static void Render(ListPackageOutputContent jsonOutputContent)
+        public ListPackageConsoleRenderer()
+        { }
+
+        public void AddProblem(string errorText, ProblemType problemType)
         {
-            ListPackageArgs = jsonOutputContent.ListPackageArgs;
-            WriteToConsole(jsonOutputContent);
+            _problems.Add(new ReportProblem(string.Empty, errorText, problemType));
         }
 
-        private static void WriteToConsole(ListPackageOutputContent jsonOutputContent)
+        public IEnumerable<ReportProblem> GetProblems()
+        {
+            return _problems;
+        }
+
+        public void Render(ListPackageReportModel listPackageReportModel)
+        {
+            WriteToConsole(new ListPackageOutputContent()
+            {
+                ListPackageArgs = listPackageReportModel.ListPackageArgs,
+                Problems = _problems,
+                Projects = listPackageReportModel.Projects
+            },
+            listPackageReportModel.ListPackageArgs);
+        }
+
+        private static void WriteToConsole(ListPackageOutputContent jsonOutputContent, ListPackageArgs listPackageArgs)
         {
             // Print non-project related problems first.
-            PrintProblems(jsonOutputContent.Problems);
-            WriteSources(jsonOutputContent.ListPackageArgs.PackageSources);
-            WriteProjects(jsonOutputContent.Projects);
+            PrintProblems(jsonOutputContent.Problems, listPackageArgs);
+            WriteSources(jsonOutputContent.ListPackageArgs);
+            WriteProjects(jsonOutputContent.Projects, jsonOutputContent.ListPackageArgs);
 
             // Print a legend message for auto-reference markers used
             if (jsonOutputContent.Projects.Any(p => p.AutoReferenceFound))
@@ -37,30 +55,30 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static void WriteSources(IEnumerable<PackageSource> packageSources)
+        private static void WriteSources(ListPackageArgs listPackageArgs)
         {
             // Print sources, but not for generic list (which is offline)
-            if (ListPackageArgs.ReportType != ReportType.Default)
+            if (listPackageArgs.ReportType != ReportType.Default)
             {
                 Console.WriteLine();
                 Console.WriteLine(Strings.ListPkg_SourcesUsedDescription);
-                PrintSources(packageSources);
+                PrintSources(listPackageArgs.PackageSources);
                 Console.WriteLine();
             }
         }
 
-        private static void WriteProjects(List<ListPackageProjectModel> projects)
+        private static void WriteProjects(List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs)
         {
             foreach (ListPackageProjectModel project in projects)
             {
                 // Print projects specific problems
-                PrintProblems(project.ProjectProblems);
+                PrintProblems(project.ProjectProblems, listPackageArgs);
                 if (project.TargetFrameworkPackages == null)
                 {
                     continue;
                 }
 
-                Console.WriteLine(project.GetProjectHeader());
+                Console.WriteLine(GetProjectHeader(project.ProjectName, listPackageArgs));
 
                 foreach (ListPackageReportFrameworkPackage frameworkPackages in project.TargetFrameworkPackages)
                 {
@@ -73,7 +91,7 @@ namespace NuGet.CommandLine.XPlat
                     {
                         Console.ForegroundColor = ConsoleColor.Blue;
 
-                        switch (ListPackageArgs.ReportType)
+                        switch (listPackageArgs.ReportType)
                         {
                             case ReportType.Outdated:
                                 Console.WriteLine(string.Format(CultureInfo.CurrentCulture, "   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, frameworkPackages.Framework));
@@ -103,7 +121,7 @@ namespace NuGet.CommandLine.XPlat
                         {
                             var tableHasAutoReference = false;
                             var tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
-                                frameworkTopLevelPackages, printingTransitive: false, ListPackageArgs, ref tableHasAutoReference);
+                                frameworkTopLevelPackages, printingTransitive: false, listPackageArgs, ref tableHasAutoReference);
                             if (tableToPrint != null)
                             {
                                 ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
@@ -111,11 +129,11 @@ namespace NuGet.CommandLine.XPlat
                         }
 
                         // Print transitive packages
-                        if (ListPackageArgs.IncludeTransitive && frameworkTransitivePackages?.Any() == true)
+                        if (listPackageArgs.IncludeTransitive && frameworkTransitivePackages?.Any() == true)
                         {
                             var tableHasAutoReference = false;
                             var tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
-                                frameworkTransitivePackages, printingTransitive: true, ListPackageArgs, ref tableHasAutoReference);
+                                frameworkTransitivePackages, printingTransitive: true, listPackageArgs, ref tableHasAutoReference);
                             if (tableToPrint != null)
                             {
                                 ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
@@ -134,7 +152,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static void PrintProblems(IEnumerable<ReportProblem> problems)
+        private static void PrintProblems(IEnumerable<ReportProblem> problems, ListPackageArgs listPackageArgs)
         {
             if (problems == null)
             {
@@ -152,7 +170,7 @@ namespace NuGet.CommandLine.XPlat
                         Console.WriteLine(problem.Message);
                         break;
                     case ProblemType.LoggerWarning:
-                        ListPackageArgs.Logger.LogWarning(problem.Message);
+                        listPackageArgs.Logger.LogWarning(problem.Message);
                         break;
                     case ProblemType.Error:
                         Console.Error.WriteLine(problem.Message);
@@ -162,6 +180,23 @@ namespace NuGet.CommandLine.XPlat
                         break;
                 }
             }
+        }
+
+        private static string GetProjectHeader(string projectName, ListPackageArgs listPackageArgs)
+        {
+            switch (listPackageArgs.ReportType)
+            {
+                case ReportType.Outdated:
+                    return string.Format(Strings.ListPkg_ProjectUpdatesHeaderLog, projectName);
+                case ReportType.Deprecated:
+                    return string.Format(Strings.ListPkg_ProjectDeprecationsHeaderLog, projectName);
+                case ReportType.Vulnerable:
+                    return string.Format(Strings.ListPkg_ProjectVulnerabilitiesHeaderLog, projectName);
+                case ReportType.Default:
+                    break;
+            }
+
+            return string.Format(Strings.ListPkg_ProjectHeaderLog, projectName);
         }
     }
 }

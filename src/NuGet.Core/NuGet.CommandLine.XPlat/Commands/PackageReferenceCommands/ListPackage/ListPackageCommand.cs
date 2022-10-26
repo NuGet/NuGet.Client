@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.CommandLine.XPlat.ListPackage;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -176,28 +177,26 @@ namespace NuGet.CommandLine.XPlat
             if (!string.IsNullOrEmpty(outputFormatOption) &&
                 !Enum.TryParse(outputFormatOption, ignoreCase: true, out outputFormat))
             {
-                string currentlySupportedFormat = EnumExtensions.GetValueList<ReportOutputFormat>();
+                string currentlySupportedFormat = GetEnumValues<ReportOutputFormat>();
                 throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOutputFormat, outputFormatOption, currentlySupportedFormat));
             }
 
             if (outputFormat == ReportOutputFormat.Console)
             {
-                return ListPackageConsoleRenderer.GetInstance();
+                return new ListPackageConsoleRenderer();
             }
 
-            // currently only version 1 is available, so default to latest available version 1.
             IReportRenderer jsonReportRenderer;
 
             var currentlySupportedReportVersions = new List<string> { "1" };
-            // If customer pass unsupported version then default to latest available version and warn about unsupported version.
+            // If customer pass unsupported version then error out instead of defaulting to version probably unsupported by customer machine.
             if (!string.IsNullOrEmpty(outputVersionOption) && !currentlySupportedReportVersions.Contains(outputVersionOption))
             {
-                jsonReportRenderer = ListPackageJsonRendererV1.GetInstance();
-                jsonReportRenderer.AddProblem(errorText: string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions), ProblemType.Warning);
+                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions));
             }
             else
             {
-                jsonReportRenderer = ListPackageJsonRendererV1.GetInstance();
+                jsonReportRenderer = new ListPackageJsonRendererV1();
             }
 
             return jsonReportRenderer;
@@ -260,6 +259,14 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return packageSources;
+        }
+
+        private static string GetEnumValues<T>() where T : Enum
+        {
+            var enumValues = ((T[])Enum.GetValues(typeof(T)))
+               .Select(x => x.ToString());
+
+            return string.Join(", ", enumValues).ToLower(CultureInfo.CurrentCulture);
         }
     }
 }
