@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.XPlat
         {
             IReportRenderer reportRenderer = listPackageArgs.Renderer;
             (int exitCode, ListPackageReportModel reportModel) = await GetReportDataAsync(listPackageArgs);
-            reportRenderer.AddProjectReport(reportModel);
+            reportRenderer.Render(reportModel);
             return exitCode;
         }
 
@@ -140,7 +140,7 @@ namespace NuGet.CommandLine.XPlat
                                 if (printPackages)
                                 {
                                     var hasAutoReference = false;
-                                    List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetaData(packages, listPackageArgs, ref hasAutoReference);
+                                    List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetadata(packages, listPackageArgs, ref hasAutoReference);
                                     projectModel.SetFrameworkPackageMetadata(projectFrameworkPackages);
                                     projectModel.SetAutoReferenceFound(hasAutoReference);
                                 }

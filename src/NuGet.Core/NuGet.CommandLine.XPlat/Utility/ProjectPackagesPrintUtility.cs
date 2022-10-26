@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="listPackageArgs">Command line options</param>
         /// <param name="hasAutoReference">At least one discovered package is autoreference</param>
         /// <returns>The list of package metadata</returns>
-        internal static List<ListPackageReportFrameworkPackage> GetPackagesMetaData(
+        internal static List<ListPackageReportFrameworkPackage> GetPackagesMetadata(
             IEnumerable<FrameworkPackages> packages,
             ListPackageArgs listPackageArgs,
             ref bool hasAutoReference)
@@ -44,7 +44,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 if (frameworkTopLevelPackages.Any())
                 {
 
-                    targetFrameworkPackageMetaData.TopLevelPackages = GetFrameworkPackageMetaData(
+                    targetFrameworkPackageMetaData.TopLevelPackages = GetFrameworkPackageMetadata(
                         frameworkTopLevelPackages, printingTransitive: false, listPackageArgs.ReportType, ref tableHasAutoReference).ToList();
                     hasAutoReference = hasAutoReference || tableHasAutoReference;
                 }
@@ -52,7 +52,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 // Print transitive packages
                 if (listPackageArgs.IncludeTransitive && frameworkTransitivePackages.Any())
                 {
-                    targetFrameworkPackageMetaData.TransitivePackages = GetFrameworkPackageMetaData(
+                    targetFrameworkPackageMetaData.TransitivePackages = GetFrameworkPackageMetadata(
                         frameworkTransitivePackages, printingTransitive: true, listPackageArgs.ReportType, ref tableHasAutoReference).ToList();
                 }
             }
@@ -60,7 +60,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             return projectFrameworkPackages;
         }
 
-        internal static IEnumerable<ListReportPackage> GetFrameworkPackageMetaData(
+        internal static IEnumerable<ListReportPackage> GetFrameworkPackageMetadata(
             IEnumerable<InstalledPackageReference> frameworkPackages,
             bool printingTransitive,
             ReportType reportType,

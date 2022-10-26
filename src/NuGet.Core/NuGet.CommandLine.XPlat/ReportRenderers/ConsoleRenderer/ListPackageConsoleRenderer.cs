@@ -30,9 +30,9 @@ namespace NuGet.CommandLine.XPlat
             return _problems;
         }
 
-        public void AddProjectReport(ListPackageReportModel listPackageReportModel)
+        public void Render(ListPackageReportModel listPackageReportModel)
         {
-            ListPackageConsoleWriter.Render(new ListPackageOutputContentV1()
+            ListPackageConsoleWriter.Render(new ListPackageOutputContent()
             {
                 ListPackageArgs = listPackageReportModel.ListPackageArgs,
                 Problems = _problems,

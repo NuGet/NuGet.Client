@@ -14,8 +14,8 @@ namespace NuGet.CommandLine.XPlat
     internal abstract class ListPackageJsonRenderer : IReportRenderer
     {
         protected readonly List<ReportProblem> _problems = new();
+        protected TextWriter _writer;
         protected int ReportOutputVersion { get; private set; }
-        private TextWriter _writer;
 
         private ListPackageJsonRenderer()
         { }
@@ -36,18 +36,6 @@ namespace NuGet.CommandLine.XPlat
             return _problems;
         }
 
-        public void AddProjectReport(ListPackageReportModel listPackageReportModel)
-        {
-            // Aggregate problems from projects.
-            _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems).Where(p => p.ProblemType != ProblemType.Information));
-            string jsonRenderedOutput = ListPackageJsonOutputSerializerV1.Render(new ListPackageOutputContentV1()
-            {
-                ListPackageArgs = listPackageReportModel.ListPackageArgs,
-                Problems = _problems,
-                Projects = listPackageReportModel.Projects
-            });
-
-            _writer.WriteLine(jsonRenderedOutput);
-        }
+        public abstract void Render(ListPackageReportModel listPackageReportModel);
     }
 }

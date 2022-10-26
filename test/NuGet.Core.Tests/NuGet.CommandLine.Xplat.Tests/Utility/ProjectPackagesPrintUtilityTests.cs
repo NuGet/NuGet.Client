@@ -29,7 +29,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             bool autoReference = false;
             var pkgArgs = listPackageArgs as ListPackageArgs;
             var listReportPackages = installPackageRefs?
-                .Select(p => ProjectPackagesPrintUtility.GetFrameworkPackageMetaData(
+                .Select(p => ProjectPackagesPrintUtility.GetFrameworkPackageMetadata(
                     new List<InstalledPackageReference> { p },
                     printingTransitive,
                     pkgArgs?.ReportType ?? ReportType.Default,

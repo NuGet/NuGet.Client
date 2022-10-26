@@ -6,11 +6,10 @@ using System.Collections.Generic;
 namespace NuGet.CommandLine.XPlat
 {
     /// <summary>
-    /// List package json output version 1
+    /// List package json output
     /// </summary>
-    internal class ListPackageOutputContentV1
+    internal class ListPackageOutputContent
     {
-        internal int ReportOutputVersion { get; set; } = 1;
         internal ListPackageArgs ListPackageArgs { get; set; }
         internal List<ReportProblem> Problems { get; set; }
         internal List<ListPackageProjectModel> Projects { get; set; }

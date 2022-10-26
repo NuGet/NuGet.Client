@@ -17,13 +17,13 @@ namespace NuGet.CommandLine.XPlat
     {
         private static ListPackageArgs ListPackageArgs;
 
-        internal static void Render(ListPackageOutputContentV1 jsonOutputContent)
+        internal static void Render(ListPackageOutputContent jsonOutputContent)
         {
             ListPackageArgs = jsonOutputContent.ListPackageArgs;
             WriteToConsole(jsonOutputContent);
         }
 
-        private static void WriteToConsole(ListPackageOutputContentV1 jsonOutputContent)
+        private static void WriteToConsole(ListPackageOutputContent jsonOutputContent)
         {
             // Print non-project related problems first.
             PrintProblems(jsonOutputContent.Problems);

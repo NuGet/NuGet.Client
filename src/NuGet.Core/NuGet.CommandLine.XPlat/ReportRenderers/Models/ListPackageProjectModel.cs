@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat.Utility;
-using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -16,6 +15,8 @@ namespace NuGet.CommandLine.XPlat
     internal class ListPackageProjectModel
     {
         private const string ProjectNameMSbuildProperty = "MSBuildProjectName";
+        private readonly ListPackageArgs _listPackageArgs;
+
         internal List<ReportProblem> ProjectProblems { get; } = new List<ReportProblem>();
         internal string ProjectPath { get; private set; }
         // Original packages
@@ -25,14 +26,13 @@ namespace NuGet.CommandLine.XPlat
         internal string HttpSourceWarning { get; private set; }
         internal string ProjectName { get; private set; }
         internal Project Project { get; }
-        internal ListPackageReportModel ReportModel { get; }
         internal bool AutoReferenceFound { get; private set; }
 
-        public ListPackageProjectModel(string projectPath, ListPackageReportModel reportModel, Project project)
+        public ListPackageProjectModel(string projectPath, Project project, ListPackageArgs listPackageArgs)
         {
             ProjectPath = projectPath;
-            ReportModel = reportModel;
             Project = project;
+            _listPackageArgs = listPackageArgs;
             ProjectName = Project.GetPropertyValue(ProjectNameMSbuildProperty);
         }
 
@@ -57,7 +57,7 @@ namespace NuGet.CommandLine.XPlat
             ProjectProblems.Add(new ReportProblem(project: ProjectPath, message: message, problemType: problemType));
         }
 
-        internal bool PrintPackagesFlag => FilterPackages(Packages, ReportModel.ListPackageArgs);
+        internal bool PrintPackagesFlag => FilterPackages(Packages, _listPackageArgs);
 
         internal static bool FilterPackages(IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)
         {
@@ -127,7 +127,7 @@ namespace NuGet.CommandLine.XPlat
 
         internal string GetProjectHeader()
         {
-            switch (ReportModel.ListPackageArgs.ReportType)
+            switch (_listPackageArgs.ReportType)
             {
                 case ReportType.Outdated:
                     return string.Format(Strings.ListPkg_ProjectUpdatesHeaderLog, ProjectName);

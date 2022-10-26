@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.XPlat
 
         internal ListPackageProjectModel CreateProjectReportData(string projectPath, Project project)
         {
-            var projectModel = new ListPackageProjectModel(projectPath, this, project);
+            var projectModel = new ListPackageProjectModel(projectPath, project, ListPackageArgs);
             Projects.Add(projectModel);
             return projectModel;
         }
