@@ -89,6 +89,10 @@ steps:
         exit 1
       }
 
+- task: CodeQL3000Init@0
+  displayName: Initialize CodeQL
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['Codeql.Enabled'], 'true'))"
+
 - task: MSBuild@1
   displayName: "Restore"
   inputs:
@@ -118,6 +122,10 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=github /p:IncludeApex=$(IncludeApex) /bl:$(Build.StagingDirectory)\\binlog\\02.Build.binlog"
 
+- task: CodeQL3000Finalize@0
+  displayName: Finalize CodeQL
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['Codeql.Enabled'], 'true'))"
+  
 - task: MSBuild@1
   displayName: "Localize Assemblies"
   inputs:

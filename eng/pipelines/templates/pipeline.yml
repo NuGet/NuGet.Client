@@ -52,6 +52,8 @@ resources:
 
 variables:
   DOTNET_NOLOGO: 1
+  Codeql.Enabled: ${{ parameters.isOfficialBuild }}
+  Codeql.TSAEnabled: ${{ parameters.isOfficialBuild }}
 
 stages:
 - stage: Initialize
