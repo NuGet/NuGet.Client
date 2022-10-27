@@ -773,7 +773,6 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server using basic authentication, with -DisableBuffering option
-        // [SkipMono]
         [Fact(Skip = "https://github.com/NuGet/Home/issues/12190")]
         public void PushCommand_PushToServerBasicAuthDisableBuffering()
         {

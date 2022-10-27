@@ -112,6 +112,8 @@ function Test-BuildIntegratedUninstallNonExistantPackage {
 
 function Test-BuildIntegratedLockFileIsCreatedOnBuild {
     [SkipTest('https://github.com/NuGet/Home/issues/12189')]
+    param()
+    
     # Arrange
     $project = New-BuildIntegratedProj UAPApp
     Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
