@@ -50,6 +50,28 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             }
         }
 
+        [Fact]
+        public void Resolve_WhenNuGetConfigUnreadable_ReturnsFailedSdkResultAndLogsError()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var sdkReference = new SdkReference(PackageA, VersionOnePointZero, minimumVersion: null);
+                var sdkResolverContext = new MockSdkResolverContext(pathContext.WorkingDirectory);
+                var sdkResultFactory = new MockSdkResultFactory();
+                var sdkResolver = new NuGetSdkResolver();
+                File.WriteAllText(pathContext.NuGetConfig, string.Empty);
+
+                MockSdkResult result = sdkResolver.Resolve(sdkReference, sdkResolverContext, sdkResultFactory) as MockSdkResult;
+
+                result.Should().NotBeNull();
+                result.Success.Should().BeFalse();
+                result.Path.Should().BeNull();
+                result.Version.Should().BeNull();
+                result.Errors.Should().BeEquivalentTo(new[] { $"Failed to load NuGet settings. NuGet.Config is not valid XML. Path: '{pathContext.NuGetConfig}'." });
+                result.Warnings.Should().BeEmpty();
+            }
+        }
+
         /// <summary>
         /// Verifies that <see cref="NuGetSdkResolver.Resolve(SdkReference, SdkResolverContext, SdkResultFactory)" /> returns a valid <see cref="SdkResult" /> when a package is found on the feed.
         /// </summary>

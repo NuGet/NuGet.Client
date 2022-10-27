@@ -130,17 +130,27 @@ namespace Microsoft.Build.NuGetSdkResolver
         {
             public static SdkResult GetSdkResult(SdkReference sdk, object nuGetVersion, SdkResolverContext context, SdkResultFactory factory)
             {
+                var logger = new NuGetSdkLogger(context.Logger);
+
                 // Cast the NuGet version since the caller does not want to consume NuGet classes directly
                 var parsedSdkVersion = (NuGetVersion)nuGetVersion;
 
                 // Load NuGet settings and a path resolver
-                ISettings settings = Settings.LoadDefaultSettings(context.ProjectFilePath, configFileName: null, MachineWideSettings.Value as IMachineWideSettings, SettingsLoadContext.Value as SettingsLoadingContext);
+                ISettings settings;
+                try
+                {
+                    settings = Settings.LoadDefaultSettings(context.ProjectFilePath, configFileName: null, MachineWideSettings.Value as IMachineWideSettings, SettingsLoadContext.Value as SettingsLoadingContext);
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedToReadSettings, e.Message));
+
+                    return factory.IndicateFailure(logger.Errors, logger.Warnings);
+                }
 
                 var fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
 
                 var libraryIdentity = new LibraryIdentity(sdk.Name, parsedSdkVersion, LibraryType.Package);
-
-                var logger = new NuGetSdkLogger(context.Logger);
 
                 // Attempt to find a package if its already installed
                 if (!TryGetMSBuildSdkPackageInfo(fallbackPackagePathResolver, libraryIdentity, out var installedPath, out var installedVersion))
