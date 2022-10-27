@@ -709,7 +709,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unsupported output format version {0} was requested. Defaulting to latest available format version {1}. The accepted values are {2}..
+        ///   Looks up a localized string similar to Unsupported output format version {0} was requested.  The accepted format version value is {1}..
         /// </summary>
         internal static string ListPkg_InvalidOutputVersion {
             get {

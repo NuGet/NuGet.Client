@@ -192,7 +192,7 @@ namespace NuGet.CommandLine.XPlat
             // If customer pass unsupported version then error out instead of defaulting to version probably unsupported by customer machine.
             if (!string.IsNullOrEmpty(outputVersionOption) && !currentlySupportedReportVersions.Contains(outputVersionOption))
             {
-                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, currentlySupportedReportVersions));
+                throw new ArgumentException(string.Format(Strings.ListPkg_InvalidOutputVersion, outputVersionOption, string.Join(" ,", currentlySupportedReportVersions)));
             }
             else
             {
