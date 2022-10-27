@@ -436,7 +436,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Theory(Skip = "https://github.com/NuGet/Home/issues/12194")]
+        [PlatformTheory(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/12194")]
         [InlineData(true)]
         [InlineData(false)]
         public void PackCommand_PackConsoleAppWithRID_NupkgValid(bool includeSymbols)
