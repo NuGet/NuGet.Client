@@ -3,19 +3,30 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <nuget:SharedResources />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition />
+      <RowDefinition />
     </Grid.RowDefinitions>
-    <CheckBox Name="newMapping" IsChecked="{Binding SelectMappingCheckBoxState}" Checked="NewMapping_Checked" Unchecked="NewMapping_Checked">Add a mapping to the selected source</CheckBox>
-    <TextBlock Name="existingMappings">Package already has mappings</TextBlock>
-    <Button Name="settingsLink" Click="SettingsButtonClicked">
-      <Hyperlink>
-        <Run>Package Source Mapping Settings</Run>
-      </Hyperlink>
-    </Button>
+    <CheckBox Grid.Row="0" Grid.ColumnSpan="2" Name="newMapping" IsChecked="{Binding SelectMappingCheckBoxState}" Checked="NewMapping_Checked" Unchecked="NewMapping_Checked">Add a mapping to the selected source</CheckBox>
+
+    <StackPanel Grid.Row="1" Orientation="Horizontal">
+      <TextBlock Name="existingMappings">Package already has mappings</TextBlock>
+      <TextBlock>
+        <Hyperlink Click="SettingsButtonClicked" Style="{StaticResource HyperlinkStyleNoUri}">
+          <Run Text="Package Source Mapping Settings" />
+        </Hyperlink>
+      </TextBlock>
+    </StackPanel>
   </Grid>
 </UserControl>
