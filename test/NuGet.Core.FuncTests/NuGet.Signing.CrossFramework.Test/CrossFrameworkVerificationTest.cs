@@ -276,7 +276,6 @@ namespace NuGet.Signing.CrossFramework.Test
 #if IS_DESKTOP
         //The following tests are from NuGet.Core.FuncTests\NuGet.Packaging.FuncTest\SigningTests\SignatureUtilityTests.cs.
         //As timestamping in net5.0 is stricter, they could not be enabled in net5.0 code path. That's why we cross verify them.
-        //https://github.com/NuGet/Client.Engineering/issues/1091
         [Fact]
         public async Task GetTimestampCertificateChain_WithNoSigningCertificateUsage_Throws()
         {
