@@ -3,24 +3,49 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Threading;
 using NuGet.Common;
 
 namespace NuGet.Configuration
 {
+    /// <summary>
+    /// Represents a cache context based on file paths when loading <see cref="SettingsFile" /> objects so that they are only read once.
+    /// If the file changes on disk, it is not reloaded.
+    /// </summary>
     public sealed class SettingsLoadingContext : IDisposable
     {
-        private readonly IList<Lazy<SettingsFile>> _settingsFiles = new List<Lazy<SettingsFile>>();
-        private readonly SemaphoreSlim _semaphore;
+        private readonly Dictionary<string, SettingsFile> _cache = new Dictionary<string, SettingsFile>(PathUtility.GetStringComparerBasedOnOS());
+
+        private readonly object _lockObject = new object();
+
         private bool _isDisposed;
 
-        public SettingsLoadingContext()
+        /// <summary>
+        /// Occurs when a file is read.
+        /// </summary>
+        internal event EventHandler<string> FileRead;
+
+        public void Dispose()
         {
-            _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+
+                _cache.Clear();
+            }
+
+            GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Gets or creates a settings file for the specified path.
+        /// </summary>
+        /// <param name="filePath">The file path to create a <see cref="SettingsFile" /> object for.</param>
+        /// <param name="isMachineWide">An optional value indicating whether or not the settings file is machine-wide.</param>
+        /// <param name="isReadOnly">An optional value indicating whether or not the settings file is read-only.</param>
+        /// <returns></returns>
+        /// <exception cref="ObjectDisposedException">When the current object has been disposed.</exception>
+        /// <exception cref="ArgumentNullException">When <paramref name="filePath" /> is <c>null</c>.</exception>
         internal SettingsFile GetOrCreateSettingsFile(string filePath, bool isMachineWide = false, bool isReadOnly = false)
         {
             if (_isDisposed)
@@ -30,46 +55,36 @@ namespace NuGet.Configuration
 
             if (filePath == null)
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(filePath)));
+                throw new ArgumentNullException(nameof(filePath));
             }
 
-            _semaphore.Wait();
-            Lazy<SettingsFile> settingsFile = null;
-
-            try
+            // See if the settings file is already cached so as not to acquire a lock
+            if (_cache.TryGetValue(filePath, out SettingsFile settingsFile))
             {
-                for (int i = 0; i < _settingsFiles.Count; i++)
+                return settingsFile;
+            }
+
+            lock (_lockObject)
+            {
+                // See if another thread already cached the settings file
+                if (_cache.TryGetValue(filePath, out settingsFile))
                 {
-                    if (PathUtility.GetStringComparerBasedOnOS().Equals(_settingsFiles[i].Value.ConfigFilePath, filePath))
-                    {
-                        return _settingsFiles[i].Value;
-                    }
+                    return settingsFile;
                 }
 
-                var file = new FileInfo(filePath);
-                settingsFile = new Lazy<SettingsFile>(() => new SettingsFile(file.DirectoryName, file.Name, isMachineWide, isReadOnly));
-                _settingsFiles.Add(settingsFile);
+                var fileInfo = new FileInfo(filePath);
+
+                // Load the settings file, this will throw an exception if something is wrong with the file
+                settingsFile = new SettingsFile(fileInfo.DirectoryName, fileInfo.Name, isMachineWide, isReadOnly);
+
+                // Fire the FileRead event so unit tests can detect when a file was actually read versus cached
+                FileRead?.Invoke(this, filePath);
+
+                // Add the settings file to the cache if loading it did not throw any exceptions
+                _cache.Add(filePath, settingsFile);
+
+                return settingsFile;
             }
-            finally
-            {
-                _semaphore.Release();
-            }
-
-            return settingsFile?.Value;
-        }
-
-        public void Dispose()
-        {
-            if (_isDisposed)
-            {
-                return;
-            }
-            _semaphore.Dispose();
-            _settingsFiles.Clear();
-
-            GC.SuppressFinalize(this);
-
-            _isDisposed = true;
         }
     }
 }
