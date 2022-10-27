@@ -96,12 +96,27 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /p:IncludeApex=true /bl:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
 
+- task: PowerShell@1
+  displayName: "Set IncludeApex variable"
+  name: "includeapex"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      try {
+        $IncludeApex = -not [bool]::Parse($env:BuildRTM)
+        Write-Host "IncludeApex URL: $IncludeApex"
+        Write-Host "##vso[task.setvariable variable=IncludeApex]$IncludeApex"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]Unable to set IncludeApex: $_"
+        exit 1
+      }
+
 - task: MSBuild@1
   displayName: "Build"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=github /p:IncludeApex=true /bl:$(Build.StagingDirectory)\\binlog\\02.Build.binlog"
+    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=github /p:IncludeApex=$(IncludeApex) /bl:$(Build.StagingDirectory)\\binlog\\02.Build.binlog"
 
 - task: MSBuild@1
   displayName: "Localize Assemblies"

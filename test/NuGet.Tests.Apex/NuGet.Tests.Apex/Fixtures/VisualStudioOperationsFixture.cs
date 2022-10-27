@@ -4,10 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.Services;
 using Microsoft.Test.Apex.VisualStudio;
+using NuGet.Console.TestContract;
+using NuGet.PackageManagement.UI.TestContract;
 
 namespace NuGet.Tests.Apex
 {
@@ -17,7 +18,6 @@ namespace NuGet.Tests.Apex
         private readonly IOperations _operations;
         private readonly IAssertionVerifier _verifier;
         private readonly ITestLogger _testLogger;
-        private IList<string> _nugetTestContracts = new List<string> {"NuGet.PackageManagement.UI.TestContract.dll", "NuGet.Console.TestContract.dll"};
 
         public VisualStudioOperationsFixture()
         {
@@ -39,32 +39,44 @@ namespace NuGet.Tests.Apex
             {
                 if (_visualStudioHostConfiguration == null)
                 {
-                    _visualStudioHostConfiguration = new VisualStudioHostConfiguration();
-                    var codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                    var uri = new UriBuilder(codeBase);
-                    var path = Uri.UnescapeDataString(uri.Path);
-
-                    var assemblyFolder = Path.GetDirectoryName(path);
-
-                    foreach(var testAssembly in _nugetTestContracts)
+                    _visualStudioHostConfiguration = new VisualStudioHostConfiguration()
                     {
-                        var assemblyPath = Path.Combine(assemblyFolder, testAssembly);
+                        InheritProcessEnvironment = true,
+                        InProcessHostConstraints = new List<ITypeConstraint>() { new NuGetTypeConstraint() }
+                    };
 
-                        if (File.Exists((assemblyPath)))
-                        {
-                            _visualStudioHostConfiguration.AddCompositionAssembly(assemblyPath);
-                        }
+                    string[] compositionAssemblies = new[]
+                    {
+                        typeof(NuGetApexTestService).Assembly.Location, // NuGet.Test.Apex.dll
+                        typeof(NuGetApexUITestService).Assembly.Location, // NuGet.PackageManagement.UI.TestContract.dll
+                        typeof(NuGetApexConsoleTestService).Assembly.Location, // NuGet.Console.TestContract.dll
+                    };
+
+                    foreach(var testAssembly in compositionAssemblies)
+                    {
+                        _visualStudioHostConfiguration.AddCompositionAssembly(testAssembly);
                     }
-                    _visualStudioHostConfiguration.AddCompositionAssembly(Assembly.GetExecutingAssembly().Location);
-                    _visualStudioHostConfiguration.InProcessHostConstraints = new List<ITypeConstraint>() { new NuGetTypeConstraint() };
 
-                    // Use the same environment to avoid elevation
-                    _visualStudioHostConfiguration.InheritProcessEnvironment = true;
-
-                    // Launch in the experimental instance of VS
-                    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_TEST_APEX_EXP")))
+                    // If test is being run in VS, "Developer PowerShell" , or "Developer Command Prompt", use the same install of VS.
+                    // But don't override Apex's env vars if they have already been set.
+                    const string vsUnderTestVariableName = "VisualStudio.InstallationUnderTest.Path";
+                    if (Environment.GetEnvironmentVariable(vsUnderTestVariableName) == null)
                     {
-                        _visualStudioHostConfiguration.CommandLineArguments += " /rootSuffix Exp";
+                        string vsInstallDir = Environment.GetEnvironmentVariable("VSAPPIDDIR") ?? Environment.GetEnvironmentVariable("DevEnvDir");
+                        if (!string.IsNullOrEmpty(vsInstallDir))
+                        {
+                            var devenvPath = Path.Combine(vsInstallDir, "devenv.exe");
+                            Environment.SetEnvironmentVariable(vsUnderTestVariableName, devenvPath);
+
+                            const string rootSuffixVariableName = "VisualStudio.InstallationUnderTest.RootSuffix";
+                            if (Environment.GetEnvironmentVariable(rootSuffixVariableName) == null)
+                            {
+                                // the environment variable doesn't work for the first class tested in the test execution,
+                                // but .RootSuffix only works for the first class tested. Hence both are needed.
+                                Environment.SetEnvironmentVariable(rootSuffixVariableName, "Exp");
+                                _visualStudioHostConfiguration.RootSuffix = "Exp";
+                            }
+                        }
                     }
                 }
                 return _visualStudioHostConfiguration;
