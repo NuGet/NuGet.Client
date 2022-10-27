@@ -358,7 +358,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux, Skip = "https://github.com/NuGet/Home/issues/12186)] // https://github.com/NuGet/Home/issues/11178
+        [PlatformFact(Platform.Windows, Platform.Linux, Skip = "https://github.com/NuGet/Home/issues/12186")] // https://github.com/NuGet/Home/issues/11178
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInAcceptMode_DoesNotWarnAsync()
         {
             // Arrange
