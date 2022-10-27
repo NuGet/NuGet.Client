@@ -935,9 +935,10 @@ namespace NuGet.Build.Tasks.Console
                             LoadSettings = ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports | ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition,
                             ProjectCollection = collection
                         };
-                        var projectInstance = ProjectInstance.FromFile(path, projectOptions);
 
-                        if (!projectInstance.Targets.ContainsKey("_IsProjectRestoreSupported") || properties.TryGetValue("TargetFramework", out var targetFramework) && string.IsNullOrWhiteSpace(targetFramework))
+                        ProjectInstance projectInstance = ProjectInstance.FromFile(path, projectOptions);
+
+                        if (!projectInstance.Targets.ContainsKey("_IsProjectRestoreSupported") || properties == null || properties.TryGetValue("TargetFramework", out string targetFramework) && string.IsNullOrWhiteSpace(targetFramework))
                         {
                             // In rare cases, users can set an empty TargetFramework value in a project-to-project reference.  Static Graph will respect that
                             // but NuGet does not need to do anything with that instance of the project since the actual project is still loaded correctly
