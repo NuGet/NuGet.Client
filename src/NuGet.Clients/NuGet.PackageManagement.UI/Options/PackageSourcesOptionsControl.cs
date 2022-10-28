@@ -28,6 +28,8 @@ using GelUtilities = Microsoft.Internal.VisualStudio.PlatformUI.Utilities;
 using Task = System.Threading.Tasks.Task;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.Imaging;
+using StreamJsonRpc;
+using StreamJsonRpc.Protocol;
 
 namespace NuGet.Options
 {
@@ -303,7 +305,20 @@ namespace NuGet.Options
             // Unknown exception.
             catch (Exception ex)
             {
-                MessageHelper.ShowErrorMessage(Resources.ShowError_ApplySettingFailed, Resources.ErrorDialogBoxTitle);
+                if (ex is RemoteInvocationException remoteException
+                && remoteException.DeserializedErrorData is CommonErrorData commonError)
+                {
+                    if (commonError.TypeName == typeof(NuGetConfigurationException).FullName)
+                    {
+                        MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
+                        return false;
+                    }
+                }
+                else
+                {
+                    MessageHelper.ShowErrorMessage(Resources.ShowError_ApplySettingFailed, Resources.ErrorDialogBoxTitle);
+                }
+
                 ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
                 return false;
             }

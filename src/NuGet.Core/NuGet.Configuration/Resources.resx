@@ -303,4 +303,7 @@
     <value>PackageSourceMapping is enabled and there are multiple package sources associated with the same key(s): {0}. Path: {1}</value>
     <comment>0 - package sources separated with comma 1 - path</comment>
   </data>
+  <data name="ShowError_ConfigDuplicateDisabledSources" xml:space="preserve">
+    <value>Cannot update package sources. NuGet.Config contains a duplicated key in the disabled package sources section.</value>
+  </data>
 </root>

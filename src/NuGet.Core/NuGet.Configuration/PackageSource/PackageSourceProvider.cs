@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NuGet.Common;
@@ -667,7 +668,16 @@ namespace NuGet.Configuration
 
             var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
             var existingDisabledSources = disabledSourcesSection?.Items.OfType<AddItem>();
-            var existingDisabledSourcesLookup = existingDisabledSources?.ToDictionary(setting => setting.Key, StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, AddItem> existingDisabledSourcesLookup = null;
+
+            try
+            {
+                existingDisabledSourcesLookup = existingDisabledSources?.ToDictionary(setting => setting.Key, StringComparer.OrdinalIgnoreCase);
+            }
+            catch (ArgumentException e)
+            {
+                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigDuplicateDisabledSources), e);
+            }
 
             var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);
             var existingCredentials = credentialsSection?.Items.OfType<CredentialsItem>();
