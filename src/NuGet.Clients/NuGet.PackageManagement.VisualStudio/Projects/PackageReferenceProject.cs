@@ -93,6 +93,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             (PackageSpec packageSpec, string assetsFilePath) = await GetCurrentPackageSpecAndAssetsFilePathSafeAsync(token);
 
             if (packageSpec == null) // null means project is not nominated
@@ -142,8 +144,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return calculatedInstalledPackages;
         }
 
-        public async Task<(PackageSpec, string)> GetCurrentPackageSpecAndAssetsFilePathSafeAsync(CancellationToken token)
+        private async Task<(PackageSpec, string)> GetCurrentPackageSpecAndAssetsFilePathSafeAsync(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             PackageSpec packageSpec = null;
             string assetsPath = null;
             try
@@ -159,6 +163,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(bool includeTransitiveOrigins, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             (PackageSpec packageSpec, string assetsFilePath) = await GetCurrentPackageSpecAndAssetsFilePathSafeAsync(token);
 
             if (packageSpec == null) // null means project is not nominated
