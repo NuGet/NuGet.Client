@@ -1,9 +1,6 @@
 {
     "tsaVersion": "TsaV2",
     "codebaseName": "NuGet.Client-Trusted_dev",
-    "notificationAliases": [
-        "NuGetHotSeat@service.microsoft.com"
-    ],
     "instanceUrl": "DEVDIV",
     "projectName": "DevDiv",
     "areaPath": "DevDiv\\NuGet\\NuGet Clients",
