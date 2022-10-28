@@ -371,11 +371,8 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath));
         }
 
-        // To avoid race condition, we work on copy of cache InstalledPackages and TransitivePackages.
-        protected override (List<FrameworkInstalledPackages> installedPackagesCopy, List<FrameworkInstalledPackages> transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy()
-        {
-            return (new List<FrameworkInstalledPackages>(InstalledPackages), new List<FrameworkInstalledPackages>(TransitivePackages));
-        }
+        /// <inheritdoc/>
+        protected override List<FrameworkInstalledPackages> GetCollectionCopy(List<FrameworkInstalledPackages> collection) => new(collection);
 
         #endregion
     }

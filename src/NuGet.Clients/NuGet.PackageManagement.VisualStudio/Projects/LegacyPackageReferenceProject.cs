@@ -507,10 +507,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetTransitivePackageReferences(targetFramework, installedPackages, transitivePackages, targets);
         }
 
-        // To avoid race condition, we work on copy of cache InstalledPackages and TransitivePackages.
-        protected override (Dictionary<string, ProjectInstalledPackage> installedPackagesCopy, Dictionary<string, ProjectInstalledPackage> transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy()
-        {
-            return (new Dictionary<string, ProjectInstalledPackage>(InstalledPackages), new Dictionary<string, ProjectInstalledPackage>(TransitivePackages));
-        }
+        /// <inheritdoc/>
+        protected override Dictionary<string, ProjectInstalledPackage> GetCollectionCopy(Dictionary<string, ProjectInstalledPackage> collection) => new(collection);
     }
 }

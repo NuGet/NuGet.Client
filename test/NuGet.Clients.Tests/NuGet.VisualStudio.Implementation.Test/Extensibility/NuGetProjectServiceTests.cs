@@ -207,10 +207,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 throw new NotImplementedException();
             }
 
-            protected override (List<PackageReference> installedPackagesCopy, List<PackageReference> transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy()
-            {
-                return (new List<PackageReference>(InstalledPackages), new List<PackageReference>(TransitivePackages));
-            }
+            protected override List<PackageReference> GetCollectionCopy(List<PackageReference> collection) => new(collection);
         }
     }
 }

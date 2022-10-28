@@ -36,6 +36,8 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private static readonly NuGetFrameworkSorter FrameworkSorter = new();
 
+        private static readonly ProjectPackages EmptyProjectPackages = new(Array.Empty<PackageReference>(), Array.Empty<TransitivePackageReference>());
+
         private readonly protected string _projectName;
         private readonly protected string _projectUniqueName;
         private readonly protected string _projectFullPath;
@@ -91,11 +93,56 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            ProjectPackages packages = await GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, token);
-            return packages.InstalledPackages;
+            (PackageSpec packageSpec, string assetsFilePath) = await GetCurrentPackageSpecAndAssetsFilePathSafeAsync(token);
+
+            if (packageSpec == null) // null means project is not nominated
+            {
+                IsInstalledAndTransitiveComputationNeeded = true;
+
+                return Array.Empty<PackageReference>();
+            }
+
+            IReadOnlyList<LockFileTarget> targetsList = null;
+            T installedPackages;
+            if (IsInstalledAndTransitiveComputationNeeded)
+            {
+                installedPackages = new T();
+                targetsList = (await GetTargetsListAsync(assetsFilePath, token))?.ToList();
+            }
+            else
+            {
+                if (InstalledPackages == null || TransitivePackages == null)
+                {
+                    installedPackages = new T();
+                }
+                else
+                {
+                    // Make a copy of the caches to prevent concurrency issues.
+                    lock (_installedAndTransitivePackagesLock)
+                    {
+                        installedPackages = GetCollectionCopy(InstalledPackages);
+                    }
+                }
+            }
+
+            // get installed packages
+            List<PackageReference> calculatedInstalledPackages = packageSpec
+                .TargetFrameworks
+                .SelectMany(f => ResolvedInstalledPackagesList(f.Dependencies, f.FrameworkName, targetsList, installedPackages))
+                .GroupBy(p => p.PackageIdentity)
+                .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First())
+                .ToList();
+
+            // Refresh cache
+            lock (_installedAndTransitivePackagesLock)
+            {
+                InstalledPackages = installedPackages;
+            }
+
+            return calculatedInstalledPackages;
         }
 
-        public async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(bool includeTransitiveOrigins, CancellationToken token)
+        public async Task<(PackageSpec, string)> GetCurrentPackageSpecAndAssetsFilePathSafeAsync(CancellationToken token)
         {
             PackageSpec packageSpec = null;
             string assetsPath = null;
@@ -107,11 +154,18 @@ namespace NuGet.PackageManagement.VisualStudio
             {
             }
 
+            return (packageSpec, assetsPath);
+        }
+
+        public async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(bool includeTransitiveOrigins, CancellationToken token)
+        {
+            (PackageSpec packageSpec, string assetsFilePath) = await GetCurrentPackageSpecAndAssetsFilePathSafeAsync(token);
+
             if (packageSpec == null) // null means project is not nominated
             {
                 IsInstalledAndTransitiveComputationNeeded = true;
 
-                return new ProjectPackages(Array.Empty<PackageReference>(), Array.Empty<TransitivePackageReference>());
+                return EmptyProjectPackages;
             }
 
             IReadOnlyList<LockFileTarget> targetsList = null;
@@ -122,7 +176,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
                 installedPackages = new T();
                 transitivePackages = new T();
-                targetsList = (await GetTargetsListAsync(assetsPath, token))?.ToList();
+                targetsList = (await GetTargetsListAsync(assetsFilePath, token))?.ToList();
             }
             else
             {
@@ -136,7 +190,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     // Make a copy of the caches to prevent concurrency issues.
                     lock (_installedAndTransitivePackagesLock)
                     {
-                        (installedPackages, transitivePackages) = GetInstalledAndTransitivePackagesCacheCopy();
+                        installedPackages = GetCollectionCopy(InstalledPackages);
+                        transitivePackages = GetCollectionCopy(TransitivePackages);
                     }
                 }
             }
@@ -171,7 +226,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     // Then, we need targets section from project.assets.json file on disk to populate Transitive Origins cache
                     if (targetsList == null)
                     {
-                        targetsList = (await GetTargetsListAsync(assetsPath, token))?.ToList();
+                        targetsList = (await GetTargetsListAsync(assetsFilePath, token))?.ToList();
                     }
 
                     transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedInstalledPackages, targetsList, token) : new Dictionary<string, TransitiveEntry>();
@@ -225,8 +280,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         protected abstract IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, T installedPackages, T transitivePackages);
 
-        // To avoid race condition, we work on copy of cache InstalledPackages and TransitivePackages.
-        protected abstract (T installedPackagesCopy, T transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy();
+        /// <summary>
+        /// To avoid race condition, we work on copy of cache InstalledPackages and TransitivePackages.
+        /// </summary>
+        /// <param name="collection">Collection to copy, can be <see cref="InstalledPackages"/> or <see cref="TransitivePackages"/></param>
+        /// <returns>A shallow copy of the collection</returns>
+        protected abstract T GetCollectionCopy(T collection);
 
         /// <summary>
         /// Obtains <see cref="PackageSpec"/> object from assets file from disk
@@ -458,15 +517,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <inheritdoc />
         public async Task<IReadOnlyCollection<string>> GetPackageFoldersAsync(CancellationToken ct)
         {
-            PackageSpec packageSpec = null;
-            string assetsFilePath = null;
-            try
-            {
-                (packageSpec, assetsFilePath) = await GetCurrentPackageSpecAndAssetsFilePathAsync(ct);
-            }
-            catch (ProjectNotNominatedException)
-            {
-            }
+            (PackageSpec packageSpec, string assetsFilePath) = await GetCurrentPackageSpecAndAssetsFilePathSafeAsync(ct);
 
             if (packageSpec == null)
             {
