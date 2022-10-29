@@ -305,8 +305,8 @@ namespace NuGet.Options
             // Unknown exception.
             catch (Exception ex)
             {
-                if (ex is RemoteInvocationException remoteException
-                && remoteException.DeserializedErrorData is CommonErrorData commonError)
+                if (ex is RemoteInvocationException remoteException &&
+                    remoteException.DeserializedErrorData is CommonErrorData commonError)
                 {
                     if (commonError.TypeName == typeof(NuGetConfigurationException).FullName)
                     {
