@@ -341,7 +341,6 @@ condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PowerShell@1
 displayName: "Set Bootstrapper URL variable"
-condition: false
 name: "vsbootstrapper"
 inputs:
   scriptType: "inlineScript"
@@ -355,7 +354,7 @@ inputs:
       Write-Host "##vso[task.LogIssue type=error;]Unable to set bootstrapperUrl: $_"
       exit 1
     }
-condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+condition: false
 
 - task: MSBuild@1
   displayName: 'Generate .runsettings files'
