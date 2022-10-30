@@ -27,7 +27,6 @@
     <VsTargetMajorVersion>$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
     <VsTargetBranch>main</VsTargetBranch>
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
-    <VsTargetChannelForTests>int.d$(VsTargetMajorVersion).3</VsTargetChannelForTests>
 
     <!-- NuGet SDK VS package Semantic Version -->
     <NuGetSdkVsSemanticVersion>$(VsTargetMajorVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</NuGetSdkVsSemanticVersion>
@@ -86,9 +85,6 @@
   </Target>
   <Target Name="GetVsTargetChannel">
     <Message Text="$(VsTargetChannel)" Importance="High"/>
-  </Target>
-  <Target Name="GetVsTargetChannelForTests">
-    <Message Text="$(VsTargetChannelForTests)" Importance="High"/>
   </Target>
   <Target Name="GetCliBranchForTesting">
       <Message Text="$(CliBranchForTesting)" Importance="High"/>
