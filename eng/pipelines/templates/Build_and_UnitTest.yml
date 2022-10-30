@@ -339,23 +339,6 @@ inputs:
   ArtifactType: Container
 condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PowerShell@1
-displayName: "Set Bootstrapper URL variable"
-name: "vsbootstrapper"
-inputs:
-  scriptType: "inlineScript"
-  inlineScript: |
-    try {
-      $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
-      $bootstrapperUrl = $json[0].bootstrapperUrl;
-      Write-Host "Bootstrapper URL: $bootstrapperUrl"
-      Write-Host "##vso[task.setvariable variable=bootstrapperUrl;isOutput=true]$bootstrapperUrl"
-    } catch {
-      Write-Host "##vso[task.LogIssue type=error;]Unable to set bootstrapperUrl: $_"
-      exit 1
-    }
-condition: "false"
-
 - task: MSBuild@1
   displayName: 'Generate .runsettings files'
   inputs:
