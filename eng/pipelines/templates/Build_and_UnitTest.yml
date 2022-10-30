@@ -354,7 +354,7 @@ inputs:
       Write-Host "##vso[task.LogIssue type=error;]Unable to set bootstrapperUrl: $_"
       exit 1
     }
-condition: false
+condition: "false"
 
 - task: MSBuild@1
   displayName: 'Generate .runsettings files'
