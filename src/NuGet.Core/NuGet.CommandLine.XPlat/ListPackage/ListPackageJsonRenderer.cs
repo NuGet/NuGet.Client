@@ -25,9 +25,9 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             _writer = textWriter != null ? textWriter : Console.Out;
         }
 
-        public void AddProblem(string errorText, ProblemType problemType)
+        public void AddProblem(ProblemType problemType, string text)
         {
-            _problems.Add(new ReportProblem(string.Empty, errorText, problemType));
+            _problems.Add(new ReportProblem(problemType, string.Empty, text));
         }
 
         public IEnumerable<ReportProblem> GetProblems()

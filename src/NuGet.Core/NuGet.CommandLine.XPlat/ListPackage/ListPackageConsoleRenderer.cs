@@ -20,9 +20,9 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         public ListPackageConsoleRenderer()
         { }
 
-        public void AddProblem(string errorText, ProblemType problemType)
+        public void AddProblem(ProblemType problemType, string text)
         {
-            _problems.Add(new ReportProblem(string.Empty, errorText, problemType));
+            _problems.Add(new ReportProblem(problemType, string.Empty, text));
         }
 
         public IEnumerable<ReportProblem> GetProblems()

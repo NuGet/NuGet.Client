@@ -15,10 +15,10 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         private ReportProblem()
         { }
 
-        public ReportProblem(string project, string message, ProblemType problemType)
+        public ReportProblem(ProblemType problemType, string project, string text)
         {
             Project = project;
-            Message = message;
+            Message = text;
             ProblemType = problemType;
         }
     }

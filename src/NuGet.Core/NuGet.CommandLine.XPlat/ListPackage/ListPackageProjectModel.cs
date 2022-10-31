@@ -35,9 +35,9 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             ProjectPath = projectPath;
         }
 
-        internal void AddProjectInformation(string message, ProblemType problemType)
+        internal void AddProjectInformation(ProblemType problemType, string message)
         {
-            ProjectProblems.Add(new ReportProblem(project: ProjectPath, message: message, problemType: problemType));
+            ProjectProblems.Add(new ReportProblem(project: ProjectPath, text: message, problemType: problemType));
         }
     }
 }

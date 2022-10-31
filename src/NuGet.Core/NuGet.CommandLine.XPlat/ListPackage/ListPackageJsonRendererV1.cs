@@ -367,7 +367,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
                 if (jsonOutputContent.Projects.Any(p => p.AutoReferenceFound))
                 {
-                    jsonOutputContent.Problems.Add(new ReportProblem(string.Empty, Strings.ListPkg_AutoReferenceDescription, ProblemType.Warning));
+                    jsonOutputContent.Problems.Add(new ReportProblem(ProblemType.Warning, string.Empty, Strings.ListPkg_AutoReferenceDescription));
                 }
 
                 if (jsonOutputContent.Problems?.Count > 0)

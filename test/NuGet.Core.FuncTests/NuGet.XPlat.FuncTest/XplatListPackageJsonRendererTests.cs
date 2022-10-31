@@ -627,7 +627,7 @@ namespace NuGet.XPlat.FuncTest
                                     { }
                                 }
                             },
-                            new List<ReportProblem>() { new ReportProblem(projectAPath, $"The given project `MyProjectD` has no vulnerable packages given the current sources.", ProblemType.Information) }
+                            new List<ReportProblem>() { new ReportProblem(ProblemType.Information, projectAPath, $"The given project `MyProjectD` has no vulnerable packages given the current sources.") }
                        )
                     );
 
@@ -1175,7 +1175,7 @@ namespace NuGet.XPlat.FuncTest
                         (
                             projectBPath,
                             null,
-                            new List<ReportProblem>() { new ReportProblem(projectBPath, $"No assets file was found for `{projectBPath}`. Please run restore before running this command.", ProblemType.Error) }
+                            new List<ReportProblem>() { new ReportProblem(ProblemType.Error, projectBPath, $"No assets file was found for `{projectBPath}`. Please run restore before running this command.") }
                         )
                     );
 
@@ -1237,7 +1237,7 @@ namespace NuGet.XPlat.FuncTest
                 {
                     foreach (var projectProblem in project.projectProblems)
                     {
-                        projectModel.AddProjectInformation(projectProblem.Message, projectProblem.ProblemType);
+                        projectModel.AddProjectInformation(projectProblem.ProblemType, projectProblem.Message);
                     }
                 }
 

@@ -207,7 +207,7 @@ namespace NuGet.CommandLine.XPlat
             if (packageRefArgs.ReportType != ReportType.Outdated &&
                 (packageRefArgs.Prerelease || packageRefArgs.HighestMinor || packageRefArgs.HighestPatch))
             {
-                reportRenderer.AddProblem(Strings.ListPkg_VulnerableIgnoredOptions, ProblemType.Warning);
+                reportRenderer.AddProblem(ProblemType.Warning, Strings.ListPkg_VulnerableIgnoredOptions);
             }
         }
 

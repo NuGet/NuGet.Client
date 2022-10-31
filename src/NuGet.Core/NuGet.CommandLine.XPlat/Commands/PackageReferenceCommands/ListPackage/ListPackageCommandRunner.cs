@@ -46,10 +46,10 @@ namespace NuGet.CommandLine.XPlat
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
             if (!File.Exists(listPackageArgs.Path))
             {
-                listPackageArgs.Renderer.AddProblem(errorText: string.Format(CultureInfo.CurrentCulture,
+                listPackageArgs.Renderer.AddProblem(problemType: ProblemType.Error,
+                    text: string.Format(CultureInfo.CurrentCulture,
                         Strings.ListPkg_ErrorFileNotFound,
-                        listPackageArgs.Path),
-                        problemType: ProblemType.Error);
+                        listPackageArgs.Path));
                 return (GenericFailureExitCode, listPackageReportModel);
             }
             //If the given file is a solution, get the list of projects
@@ -145,13 +145,13 @@ namespace NuGet.CommandLine.XPlat
                                 switch (listPackageArgs.ReportType)
                                 {
                                     case ReportType.Outdated:
-                                        projectModel.AddProjectInformation(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoUpdatesForProject, projectModel.ProjectName), ProblemType.Information);
+                                        projectModel.AddProjectInformation(ProblemType.Information, string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoUpdatesForProject, projectModel.ProjectName));
                                         break;
                                     case ReportType.Deprecated:
-                                        projectModel.AddProjectInformation(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoDeprecatedPackagesForProject, projectModel.ProjectName), ProblemType.Information);
+                                        projectModel.AddProjectInformation(ProblemType.Information, string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoDeprecatedPackagesForProject, projectModel.ProjectName));
                                         break;
                                     case ReportType.Vulnerable:
-                                        projectModel.AddProjectInformation(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, projectModel.ProjectName), ProblemType.Information);
+                                        projectModel.AddProjectInformation(ProblemType.Information, string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, projectModel.ProjectName));
                                         break;
                                 }
                             }
@@ -198,20 +198,20 @@ namespace NuGet.CommandLine.XPlat
                 if (httpPackageSources.Count == 1)
                 {
                     projectModel.AddProjectInformation(
+                        problemType: ProblemType.LoggerWarning,
                         string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_HttpServerUsage,
                         "list package",
-                        httpPackageSources[0]),
-                        problemType: ProblemType.LoggerWarning);
+                        httpPackageSources[0]));
                 }
                 else
                 {
                     projectModel.AddProjectInformation(
+                        problemType: ProblemType.LoggerWarning,
                         string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_HttpServerUsage_MultipleSources,
                         "list package",
-                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))),
-                        problemType: ProblemType.LoggerWarning);
+                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
                 }
             }
 

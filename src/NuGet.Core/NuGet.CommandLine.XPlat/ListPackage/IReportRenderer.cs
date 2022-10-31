@@ -7,7 +7,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 {
     internal interface IReportRenderer
     {
-        void AddProblem(string errorText, ProblemType problemType);
+        void AddProblem(ProblemType problemType, string text);
         IEnumerable<ReportProblem> GetProblems();
         void Render(ListPackageReportModel reportProject);
     }
