@@ -174,7 +174,7 @@ namespace NuGet.Credentials
 
             foreach (var entry in _providerCredentialCache)
             {
-                if (entry.Value.Status == CredentialStatus.Success && entry.Key.EndsWith(ending))
+                if (entry.Value.Status == CredentialStatus.Success && entry.Key.EndsWith(ending, StringComparison.OrdinalIgnoreCase))
                 {
                     credentials = entry.Value.Credentials;
 

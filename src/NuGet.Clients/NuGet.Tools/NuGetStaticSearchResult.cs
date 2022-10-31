@@ -31,7 +31,7 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException(nameof(supportedManagePackageCommand));
             }
 
-            if (searchText.StartsWith(provider.Shortcut + " "))
+            if (searchText.StartsWith(provider.Shortcut + " ", StringComparison.OrdinalIgnoreCase))
             {
                 searchText = searchText.Substring(provider.Shortcut.Length);
             }

@@ -35,7 +35,7 @@ namespace NuGet.Packaging
 
             foreach (var file in refAndLibFiles)
             {
-                if (!file.EndsWith(".xml"))
+                if (!file.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }

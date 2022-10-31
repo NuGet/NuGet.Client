@@ -951,7 +951,7 @@ namespace NuGet.Commands
                 var fileName = Path.GetFileName(filePath);
 
                 return fileName.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase)
-                    || (fileName.StartsWith(".") && fileName.IndexOf('.', startIndex: 1) == -1);
+                    || (fileName.StartsWith(".", StringComparison.OrdinalIgnoreCase) && fileName.IndexOf('.', startIndex: 1) == -1);
             });
 
             var matchedFiles = new HashSet<IPackageFile>(matches);
