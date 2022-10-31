@@ -196,7 +196,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                jsonReportRenderer = new ListPackageJsonRendererV1();
+                jsonReportRenderer = new ListPackageJsonRenderer();
             }
 
             return jsonReportRenderer;

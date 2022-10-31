@@ -40,7 +40,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRendererV1(writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -194,7 +194,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRendererV1(writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -294,7 +294,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRendererV1(writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -385,7 +385,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRendererV1(writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -490,7 +490,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRendererV1(writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -602,7 +602,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRendererV1(writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -682,7 +682,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRendererV1(writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -860,7 +860,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRendererV1(writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -995,7 +995,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRendererV1(writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
@@ -1138,7 +1138,7 @@ namespace NuGet.XPlat.FuncTest
                     using StreamWriter writer = new StreamWriter(stream);
                     writer.AutoFlush = true;
 
-                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRendererV1(writer);
+                    ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
                     var packageRefArgs = new ListPackageArgs(
                                 path: pathContext.SolutionRoot,
                                 packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
