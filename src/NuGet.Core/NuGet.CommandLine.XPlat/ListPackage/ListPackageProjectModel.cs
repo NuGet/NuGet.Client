@@ -10,30 +10,22 @@ namespace NuGet.CommandLine.XPlat.ListPackage
     /// </summary>
     internal class ListPackageProjectModel
     {
-        private readonly ListPackageArgs _listPackageArgs;
-
         internal List<ReportProblem> ProjectProblems { get; } = new List<ReportProblem>();
         internal string ProjectPath { get; private set; }
-        // Original packages
-        internal IEnumerable<FrameworkPackages> Packages { get; private set; }
         // Calculated project model data for each targetframeworks
         internal List<ListPackageReportFrameworkPackage> TargetFrameworkPackages { get; set; }
-        internal string HttpSourceWarning { get; private set; }
         internal string ProjectName { get; private set; }
         internal bool AutoReferenceFound { get; set; }
 
-        public ListPackageProjectModel(string projectPath, string projectName, ListPackageArgs listPackageArgs)
+        public ListPackageProjectModel(string projectPath, string projectName)
         {
             ProjectPath = projectPath;
-            _listPackageArgs = listPackageArgs;
             ProjectName = projectName;
         }
 
         // For testing purposes only
         internal ListPackageProjectModel(string projectPath)
-        {
-            ProjectPath = projectPath;
-        }
+            : this(projectPath, null) { }
 
         internal void AddProjectInformation(ProblemType problemType, string message)
         {

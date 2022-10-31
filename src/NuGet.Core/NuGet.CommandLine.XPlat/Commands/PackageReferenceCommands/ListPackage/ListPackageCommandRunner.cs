@@ -89,9 +89,8 @@ namespace NuGet.CommandLine.XPlat
 
             if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
             {
-                projectModel.AddProjectInformation(message: string.Format(CultureInfo.CurrentCulture,
-                    Strings.Error_NotPRProject, projectPath),
-                    problemType: ProblemType.Error);
+                projectModel.AddProjectInformation(problemType: ProblemType.Error,
+                    string.Format(CultureInfo.CurrentCulture, Strings.Error_NotPRProject, projectPath));
                 return;
             }
 
@@ -100,9 +99,8 @@ namespace NuGet.CommandLine.XPlat
             // If the file was not found, print an error message and continue to next project
             if (!File.Exists(assetsPath))
             {
-                projectModel.AddProjectInformation(message: string.Format(CultureInfo.CurrentCulture,
-                    Strings.Error_AssetsFileNotFound, projectPath),
-                    problemType: ProblemType.Error);
+                projectModel.AddProjectInformation(ProblemType.Error,
+                    string.Format(CultureInfo.CurrentCulture, Strings.Error_AssetsFileNotFound, projectPath));
             }
             else
             {
@@ -125,7 +123,7 @@ namespace NuGet.CommandLine.XPlat
                         // No packages means that no package references at all were found in the current framework
                         if (!packages.Any())
                         {
-                            projectModel.AddProjectInformation(message: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, projectModel.ProjectName), problemType: ProblemType.Information);
+                            projectModel.AddProjectInformation(ProblemType.Information, message: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, projectModel.ProjectName));
                         }
                         else
                         {
@@ -169,8 +167,8 @@ namespace NuGet.CommandLine.XPlat
                 }
                 else
                 {
-                    projectModel.AddProjectInformation(message: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingAssetsFile, assetsPath),
-                        problemType: ProblemType.Error);
+                    projectModel.AddProjectInformation(ProblemType.Error,
+                        string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingAssetsFile, assetsPath));
                 }
 
                 // Unload project
@@ -198,7 +196,7 @@ namespace NuGet.CommandLine.XPlat
                 if (httpPackageSources.Count == 1)
                 {
                     projectModel.AddProjectInformation(
-                        problemType: ProblemType.LoggerWarning,
+                        ProblemType.LoggerWarning,
                         string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_HttpServerUsage,
                         "list package",
@@ -207,7 +205,7 @@ namespace NuGet.CommandLine.XPlat
                 else
                 {
                     projectModel.AddProjectInformation(
-                        problemType: ProblemType.LoggerWarning,
+                        ProblemType.LoggerWarning,
                         string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_HttpServerUsage_MultipleSources,
                         "list package",
