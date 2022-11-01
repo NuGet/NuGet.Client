@@ -680,9 +680,9 @@ namespace NuGet.Configuration
                 var duplicatedKey = existingDisabledSources
                     .GroupBy(s => s.Key, StringComparer.OrdinalIgnoreCase)
                     .Where(g => g.Count() > 1)
-                    .First()
-                    .Select(g => g);
-                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigDuplicateDisabledSources), e);
+                    .Select(g => g.First())
+                    .First();
+                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigDuplicateDisabledSources, duplicatedKey.Key, duplicatedKey.Origin.ConfigFilePath), e);
             }
 
             var credentialsSection = Settings.GetSection(ConfigurationConstants.CredentialsSectionName);

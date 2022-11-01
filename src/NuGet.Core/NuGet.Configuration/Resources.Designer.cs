@@ -403,7 +403,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot update package sources. NuGet.Config contains a duplicated key in the disabled package sources section..
+        ///   Looks up a localized string similar to Cannot update package sources, config file contains a duplicated key &apos;{0}&apos; in the disabled package sources section. Path: &apos;{1}&apos;.
         /// </summary>
         internal static string ShowError_ConfigDuplicateDisabledSources {
             get {
