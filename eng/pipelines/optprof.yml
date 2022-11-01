@@ -141,8 +141,10 @@ stages:
       name: SetRunSettingsURI
     - download: ComponentBuildUnderTest
       artifact: VS15
-      patterns: "*"
+      patterns: "VS15/*"
       displayName: 'Download VS15 files from official build'
+    - task: MicroBuildSwixPlugin@4
+      displayName: "Install Swix Plugin"
     - task: MicroBuildBuildVSBootstrapper@2
       displayName: 'Build a Visual Studio bootstrapper'
       inputs:
