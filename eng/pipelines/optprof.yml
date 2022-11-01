@@ -172,7 +172,7 @@ stages:
       displayName: "Upload VSTS Drop"
       inputs:
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-        buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
+        buildNumber: 'OptProf/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
         sourcePath: "$(Pipeline.Workspace)\\ComponentBuildUnderTest\\VS15"
         toLowerCase: false
         usePat: true
