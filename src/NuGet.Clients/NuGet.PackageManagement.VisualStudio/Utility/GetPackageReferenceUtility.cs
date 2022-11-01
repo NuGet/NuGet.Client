@@ -27,8 +27,6 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         /// <param name="installedPackages">Installed packages information from the project.</param>
         internal static PackageIdentity UpdateResolvedVersion(LibraryDependency projectLibrary, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
         {
-            NuGetVersion resolvedVersion = default;
-
             // Returns the installed version if the package:
             // 1. Already exists in the installedPackages
             // 2. The range is the same as the installed one
@@ -38,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
                 return installedVersion.InstalledPackage;
             }
 
-            resolvedVersion = GetInstalledVersion(projectLibrary.Name, targetFramework, targets);
+            NuGetVersion resolvedVersion = GetInstalledVersion(projectLibrary.Name, targetFramework, targets);
 
             if (resolvedVersion == null)
             {
@@ -48,11 +46,11 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
             // Add or update the the version of the package in the project
             if (installedPackages.TryGetValue(projectLibrary.Name, out ProjectInstalledPackage installedPackage))
             {
-                installedPackages[projectLibrary.Name] = new ProjectInstalledPackage(projectLibrary.LibraryRange.VersionRange, new PackageIdentity(projectLibrary.Name, resolvedVersion));
+                installedPackages[projectLibrary.Name] = new ProjectInstalledPackage(projectLibrary?.LibraryRange?.VersionRange ?? new VersionRange(resolvedVersion), new PackageIdentity(projectLibrary.Name, resolvedVersion));
             }
             else
             {
-                ProjectInstalledPackage newInstalledPackage = new ProjectInstalledPackage(projectLibrary.LibraryRange.VersionRange, new PackageIdentity(projectLibrary.Name, resolvedVersion));
+                ProjectInstalledPackage newInstalledPackage = new ProjectInstalledPackage(projectLibrary?.LibraryRange?.VersionRange ?? new VersionRange(resolvedVersion), new PackageIdentity(projectLibrary.Name, resolvedVersion));
                 installedPackages.Add(projectLibrary.Name, newInstalledPackage);
             }
 
