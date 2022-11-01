@@ -141,7 +141,7 @@ stages:
       name: SetRunSettingsURI
     - download: ComponentBuildUnderTest
       artifact: VS15
-      patterns: "VS15/*"
+      patterns: "VS15/Microsoft.*"
       displayName: 'Download VS15 files from official build'
     - task: MicroBuildSigningPlugin@1
       inputs:
