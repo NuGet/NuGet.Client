@@ -285,30 +285,14 @@ namespace NuGet.Options
                     await _nugetSourcesService.SavePackageSourceContextInfosAsync(packageSources, cancellationToken);
                 }
             }
-            // Thrown during creating or saving NuGet.Config.
-            catch (NuGetConfigurationException ex)
-            {
-                MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
-                return false;
-            }
-            // Thrown if no nuget.config found.
-            catch (InvalidOperationException ex)
-            {
-                MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
-                return false;
-            }
-            // Unknown exception.
             catch (Exception ex)
             {
                 if (ex is RemoteInvocationException remoteException &&
                     remoteException.DeserializedErrorData is CommonErrorData commonError)
                 {
-                    if (commonError.TypeName == typeof(NuGetConfigurationException).FullName)
+                    if (commonError.TypeName == typeof(NuGetConfigurationException).FullName || // Thrown during creating or saving NuGet.Config.
+                        commonError.TypeName == typeof(InvalidOperationException).FullName || // Thrown if no nuget.config found.
+                        commonError.TypeName == typeof(UnauthorizedAccessException).FullName)
                     {
                         MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
                         return false;

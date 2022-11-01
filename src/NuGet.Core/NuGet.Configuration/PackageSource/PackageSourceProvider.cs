@@ -676,6 +676,12 @@ namespace NuGet.Configuration
             }
             catch (ArgumentException e)
             {
+                var path = Settings.GetConfigFilePaths();
+                var duplicatedKey = existingDisabledSources
+                    .GroupBy(s => s.Key, StringComparer.OrdinalIgnoreCase)
+                    .Where(g => g.Count() > 1)
+                    .First()
+                    .Select(g => g);
                 throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigDuplicateDisabledSources), e);
             }
 
