@@ -141,7 +141,7 @@ stages:
       name: SetRunSettingsURI
     - download: ComponentBuildUnderTest
       artifact: VS15
-      itemPattern: "*"
+      patterns: "*"
       displayName: 'Download VS15 files from official build'
     - task: MicroBuildBuildVSBootstrapper@2
       displayName: 'Build a Visual Studio bootstrapper'
