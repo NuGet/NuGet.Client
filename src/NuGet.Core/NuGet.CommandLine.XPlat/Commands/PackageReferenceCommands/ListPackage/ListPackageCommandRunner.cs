@@ -84,7 +84,6 @@ namespace NuGet.CommandLine.XPlat
             //file and the name of the project
             Project project = MSBuildAPIUtility.GetProject(projectPath);
             var projectName = project.GetPropertyValue(ProjectName);
-            // Project specific data stored in below variable
             ListPackageProjectModel projectModel = listPackageReportModel.CreateProjectReportData(projectPath: projectPath, projectName);
 
             if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
@@ -96,7 +95,6 @@ namespace NuGet.CommandLine.XPlat
 
             var assetsPath = project.GetPropertyValue(ProjectAssetsFile);
 
-            // If the file was not found, print an error message and continue to next project
             if (!File.Exists(assetsPath))
             {
                 projectModel.AddProjectInformation(ProblemType.Error,

@@ -19,16 +19,4 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             Framework = frameWork;
         }
     }
-
-    internal class ListReportPackage
-    {
-        internal string PackageId { get; set; }
-        internal string ResolvedVersion { get; set; }
-        internal string LatestVersion { get; set; }
-        public List<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
-        internal PackageDeprecationMetadata DeprecationReasons { get; set; }
-        internal AlternatePackageMetadata AlternativePackage { get; set; }
-        internal string RequestedVersion { get; set; } // not needed for transitive package
-        internal bool AutoReference { get; set; } // not needed for transitive package
-    }
 }
