@@ -164,16 +164,16 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 switch (problem.ProblemType)
                 {
                     case ProblemType.Information:
-                        Console.WriteLine(problem.Message);
+                        Console.WriteLine(problem.Text);
                         break;
                     case ProblemType.Warning:
-                        Console.WriteLine(problem.Message);
+                        Console.WriteLine(problem.Text);
                         break;
                     case ProblemType.LoggerWarning:
-                        listPackageArgs.Logger.LogWarning(problem.Message);
+                        listPackageArgs.Logger.LogWarning(problem.Text);
                         break;
                     case ProblemType.Error:
-                        Console.Error.WriteLine(problem.Message);
+                        Console.Error.WriteLine(problem.Text);
                         Console.WriteLine();
                         break;
                     default:

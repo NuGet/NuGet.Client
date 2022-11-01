@@ -41,8 +41,9 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         private const string DeprecationReasonsProperty = "deprecationReasons";
         private const string AlternativePackageProperty = "alternativePackage";
         private const string VersionRangeProperty = "versionRange";
-        private const string InformationProperty = "information";
+        private const string LevelProperty = "level";
         private const string WarningProperty = "warning";
+        private const string TextProperty = "text";
         private const string ErrorProperty = "error";
 
         private readonly JsonSerializer _jsonSerializer = JsonSerializer.Create(GetSerializerSettings());
@@ -124,8 +125,10 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                     writer.WriteValue(PathUtility.GetPathWithForwardSlashes(reportProblem.Project));
                 }
 
-                writer.WritePropertyName(reportProblem.ProblemType == ProblemType.Warning ? WarningProperty : reportProblem.ProblemType == ProblemType.Error ? ErrorProperty : InformationProperty);
-                writer.WriteValue(PathUtility.GetPathWithForwardSlashes(reportProblem.Message));
+                writer.WritePropertyName(LevelProperty);
+                writer.WriteValue(reportProblem.ProblemType == ProblemType.Error ? ErrorProperty : WarningProperty);
+                writer.WritePropertyName(TextProperty);
+                writer.WriteValue(PathUtility.GetPathWithForwardSlashes(reportProblem.Text));
                 writer.WriteEndObject();
             }
 

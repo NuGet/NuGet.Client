@@ -208,7 +208,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 return string.Empty;
             }
 
-            if ((package as ListReportPackage)?.AutoReference == true)
+            if (package?.AutoReference == true)
             {
                 autoReferenceFound = true;
                 return "(A)";

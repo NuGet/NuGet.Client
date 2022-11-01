@@ -4,12 +4,12 @@
 namespace NuGet.CommandLine.XPlat.ListPackage
 {
     /// <summary>
-    /// Report problem message with problem type for a project
+    /// Report problem text with problem type for a project
     /// </summary>
     internal class ReportProblem
     {
         internal string Project { get; private set; }
-        internal string Message { get; private set; }
+        internal string Text { get; private set; }
         internal ProblemType ProblemType { get; }
 
         private ReportProblem()
@@ -17,9 +17,9 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
         public ReportProblem(ProblemType problemType, string project, string text)
         {
-            Project = project;
-            Message = text;
             ProblemType = problemType;
+            Project = project;
+            Text = text;
         }
     }
 }

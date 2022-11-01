@@ -1192,7 +1192,8 @@ namespace NuGet.XPlat.FuncTest
                       'problems': [
                         {{
                           'project': '{projectBPath}',
-                          'error': 'No assets file was found for `{projectBPath}`. Please run restore before running this command.'
+                          'level': 'error',
+                          'text': 'No assets file was found for `{projectBPath}`. Please run restore before running this command.'
                         }}
                       ],
                       'projects': [
@@ -1237,7 +1238,7 @@ namespace NuGet.XPlat.FuncTest
                 {
                     foreach (var projectProblem in project.projectProblems)
                     {
-                        projectModel.AddProjectInformation(projectProblem.ProblemType, projectProblem.Message);
+                        projectModel.AddProjectInformation(projectProblem.ProblemType, projectProblem.Text);
                     }
                 }
 
