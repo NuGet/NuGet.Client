@@ -161,6 +161,8 @@ stages:
       displayName: 'Publish BootstrapperInfo.json as a pipeline artifact'
       inputs:
         publishLocation: $(Build.StagingDirectory)\MicroBuild\Output
+        ArtifactName: MicroBuildOutputs
+        ArtifactType: Container
     - task: PowerShell@2
       displayName: Set 'VisualStudio.InstallationUnderTest.BootstrapperURL'
       inputs:
