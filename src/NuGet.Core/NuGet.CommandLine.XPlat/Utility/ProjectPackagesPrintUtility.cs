@@ -74,17 +74,16 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             frameworkPackages = frameworkPackages.OrderBy(p => p.Name);
 
-            var packages = frameworkPackages.Select(p => new ListReportPackage()
-            {
-                PackageId = p.Name,
-                RequestedVersion = printingTransitive ? string.Empty : p.OriginalRequestedVersion,
-                AutoReference = printingTransitive ? false : p.AutoReference,
-                ResolvedVersion = GetPackageVersion(p),
-                LatestVersion = reportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null,
-                Vulnerabilities = reportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
-                DeprecationReasons = reportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null,
-                AlternativePackage = reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null
-            });
+            var packages = frameworkPackages.Select(p => new ListReportPackage(
+                packageId: p.Name,
+                requestedVersion: printingTransitive ? string.Empty : p.OriginalRequestedVersion,
+                autoReference: printingTransitive ? false : p.AutoReference,
+                resolvedVersion: GetPackageVersion(p),
+                latestVersion: reportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null,
+                vulnerabilities: reportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
+                deprecationReasons: reportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null,
+                alternativePackage: reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null
+            ));
 
             tableHasAutoReference = frameworkPackages.Any(p => p.AutoReference);
 

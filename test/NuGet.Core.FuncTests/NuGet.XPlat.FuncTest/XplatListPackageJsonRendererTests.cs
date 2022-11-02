@@ -63,29 +63,25 @@ namespace NuGet.XPlat.FuncTest
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "A",
-                                            RequestedVersion= "2.0.0",
-                                            ResolvedVersion = "2.0.0"
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "A",
+                                            requestedVersion : "2.0.0",
+                                            resolvedVersion : "2.0.0")
                                     },
                                     // Below transitive packages shouldn't be in json output because this report doesn't have --include-transive option.
                                     TransitivePackages = new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "C",
-                                            RequestedVersion= "2.0.0",
-                                            ResolvedVersion = "3.1.0",
-                                            AutoReference = true
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "C",
+                                            requestedVersion : "2.0.0",
+                                            resolvedVersion : "3.1.0",
+                                            autoReference : true)
                                     }
                                 }
-                          },
-                          null
-                          ),
-                          (
+                            },
+                            projectProblems : null
+                        ),
+                        (
                             projectBPath,
                             new List<ListPackageReportFrameworkPackage>()
                             {
@@ -93,28 +89,24 @@ namespace NuGet.XPlat.FuncTest
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "B",
-                                            RequestedVersion= "3.0.0",
-                                            ResolvedVersion = "3.1.0"
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "B",
+                                            requestedVersion : "3.0.0",
+                                            resolvedVersion : "3.1.0")
                                     }
                                 },
                                 new ListPackageReportFrameworkPackage(frameWork5)
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "B",
-                                            RequestedVersion= "3.0.0",
-                                            ResolvedVersion = "3.1.0"
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "B",
+                                            requestedVersion : "3.0.0",
+                                            resolvedVersion : "3.1.0")
                                     }
                                 }
-                      },
-                      null
+                          },
+                          projectProblems : null
                       )
                     );
 
@@ -217,23 +209,21 @@ namespace NuGet.XPlat.FuncTest
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "A",
-                                            RequestedVersion= "2.0.0",
-                                            ResolvedVersion = "2.0.0",
-                                            AutoReference = true  // this one should be detected.
-                                        },
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "B",
-                                            RequestedVersion= "1.0.0",
-                                            ResolvedVersion = "1.3.0",
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "A",
+                                            requestedVersion : "2.0.0",
+                                            resolvedVersion : "2.0.0",
+                                            autoReference : true  // this one should be detected.
+                                        ),
+                                        new ListReportPackage(
+                                            packageId : "B",
+                                            requestedVersion : "1.0.0",
+                                            resolvedVersion : "1.3.0"
+                                        )
                                     }
                                 }
                            },
-                           null
+                           projectProblems: null
                        )
                     );
 
@@ -317,17 +307,15 @@ namespace NuGet.XPlat.FuncTest
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "A",
-                                            RequestedVersion = "[1.0.0,1.3.0]",
-                                            ResolvedVersion = "1.0.0",
-                                            LatestVersion = "2.0.0"
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "A",
+                                            requestedVersion : "[1.0.0,1.3.0]",
+                                            resolvedVersion : "1.0.0",
+                                            latestVersion : "2.0.0")
                                     }
                                 }
                             },
-                            null
+                            projectProblems: null
                       )
                     );
 
@@ -408,25 +396,23 @@ namespace NuGet.XPlat.FuncTest
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "A",
-                                            RequestedVersion = "[1.0.0,1.3.0]",
-                                            ResolvedVersion = "1.0.0",
-                                            DeprecationReasons = new PackageDeprecationMetadata
+                                        new ListReportPackage(
+                                            packageId : "A",
+                                            requestedVersion : "[1.0.0,1.3.0]",
+                                            resolvedVersion : "1.0.0",
+                                            deprecationReasons : new PackageDeprecationMetadata
                                             {
                                                 Reasons = new List<string>() { "Other", "Legacy"}.AsEnumerable()
                                             },
-                                            AlternativePackage = new AlternatePackageMetadata()
+                                            alternativePackage : new AlternatePackageMetadata()
                                             {
                                                 PackageId = "betterPackage",
                                                 Range = VersionRange.Parse("[*,)")
-                                            }
-                                        }
+                                            })
                                     }
                                 }
                             },
-                            null
+                            projectProblems: null
                       )
                     );
 
@@ -513,12 +499,12 @@ namespace NuGet.XPlat.FuncTest
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "A",
-                                            RequestedVersion = "[1.0.0,1.3.0]",
-                                            ResolvedVersion = "1.0.0",
-                                            Vulnerabilities = new List<PackageVulnerabilityMetadata>
+                                        new ListReportPackage(
+                                            packageId : "A",
+                                            requestedVersion : "[1.0.0,1.3.0]",
+                                            resolvedVersion : "1.0.0",
+                                            latestVersion : null,
+                                            vulnerabilities : new List<PackageVulnerabilityMetadata>
                                             {
                                                 new PackageVulnerabilityMetadata()
                                                 {
@@ -530,12 +516,11 @@ namespace NuGet.XPlat.FuncTest
                                                     Severity = 1,
                                                     AdvisoryUrl = new Uri("https://github.com/advisories/GHSA-v76m-f5cx-8rg4")
                                                 }
-                                            }
-                                        }
+                                            })
                                     }
                                 }
                             },
-                            null
+                            projectProblems: null
                        )
                     );
 
@@ -705,27 +690,24 @@ namespace NuGet.XPlat.FuncTest
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "A",
-                                            RequestedVersion= "2.0.0",
-                                            ResolvedVersion = "2.0.0"
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "A",
+                                            requestedVersion : "2.0.0",
+                                            resolvedVersion : "2.0.0")
                                     },
                                     // Below transitive packages should be in json output because this report has --include-transive option.
                                     TransitivePackages = new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "C",
-                                            RequestedVersion= "2.0.0",  // This is ignored for Transitive packages
-                                            ResolvedVersion = "3.1.0",
-                                            AutoReference = true  // This is ignored for Transitive packages
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "C",
+                                            requestedVersion : "2.0.0",  // This is ignored for Transitive packages
+                                            resolvedVersion : "3.1.0",
+                                            autoReference : true  // This is ignored for Transitive packages
+                                        )
                                     }
                                 }
                             },
-                            null
+                            projectProblems: null
                          ),
                          (
                             projectBPath,
@@ -735,38 +717,33 @@ namespace NuGet.XPlat.FuncTest
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "B",
-                                            RequestedVersion= "3.0.0",
-                                            ResolvedVersion = "3.1.0"
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "B",
+                                            requestedVersion : "3.0.0",
+                                            resolvedVersion : "3.1.0")
                                     }
                                 },
                                 new ListPackageReportFrameworkPackage(frameWork5)
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "B",
-                                            RequestedVersion= "3.0.0",
-                                            ResolvedVersion = "3.1.0"
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "B",
+                                            requestedVersion : "3.0.0",
+                                            resolvedVersion : "3.1.0")
                                     },
                                     TransitivePackages = new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "D",
-                                            RequestedVersion= "1.0.0",  // This is ignored for Transitive packages
-                                            ResolvedVersion = "1.1.0",
-                                            AutoReference = true  // This is ignored for Transitive packages
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "D",
+                                            requestedVersion : "1.0.0",  // This is ignored for Transitive packages
+                                            resolvedVersion : "1.1.0",
+                                            autoReference : true  // This is ignored for Transitive packages
+                                        )
                                     }
                                 }
                             },
-                            null
+                            projectProblems: null
                         )
                     );
 
@@ -883,41 +860,36 @@ namespace NuGet.XPlat.FuncTest
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "A",
-                                            RequestedVersion = "[1.0.0,1.3.0]",
-                                            ResolvedVersion = "1.0.0",
-                                            LatestVersion = "2.0.0"
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "A",
+                                            requestedVersion : "[1.0.0,1.3.0]",
+                                            resolvedVersion : "1.0.0",
+                                            latestVersion : "2.0.0")
                                     }
                                 },
                                 new ListPackageReportFrameworkPackage(frameWork5)
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "B",
-                                            RequestedVersion = "[1.0.0,1.3.0]",
-                                            ResolvedVersion = "1.0.0",
-                                            LatestVersion = "2.0.0"
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "B",
+                                            requestedVersion : "[1.0.0,1.3.0]",
+                                            resolvedVersion : "1.0.0",
+                                            latestVersion : "2.0.0")
                                     },
                                     TransitivePackages = new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "D",
-                                            RequestedVersion= "1.0.0",  // This is ignored for Transitive packages
-                                            ResolvedVersion = "1.1.0",
-                                            LatestVersion = "3.1.0",
-                                            AutoReference = true  // This is ignored for Transitive packages
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "D",
+                                            requestedVersion : "1.0.0",  // This is ignored for Transitive packages
+                                            resolvedVersion : "1.1.0",
+                                            latestVersion : "3.1.0",
+                                            autoReference : true  // This is ignored for Transitive packages
+                                            )
                                     }
                                 }
                             },
-                            null
+                            projectProblems: null
                          )
                     );
 
@@ -1018,12 +990,12 @@ namespace NuGet.XPlat.FuncTest
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "A",
-                                            RequestedVersion = "[1.0.0,1.3.0]",
-                                            ResolvedVersion = "1.0.0",
-                                            Vulnerabilities = new List<PackageVulnerabilityMetadata>
+                                        new ListReportPackage(
+                                            packageId: "A",
+                                            requestedVersion: "[1.0.0,1.3.0]",
+                                            resolvedVersion : "1.0.0",
+                                            latestVersion: null,
+                                            vulnerabilities: new List<PackageVulnerabilityMetadata>
                                             {
                                                 new PackageVulnerabilityMetadata()
                                                 {
@@ -1036,28 +1008,27 @@ namespace NuGet.XPlat.FuncTest
                                                     AdvisoryUrl = new Uri("https://github.com/advisories/GHSA-v76m-f5cx-8rg4")
                                                 }
                                             }
-                                        }
+                                        )
                                     },
                                     TransitivePackages = new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "D",
-                                            ResolvedVersion = "1.1.0",
-                                            LatestVersion = "3.1.0",
-                                            Vulnerabilities = new List<PackageVulnerabilityMetadata>
+                                        new ListReportPackage(
+                                            packageId: "D",
+                                            requestedVersion: null,
+                                            resolvedVersion: "1.1.0",
+                                            latestVersion: "3.1.0",
+                                            vulnerabilities : new List<PackageVulnerabilityMetadata>
                                             {
                                                 new PackageVulnerabilityMetadata()
                                                 {
                                                     Severity = 3,
                                                     AdvisoryUrl = new Uri("https://github.com/advisories/GHSA-5c66-x4wm-rjfx")
                                                 }
-                                            }
-                                        }
+                                            })
                                     }
                                 }
                             },
-                            null
+                            projectProblems: null
                          )
                     );
 
@@ -1161,16 +1132,14 @@ namespace NuGet.XPlat.FuncTest
                                 {
                                     TopLevelPackages =  new List<ListReportPackage>()
                                     {
-                                        new ListReportPackage()
-                                        {
-                                            PackageId = "A",
-                                            RequestedVersion= "2.0.0",
-                                            ResolvedVersion = "2.0.0",
-                                        }
+                                        new ListReportPackage(
+                                            packageId : "A",
+                                            requestedVersion : "2.0.0",
+                                            resolvedVersion : "2.0.0")
                                     }
                                 }
                             },
-                            null
+                            projectProblems: null
                         ),
                         (
                             projectBPath,
