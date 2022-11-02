@@ -143,8 +143,9 @@ stages:
       artifact: VS15
       patterns: |
         VS15/*
-        !EndtoEnd.zip
-        !NuGet.*
+        !EndToEnd.zip
+        !*.exe
+        !*.pdb
         !!NuGet.Tools.vsix
       displayName: 'Download VS15 files from official build'
     - task: MicroBuildSigningPlugin@1
