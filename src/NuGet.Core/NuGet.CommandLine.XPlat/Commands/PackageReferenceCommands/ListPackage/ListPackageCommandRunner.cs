@@ -111,7 +111,17 @@ namespace NuGet.CommandLine.XPlat
                     assetsFile.Targets.Count != 0)
                 {
                     // Get all the packages that are referenced in a project
-                    IEnumerable<FrameworkPackages> packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive, includeProjects: listPackageArgs.ReportType == ReportType.Default);
+                    IEnumerable<FrameworkPackages> packages;
+                    try
+                    {
+                        packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive, includeProjects: listPackageArgs.ReportType == ReportType.Default);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        projectModel.AddProjectInformation(ProblemType.Error, ex.Message);
+                        return;
+                    }
+
 
                     // If packages equals null, it means something wrong happened
                     // with reading the packages and it was handled and message printed
