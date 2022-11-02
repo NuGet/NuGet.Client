@@ -73,7 +73,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         public void Render(ListPackageReportModel listPackageReportModel)
         {
             // Aggregate problems from projects.
-            _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems).Where(p => p.ProblemType != ProblemType.Information));
+            _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems));
             var jsonRenderedOutput = WriteJson(new ListPackageOutputContent()
             {
                 ListPackageArgs = listPackageReportModel.ListPackageArgs,

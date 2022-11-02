@@ -116,50 +116,24 @@ namespace NuGet.CommandLine.XPlat
                     // If packages equals null, it means something wrong happened
                     // with reading the packages and it was handled and message printed
                     // in MSBuildAPIUtility function, but we need to move to the next project
-                    if (packages != null)
+                    if (packages != null && packages.Any())
                     {
-                        // No packages means that no package references at all were found in the current framework
-                        if (!packages.Any())
+                        if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                         {
-                            projectModel.AddProjectInformation(ProblemType.Information, message: string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, projectModel.ProjectName));
+                            PopulateSourceRepositoryCache(listPackageArgs);
+                            WarnForHttpSources(listPackageArgs, projectModel);
+                            await GetRegistrationMetadataAsync(packages, listPackageArgs);
+                            await AddLatestVersionsAsync(packages, listPackageArgs);
                         }
-                        else
+
+                        bool printPackages = FilterPackages(packages, listPackageArgs);
+                        printPackages = printPackages || ReportType.Default == listPackageArgs.ReportType;
+                        if (printPackages)
                         {
-                            if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
-                            {
-                                PopulateSourceRepositoryCache(listPackageArgs);
-                                WarnForHttpSources(listPackageArgs, projectModel);
-                                await GetRegistrationMetadataAsync(packages, listPackageArgs);
-                                await AddLatestVersionsAsync(packages, listPackageArgs);
-                            }
-
-                            bool printPackages = FilterPackages(packages, listPackageArgs);
-
-                            // Filter packages for dedicated reports, inform user if none
-                            if (listPackageArgs.ReportType != ReportType.Default && !printPackages)
-                            {
-                                switch (listPackageArgs.ReportType)
-                                {
-                                    case ReportType.Outdated:
-                                        projectModel.AddProjectInformation(ProblemType.Information, string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoUpdatesForProject, projectModel.ProjectName));
-                                        break;
-                                    case ReportType.Deprecated:
-                                        projectModel.AddProjectInformation(ProblemType.Information, string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoDeprecatedPackagesForProject, projectModel.ProjectName));
-                                        break;
-                                    case ReportType.Vulnerable:
-                                        projectModel.AddProjectInformation(ProblemType.Information, string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, projectModel.ProjectName));
-                                        break;
-                                }
-                            }
-
-                            printPackages = printPackages || ReportType.Default == listPackageArgs.ReportType;
-                            if (printPackages)
-                            {
-                                var hasAutoReference = false;
-                                List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetadata(packages, listPackageArgs, ref hasAutoReference);
-                                projectModel.TargetFrameworkPackages = projectFrameworkPackages;
-                                projectModel.AutoReferenceFound = hasAutoReference;
-                            }
+                            var hasAutoReference = false;
+                            List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetadata(packages, listPackageArgs, ref hasAutoReference);
+                            projectModel.TargetFrameworkPackages = projectFrameworkPackages;
+                            projectModel.AutoReferenceFound = hasAutoReference;
                         }
                     }
                 }

@@ -71,9 +71,34 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         {
             foreach (ListPackageProjectModel project in projects)
             {
-                // Print projects specific problems
                 PrintProblems(project.ProjectProblems, listPackageArgs);
                 if (project.TargetFrameworkPackages == null)
+                {
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, project.ProjectName));
+                    continue;
+                }
+
+                bool printPackages = project.TargetFrameworkPackages.Any(p => p.TopLevelPackages.Any() ||
+                                                                            listPackageArgs.IncludeTransitive && p.TransitivePackages.Any());
+
+                // Filter packages for dedicated reports, inform user if none
+                if (listPackageArgs.ReportType != ReportType.Default && !printPackages)
+                {
+                    switch (listPackageArgs.ReportType)
+                    {
+                        case ReportType.Outdated:
+                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoUpdatesForProject, project.ProjectName));
+                            break;
+                        case ReportType.Deprecated:
+                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoDeprecatedPackagesForProject, project.ProjectName));
+                            break;
+                        case ReportType.Vulnerable:
+                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, project.ProjectName));
+                            break;
+                    }
+                }
+
+                if (!printPackages)
                 {
                     continue;
                 }
@@ -163,9 +188,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             {
                 switch (problem.ProblemType)
                 {
-                    case ProblemType.Information:
-                        Console.WriteLine(problem.Text);
-                        break;
                     case ProblemType.Warning:
                         Console.WriteLine(problem.Text);
                         break;

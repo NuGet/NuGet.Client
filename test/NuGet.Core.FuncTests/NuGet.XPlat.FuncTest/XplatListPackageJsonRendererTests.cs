@@ -627,7 +627,7 @@ namespace NuGet.XPlat.FuncTest
                                     { }
                                 }
                             },
-                            new List<ReportProblem>() { new ReportProblem(ProblemType.Information, projectAPath, $"The given project `MyProjectD` has no vulnerable packages given the current sources.") }
+                            new List<ReportProblem>() { }
                        )
                     );
 
