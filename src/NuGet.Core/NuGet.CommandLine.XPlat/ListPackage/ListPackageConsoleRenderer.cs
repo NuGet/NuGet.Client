@@ -45,6 +45,12 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         {
             // Print non-project related problems first.
             PrintProblems(jsonOutputContent.Problems, listPackageArgs);
+
+            if (jsonOutputContent.Problems?.Any(p => p.ProblemType == ProblemType.Error) == true)
+            {
+                return;
+            }
+
             WriteSources(jsonOutputContent.ListPackageArgs);
             WriteProjects(jsonOutputContent.Projects, jsonOutputContent.ListPackageArgs);
 
@@ -72,6 +78,12 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             foreach (ListPackageProjectModel project in projects)
             {
                 PrintProblems(project.ProjectProblems, listPackageArgs);
+
+                if (project.ProjectProblems?.Any(p => p.ProblemType == ProblemType.Error) == true)
+                {
+                    return;
+                }
+
                 if (project.TargetFrameworkPackages == null)
                 {
                     Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, project.ProjectName));
