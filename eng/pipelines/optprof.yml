@@ -144,8 +144,8 @@ stages:
       patterns: |
         VS15/*
         !VS15/EndToEnd.zip
-        !*.exe
-        !*.pdb
+        !VS15/*.exe
+        !VS15/*.pdb
       displayName: 'Download VS15 files from official build'
     - task: MicroBuildSigningPlugin@1
       inputs:
