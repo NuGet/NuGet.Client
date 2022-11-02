@@ -146,7 +146,6 @@ stages:
         !EndToEnd.zip
         !*.exe
         !*.pdb
-        !!NuGet.Tools.vsix
       displayName: 'Download VS15 files from official build'
     - task: MicroBuildSigningPlugin@1
       inputs:
