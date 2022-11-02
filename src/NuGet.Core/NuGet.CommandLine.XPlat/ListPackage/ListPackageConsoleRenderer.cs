@@ -189,10 +189,14 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 switch (problem.ProblemType)
                 {
                     case ProblemType.Warning:
-                        Console.WriteLine(problem.Text);
-                        break;
-                    case ProblemType.LoggerWarning:
-                        listPackageArgs.Logger.LogWarning(problem.Text);
+                        if (problem.Text.StartsWith("You are running the 'list package' operation with an 'HTTP' source"))
+                        {
+                            listPackageArgs.Logger.LogWarning(problem.Text);
+                        }
+                        else
+                        {
+                            Console.WriteLine(problem.Text);
+                        }
                         break;
                     case ProblemType.Error:
                         Console.Error.WriteLine(problem.Text);

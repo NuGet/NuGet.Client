@@ -178,7 +178,7 @@ namespace NuGet.CommandLine.XPlat
                 if (httpPackageSources.Count == 1)
                 {
                     projectModel.AddProjectInformation(
-                        ProblemType.LoggerWarning,
+                        ProblemType.Warning,
                         string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_HttpServerUsage,
                         "list package",
@@ -187,7 +187,7 @@ namespace NuGet.CommandLine.XPlat
                 else
                 {
                     projectModel.AddProjectInformation(
-                        ProblemType.LoggerWarning,
+                        ProblemType.Warning,
                         string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_HttpServerUsage_MultipleSources,
                         "list package",
