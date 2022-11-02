@@ -72,8 +72,9 @@ stages:
         }
         $branch = $branch.Replace('/', '_')
         $commit = "$(Resources.Pipeline.ComponentBuildUnderTest.SourceCommit)"
+        $buildNumber = "$(Build.BuildNumber)"
 
-        $BuildName = "${branch}_${commit}"
+        $BuildName = "${branch}_${commit}_${buildNumber}"
         Write-Host "Settings build name = $BuildName"
         Write-Host "##vso[build.updatebuildnumber]$BuildName"
       displayName: 'Set Build Name'
@@ -82,7 +83,7 @@ stages:
       displayName: 'Download buildinfo.json'
     - powershell: |
         try {
-          Write-Host "Set VSBranch variable"
+          Write-Host "Set VSBranch, VsTargetChannel &  VsTargetMajorVersion variables"
           $buildInfoJsonFilePath = "$(Pipeline.Workspace)\ComponentBuildUnderTest\BuildInfo\buildinfo.json"
 
           Write-Host "buildinfo.json drop URI:  $buildInfoJsonFilePath"
@@ -105,10 +106,18 @@ stages:
 
           Write-Host "Target Visual Studio branch: $VSBranch"
           Set-AzurePipelinesVariable 'VSBranch' $VSBranch
+
+          $VsTargetChannel = $buildInfoJson.VsTargetChannel
+          Write-Host "Visual Studio target channel: $VsTargetChannel"
+          Set-AzurePipelinesVariable 'VsTargetChannel' $VsTargetChannel
+
+          $VsTargetMajorVersion = $buildInfoJson.VsTargetMajorVersion
+          Write-Host "Visual Studio major version: $VsTargetMajorVersion"
+          Set-AzurePipelinesVariable 'VsTargetMajorVersion' $VsTargetMajorVersion
         }
         catch {
           Write-Host $_
-          Write-Error "Failed to set VSBranch pipeline variable"
+          Write-Error "Failed to set VSBranch, VsTargetChannel &  VsTargetMajorVersion pipeline variables"
           throw
         }
       displayName: 'Set VSBranch variable'
@@ -132,14 +141,41 @@ stages:
       displayName: 'Set RunSettingsURI variable'
       name: SetRunSettingsURI
     - download: ComponentBuildUnderTest
-      artifact: MicroBuildOutputs
-      patterns: '**\BootstrapperInfo.json'
-      displayName: Download Bootstrapper Information
+      artifact: VS15
+      patterns: |
+        VS15/*
+        !VS15/EndToEnd.zip
+        !VS15/*.exe
+        !VS15/*.pdb
+      displayName: 'Download VS15 files from official build'
+    - task: MicroBuildSigningPlugin@1
+      inputs:
+        signType: "real"
+        esrpSigning: "true"
+      displayName: "Install Signing Plugin"
+    - task: MicroBuildSwixPlugin@4
+      displayName: "Install Swix Plugin"
+    - task: MicroBuildBuildVSBootstrapper@2
+      displayName: 'Build a Visual Studio bootstrapper'
+      inputs:
+        channelName: "$(VsTargetChannel)"
+        vsMajorVersion: "$(VsTargetMajorVersion)"
+        manifests: '$(Pipeline.Workspace)\ComponentBuildUnderTest\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
+        outputFolder: '$(Pipeline.Workspace)\ComponentBuildUnderTest\VS15'
     - task: PowerShell@2
       displayName: Set 'VisualStudio.InstallationUnderTest.BootstrapperURL'
       inputs:
         filePath: $(DartLab.Path)\Scripts\VisualStudio\Bootstrapper\Get-BootstrapperURL.ps1
-        arguments: -BootstrapperInfoJsonURI '$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\BootstrapperInfo.json' -VSBranch '$(VSBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
+        arguments: -BootstrapperInfoJsonURI '$(Build.StagingDirectory)\MicroBuild\Output\BootstrapperInfo.json' -VSBranch '$(VSBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
+    - task: artifactDropTask@0
+      displayName: "Upload VSTS Drop"
+      inputs:
+        dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+        buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
+        sourcePath: "$(Pipeline.Workspace)\\ComponentBuildUnderTest\\VS15"
+        toLowerCase: false
+        usePat: true
+        dropMetadataContainerName: "DropMetadata-Product"
     # Remove this step hook and it's task if you don't want LKG support
     prePublishOptimizationInputsDropStepList:
     # Set parameter for PreviousOptimizationInputsDropName 
