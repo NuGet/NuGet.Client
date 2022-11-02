@@ -102,7 +102,7 @@ namespace NuGet.PackageManagement.UI
                 var formatString = Resx.Text_Downloads;
                 string begin = string.Empty;
                 string end = string.Empty;
-                var index = formatString.IndexOf("{0}", StringComparison.OrdinalIgnoreCase);
+                var index = formatString.IndexOf("{0}", StringComparison.Ordinal);
                 if (index == -1)
                 {
                     // Cannot find "{0}".

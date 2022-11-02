@@ -57,8 +57,8 @@ namespace NuGet.Packaging.Rules
                         .GroupBy(t => NuGetFramework.ParseFolder(t.Split('/')[1]).GetShortFolderName(), t => Path.GetFileName(t));
                     var keys = GetAllKeys(filesByTFM);
                     var missingSubfolderInFiles = nuspecReferences.Keys.Where(t => !keys.Contains(t) &&
-                    !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("unsupported", StringComparison.OrdinalIgnoreCase) &&
-                    !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("any", StringComparison.OrdinalIgnoreCase));
+                    !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("unsupported", StringComparison.Ordinal) &&
+                    !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("any", StringComparison.Ordinal));
                     if (missingSubfolderInFiles.Any())
                     {
                         var subfolder = nuspecReferences.Where(t => missingSubfolderInFiles.Contains(t.Key));
@@ -146,7 +146,7 @@ namespace NuGet.Packaging.Rules
                 {
                     foreach (var item in reference.MissingItems)
                     {
-                        if (reference.Tfm.Equals("any", StringComparison.OrdinalIgnoreCase))
+                        if (reference.Tfm.Equals("any", StringComparison.Ordinal))
                         {
                             message.AppendLine(string.Format(CultureInfo.CurrentCulture, _addToNuspecNoTfmFormat, item));
                         }

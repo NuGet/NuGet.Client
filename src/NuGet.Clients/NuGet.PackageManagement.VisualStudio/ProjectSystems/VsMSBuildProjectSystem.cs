@@ -139,11 +139,11 @@ namespace NuGet.PackageManagement.VisualStudio
             var lockFileFullPath = PackagesConfigLockFileUtility.GetPackagesLockFilePath(ProjectFullPath, GetPropertyValue("NuGetLockFilePath")?.ToString(), ProjectName);
             if (File.Exists(Path.Combine(ProjectFullPath, path))
                 && !fileExistsInProject
-                && !fileName.Equals(ProjectManagement.Constants.PackageReferenceFile, StringComparison.OrdinalIgnoreCase)
-                && !fileName.Equals("packages." + ProjectName + ".config", StringComparison.OrdinalIgnoreCase)
-                && !fileName.Equals(EnvDteProjectExtensions.WebConfig, StringComparison.OrdinalIgnoreCase)
-                && !fileName.Equals(EnvDteProjectExtensions.AppConfig, StringComparison.OrdinalIgnoreCase)
-                && !fileName.Equals(Path.GetFileName(lockFileFullPath))
+                && !fileName.Equals(ProjectManagement.Constants.PackageReferenceFile, StringComparison.Ordinal)
+                && !fileName.Equals("packages." + ProjectName + ".config", StringComparison.Ordinal)
+                && !fileName.Equals(EnvDteProjectExtensions.WebConfig, StringComparison.Ordinal)
+                && !fileName.Equals(EnvDteProjectExtensions.AppConfig, StringComparison.Ordinal)
+                && !fileName.Equals(Path.GetFileName(lockFileFullPath), StringComparison.Ordinal)
                 )
             {
                 NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);

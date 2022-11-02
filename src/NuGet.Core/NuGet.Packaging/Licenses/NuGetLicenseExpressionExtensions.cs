@@ -81,7 +81,7 @@ namespace NuGet.Packaging.Licenses
 
         public static bool IsUnlicensed(this NuGetLicense license)
         {
-            return license.Identifier.Equals(NuGetLicense.UNLICENSED, StringComparison.OrdinalIgnoreCase);
+            return license.Identifier.Equals(NuGetLicense.UNLICENSED, StringComparison.Ordinal);
         }
 
         public static bool IsUnlicensed(this NuGetLicenseExpression expression)
