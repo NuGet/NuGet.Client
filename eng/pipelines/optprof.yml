@@ -74,7 +74,7 @@ stages:
         $commit = "$(Resources.Pipeline.ComponentBuildUnderTest.SourceCommit)"
         $buildNumber = "$(Build.BuildNumber)"
 
-        $BuildName = "${branch}_${commit}_$(buildNumber)"
+        $BuildName = "${branch}_${commit}_${buildNumber}"
         Write-Host "Settings build name = $BuildName"
         Write-Host "##vso[build.updatebuildnumber]$BuildName"
       displayName: 'Set Build Name'
