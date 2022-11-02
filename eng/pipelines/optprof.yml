@@ -143,7 +143,7 @@ stages:
       artifact: VS15
       patterns: |
         VS15/*
-        !EndToEnd.zip
+        !VS15/EndToEnd.zip
         !*.exe
         !*.pdb
       displayName: 'Download VS15 files from official build'
