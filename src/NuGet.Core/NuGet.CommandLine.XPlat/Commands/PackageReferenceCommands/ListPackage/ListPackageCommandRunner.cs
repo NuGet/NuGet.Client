@@ -122,11 +122,7 @@ namespace NuGet.CommandLine.XPlat
                         return;
                     }
 
-
-                    // If packages equals null, it means something wrong happened
-                    // with reading the packages and it was handled and message printed
-                    // in MSBuildAPIUtility function, but we need to move to the next project
-                    if (packages != null && packages.Any())
+                    if (packages.Any())
                     {
                         if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                         {
@@ -144,6 +140,10 @@ namespace NuGet.CommandLine.XPlat
                             List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetadata(packages, listPackageArgs, ref hasAutoReference);
                             projectModel.TargetFrameworkPackages = projectFrameworkPackages;
                             projectModel.AutoReferenceFound = hasAutoReference;
+                        }
+                        else
+                        {
+                            projectModel.TargetFrameworkPackages = new List<ListPackageReportFrameworkPackage>();
                         }
                     }
                 }

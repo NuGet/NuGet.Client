@@ -32,30 +32,24 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
         public void Render(ListPackageReportModel listPackageReportModel)
         {
-            WriteToConsole(new ListPackageOutputContent()
-            {
-                ListPackageArgs = listPackageReportModel.ListPackageArgs,
-                Problems = _problems,
-                Projects = listPackageReportModel.Projects
-            },
-            listPackageReportModel.ListPackageArgs);
+            WriteToConsole(listPackageReportModel);
         }
 
-        private static void WriteToConsole(ListPackageOutputContent jsonOutputContent, ListPackageArgs listPackageArgs)
+        private void WriteToConsole(ListPackageReportModel listPackageReportModel)
         {
             // Print non-project related problems first.
-            PrintProblems(jsonOutputContent.Problems, listPackageArgs);
+            PrintProblems(_problems, listPackageReportModel.ListPackageArgs);
 
-            if (jsonOutputContent.Problems?.Any(p => p.ProblemType == ProblemType.Error) == true)
+            if (_problems?.Any(p => p.ProblemType == ProblemType.Error) == true)
             {
                 return;
             }
 
-            WriteSources(jsonOutputContent.ListPackageArgs);
-            WriteProjects(jsonOutputContent.Projects, jsonOutputContent.ListPackageArgs);
+            WriteSources(listPackageReportModel.ListPackageArgs);
+            WriteProjects(listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs);
 
             // Print a legend message for auto-reference markers used
-            if (jsonOutputContent.Projects.Any(p => p.AutoReferenceFound))
+            if (listPackageReportModel.Projects.Any(p => p.AutoReferenceFound))
             {
                 Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
             }
@@ -90,8 +84,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                     continue;
                 }
 
-                bool printPackages = project.TargetFrameworkPackages.Any(p => p.TopLevelPackages.Any() ||
-                                                                            listPackageArgs.IncludeTransitive && p.TransitivePackages.Any());
+                bool printPackages = project.TargetFrameworkPackages.Any(p => p.TopLevelPackages?.Any() == true ||
+                                                                            listPackageArgs.IncludeTransitive && p.TransitivePackages?.Any() == true);
 
                 // Filter packages for dedicated reports, inform user if none
                 if (listPackageArgs.ReportType != ReportType.Default && !printPackages)
@@ -110,6 +104,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                     }
                 }
 
+                printPackages = printPackages || ReportType.Default == listPackageArgs.ReportType;
                 if (!printPackages)
                 {
                     continue;

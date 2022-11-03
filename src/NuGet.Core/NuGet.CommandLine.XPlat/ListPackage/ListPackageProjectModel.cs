@@ -10,7 +10,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
     /// </summary>
     internal class ListPackageProjectModel
     {
-        internal List<ReportProblem> ProjectProblems { get; } = new List<ReportProblem>();
+        internal List<ReportProblem> ProjectProblems { get; } = new();
         internal string ProjectPath { get; private set; }
         // Calculated project model data for each targetframeworks
         internal List<ListPackageReportFrameworkPackage> TargetFrameworkPackages { get; set; }
