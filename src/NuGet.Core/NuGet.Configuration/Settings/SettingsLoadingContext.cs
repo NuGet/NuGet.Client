@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using NuGet.Common;
 
@@ -14,9 +14,7 @@ namespace NuGet.Configuration
     /// </summary>
     public sealed class SettingsLoadingContext : IDisposable
     {
-        private readonly Dictionary<string, SettingsFile> _cache = new Dictionary<string, SettingsFile>(PathUtility.GetStringComparerBasedOnOS());
-
-        private readonly object _lockObject = new object();
+        private readonly ConcurrentDictionary<string, Lazy<SettingsFile>> _cache = new ConcurrentDictionary<string, Lazy<SettingsFile>>(PathUtility.GetStringComparerBasedOnOS());
 
         private bool _isDisposed;
 
@@ -25,6 +23,7 @@ namespace NuGet.Configuration
         /// </summary>
         internal event EventHandler<string> FileRead;
 
+        /// <inheritdoc cref="IDisposable.Dispose" />
         public void Dispose()
         {
             if (!_isDisposed)
@@ -58,33 +57,22 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            // See if the settings file is already cached so as not to acquire a lock
-            if (_cache.TryGetValue(filePath, out SettingsFile settingsFile))
-            {
-                return settingsFile;
-            }
-
-            lock (_lockObject)
-            {
-                // See if another thread already cached the settings file
-                if (_cache.TryGetValue(filePath, out settingsFile))
+            Lazy<SettingsFile> settingsLazy = _cache.GetOrAdd(
+                filePath,
+                (key) => new Lazy<SettingsFile>(() =>
                 {
+                    var fileInfo = new FileInfo(key);
+
+                    // Load the settings file, this will throw an exception if something is wrong with the file
+                    var settingsFile = new SettingsFile(fileInfo.DirectoryName, fileInfo.Name, isMachineWide, isReadOnly);
+
+                    // Fire the FileRead event so unit tests can detect when a file was actually read versus cached
+                    FileRead?.Invoke(this, fileInfo.FullName);
+
                     return settingsFile;
-                }
+                }));
 
-                var fileInfo = new FileInfo(filePath);
-
-                // Load the settings file, this will throw an exception if something is wrong with the file
-                settingsFile = new SettingsFile(fileInfo.DirectoryName, fileInfo.Name, isMachineWide, isReadOnly);
-
-                // Fire the FileRead event so unit tests can detect when a file was actually read versus cached
-                FileRead?.Invoke(this, filePath);
-
-                // Add the settings file to the cache if loading it did not throw any exceptions
-                _cache.Add(filePath, settingsFile);
-
-                return settingsFile;
-            }
+            return settingsLazy.Value;
         }
     }
 }
