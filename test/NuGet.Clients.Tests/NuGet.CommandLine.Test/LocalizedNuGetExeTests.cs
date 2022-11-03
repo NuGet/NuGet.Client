@@ -11,7 +11,7 @@ using NuGet.CommandLine.Test;
 using NuGet.Test.Utility;
 using Xunit;
 
-namespace NuGet.CommandLine.FuncTest
+namespace NuGet.CommandLine.Test
 {
     public class LocalizedNuGetExeTests
     {
@@ -56,7 +56,7 @@ namespace NuGet.CommandLine.FuncTest
             {
                 { "NUGET_CLI_LANGUAGE", nugetCliLanguageEnvVarValue }
             };
-            var args = new[] { nugetCliLanguageEnvVarValue };
+            var args = new[] { "help" };
 
             // Act
             var r = CommandRunner.Run(
