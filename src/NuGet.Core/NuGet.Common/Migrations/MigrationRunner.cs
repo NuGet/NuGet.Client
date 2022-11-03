@@ -41,23 +41,23 @@ namespace NuGet.Common.Migrations
                         }
                     }
                 }
-            }
+            } 
+        }
 
-            static bool WaitForMutex(Mutex mutex)
+        private static bool WaitForMutex(Mutex mutex)
+        {
+            bool captured;
+
+            try
             {
-                bool captured;
-
-                try
-                {
-                    captured = mutex.WaitOne(TimeSpan.FromMinutes(1), false);
-                }
-                catch (AbandonedMutexException)
-                {
-                    captured = true;
-                }
-
-                return captured;
+                captured = mutex.WaitOne(TimeSpan.FromMinutes(1), false);
             }
+            catch (AbandonedMutexException)
+            {
+                captured = true;
+            }
+
+            return captured;
         }
 
         internal static string GetMigrationsDirectory()
