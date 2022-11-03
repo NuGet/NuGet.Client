@@ -71,52 +71,47 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         {
             // Aggregate problems from projects.
             _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems));
-            var jsonRenderedOutput = WriteJson(new ListPackageOutputContent()
-            {
-                ListPackageArgs = listPackageReportModel.ListPackageArgs,
-                Problems = _problems,
-                Projects = listPackageReportModel.Projects
-            });
-
+            var jsonRenderedOutput = WriteJson(listPackageReportModel);
             _writer.WriteLine(jsonRenderedOutput);
         }
 
-        internal string WriteJson(ListPackageOutputContent jsonOutputContent)
+        internal string WriteJson(ListPackageReportModel listPackageReportModel)
         {
             using (var writer = new StringWriter())
             {
                 using (var jsonWriter = new JsonTextWriter(writer))
                 {
                     jsonWriter.Formatting = Formatting.Indented;
-                    WriteJson(jsonWriter, jsonOutputContent);
+                    WriteJson(jsonWriter, listPackageReportModel);
                 }
 
                 return writer.ToString();
             }
         }
 
-        private void WriteJson(JsonWriter writer, ListPackageOutputContent jsonOutputContent)
+        private void WriteJson(JsonWriter writer, ListPackageReportModel listPackageReportModel)
         {
+            ListPackageArgs listPackageArgs = listPackageReportModel.ListPackageArgs;
             writer.WriteStartObject();
 
             writer.WritePropertyName(VersionProperty);
             writer.WriteValue(ReportOutputVersion);
 
             writer.WritePropertyName(ParametersProperty);
-            writer.WriteValue(PathUtility.GetPathWithForwardSlashes(jsonOutputContent.ListPackageArgs.ArgumentText));
+            writer.WriteValue(PathUtility.GetPathWithForwardSlashes(listPackageArgs.ArgumentText));
 
-            if (jsonOutputContent.Projects.Any(p => p.AutoReferenceFound))
+            if (listPackageReportModel.Projects.Any(p => p.AutoReferenceFound))
             {
-                jsonOutputContent.Problems.Add(new ReportProblem(ProblemType.Warning, string.Empty, Strings.ListPkg_AutoReferenceDescription));
+                _problems.Add(new ReportProblem(ProblemType.Warning, string.Empty, Strings.ListPkg_AutoReferenceDescription));
             }
 
-            if (jsonOutputContent.Problems?.Count > 0)
+            if (_problems?.Count > 0)
             {
-                WriteProblems(writer, jsonOutputContent.Problems);
+                WriteProblems(writer, _problems);
             }
 
-            WriteSources(writer, jsonOutputContent.ListPackageArgs);
-            WriteProjects(writer, jsonOutputContent.Projects, jsonOutputContent.ListPackageArgs);
+            WriteSources(writer, listPackageReportModel.ListPackageArgs);
+            WriteProjects(writer, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs);
             writer.WriteEndObject();
         }
 
