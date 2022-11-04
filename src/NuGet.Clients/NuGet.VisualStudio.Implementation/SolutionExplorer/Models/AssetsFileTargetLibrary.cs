@@ -97,9 +97,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                 if (path.StartsWith("contentFiles/", StringComparison.OrdinalIgnoreCase))
                     return false;
 
-                return path.StartsWith("doc/", StringComparison.OrdinalIgnoreCase)
-                    || path.StartsWith("documentation/", StringComparison.OrdinalIgnoreCase)
-                    || path.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
+                return path.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
                     || path.EndsWith(".md", StringComparison.OrdinalIgnoreCase);
             }
         }
