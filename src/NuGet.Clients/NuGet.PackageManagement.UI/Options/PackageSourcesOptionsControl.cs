@@ -291,10 +291,14 @@ namespace NuGet.Options
                     remoteException.DeserializedErrorData is CommonErrorData commonError)
                 {
                     if (commonError.TypeName == typeof(NuGetConfigurationException).FullName || // Thrown during creating or saving NuGet.Config.
-                        commonError.TypeName == typeof(InvalidOperationException).FullName || // Thrown if no nuget.config found.
-                        commonError.TypeName == typeof(UnauthorizedAccessException).FullName)
+                        commonError.TypeName == typeof(InvalidOperationException).FullName) // Thrown if no nuget.config found.
                     {
                         MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
+                        return false;
+                    }
+                    else if (commonError.TypeName == typeof(UnauthorizedAccessException).FullName)
+                    {
+                        MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
                         return false;
                     }
                 }
