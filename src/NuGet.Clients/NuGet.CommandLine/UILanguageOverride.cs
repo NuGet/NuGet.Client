@@ -18,15 +18,30 @@ namespace NuGet.CommandLine
 
         public static void Setup(ILogger logger)
         {
+            Setup(logger, ApplyOverrideToCurrentProcess);
+        }
+
+        /// <summary>
+        /// For testing purposes
+        /// </summary>
+        /// <param name="logger">NuGet logger for diagnostic messages</param>
+        /// <param name="langOverrideFunc">Method to apply culture to other step</param>
+        /// <exception cref="ArgumentNullException">If any arguments </exception>
+        internal static void Setup(ILogger logger, Action<CultureInfo> langOverrideFunc)
+        {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
+            }
+            if (langOverrideFunc == null)
+            {
+                throw new ArgumentNullException(nameof(langOverrideFunc));
             }
             Logger = logger;
             CultureInfo language = GetOverriddenUILanguage();
             if (language != null)
             {
-                ApplyOverrideToCurrentProcess(language);
+                langOverrideFunc(language);
             }
         }
 
@@ -35,7 +50,7 @@ namespace NuGet.CommandLine
             CultureInfo.DefaultThreadCurrentUICulture = language;
         }
 
-        private static CultureInfo GetOverriddenUILanguage()
+        internal static CultureInfo GetOverriddenUILanguage()
         {
             // NUGET_CLI_LANGUAGE=<culture name> is the main way for users to customize nuget.exe language.
             string nugetCliLanguage = Environment.GetEnvironmentVariable(NUGET_CLI_LANGUAGE);
