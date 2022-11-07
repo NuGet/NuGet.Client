@@ -47,7 +47,6 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             Assert.Null(cultureInfo);
-            Assert.NotEmpty(logger.Messages);
             string errorMessage = string.Format(CultureInfo.InvariantCulture, NuGet.CommandLine.NuGetResources.Error_InvalidCultureInfo, "NUGET_CLI_LANGUAGE", invalidValue);
             Assert.Collection(logger.Messages, msg => Assert.Equal(errorMessage, msg));
         }
