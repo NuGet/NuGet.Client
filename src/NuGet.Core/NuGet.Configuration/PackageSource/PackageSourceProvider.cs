@@ -676,8 +676,7 @@ namespace NuGet.Configuration
             }
             catch (ArgumentException e)
             {
-                var path = Settings.GetConfigFilePaths();
-                var duplicatedKey = existingDisabledSources
+                AddItem duplicatedKey = existingDisabledSources
                     .GroupBy(s => s.Key, StringComparer.OrdinalIgnoreCase)
                     .Where(g => g.Count() > 1)
                     .Select(g => g.First())
