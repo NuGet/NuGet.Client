@@ -31,7 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build">
-      <HintPath>$(NuGetPackageRoot)microsoft.build\15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
+      <HintPath>$(PkgMicrosoft_Build)lib\net46\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -293,7 +293,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <PackageDownload Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="All" />
     <PackageReference Include="Microsoft.DataAI.NuGetRecommender.Contracts" />
     <PackageReference Include="Microsoft.VisualStudio.VCProjectEngine" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
