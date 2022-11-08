@@ -14,11 +14,10 @@ namespace NuGet.CommandLine
     internal static class UILanguageOverride
     {
         private const string NUGET_CLI_LANGUAGE = nameof(NUGET_CLI_LANGUAGE);
-        private static ILogger Logger;
 
         public static void Setup(ILogger logger)
         {
-            Setup(logger, ApplyOverrideToCurrentProcess);
+            Setup(logger, ApplyOverrideToCurrentProcess, EnvironmentVariableWrapper.Instance);
         }
 
         /// <summary>
@@ -27,7 +26,7 @@ namespace NuGet.CommandLine
         /// <param name="logger">NuGet logger for diagnostic messages</param>
         /// <param name="langOverrideFunc">Method to apply culture to other step</param>
         /// <exception cref="ArgumentNullException">If any arguments are null</exception>
-        internal static void Setup(ILogger logger, Action<CultureInfo> langOverrideFunc)
+        internal static void Setup(ILogger logger, Action<CultureInfo> langOverrideFunc, IEnvironmentVariableReader envvarReader)
         {
             if (logger == null)
             {
@@ -37,8 +36,11 @@ namespace NuGet.CommandLine
             {
                 throw new ArgumentNullException(nameof(langOverrideFunc));
             }
-            Logger = logger;
-            CultureInfo language = GetOverriddenUILanguage();
+            if (envvarReader == null)
+            {
+                throw new ArgumentNullException(nameof(envvarReader));
+            }
+            CultureInfo language = GetOverriddenUILanguage(envvarReader, logger);
             if (language != null)
             {
                 langOverrideFunc(language);
@@ -50,10 +52,10 @@ namespace NuGet.CommandLine
             CultureInfo.DefaultThreadCurrentUICulture = language;
         }
 
-        internal static CultureInfo GetOverriddenUILanguage()
+        internal static CultureInfo GetOverriddenUILanguage(IEnvironmentVariableReader envvarReader, ILogger logger)
         {
             // NUGET_CLI_LANGUAGE=<culture name> is the main way for users to customize nuget.exe language.
-            string nugetCliLanguage = Environment.GetEnvironmentVariable(NUGET_CLI_LANGUAGE);
+            string nugetCliLanguage = envvarReader.GetEnvironmentVariable(NUGET_CLI_LANGUAGE);
             if (nugetCliLanguage != null)
             {
                 try
@@ -62,7 +64,7 @@ namespace NuGet.CommandLine
                 }
                 catch (CultureNotFoundException)
                 {
-                    Logger.LogError(string.Format(CultureInfo.CurrentCulture, NuGetResources.Error_InvalidCultureInfo, NUGET_CLI_LANGUAGE, nugetCliLanguage));
+                    logger.LogError(string.Format(CultureInfo.CurrentCulture, NuGetResources.Error_InvalidCultureInfo, NUGET_CLI_LANGUAGE, nugetCliLanguage));
                 }
             }
 
