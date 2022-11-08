@@ -183,7 +183,7 @@ fi
 #run mono test
 TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
 VsTestConsole="$DIR/artifacts/NuGet.CommandLine.Test/vstest/vstest.console.exe"
-TestResultsTrx="$DIR/build/TestResults/monoonmac.trx"
+TestResultsDir="$DIR/build/TestResults"
 VsTestVerbosity="minimal"
 
 if [ "$SYSTEM_DEBUG" == "true" ]; then
@@ -198,8 +198,8 @@ rm -rf "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSharp
 case "$(uname -s)" in
 		Linux)
 			# We are not testing Mono on linux currently, so comment it out.
-			#echo "mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --TestCaseFilter:Platform!=Windows&Platform!=Darwin --logger:console;verbosity=$VsTestVerbosity --logger:trx;LogFilePath=$TestResultsTrx"
-			#mono $VsTestConsole "$TestDir/NuGet.CommandLine.Test.dll" --TestCaseFilter:"Platform!=Windows&Platform!=Darwin" --logger:"console;verbosity=$VsTestVerbosity" --logger:"trx;LogFilePath=$TestResultsTrx"
+			#echo "mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --TestCaseFilter:Platform!=Windows&Platform!=Darwin --logger:console;verbosity=$VsTestVerbosity --logger:"trx" --ResultsDirectory:$TestResultsDir"
+			#mono $VsTestConsole "$TestDir/NuGet.CommandLine.Test.dll" --TestCaseFilter:"Platform!=Windows&Platform!=Darwin" --logger:"console;verbosity=$VsTestVerbosity" --logger:"trx" --ResultsDirectory:"$TestResultsDir"
 			if [ $RESULTCODE -ne '0' ]; then
 				RESULTCODE=$?
 				echo "Unit Tests or Core Func Tests failed on Linux"
@@ -207,8 +207,8 @@ case "$(uname -s)" in
 			fi
 			;;
 		Darwin)
-			echo "mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --TestCaseFilter:Platform!=Windows&Platform!=Linux --logger:console;verbosity=$VsTestVerbosity --logger:trx;LogFilePath=$TestResultsTrx"
-			mono $VsTestConsole "$TestDir/NuGet.CommandLine.Test.dll" --TestCaseFilter:"Platform!=Windows&Platform!=Linux" --logger:"console;verbosity=$VsTestVerbosity" --logger:"trx;LogFilePath=$TestResultsTrx"
+			echo "mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --TestCaseFilter:Platform!=Windows&Platform!=Linux --logger:console;verbosity=$VsTestVerbosity --logger:"trx" --ResultsDirectory:$TestResultsDir"
+			mono $VsTestConsole "$TestDir/NuGet.CommandLine.Test.dll" --TestCaseFilter:"Platform!=Windows&Platform!=Linux" --logger:"console;verbosity=$VsTestVerbosity" --logger:"trx" --ResultsDirectory:"$TestResultsDir"
 			if [ $? -ne '0' ]; then
 				RESULTCODE=$?
 				echo "Mono tests failed!"
