@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -11,16 +13,24 @@ namespace NuGet.CommandLine.Test
     public class UILanguageOverrideTests
     {
         [Theory]
-        [InlineData("en-US", "en-US")]
-        [InlineData("fr-FR", "fr-FR")]
-        [InlineData("pt-BR", "pt-BR")]
-        public void GetOverriddenUILanguage_WithEnvironmentVariableSet_ReturnsCultureInfo(string envvarValue, string cultureName)
+        [InlineData("en-US")]
+        [InlineData("fr-FR")]
+        [InlineData("pt-BR")]
+        [InlineData("it-IT")]
+        [InlineData("")] // Invariant culture
+        [InlineData("cs")]
+        public void GetOverriddenUILanguage_WithEnvironmentVariableSet_ReturnsCultureInfoWithSameName(string cultureName)
         {
             // Arrange
-            Environment.SetEnvironmentVariable("NUGET_CLI_LANGUAGE", envvarValue, EnvironmentVariableTarget.Process);
+            var envVars = new Dictionary<string, string>()
+            {
+                { "NUGET_CLI_LANGUAGE", cultureName },
+            };
+            var envVarWrapper = new TestEnvironmentVariableReader(envVars);
+            var logger = new TestLogger();
 
             // Act
-            CultureInfo cultureInfo = UILanguageOverride.GetOverriddenUILanguage();
+            CultureInfo cultureInfo = UILanguageOverride.GetOverriddenUILanguage(envVarWrapper, logger);
 
             // Assert
             Assert.Equal(cultureName, cultureInfo.Name);
@@ -37,17 +47,19 @@ namespace NuGet.CommandLine.Test
         public void GetOverriddenUILanguage_WithInvalidValue_LogsErrorMessage()
         {
             // Arrange
+            var envVars = new Dictionary<string, string>()
+            {
+                { "NUGET_CLI_LANGUAGE", "invalid-value" },
+            };
+            var envVarWrapper = new TestEnvironmentVariableReader(envVars);
             var logger = new TestLogger();
-            UILanguageOverride.Setup(logger, (cultureInfo) => { });
-            var invalidValue = "invalid-value";
-            Environment.SetEnvironmentVariable("NUGET_CLI_LANGUAGE", invalidValue, EnvironmentVariableTarget.Process);
 
             // Act
-            CultureInfo cultureInfo = UILanguageOverride.GetOverriddenUILanguage();
+            CultureInfo cultureInfo = UILanguageOverride.GetOverriddenUILanguage(envVarWrapper, logger);
 
             // Assert
             Assert.Null(cultureInfo);
-            string errorMessage = string.Format(CultureInfo.InvariantCulture, NuGet.CommandLine.NuGetResources.Error_InvalidCultureInfo, "NUGET_CLI_LANGUAGE", invalidValue);
+            string errorMessage = string.Format(CultureInfo.InvariantCulture, NuGet.CommandLine.NuGetResources.Error_InvalidCultureInfo, "NUGET_CLI_LANGUAGE", "invalid-value");
             Assert.Collection(logger.Messages, msg => Assert.Equal(errorMessage, msg));
         }
     }
