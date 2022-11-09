@@ -208,7 +208,7 @@ namespace NuGet.Protocol
                         // 5xx == server side failure
                         // 408 == request timeout
                         // 429 == too many requests
-                        if (statusCode >= 500 || statusCode == 408 || statusCode == 429)
+                        if (statusCode >= 500 || ((statusCode == 408 || statusCode == 429) && _enhancedHttpRetryHelper.Retry429))
                         {
                             success = false;
                         }

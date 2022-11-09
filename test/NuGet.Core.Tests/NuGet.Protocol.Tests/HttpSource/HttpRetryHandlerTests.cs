@@ -461,21 +461,15 @@ namespace NuGet.Protocol.Tests
                 }
             };
 
-            TestEnvironmentVariableReader testEnvironmentVariableReader = GetEnhancedHttpRetryEnvironmentVariables(retryCount: 11, delayMilliseconds: 3);
-
-            EnhancedHttpRetryHelper helper = new EnhancedHttpRetryHelper(testEnvironmentVariableReader);
-            Assert.Equal(helper.IsEnabled, true);
-            // Enhanced retry mode causes a random 0-199 ms jitter so we can't time it in this test
-            // but we can make sure the setting got through
-            Assert.Equal(helper.DelayInMilliseconds, 3);
-            Assert.Equal(helper.RetryCount, 11);
+            int retryCount = 11;
+            TestEnvironmentVariableReader testEnvironmentVariableReader = GetEnhancedHttpRetryEnvironmentVariables(retryCount: retryCount, delayMilliseconds: 3);
 
             var retryHandler = new HttpRetryHandler(testEnvironmentVariableReader);
             var testHandler = new HttpRetryTestHandler(handler);
             var httpClient = new HttpClient(testHandler);
             var request = new HttpRetryHandlerRequest(httpClient, () => new HttpRequestMessage(HttpMethod.Get, TestUrl))
             {
-                MaxTries = helper.RetryCount,
+                MaxTries = retryCount,
                 RequestTimeout = Timeout.InfiniteTimeSpan,
                 // HttpRetryHandler will override with values from NUGET_ENHANCED_NETWORK_RETRY_DELAY_MILLISECONDS
                 // so set this to a value that will cause test timeout if the correct value is not honored.
@@ -484,7 +478,8 @@ namespace NuGet.Protocol.Tests
             var log = new TestLogger();
 
             // Act
-            using (var response = await retryHandler.SendAsync(request, log, CancellationToken.None))
+            using (CancellationTokenSource cts = new CancellationTokenSource(millisecondsDelay: 60 * 1000))
+            using (var response = await retryHandler.SendAsync(request, log, cts.Token))
             {
                 // Assert
                 Assert.True(sent503);
@@ -494,32 +489,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Theory]
-        [InlineData(null, EnhancedHttpRetryHelper.DefaultEnabled)]
-        [InlineData("true", true)]
-        [InlineData("false", false)]
-        [InlineData("0", EnhancedHttpRetryHelper.DefaultEnabled)]
-        [InlineData("something", EnhancedHttpRetryHelper.DefaultEnabled)]
-        public void HttpRetryHandler_EnhancedRetryOnByDefault(string value, bool expectedValue)
-        {
-            // Arrange
-            TestEnvironmentVariableReader testEnvironmentVariableReader = new TestEnvironmentVariableReader(
-                new Dictionary<string, string>()
-                {
-                    [EnhancedHttpRetryHelper.IsEnabledEnvironmentVariableName] = value,
-                    [EnhancedHttpRetryHelper.RetryCountEnvironmentVariableName] = null,
-                    [EnhancedHttpRetryHelper.DelayInMillisecondsEnvironmentVariableName] = null
-                });
-
-            // Act
-            EnhancedHttpRetryHelper helper = new EnhancedHttpRetryHelper(testEnvironmentVariableReader);
-
-            Assert.Equal(helper.IsEnabled, expectedValue);
-            Assert.Equal(helper.RetryCount, EnhancedHttpRetryHelper.DefaultRetryCount);
-            Assert.Equal(helper.DelayInMilliseconds, EnhancedHttpRetryHelper.DefaultDelayMilliseconds);
-        }
-
-        [Fact]
-        public async Task HttpRetryHandler_RetriesOn429()
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task HttpRetryHandler_429Response_RetriesWhenEnvVarSet(bool retry429)
         {
             // Arrange
             int attempt = 0;
@@ -533,7 +505,7 @@ namespace NuGet.Protocol.Tests
             var client = new HttpClient(busyServer);
 
             var httpRetryHandlerRequest = new HttpRetryHandlerRequest(client, () => new HttpRequestMessage(HttpMethod.Get, TestUrl));
-            TestEnvironmentVariableReader environmentVariables = GetEnhancedHttpRetryEnvironmentVariables();
+            TestEnvironmentVariableReader environmentVariables = GetEnhancedHttpRetryEnvironmentVariables(retry429: retry429);
             var httpRetryHandler = new HttpRetryHandler(environmentVariables);
             var logger = new TestLogger();
 
@@ -541,11 +513,19 @@ namespace NuGet.Protocol.Tests
             var response = await httpRetryHandler.SendAsync(httpRetryHandlerRequest, logger, CancellationToken.None);
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            attempt.Should().Be(3);
+            if (retry429)
+            {
+                response.StatusCode.Should().Be(HttpStatusCode.OK);
+                attempt.Should().Be(3);
+            }
+            else
+            {
+                response.StatusCode.Should().Be(tooManyRequestsStatusCode);
+                attempt.Should().Be(1);
+            }
 
             string expectedMessagePrefix = "  " + tooManyRequestsStatusCode.ToString() + " " + TestUrl;
-            logger.Messages.Where(m => m.StartsWith(expectedMessagePrefix, StringComparison.Ordinal)).Count().Should().Be(2);
+            logger.Messages.Where(m => m.StartsWith(expectedMessagePrefix, StringComparison.Ordinal)).Count().Should().Be(retry429 ? 2 : 1);
         }
 
         private static TimeSpan GetRetryMinTime(int tries, TimeSpan retryDelay)
@@ -553,13 +533,14 @@ namespace NuGet.Protocol.Tests
             return TimeSpan.FromTicks((tries - 1) * retryDelay.Ticks);
         }
 
-        private static TestEnvironmentVariableReader GetEnhancedHttpRetryEnvironmentVariables(bool? isEnabled = true, int? retryCount = MaxTries, int? delayMilliseconds = 0)
+        private static TestEnvironmentVariableReader GetEnhancedHttpRetryEnvironmentVariables(bool? isEnabled = true, int? retryCount = MaxTries, int? delayMilliseconds = 0, bool? retry429 = true)
         => new TestEnvironmentVariableReader(
             new Dictionary<string, string>()
             {
                 [EnhancedHttpRetryHelper.IsEnabledEnvironmentVariableName] = isEnabled?.ToString(),
                 [EnhancedHttpRetryHelper.RetryCountEnvironmentVariableName] = retryCount?.ToString(),
-                [EnhancedHttpRetryHelper.DelayInMillisecondsEnvironmentVariableName] = delayMilliseconds?.ToString()
+                [EnhancedHttpRetryHelper.DelayInMillisecondsEnvironmentVariableName] = delayMilliseconds?.ToString(),
+                [EnhancedHttpRetryHelper.Retry429EnvironmentVariableName] = retry429?.ToString(),
             });
 
         private class TestHandler : DelegatingHandler
