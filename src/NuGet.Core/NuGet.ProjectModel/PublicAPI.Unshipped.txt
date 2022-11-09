@@ -1,1 +1,0 @@
-NuGet.ProjectModel.DependencyGraphSpec.Save(System.IO.Stream stream) -> void

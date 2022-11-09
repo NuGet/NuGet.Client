@@ -342,6 +342,7 @@ static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net471 -> N
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net472 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net50 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net60 -> NuGet.Frameworks.NuGetFramework
+static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.Net70 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.NetCore45 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.NetCore451 -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.FrameworkConstants.CommonFrameworks.NetCore50 -> NuGet.Frameworks.NuGetFramework
@@ -384,6 +385,7 @@ static readonly NuGet.Frameworks.FrameworkConstants.MaxVersion -> System.Version
 static readonly NuGet.Frameworks.FrameworkConstants.Version10 -> System.Version
 static readonly NuGet.Frameworks.FrameworkConstants.Version5 -> System.Version
 static readonly NuGet.Frameworks.FrameworkConstants.Version6 -> System.Version
+static readonly NuGet.Frameworks.FrameworkConstants.Version7 -> System.Version
 static readonly NuGet.Frameworks.NuGetFramework.AgnosticFramework -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.NuGetFramework.AnyFramework -> NuGet.Frameworks.NuGetFramework
 static readonly NuGet.Frameworks.NuGetFramework.Comparer -> System.Collections.Generic.IEqualityComparer<NuGet.Frameworks.NuGetFramework>
