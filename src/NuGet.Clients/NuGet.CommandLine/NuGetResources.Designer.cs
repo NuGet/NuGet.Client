@@ -367,6 +367,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid culture identifier in {0} environment variable. Value read is &apos;{1}&apos;.
+        /// </summary>
+        public static string Error_InvalidCultureInfo {
+            get {
+                return ResourceManager.GetString("Error_InvalidCultureInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid MSBuild version specified: &apos;{0}&apos;.
         /// </summary>
         public static string Error_InvalidMsbuildVersion {
