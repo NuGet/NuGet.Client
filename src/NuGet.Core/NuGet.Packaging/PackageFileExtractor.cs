@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using NuGet.Common;
 
 namespace NuGet.Packaging
 {
@@ -36,7 +37,7 @@ namespace NuGet.Packaging
 
             foreach (var file in refAndLibFiles)
             {
-                if (!file.EndsWith(".xml", StringComparison.Ordinal))
+                if (!file.EndsWith(".xml", PathUtility.GetStringComparisonBasedOnOS()))
                 {
                     continue;
                 }
