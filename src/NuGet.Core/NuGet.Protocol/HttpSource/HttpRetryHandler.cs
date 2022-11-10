@@ -1,11 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -37,10 +40,12 @@ namespace NuGet.Protocol
         /// requests cannot always be used. For example, suppose the request is a POST and contains content
         /// of a stream that can only be consumed once.
         /// </remarks>
+#nullable disable
         public Task<HttpResponseMessage> SendAsync(
             HttpRetryHandlerRequest request,
             ILogger log,
             CancellationToken cancellationToken)
+#nullable enable
         {
             return SendAsync(request, source: string.Empty, log, cancellationToken);
         }
@@ -53,11 +58,13 @@ namespace NuGet.Protocol
         /// requests cannot always be used. For example, suppose the request is a POST and contains content
         /// of a stream that can only be consumed once.
         /// </remarks>
+#nullable disable
         public async Task<HttpResponseMessage> SendAsync(
             HttpRetryHandlerRequest request,
             string source,
             ILogger log,
             CancellationToken cancellationToken)
+#nullable enable
         {
             if (source == null)
             {
@@ -71,8 +78,9 @@ namespace NuGet.Protocol
             }
 
             var tries = 0;
-            HttpResponseMessage response = null;
+            HttpResponseMessage? response = null;
             var success = false;
+            TimeSpan? retryAfter = null;
 
             while (tries < request.MaxTries && !success)
             {
@@ -80,7 +88,11 @@ namespace NuGet.Protocol
                 // so the Delay() never actually occurs.
                 // When opted in to "enhanced retry", do the delay and have it increase exponentially where applicable
                 // (i.e. when "tries" is allowed to be > 1)
-                if (tries > 0 || (_enhancedHttpRetryHelper.IsEnabled && request.IsRetry))
+                if (retryAfter != null && _enhancedHttpRetryHelper.ObserveRetryAfter)
+                {
+                    await Task.Delay(retryAfter.Value, cancellationToken);
+                }
+                else if (tries > 0 || (_enhancedHttpRetryHelper.IsEnabled && request.IsRetry))
                 {
                     // "Enhanced" retry: In the case where this is actually a 2nd-Nth try, back off exponentially with some random.
                     // In many cases due to the external retry loop, this will be always be 1 * request.RetryDelay.TotalMilliseconds + 0-200 ms
@@ -107,7 +119,7 @@ namespace NuGet.Protocol
                     var stopwatches = new List<Stopwatch>(2);
                     var bodyStopwatch = new Stopwatch();
                     stopwatches.Add(bodyStopwatch);
-                    Stopwatch headerStopwatch = null;
+                    Stopwatch? headerStopwatch = null;
                     if (request.CompletionOption == HttpCompletionOption.ResponseHeadersRead)
                     {
                         headerStopwatch = new Stopwatch();
@@ -118,7 +130,7 @@ namespace NuGet.Protocol
 #else
                     requestMessage.Properties[StopwatchPropertyName] = stopwatches;
 #endif
-                    var requestUri = requestMessage.RequestUri;
+                    var requestUri = requestMessage.RequestUri!;
 
                     try
                     {
@@ -197,12 +209,31 @@ namespace NuGet.Protocol
                             response.Content = newContent;
                         }
 
-                        log.LogInformation("  " + string.Format(
-                            CultureInfo.InvariantCulture,
-                            Strings.Http_ResponseLog,
-                            response.StatusCode,
-                            requestUri,
-                            bodyStopwatch.ElapsedMilliseconds));
+                        retryAfter = GetRetryAfter(response.Headers.RetryAfter);
+                        if (retryAfter != null)
+                        {
+                            log.LogInformation("  " + string.Format(
+                                CultureInfo.InvariantCulture,
+                                Strings.Http_ResponseLogWithRetryAfter,
+                                response.StatusCode,
+                                requestUri,
+                                bodyStopwatch.ElapsedMilliseconds,
+                                retryAfter.Value.TotalSeconds));
+                        }
+                        else
+                        {
+                            log.LogInformation("  " + string.Format(
+                                CultureInfo.InvariantCulture,
+                                Strings.Http_ResponseLog,
+                                response.StatusCode,
+                                requestUri,
+                                bodyStopwatch.ElapsedMilliseconds));
+                        }
+
+                        if (retryAfter?.TotalMilliseconds < 0)
+                        {
+                            retryAfter = null;
+                        }
 
                         int statusCode = (int)response.StatusCode;
                         // 5xx == server side failure
@@ -269,6 +300,23 @@ namespace NuGet.Protocol
             }
 
             return response;
+        }
+
+        private static TimeSpan? GetRetryAfter(RetryConditionHeaderValue? retryAfter)
+        {
+            if (retryAfter?.Delta != null)
+            {
+                return retryAfter.Delta;
+            }
+
+            if (retryAfter?.Date != null)
+            {
+                DateTimeOffset retryAfterDate = retryAfter.Date.Value.ToUniversalTime();
+                var now = DateTimeOffset.UtcNow;
+                return retryAfterDate - now;
+            }
+
+            return null;
         }
     }
 }
