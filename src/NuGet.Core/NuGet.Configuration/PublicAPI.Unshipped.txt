@@ -1,3 +1,0 @@
-NuGet.Configuration.PackageSourceMappingProvider
-NuGet.Configuration.PackageSourceMappingProvider.PackageSourceMappingProvider(NuGet.Configuration.ISettings settings) -> void
-NuGet.Configuration.PackageSourceMappingProvider.SavePackageSourceMappings(System.Collections.Generic.IReadOnlyList<NuGet.Configuration.PackageSourceMappingSourceItem> packageSourceMappingsSourceItems) -> void
