@@ -1,1 +1,0 @@
-const NuGet.ProjectManagement.ProjectBuildProperties.WarningsNotAsErrors = "WarningsNotAsErrors" -> string

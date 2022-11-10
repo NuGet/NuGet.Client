@@ -68,6 +68,7 @@ NuGet.ProjectModel.DependencyGraphSpec.GetParents(string rootUniqueName) -> Syst
 NuGet.ProjectModel.DependencyGraphSpec.GetProjectSpec(string projectUniqueName) -> NuGet.ProjectModel.PackageSpec
 NuGet.ProjectModel.DependencyGraphSpec.Projects.get -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec>
 NuGet.ProjectModel.DependencyGraphSpec.Restore.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.ProjectModel.DependencyGraphSpec.Save(System.IO.Stream stream) -> void
 NuGet.ProjectModel.DependencyGraphSpec.Save(string path) -> void
 NuGet.ProjectModel.DependencyGraphSpec.WithPackageSpecs(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.PackageSpec> packageSpecs) -> NuGet.ProjectModel.DependencyGraphSpec
 NuGet.ProjectModel.DependencyGraphSpec.WithProjectClosure(string projectUniqueName) -> NuGet.ProjectModel.DependencyGraphSpec
@@ -567,7 +568,9 @@ NuGet.ProjectModel.WarningProperties.Equals(NuGet.ProjectModel.WarningProperties
 NuGet.ProjectModel.WarningProperties.NoWarn.get -> System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode>
 NuGet.ProjectModel.WarningProperties.WarningProperties() -> void
 NuGet.ProjectModel.WarningProperties.WarningProperties(System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode> warningsAsErrors, System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode> noWarn, bool allWarningsAsErrors) -> void
+NuGet.ProjectModel.WarningProperties.WarningProperties(System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode> warningsAsErrors, System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode> noWarn, bool allWarningsAsErrors, System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode> warningsNotAsErrors) -> void
 NuGet.ProjectModel.WarningProperties.WarningsAsErrors.get -> System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode>
+NuGet.ProjectModel.WarningProperties.WarningsNotAsErrors.get -> System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode>
 override NuGet.ProjectModel.AssetsLogMessage.Equals(object other) -> bool
 override NuGet.ProjectModel.AssetsLogMessage.GetHashCode() -> int
 override NuGet.ProjectModel.BuildAction.Equals(object obj) -> bool
@@ -687,7 +690,9 @@ static NuGet.ProjectModel.PackagesLockFileUtilities.IsLockFileValid(NuGet.Projec
 static NuGet.ProjectModel.PackagesLockFileUtilities.IsNuGetLockFileEnabled(NuGet.ProjectModel.PackageSpec project) -> bool
 static NuGet.ProjectModel.ProjectLockFile.LockFileDependencyComparerWithoutContentHash.Default.get -> NuGet.ProjectModel.ProjectLockFile.LockFileDependencyComparerWithoutContentHash
 static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> warningsAsErrors, System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> noWarn) -> NuGet.ProjectModel.WarningProperties
+static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> warningsAsErrors, System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> noWarn, System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode> warningsNotAsErrors) -> NuGet.ProjectModel.WarningProperties
 static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, string warningsAsErrors, string noWarn) -> NuGet.ProjectModel.WarningProperties
+static NuGet.ProjectModel.WarningProperties.GetWarningProperties(string treatWarningsAsErrors, string warningsAsErrors, string noWarn, string warningsNotAsErrors) -> NuGet.ProjectModel.WarningProperties
 static readonly NuGet.ProjectModel.BuildAction.AndroidAsset -> NuGet.ProjectModel.BuildAction
 static readonly NuGet.ProjectModel.BuildAction.AndroidResource -> NuGet.ProjectModel.BuildAction
 static readonly NuGet.ProjectModel.BuildAction.ApplicationDefinition -> NuGet.ProjectModel.BuildAction

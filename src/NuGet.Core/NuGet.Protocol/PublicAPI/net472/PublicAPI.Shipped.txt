@@ -1673,6 +1673,7 @@ override NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResourceProvider.TryCr
 override NuGet.Protocol.HttpHandlerResourceV3.ClientHandler.get -> System.Net.Http.HttpClientHandler
 override NuGet.Protocol.HttpHandlerResourceV3.MessageHandler.get -> System.Net.Http.HttpMessageHandler
 override NuGet.Protocol.HttpHandlerResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
+override NuGet.Protocol.HttpSourceAuthenticationHandler.Dispose(bool disposing) -> void
 override NuGet.Protocol.HttpSourceAuthenticationHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>
 override NuGet.Protocol.HttpSourceResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
 override NuGet.Protocol.LegacyFeedCapabilityResourceV2Feed.SupportsIsAbsoluteLatestVersionAsync(NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>

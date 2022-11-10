@@ -1,1 +1,0 @@
-NuGet.DependencyResolver.GraphNode<TItem>.ParentNodes.get -> System.Collections.Generic.IList<NuGet.DependencyResolver.GraphNode<TItem>>

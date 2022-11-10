@@ -715,6 +715,7 @@ const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformVersion = "Ta
 const NuGet.ProjectManagement.ProjectBuildProperties.TreatWarningsAsErrors = "TreatWarningsAsErrors" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.Version = "Version" -> string
 const NuGet.ProjectManagement.ProjectBuildProperties.WarningsAsErrors = "WarningsAsErrors" -> string
+const NuGet.ProjectManagement.ProjectBuildProperties.WarningsNotAsErrors = "WarningsNotAsErrors" -> string
 const NuGet.ProjectManagement.ProjectItemProperties.Aliases = "Aliases" -> string
 const NuGet.ProjectManagement.ProjectItemProperties.ExcludeAssets = "ExcludeAssets" -> string
 const NuGet.ProjectManagement.ProjectItemProperties.GeneratePathProperty = "GeneratePathProperty" -> string

@@ -304,6 +304,7 @@ NuGet.Common.NuGetLogCode.NU5045 = 5045 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5046 = 5046 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5047 = 5047 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5048 = 5048 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU5049 = 5049 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5050 = 5050 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5100 = 5100 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5101 = 5101 -> NuGet.Common.NuGetLogCode
