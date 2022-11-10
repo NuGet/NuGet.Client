@@ -41,7 +41,7 @@ namespace NuGet.Common.Migrations
                         }
                     }
                 }
-            } 
+            }
         }
 
         private static bool WaitForMutex(Mutex mutex)
