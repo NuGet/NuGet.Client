@@ -1,4 +1,7 @@
 #if IS_NET40_CLIENT
+
+#nullable enable
+
 using System;
 using System.Reflection;
 
