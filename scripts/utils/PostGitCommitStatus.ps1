@@ -14,7 +14,7 @@ Function Update-GitCommitStatus {
         [Parameter(Mandatory = $True)]
         [string]$PersonalAccessToken,
         [Parameter(Mandatory = $True)]
-        [ValidateSet( "Unit Tests On Windows", "Tests On Mac", "Tests On Linux", "Functional_Tests_On_Windows IsDesktop", "Functional_Tests_On_Windows IsCore", "EndToEnd Tests On Windows", "Apex Tests On Windows", "Rebuild")]
+        [ValidateSet( "Build_and_UnitTest_NonRTM", "Build_and_UnitTest_RTM", "Tests_On_Mac", "Tests_On_Linux", "Functional_Tests_On_Windows IsDesktop", "Functional_Tests_On_Windows IsCore", "End_To_End_Tests_On_Windows", "Apex_Tests_On_Windows", "Rebuild")]
         [string]$TestName,
         [Parameter(Mandatory = $True)]
         [ValidateSet( "pending", "success", "error", "failure")]
