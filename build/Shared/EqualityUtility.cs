@@ -249,6 +249,7 @@ namespace NuGet.Shared
             IDictionary<TKey, TValue> self,
             IDictionary<TKey, TValue> other,
             Func<TValue, TValue, bool>? compareValues = null)
+            where TKey : notnull
         {
             var comparer = EqualityComparer<TValue>.Default;
             Func<TValue, TValue, bool> comparerFunc = (s, o) => comparer.Equals(s, o);
@@ -294,6 +295,7 @@ namespace NuGet.Shared
         internal static bool DictionaryOfSequenceEquals<TKey, TValue>(
             IDictionary<TKey, IEnumerable<TValue>> self,
             IDictionary<TKey, IEnumerable<TValue>> other)
+            where TKey : notnull
         {
             return DictionaryEquals(
                 self,
