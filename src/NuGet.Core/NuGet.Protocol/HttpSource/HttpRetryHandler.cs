@@ -40,12 +40,10 @@ namespace NuGet.Protocol
         /// requests cannot always be used. For example, suppose the request is a POST and contains content
         /// of a stream that can only be consumed once.
         /// </remarks>
-#nullable disable
         public Task<HttpResponseMessage> SendAsync(
             HttpRetryHandlerRequest request,
             ILogger log,
             CancellationToken cancellationToken)
-#nullable enable
         {
             return SendAsync(request, source: string.Empty, log, cancellationToken);
         }
@@ -58,13 +56,11 @@ namespace NuGet.Protocol
         /// requests cannot always be used. For example, suppose the request is a POST and contains content
         /// of a stream that can only be consumed once.
         /// </remarks>
-#nullable disable
         public async Task<HttpResponseMessage> SendAsync(
             HttpRetryHandlerRequest request,
             string source,
             ILogger log,
             CancellationToken cancellationToken)
-#nullable enable
         {
             if (source == null)
             {
@@ -79,10 +75,9 @@ namespace NuGet.Protocol
 
             var tries = 0;
             HttpResponseMessage? response = null;
-            var success = false;
             TimeSpan? retryAfter = null;
 
-            while (tries < request.MaxTries && !success)
+            while (true)
             {
                 // There are many places where another variable named "MaxTries" is set to 1,
                 // so the Delay() never actually occurs.
@@ -112,7 +107,6 @@ namespace NuGet.Protocol
                 }
 
                 tries++;
-                success = true;
 
                 using (var requestMessage = request.RequestFactory())
                 {
@@ -241,7 +235,14 @@ namespace NuGet.Protocol
                         // 429 == too many requests
                         if (statusCode >= 500 || ((statusCode == 408 || statusCode == 429) && _enhancedHttpRetryHelper.Retry429))
                         {
-                            success = false;
+                            if (tries == request.MaxTries)
+                            {
+                                return response;
+                            }
+                        }
+                        else
+                        {
+                            return response;
                         }
                     }
                     catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -265,8 +266,6 @@ namespace NuGet.Protocol
                     }
                     catch (Exception e)
                     {
-                        success = false;
-
                         response?.Dispose();
 
                         ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpEvent(
@@ -298,8 +297,6 @@ namespace NuGet.Protocol
                     }
                 }
             }
-
-            return response;
         }
 
         private static TimeSpan? GetRetryAfter(RetryConditionHeaderValue? retryAfter)
