@@ -10,7 +10,10 @@ namespace Test.Utility
 {
     public class ReadTimeoutHonoringSlowStream : SlowStream
     {
+#pragma warning disable CA2213
+        // TODO: https://github.com/NuGet/Home/issues/12116
         private readonly Stream _innerStream;
+#pragma warning restore CA2213
         private readonly CancellationToken _cancellationToken;
 
         public ReadTimeoutHonoringSlowStream(Stream innerStream)
