@@ -213,6 +213,15 @@ namespace NuGet.Protocol
                                 requestUri,
                                 bodyStopwatch.ElapsedMilliseconds,
                                 retryAfter.Value.TotalSeconds));
+
+                            if (retryAfter.Value.TotalMilliseconds < 0)
+                            {
+                                retryAfter = null;
+                            }
+                            else if (retryAfter.Value > _enhancedHttpRetryHelper.MaxRetryAfterDelay)
+                            {
+                                retryAfter = _enhancedHttpRetryHelper.MaxRetryAfterDelay;
+                            }
                         }
                         else
                         {
@@ -222,11 +231,6 @@ namespace NuGet.Protocol
                                 response.StatusCode,
                                 requestUri,
                                 bodyStopwatch.ElapsedMilliseconds));
-                        }
-
-                        if (retryAfter?.TotalMilliseconds < 0)
-                        {
-                            retryAfter = null;
                         }
 
                         int statusCode = (int)response.StatusCode;
