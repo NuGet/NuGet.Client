@@ -34,6 +34,8 @@
     <PackageVersion Include="Microsoft.CSharp" Version="$(SystemPackagesVersion)" />
     <PackageVersion Include="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
     <PackageVersion Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview6.19253.5" />
+    <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Internal.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
     <PackageVersion Include="Microsoft.Net.Compilers.netcore" Version="3.0.0-dev-61717-03" />
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="3.9.0" />
