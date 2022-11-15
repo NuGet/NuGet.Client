@@ -81,7 +81,6 @@ namespace NuGet.Protocol
         private bool? _observeRetryAfter = null;
 
         private TimeSpan? _maxRetyAfterDelay = null;
-        private bool _gotMaxRetryAfterDelay = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnhancedHttpRetryHelper" /> class.
@@ -118,21 +117,17 @@ namespace NuGet.Protocol
         /// </summary>
         internal bool ObserveRetryAfter => _observeRetryAfter ??= GetBoolFromEnvironmentVariable(ObserveRetryAfterEnvironmentVariableName, defaultValue: DefaultObserveRetryAfter, _environmentVariableReader);
 
-        internal TimeSpan? MaxRetryAfterDelay
+        internal TimeSpan MaxRetryAfterDelay
         {
             get
             {
-                if (!_gotMaxRetryAfterDelay)
+                if (_maxRetyAfterDelay == null)
                 {
-                    if (int.TryParse(_environmentVariableReader.GetEnvironmentVariable(MaximumRetryAfterDurationEnvironmentVariableName), out int maxRetryAfterDelay))
-                    {
-                        _maxRetyAfterDelay = TimeSpan.FromSeconds(maxRetryAfterDelay);
-                    }
-
-                    _gotMaxRetryAfterDelay = true;
+                    int maxRetryAfterDelay = GetIntFromEnvironmentVariable(MaximumRetryAfterDurationEnvironmentVariableName, defaultValue: (int)TimeSpan.FromHours(1).TotalSeconds, _environmentVariableReader);
+                    _maxRetyAfterDelay = TimeSpan.FromSeconds(maxRetryAfterDelay);
                 }
 
-                return _maxRetyAfterDelay;
+                return _maxRetyAfterDelay.Value;
             }
         }
 

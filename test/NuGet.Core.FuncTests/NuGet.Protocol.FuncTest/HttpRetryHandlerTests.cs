@@ -179,7 +179,7 @@ namespace NuGet.Core.FuncTest
         }
 
         [Fact]
-        public async Task HttpRetryHandler_429WithRetryAfterHeader_UsesHeaderDelay()
+        public async Task HttpRetryHandler_429WithRetryAfterHeader_UsesRetryAfterValue()
         {
             // Arrange
             int attempt = 0;
@@ -188,16 +188,10 @@ namespace NuGet.Core.FuncTest
 
             var busyServer = new HttpRetryTestHandler((req, cancellationToken) =>
             {
-                if (attempt++ < 2)
-                {
-                    var response = new HttpResponseMessage(tooManyRequestsStatusCode);
-                    response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromMilliseconds(1));
-                    return Task.FromResult(response);
-                }
-                else
-                {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
-                }
+                attempt++;
+                var response = new HttpResponseMessage(tooManyRequestsStatusCode);
+                response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromMilliseconds(1));
+                return Task.FromResult(response);
             });
             var client = new HttpClient(busyServer);
 
@@ -227,7 +221,7 @@ namespace NuGet.Core.FuncTest
             }
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(tooManyRequestsStatusCode);
             attempt.Should().Be(3);
         }
 
