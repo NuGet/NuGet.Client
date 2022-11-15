@@ -53,7 +53,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NuGet.Core" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="NuGet.Core" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
