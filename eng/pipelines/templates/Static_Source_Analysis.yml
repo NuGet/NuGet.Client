@@ -53,7 +53,9 @@ steps:
     script: |
       try {
         $slnProjects = & dotnet sln list | Select-Object -Skip 2 | ForEach-Object { "$PWD\$_" } | sort
+        "Solution contains $($slnProjects.Length) projects"
         $fsProjects = gci -Recurse -Filter *.csproj | ForEach-Object { $_.FullName } | Where-Object { $_ -notlike "*\EndToEnd\*" -and $_ -notlike "*\bin\*" -and $_ -notlike "*\compiler\resources\*" -and $_ -notlike "*\Assets\*" } | sort
+        "Repo contains $($fsProjects.Length) projects"
         $diff = @(Compare-Object -ReferenceObject $fsProjects -DifferenceObject $slnProjects)
         $diff
         if ($diff.length -gt 0)
