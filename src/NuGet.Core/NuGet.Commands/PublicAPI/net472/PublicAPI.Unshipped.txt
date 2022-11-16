@@ -1,4 +1,5 @@
-NuGet.Commands.RestoreArgs.NewMappingID.get -> string
-NuGet.Commands.RestoreArgs.NewMappingID.set -> void
-NuGet.Commands.RestoreArgs.NewMappingSource.get -> string
-NuGet.Commands.RestoreArgs.NewMappingSource.set -> void
+#nullable enable
+~NuGet.Commands.RestoreArgs.NewMappingID.get -> string
+~NuGet.Commands.RestoreArgs.NewMappingID.set -> void
+~NuGet.Commands.RestoreArgs.NewMappingSource.get -> string
+~NuGet.Commands.RestoreArgs.NewMappingSource.set -> void
