@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.Test.Apex.VisualStudio.Solution;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,7 +29,6 @@ namespace NuGet.Tests.Apex
         {
             // Arrange
             EnsureVisualStudioHost();
-            var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
 
             solutionService.CreateEmptySolution();
@@ -52,7 +52,6 @@ namespace NuGet.Tests.Apex
         {
             // Arrange
             EnsureVisualStudioHost();
-            var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
 
             solutionService.CreateEmptySolution();
@@ -75,7 +74,6 @@ namespace NuGet.Tests.Apex
         {
             // Arrange
             EnsureVisualStudioHost();
-            var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
 
             solutionService.CreateEmptySolution();
@@ -105,7 +103,6 @@ namespace NuGet.Tests.Apex
         {
             // Arrange
             EnsureVisualStudioHost();
-            var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
 
             solutionService.CreateEmptySolution();
@@ -136,7 +133,6 @@ namespace NuGet.Tests.Apex
         {
             // Arrange
             EnsureVisualStudioHost();
-            var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
 
             solutionService.CreateEmptySolution();
@@ -162,10 +158,10 @@ namespace NuGet.Tests.Apex
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
-            EnsureVisualStudioHost();
-            var solutionService = VisualStudio.Get<SolutionService>();
-            string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
-            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            
+            
+            var privateRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
             var packageName = "Contoso.A";
@@ -174,8 +170,11 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion);
 
             // Create nuget.config with Package source mapping filtering rules before project is created.
-            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            CommonUtility.CreateConfigurationFile(simpleTestPathContext.NuGetConfig, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
+    <config>
+        <add key=""globalPackagesFolder"" value=""{simpleTestPathContext.UserPackagesFolder}"" />
+    </config>
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
     <clear />
@@ -189,7 +188,10 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
+            EnsureVisualStudioHost();
+            var solutionService = VisualStudio.Get<SolutionService>();
+
+            solutionService.CreateEmptySolution("TestSolution", simpleTestPathContext.SolutionRoot);
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             VisualStudio.ClearOutputWindow();
@@ -209,10 +211,9 @@ namespace NuGet.Tests.Apex
         public async Task InstallPackageToProjectsFromUI_PC_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
-            EnsureVisualStudioHost();
-            var solutionService = VisualStudio.Get<SolutionService>();
-            string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
-            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            
+            var privateRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "PrivateRepository");
 
             Directory.CreateDirectory(privateRepositoryPath);
 
@@ -222,8 +223,11 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersion);
 
             // Create nuget.config with Package source mapping filtering rules before project is created.
-            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            CommonUtility.CreateConfigurationFile(simpleTestPathContext.NuGetConfig, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
+    <config>
+        <add key=""globalPackagesFolder"" value=""{simpleTestPathContext.UserPackagesFolder}"" />
+    </config>
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
     <clear />
@@ -237,7 +241,10 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
+            EnsureVisualStudioHost();
+            var solutionService = VisualStudio.Get<SolutionService>();
+
+            solutionService.CreateEmptySolution("TestSolution", simpleTestPathContext.SolutionRoot);
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             var nuProject = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "NuProject");
@@ -264,17 +271,19 @@ namespace NuGet.Tests.Apex
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
-            EnsureVisualStudioHost();
-            var solutionService = VisualStudio.Get<SolutionService>();
-            string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
-            var externalRepositoryPath = Path.Combine(solutionDirectory, "ExternalRepository");
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            
+            var externalRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "ExternalRepository");
             Directory.CreateDirectory(externalRepositoryPath);
-            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            var privateRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
             // Create nuget.config with Package source mapping filtering rules before project is created.
-            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            CommonUtility.CreateConfigurationFile(simpleTestPathContext.NuGetConfig, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
+    <config>
+        <add key=""globalPackagesFolder"" value=""{simpleTestPathContext.UserPackagesFolder}"" />
+    </config>
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
     <clear />
@@ -293,7 +302,10 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 //</configuration>");
 
-            solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
+            EnsureVisualStudioHost();
+            var solutionService = VisualStudio.Get<SolutionService>();
+
+            solutionService.CreateEmptySolution("TestSolution", simpleTestPathContext.SolutionRoot);
             var packageName = "Contoso.A";
             var packageVersion1 = "1.0.0";
             await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion1);
@@ -319,12 +331,10 @@ namespace NuGet.Tests.Apex
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Fails()
         {
             // Arrange
-            EnsureVisualStudioHost();
-            var solutionService = VisualStudio.Get<SolutionService>();
-            string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
-            var externalRepositoryPath = Path.Combine(solutionDirectory, "ExternalRepository");
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            var externalRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "ExternalRepository");
             Directory.CreateDirectory(externalRepositoryPath);
-            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            var privateRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
             var packageName = "Contoso.A";
@@ -332,8 +342,11 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion);
 
             // Create nuget.config with Package source mapping filtering rules before project is created.
-            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            CommonUtility.CreateConfigurationFile(simpleTestPathContext.NuGetConfig, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
+    <config>
+        <add key=""globalPackagesFolder"" value=""{simpleTestPathContext.UserPackagesFolder}"" />
+    </config>
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
     <clear />
@@ -352,7 +365,11 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
+            EnsureVisualStudioHost();
+
+            var solutionService = VisualStudio.Get<SolutionService>();
+
+            solutionService.CreateEmptySolution("TestSolution", simpleTestPathContext.SolutionRoot);
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             VisualStudio.ClearOutputWindow();
@@ -373,10 +390,8 @@ namespace NuGet.Tests.Apex
         public async Task UpdatePackageFromUI_PC_PackageSourceMapping_WithSingleFeed_Succeeds()
         {
             // Arrange
-            EnsureVisualStudioHost();
-            var solutionService = VisualStudio.Get<SolutionService>();
-            string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
-            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            var privateRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
             var packageName = "Contoso.A";
@@ -387,8 +402,11 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreatePackageInSourceAsync(privateRepositoryPath, packageName, packageVersionV2);
 
             // Create nuget.config with Package source mapping filtering rules before project is created.
-            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            CommonUtility.CreateConfigurationFile(simpleTestPathContext.NuGetConfig, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
+    <config>
+        <add key=""globalPackagesFolder"" value=""{simpleTestPathContext.UserPackagesFolder}"" />
+    </config>
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
     <clear />
@@ -402,7 +420,10 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
+            EnsureVisualStudioHost();
+            var solutionService = VisualStudio.Get<SolutionService>();
+
+            solutionService.CreateEmptySolution("TestSolution", simpleTestPathContext.SolutionRoot);
 
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
             VisualStudio.ClearOutputWindow();
@@ -427,17 +448,18 @@ namespace NuGet.Tests.Apex
         public async Task UpdatePackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
-            EnsureVisualStudioHost();
-            var solutionService = VisualStudio.Get<SolutionService>();
-            string solutionDirectory = CommonUtility.CreateSolutionDirectory(Directory.GetCurrentDirectory());
-            var externalRepositoryPath = Path.Combine(solutionDirectory, "ExternalRepository");
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            var externalRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "ExternalRepository");
             Directory.CreateDirectory(externalRepositoryPath);
-            var privateRepositoryPath = Path.Combine(solutionDirectory, "PrivateRepository");
+            var privateRepositoryPath = Path.Combine(simpleTestPathContext.SolutionRoot, "PrivateRepository");
             Directory.CreateDirectory(privateRepositoryPath);
 
             // Create nuget.config with Package source mapping filtering rules before project is created.
-            CommonUtility.CreateConfigurationFile(Path.Combine(solutionDirectory, "NuGet.config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
+            CommonUtility.CreateConfigurationFile(simpleTestPathContext.NuGetConfig, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
+    <config>
+        <add key=""globalPackagesFolder"" value=""{simpleTestPathContext.UserPackagesFolder}"" />
+    </config>
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
     <clear />
@@ -456,7 +478,10 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 //</configuration>");
 
-            solutionService.CreateEmptySolution("TestSolution", solutionDirectory);
+            EnsureVisualStudioHost();
+            var solutionService = VisualStudio.Get<SolutionService>();
+
+            solutionService.CreateEmptySolution("TestSolution", simpleTestPathContext.SolutionRoot);
 
             var packageName = "Contoso.A";
             var packageVersion1 = "1.0.0";
