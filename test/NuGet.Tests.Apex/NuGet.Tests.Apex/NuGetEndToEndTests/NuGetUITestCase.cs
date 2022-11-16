@@ -48,7 +48,7 @@ namespace NuGet.Tests.Apex
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.SwitchTabToBrowse();
-            uiwindow.SearchPackgeFromUI(TestPackageName);
+            uiwindow.SearchPackageFromUI(TestPackageName);
 
             // Assert
             VisualStudio.AssertNoErrors();
