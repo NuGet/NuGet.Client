@@ -48,12 +48,12 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="NuGet.Core">
-      <HintPath>$(NuGetPackageRoot)\nuget.core\$(NuGetCoreV2Version)\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <HintPath>$(PkgNuGet_Core)\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Aliases>CoreV2</Aliases>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageDownload Include="NuGet.Core" />
+    <PackageReference Include="NuGet.Core" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
