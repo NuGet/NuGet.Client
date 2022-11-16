@@ -55,16 +55,8 @@ steps:
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
 
-- task: MSBuild@1
-  displayName: "Ensure package versions are declared in packages.targets"
-  inputs:
-    solution: "build\\build.proj"
-    msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution /bl:$(Build.StagingDirectory)\\binlog\\02.EnsurePackageReferenceVersionsInSolution.binlog"
-  continueOnError: ${{ parameters.isOfficialBuild }}
-  condition: succeededOrFailed()
-
-- task: PowerShell@2
-  displayName: "Initialize Git Commit Status on GitHub"
+- task: PublishPipelineArtifact@1
+  displayName: "Publish binlogs"
   inputs:
     targetType: "inline"
     script: |

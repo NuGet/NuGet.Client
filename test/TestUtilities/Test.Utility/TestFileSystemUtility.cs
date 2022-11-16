@@ -43,9 +43,26 @@ namespace NuGet.Test.Utility
 
             if (repoRoot != null)
             {
-                path = Path.Combine(repoRoot, ".test");
-                Directory.CreateDirectory(path);
-                path = Path.Combine(path, "work");
+                // Use a folder under %TEMP% if the repository root can't be determined
+                root = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "NuGetTestFolder"));
+            }
+            else
+            {
+                DirectoryInfo testDirectory = Directory.CreateDirectory(Path.Combine(repoRoot, ".test"));
+
+                try
+                {
+                    File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Build.props"), "<Project />");
+                    File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Build.targets"), "<Project />");
+                    File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Build.rsp"), string.Empty);
+                    File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Packages.props"), "<Project />");
+                }
+                catch (Exception)
+                {
+                    // Ignored
+                }
+
+                root = testDirectory.CreateSubdirectory("work");
             }
 
             Directory.CreateDirectory(path);
