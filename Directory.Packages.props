@@ -53,7 +53,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="$(VSFrameworkVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" Version="17.2.7" />
     <PackageVersion Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="$(VSServicesVersion)" />
-    <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.16.30" />
+    <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.4.2244" />
     <PackageVersion Include="Microsoft.VisualStudio.TemplateWizardInterface" Version="$(VSFrameworkVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.VCProjectEngine" Version="$(VSFrameworkVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="17.0.7-preview-0001-g5492e466a9" />
