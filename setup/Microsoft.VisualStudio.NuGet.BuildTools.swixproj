@@ -15,13 +15,14 @@
 
   <PropertyGroup>
     <ReferenceOutputPath>$(ArtifactsDirectory)NuGet.VisualStudio.Client\bin\$(Configuration)\</ReferenceOutputPath>
+    <XmlTransformPath>$(ArtifactsDirectory)microsoft.web.xdt\3.0.0\lib\net40\</XmlTransformPath>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- Variables added here will be usable in the swr file.  This is a semi colon delimited
           list of name=value items.  Use $(name) in the swr file to reference the variable.
     -->
-    <PackagePreprocessorDefinitions>$(PackagePreprocessorDefinitions);ReferenceOutputPath=$(ReferenceOutputPath);BuildNumber=$(BuildNumber);MajorNuGetVersion=$(MajorNuGetVersion);MinorNuGetVersion=$(MinorNuGetVersion);PatchNuGetVersion=$(PatchNuGetVersion);MajorVSVersion=$(MajorVSVersion)</PackagePreprocessorDefinitions>
+    <PackagePreprocessorDefinitions>$(PackagePreprocessorDefinitions);ReferenceOutputPath=$(ReferenceOutputPath);XmlTransformPath=$(XmlTransformPath);BuildNumber=$(BuildNumber);MajorNuGetVersion=$(MajorNuGetVersion);MinorNuGetVersion=$(MinorNuGetVersion);PatchNuGetVersion=$(PatchNuGetVersion);MajorVSVersion=$(MajorVSVersion)</PackagePreprocessorDefinitions>
   </PropertyGroup>
 
   <ItemGroup>
