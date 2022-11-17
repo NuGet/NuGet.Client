@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -164,7 +165,10 @@ namespace NuGet.PackageManagement.UI
             {
                 // When creating a new project, the assets file is not created until restore
                 // and if there are no packages, we don't need the assets file in the PM UI
+                var sw = Stopwatch.StartNew();
                 var installedPackages = await buildIntegratedNuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
+                sw.Stop();
+                GIPAEventSource.Instance.LogCall(typeof(PackageRestoreBar).ToString(), nameof(GetMissingAssetsFileStatusAsync), sw.ElapsedTicks, Stopwatch.Frequency);
                 if (!installedPackages.Any())
                 {
                     return false;

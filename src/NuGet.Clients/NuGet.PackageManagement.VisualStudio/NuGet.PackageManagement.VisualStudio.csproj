@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -33,6 +33,7 @@
     <Compile Include="Common\IProjectContextInfoExtensions.cs" />
     <Compile Include="Common\InstalledAndTransitivePackageCollections.cs" />
     <Compile Include="Exceptions\ProjectNotNominatedException.cs" />
+    <Compile Include="GIPAEventSource.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageFeeds\InstalledAndTransitivePackageFeed.cs" />
     <Compile Include="PackageFeeds\PackageSourceMoniker.cs" />
