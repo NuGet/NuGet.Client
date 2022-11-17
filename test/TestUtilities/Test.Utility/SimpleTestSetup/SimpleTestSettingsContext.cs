@@ -199,6 +199,23 @@ namespace NuGet.Test.Utility
             Save();
         }
 
+        public void AddPackageSourceMapping(string sourceName, params string[] patterns)
+        {
+            XElement packageSourceMappingSection = GetOrAddSection(XML, "packageSourceMapping");
+
+            packageSourceMappingSection.Add(
+                new XElement(
+                    XName.Get("packageSource"),
+                    new XAttribute(XName.Get("key"), sourceName),
+                    patterns.Select(i => new XElement(
+                        XName.Get("package"),
+                        new XAttribute(
+                            XName.Get("pattern"),
+                            i)))));
+
+            Save();
+        }
+
         // Simply add any text as section into nuget.config file, adding large child node into nuget.config via api is tedious.
         public static void AddSectionIntoNuGetConfig(string path, string content, string parentNode)
         {
