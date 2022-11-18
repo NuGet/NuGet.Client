@@ -73,8 +73,9 @@ namespace NuGet.Test.Utility
 
                 entryFullName = Uri.UnescapeDataString(entryFullName.Replace('/', Path.DirectorySeparatorChar));
 
-                var targetFile = Path.Combine(targetPath, entryFullName);
-                if (!targetFile.StartsWith(targetPath, StringComparison.OrdinalIgnoreCase))
+                string targetFile = Path.GetFullPath(Path.Combine(targetPath, entryFullName));
+                string fullDestDirPath = Path.GetFullPath(targetPath + Path.DirectorySeparatorChar);
+                if (!targetFile.StartsWith(fullDestDirPath, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
