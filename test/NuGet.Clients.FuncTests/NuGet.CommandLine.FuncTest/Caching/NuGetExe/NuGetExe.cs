@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -190,7 +191,8 @@ namespace NuGet.CommandLine.Test.Caching
                         }
 
                         // Download the executable.
-                        using (var httpClient = new System.Net.Http.HttpClient())
+                        using (var httpClientHandler = new HttpClientHandler() { CheckCertificateRevocationList = true })
+                        using (var httpClient = new HttpClient(httpClientHandler))
                         using (var stream = await httpClient.GetStreamAsync(requestUri))
                         using (var fileStream = new FileStream(thisPath, FileMode.Create))
                         {

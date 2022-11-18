@@ -27,7 +27,8 @@ namespace NuGet.Core.FuncTest
         {
             // Arrange
             var retryHandler = new HttpRetryHandler();
-            using (var httpClient = new HttpClient())
+            using (var httpClientHandler = new HttpClientHandler() { CheckCertificateRevocationList = true })
+            using (var httpClient = new HttpClient(httpClientHandler))
             {
                 var request = new HttpRetryHandlerRequest(
                     httpClient,
