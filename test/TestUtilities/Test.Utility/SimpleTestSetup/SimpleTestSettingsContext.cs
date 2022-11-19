@@ -7,6 +7,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 
 namespace NuGet.Test.Utility
 {
@@ -246,6 +247,13 @@ namespace NuGet.Test.Utility
             }
 
             doc.Save(nugetConfigPath);
+        }
+
+        public void SetDefaultPushSource(string packageSource)
+        {
+            XElement config = GetOrAddSection(XML, ConfigurationConstants.Config);
+            AddEntry(config, ConfigurationConstants.DefaultPushSource, packageSource);
+            Save();
         }
     }
 }
