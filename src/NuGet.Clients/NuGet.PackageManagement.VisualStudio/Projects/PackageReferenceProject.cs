@@ -47,6 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
         protected T InstalledPackages { get; set; }
         protected T TransitivePackages { get; set; }
 
+        private readonly object _installedPackagesLock = new();
         private readonly object _installedAndTransitivePackagesLock = new object();
         private readonly object _transitiveOriginsLock = new object();
 
@@ -55,6 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private protected IList<LockFileItem> _packageFolders;
 
         protected bool IsInstalledAndTransitiveComputationNeeded { get; set; } = true;
+        protected bool IsInstalledComputationNeeded { get; set; } = true;
 
         protected PackageReferenceProject(
             string projectName,
@@ -99,28 +101,27 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (packageSpec == null) // null means project is not nominated
             {
-                IsInstalledAndTransitiveComputationNeeded = true;
-
+                IsInstalledComputationNeeded = true;
                 return Array.Empty<PackageReference>();
             }
 
             IReadOnlyList<LockFileTarget> targetsList = null;
             T installedPackages;
-            if (IsInstalledAndTransitiveComputationNeeded)
+            if (IsInstalledComputationNeeded)
             {
                 installedPackages = new T();
                 targetsList = (await GetTargetsListAsync(assetsFilePath, token))?.ToList();
             }
             else
             {
-                if (InstalledPackages == null || TransitivePackages == null)
+                if (InstalledPackages == null)
                 {
                     installedPackages = new T();
                 }
                 else
                 {
                     // Make a copy of the caches to prevent concurrency issues.
-                    lock (_installedAndTransitivePackagesLock)
+                    lock (_installedPackagesLock)
                     {
                         installedPackages = GetCollectionCopy(InstalledPackages);
                     }
@@ -136,10 +137,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToList();
 
             // Refresh cache
-            lock (_installedAndTransitivePackagesLock)
+            lock (_installedPackagesLock)
             {
                 InstalledPackages = installedPackages;
             }
+            IsInstalledComputationNeeded = false;
 
             return calculatedInstalledPackages;
         }
@@ -267,7 +269,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             List<TransitivePackageReference> transitivePkgsResult = transitivePackagesWithOrigins.ToList(); // Materialize results before setting IsInstalledAndTransitiveComputationNeeded flag to false
-            IsInstalledAndTransitiveComputationNeeded = false;
 
             // Refresh cache
             lock (_installedAndTransitivePackagesLock)
@@ -275,6 +276,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 InstalledPackages = installedPackages;
                 TransitivePackages = transitivePackages;
             }
+
+            IsInstalledAndTransitiveComputationNeeded = false;
+            IsInstalledComputationNeeded = false;
 
             return new ProjectPackages(calculatedInstalledPackages, transitivePkgsResult);
         }
