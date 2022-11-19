@@ -63,6 +63,7 @@ namespace NuGet.Test.Utility
 
         public static void ExtractAll(this ZipArchive archive, string targetPath)
         {
+            string fullDestDirPath = Path.GetFullPath(targetPath + Path.DirectorySeparatorChar);
             foreach (var entry in archive.Entries)
             {
                 var entryFullName = entry.FullName;
@@ -74,7 +75,6 @@ namespace NuGet.Test.Utility
                 entryFullName = Uri.UnescapeDataString(entryFullName.Replace('/', Path.DirectorySeparatorChar));
 
                 string targetFile = Path.GetFullPath(Path.Combine(targetPath, entryFullName));
-                string fullDestDirPath = Path.GetFullPath(targetPath + Path.DirectorySeparatorChar);
                 if (!targetFile.StartsWith(fullDestDirPath, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
