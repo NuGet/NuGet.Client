@@ -1,12 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.Threading;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio.Utility.FileWatchers;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -18,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string NuGetSolutionSettingsFolder = ".nuget";
 
         // to initialize SolutionSettings first time outside MEF constructor
-        private Tuple<string, AsyncLazy<ISettings>> _solutionSettings;
+        private Tuple<string?, AsyncLazy<ISettings>>? _solutionSettings;
 
         private ISettings SolutionSettings
         {
@@ -30,15 +34,19 @@ namespace NuGet.PackageManagement.VisualStudio
                     ResetSolutionSettingsIfNeeded();
                 }
 
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(_solutionSettings.Item2.GetValueAsync);
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(_solutionSettings!.Item2.GetValueAsync);
             }
         }
 
-        private ISolutionManager SolutionManager { get; set; }
+        private ISolutionManager SolutionManager { get; }
 
-        private IMachineWideSettings MachineWideSettings { get; set; }
+        private IMachineWideSettings? MachineWideSettings { get; }
 
-        public event EventHandler SettingsChanged;
+        private IFileWatcherFactory _fileWatcherFactory;
+        private IFileWatcher _userConfigFileWatcher;
+        private IFileWatcher? _solutionConfigFileWatcher;
+
+        public event EventHandler? SettingsChanged;
 
         public VSSettings(ISolutionManager solutionManager)
             : this(solutionManager, machineWideSettings: null)
@@ -46,17 +54,26 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         [ImportingConstructor]
-        public VSSettings(ISolutionManager solutionManager, IMachineWideSettings machineWideSettings)
+        public VSSettings(ISolutionManager solutionManager, IMachineWideSettings? machineWideSettings)
+            : this(solutionManager, machineWideSettings, new FileWatcherFactory())
+        {
+        }
+
+        public VSSettings(ISolutionManager solutionManager, IMachineWideSettings? machineWideSettings, IFileWatcherFactory fileWatcherFactory)
         {
             SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             MachineWideSettings = machineWideSettings;
             SolutionManager.SolutionOpening += OnSolutionOpenedOrClosed;
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
+
+            _fileWatcherFactory = fileWatcherFactory ?? throw new ArgumentNullException(nameof(fileWatcherFactory));
+            _userConfigFileWatcher = _fileWatcherFactory.CreateUserConfigFileWatcher();
+            _userConfigFileWatcher.FileChanged += OnConfigFileChanged;
         }
 
         private bool ResetSolutionSettingsIfNeeded()
         {
-            string root, solutionDirectory;
+            string? root, solutionDirectory;
             if (SolutionManager == null
                 || !SolutionManager.IsSolutionOpen
                 || string.IsNullOrEmpty(solutionDirectory = SolutionManager.SolutionDirectory))
@@ -76,29 +93,56 @@ namespace NuGet.PackageManagement.VisualStudio
             // That however is not the case for solution close and  same session close -> open events. Those will be on the UI thread.
             if (_solutionSettings == null || !string.Equals(root, _solutionSettings.Item1, Common.PathUtility.GetStringComparisonBasedOnOS()))
             {
-                _solutionSettings = new Tuple<string, AsyncLazy<ISettings>>(
-                    item1: root,
-                    item2: new AsyncLazy<ISettings>(async () =>
-                        {
-                            ISettings settings = null;
-                            try
-                            {
-                                settings = Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
-                            }
-                            catch (NuGetConfigurationException ex)
-                            {
-                                settings = NullSettings.Instance;
-                                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                                MessageHelper.ShowErrorMessage(Common.ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
-                            }
+                var oldSolutionConfigFileWatcher = _solutionConfigFileWatcher;
+                var newSolutionConfigFileWatcher = root == null ? null : _fileWatcherFactory.CreateSolutionConfigFileWatcher(root);
 
-                            return settings;
+                var exchanged = Interlocked.CompareExchange(ref _solutionConfigFileWatcher, newSolutionConfigFileWatcher, oldSolutionConfigFileWatcher);
+                if (ReferenceEquals(exchanged, oldSolutionConfigFileWatcher))
+                {
+                    if (newSolutionConfigFileWatcher != null)
+                    {
+                        newSolutionConfigFileWatcher.FileChanged += OnConfigFileChanged;
+                    }
 
-                        }, NuGetUIThreadHelper.JoinableTaskFactory));
+                    if (oldSolutionConfigFileWatcher != null)
+                    {
+                        oldSolutionConfigFileWatcher.FileChanged -= OnConfigFileChanged;
+                        oldSolutionConfigFileWatcher.Dispose();
+                    }
+                }
+                else
+                {
+                    newSolutionConfigFileWatcher?.Dispose();
+                }
+
+                ResetSolutionSettings(root);
                 return true;
             }
 
             return false;
+        }
+
+        private void ResetSolutionSettings(string? solutionDirectory)
+        {
+            _solutionSettings = new Tuple<string?, AsyncLazy<ISettings>>(
+                item1: solutionDirectory,
+                item2: new AsyncLazy<ISettings>(async () =>
+                {
+                    ISettings settings;
+                    try
+                    {
+                        settings = Settings.LoadDefaultSettings(solutionDirectory, configFileName: null, machineWideSettings: MachineWideSettings);
+                    }
+                    catch (NuGetConfigurationException ex)
+                    {
+                        settings = NullSettings.Instance;
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        MessageHelper.ShowErrorMessage(Common.ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
+                    }
+
+                    return settings;
+
+                }, NuGetUIThreadHelper.JoinableTaskFactory));
         }
 
         private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
@@ -109,6 +153,12 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 SettingsChanged?.Invoke(this, EventArgs.Empty);
             }
+        }
+
+        private void OnConfigFileChanged(object sender, EventArgs e)
+        {
+            ResetSolutionSettings(SolutionManager.SolutionDirectory);
+            SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public SettingSection GetSection(string sectionName)
@@ -148,6 +198,15 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             SolutionManager.SolutionOpening -= OnSolutionOpenedOrClosed;
             SolutionManager.SolutionClosed -= OnSolutionOpenedOrClosed;
+
+            _userConfigFileWatcher.FileChanged -= OnConfigFileChanged;
+            _userConfigFileWatcher.Dispose();
+
+            if (_solutionConfigFileWatcher != null)
+            {
+                _solutionConfigFileWatcher.FileChanged -= OnConfigFileChanged;
+                _solutionConfigFileWatcher.Dispose();
+            }
         }
 
         // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
