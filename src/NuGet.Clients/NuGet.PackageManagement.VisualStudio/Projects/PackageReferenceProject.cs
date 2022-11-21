@@ -403,6 +403,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 _lastTimeAssetsModified = assets.LastWriteTimeUtc;
                 _lastPackageSpec = new WeakReference<PackageSpec>(currentPackageSpec);
                 IsInstalledAndTransitiveComputationNeeded = true;
+                IsInstalledComputationNeeded = true;
             }
 
             return (currentPackageSpec, assetsFilePath);
