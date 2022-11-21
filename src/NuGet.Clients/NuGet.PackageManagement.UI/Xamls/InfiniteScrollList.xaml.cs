@@ -217,6 +217,15 @@ namespace NuGet.PackageManagement.UI
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
+            // add Loading... indicator if not present
+            //var addedLoadingIndicator = false;
+            //if (!Items.Contains(_loadingStatusIndicator))
+            //{
+            //    Items.Add(_loadingStatusIndicator);
+            //    addedLoadingIndicator = true;
+            //}
+
+
             await RepopulatePackageListAsync(selectedPackageItem, _loader, loadCts);
         }
 
@@ -224,17 +233,8 @@ namespace NuGet.PackageManagement.UI
         {
             await TaskScheduler.Default;
 
-            var addedLoadingIndicator = false;
-
             try
             {
-                // add Loading... indicator if not present
-                if (!Items.Contains(_loadingStatusIndicator))
-                {
-                    Items.Add(_loadingStatusIndicator);
-                    addedLoadingIndicator = true;
-                }
-
                 await LoadItemsCoreAsync(currentLoader, loadCts.Token);
 
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
@@ -289,15 +289,15 @@ namespace NuGet.PackageManagement.UI
                     // Ideally, after a search, it should report its status, and
                     // do not keep the LoadingStatus.Loading forever.
                     // This is a workaround.
-                    var emptyListCount = addedLoadingIndicator ? 1 : 0;
-                    if (Items.Count == emptyListCount)
-                    {
-                        _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
-                    }
-                    else
-                    {
-                        Items.Remove(_loadingStatusIndicator);
-                    }
+                    //var emptyListCount = addedLoadingIndicator ? 1 : 0;
+                    //if (Items.Count == emptyListCount)
+                    //{
+                    //    _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                    //}
+                    //else
+                    //{
+                    //    Items.Remove(_loadingStatusIndicator);
+                    //}
                 }
             }
 
@@ -434,14 +434,14 @@ namespace NuGet.PackageManagement.UI
 
                     _loadingStatusIndicator.Status = state.LoadingStatus;
 
-                    if (!Items.Contains(_loadingStatusIndicator))
-                    {
-                        await _list.ItemsLock.ExecuteAsync(() =>
-                        {
-                            Items.Add(_loadingStatusIndicator);
-                            return Task.CompletedTask;
-                        });
-                    }
+                    // if (!Items.Contains(_loadingStatusIndicator))
+                    // {
+                    //     await _list.ItemsLock.ExecuteAsync(() =>
+                    //     {
+                    //         Items.Add(_loadingStatusIndicator);
+                    //         return Task.CompletedTask;
+                    //     });
+                    // }
                 }
             }).PostOnFailure(nameof(InfiniteScrollList), nameof(HandleItemLoaderStateChange));
         }
