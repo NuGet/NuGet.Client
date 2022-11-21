@@ -122,6 +122,31 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
         }
 
         [Fact]
+        public void FileChanged_NonConfigFileChanged_NotificationNotReceived()
+        {
+            // Arrange
+            using TestDirectory testDirectory = TestDirectory.Create();
+            ManualResetEventSlim mre = new(initialState: false, spinCount: 0);
+            using (SolutionConfigFileWatcher target = new(testDirectory.Path))
+            {
+                target.FileChanged += (s, e) => mre.Set();
+            }
+            string slnPath = Path.Combine(testDirectory.Path, "solution.sln");
+            string packagesConfigPath = Path.Combine(testDirectory.Path, "packages.config");
+            string nugetConfigBakPath = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName + ".bak");
+
+            // Act
+            File.WriteAllText(slnPath, string.Empty);
+            File.WriteAllText(packagesConfigPath, string.Empty);
+            File.WriteAllText(nugetConfigBakPath, string.Empty);
+            // filesystem watchers are not real time, so we need to give a litle time for all the async file IO to happen
+            bool obtained = mre.Wait(TimeSpan.FromMilliseconds(10));
+
+            // Assert
+            obtained.Should().BeFalse();
+        }
+
+        [Fact]
         public void FileChanged_FileChangedAfterDispose_NotificationNotReceived()
         {
             // Arrange

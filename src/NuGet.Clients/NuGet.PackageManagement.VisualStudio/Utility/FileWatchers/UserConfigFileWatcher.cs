@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
             _userSettingsWatcher.Renamed += OnFileSystemEvent;
             _userSettingsWatcher.EnableRaisingEvents = true;
 
-            _configDirectoryWatcher = new FileSystemWatcher(configDirectory);
+            _configDirectoryWatcher = new FileSystemWatcher(configDirectory, "*.config");
             _configDirectoryWatcher.Created += OnFileSystemEvent;
             _configDirectoryWatcher.Changed += OnFileSystemEvent;
             _configDirectoryWatcher.Deleted += OnFileSystemEvent;
