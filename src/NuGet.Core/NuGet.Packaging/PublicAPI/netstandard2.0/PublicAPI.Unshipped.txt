@@ -1,1 +1,3 @@
 #nullable enable
+static readonly NuGet.Packaging.StreamExtensions.BufferSize -> int
+~static NuGet.Packaging.StreamExtensions.CopyToAsync(this System.IO.Stream stream, System.IO.Stream destination, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task

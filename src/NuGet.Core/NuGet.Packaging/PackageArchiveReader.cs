@@ -203,7 +203,7 @@ namespace NuGet.Packaging
 
             using (var destination = File.OpenWrite(nupkgFilePath))
             {
-                await ZipReadStream.CopyToAsync(destination);
+                await ZipReadStream.CopyToAsync(destination, cancellationToken);
             }
 
             return nupkgFilePath;

@@ -5229,7 +5229,7 @@ namespace NuGet.Packaging.Test
 
                 using (var destination = File.OpenWrite(nupkgFilePath))
                 {
-                    await _stream.CopyToAsync(destination);
+                    await _stream.CopyToAsync(destination, cancellationToken);
                 }
 
                 return nupkgFilePath;
