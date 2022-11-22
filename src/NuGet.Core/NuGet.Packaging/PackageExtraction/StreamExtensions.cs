@@ -5,12 +5,20 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.IO.MemoryMappedFiles;
+using System.Threading.Tasks;
+using System.Threading;
 using NuGet.Common;
 
 namespace NuGet.Packaging
 {
     public static class StreamExtensions
     {
+        public static readonly int BufferSize = 8192;
+        public static async Task CopyToAsync(this Stream stream, Stream destination, CancellationToken token)
+        {
+            await stream.CopyToAsync(destination, BufferSize, token);
+        }
+
         public static string CopyToFile(this Stream inputStream, string fileFullPath)
         {
             return Testable.Default.CopyToFile(inputStream, fileFullPath);
