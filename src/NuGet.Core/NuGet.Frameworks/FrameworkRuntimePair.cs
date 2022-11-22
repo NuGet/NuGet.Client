@@ -7,7 +7,7 @@ using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
-    public class FrameworkRuntimePair : IEquatable<FrameworkRuntimePair>
+    public class FrameworkRuntimePair : IEquatable<FrameworkRuntimePair>, IComparable<FrameworkRuntimePair>
     {
         public NuGetFramework Framework
         {
