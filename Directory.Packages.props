@@ -14,6 +14,9 @@
     <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'netstandard2.0'">16.8.0</MicrosoftBuildVersion>
     <!-- The last package version of MSBuild that works with net5.0 is 16.11.0.  Our assemblies are still compiled against MSBuild assembly version 15.1.0.0 which will work with all versions -->
     <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp5.0'">16.11.0</MicrosoftBuildVersion>
+    
+    <!-- Overridden by source build to ensure the same version is used across products, do not remove this property -->
+    <MicrosoftWebXdtPackageVersion>3.0.0</MicrosoftWebXdtPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -58,7 +61,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.VCProjectEngine" Version="$(VSFrameworkVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="17.0.7-preview-0001-g5492e466a9" />
     <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.0.1600" />
-    <PackageVersion Include="Microsoft.Web.Xdt" Version="3.0.0" />
+    <PackageVersion Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <PackageVersion Include="Moq" Version="4.18.1" />
     <PackageVersion Include="MSTest.TestAdapter" Version="2.2.10" />
     <PackageVersion Include="MSTest.TestFramework" Version="2.2.10" />
