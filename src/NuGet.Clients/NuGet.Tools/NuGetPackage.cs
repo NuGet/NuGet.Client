@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -521,10 +520,7 @@ namespace NuGetVSExtension
             // load packages.config. This makes sure that an exception will get thrown if there
             // are problems with packages.config, such as duplicate packages. When an exception
             // is thrown, an error dialog will pop up and this doc window will not be created.
-            var sw = Stopwatch.StartNew();
             _ = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
-            sw.Stop();
-            GIPAEventSource.Instance.LogCall(typeof(NuGetPackage).ToString(), nameof(CreateDocWindowAsync), sw.ElapsedTicks, Stopwatch.Frequency);
 
             IServiceBroker serviceBroker = await ServiceBrokerProvider.Value.GetAsync();
             IProjectContextInfo contextInfo = await ProjectContextInfo.CreateAsync(nugetProject, CancellationToken.None);

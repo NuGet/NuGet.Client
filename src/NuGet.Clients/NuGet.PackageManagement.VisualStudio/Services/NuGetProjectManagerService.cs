@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -115,10 +114,7 @@ namespace NuGet.PackageManagement.VisualStudio
             List<Task<IEnumerable<PackageReference>>> tasks = projects
                 .Select(project => project.GetInstalledPackagesAsync(cancellationToken))
                 .ToList();
-            var sw = Stopwatch.StartNew();
             IEnumerable<PackageReference>[] results = await Task.WhenAll(tasks);
-            sw.Stop();
-            GIPAEventSource.Instance.LogCall(typeof(NuGetProjectManagerService).ToString(), nameof(GetInstalledPackagesAsync), sw.ElapsedTicks, Stopwatch.Frequency);
 
             var installedPackages = new List<PackageReferenceContextInfo>();
             GetInstalledPackagesAsyncTelemetryEvent? telemetryEvent = null;

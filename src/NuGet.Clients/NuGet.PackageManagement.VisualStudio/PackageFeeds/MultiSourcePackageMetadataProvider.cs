@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -78,10 +77,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             cancellationToken.ThrowIfCancellationRequested();
             // get all package references for all the projects and cache locally
-            var sw = Stopwatch.StartNew();
             var packageReferences = await project.GetInstalledPackagesAsync(cancellationToken);
-            sw.Stop();
-            GIPAEventSource.Instance.LogCall(typeof(MultiSourcePackageMetadataProvider).ToString(), nameof(GetLatestPackageMetadataAsync), sw.ElapsedTicks, Stopwatch.Frequency);
 
             // filter package references for current package identity
             var matchedPackageReferences = packageReferences
