@@ -6,9 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using LocalResources = NuGet.PackageManagement.PowerShellCmdlets.Resources;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -34,7 +34,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             if (string.IsNullOrEmpty(projectName))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectName));
+                throw new ArgumentException(LocalResources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectName));
             }
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate

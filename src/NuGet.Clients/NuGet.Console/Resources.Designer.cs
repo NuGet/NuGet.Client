@@ -22,7 +22,7 @@ namespace NuGetConsole {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace NuGetConsole {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGetConsole.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace NuGetConsole {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace NuGetConsole {
         /// <summary>
         ///   Looks up a localized string similar to Failed to initialize the PowerShell host. If your PowerShell execution policy setting is set to AllSigned, open the Package Manager Console to initialize the host first..
         /// </summary>
-        internal static string Console_InitializeHostFails {
+        public static string Console_InitializeHostFails {
             get {
                 return ResourceManager.GetString("Console_InitializeHostFails", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace NuGetConsole {
         /// <summary>
         ///   Looks up a localized string similar to Executing script file &apos;{0}&apos;....
         /// </summary>
-        internal static string ExecutingScript {
+        public static string ExecutingScript {
             get {
                 return ResourceManager.GetString("ExecutingScript", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace NuGetConsole {
         /// <summary>
         ///   Looks up a localized string similar to Package Manager.
         /// </summary>
-        internal static string OutputConsolePaneName {
+        public static string OutputConsolePaneName {
             get {
                 return ResourceManager.GetString("OutputConsolePaneName", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace NuGetConsole {
         /// <summary>
         ///   Looks up a localized string similar to Package Manager Console busy at the moment....
         /// </summary>
-        internal static string PackageManagerConsoleBusy {
+        public static string PackageManagerConsoleBusy {
             get {
                 return ResourceManager.GetString("PackageManagerConsoleBusy", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace NuGetConsole {
         /// <summary>
         ///   Looks up a localized string similar to Package Manager Console Command Executed.
         /// </summary>
-        internal static string PackageManagerConsoleCommandExecuted {
+        public static string PackageManagerConsoleCommandExecuted {
             get {
                 return ResourceManager.GetString("PackageManagerConsoleCommandExecuted", resourceCulture);
             }
@@ -108,7 +108,7 @@ namespace NuGetConsole {
         /// <summary>
         ///   Looks up a localized string similar to Registry key &apos;{0}&apos; should be a DWORD..
         /// </summary>
-        internal static string RegistryKeyShouldBeDWORD {
+        public static string RegistryKeyShouldBeDWORD {
             get {
                 return ResourceManager.GetString("RegistryKeyShouldBeDWORD", resourceCulture);
             }
@@ -117,7 +117,7 @@ namespace NuGetConsole {
         /// <summary>
         ///   Looks up a localized string similar to Initializing PowerShell host....
         /// </summary>
-        internal static string ToolWindowInitializing {
+        public static string ToolWindowInitializing {
             get {
                 return ResourceManager.GetString("ToolWindowInitializing", resourceCulture);
             }
@@ -126,7 +126,7 @@ namespace NuGetConsole {
         /// <summary>
         ///   Looks up a localized string similar to Package Manager Console.
         /// </summary>
-        internal static string ToolWindowTitle {
+        public static string ToolWindowTitle {
             get {
                 return ResourceManager.GetString("ToolWindowTitle", resourceCulture);
             }

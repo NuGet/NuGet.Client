@@ -13,8 +13,8 @@ using System.Management.Automation.Host;
 using System.Security;
 using System.Text;
 using System.Windows.Media;
-using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.VisualStudio;
+using LocalResources = NuGet.PackageManagement.PowerShellCmdlets.Resources;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -83,7 +83,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             if (descriptions.Count == 0)
             {
                 // emulate powershell.exe behavior for empty collection.
-                throw new ArgumentException(Resources.ZeroLengthCollection, nameof(descriptions));
+                throw new ArgumentException(LocalResources.ZeroLengthCollection, nameof(descriptions));
             }
 
             if (!string.IsNullOrEmpty(caption))
@@ -303,7 +303,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         label.Replace("&", string.Empty)));
                 }
 
-                Write(string.Format(CultureInfo.CurrentCulture, Resources.PromptForChoiceSuffix, accelerators[defaultChoice]));
+                Write(string.Format(CultureInfo.CurrentCulture, LocalResources.PromptForChoiceSuffix, accelerators[defaultChoice]));
 
                 string input = ReadLine().Trim();
                 switch (input.Length)

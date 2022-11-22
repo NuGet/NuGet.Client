@@ -8,8 +8,8 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Threading;
-using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.VisualStudio;
+using LocalResources = NuGet.PackageManagement.PowerShellCmdlets.Resources;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -104,7 +104,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override void EnterNestedPrompt()
         {
-            UI.WriteErrorLine(Resources.ErrorNestedPromptNotSupported);
+            UI.WriteErrorLine(LocalResources.ErrorNestedPromptNotSupported);
         }
 
         public override void ExitNestedPrompt()

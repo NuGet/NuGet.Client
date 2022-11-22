@@ -32,13 +32,13 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
-using Resources = NuGet.PackageManagement.PowerShellCmdlets.Resources;
+using LocalResources = NuGet.PackageManagement.PowerShellCmdlets.Resources;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
     internal abstract class PowerShellHost : IHost, IPathExpansion, IDisposable
     {
-        private static readonly string AggregateSourceName = Resources.AggregateSourceName;
+        private static readonly string AggregateSourceName = LocalResources.AggregateSourceName;
         private static readonly TimeSpan ExecuteInitScriptsRetryDelay = TimeSpan.FromMilliseconds(400);
         private const int MaxTasks = 16;
         private static bool PowerShellLoaded = false;
@@ -631,13 +631,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void DisplayDisclaimerAndHelpText()
         {
-            WriteLine(Resources.Console_DisclaimerText);
+            WriteLine(LocalResources.Console_DisclaimerText);
             WriteLine();
 
-            WriteLine(string.Format(CultureInfo.CurrentCulture, Resources.PowerShellHostTitle, _nugetHost.Version));
+            WriteLine(string.Format(CultureInfo.CurrentCulture, LocalResources.PowerShellHostTitle, _nugetHost.Version));
             WriteLine();
 
-            WriteLine(Resources.Console_HelpText);
+            WriteLine(LocalResources.Console_HelpText);
             WriteLine();
         }
 
