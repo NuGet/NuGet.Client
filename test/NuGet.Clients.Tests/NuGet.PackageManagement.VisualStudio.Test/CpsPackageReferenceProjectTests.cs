@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Sdk.TestFramework;
@@ -4368,6 +4369,123 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert 
             progressReporter.VerifyAll();
+        }
+
+        [Fact]
+        public async Task GetInstalledPackagesInternalAsync_NullArguments_ThrowsAsync()
+        {
+            // Project1 -> PackageA (1.0.0)
+            // PackageA (1.0.0) -> PackageB (1.0.0)
+
+            // Arrange
+            using var rootDir = new SimpleTestPathContext();
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+
+            PackageSpec prjSpec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "net6.0", dependencyName: "PackageA");
+            await RestorePackageSpecsAsync(rootDir, output: null, prjSpec); // restore
+            CpsPackageReferenceProject project = PrepareCpsRestoredProject(prjSpec);
+
+            // Act and Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await project.GetInstalledPackagesInternalAsync(It.IsAny<IReadOnlyList<LockFileTarget>>(), null, It.IsAny<PackageSpec>(), CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await project.GetInstalledPackagesInternalAsync(It.IsAny<IReadOnlyList<LockFileTarget>>(), It.IsAny<string>(), null, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task GetInstalledPackagesInternalAsync_WithTargetsList_ComputesInstalledPackagesAsync()
+        {
+            // Project1 -> PackageA (1.0.0)
+            // PackageA (1.0.0) -> PackageB (1.0.0)
+
+            // Arrange
+            using var rootDir = new SimpleTestPathContext();
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+
+            PackageSpec prjSpec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "net6.0", dependencyName: "PackageA");
+            await RestorePackageSpecsAsync(rootDir, output: null, prjSpec); // restore
+            CpsPackageReferenceProject project = PrepareCpsRestoredProject(prjSpec);
+
+            string path = await project.GetAssetsFilePathAsync();
+            IReadOnlyList<LockFileTarget> targetsSection = (await project.GetTargetsListAsync(path, CancellationToken.None)).ToList();
+
+            // Act
+            IEnumerable<PackageReference> installedPackagesInternal = await project.GetInstalledPackagesInternalAsync(targetsSection, path, prjSpec, CancellationToken.None);
+
+            // Assert
+            Assert.Collection(installedPackagesInternal, elem => Assert.Equal(elem.PackageIdentity, new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"))));
+        }
+
+        [Fact]
+        public async Task GetInstalledPackagesInternalAsync_WithNullTargetsList_ComputesInstalledPackagesAsync()
+        {
+            // Project1 -> PackageA (1.0.0)
+            // PackageA (1.0.0) -> PackageB (1.0.0)
+
+            // Arrange
+            using var rootDir = new SimpleTestPathContext();
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+
+            PackageSpec prjSpec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "net6.0", dependencyName: "PackageA");
+            await RestorePackageSpecsAsync(rootDir, output: null, prjSpec); // restore
+            CpsPackageReferenceProject project = PrepareCpsRestoredProject(prjSpec);
+
+            string path = await project.GetAssetsFilePathAsync();
+
+            // Act
+            IEnumerable<PackageReference> installedPackagesInternal = await project.GetInstalledPackagesInternalAsync(targetsList: null, path, prjSpec, CancellationToken.None);
+
+            // Assert
+            Assert.Collection(installedPackagesInternal, elem => Assert.Equal(elem.PackageIdentity, new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"))));
+        }
+
+        [Fact]
+        public async Task GetInstalledPackagesInternalAsync_WithNullTargetsList_SameResultsAsGetInstalledPackagesAsync()
+        {
+            // Project1 -> PackageA (1.0.0)
+            // PackageA (1.0.0) -> PackageB (1.0.0)
+
+            // Arrange
+            using var rootDir = new SimpleTestPathContext();
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+
+            PackageSpec prjSpec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "net6.0", dependencyName: "PackageA");
+            await RestorePackageSpecsAsync(rootDir, output: null, prjSpec); // restore
+            CpsPackageReferenceProject project = PrepareCpsRestoredProject(prjSpec);
+
+            string path = await project.GetAssetsFilePathAsync();
+
+            // Act
+            IEnumerable<PackageReference> installedPackagesInternal = await project.GetInstalledPackagesInternalAsync(targetsList: null, path, prjSpec, CancellationToken.None);
+
+            // Assert
+            IEnumerable<PackageReference> installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+            Assert.NotEmpty(installedPackagesInternal);
+            installedPackagesInternal.Should().BeEquivalentTo(installedPackages);
+        }
+
+        [Fact]
+        public async Task GetInstalledPackagesInternalAsync_WithNullTargetsList_ShouldCacheResults()
+        {
+            // Project1 -> PackageA (1.0.0)
+            // PackageA (1.0.0) -> PackageB (1.0.0)
+
+            // Arrange
+            using var rootDir = new SimpleTestPathContext();
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+
+            PackageSpec prjSpec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "net6.0", dependencyName: "PackageA");
+            await RestorePackageSpecsAsync(rootDir, output: null, prjSpec); // restore
+            CpsPackageReferenceProject project = PrepareCpsRestoredProject(prjSpec);
+
+            string path = await project.GetAssetsFilePathAsync();
+
+            // Act
+            IEnumerable<PackageReference> installedPackagesInternal = await project.GetInstalledPackagesInternalAsync(targetsList: null, path, prjSpec, CancellationToken.None);
+            File.Delete(path);
+            IEnumerable<PackageReference> installed2 = await project.GetInstalledPackagesInternalAsync(targetsList: null, path, prjSpec, CancellationToken.None);
+
+            // Assert
+            Assert.NotEmpty(installedPackagesInternal);
+            installedPackagesInternal.Should().BeEquivalentTo(installed2);
         }
 
         private static void AddProjectDetailsToCache(ProjectSystemCache projectCache, DependencyGraphSpec parentDependencyGraphSpec, TestCpsPackageReferenceProject parentPackageReferenceProject, ProjectNames parentProjectNames)
