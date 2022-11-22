@@ -4,6 +4,7 @@
 using System;
 using System.Windows.Media;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.VisualStudio;
 
 namespace NuGetConsole.Host
@@ -21,7 +22,7 @@ namespace NuGetConsole.Host
         public void Initialize(IConsole console)
         {
             // display the error message at the beginning
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => console.WriteAsync(PowerShell.Resources.Host_PSNotInstalled, Colors.Red, null));
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => console.WriteAsync(Resources.Host_PSNotInstalled, Colors.Red, null));
         }
 
         public string Prompt

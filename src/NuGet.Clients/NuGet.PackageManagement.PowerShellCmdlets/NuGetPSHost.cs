@@ -8,6 +8,7 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Threading;
+using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.VisualStudio;
 
 namespace NuGetConsole.Host.PowerShell.Implementation

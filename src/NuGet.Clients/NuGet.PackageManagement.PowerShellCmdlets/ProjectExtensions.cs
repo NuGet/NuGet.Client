@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 

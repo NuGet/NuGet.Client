@@ -13,6 +13,7 @@ using System.Management.Automation.Host;
 using System.Security;
 using System.Text;
 using System.Windows.Media;
+using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.VisualStudio;
 
 namespace NuGetConsole.Host.PowerShell.Implementation

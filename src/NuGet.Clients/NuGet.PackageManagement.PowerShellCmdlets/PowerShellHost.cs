@@ -32,6 +32,7 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
+using Resources = NuGet.PackageManagement.PowerShellCmdlets.Resources;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {

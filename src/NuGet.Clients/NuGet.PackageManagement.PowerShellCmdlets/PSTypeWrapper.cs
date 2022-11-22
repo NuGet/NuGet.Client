@@ -4,6 +4,7 @@
 using System;
 using System.Management.Automation;
 using System.Reflection;
+using NuGet.PackageManagement.PowerShellCmdlets;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
