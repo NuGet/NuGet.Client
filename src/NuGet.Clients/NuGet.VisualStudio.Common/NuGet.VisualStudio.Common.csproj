@@ -27,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
     <ProjectReference Include="..\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj" />
+    <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources.Designer.cs">

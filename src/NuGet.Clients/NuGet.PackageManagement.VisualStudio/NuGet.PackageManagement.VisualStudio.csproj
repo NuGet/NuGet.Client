@@ -230,7 +230,6 @@
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
