@@ -491,17 +491,20 @@ namespace NuGet.Commands
                 }
 
                 // The transitive dependencies enforced by the central package version management file are written to the assets to be used by the pack task.
-                List<LibraryDependency> centralEnforcedTransitiveDependencies = GetLibraryDependenciesForCentralTransitiveDependencies(targetGraph, targetFrameworkInformation, project.RestoreMetadata.CentralPackageTransitivePinningEnabled).ToList();
-
-                if (centralEnforcedTransitiveDependencies.Any())
+                if (project.RestoreMetadata.CentralPackageTransitivePinningEnabled)
                 {
-                    var centralEnforcedTransitiveDependencyGroup = new CentralTransitiveDependencyGroup
-                            (
-                                targetGraph.Framework,
-                                centralEnforcedTransitiveDependencies
-                            );
+                    List<LibraryDependency> centralEnforcedTransitiveDependencies = GetLibraryDependenciesForCentralTransitiveDependencies(targetGraph, targetFrameworkInformation).ToList();
 
-                    lockFile.CentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
+                    if (centralEnforcedTransitiveDependencies.Any())
+                    {
+                        var centralEnforcedTransitiveDependencyGroup = new CentralTransitiveDependencyGroup
+                        (
+                            targetGraph.Framework,
+                            centralEnforcedTransitiveDependencies
+                        );
+
+                        lockFile.CentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
+                    }
                 }
             }
         }
@@ -511,87 +514,83 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="targetGraph">The <see cref="RestoreTargetGraph" /> to get centrally defined transitive dependencies for.</param>
         /// <param name="targetFrameworkInformation">The <see cref="TargetFrameworkInformation" /> for the target framework to get centrally defined transitive dependencies for.</param>
-        /// <param name="centralPackageTransitivePinningEnabled">A value indicating whether or not central transitive dependency version pinning is enabled.</param>
         /// <returns>An <see cref="IEnumerable{LibraryDependency}" /> representing the centrally defined transitive dependencies for the specified <see cref="RestoreTargetGraph" />.</returns>
-        private IEnumerable<LibraryDependency> GetLibraryDependenciesForCentralTransitiveDependencies(RestoreTargetGraph targetGraph, TargetFrameworkInformation targetFrameworkInformation, bool centralPackageTransitivePinningEnabled)
+        private IEnumerable<LibraryDependency> GetLibraryDependenciesForCentralTransitiveDependencies(RestoreTargetGraph targetGraph, TargetFrameworkInformation targetFrameworkInformation)
         {
-            foreach (GraphNode<RemoteResolveResult> node in targetGraph.Graphs.SelectMany(i => i.InnerNodes))
+            foreach (GraphNode<RemoteResolveResult> rootNode in targetGraph.Graphs)
             {
-                // Only consider nodes that are Accepted, IsCentralTransitive, and have a centrally defined package version
-                if (node?.Item == null || node.Disposition != Disposition.Accepted || !node.Item.IsCentralTransitive || !targetFrameworkInformation.CentralPackageVersions?.ContainsKey(node.Item.Key.Name) == true)
+                var dependencyDictionary = rootNode.Item.Data.Dependencies.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
+
+                foreach (GraphNode<RemoteResolveResult> node in rootNode.InnerNodes)
                 {
-                    continue;
-                }
-
-                CentralPackageVersion centralPackageVersion = targetFrameworkInformation.CentralPackageVersions[node.Item.Key.Name];
-                Dictionary<string, LibraryIncludeFlags> dependenciesIncludeFlags = _includeFlagGraphs[targetGraph];
-
-                LibraryIncludeFlags suppressParent = LibraryIncludeFlags.None;
-
-                if (centralPackageTransitivePinningEnabled)
-                {
-                    // Centrally pinned dependencies are not directly declared but the PrivateAssets from the top-level dependency that pulled it in should apply to it also
-                    foreach (GraphNode<RemoteResolveResult> parentNode in EnumerateParentNodes(node))
-                    {
-                        LibraryDependency parentDependency = targetFrameworkInformation.Dependencies.FirstOrDefault(i => i.Name.Equals(parentNode.Item.Key.Name, StringComparison.OrdinalIgnoreCase));
-
-                        // A transitive dependency that is a few levels deep won't be a top-level dependency so skip it
-                        if (parentDependency == null)
-                        {
-                            continue;
-                        }
-
-                        suppressParent |= parentDependency.SuppressParent;
-                    }
-
-                    // If all assets are suppressed then the dependency should not be added
-                    if (suppressParent == LibraryIncludeFlags.All)
+                    // Only consider nodes that are Accepted, IsCentralTransitive, and have a centrally defined package version
+                    if (node?.Item == null || node.Disposition != Disposition.Accepted || !node.Item.IsCentralTransitive || !targetFrameworkInformation.CentralPackageVersions?.ContainsKey(node.Item.Key.Name) == true)
                     {
                         continue;
                     }
-                }
 
-                yield return new LibraryDependency()
-                {
-                    LibraryRange = new LibraryRange(centralPackageVersion.Name, centralPackageVersion.VersionRange, LibraryDependencyTarget.Package),
-                    ReferenceType = LibraryDependencyReferenceType.Transitive,
-                    VersionCentrallyManaged = true,
-                    IncludeType = dependenciesIncludeFlags[centralPackageVersion.Name],
-                    SuppressParent = suppressParent,
-                };
+                    CentralPackageVersion centralPackageVersion = targetFrameworkInformation.CentralPackageVersions[node.Item.Key.Name];
+                    LibraryIncludeFlags suppressParent = LibraryIncludeFlags.All;
+                    foreach (GraphNode<RemoteResolveResult> dependencyNode in EnumerateNodesForDependencyChecks(rootNode, node))
+                    {
+                        var dependency = dependencyDictionary[dependencyNode.Key.Name];
+                        suppressParent &= dependency.SuppressParent;
+                    }
+
+                    if (suppressParent != LibraryIncludeFlags.All)
+                    {
+                        yield return new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(centralPackageVersion.Name, centralPackageVersion.VersionRange, LibraryDependencyTarget.Package),
+                            ReferenceType = LibraryDependencyReferenceType.Transitive,
+                            VersionCentrallyManaged = true,
+                            IncludeType = _includeFlagGraphs[targetGraph][centralPackageVersion.Name],
+                            SuppressParent = suppressParent,
+                        };
+                    }
+                }
             }
         }
 
         /// <summary>
-        /// Enumerates all parent nodes of the specified node.
+        /// Enumerates all inner nodes of the root node which directly or transitively reference the particular graph node.
         /// </summary>
         /// <typeparam name="T">The type of the node.</typeparam>
+        /// <param name="rootNode">The <see cref="GraphNode{TItem}" /> to know which nodes are first level inner nodes.</param>
         /// <param name="graphNode">The <see cref="GraphNode{TItem}" /> to enumerate the parent nodes of.</param>
-        /// <returns>An <see cref="IEnumerable{T}" /> containing a top down list of parent nodes of the specied node.</returns>
-        private static IEnumerable<GraphNode<T>> EnumerateParentNodes<T>(GraphNode<T> graphNode)
+        /// <returns>An <see cref="IEnumerable{T}" /> containing list of parent nodes of the specified node.</returns>
+        private static IEnumerable<GraphNode<T>> EnumerateNodesForDependencyChecks<T>( GraphNode<T> rootNode, GraphNode<T> graphNode)
         {
-            foreach (GraphNode<T> item in graphNode.ParentNodes)
+            var visitedNodes = new HashSet<GraphNode<T>>();
+            var queue = new Queue<GraphNode<T>>();
+            queue.Enqueue(graphNode);
+
+            while (queue.Count > 0)
             {
-                if (item.ParentNodes.Any())
+                var node = queue.Dequeue();
+                if (node.Item.IsCentralTransitive)
                 {
-                    // Transitive pinned nodes have ParentNodes set
-                    foreach (GraphNode<T> parentNode in EnumerateParentNodes(item))
+                    foreach (var parentNode in node.ParentNodes)
                     {
-                        yield return parentNode;
+                        queue.Enqueue(parentNode);
                     }
                 }
-                else if (item.OuterNode != null)
+                else
                 {
-                    // Normal transitive nodes use OuterNode to track their parent
-                    foreach (GraphNode<T> outerNode in EnumerateParentNodes(item.OuterNode))
+                    if (!visitedNodes.Add(node))
+                        continue;
+
+                    if (node.OuterNode == rootNode)
                     {
-                        yield return outerNode;
+                        // It's what we are looking for
+                        yield return node;
                     }
-
-                    yield return item.OuterNode;
+                    else
+                    {
+                        // Go one level up
+                        queue.Enqueue(node.OuterNode);
+                    }
                 }
-
-                yield return item;
             }
         }
 
