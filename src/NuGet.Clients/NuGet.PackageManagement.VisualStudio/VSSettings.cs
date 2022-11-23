@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private ISolutionManager SolutionManager { get; }
 
-        private IMachineWideSettings? MachineWideSettings { get; }
+        private IMachineWideSettings MachineWideSettings { get; }
 
         private IFileWatcherFactory _fileWatcherFactory;
         private IFileWatcher _userConfigFileWatcher;
@@ -48,21 +48,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public event EventHandler? SettingsChanged;
 
-        public VSSettings(ISolutionManager solutionManager)
-            : this(solutionManager, machineWideSettings: null)
-        {
-        }
-
         [ImportingConstructor]
-        public VSSettings(ISolutionManager solutionManager, IMachineWideSettings? machineWideSettings)
+        public VSSettings(ISolutionManager solutionManager, IMachineWideSettings machineWideSettings)
             : this(solutionManager, machineWideSettings, new FileWatcherFactory())
         {
         }
 
-        public VSSettings(ISolutionManager solutionManager, IMachineWideSettings? machineWideSettings, IFileWatcherFactory fileWatcherFactory)
+        public VSSettings(ISolutionManager solutionManager, IMachineWideSettings machineWideSettings, IFileWatcherFactory fileWatcherFactory)
         {
             SolutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
-            MachineWideSettings = machineWideSettings;
+            MachineWideSettings = machineWideSettings ?? throw new ArgumentNullException(nameof(machineWideSettings));
             SolutionManager.SolutionOpening += OnSolutionOpenedOrClosed;
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
 
@@ -93,10 +88,14 @@ namespace NuGet.PackageManagement.VisualStudio
             // That however is not the case for solution close and  same session close -> open events. Those will be on the UI thread.
             if (_solutionSettings == null || !string.Equals(root, _solutionSettings.Item1, Common.PathUtility.GetStringComparisonBasedOnOS()))
             {
-                var oldSolutionConfigFileWatcher = _solutionConfigFileWatcher;
-                var newSolutionConfigFileWatcher = root == null ? null : _fileWatcherFactory.CreateSolutionConfigFileWatcher(root);
+                IFileWatcher? oldSolutionConfigFileWatcher = _solutionConfigFileWatcher;
+                IFileWatcher? newSolutionConfigFileWatcher = root == null ? null : _fileWatcherFactory.CreateSolutionConfigFileWatcher(root);
 
-                var exchanged = Interlocked.CompareExchange(ref _solutionConfigFileWatcher, newSolutionConfigFileWatcher, oldSolutionConfigFileWatcher);
+                // Just in case multiple threads run this in parallel, use Interlocked.CompareExchange to ensure only
+                // one of those threads actually do the work to dispose the old FileWatchers and create new ones.
+                // This helps minimize risk that there are multiple FileWatchers watching the same directory which
+                // leads to multiple notifications for a single file change in the future.
+                IFileWatcher? exchanged = Interlocked.CompareExchange(ref _solutionConfigFileWatcher, newSolutionConfigFileWatcher, oldSolutionConfigFileWatcher);
                 if (ReferenceEquals(exchanged, oldSolutionConfigFileWatcher))
                 {
                     if (newSolutionConfigFileWatcher != null)

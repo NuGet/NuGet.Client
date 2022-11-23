@@ -5,6 +5,7 @@ using System;
 using FluentAssertions;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
+using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio.Utility.FileWatchers;
 using NuGet.Test.Utility;
 using Xunit;
@@ -16,7 +17,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     {
         public VSSettingsTests(GlobalServiceProvider globalServiceProvider) : base(globalServiceProvider)
         {
-            globalServiceProvider.Reset();
         }
 
         [Fact]
@@ -25,6 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             bool received = false;
             var solutionManager = new Mock<ISolutionManager>();
+            var machineWideSettings = new Mock<IMachineWideSettings>();
             var slnConfigWatcher = new Mock<IFileWatcher>();
             var userConfigWatcher = new Mock<IFileWatcher>();
 
@@ -32,7 +33,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             watcherFactory.Setup(f => f.CreateUserConfigFileWatcher()).Returns(userConfigWatcher.Object);
             watcherFactory.Setup(f => f.CreateSolutionConfigFileWatcher(It.IsAny<string>())).Returns(userConfigWatcher.Object);
 
-            using var target = new VSSettings(solutionManager.Object, machineWideSettings: null, watcherFactory.Object);
+            using var target = new VSSettings(solutionManager.Object, machineWideSettings.Object, watcherFactory.Object);
             target.SettingsChanged += (_, _) => received = true;
 
             // Act
@@ -52,6 +53,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             solutionManager.SetupGet(sm => sm.IsSolutionOpen).Returns(true);
             solutionManager.SetupGet(sm => sm.SolutionDirectory).Returns(testDirectory.Path);
 
+            var machineWideSettings = new Mock<IMachineWideSettings>();
             var slnConfigWatcher = new Mock<IFileWatcher>();
             var userConfigWatcher = new Mock<IFileWatcher>();
 
@@ -59,7 +61,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             watcherFactory.Setup(f => f.CreateUserConfigFileWatcher()).Returns(userConfigWatcher.Object);
             watcherFactory.Setup(f => f.CreateSolutionConfigFileWatcher(It.IsAny<string>())).Returns(slnConfigWatcher.Object);
 
-            var target = new VSSettings(solutionManager.Object, machineWideSettings: null, watcherFactory.Object);
+            var target = new VSSettings(solutionManager.Object, machineWideSettings.Object, watcherFactory.Object);
             target.SettingsChanged += (_, _) => received = true;
             // The solution watcher is initialized lazily, the first time the settings are actually used.
             _ = target.GetSection("config");

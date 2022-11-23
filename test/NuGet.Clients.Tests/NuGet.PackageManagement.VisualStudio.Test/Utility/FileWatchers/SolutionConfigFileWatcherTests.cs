@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
 
             // Act
             File.WriteAllText(configPath, string.Empty);
-            // filesystem watchers are not real time, so we need to give a litle time for all the async file IO to happen
+            // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromSeconds(10));
 
             // Assert
@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             // Act
             mre.Wait(0).Should().BeFalse();
             File.WriteAllText(configPath, "1");
-            // filesystem watchers are not real time, so we need to give a litle time for all the async file IO to happen
+            // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromSeconds(10));
 
             // Assert
@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             // Act
             mre.Wait(0).Should().BeFalse();
             File.Delete(configPath);
-            // filesystem watchers are not real time, so we need to give a litle time for all the async file IO to happen
+            // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromSeconds(10));
 
             // Assert
@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             // Act
             mre.Wait(0).Should().BeFalse();
             File.Move(configPath1, configPath2);
-            // filesystem watchers are not real time, so we need to give a litle time for all the async file IO to happen
+            // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromSeconds(10));
 
             // Assert
@@ -114,7 +114,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
 
             // Act
             File.WriteAllText(configPath, string.Empty);
-            // filesystem watchers are not real time, so we need to give a litle time for all the async file IO to happen
+            // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromSeconds(10));
 
             // Assert
@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             File.WriteAllText(slnPath, string.Empty);
             File.WriteAllText(packagesConfigPath, string.Empty);
             File.WriteAllText(nugetConfigBakPath, string.Empty);
-            // filesystem watchers are not real time, so we need to give a litle time for all the async file IO to happen
+            // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromMilliseconds(10));
 
             // Assert
@@ -152,15 +152,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             // Arrange
             using TestDirectory testDirectory = TestDirectory.Create();
             ManualResetEventSlim mre = new(initialState: false, spinCount: 0);
+            string configPath = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
+
+            // Act
             using (SolutionConfigFileWatcher target = new(testDirectory.Path))
             {
                 target.FileChanged += (s, e) => mre.Set();
             }
-            string configPath = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
-
-            // Act
             File.WriteAllText(configPath, string.Empty);
-            // filesystem watchers are not real time, so we need to give a litle time for all the async file IO to happen
+            // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromMilliseconds(10));
 
             // Assert
