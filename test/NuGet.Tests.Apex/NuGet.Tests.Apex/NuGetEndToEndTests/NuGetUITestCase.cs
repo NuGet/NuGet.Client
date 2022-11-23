@@ -513,17 +513,15 @@ namespace NuGet.Tests.Apex
                 $"{file.FullName} still existed after {Timeout}.");
         }
 
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetWebSiteTemplates))]
-        public void InstallPackageToWebSiteFromUI(ProjectTemplate projectTemplate, string projectName, ProjectTargetFramework targetFramework, string packageName, string packageVersion)
+        [StaFact]
+        public void InstallPackageToWebSiteProjectFromUI()
         {
             // Arrange
             EnsureVisualStudioHost();
             var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
-
-            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, targetFramework, projectName);
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "WebSiteEmpty");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
@@ -531,30 +529,21 @@ namespace NuGet.Tests.Apex
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            uiwindow.InstallPackageFromUI(packageName, packageVersion);
+            uiwindow.InstallPackageFromUI("log4net", "2.0.12");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, packageName, packageVersion, XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "log4net", "2.0.12", XunitLogger);
         }
 
-        public static IEnumerable<object[]> GetWebSiteTemplates()
-        {
-            yield return new object[] { ProjectTemplate.WebSiteEmpty, "WebSiteEmpty", ProjectTargetFramework.V48, "log4net", "2.0.12" };
-            yield return new object[] { ProjectTemplate.WebSiteWCF, "WebSiteWCF", ProjectTargetFramework.V48, "log4net.Ext.Json", "2.0.9.1" };
-            yield return new object[] { ProjectTemplate.WebSiteDynamicDataEntityFramework, "WebSiteEntity", ProjectTargetFramework.V48, "log4net", "2.0.13" };
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(UpdateWebSiteTemplates))]
-        public void UpdateWebSitePackageFromUI(ProjectTemplate projectTemplate, string projectName, ProjectTargetFramework targetFramework, string packageName, string installVersion, string updateVersion)
+        [StaFact]
+        public void UpdateWebSitePackageFromUI()
         {
             // Arrange
             EnsureVisualStudioHost();
             var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
-
-            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, targetFramework, projectName);
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "WebSiteEmpty");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
@@ -562,32 +551,23 @@ namespace NuGet.Tests.Apex
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            uiwindow.InstallPackageFromUI(packageName, installVersion);
+            uiwindow.InstallPackageFromUI("log4net", "2.0.13");
             VisualStudio.ClearWindows();
-            uiwindow.UpdatePackageFromUI(packageName, updateVersion);
+            uiwindow.UpdatePackageFromUI("log4net", "2.0.15");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, packageName, updateVersion, XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "log4net", "2.0.15", XunitLogger);
         }
 
-        public static IEnumerable<object[]> UpdateWebSiteTemplates()
-        {
-            yield return new object[] { ProjectTemplate.WebSiteEmpty, "WebSiteEmpty", ProjectTargetFramework.V48, "log4net", "2.0.12", "2.0.15" };
-            yield return new object[] { ProjectTemplate.WebSiteWCF, "WebSiteWCF", ProjectTargetFramework.V48, "log4net.Ext.Json", "2.0.9.1", "2.0.10.1" };
-            yield return new object[] { ProjectTemplate.WebSiteDynamicDataEntityFramework, "WebSiteEntity", ProjectTargetFramework.V48, "log4net", "2.0.13", "2.0.15" };
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(UninstallWebSiteTemplates))]
-        public void UninstallWebSitePackageFromUI(ProjectTemplate projectTemplate, string projectName, ProjectTargetFramework targetFramework, string packageName, string packageVersion)
+        [StaFact]
+        public void UninstallWebSitePackageFromUI()
         {
             // Arrange
             EnsureVisualStudioHost();
             var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
-
-            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, targetFramework, projectName);
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "WebSiteEmpty");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
@@ -595,19 +575,12 @@ namespace NuGet.Tests.Apex
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            uiwindow.InstallPackageFromUI(packageName, packageVersion);
+            uiwindow.InstallPackageFromUI("log4net", "2.0.15");
             VisualStudio.ClearWindows();
-            uiwindow.UninstallPackageFromUI(packageName);
+            uiwindow.UninstallPackageFromUI("log4net");
 
             // Assert
-            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, packageName, XunitLogger);
-        }
-
-        public static IEnumerable<object[]> UninstallWebSiteTemplates()
-        {
-            yield return new object[] { ProjectTemplate.WebSiteEmpty, "WebSiteEmpty", ProjectTargetFramework.V48, "log4net", "2.0.15" };
-            yield return new object[] { ProjectTemplate.WebSiteWCF, "WebSiteWCF", ProjectTargetFramework.V48, "log4net.Ext.Json", "2.0.10.1" };
-            yield return new object[] { ProjectTemplate.WebSiteDynamicDataEntityFramework, "WebSiteEntity", ProjectTargetFramework.V48, "log4net", "2.0.15" };
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "log4net", XunitLogger);
         }
     }
 }
