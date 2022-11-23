@@ -184,8 +184,8 @@
     <None Include="Scripts\about_NuGet.Cmdlets.help.txt">
       <CopyToOutputDirectory Condition="$(IsVsixBuild) != 'true'">PreserveNewest</CopyToOutputDirectory>
     </None>
-    <!-- We copy this xml file to output directory so CI can pick it for localization from artifacts directory
-    However, we condition it to only be copied when building the project itself and not the vsix to prevent VSIX
+    <!-- We copy this xml file to output directory so the CI can pick it for localization from the artifacts directory.
+    However, we condition it to only be copied when building the project itself and not the vsix to prevent the VSIX
     from including this file -->
     <None Include="Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
       <CopyToOutputDirectory Condition="$(IsVsixBuild) != 'true'">PreserveNewest</CopyToOutputDirectory>
