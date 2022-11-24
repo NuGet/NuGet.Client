@@ -4,6 +4,7 @@
 using System;
 using System.Management.Automation;
 using System.Reflection;
+using LocalResources = NuGet.PackageManagement.PowerShellCmdlets.Resources;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
@@ -43,7 +44,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             get
             {
                 return _addWrapperMembersScript ??
-                       (_addWrapperMembersScript = ScriptBlock.Create(Resources.Add_WrapperMembers));
+                       (_addWrapperMembersScript = ScriptBlock.Create(LocalResources.Add_WrapperMembers));
             }
         }
 
