@@ -79,8 +79,7 @@ namespace NuGet.PackageManagement.UI
                     uiService.RemoveDependencies,
                     uiService.ForceRemove,
                     cancellationToken,
-                    userAction.NewMappingID,
-                    userAction.NewMappingSource),
+                    userAction.SourceMappingSourceName),
                 cancellationToken);
         }
 
@@ -879,33 +878,6 @@ namespace NuGet.PackageManagement.UI
                     newMappingSource);
 
                 results.AddRange(actions);
-
-                if (newMappingID != null || newMappingSource != null)
-                {
-                    PackageSourceMappingProvider mappingProvider = new PackageSourceMappingProvider(uiService.Settings);
-                    List<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems().ToList();
-                    PackagePatternItem packagePattern = new PackagePatternItem(newMappingID);
-                    bool newSource = true;
-                    var existingPackageSourceMappingItemsCopy = mappingProvider.GetPackageSourceMappingItems().ToList();
-                    foreach (var sourceItem in existingPackageSourceMappingItemsCopy)
-                    {
-                        if (sourceItem.Key == newMappingSource)
-                        {
-                            var patterns = sourceItem.Patterns;
-                            patterns.Add(packagePattern);
-                            PackageSourceMappingSourceItem mappingSourceItem = new PackageSourceMappingSourceItem(newMappingSource, patterns);
-                            existingPackageSourceMappingItems.Remove(sourceItem);
-                            existingPackageSourceMappingItems.Add(mappingSourceItem);
-                            newSource = false;
-                        }
-                    }
-                    if (newSource == true)
-                    {
-                        PackageSourceMappingSourceItem mappingSourceItem = new PackageSourceMappingSourceItem(newMappingSource, new List<PackagePatternItem>() { packagePattern });
-                        existingPackageSourceMappingItems.Add(mappingSourceItem);
-                    }
-                    mappingProvider.SavePackageSourceMappings(existingPackageSourceMappingItems);
-                }
             }
             else
             {
@@ -922,6 +894,36 @@ namespace NuGet.PackageManagement.UI
             }
 
             return results;
+        }
+
+        private static void CreateAndSavePackageSourceMappings(INuGetUI uiService, string newMappingID, string newMappingSource)
+        {
+            if (newMappingID != null && newMappingSource != null)
+            {
+                var mappingProvider = new PackageSourceMappingProvider(uiService.Settings);
+                List<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems().ToList();
+                var packagePattern = new PackagePatternItem(newMappingID);
+                var newSource = true;
+                var existingPackageSourceMappingItemsCopy = mappingProvider.GetPackageSourceMappingItems().ToList();
+                foreach (var sourceItem in existingPackageSourceMappingItemsCopy)
+                {
+                    if (sourceItem.Key == newMappingSource)
+                    {
+                        var patterns = sourceItem.Patterns;
+                        patterns.Add(packagePattern);
+                        PackageSourceMappingSourceItem mappingSourceItem = new PackageSourceMappingSourceItem(newMappingSource, patterns);
+                        existingPackageSourceMappingItems.Remove(sourceItem);
+                        existingPackageSourceMappingItems.Add(mappingSourceItem);
+                        newSource = false;
+                    }
+                }
+                if (newSource == true)
+                {
+                    PackageSourceMappingSourceItem mappingSourceItem = new PackageSourceMappingSourceItem(newMappingSource, new List<PackagePatternItem>() { packagePattern });
+                    existingPackageSourceMappingItems.Add(mappingSourceItem);
+                }
+                mappingProvider.SavePackageSourceMappings(existingPackageSourceMappingItems);
+            }
         }
 
         // Non-private only to facilitate testing.

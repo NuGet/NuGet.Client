@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;
-            UpdateIsInstallorUpdateButtonEnabled();
+            UpdateIsInstallOrUpdateButtonEnabled();
         }
 
         public async override Task SetCurrentPackageAsync(
@@ -377,7 +377,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void UpdateIsInstallorUpdateButtonEnabled()
+        public void UpdateIsInstallOrUpdateButtonEnabled()
         {
             bool isPackageMapped = true;
             if (IsPackageSourceMappingEnabled == true && _selectMappingCheckBoxState == false && IsExistingMappingsNull == true)

@@ -290,7 +290,7 @@ namespace NuGet.PackageManagement.UI
 
         private void NewMapping_Checked(object sender, RoutedEventArgs e)
         {
-            PackageDetailControlModel.UpdateIsInstallorUpdateButtonEnabled();
+            PackageDetailControlModel.UpdateIsInstallOrUpdateButtonEnabled();
         }
     }
 }

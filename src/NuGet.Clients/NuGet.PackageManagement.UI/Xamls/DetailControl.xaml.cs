@@ -111,13 +111,11 @@ namespace NuGet.PackageManagement.UI
         private void ProjectInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageDetailControlModel)DataContext;
-            string newMappingSource = null;
-            string newMappingID = null;
+            string selectedSource = null;
 
             if (model.SelectMappingCheckBoxState == true && model.IsAllSourcesSelected == false)
             {
-                newMappingID = model.Id;
-                newMappingSource = Control.SelectedSource.SourceName;
+                selectedSource = Control.SelectedSource.SourceName;
             }
             if (model != null && model.SelectedVersion != null)
             {
@@ -126,8 +124,7 @@ namespace NuGet.PackageManagement.UI
                     model.SelectedVersion.Version,
                     Control.Model.IsSolution,
                     UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
-                    newMappingID,
-                    newMappingSource);
+                    sourceMappingSourceName: selectedSource);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -147,13 +144,11 @@ namespace NuGet.PackageManagement.UI
         private void SolutionInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageSolutionDetailControlModel)DataContext;
-            string newMappingSource = null;
-            string newMappingID = null;
+            string selectedSource = null;
 
             if (model.SelectMappingCheckBoxState == true && model.IsAllSourcesSelected == false)
             {
-                newMappingID = model.Id;
-                newMappingSource = Control.SelectedSource.SourceName;
+                selectedSource = Control.SelectedSource.SourceName;
             }
             if (model != null && model.SelectedVersion != null)
             {
@@ -162,8 +157,7 @@ namespace NuGet.PackageManagement.UI
                     model.SelectedVersion.Version,
                     Control.Model.IsSolution,
                     UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
-                    newMappingID,
-                    newMappingSource);
+                    sourceMappingSourceName: selectedSource);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -183,14 +177,14 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteUserAction(UserAction action, NuGetActionType actionType)
         {
             Control.ExecuteAction(
-                () =>
+                performAction: () =>
                 {
                     return Control.Model.Context.UIActionEngine.PerformInstallOrUninstallAsync(
                         Control.Model.UIController,
                         action,
                         CancellationToken.None);
                 },
-                nugetUi =>
+                setOptions: nugetUi =>
                 {
                     var model = (DetailControlModel)DataContext;
 

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +30,7 @@ namespace NuGet.PackageManagement.UI
         // Indicates whether the SelectCheckBoxState is being updated in code. True means the state is being updated by code, while false means the state is changed by user clicking the checkbox.
         private bool _updatingSelectCheckBoxState;
         private bool? _selectCheckBoxState;
-        private bool? _selectMappingCheckBoxState = false;
+        private bool? _selectMappingCheckBoxState;
         private bool _isInBatchUpdate;
         private List<PackageInstallationInfo> _projects; // List of projects in the solution
 
@@ -57,7 +56,7 @@ namespace NuGet.PackageManagement.UI
             // when the SelectedVersion is changed, we need to update CanInstall and CanUninstall.
             PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(SelectedVersion) || e.PropertyName == "SelectMappingCheckBoxState")
+                if (e.PropertyName == nameof(SelectedVersion) || e.PropertyName == nameof(SelectMappingCheckBoxState))
                 {
                     UpdateCanInstallAndCanUninstall();
                 }
@@ -452,14 +451,14 @@ namespace NuGet.PackageManagement.UI
             CanUninstall = Projects.Any(project => project.IsSelected && project.InstalledVersion != null && !project.AutoReferenced);
 
             bool isPackageMapped = true;
-            if (IsPackageSourceMappingEnabled == true && _selectMappingCheckBoxState == false && IsExistingMappingsNull == true)
-            {
-                isPackageMapped = false;
-            }
-            if (IsAllSourcesSelected == true && IsPackageSourceMappingEnabled)
-            {
-                isPackageMapped = false;
-            }
+            //if (IsPackageSourceMappingEnabled && _selectMappingCheckBoxState == false && IsExistingMappingsNull == true)
+            //{
+            //    isPackageMapped = false;
+            //}
+            //if (IsAllSourcesSelected && IsPackageSourceMappingEnabled)
+            //{
+            //    isPackageMapped = false;
+            //}
             CanInstall = SelectedVersion != null && Projects.Any(
                 project => project.IsSelected &&
                     VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0) && isPackageMapped;
