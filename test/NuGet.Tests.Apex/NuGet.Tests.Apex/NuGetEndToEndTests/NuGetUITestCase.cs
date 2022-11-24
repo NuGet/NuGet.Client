@@ -399,5 +399,75 @@ namespace NuGet.Tests.Apex
                 Interval,
                 $"{file.FullName} still existed after {Timeout}.");
         }
+
+        [StaFact]
+        public void InstallPackageToWebSiteProjectFromUI()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "WebSiteEmpty");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var nugetTestService = GetNuGetTestService();
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI("log4net", "2.0.12");
+
+            // Assert
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "log4net", "2.0.12", XunitLogger);
+        }
+
+        [StaFact]
+        public void UpdateWebSitePackageFromUI()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "WebSiteEmpty");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var nugetTestService = GetNuGetTestService();
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI("log4net", "2.0.13");
+            VisualStudio.ClearWindows();
+            uiwindow.UpdatePackageFromUI("log4net", "2.0.15");
+
+            // Assert
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "log4net", "2.0.15", XunitLogger);
+        }
+
+        [StaFact]
+        public void UninstallWebSitePackageFromUI()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "WebSiteEmpty");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var nugetTestService = GetNuGetTestService();
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI("log4net", "2.0.15");
+            VisualStudio.ClearWindows();
+            uiwindow.UninstallPackageFromUI("log4net");
+
+            // Assert
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "log4net", XunitLogger);
+        }
     }
 }
