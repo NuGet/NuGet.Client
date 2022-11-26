@@ -434,15 +434,34 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
-        public string SolutionDirectory => NuGetUIThreadHelper.JoinableTaskFactory.Run(GetSolutionDirectoryAsync);
+        private string _solutionDir;
+        public string SolutionDirectory
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_solutionDir))
+                {
+                    return _solutionDir;
+                }
+
+                _solutionDir = NuGetUIThreadHelper.JoinableTaskFactory.Run(GetSolutionDirectoryAsync);
+                return _solutionDir;
+            }
+        }
 
         public async Task<string> GetSolutionDirectoryAsync()
         {
+            if (!string.IsNullOrEmpty(_solutionDir))
+            {
+                return _solutionDir;
+            }
+
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var vsSolution = await _asyncVSSolution.GetValueAsync();
             if (IsSolutionOpenFromVSSolution(vsSolution))
             {
-                return (string)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_SolutionDirectory);
+                _solutionDir = (string)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_SolutionDirectory);
+                return _solutionDir;
             }
             return null;
         }
