@@ -205,7 +205,7 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override IEnumerable<PackageReference> ResolvedInstalledPackagesList(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
-            IReadOnlyList<LockFileTarget> targets,
+            IList<LockFileTarget> targets,
             List<FrameworkInstalledPackages> installedPackagesInCache)
         {
             FrameworkInstalledPackages targetFrameworkPackages = installedPackagesInCache.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
@@ -227,7 +227,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         protected override IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(
             NuGetFramework targetFramework,
-            IReadOnlyList<LockFileTarget> targets,
+            IList<LockFileTarget> targets,
             List<FrameworkInstalledPackages> installedPackagesInCache,
             List<FrameworkInstalledPackages> transitivePackagesInCache)
         {
