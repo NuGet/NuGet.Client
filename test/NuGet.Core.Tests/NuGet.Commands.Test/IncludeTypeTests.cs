@@ -11,7 +11,10 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Test;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
+using Test.Utility.Commands;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -1731,7 +1734,7 @@ namespace NuGet.Commands.Test
                                 ""version"": ""1.0.0""
                             },
                             ""packageY"": ""1.0.0"",
-                            ""packageZ"": ""1.0.0""                            
+                            ""packageZ"": ""1.0.0""
                         },
                         ""frameworks"": {
                             ""net46"": {}
@@ -1756,6 +1759,106 @@ namespace NuGet.Commands.Test
                 Assert.Equal("packageZ", buildTargets[0]);
                 Assert.Equal("packageY", buildTargets[1]);
                 Assert.Equal("packageX", buildTargets[2]);
+            }
+        }
+
+        [Theory]
+        [InlineData(LibraryIncludeFlags.Compile)]
+        [InlineData(LibraryIncludeFlags.Runtime)]
+        public async Task IncludeType_FlowsIntoCentralTransitiveDependencies(LibraryIncludeFlags includeFlags)
+        {
+            // Arrange
+            using (var tmpPath = new SimpleTestPathContext())
+            {
+                var packageA = new SimpleTestPackageContext { Id = "PackageA", Version = "1.0.0", };
+                var logger = new TestLogger();
+                var project1Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project1"));
+                var project2Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project2"));
+                var project3Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project3"));
+                var globalPackages = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "packageSource"));
+
+                globalPackages.Create();
+                packageSource.Create();
+
+                var project3Spec = PackageReferenceSpecBuilder.Create("Project3", project3Directory.FullName)
+                    .WithTargetFrameworks(new[]
+                    {
+                        new TargetFrameworkInformation
+                        {
+                            FrameworkName = NuGetFramework.Parse("net471"),
+                            Dependencies = new List<LibraryDependency>(
+                                new[]
+                                {
+                                    new LibraryDependency
+                                    {
+                                        LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.All),
+                                        VersionCentrallyManaged = true,
+                                    },
+                                }),
+                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
+                        }
+                    })
+                    .WithCentralPackageVersionsEnabled()
+                    .WithCentralPackageTransitivePinningEnabled()
+                    .Build()
+                    .WithTestRestoreMetadata();
+
+                var project2Spec = PackageReferenceSpecBuilder.Create("Project2", project2Directory.FullName)
+                    .WithTargetFrameworks(new[]
+                    {
+                        new TargetFrameworkInformation
+                        {
+                            FrameworkName = NuGetFramework.Parse("net471"),
+                            Dependencies = new List<LibraryDependency>(),
+                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
+                        }
+                    })
+                    .WithCentralPackageVersionsEnabled()
+                    .WithCentralPackageTransitivePinningEnabled()
+                    .Build()
+                    .WithTestRestoreMetadata()
+                    .WithTestProjectReference(project3Spec, privateAssets:(LibraryIncludeFlags.All & (~includeFlags)));
+
+
+                var project1Spec = PackageReferenceSpecBuilder.Create("Project1", project1Directory.FullName)
+                    .WithTargetFrameworks(new[]
+                    {
+                        new TargetFrameworkInformation
+                        {
+                            FrameworkName = NuGetFramework.Parse("net471"),
+                            Dependencies = new List<LibraryDependency>(),
+                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
+                        }
+                    })
+                    .WithCentralPackageVersionsEnabled()
+                    .WithCentralPackageTransitivePinningEnabled()
+                    .Build()
+                    .WithTestRestoreMetadata()
+                    .WithTestProjectReference(project2Spec);
+
+                var restoreContext = new RestoreArgs()
+                {
+                    Sources = new List<string>() { packageSource.FullName },
+                    GlobalPackagesFolder = globalPackages.FullName,
+                    Log = logger,
+                    CacheContext = new TestSourceCacheContext(),
+                };
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    packageSource.FullName,
+                    packageA);
+
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, project1Spec, project2Spec, project3Spec);
+
+                // Act
+                var command1 = new RestoreCommand(request);
+                var result1 = await command1.ExecuteAsync();
+                var lockFile1 = result1.LockFile;
+
+                // Assert
+                Assert.True(result1.Success);
+                Assert.Equal(includeFlags, lockFile1.CentralTransitiveDependencyGroups.Single().TransitiveDependencies.Single().IncludeType);
             }
         }
 
