@@ -19,8 +19,6 @@ namespace NuGet.PackageManagement.VisualStudio
     [PartCreationPolicy(CreationPolicy.Shared)]
     public sealed class VSSettings : ISettings, IDisposable
     {
-        private const string NuGetSolutionSettingsFolder = ".nuget";
-
         // to initialize SolutionSettings first time outside MEF constructor
         private Tuple<string?, AsyncLazy<ISettings>>? _solutionSettings;
 
@@ -77,7 +75,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                root = Path.Combine(solutionDirectory, NuGetSolutionSettingsFolder);
+                root = Path.Combine(solutionDirectory, NuGetConstants.NuGetSolutionSettingsFolder);
             }
 
             // This is a performance optimization.
@@ -156,7 +154,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnConfigFileChanged(object sender, EventArgs e)
         {
-            ResetSolutionSettings(SolutionManager.SolutionDirectory);
+            ResetSolutionSettings(_solutionSettings?.Item1);
             SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
 
