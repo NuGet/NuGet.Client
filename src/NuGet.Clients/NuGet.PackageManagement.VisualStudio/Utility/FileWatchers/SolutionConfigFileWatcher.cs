@@ -4,16 +4,16 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
 {
-    internal class SolutionConfigFileWatcher : IFileWatcher
+    internal sealed class SolutionConfigFileWatcher : IFileWatcher
     {
         private bool _disposed;
-        private List<FileSystemWatcher> _watchers;
+        private FileSystemWatcher _solutionWatcher;
+        private FileSystemWatcher? _dotNuGetWatcher;
 
         public SolutionConfigFileWatcher(string solutionDirectory)
         {
@@ -21,16 +21,12 @@ namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
                 ? Path.GetDirectoryName(solutionDirectory)
                 : solutionDirectory;
 
-            _watchers = new List<FileSystemWatcher>();
-            while (current != null)
-            {
-                if (Directory.Exists(current))
-                {
-                    var watcher = Create(current);
-                    _watchers.Add(watcher);
-                }
+            _solutionWatcher = Create(solutionDirectory);
 
-                current = Path.GetDirectoryName(current);
+            var dotNuGetPath = Path.Combine(solutionDirectory, NuGetConstants.NuGetSolutionSettingsFolder);
+            if (Directory.Exists(dotNuGetPath))
+            {
+                _dotNuGetWatcher = Create(dotNuGetPath);
             }
 
             FileSystemWatcher Create(string path)
@@ -54,17 +50,8 @@ namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
 
             _disposed = true;
 
-            foreach (var watcher in _watchers)
-            {
-                watcher.EnableRaisingEvents = false;
-                watcher.Created -= OnFileSystemEvent;
-                watcher.Changed -= OnFileSystemEvent;
-                watcher.Deleted -= OnFileSystemEvent;
-                watcher.Renamed -= OnFileSystemEvent;
-                watcher.Dispose();
-            }
-
-            _watchers.Clear();
+            _solutionWatcher.Dispose();
+            _dotNuGetWatcher?.Dispose();
 
             GC.SuppressFinalize(this);
         }

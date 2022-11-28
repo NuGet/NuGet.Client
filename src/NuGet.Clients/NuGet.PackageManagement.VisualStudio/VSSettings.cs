@@ -41,7 +41,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private IMachineWideSettings MachineWideSettings { get; }
 
         private IFileWatcherFactory _fileWatcherFactory;
-        private IFileWatcher _userConfigFileWatcher;
         private IFileWatcher? _solutionConfigFileWatcher;
 
         public event EventHandler? SettingsChanged;
@@ -60,13 +59,11 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
 
             _fileWatcherFactory = fileWatcherFactory ?? throw new ArgumentNullException(nameof(fileWatcherFactory));
-            _userConfigFileWatcher = _fileWatcherFactory.CreateUserConfigFileWatcher();
-            _userConfigFileWatcher.FileChanged += OnConfigFileChanged;
         }
 
         private bool ResetSolutionSettingsIfNeeded()
         {
-            string? root, solutionDirectory;
+            string? root, solutionDirectory = null;
             if (SolutionManager == null
                 || !SolutionManager.IsSolutionOpen
                 || string.IsNullOrEmpty(solutionDirectory = SolutionManager.SolutionDirectory))
@@ -87,7 +84,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (_solutionSettings == null || !string.Equals(root, _solutionSettings.Item1, Common.PathUtility.GetStringComparisonBasedOnOS()))
             {
                 IFileWatcher? oldSolutionConfigFileWatcher = _solutionConfigFileWatcher;
-                IFileWatcher? newSolutionConfigFileWatcher = root == null ? null : _fileWatcherFactory.CreateSolutionConfigFileWatcher(root);
+                IFileWatcher? newSolutionConfigFileWatcher = solutionDirectory == null ? null : _fileWatcherFactory.CreateSolutionConfigFileWatcher(solutionDirectory);
 
                 // Just in case multiple threads run this in parallel, use Interlocked.CompareExchange to ensure only
                 // one of those threads actually do the work to dispose the old FileWatchers and create new ones.
@@ -195,9 +192,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             SolutionManager.SolutionOpening -= OnSolutionOpenedOrClosed;
             SolutionManager.SolutionClosed -= OnSolutionOpenedOrClosed;
-
-            _userConfigFileWatcher.FileChanged -= OnConfigFileChanged;
-            _userConfigFileWatcher.Dispose();
 
             if (_solutionConfigFileWatcher != null)
             {

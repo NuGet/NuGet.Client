@@ -102,15 +102,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
         }
 
         [Fact]
-        public void FileChanged_WhenFileCreatedInParentDirectory_NotificationReceived()
+        public void FileChanged_WhenFileCreatedInDotNuGetDirectory_NotificationReceived()
         {
             // Arrange
             using TestDirectory testDirectory = TestDirectory.Create();
-            var solutionDirectory = Path.Combine(testDirectory, "solution");
-            using SolutionConfigFileWatcher target = new(solutionDirectory);
+            var dotNuGetDirectory = Path.Combine(testDirectory, NuGetConstants.NuGetSolutionSettingsFolder);
+            Directory.CreateDirectory(dotNuGetDirectory);
+            using SolutionConfigFileWatcher target = new(testDirectory.Path);
             ManualResetEventSlim mre = new(initialState: false, spinCount: 0);
             target.FileChanged += (s, e) => mre.Set();
-            string configPath = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
+            string configPath = Path.Combine(dotNuGetDirectory, Settings.DefaultSettingsFileName);
 
             // Act
             File.WriteAllText(configPath, string.Empty);

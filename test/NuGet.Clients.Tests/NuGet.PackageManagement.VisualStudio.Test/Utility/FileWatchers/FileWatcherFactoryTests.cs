@@ -13,19 +13,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
     public class FileWatcherFactoryTests
     {
         [Fact]
-        public void CreateUserConfigFileWatcher_ReturnsNotNull()
-        {
-            // Arrange
-            FileWatcherFactory target = new();
-
-            // Act
-            using IFileWatcher result = target.CreateUserConfigFileWatcher();
-
-            // Assert
-            result.Should().NotBeNull();
-        }
-
-        [Fact]
         public void CreateSolutionConfigFileWatcher_ReturnsNotNull()
         {
             // Arrange
