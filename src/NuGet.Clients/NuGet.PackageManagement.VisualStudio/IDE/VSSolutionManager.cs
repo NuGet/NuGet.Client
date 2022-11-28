@@ -544,6 +544,7 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionClosed?.Invoke(this, EventArgs.Empty);
 
             _solutionOpenedRaised = false;
+            _solutionDir = null;
         }
 
         private void OnBeforeClosing()
