@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             target.FileChanged += (s, e) => mre.Set();
 
             // Act
-            mre.Wait(0).Should().BeFalse();
+            mre.Wait(1).Should().BeFalse();
             File.WriteAllText(configPath, "1");
             // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromSeconds(10));
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             target.FileChanged += (s, e) => mre.Set();
 
             // Act
-            mre.Wait(0).Should().BeFalse();
+            mre.Wait(1).Should().BeFalse();
             File.Delete(configPath);
             // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromSeconds(10));
@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             target.FileChanged += (s, e) => mre.Set();
 
             // Act
-            mre.Wait(0).Should().BeFalse();
+            mre.Wait(1).Should().BeFalse();
             File.Move(configPath1, configPath2);
             // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromSeconds(10));
