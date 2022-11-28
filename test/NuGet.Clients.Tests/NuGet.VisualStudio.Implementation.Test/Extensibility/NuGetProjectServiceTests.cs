@@ -197,12 +197,12 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 throw new NotImplementedException();
             }
 
-            protected override IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, List<PackageReference> installedPackages)
+            protected override IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<LockFileTarget> targets, List<PackageReference> installedPackages)
             {
                 throw new NotImplementedException();
             }
 
-            protected override IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(NuGetFramework targetFramework, IReadOnlyList<LockFileTarget> targets, List<PackageReference> installedPackages, List<PackageReference> transitivePackages)
+            protected override IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(NuGetFramework targetFramework, IList<LockFileTarget> targets, List<PackageReference> installedPackages, List<PackageReference> transitivePackages)
             {
                 throw new NotImplementedException();
             }
