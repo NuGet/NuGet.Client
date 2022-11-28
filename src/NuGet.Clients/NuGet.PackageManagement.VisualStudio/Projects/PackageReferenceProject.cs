@@ -138,7 +138,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
                 installedPackages = new T();
-
                 if (includeTransitivePackages)
                 {
                     transitivePackages = new T();
