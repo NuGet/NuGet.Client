@@ -4,17 +4,94 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell.ServiceBroker;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Contracts;
 using Task = System.Threading.Tasks.Task;
 
 namespace API.Test
 {
     public static class InternalAPITestHook
     {
+        public static void InstallLatestPackageAsyncApi(string id, bool prerelease, bool invokeOnUIThread)
+        {
+            ThreadHelper.JoinableTaskFactory.Run(
+                async () =>
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    var dte = ServiceLocator.GetDTE();
+
+                    var projectGuids = new List<Guid>();
+                    var vsSolution2 = ServiceLocator.GetService<SVsSolution, IVsSolution2>();
+
+                    foreach (EnvDTE.Project project in dte.Solution.Projects)
+                    {
+                        var hierarchy = await project.ToVsHierarchyAsync();
+                        vsSolution2.GetGuidOfProject(hierarchy, out Guid guid);
+                        projectGuids.Add(guid);
+                    }
+
+                    // This is technically a big no-no in production code,
+                    // but our API needs to be able to safely complete when invoke from both UI thread/background thread.
+                    if (!invokeOnUIThread)
+                    {
+                        await TaskScheduler.Default;
+                    }
+
+                    INuGetProjectService service = await GetNuGetProjectServiceAsync();
+
+                    foreach (var projectName in projectGuids)
+                    {
+                        await service.InstallLatestPackageAsync(projectName, source: null, id, prerelease, CancellationToken.None);
+                        return;
+
+                    }
+                });
+        }
+
+        public static void InstallPackageAsyncApi(string source, string id, string version, bool invokeOnUIThread)
+        {
+            ThreadHelper.JoinableTaskFactory.Run(
+                async () =>
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    var dte = ServiceLocator.GetDTE();
+
+                    var projectGuids = new List<Guid>();
+                    var vsSolution2 = ServiceLocator.GetService<SVsSolution, IVsSolution2>();
+
+                    foreach (EnvDTE.Project project in dte.Solution.Projects)
+                    {
+                        var hierarchy = await project.ToVsHierarchyAsync();
+                        vsSolution2.GetGuidOfProject(hierarchy, out Guid guid);
+                        projectGuids.Add(guid);
+                    }
+
+                    // Condition thread switches is technically a big no-no in production code,
+                    // but our API needs to be able to safely complete when invoke from both UI thread/background thread.
+                    if (!invokeOnUIThread)
+                    {
+                        await TaskScheduler.Default;
+                    }
+
+                    INuGetProjectService service = await GetNuGetProjectServiceAsync();
+                    foreach (var projectName in projectGuids)
+                    {
+                        await service.InstallPackageAsync(projectName, source, id, version, CancellationToken.None);
+                        return;
+                    }
+                });
+        }
+
         public static void InstallLatestPackageApi(string id, bool prerelease)
         {
             ThreadHelper.JoinableTaskFactory.Run(
@@ -188,5 +265,25 @@ namespace API.Test
                     return false;
                 });
         }
+
+        private static async Task<INuGetProjectService> GetNuGetProjectServiceAsync()
+        {
+            IBrokeredServiceContainer brokeredServiceContainer = await GetBrokeredServiceContainerAsync();
+            Assumes.Present(brokeredServiceContainer);
+
+            IServiceBroker sb = brokeredServiceContainer.GetFullAccessServiceBroker();
+#pragma warning disable ISB001 // Dispose of proxies
+            var service = await sb.GetProxyAsync<INuGetProjectService>(NuGetServices.NuGetProjectServiceV1, CancellationToken.None);
+#pragma warning restore ISB001 // Dispose of proxies
+            return service;
+
+            static async Task<IBrokeredServiceContainer> GetBrokeredServiceContainerAsync()
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                // We don't have access to an async service provider here, so we use the global one.
+                return ServiceLocator.GetService<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
+            }
+        }
+
     }
 }

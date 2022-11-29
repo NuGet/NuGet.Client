@@ -333,6 +333,95 @@ function Test-InstallLatestStablePackageAPI
     Assert-Package $p TestPackage.ListedStable 2.0.6
 }
 
+function Test-InstallLatestStablePackageAsyncAPI
+{
+    param($context, $testCase)
+
+    # Arrange
+    $p = New-ClassLibrary
+    $RunOnUIThread = [System.Convert]::ToBoolean($testCase.RunOnUIThread) 
+    
+    # Act
+    [API.Test.InternalAPITestHook]::InstallLatestPackageAsyncApi("TestPackage.ListedStable", $false, $RunOnUIThread)
+
+    # Assert
+    Assert-Package $p TestPackage.ListedStable 2.0.6
+}
+
+function Test-InstallPackageAsyncAPI
+{
+    param($context, $testCase)
+
+    # Arrange
+    $p = New-ClassLibrary
+    $RunOnUIThread = [System.Convert]::ToBoolean($testCase.RunOnUIThread) 
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageAsyncApi($null, "owin", "1.0.0", $RunOnUIThread)
+
+    # Assert
+    Assert-Package $p owin 1.0.0
+}
+
+function Test-InstallPackageAsyncAPIEmptyVersion
+{
+    param($context, $testCase)
+
+    # Arrange
+    $p = New-ClassLibrary
+    $RunOnUIThread = [System.Convert]::ToBoolean($testCase.RunOnUIThread) 
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageAsyncApi($null, "owin", "", $RunOnUIThread)
+
+    # Assert
+    Assert-Package $p owin 1.0.0
+}
+
+function Test-InstallPackageAsyncAPIAllSource
+{
+    param($context, $testCase)
+
+    # Arrange
+    $p = New-ClassLibrary
+    $RunOnUIThread = [System.Convert]::ToBoolean($testCase.RunOnUIThread) 
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageAsyncApi("All", "owin", "1.0.0", $RunOnUIThread)
+
+    # Assert
+    Assert-Package $p owin 1.0.0
+}
+
+function TestCases-InstallLatestStablePackageAsyncAPI 
+{
+    BuildTestCaseObject $true, $false
+}
+
+function TestCases-InstallPackageAsyncAPI 
+{
+    BuildTestCaseObject $true, $false
+}
+
+function TestCases-InstallPackageAsyncAPIEmptyVersion 
+{
+    BuildTestCaseObject $true, $false
+}
+
+function TestCases-InstallPackageAsyncAPIAllSource 
+{
+    BuildTestCaseObject $true, $false
+}
+
+function BuildTestCaseObject([string[]]$TestCases) 
+{		
+    $TestCases | ForEach-Object{		
+        $testCase = New-Object System.Object		
+        $testCase | Add-Member -Type NoteProperty -Name RunOnUIThread -Value $_		
+        $testCase		
+    }		
+}
+
 function Test-InstallLatestStablePackageAPIForOnlyPrerelease
 {
     param($context)

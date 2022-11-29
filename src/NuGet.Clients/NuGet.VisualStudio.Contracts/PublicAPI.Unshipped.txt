@@ -1,1 +1,3 @@
 #nullable enable
+NuGet.VisualStudio.Contracts.INuGetProjectService.InstallLatestPackageAsync(System.Guid projectId, string source, string packageId, bool includePrerelease, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+NuGet.VisualStudio.Contracts.INuGetProjectService.InstallPackageAsync(System.Guid projectId, string source, string packageId, string version, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task

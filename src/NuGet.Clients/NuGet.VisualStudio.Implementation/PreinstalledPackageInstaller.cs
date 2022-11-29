@@ -256,7 +256,7 @@ namespace NuGet.VisualStudio
                                 loggerAdapter);
 
                             // This runs from the UI thread
-                            await _installer.InstallInternalCoreAsync(
+                            await PackageServiceUtilities.InstallInternalCoreAsync(
                                 packageManager,
                                 gatherCache,
                                 nuGetProject,
