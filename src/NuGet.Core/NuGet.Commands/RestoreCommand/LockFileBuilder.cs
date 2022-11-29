@@ -528,7 +528,7 @@ namespace NuGet.Commands
                     CentralPackageVersion centralPackageVersion = targetFrameworkInformation.CentralPackageVersions[node.Item.Key.Name];
                     Dictionary<string, LibraryIncludeFlags> dependenciesIncludeFlags = _includeFlagGraphs[targetGraph];
 
-                    LibraryIncludeFlags suppressParent = LibraryIncludeFlags.None;
+                    LibraryIncludeFlags suppressParent = LibraryIncludeFlags.All;
 
                     if (centralPackageTransitivePinningEnabled)
                     {
@@ -538,12 +538,12 @@ namespace NuGet.Commands
                             LibraryDependency parentDependency = rootNode.Item.Data.Dependencies.FirstOrDefault(i => i.Name.Equals(parentNode.Item.Key.Name, StringComparison.OrdinalIgnoreCase));
 
                             // A transitive dependency that is a few levels deep won't be a top-level dependency so skip it
-                            if (parentDependency == null)
+                            if (parentDependency == null || parentDependency.ReferenceType != LibraryDependencyReferenceType.Direct)
                             {
                                 continue;
                             }
 
-                            suppressParent |= parentDependency.SuppressParent;
+                            suppressParent &= parentDependency.SuppressParent;
                         }
 
                         // If all assets are suppressed then the dependency should not be added

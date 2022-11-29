@@ -2629,7 +2629,7 @@ namespace NuGet.Commands.Test
                                 TypeConstraint = LibraryDependencyTarget.Package,
                             },
                             VersionCentrallyManaged = true,
-                            SuppressParent = LibraryIncludeFlags.Runtime
+                            SuppressParent = LibraryIncludeFlags.Runtime | LibraryIncludeFlags.ContentFiles,
                         },
                         new LibraryDependency()
                         {
@@ -2639,7 +2639,7 @@ namespace NuGet.Commands.Test
                                 TypeConstraint = LibraryDependencyTarget.Package,
                             },
                             VersionCentrallyManaged = true,
-                            SuppressParent = LibraryIncludeFlags.Analyzers
+                            SuppressParent = LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.ContentFiles,
                         },
                     },
                     new List<CentralPackageVersion>
@@ -2672,8 +2672,6 @@ namespace NuGet.Commands.Test
                 var result = await restoreCommand.ExecuteAsync();
                 var lockFile = result.LockFile;
 
-                var targetLib = lockFile.Targets.First().Libraries.Where(l => l.Name == packageA.Id).FirstOrDefault();
-
                 // Assert
                 Assert.True(result.Success);
                 Assert.Equal(1, lockFile.CentralTransitiveDependencyGroups.Count);
@@ -2684,7 +2682,7 @@ namespace NuGet.Commands.Test
 
                 LibraryDependency transitiveDependencyC = transitiveDependencies.Single(i => i.Name.Equals(packageC2_0.Id));
 
-                Assert.Equal(LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Analyzers, transitiveDependencyC.SuppressParent);
+                Assert.Equal(LibraryIncludeFlags.ContentFiles, transitiveDependencyC.SuppressParent);
             }
         }
 
