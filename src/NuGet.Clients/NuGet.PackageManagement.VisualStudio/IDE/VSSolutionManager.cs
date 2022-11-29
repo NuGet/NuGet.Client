@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -67,6 +66,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool _initialized;
         private bool _cacheInitialized;
+        private string _solutionDirectory;
 
         //add solutionOpenedRasied to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
         private bool _solutionOpenedRaised;
@@ -434,34 +434,33 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
-        private string _solutionDir;
         public string SolutionDirectory
         {
             get
             {
-                if (!string.IsNullOrEmpty(_solutionDir))
+                if (!string.IsNullOrEmpty(_solutionDirectory))
                 {
-                    return _solutionDir;
+                    return _solutionDirectory;
                 }
 
-                _solutionDir = NuGetUIThreadHelper.JoinableTaskFactory.Run(GetSolutionDirectoryAsync);
-                return _solutionDir;
+                _solutionDirectory = NuGetUIThreadHelper.JoinableTaskFactory.Run(GetSolutionDirectoryAsync);
+                return _solutionDirectory;
             }
         }
 
         public async Task<string> GetSolutionDirectoryAsync()
         {
-            if (!string.IsNullOrEmpty(_solutionDir))
+            if (!string.IsNullOrEmpty(_solutionDirectory))
             {
-                return _solutionDir;
+                return _solutionDirectory;
             }
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var vsSolution = await _asyncVSSolution.GetValueAsync();
             if (IsSolutionOpenFromVSSolution(vsSolution))
             {
-                _solutionDir = (string)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_SolutionDirectory);
-                return _solutionDir;
+                _solutionDirectory = (string)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_SolutionDirectory);
+                return _solutionDirectory;
             }
             return null;
         }
@@ -544,7 +543,7 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionClosed?.Invoke(this, EventArgs.Empty);
 
             _solutionOpenedRaised = false;
-            _solutionDir = null;
+            _solutionDirectory = null;
         }
 
         private void OnBeforeClosing()
