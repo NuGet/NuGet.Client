@@ -177,6 +177,72 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
+        private static int HandleCommandException(Exception e, string[] args, CommandOutputLogger log)
+        {
+            bool handled = false;
+            string verb = null;
+            int exitCode = 0;
+            if (args.Length > 1)
+            {
+                // Redirect users nicely if they do 'dotnet nuget sources add' or 'dotnet nuget add sources'
+                if (StringComparer.OrdinalIgnoreCase.Compare(args[0], "sources") == 0)
+                {
+                    verb = args[1];
+                }
+                else if (StringComparer.OrdinalIgnoreCase.Compare(args[1], "sources") == 0)
+                {
+                    verb = args[0];
+                }
+
+                if (verb != null)
+                {
+                    switch (verb.ToLowerInvariant())
+                    {
+                        case "add":
+                        case "remove":
+                        case "update":
+                        case "enable":
+                        case "disable":
+                        case "list":
+                            log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                                Strings.Sources_Redirect, $"dotnet nuget {verb} source"));
+                            handled = true;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            if (!handled)
+            {
+                // Log the error
+                if (ExceptionLogger.Instance.ShowStack)
+                {
+                    log.LogError(e.ToString());
+                }
+                else
+                {
+                    log.LogError(ExceptionUtilities.DisplayMessage(e));
+                }
+
+                // Log the stack trace as verbose output.
+                log.LogVerbose(e.ToString());
+
+                exitCode = 1;
+
+                ShowBestHelp(app, args);
+            }
+
+            // Limit the exit code range to 0-255 to support POSIX
+            if (exitCode < 0 || exitCode> 255)
+            {
+                exitCode = 1;
+            }
+
+            return exitCode;
+        }
+
         private static Func<ILogger> GenerateLoggerHidePrefix(CommandOutputLogger log)
         {
             return () =>

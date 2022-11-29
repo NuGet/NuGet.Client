@@ -38,8 +38,9 @@ foreach (XElement verb in allElements)
     internal partial class <#= commandFormalName #><#= verb.Name.LocalName #>Parser
     {
         internal static Func<ILogger> GetLoggerFunction;
+        internal static Action<Exception> CommandExceptionHandler;
 
-        internal static Command Register(Command app, Func<ILogger> getLogger)
+        internal static Command Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
         {
             var <#= commandFormalNameVar #> = new Command(name: "<#= commandName #>", description: Strings.<#= getCommandHelpString(verb, $"{commandFormalName}_Description") #>);
 
@@ -78,6 +79,7 @@ foreach (XElement verb in allElements)
 #>
 
             GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
             app.AddCommand(<#= commandFormalNameVar #>);
 
             return <#= commandFormalNameVar #>;

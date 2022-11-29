@@ -15,8 +15,9 @@ namespace NuGet.CommandLine.XPlat.Commands
     internal partial class AddVerbParser
     {
         internal static Func<ILogger> GetLoggerFunction;
+        internal static Action<Exception> CommandExceptionHandler;
 
-        internal static Command Register(Command app, Func<ILogger> getLogger)
+        internal static Command Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
         {
             var AddCmd = new Command(name: "add", description: Strings.Add_Description);
 
@@ -39,6 +40,7 @@ namespace NuGet.CommandLine.XPlat.Commands
             AddCmd.AddCommand(ClientCertCmd);
 
             GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
             app.AddCommand(AddCmd);
 
             return AddCmd;
@@ -84,7 +86,14 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
-                AddSourceRunner.Run(args, getLogger);
+                try
+                {
+                    AddSourceRunner.Run(args, getLogger);
+                }
+                catch (Exception e)
+                {
+                    CommandExceptionHandler(e);
+                }
             }, new AddSourceCustomBinder(source_Argument, name_Option, username_Option, password_Option, storePasswordInClearText_Option, validAuthenticationTypes_Option, configfile_Option));
         }
 
@@ -143,7 +152,14 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
-                AddClientCertRunner.Run(args, getLogger);
+                try
+                {
+                    AddClientCertRunner.Run(args, getLogger);
+                }
+                catch (Exception e)
+                {
+                    CommandExceptionHandler(e);
+                }
             }, new AddClientCertCustomBinder(packageSource_Option, path_Option, password_Option, storePasswordInClearText_Option, storeLocation_Option, storeName_Option, findBy_Option, findValue_Option, force_Option, configfile_Option));
         }
     } // end class
@@ -151,8 +167,9 @@ namespace NuGet.CommandLine.XPlat.Commands
     internal partial class DisableVerbParser
     {
         internal static Func<ILogger> GetLoggerFunction;
+        internal static Action<Exception> CommandExceptionHandler;
 
-        internal static Command Register(Command app, Func<ILogger> getLogger)
+        internal static Command Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
         {
             var DisableCmd = new Command(name: "disable", description: Strings.Disable_Description);
 
@@ -167,6 +184,7 @@ namespace NuGet.CommandLine.XPlat.Commands
             DisableCmd.AddCommand(SourceCmd);
 
             GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
             app.AddCommand(DisableCmd);
 
             return DisableCmd;
@@ -187,7 +205,14 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
-                DisableSourceRunner.Run(args, getLogger);
+                try
+                {
+                    DisableSourceRunner.Run(args, getLogger);
+                }
+                catch (Exception e)
+                {
+                    CommandExceptionHandler(e);
+                }
             }, new DisableSourceCustomBinder(name_Argument, configfile_Option));
         }
     } // end class
@@ -195,8 +220,9 @@ namespace NuGet.CommandLine.XPlat.Commands
     internal partial class EnableVerbParser
     {
         internal static Func<ILogger> GetLoggerFunction;
+        internal static Action<Exception> CommandExceptionHandler;
 
-        internal static Command Register(Command app, Func<ILogger> getLogger)
+        internal static Command Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
         {
             var EnableCmd = new Command(name: "enable", description: Strings.Enable_Description);
 
@@ -211,6 +237,7 @@ namespace NuGet.CommandLine.XPlat.Commands
             EnableCmd.AddCommand(SourceCmd);
 
             GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
             app.AddCommand(EnableCmd);
 
             return EnableCmd;
@@ -231,7 +258,14 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
-                EnableSourceRunner.Run(args, getLogger);
+                try
+                {
+                    EnableSourceRunner.Run(args, getLogger);
+                }
+                catch (Exception e)
+                {
+                    CommandExceptionHandler(e);
+                }
             }, new EnableSourceCustomBinder(name_Argument, configfile_Option));
         }
     } // end class
@@ -239,8 +273,9 @@ namespace NuGet.CommandLine.XPlat.Commands
     internal partial class ListVerbParser
     {
         internal static Func<ILogger> GetLoggerFunction;
+        internal static Action<Exception> CommandExceptionHandler;
 
-        internal static Command Register(Command app, Func<ILogger> getLogger)
+        internal static Command Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
         {
             var ListCmd = new Command(name: "list", description: Strings.List_Description);
 
@@ -263,6 +298,7 @@ namespace NuGet.CommandLine.XPlat.Commands
             ListCmd.AddCommand(ClientCertCmd);
 
             GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
             app.AddCommand(ListCmd);
 
             return ListCmd;
@@ -283,7 +319,14 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
-                ListSourceRunner.Run(args, getLogger);
+                try
+                {
+                    ListSourceRunner.Run(args, getLogger);
+                }
+                catch (Exception e)
+                {
+                    CommandExceptionHandler(e);
+                }
             }, new ListSourceCustomBinder(format_Option, configfile_Option));
         }
 
@@ -297,7 +340,14 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
-                ListClientCertRunner.Run(args, getLogger);
+                try
+                {
+                    ListClientCertRunner.Run(args, getLogger);
+                }
+                catch (Exception e)
+                {
+                    CommandExceptionHandler(e);
+                }
             }, new ListClientCertCustomBinder(configfile_Option));
         }
     } // end class
@@ -305,8 +355,9 @@ namespace NuGet.CommandLine.XPlat.Commands
     internal partial class RemoveVerbParser
     {
         internal static Func<ILogger> GetLoggerFunction;
+        internal static Action<Exception> CommandExceptionHandler;
 
-        internal static Command Register(Command app, Func<ILogger> getLogger)
+        internal static Command Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
         {
             var RemoveCmd = new Command(name: "remove", description: Strings.Remove_Description);
 
@@ -329,6 +380,7 @@ namespace NuGet.CommandLine.XPlat.Commands
             RemoveCmd.AddCommand(ClientCertCmd);
 
             GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
             app.AddCommand(RemoveCmd);
 
             return RemoveCmd;
@@ -349,7 +401,14 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
-                RemoveSourceRunner.Run(args, getLogger);
+                try
+                {
+                    RemoveSourceRunner.Run(args, getLogger);
+                }
+                catch (Exception e)
+                {
+                    CommandExceptionHandler(e);
+                }
             }, new RemoveSourceCustomBinder(name_Argument, configfile_Option));
         }
 
@@ -368,7 +427,14 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
-                RemoveClientCertRunner.Run(args, getLogger);
+                try
+                {
+                    RemoveClientCertRunner.Run(args, getLogger);
+                }
+                catch (Exception e)
+                {
+                    CommandExceptionHandler(e);
+                }
             }, new RemoveClientCertCustomBinder(packageSource_Option, configfile_Option));
         }
     } // end class
@@ -376,8 +442,9 @@ namespace NuGet.CommandLine.XPlat.Commands
     internal partial class UpdateVerbParser
     {
         internal static Func<ILogger> GetLoggerFunction;
+        internal static Action<Exception> CommandExceptionHandler;
 
-        internal static Command Register(Command app, Func<ILogger> getLogger)
+        internal static Command Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
         {
             var UpdateCmd = new Command(name: "update", description: Strings.Update_Description);
 
@@ -400,6 +467,7 @@ namespace NuGet.CommandLine.XPlat.Commands
             UpdateCmd.AddCommand(ClientCertCmd);
 
             GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
             app.AddCommand(UpdateCmd);
 
             return UpdateCmd;
@@ -445,7 +513,14 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
-                UpdateSourceRunner.Run(args, getLogger);
+                try
+                {
+                    UpdateSourceRunner.Run(args, getLogger);
+                }
+                catch (Exception e)
+                {
+                    CommandExceptionHandler(e);
+                }
             }, new UpdateSourceCustomBinder(name_Argument, source_Option, username_Option, password_Option, storePasswordInClearText_Option, validAuthenticationTypes_Option, configfile_Option));
         }
 
@@ -504,7 +579,14 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
-                UpdateClientCertRunner.Run(args, getLogger);
+                try
+                {
+                    UpdateClientCertRunner.Run(args, getLogger);
+                }
+                catch (Exception e)
+                {
+                    CommandExceptionHandler(e);
+                }
             }, new UpdateClientCertCustomBinder(packageSource_Option, path_Option, password_Option, storePasswordInClearText_Option, storeLocation_Option, storeName_Option, findBy_Option, findValue_Option, force_Option, configfile_Option));
         }
     } // end class

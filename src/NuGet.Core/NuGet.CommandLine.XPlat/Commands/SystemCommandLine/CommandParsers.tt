@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.XPlat.Commands
 {
     internal static class CommandParsers
     {
-        public static void Register(Command app, Func<ILogger> getLogger)
+        public static void Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
         {
 <#
  foreach (XElement command in commands.Descendants(XName.Get("Verb","")))
@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.XPlat.Commands
     string verbName = command.Attribute(XName.Get("Name", "")).Value;
     string verbFormalName = InitCaps(verbName);
 #>
-            <#= verbFormalName #>VerbParser.Register(app, getLogger);
+            <#= verbFormalName #>VerbParser.Register(app, getLogger, commandExceptionHandler);
 <#
  }
 #>
@@ -44,7 +44,7 @@ namespace NuGet.CommandLine.XPlat.Commands
     string commandName = command.Attribute(XName.Get("Name", "")).Value;
     string commandFormalName = InitCaps(commandName);
 #>
-            <#= commandFormalName #>CommandParser.Register(app, getLogger);
+            <#= commandFormalName #>CommandParser.Register(app, getLogger, commandExceptionHandler);
 <#
 } // End of CommandParser class
 #>
