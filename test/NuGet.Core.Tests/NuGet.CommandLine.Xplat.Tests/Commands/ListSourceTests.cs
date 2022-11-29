@@ -23,7 +23,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             var newCli = new RootCommand();
             var testLoggerNew = new TestLogger();
-            NuGet.CommandLine.XPlat.Commands.ListVerbParser.Register(newCli, () => testLoggerNew);
+            NuGet.CommandLine.XPlat.Commands.ListVerbParser.Register(newCli, () => testLoggerNew, e => NuGet.CommandLine.XPlat.Program.LogException(e, testLoggerNew));
 
             // Act
             int statusCurrent = currentCli.Execute(cmd);

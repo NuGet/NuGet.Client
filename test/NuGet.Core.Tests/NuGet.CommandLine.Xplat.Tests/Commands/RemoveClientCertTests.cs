@@ -24,7 +24,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             var addClientCertCli = new RootCommand();
             var addClientCertLogger = new TestLogger();
-            NuGet.CommandLine.XPlat.Commands.AddVerbParser.Register(addClientCertCli, () => addClientCertLogger);
+            NuGet.CommandLine.XPlat.Commands.AddVerbParser.Register(addClientCertCli, () => addClientCertLogger, e => NuGet.CommandLine.XPlat.Program.LogException(e, addClientCertLogger));
             int addClientCertStatus = addClientCertCli.Invoke(addCertCMD);
             Assert.Equal(0, addClientCertStatus);
             string nuGetConfigWithFile = File.ReadAllText(certData.ConfigFile);
@@ -35,7 +35,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             var newCli = new RootCommand();
             var testLoggerNew = new TestLogger();
-            NuGet.CommandLine.XPlat.Commands.RemoveVerbParser.Register(newCli, () => testLoggerNew);
+            NuGet.CommandLine.XPlat.Commands.RemoveVerbParser.Register(newCli, () => testLoggerNew, e => NuGet.CommandLine.XPlat.Program.LogException(e, testLoggerNew));
 
             var cmd = new[] { "remove", "client-cert", "--package-source", certData.PackageSourceName, "--configfile", certData.ConfigFile };
 

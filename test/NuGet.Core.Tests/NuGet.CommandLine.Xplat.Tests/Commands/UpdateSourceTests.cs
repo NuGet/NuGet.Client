@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             var newCli = new RootCommand();
             var testLoggerNew = new TestLogger();
-            NuGet.CommandLine.XPlat.Commands.UpdateVerbParser.Register(newCli, () => testLoggerNew);
+            NuGet.CommandLine.XPlat.Commands.UpdateVerbParser.Register(newCli, () => testLoggerNew, e => NuGet.CommandLine.XPlat.Program.LogException(e, testLoggerNew));
 
             var cmd = new[] { "update", "source", "src", "--source", newSource, "--configfile", file1 };
 

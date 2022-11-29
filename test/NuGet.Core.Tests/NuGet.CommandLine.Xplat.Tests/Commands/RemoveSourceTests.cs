@@ -33,7 +33,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             var newCli = new RootCommand();
             var testLoggerNew = new TestLogger();
-            NuGet.CommandLine.XPlat.Commands.RemoveVerbParser.Register(newCli, () => testLoggerNew);
+            NuGet.CommandLine.XPlat.Commands.RemoveVerbParser.Register(newCli, () => testLoggerNew, e => NuGet.CommandLine.XPlat.Program.LogException(e, testLoggerNew));
 
             // Act
             File.WriteAllText(configFile, configFileSample); // Prepare config file

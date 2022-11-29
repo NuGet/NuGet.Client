@@ -24,7 +24,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             var newCli = new RootCommand();
             var testLoggerNew = new TestLogger();
-            NuGet.CommandLine.XPlat.Commands.AddVerbParser.Register(newCli, () => testLoggerNew);
+            NuGet.CommandLine.XPlat.Commands.AddVerbParser.Register(newCli, () => testLoggerNew, e => NuGet.CommandLine.XPlat.Program.LogException(e, testLoggerNew));
 
             certData.SetupCertificateInStorage();
 
