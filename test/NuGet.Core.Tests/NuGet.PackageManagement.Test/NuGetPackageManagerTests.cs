@@ -4482,7 +4482,7 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
             {
                 TestSourceRepositoryUtility.V3PackageSource,
-                new NuGet.Configuration.PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
+                new NuGet.Configuration.PackageSource("https://www.nuget.org"),
             });
 
             using (var testSolutionManager = new TestSolutionManager())

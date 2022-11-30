@@ -161,7 +161,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
+        [Theory(Skip = "")]
         [InlineData("1.0.0")]
         [InlineData("*")]
         [InlineData("1.*")]
@@ -642,7 +642,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
+        [Theory(Skip = "")]
         [InlineData("net46", "net46; netcoreapp1.0", "net46")]
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46")]
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0")]
@@ -803,7 +803,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Theory]
+        [Theory(Skip = "")]
         [InlineData("net46; netcoreapp1.0", "0.0.5", "1.0.0", false)]
         [InlineData("net46; netcoreapp1.0", "0.0.5", "0.9", false)]
         [InlineData("net46; netcoreapp1.0", "0.0.5", "*", false)]
