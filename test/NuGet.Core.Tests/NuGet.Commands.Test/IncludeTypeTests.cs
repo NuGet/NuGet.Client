@@ -1775,11 +1775,6 @@ namespace NuGet.Commands.Test
                 var project1Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project1"));
                 var project2Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project2"));
                 var project3Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project3"));
-                var globalPackages = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "globalPackages"));
-                var packageSource = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "packageSource"));
-
-                globalPackages.Create();
-                packageSource.Create();
 
                 var project3Spec = PackageReferenceSpecBuilder.Create("Project3", project3Directory.FullName)
                     .WithTargetFrameworks(new[]
@@ -1839,16 +1834,13 @@ namespace NuGet.Commands.Test
 
                 var restoreContext = new RestoreArgs()
                 {
-                    Sources = new List<string>() { packageSource.FullName },
-                    GlobalPackagesFolder = globalPackages.FullName,
+                    Sources = new List<string>() { tmpPath.PackageSource },
+                    GlobalPackagesFolder = tmpPath.UserPackagesFolder,
                     Log = logger,
                     CacheContext = new TestSourceCacheContext(),
                 };
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(
-                    packageSource.FullName,
-                    packageA);
-
+                await SimpleTestPackageUtility.CreatePackagesAsync(tmpPath.PackageSource, packageA);
                 var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, project1Spec, project2Spec, project3Spec);
 
                 // Act
@@ -1859,6 +1851,10 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result1.Success);
                 Assert.Equal(includeFlags, lockFile1.CentralTransitiveDependencyGroups.Single().TransitiveDependencies.Single().IncludeType);
+
+                var targetLibrary = lockFile1.Targets.Single().Libraries.Single(x => x.Name == packageA.Id);
+                Assert.EndsWith((includeFlags & LibraryIncludeFlags.Compile) == LibraryIncludeFlags.Compile ? "a.dll" : "_._", targetLibrary.CompileTimeAssemblies.Single().Path);
+                Assert.EndsWith((includeFlags & LibraryIncludeFlags.Runtime) == LibraryIncludeFlags.Runtime ? "a.dll" : "_._", targetLibrary.RuntimeAssemblies.Single().Path);
             }
         }
 
