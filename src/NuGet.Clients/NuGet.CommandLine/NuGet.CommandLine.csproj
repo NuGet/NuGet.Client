@@ -80,9 +80,9 @@
       <DependentUpon>NuGetResources.resx</DependentUpon>
     </Compile>
     <!-- nuget.exe localized assemblies -->
-    <EmbeddedResource Include="$(OutputPath)\**\$(AssemblyName).resources.dll" Exclude="@(MergeExclude)" />
+    <EmbeddedResource Include="$(OutputPath)\**\$(AssemblyName).resources.dll" />
     <!-- NuGet.Commands localized assemblies -->
-    <LocResource Include="$(OutputPath)\**\NuGet.Commands.resources.dll" Exclude="@(MergeExclude)" />
+    <LocResource Include="$(OutputPath)\**\NuGet.Commands.resources.dll" />
   </ItemGroup>
 
   <ItemGroup>
