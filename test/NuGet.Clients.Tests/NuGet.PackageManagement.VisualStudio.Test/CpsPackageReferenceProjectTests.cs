@@ -2871,6 +2871,42 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public async Task GetInstalledPackagesAsync_WithMultipleCalls_DoesNotDeadlockAsync()
+        {
+            // Arrange
+            using var testContext = new SimpleTestPathContext();
+            await CreatePackagesAsync(testContext);
+
+            var project = await PrepareTestProjectAsync(testContext) as CpsPackageReferenceProject;
+
+            var tasks = new []
+            {
+                project.GetInstalledPackagesAsync(CancellationToken.None),
+                project.GetInstalledPackagesAsync(CancellationToken.None),
+                project.GetInstalledPackagesAsync(CancellationToken.None),
+                project.GetInstalledPackagesAsync(CancellationToken.None),
+                project.GetInstalledPackagesAsync(CancellationToken.None),
+            };
+
+            // Act
+            Parallel.ForEach(tasks, tsk =>
+            {
+                if (tsk.Status == TaskStatus.Created)
+                {
+                    tsk.Start();
+                }
+            });
+            IEnumerable<PackageReference>[] results = await Task.WhenAll(tasks);
+            IEnumerable<PackageReference> first = results[0];
+
+            // Assert
+            results.Should().AllBeEquivalentTo(first);
+
+            Assert.Collection(first,
+                elem => Assert.Equal(new PackageIdentity("PackageA", NuGetVersion.Parse("2.15.3")), elem.PackageIdentity));
+        }
+
+        [Fact]
         public async Task GetInstalledPackages_WithNominationUpdate_ReloadsCache()
         {
             using (var testContext = new SimpleTestPathContext())
