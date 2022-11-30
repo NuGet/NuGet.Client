@@ -219,7 +219,7 @@ Function Install-DotnetCLI {
             $stringReader = New-Object -TypeName System.IO.StringReader -ArgumentList $versionFile
             
             [int]$count = 0
-            while ( $line = $stringReader.ReadLine() ) {                
+            while ( $line = $stringReader.ReadLine() ) {
                 if ($count -eq 0) {
                     $specificVersion = $line.trim()
                 }

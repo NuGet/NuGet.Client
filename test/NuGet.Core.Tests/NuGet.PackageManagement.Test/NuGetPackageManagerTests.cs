@@ -4492,7 +4492,7 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[]
             {
                 TestSourceRepositoryUtility.V3PackageSource,
-                new NuGet.Configuration.PackageSource("https://www.nuget.org"),
+                new NuGet.Configuration.PackageSource(NuGetConstants.V3FeedUrl),
             });
 
             using (var testSolutionManager = new TestSolutionManager())
