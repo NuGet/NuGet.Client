@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -101,28 +101,45 @@ namespace NuGet.CommandLine.XPlat
             ParseResult result = command.Parse(args);
             if (result.Errors.Any())
             {
+                // Run with CommandLineUtils
                 try
                 {
                     exitCode = app.Execute(args);
                 }
                 catch (Exception e)
                 {
-                    exitCode = HandleCommandException(e, args, log, app);
+                    bool handled = HandleCommandLineHelp(args, log);
+                    if (!handled)
+                    {
+                        LogException(e, log);
+                        ShowBestHelp(app, args);
+                    }
+
+                    exitCode = 1;
+                }
+                finally
+                {
+                    // Limit the exit code range to 0-255 to support POSIX
+                    if (exitCode < 0 || exitCode > 255)
+                    {
+                        exitCode = 1;
+                    }
                 }
             }
             else
             {
+                // Run with System.CommandLine
                 exitCode = command.Invoke(args);
             }
 
             return exitCode;
         }
 
-        private static int HandleCommandException(Exception e, string[] args, CommandOutputLogger log, CommandLineApplication app)
+        private static bool HandleCommandLineHelp(string[] args, CommandOutputLogger log)
         {
-            bool handled = false;
             string verb = null;
-            int exitCode = 0;
+            bool handled = false;
+
             if (args.Length > 1)
             {
                 // Redirect users nicely if they do 'dotnet nuget sources add' or 'dotnet nuget add sources'
@@ -154,22 +171,7 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
-            if (!handled)
-            {
-                LogException(e, log);
-
-                exitCode = 1;
-
-                ShowBestHelp(app, args);
-            }
-
-            // Limit the exit code range to 0-255 to support POSIX
-            if (exitCode < 0 || exitCode > 255)
-            {
-                exitCode = 1;
-            }
-
-            return exitCode;
+            return handled;
         }
 
         internal static void LogException(Exception e, ILogger log)

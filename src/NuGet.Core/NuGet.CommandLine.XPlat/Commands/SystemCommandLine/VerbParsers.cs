@@ -9,6 +9,7 @@ using System;
 using System.CommandLine;
 using NuGet.Commands;
 using NuGet.Common;
+using System.Threading.Tasks;
 
 namespace NuGet.CommandLine.XPlat.Commands
 {
@@ -86,14 +87,18 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
+                int exitCode;
                 try
                 {
                     AddSourceRunner.Run(args, getLogger);
+                    exitCode = 0;
                 }
                 catch (Exception e)
                 {
                     CommandExceptionHandler(e);
+                    exitCode = 1;
                 }
+                return Task.FromResult(exitCode);
             }, new AddSourceCustomBinder(source_Argument, name_Option, username_Option, password_Option, storePasswordInClearText_Option, validAuthenticationTypes_Option, configfile_Option));
         }
 
@@ -152,14 +157,18 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
+                int exitCode;
                 try
                 {
                     AddClientCertRunner.Run(args, getLogger);
+                    exitCode = 0;
                 }
                 catch (Exception e)
                 {
                     CommandExceptionHandler(e);
+                    exitCode = 1;
                 }
+                return Task.FromResult(exitCode);
             }, new AddClientCertCustomBinder(packageSource_Option, path_Option, password_Option, storePasswordInClearText_Option, storeLocation_Option, storeName_Option, findBy_Option, findValue_Option, force_Option, configfile_Option));
         }
     } // end class
@@ -205,14 +214,18 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
+                int exitCode;
                 try
                 {
                     DisableSourceRunner.Run(args, getLogger);
+                    exitCode = 0;
                 }
                 catch (Exception e)
                 {
                     CommandExceptionHandler(e);
+                    exitCode = 1;
                 }
+                return Task.FromResult(exitCode);
             }, new DisableSourceCustomBinder(name_Argument, configfile_Option));
         }
     } // end class
@@ -258,14 +271,18 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
+                int exitCode;
                 try
                 {
                     EnableSourceRunner.Run(args, getLogger);
+                    exitCode = 0;
                 }
                 catch (Exception e)
                 {
                     CommandExceptionHandler(e);
+                    exitCode = 1;
                 }
+                return Task.FromResult(exitCode);
             }, new EnableSourceCustomBinder(name_Argument, configfile_Option));
         }
     } // end class
@@ -319,14 +336,18 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
+                int exitCode;
                 try
                 {
                     ListSourceRunner.Run(args, getLogger);
+                    exitCode = 0;
                 }
                 catch (Exception e)
                 {
                     CommandExceptionHandler(e);
+                    exitCode = 1;
                 }
+                return Task.FromResult(exitCode);
             }, new ListSourceCustomBinder(format_Option, configfile_Option));
         }
 
@@ -340,14 +361,18 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
+                int exitCode;
                 try
                 {
                     ListClientCertRunner.Run(args, getLogger);
+                    exitCode = 0;
                 }
                 catch (Exception e)
                 {
                     CommandExceptionHandler(e);
+                    exitCode = 1;
                 }
+                return Task.FromResult(exitCode);
             }, new ListClientCertCustomBinder(configfile_Option));
         }
     } // end class
@@ -401,14 +426,18 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
+                int exitCode;
                 try
                 {
                     RemoveSourceRunner.Run(args, getLogger);
+                    exitCode = 0;
                 }
                 catch (Exception e)
                 {
                     CommandExceptionHandler(e);
+                    exitCode = 1;
                 }
+                return Task.FromResult(exitCode);
             }, new RemoveSourceCustomBinder(name_Argument, configfile_Option));
         }
 
@@ -427,14 +456,18 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
+                int exitCode;
                 try
                 {
                     RemoveClientCertRunner.Run(args, getLogger);
+                    exitCode = 0;
                 }
                 catch (Exception e)
                 {
                     CommandExceptionHandler(e);
+                    exitCode = 1;
                 }
+                return Task.FromResult(exitCode);
             }, new RemoveClientCertCustomBinder(packageSource_Option, configfile_Option));
         }
     } // end class
@@ -513,14 +546,18 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
+                int exitCode;
                 try
                 {
                     UpdateSourceRunner.Run(args, getLogger);
+                    exitCode = 0;
                 }
                 catch (Exception e)
                 {
                     CommandExceptionHandler(e);
+                    exitCode = 1;
                 }
+                return Task.FromResult(exitCode);
             }, new UpdateSourceCustomBinder(name_Argument, source_Option, username_Option, password_Option, storePasswordInClearText_Option, validAuthenticationTypes_Option, configfile_Option));
         }
 
@@ -579,14 +616,18 @@ namespace NuGet.CommandLine.XPlat.Commands
             // Create handler delegate handler for cmd
             cmd.SetHandler((args) =>
             {
+                int exitCode;
                 try
                 {
                     UpdateClientCertRunner.Run(args, getLogger);
+                    exitCode = 0;
                 }
                 catch (Exception e)
                 {
                     CommandExceptionHandler(e);
+                    exitCode = 1;
                 }
+                return Task.FromResult(exitCode);
             }, new UpdateClientCertCustomBinder(packageSource_Option, path_Option, password_Option, storePasswordInClearText_Option, storeLocation_Option, storeName_Option, findBy_Option, findValue_Option, force_Option, configfile_Option));
         }
     } // end class

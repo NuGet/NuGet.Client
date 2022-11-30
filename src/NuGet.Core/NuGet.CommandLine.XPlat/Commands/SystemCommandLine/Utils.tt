@@ -333,18 +333,22 @@ public class OptionData
         WriteLine($"{commandNameVar}.SetHandler((args) =>");
         WriteLine("{");
         PushIndent(Indent(4));
+        WriteLine("int exitCode;");
         WriteLine("try");
         WriteLine("{");
         PushIndent(Indent(4));
         WriteLine($"{runnerClassName}.Run(args, getLogger);"); // logger comes from param arg
+        WriteLine("exitCode = 0;");
         PopIndent();
         WriteLine("}");
         WriteLine("catch (Exception e)");
         WriteLine("{");
         PushIndent(Indent(4));
         WriteLine("CommandExceptionHandler(e);");
+        WriteLine("exitCode = 1;");
         PopIndent();
         WriteLine("}");
+        WriteLine("return Task.FromResult(exitCode);");
         PopIndent();
         Write($"}}, new {binderClassName}(");
         Write(GenerateCommandHandlerFunctionArgs(options, hasInitialComma: false, hasInitialSpace: false));

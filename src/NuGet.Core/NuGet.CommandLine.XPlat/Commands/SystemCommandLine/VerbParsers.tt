@@ -22,6 +22,7 @@ using System;
 using System.CommandLine;
 using NuGet.Commands;
 using NuGet.Common;
+using System.Threading.Tasks;
 
 namespace NuGet.CommandLine.XPlat.Commands
 {
