@@ -62,8 +62,7 @@ namespace NuGet.CommandLine.Test
 
         private static void BackupAndDeleteDefaultConfigurationFile()
         {
-            string appDataPath = NuGetEnvironment.GetFolderPath(NuGetEnvironment.SpecialFolder.ApplicationData);
-            string defaultConfigurationFile = Path.Combine(appDataPath, "NuGet", "NuGet.Config");
+            string defaultConfigurationFile = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory), "NuGet.Config");
             string backupFileName = defaultConfigurationFile + ".backup";
 
             if (File.Exists(defaultConfigurationFile))
@@ -75,8 +74,7 @@ namespace NuGet.CommandLine.Test
 
         private static void RestoreDefaultConfigurationFile()
         {
-            string appDataPath = NuGetEnvironment.GetFolderPath(NuGetEnvironment.SpecialFolder.ApplicationData);
-            string defaultConfigurationFile = Path.Combine(appDataPath, "NuGet", "NuGet.Config");
+            string defaultConfigurationFile = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory), "NuGet.Config");
             string backupFileName = defaultConfigurationFile + ".backup";
 
             if (File.Exists(backupFileName))

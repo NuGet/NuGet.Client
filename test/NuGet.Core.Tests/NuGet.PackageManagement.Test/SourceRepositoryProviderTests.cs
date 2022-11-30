@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Common;
 using Test.Utility;
 using Xunit;
 
@@ -15,7 +15,7 @@ namespace NuGet.Test
         public void TestSourceRepoPackageSourcesChanged()
         {
             // Arrange
-            var localAppDataPath = NuGetEnvironment.GetFolderPath(NuGetEnvironment.SpecialFolder.LocalApplicationData);
+            var localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var localPackageSource = new Configuration.PackageSource(localAppDataPath);
             var oldPackageSources = new List<Configuration.PackageSource> { localPackageSource };
             var packageSourceProvider = new TestPackageSourceProvider(oldPackageSources);
