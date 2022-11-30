@@ -20,9 +20,9 @@
 
 using System;
 using System.CommandLine;
+using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
-using System.Threading.Tasks;
 
 namespace NuGet.CommandLine.XPlat.Commands
 {
@@ -39,9 +39,9 @@ foreach (XElement verb in allElements)
     internal partial class <#= commandFormalName #><#= verb.Name.LocalName #>Parser
     {
         internal static Func<ILogger> GetLoggerFunction;
-        internal static Action<Exception> CommandExceptionHandler;
+        internal static Func<Exception, int> CommandExceptionHandler;
 
-        internal static Command Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
+        internal static Command Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
         {
             var <#= commandFormalNameVar #> = new Command(name: "<#= commandName #>", description: Strings.<#= getCommandHelpString(verb, $"{commandFormalName}_Description") #>);
 

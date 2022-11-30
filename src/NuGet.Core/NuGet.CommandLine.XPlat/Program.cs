@@ -203,7 +203,11 @@ namespace NuGet.CommandLine.XPlat
         {
             var app = new RootCommand();
 
-            Commands.CommandParsers.Register(app, GenerateLoggerHidePrefix(log), e => LogException(e, log));
+            Commands.CommandParsers.Register(app, getLogger: GenerateLoggerHidePrefix(log), commandExceptionHandler: e =>
+            {
+                LogException(e, log);
+                return 1;
+            });
 
             return app;
         }

@@ -13,7 +13,7 @@ namespace NuGet.CommandLine.XPlat.Commands
 {
     internal static class CommandParsers
     {
-        public static void Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
+        public static void Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
         {
             AddVerbParser.Register(app, getLogger, commandExceptionHandler);
             ListVerbParser.Register(app, getLogger, commandExceptionHandler);

@@ -7,18 +7,18 @@
 
 using System;
 using System.CommandLine;
+using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
-using System.Threading.Tasks;
 
 namespace NuGet.CommandLine.XPlat.Commands
 {
     internal partial class AddVerbParser
     {
         internal static Func<ILogger> GetLoggerFunction;
-        internal static Action<Exception> CommandExceptionHandler;
+        internal static Func<Exception, int> CommandExceptionHandler;
 
-        internal static Command Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
+        internal static Command Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
         {
             var AddCmd = new Command(name: "add", description: Strings.Add_Description);
 
@@ -87,8 +87,7 @@ namespace NuGet.CommandLine.XPlat.Commands
                 }
                 catch (Exception e)
                 {
-                    CommandExceptionHandler(e);
-                    exitCode = 1;
+                    exitCode = CommandExceptionHandler(e);
                 }
                 return Task.FromResult(exitCode);
             }, new AddSourceCustomBinder(source_Argument, name_Option, username_Option, password_Option, storePasswordInClearText_Option, validAuthenticationTypes_Option, configfile_Option));
@@ -98,9 +97,9 @@ namespace NuGet.CommandLine.XPlat.Commands
     internal partial class ListVerbParser
     {
         internal static Func<ILogger> GetLoggerFunction;
-        internal static Action<Exception> CommandExceptionHandler;
+        internal static Func<Exception, int> CommandExceptionHandler;
 
-        internal static Command Register(Command app, Func<ILogger> getLogger, Action<Exception> commandExceptionHandler)
+        internal static Command Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
         {
             var ListCmd = new Command(name: "list", description: Strings.List_Description);
 
@@ -144,8 +143,7 @@ namespace NuGet.CommandLine.XPlat.Commands
                 }
                 catch (Exception e)
                 {
-                    CommandExceptionHandler(e);
-                    exitCode = 1;
+                    exitCode = CommandExceptionHandler(e);
                 }
                 return Task.FromResult(exitCode);
             }, new ListSourceCustomBinder(format_Option, configfile_Option));

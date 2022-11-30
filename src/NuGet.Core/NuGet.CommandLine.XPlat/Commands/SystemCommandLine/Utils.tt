@@ -344,8 +344,7 @@ public class OptionData
         WriteLine("catch (Exception e)");
         WriteLine("{");
         PushIndent(Indent(4));
-        WriteLine("CommandExceptionHandler(e);");
-        WriteLine("exitCode = 1;");
+        WriteLine("exitCode = CommandExceptionHandler(e);");
         PopIndent();
         WriteLine("}");
         WriteLine("return Task.FromResult(exitCode);");
