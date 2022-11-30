@@ -18,21 +18,5 @@ namespace NuGet.CommandLine.Xplat.Tests
             Assert.False(loggerNew.Messages.IsEmpty);
             Assert.Equal(loggerCurrent.Messages, loggerNew.Messages);
         }
-
-        internal static SettingSection GetNuGetConfigSection(string configFile, string sectionName)
-        {
-            string configDirectory = Path.GetDirectoryName(configFile);
-            string configFileName = Path.GetFileName(configFile);
-            ISettings settings = Settings.LoadSpecificSettings(configDirectory, configFileName);
-            SettingSection packageSourcesSection = settings.GetSection(sectionName);
-
-            return packageSourcesSection;
-        }
-
-        internal static void AssertDisableSource(string configFile, string sourceName)
-        {
-            SettingSection disabledSources = CommandTestUtils.GetNuGetConfigSection(configFile, "disabledPackageSources");
-            Assert.Collection(disabledSources.Items, elem => Assert.Equal(sourceName, (elem as AddItem).Key));
-        }
     }
 }
