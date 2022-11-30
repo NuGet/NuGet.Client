@@ -28,7 +28,11 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             var newCli = new RootCommand();
             var testLoggerNew = new TestLogger();
-            NuGet.CommandLine.XPlat.Commands.AddVerbParser.Register(newCli, () => testLoggerNew, e => NuGet.CommandLine.XPlat.Program.LogException(e, testLoggerNew));
+            XPlat.Commands.AddVerbParser.Register(newCli, getLogger: () => testLoggerNew, commandExceptionHandler: e =>
+            {
+                XPlat.Program.LogException(e, testLoggerNew);
+                return 1;
+            });
 
             // Act
             int statusCurrent = currentCli.Execute(new[] { "add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", file1 });
