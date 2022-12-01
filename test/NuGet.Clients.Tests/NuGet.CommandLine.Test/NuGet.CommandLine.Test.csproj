@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.CommandLine\NuGet.CommandLine.csproj">
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj">
       <Project>{957c4e99-3644-47dd-8f9a-ae36f41ebe4a}</Project>
       <Name>NuGet.CommandLine</Name>
     </ProjectReference>

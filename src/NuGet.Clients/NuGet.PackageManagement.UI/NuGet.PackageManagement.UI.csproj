@@ -493,7 +493,7 @@
       <Project>{9A9A9F26-597A-4FA6-A4F1-415063484D9C}</Project>
       <Name>NuGet.Frameworks</Name>
     </ProjectReference>
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.Indexing\NuGet.Indexing.csproj">
+    <ProjectReference Include="..\NuGet.Indexing\NuGet.Indexing.csproj">
       <Project>{a2b06fa8-bdbc-4459-a92a-161862b2aa97}</Project>
       <Name>NuGet.Indexing</Name>
     </ProjectReference>

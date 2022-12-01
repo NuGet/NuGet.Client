@@ -35,7 +35,6 @@
     <DotnetExePath Condition=" '$(IsXPlat)' == 'true' ">$(RepositoryRootDirectory)cli\dotnet</DotnetExePath>
     <SharedDirectory>$(BuildCommonDirectory)Shared</SharedDirectory>
     <NuGetCoreSrcDirectory>$(RepositoryRootDirectory)src\NuGet.Core\</NuGetCoreSrcDirectory>
-    <NuGetClientsSrcDirectory>$(RepositoryRootDirectory)src\NuGet.Clients\</NuGetClientsSrcDirectory>
     <NupkgOutputDirectory>$(ArtifactsDirectory)nupkgs\</NupkgOutputDirectory>
     <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
     <ILMergeExePath>$(SolutionPackagesFolder)ilmerge\3.0.21\tools\net452\ILMerge.exe</ILMergeExePath>
