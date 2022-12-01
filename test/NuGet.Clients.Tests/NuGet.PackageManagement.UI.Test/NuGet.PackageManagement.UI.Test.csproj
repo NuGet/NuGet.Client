@@ -69,7 +69,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
-    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
     <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio.Test\NuGet.PackageManagement.VisualStudio.Test.csproj" />
   </ItemGroup>

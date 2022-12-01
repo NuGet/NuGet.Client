@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Core\Microsoft.Build.NuGetSdkResolver\Microsoft.Build.NuGetSdkResolver.csproj" />
     <ProjectReference Include="..\..\NuGet.Core.Tests\NuGet.CommandLine.Xplat.Tests\NuGet.CommandLine.Xplat.Tests.csproj" />

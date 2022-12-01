@@ -45,7 +45,7 @@
       <Name>NuGet.VisualStudio</Name>
     </ProjectReference>
 
-    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup>
