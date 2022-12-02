@@ -351,8 +351,7 @@ namespace Dotnet.Integration.Test
         private string GetSdkToTest(string sdkDir)
         {
             // The TFM we're testing
-            var testTfm = NuGetFramework.Parse(".NETCoreApp,Version=v3.1");
-                //AssemblyReader.GetTargetFramework(typeof(MsbuildIntegrationTestFixture).Assembly.Location);
+            var testTfm = AssemblyReader.GetTargetFramework(typeof(MsbuildIntegrationTestFixture).Assembly.Location);
 
             var selectedVersion =
                 Directory.EnumerateDirectories(sdkDir) // get all directories in sdk folder
