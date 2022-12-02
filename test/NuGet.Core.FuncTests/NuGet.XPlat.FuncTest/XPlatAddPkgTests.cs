@@ -356,7 +356,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/12284")]
         public async Task AddPkg_UnconditionalAddWithoutVersion_Success()
         {
             // Arrange
@@ -600,7 +600,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/12284")]
         public async Task AddPkg_UnconditionalAddTwoPackages_Success()
         {
             // Arrange
@@ -706,7 +706,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/12284")]
         public async Task AddPkg_UnconditionalAddWithPackageDirectory_Success()
         {
             // Arrange
@@ -869,7 +869,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/12284")]
         public async Task AddPkg_DevelopmentDependency()
         {
             // Arrange
