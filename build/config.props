@@ -43,7 +43,7 @@
     <!--TODO: remove temporary workaround of using LockSDKVersion. Tracking issue: https://github.com/NuGet/Home/issues/9712 -->
     <LockSDKVersion>true</LockSDKVersion>
     <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'false'"></OverrideCliBranchForTesting>
-    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">5.0;3.1</OverrideCliBranchForTesting>
+    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">3.1</OverrideCliBranchForTesting>
     <CliVersionForBuilding>5.0</CliVersionForBuilding>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">master;3.1</CliBranchForTesting>
