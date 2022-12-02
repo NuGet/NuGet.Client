@@ -55,8 +55,8 @@
   <ItemGroup>
     <PackageReference Include="NuGet.Core" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" ExcludeAssets="Runtime" />
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -84,7 +84,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.targets">
+    <EmbeddedResource Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.targets">
       <Link>NuGet.targets</Link>
       <SubType>Designer</SubType>
     </EmbeddedResource>

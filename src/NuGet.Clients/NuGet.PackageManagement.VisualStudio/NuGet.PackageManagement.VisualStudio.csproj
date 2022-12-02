@@ -29,11 +29,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.Indexing\NuGet.Indexing.csproj" />
+    <ProjectReference Include="..\NuGet.Indexing\NuGet.Indexing.csproj" />
     <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
-    <ProjectReference Include="..\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj" />
-    <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
