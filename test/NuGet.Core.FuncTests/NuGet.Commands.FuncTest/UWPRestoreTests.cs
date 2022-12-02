@@ -106,7 +106,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(5, result.GetAllInstalled().Count);
             }
@@ -165,7 +165,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(118, result.GetAllInstalled().Count);
             }
@@ -211,7 +211,7 @@ namespace NuGet.Commands.FuncTest
                 var result2 = await command.ExecuteAsync();
 
                 // Assert
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(result.LockFile, result2.LockFile);
             }
@@ -255,7 +255,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
             }
         }
@@ -316,7 +316,7 @@ namespace NuGet.Commands.FuncTest
                 RemovePackageFolders(lockFileJson);
 
                 // Assert
-                Assert.True(result.Success);
+                Assert.True(result.Success, userMessage: logger.ShowErrors());
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
@@ -383,7 +383,7 @@ namespace NuGet.Commands.FuncTest
                 RemovePackageFolders(lockFileJson);
 
                 // Assert
-                Assert.True(result.Success);
+                Assert.True(result.Success, userMessage: logger.ShowErrors());
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
@@ -436,7 +436,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.True(0 == logger.Errors, logger.ShowMessages());
+                Assert.True(0 == logger.Errors, logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(86, result.GetAllInstalled().Count);
             }
@@ -494,7 +494,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(140, result.GetAllInstalled().Count);
             }

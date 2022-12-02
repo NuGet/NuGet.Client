@@ -56,7 +56,7 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
 
                 // Assert
-                Assert.True(result.Success, "The restore should have succeeded.");
+                Assert.True(result.Success, userMessage: logger.ShowErrors());
 
                 var library = result.LockFile.Libraries
                     .FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Name, "EntityFramework"));
@@ -260,7 +260,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(1, result.RestoreGraphs.Count());
                 var graph = result.RestoreGraphs.First();
                 Assert.Equal(0, graph.Conflicts.Count());
-                Assert.True(result.Success, "The restore should have been successful.");
+                Assert.True(result.Success, userMessage: logger.ShowErrors());
             }
         }
 
@@ -526,7 +526,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(1, result.GetAllInstalled().Count);
                 Assert.Equal("Newtonsoft.Json", result.GetAllInstalled().Single().Name);
@@ -583,7 +583,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(1, result.GetAllInstalled().Count);
                 Assert.Equal("Newtonsoft.Json", result.GetAllInstalled().Single().Name);
@@ -646,7 +646,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(0, result.GetAllInstalled().Count);
             }
@@ -759,7 +759,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(1, result.GetAllInstalled().Count);
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(1, logger.Warnings);
                 Assert.Equal(1, logger.Messages.Where(message => message.Contains(warning)).Count());
             }
@@ -814,7 +814,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(4, result.GetAllInstalled().Count);
                 Assert.Equal("Microsoft.Data.Edm|Microsoft.Data.OData|System.Spatial|WindowsAzure.Storage", dependencies);
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowMessages());
                 Assert.Equal(0, logger.Warnings);
             }
         }
@@ -914,7 +914,7 @@ namespace NuGet.Commands.FuncTest
                 var assemblies2 = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
 
                 // Assert
-                Assert.Equal(2, assemblies.Count);
+                Assert.True(assemblies.Count == 2, userMessage: logger.ShowMessages());
                 Assert.Equal("lib/net45/Newtonsoft.Json.dll", assemblies[1].Path);
                 Assert.Equal(2, assemblies2.Count);
                 Assert.Equal("lib/net45/Newtonsoft.Json.dll", assemblies2[1].Path);
@@ -964,7 +964,7 @@ namespace NuGet.Commands.FuncTest
                 var assemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
 
                 // Assert
-                Assert.Equal(4, assemblies.Count);
+                Assert.True(assemblies.Count == 4, userMessage: logger.ShowMessages());
                 Assert.Equal("lib/40/Newtonsoft.Json.dll", assemblies[2].Path);
             }
         }
@@ -1128,7 +1128,7 @@ namespace NuGet.Commands.FuncTest
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
                 // Assert
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(1, installed.Count);
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal("NuGet.Versioning", installed.Single().Name);
@@ -1177,7 +1177,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal("5.0.4", jsonNetPackage.Version.ToNormalizedString());
 
-                Assert.Equal(1, runtimeAssemblies.Count);
+                Assert.True(runtimeAssemblies.Count == 1, userMessage: logger.ShowMessages());
                 Assert.NotNull(jsonNetReference);
             }
         }
@@ -1299,7 +1299,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
 
-                Assert.Equal(24, runtimeAssemblies.Count);
+                Assert.True(runtimeAssemblies.Count == 24, userMessage: logger.ShowMessages());
                 Assert.NotNull(jsonNetReference);
             }
         }
@@ -1338,7 +1338,7 @@ namespace NuGet.Commands.FuncTest
                 var unresolved = result.GetAllUnresolved();
 
                 // Assert
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, installed.Count);
                 Assert.Equal(0, unresolved.Count);
             }
@@ -1376,7 +1376,7 @@ namespace NuGet.Commands.FuncTest
                 // Assert
                 var pathResolver = new VersionFolderPathResolver(packagesDir);
                 var nuspecPath = pathResolver.GetManifestFilePath("NuGet.Versioning", new NuGetVersion("1.0.7"));
-                Assert.True(File.Exists(nuspecPath));
+                Assert.True(File.Exists(nuspecPath), userMessage: logger.ShowMessages());
             }
         }
 
@@ -1412,7 +1412,7 @@ namespace NuGet.Commands.FuncTest
                 // Assert
                 var pathResolver = new VersionFolderPathResolver(packagesDir);
                 var nuspecPath = pathResolver.GetManifestFilePath("owin", new NuGetVersion("1.0.0"));
-                Assert.True(File.Exists(nuspecPath));
+                Assert.True(File.Exists(nuspecPath), userMessage: logger.ShowMessages());
             }
         }
 
@@ -1529,7 +1529,7 @@ namespace NuGet.Commands.FuncTest
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
                 // Assert
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(1, installed.Count);
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal("Newtonsoft.Json", installed.Single().Name);
@@ -1540,7 +1540,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_NoCompatibleRuntimeAssembliesForProjectAsync()
         {
             // Arrange
@@ -1946,7 +1946,7 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
 
                 // Assert
-                Assert.True(result.Success);
+                Assert.True(result.Success, userMessage: logger.ShowErrors());
             }
         }
 
