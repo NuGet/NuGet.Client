@@ -114,7 +114,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal("loader", exception.ParamName);
         }
 
-        [WpfTheory]
+        [WpfTheory(Skip = "https://github.com/NuGet/Home/issues/10938")]
         [InlineData(null)]
         [InlineData("")]
         public async Task LoadItems_LoadingMessageIsNullOrEmpty_Throws(string loadingMessage)
@@ -276,7 +276,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
-        [WpfTheory]
+        [WpfTheory(Skip = "https://github.com/NuGet/Home/issues/10938")]
         [MemberData(nameof(TestSearchMetadata))]
         public async Task LoadItemsAsync_LoadingStatusIndicator_InItemsCollectionIfEmptySearch(
             IPackageSearchMetadata[] searchItems,
