@@ -93,7 +93,7 @@ jobs:
 
 - job: Tests_On_Linux
   dependsOn: Initialize_Build
-  timeoutInMinutes: 100
+  timeoutInMinutes: 45
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
@@ -110,7 +110,7 @@ jobs:
   dependsOn:
   - Build_and_UnitTest_NonRTM
   - Initialize_Build
-  timeoutInMinutes: 180
+  timeoutInMinutes: 75
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
