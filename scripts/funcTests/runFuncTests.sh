@@ -37,7 +37,7 @@ chmod +x scripts/funcTests/dotnet-install.sh
 # Get recommended version for bootstrapping testing version
 # Issue 8936 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
 scripts/funcTests/dotnet-install.sh -i cli -c 2.2 -NoPath
-
+scripts/funcTests/dotnet-install.sh -i cli -c 5.0 -NoPath
 DOTNET="$(pwd)/cli/dotnet"
 
 
