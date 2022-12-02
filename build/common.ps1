@@ -255,6 +255,11 @@ Function Install-DotnetCLI {
     # Install the 2.x runtime because our tests target netcoreapp2x
     Trace-Log "$DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath"
     & $DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath
+
+    # Install the 5.x runtime because our tests target netcoreapp5x
+    Trace-Log "$DotNetInstall -Runtime dotnet -Channel 5.0 -i $CLIRoot -NoPath"
+    & $DotNetInstall -Runtime dotnet -Channel 5.0 -i $CLIRoot -NoPath
+
     # Display build info
     & $DotNetExe --info
 }
