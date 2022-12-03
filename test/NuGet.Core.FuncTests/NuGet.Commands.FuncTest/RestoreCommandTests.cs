@@ -652,7 +652,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_LeftOverNupkg_OverwrittenAsync()
         {
             // Arrange
@@ -1262,7 +1262,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_InstallPackageWithReferenceDependenciesAsync()
         {
             // Arrange
