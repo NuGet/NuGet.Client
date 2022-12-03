@@ -30,7 +30,7 @@ namespace NuGet.Commands.FuncTest
 
     public class RestoreCommandTests
     {
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(NuGetConstants.V2FeedUrl, new Type[0])]
         [InlineData(NuGetConstants.V3FeedUrl, new[] { typeof(RemoteV3FindPackageByIdResourceProvider) })]
         [InlineData(NuGetConstants.V3FeedUrl, new[] { typeof(HttpFileSystemBasedFindPackageByIdResourceProvider) })]
@@ -183,7 +183,7 @@ namespace NuGet.Commands.FuncTest
         /// <summary>
         /// This test fixes https://github.com/NuGet/Home/issues/2901.
         /// </summary>
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_DependenciesOfDifferentCaseAsync()
         {
             // Arrange
@@ -480,7 +480,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_FrameworkImportRulesAreAppliedAsync()
         {
             // Arrange
@@ -536,7 +536,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_FrameworkImportArrayAsync()
         {
             // Arrange
@@ -594,7 +594,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_FrameworkImportRulesAreApplied_NoopAsync()
         {
             // Arrange
@@ -707,13 +707,14 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
 
                 // Assert
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 var newFileSize = new FileInfo(nupkgPath).Length;
 
                 Assert.True(newFileSize > 0, "Downloaded file not overriding the dummy nupkg");
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_FrameworkImport_WarnOnAsync()
         {
             // Arrange
@@ -765,7 +766,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_FollowFallbackDependenciesAsync()
         {
             // Arrange
@@ -866,7 +867,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_DependenciesDifferOnCaseAsync()
         {
             // Arrange
@@ -921,7 +922,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_DependenciesDifferOnCase_DowngradeAsync()
         {
             // Arrange
@@ -1095,7 +1096,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_NuGetVersioning107RuntimeAssembliesAsync()
         {
             // Arrange
@@ -1139,7 +1140,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_InstallPackageWithDependenciesAsync()
         {
             // Arrange
@@ -1299,12 +1300,12 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
 
-                Assert.True(runtimeAssemblies.Count == 24, userMessage: logger.ShowMessages());
+                Assert.True(runtimeAssemblies.Count == 24, userMessage: logger.ShowErrors());
                 Assert.NotNull(jsonNetReference);
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_RestoreWithNoChangesAsync()
         {
             // Arrange
@@ -1344,7 +1345,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(NuGetConstants.V2FeedUrl)]
         [InlineData(NuGetConstants.V3FeedUrl)]
         public async Task RestoreCommand_PackageIsAddedToPackageCacheAsync(string source)
@@ -1380,7 +1381,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(NuGetConstants.V2FeedUrl)]
         [InlineData(NuGetConstants.V3FeedUrl)]
         public async Task RestoreCommand_PackagesAreExtractedToTheNormalizedPathAsync(string source)
@@ -1496,7 +1497,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_JsonNet701RuntimeAssembliesAsync()
         {
             // Arrange
@@ -1907,7 +1908,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_RestoreExactVersionWithFailingSourceAsync()
         {
             // Arrange

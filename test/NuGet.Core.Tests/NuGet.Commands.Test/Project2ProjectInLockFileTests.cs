@@ -152,7 +152,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Darwin)]
+        [PlatformFact(Platform.Windows)]
         public async Task Project2ProjectInLockFile_PackageReferenceConflict()
         {
             // Arrange
