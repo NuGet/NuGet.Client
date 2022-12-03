@@ -80,7 +80,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyTheory]
+        [PlatformTheory(Platform.Windows, Platform.Linux, SkipMono = true)]
         [MemberData(nameof(EmptyNullAndRequiredListCombinations))]
         public async Task GetTrustResultAsync_AuthorSignedPackage_RequirementsAsync(
             SignedPackageVerifierSettings verifierSettings,
