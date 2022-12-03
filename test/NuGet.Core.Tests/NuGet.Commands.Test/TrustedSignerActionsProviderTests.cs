@@ -771,7 +771,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [CIOnlyFact(Skip = "https://github.com/NuGet/Home/issues/12284")]
         public async Task AddTrustedSignerAsync_AuthorSignedPackage_AddsAuthorCorrectlyAsync()
         {
             // Arrange
