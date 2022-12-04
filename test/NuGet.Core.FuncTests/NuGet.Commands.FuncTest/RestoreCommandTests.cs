@@ -1432,7 +1432,7 @@ namespace NuGet.Commands.FuncTest
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
 
-                AddDependency(spec, "Newtonsoft.Json", "7.0.0"); // 7.0.0 does not exist so we'll bump up to 7.0.1
+                AddDependency(spec, "Newtonsoft.Json", "13.0.0"); // 13.0.0 does not exist so we'll bump up to 13.0.1
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
@@ -1451,7 +1451,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(1, logger.Warnings); // Warnings are combined on message
-                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
+                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 13.0.0) but Newtonsoft.Json 13.0.0 was not found. An approximate best match of Newtonsoft.Json 13.0.1 was resolved.", logger.Messages);
             }
         }
 
@@ -1470,7 +1470,7 @@ namespace NuGet.Commands.FuncTest
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
 
-                AddDependency(spec, "Newtonsoft.Json", "7.0.0"); // 7.0.0 does not exist so we'll bump up to 7.0.1
+                AddDependency(spec, "Newtonsoft.Json", "13.0.0"); // 13.0.0 does not exist so we'll bump up to 13.0.1
 
                 // Execute the first restore
                 var requestA = new TestRestoreRequest(spec, sources, packagesDir, new TestLogger())
@@ -1493,7 +1493,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(1, logger.Warnings); // Warnings for all graphs are combined
-                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
+                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 13.0.0) but Newtonsoft.Json 13.0.0 was not found. An approximate best match of Newtonsoft.Json 13.0.1 was resolved.", logger.Messages);
             }
         }
 
