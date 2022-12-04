@@ -1310,7 +1310,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithValidSignatureButNoTimestamp_ReturnsStatusAsync(
@@ -1342,7 +1342,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithUntrustedSignature_ReturnsStatusAsync(
@@ -1584,7 +1584,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithValidSignatureButNoTimestamp_ReturnsStatusAsync(
@@ -1617,7 +1617,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithUntrustedSignature_ReturnsStatusAsync(
@@ -1936,7 +1936,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithValidCountersignatureButNoTimestamp_ReturnsStatusAsync(
@@ -1972,7 +1972,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task VerifyAsync_WithUntrustedCountersignature_ReturnsStatusAsync(
