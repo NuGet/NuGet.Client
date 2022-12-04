@@ -157,7 +157,7 @@ if [ -z "$CI" ]; then
 fi
 
 #run mono test
-TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
+TestDir="$DIR/artifacts/NuGet.CommandLine.Test/win7-x64/"
 XunitConsole="$DIR/packages/xunit.runner.console/2.4.1/tools/net472/xunit.console.exe"
 
 #Clean System dll
