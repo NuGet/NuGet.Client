@@ -59,7 +59,7 @@ namespace NuGet.Packaging.FuncTest
                 revocationMode: RevocationMode.Online);
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnShiftedSignaturePackage_WhenCentralDirectoryIsLastAndFileHeaderIsLastAsync()
         {
             // Arrange
@@ -93,7 +93,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnShiftedSignaturePackage_WhenCentralDirectoryIsFirstAndFileHeaderIsFirstAsync()
         {
             // Arrange
@@ -120,7 +120,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnShiftedSignaturePackage_WhenCentralDirectoryIsLastAndFileHeaderIsFirstAsync()
         {
             // Arrange
@@ -154,7 +154,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnShiftedSignaturePackage_WhenCentralDirectoryIsFirstAndFileHeaderIsLastAsync()
         {
             // Arrange
@@ -188,7 +188,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnShiftedSignaturePackage_WhenCentralDirectoryIsMiddleAndFileHeaderIsMiddleAsync()
         {
             // Arrange
@@ -223,7 +223,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAsync()
         {
             // Arrange
@@ -262,7 +262,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAssertExceptionAsync()
         {
             // Arrange
@@ -289,7 +289,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAndCompressedAsync()
         {
             // Arrange
@@ -328,7 +328,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureIsCreatedUsingZipArchiveAndCompressedAssertExceptionAsync()
         {
             // Arrange
@@ -355,7 +355,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidExternalFileAttributesAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -384,7 +384,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidGeneralPurposeFlagBitsAsync()
         {
             // Arrange
@@ -428,7 +428,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidGeneralPurposeFlagBitsAssertExceptionAsync()
         {
             // Arrange
@@ -460,7 +460,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidCompressionMethodAsync()
         {
             // Arrange
@@ -492,7 +492,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidCompressedSizeAsync()
         {
             // Arrange
@@ -536,7 +536,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidCompressedSizeAssertExceptionAsync()
         {
             // Arrange
@@ -568,7 +568,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidUncompressedSizeAsync()
         {
             // Arrange
@@ -612,7 +612,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureCentralDirectoryHeaderHasInvalidUncompressedSizeAssertExceptionAsync()
         {
             // Arrange
@@ -644,7 +644,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidGeneralPurposeFlagBitsAsync()
         {
             // Arrange
@@ -688,7 +688,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidGeneralPurposeFlagBitsAssertExceptionAsync()
         {
             // Arrange
@@ -720,7 +720,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressionMethodAsync()
         {
             // Arrange
@@ -764,7 +764,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressionMethodAssertExceptionAsync()
         {
             // Arrange
@@ -796,7 +796,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressedSizeAsync()
         {
             // Arrange
@@ -840,7 +840,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidCompressedSizeAssertExceptionAsync()
         {
             // Arrange
@@ -872,7 +872,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidUncompressedSizeAsync()
         {
             // Arrange
@@ -919,7 +919,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyOnInvalidSignatureFileEntry_SignatureLocalFileHeaderHasInvalidUncompressedSizeAssertExceptionAsync()
         {
             // Arrange
@@ -950,7 +950,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifyPackageContentHash_SignedPackagesAsync()
         {
             // Arrange
@@ -984,7 +984,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task ReadSignedArchiveMetadata_InvalidSignatureFileEntry_IgnoreVerifySignatureEntry()
         {
             // Arrange
