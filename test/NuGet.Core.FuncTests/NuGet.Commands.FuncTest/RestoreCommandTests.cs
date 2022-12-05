@@ -1417,7 +1417,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task RestoreCommand_WarnWhenWeBumpYouUpAsync()
         {
             // Arrange
@@ -1455,7 +1455,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task RestoreCommand_WarnWhenWeBumpYouUpOnSubsequentRestoresAsync()
         {
             // Arrange
