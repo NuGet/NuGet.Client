@@ -574,7 +574,7 @@ namespace NuGet.Commands
 
             foreach (LibraryDependency dependency in dependencies)
             {
-                LibraryIncludeFlags effectiveInclude = dependency.IncludeType & ~dependency.SuppressParent;
+                LibraryIncludeFlags effectiveInclude = dependency.IncludeType | (~dependency.SuppressParent & LibraryIncludeFlags.All);
 
                 if (dependency.IncludeType == LibraryIncludeFlags.None || dependency.SuppressParent == LibraryIncludeFlags.All)
                 {
