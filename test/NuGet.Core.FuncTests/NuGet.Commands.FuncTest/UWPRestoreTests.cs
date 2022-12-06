@@ -70,7 +70,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task UWPRestore_VerifySatellitePackagesAreCompatibleInPCL()
         {
             // Arrange
@@ -106,14 +106,14 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(5, result.GetAllInstalled().Count);
             }
         }
 
         // Verify that UWP packages are still compatible after excluding their contents.
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task UWPRestore_BlankUWPAppWithExcludes()
         {
             // Arrange
@@ -165,13 +165,13 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(118, result.GetAllInstalled().Count);
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task UWPRestore_VerifySameResultWhenRestoringWithLocalPackages()
         {
             // Arrange
@@ -211,13 +211,13 @@ namespace NuGet.Commands.FuncTest
                 var result2 = await command.ExecuteAsync();
 
                 // Assert
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(result.LockFile, result2.LockFile);
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task UWPRestore_SystemDependencyVersionConflict()
         {
             // Arrange
@@ -255,13 +255,13 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
             }
         }
 
         // Verify that File > New Project > Blank UWP App can restore without errors or warnings.
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task UWPRestore_BlankUWPApp()
         {
             // Arrange
@@ -316,7 +316,7 @@ namespace NuGet.Commands.FuncTest
                 RemovePackageFolders(lockFileJson);
 
                 // Assert
-                Assert.True(result.Success);
+                Assert.True(result.Success, userMessage: logger.ShowErrors());
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
@@ -326,7 +326,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         // Verify that File > New Project > Blank UWP App can restore without errors or warnings.
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task UWPRestore_BlankUWPAppV1()
         {
             // Arrange
@@ -383,7 +383,7 @@ namespace NuGet.Commands.FuncTest
                 RemovePackageFolders(lockFileJson);
 
                 // Assert
-                Assert.True(result.Success);
+                Assert.True(result.Success, userMessage: logger.ShowErrors());
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
@@ -393,7 +393,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         // Verify that File > New Project > Class Library (Portable) can restore without errors or warnings.
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task UWPRestore_ModernPCL()
         {
             // Arrange
@@ -436,14 +436,14 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.True(0 == logger.Errors, logger.ShowMessages());
+                Assert.True(0 == logger.Errors, logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(86, result.GetAllInstalled().Count);
             }
         }
 
         // Verify that installing all Office 365 services into a UWP app restores without errors.
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task UWPRestore_UWPAppWithOffice365Packages()
         {
             // Arrange
@@ -494,7 +494,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(140, result.GetAllInstalled().Count);
             }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -16,6 +16,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class Project2ProjectTests
     {
         [Fact]
@@ -152,7 +153,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task Project2ProjectInLockFile_PackageReferenceConflict()
         {
             // Arrange

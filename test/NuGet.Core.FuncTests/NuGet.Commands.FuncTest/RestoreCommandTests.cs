@@ -30,7 +30,7 @@ namespace NuGet.Commands.FuncTest
 
     public class RestoreCommandTests
     {
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(NuGetConstants.V2FeedUrl, new Type[0])]
         [InlineData(NuGetConstants.V3FeedUrl, new[] { typeof(RemoteV3FindPackageByIdResourceProvider) })]
         [InlineData(NuGetConstants.V3FeedUrl, new[] { typeof(HttpFileSystemBasedFindPackageByIdResourceProvider) })]
@@ -56,7 +56,7 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
 
                 // Assert
-                Assert.True(result.Success, "The restore should have succeeded.");
+                Assert.True(result.Success, userMessage: logger.ShowErrors());
 
                 var library = result.LockFile.Libraries
                     .FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Name, "EntityFramework"));
@@ -183,7 +183,7 @@ namespace NuGet.Commands.FuncTest
         /// <summary>
         /// This test fixes https://github.com/NuGet/Home/issues/2901.
         /// </summary>
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_DependenciesOfDifferentCaseAsync()
         {
             // Arrange
@@ -260,7 +260,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(1, result.RestoreGraphs.Count());
                 var graph = result.RestoreGraphs.First();
                 Assert.Equal(0, graph.Conflicts.Count());
-                Assert.True(result.Success, "The restore should have been successful.");
+                Assert.True(result.Success, userMessage: logger.ShowErrors());
             }
         }
 
@@ -480,7 +480,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_FrameworkImportRulesAreAppliedAsync()
         {
             // Arrange
@@ -526,7 +526,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(1, result.GetAllInstalled().Count);
                 Assert.Equal("Newtonsoft.Json", result.GetAllInstalled().Single().Name);
@@ -536,7 +536,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_FrameworkImportArrayAsync()
         {
             // Arrange
@@ -583,7 +583,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(1, result.GetAllInstalled().Count);
                 Assert.Equal("Newtonsoft.Json", result.GetAllInstalled().Single().Name);
@@ -594,7 +594,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_FrameworkImportRulesAreApplied_NoopAsync()
         {
             // Arrange
@@ -646,13 +646,13 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(0, result.GetAllInstalled().Count);
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_LeftOverNupkg_OverwrittenAsync()
         {
             // Arrange
@@ -707,13 +707,14 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
 
                 // Assert
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 var newFileSize = new FileInfo(nupkgPath).Length;
 
                 Assert.True(newFileSize > 0, "Downloaded file not overriding the dummy nupkg");
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_FrameworkImport_WarnOnAsync()
         {
             // Arrange
@@ -759,13 +760,13 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(1, result.GetAllInstalled().Count);
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(1, logger.Warnings);
                 Assert.Equal(1, logger.Messages.Where(message => message.Contains(warning)).Count());
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_FollowFallbackDependenciesAsync()
         {
             // Arrange
@@ -814,7 +815,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(4, result.GetAllInstalled().Count);
                 Assert.Equal("Microsoft.Data.Edm|Microsoft.Data.OData|System.Spatial|WindowsAzure.Storage", dependencies);
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowMessages());
                 Assert.Equal(0, logger.Warnings);
             }
         }
@@ -866,7 +867,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_DependenciesDifferOnCaseAsync()
         {
             // Arrange
@@ -914,14 +915,14 @@ namespace NuGet.Commands.FuncTest
                 var assemblies2 = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
 
                 // Assert
-                Assert.Equal(2, assemblies.Count);
+                Assert.True(assemblies.Count == 2, userMessage: logger.ShowMessages());
                 Assert.Equal("lib/net45/Newtonsoft.Json.dll", assemblies[1].Path);
                 Assert.Equal(2, assemblies2.Count);
                 Assert.Equal("lib/net45/Newtonsoft.Json.dll", assemblies2[1].Path);
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_DependenciesDifferOnCase_DowngradeAsync()
         {
             // Arrange
@@ -964,7 +965,7 @@ namespace NuGet.Commands.FuncTest
                 var assemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
 
                 // Assert
-                Assert.Equal(4, assemblies.Count);
+                Assert.True(assemblies.Count == 4, userMessage: logger.ShowMessages());
                 Assert.Equal("lib/40/Newtonsoft.Json.dll", assemblies[2].Path);
             }
         }
@@ -1095,7 +1096,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_NuGetVersioning107RuntimeAssembliesAsync()
         {
             // Arrange
@@ -1128,7 +1129,7 @@ namespace NuGet.Commands.FuncTest
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
                 // Assert
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(1, installed.Count);
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal("NuGet.Versioning", installed.Single().Name);
@@ -1139,7 +1140,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_InstallPackageWithDependenciesAsync()
         {
             // Arrange
@@ -1177,7 +1178,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal("5.0.4", jsonNetPackage.Version.ToNormalizedString());
 
-                Assert.Equal(1, runtimeAssemblies.Count);
+                Assert.True(runtimeAssemblies.Count == 1, userMessage: logger.ShowMessages());
                 Assert.NotNull(jsonNetReference);
             }
         }
@@ -1261,7 +1262,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_InstallPackageWithReferenceDependenciesAsync()
         {
             // Arrange
@@ -1299,12 +1300,12 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
 
-                Assert.Equal(24, runtimeAssemblies.Count);
+                Assert.True(runtimeAssemblies.Count == 24, userMessage: logger.ShowErrors());
                 Assert.NotNull(jsonNetReference);
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_RestoreWithNoChangesAsync()
         {
             // Arrange
@@ -1338,13 +1339,13 @@ namespace NuGet.Commands.FuncTest
                 var unresolved = result.GetAllUnresolved();
 
                 // Assert
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(0, installed.Count);
                 Assert.Equal(0, unresolved.Count);
             }
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(NuGetConstants.V2FeedUrl)]
         [InlineData(NuGetConstants.V3FeedUrl)]
         public async Task RestoreCommand_PackageIsAddedToPackageCacheAsync(string source)
@@ -1376,11 +1377,11 @@ namespace NuGet.Commands.FuncTest
                 // Assert
                 var pathResolver = new VersionFolderPathResolver(packagesDir);
                 var nuspecPath = pathResolver.GetManifestFilePath("NuGet.Versioning", new NuGetVersion("1.0.7"));
-                Assert.True(File.Exists(nuspecPath));
+                Assert.True(File.Exists(nuspecPath), userMessage: logger.ShowMessages());
             }
         }
 
-        [Theory]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(NuGetConstants.V2FeedUrl)]
         [InlineData(NuGetConstants.V3FeedUrl)]
         public async Task RestoreCommand_PackagesAreExtractedToTheNormalizedPathAsync(string source)
@@ -1412,11 +1413,11 @@ namespace NuGet.Commands.FuncTest
                 // Assert
                 var pathResolver = new VersionFolderPathResolver(packagesDir);
                 var nuspecPath = pathResolver.GetManifestFilePath("owin", new NuGetVersion("1.0.0"));
-                Assert.True(File.Exists(nuspecPath));
+                Assert.True(File.Exists(nuspecPath), userMessage: logger.ShowMessages());
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task RestoreCommand_WarnWhenWeBumpYouUpAsync()
         {
             // Arrange
@@ -1431,7 +1432,7 @@ namespace NuGet.Commands.FuncTest
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
 
-                AddDependency(spec, "Newtonsoft.Json", "7.0.0"); // 7.0.0 does not exist so we'll bump up to 7.0.1
+                AddDependency(spec, "Newtonsoft.Json", "13.0.0"); // 13.0.0 does not exist so we'll bump up to 13.0.1
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
@@ -1450,11 +1451,11 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(1, logger.Warnings); // Warnings are combined on message
-                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
+                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 13.0.0) but Newtonsoft.Json 13.0.0 was not found. An approximate best match of Newtonsoft.Json 13.0.1 was resolved.", logger.Messages);
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task RestoreCommand_WarnWhenWeBumpYouUpOnSubsequentRestoresAsync()
         {
             // Arrange
@@ -1469,7 +1470,7 @@ namespace NuGet.Commands.FuncTest
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
 
-                AddDependency(spec, "Newtonsoft.Json", "7.0.0"); // 7.0.0 does not exist so we'll bump up to 7.0.1
+                AddDependency(spec, "Newtonsoft.Json", "13.0.0"); // 13.0.0 does not exist so we'll bump up to 13.0.1
 
                 // Execute the first restore
                 var requestA = new TestRestoreRequest(spec, sources, packagesDir, new TestLogger())
@@ -1492,11 +1493,11 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(1, logger.Warnings); // Warnings for all graphs are combined
-                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 7.0.0) but Newtonsoft.Json 7.0.0 was not found. An approximate best match of Newtonsoft.Json 7.0.1 was resolved.", logger.Messages);
+                Assert.Contains("TestProject depends on Newtonsoft.Json (>= 13.0.0) but Newtonsoft.Json 13.0.0 was not found. An approximate best match of Newtonsoft.Json 13.0.1 was resolved.", logger.Messages);
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_JsonNet701RuntimeAssembliesAsync()
         {
             // Arrange
@@ -1529,7 +1530,7 @@ namespace NuGet.Commands.FuncTest
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
                 // Assert
-                Assert.Equal(0, logger.Errors);
+                Assert.True(logger.Errors == 0, userMessage: logger.ShowErrors());
                 Assert.Equal(1, installed.Count);
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal("Newtonsoft.Json", installed.Single().Name);
@@ -1540,7 +1541,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_NoCompatibleRuntimeAssembliesForProjectAsync()
         {
             // Arrange
@@ -1907,7 +1908,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task RestoreCommand_RestoreExactVersionWithFailingSourceAsync()
         {
             // Arrange
@@ -1946,7 +1947,7 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
 
                 // Assert
-                Assert.True(result.Success);
+                Assert.True(result.Success, userMessage: logger.ShowErrors());
             }
         }
 

@@ -49,7 +49,7 @@ namespace NuGet.Packaging.FuncTest
             };
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_ValidCertificate_SuccessAsync()
         {
             // Arrange
@@ -73,7 +73,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_ValidCertificateAndTimestamp_SuccessAsync()
         {
             // Arrange
@@ -102,7 +102,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_ValidCertificateAndTimestampWithDifferentHashAlgorithms_SuccessAsync()
         {
             var packageContext = new SimpleTestPackageContext();
@@ -130,7 +130,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestamp_SuccessAsync()
         {
             var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -181,7 +181,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_ExpiredCertificateAndTimestampWithTooLargeRange_FailsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
@@ -243,7 +243,7 @@ namespace NuGet.Packaging.FuncTest
 
         // Verify a package meeting minimum signature requirements.
         // This signature is neither an author nor repository signature.
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_WithBasicSignedCms_SucceedsAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -292,7 +292,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_SettingsRequireTimestamp_NoTimestamp_FailsAsync()
         {
             // Arrange
@@ -332,7 +332,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_SettingsNotRequireCheckCountersignature_WithValidPrimarySignatureAndInvalidCountersignature_SucceedsAsync()
         {
             // Arrange
@@ -378,7 +378,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_SettingsRequireCheckCountersignature_WithValidPrimarySignatureAndInvalidCountersignature_FailsAsync()
         {
             // Arrange
@@ -424,7 +424,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_SettingsRequireCheckCountersignature_WithValidPrimarySignatureAndValidCountersignature_SucceedsAsync()
         {
             // Arrange
@@ -470,7 +470,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_WithExpiredPrimarySignature_ValidCountersignature_AndPrimarySignatureValidAtCountersignTime_SucceedsAsync()
         {
             // Arrange
@@ -518,7 +518,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_WithExpiredAndUntrustedPrimarySignature_ValidCountersignature_AndPrimarySignatureValidAtCountersignTime_SucceedsAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -567,7 +567,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task VerifySignaturesAsync_WithExpiredPrimarySignature_ValidCountersignature_AndPrimarySignatureExpiredAtCountersignTime_FailsAsync()
         {
             // Arrange
@@ -615,7 +615,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithInvalidSignature_ThrowsAsync()
         {
             var package = new SimpleTestPackageContext();
@@ -650,7 +650,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_SettingsRequireExactlyOneTimestamp_MultipleTimestamps_FailsAsync()
         {
             // Arrange
@@ -695,7 +695,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithSignedAndCountersignedPackage_SucceedsAsync()
         {
             // Arrange
@@ -731,7 +731,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithSignedTimestampedCountersignedAndCountersignatureTimestampedPackage_SucceedsAsync()
         {
             // Arrange
@@ -770,7 +770,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithExpiredTimestamp_NotAllowIgnoreTimestamp_ShouldNotBeAnErrorAsync()
         {
             using (var nupkgStream = new MemoryStream(GetResource("UntrustedTimestampPackage.nupkg")))
@@ -788,7 +788,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_PrimarySignatureWithUntrustedRoot_EmptyAllowedUntrustedRootList_AllowUntrustedFalse_ErrorAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -823,7 +823,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryCountersignatureWithUntrustedRoot_EmptyAllowedUntrustedRootList_AllowUntrustedFalse_ErrorAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -860,7 +860,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_PrimarySignatureWithUntrustedRoot_NotInAllowedUntrustedRootList_AllowUntrustedFalse_ErrorAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -896,7 +896,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryCountersignatureWithUntrustedRoot_NotInAllowedUntrustedRootList_AllowUntrustedFalse_ErrorAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -934,7 +934,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_PrimarySignatureWithUntrustedRoot_InAllowedUntrustedRootList_AllowUntrustedFalse_SucceedsAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -972,7 +972,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryCountersignatureWithUntrustedRoot_InAllowedUntrustedRootList_AllowUntrustedFalse_SucceedsAsync()
         {
             var settings = new SignedPackageVerifierSettings(
@@ -1012,7 +1012,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInAcceptMode_DoesNotWarnAsync()
         {
             // Arrange
@@ -1027,7 +1027,7 @@ namespace NuGet.Packaging.FuncTest
             Assert.Empty(matchingIssues);
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInRequireMode_WarnsAsync()
         {
             // Arrange
@@ -1052,7 +1052,7 @@ namespace NuGet.Packaging.FuncTest
             SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInVerify_WarnsAsync()
         {
 
@@ -1074,7 +1074,7 @@ namespace NuGet.Packaging.FuncTest
             SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowIllegal_WarnsAsync()
         {
             // Arrange
@@ -1101,7 +1101,7 @@ namespace NuGet.Packaging.FuncTest
             Assert.Empty(matchingIssues);
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WithOnlineRevocationMode_WarnsAsync()
         {
             // Arrange
@@ -1138,7 +1138,7 @@ namespace NuGet.Packaging.FuncTest
             SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WithOfflineRevocationMode_WarnsAsync()
         {
             // Arrange
@@ -1170,7 +1170,7 @@ namespace NuGet.Packaging.FuncTest
             SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Information, NuGetLogCode.Undefined);
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithTrustedButExpiredPrimaryAndTimestampCertificates_WithUnavailableRevocationInformationAndAllowUnknownRevocation_WarnsAsync()
         {
             var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
@@ -1191,7 +1191,7 @@ namespace NuGet.Packaging.FuncTest
             SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithTimestampChainingToUntrustedRoot_NotAllowIgnoreTimestamp_FailAsync()
         {
             using (var nupkgStream = new MemoryStream(GetResource("UntrustedTimestampPackage.nupkg")))
@@ -1212,7 +1212,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_WithNoIgnoringTimestamp_TimestampWithGeneralizedTimeOutsideCertificateValidity_FailAsync()
         {
             var verificationProvider = new SignatureTrustAndValidityVerificationProvider();
@@ -1251,7 +1251,7 @@ namespace NuGet.Packaging.FuncTest
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 
-            [CIOnlyFact]
+            [PlatformFact(Platform.Windows, Platform.Linux)]
             public async Task GetTrustResultAsync_WithRepositorySignedPackage_ReturnsUnknownAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1279,7 +1279,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            [PlatformFact(Platform.Windows, Platform.Linux)]
             public async Task GetTrustResultAsync_WithValidSignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1310,7 +1310,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithValidSignatureButNoTimestamp_ReturnsStatusAsync(
@@ -1342,7 +1342,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithUntrustedSignature_ReturnsStatusAsync(
@@ -1467,7 +1467,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            [PlatformFact(Platform.Windows, Platform.Linux)]
             public async Task GetTrustResultAsync_WithTamperedRepositoryPrimarySignedPackage_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1525,7 +1525,7 @@ namespace NuGet.Packaging.FuncTest
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 
-            [CIOnlyFact]
+            [PlatformFact(Platform.Windows, Platform.Linux)]
             public async Task GetTrustResultAsync_WithAuthorSignedPackage_ReturnsUnknownAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1553,7 +1553,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            [PlatformFact(Platform.Windows, Platform.Linux)]
             public async Task GetTrustResultAsync_WithValidSignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1584,7 +1584,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithValidSignatureButNoTimestamp_ReturnsStatusAsync(
@@ -1617,7 +1617,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithUntrustedSignature_ReturnsStatusAsync(
@@ -1742,7 +1742,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            [PlatformFact(Platform.Windows, Platform.Linux)]
             public async Task GetTrustResultAsync_WithTamperedRepositoryPrimarySignedPackage_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1782,7 +1782,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            [PlatformFact(Platform.Windows, Platform.Linux)]
             public async Task GetTrustResultAsync_WithAlwaysVerifyCountersignatureBehavior_ReturnsDisallowedAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1842,7 +1842,7 @@ namespace NuGet.Packaging.FuncTest
                 _provider = new SignatureTrustAndValidityVerificationProvider();
             }
 
-            [CIOnlyFact]
+            [PlatformFact(Platform.Windows, Platform.Linux)]
             public async Task GetTrustResultAsync_WithAuthorSignedPackage_ReturnsUnknownAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1870,7 +1870,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            [PlatformFact(Platform.Windows, Platform.Linux)]
             public async Task GetTrustResultAsync_WithValidCountersignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1903,7 +1903,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            [PlatformFact(Platform.Windows, Platform.Linux)]
             public async Task GetTrustResultAsync_WithValidCountersignatureAndUntrustedPrimarySignature_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(
@@ -1936,7 +1936,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithValidCountersignatureButNoTimestamp_ReturnsStatusAsync(
@@ -1972,7 +1972,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)]
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task VerifyAsync_WithUntrustedCountersignature_ReturnsStatusAsync(
@@ -2104,7 +2104,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyFact]
+            [PlatformFact(Platform.Windows, Platform.Linux)]
             public async Task VerifyAsync_WithTamperedRepositoryCountersignedPackage_ReturnsValidAsync()
             {
                 var settings = new SignedPackageVerifierSettings(

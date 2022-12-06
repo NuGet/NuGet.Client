@@ -39,7 +39,7 @@ namespace NuGet.Packaging.FuncTest
             _trustedRepoTestCert.Dispose();
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_AuthorSignedPackage_WithCertificateInAllowList_SuccessAsync()
         {
             // Arrange
@@ -80,7 +80,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyTheory]
+        [PlatformTheory(Platform.Windows, Platform.Linux)]
         [MemberData(nameof(EmptyNullAndRequiredListCombinations))]
         public async Task GetTrustResultAsync_AuthorSignedPackage_RequirementsAsync(
             SignedPackageVerifierSettings verifierSettings,
@@ -128,7 +128,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_AuthorSignedPackage_VerifyWithoutCertificateInAllowList_AllowUntrusted_WarnAsync()
         {
             // Arrange
@@ -174,7 +174,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_AuthorSignedPackage_VerifyWithoutCertificateInAllowList_NotAllowUntrusted_ErrorAsync()
         {
             // Arrange
@@ -220,7 +220,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositorySignedPackage_AllowListWithAuthorTarget_AndPrimaryPlacement_ErrorAsync()
         {
             // Arrange
@@ -268,7 +268,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositorySignedPackage_AllowListWithRepositoryTarget_AndCounterPlacementOnly_ErrorAsync()
         {
             // Arrange
@@ -316,7 +316,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositorySignedPackage_AllowListWithRepositoryTarget_AndPrimaryPlacement_SuccessAsync()
         {
             // Arrange
@@ -362,7 +362,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryCountersignedPackage_AllowListWithAuthorTarget_AndPrimaryPlacement_ErrorAsync()
         {
             // Arrange
@@ -412,7 +412,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryCountersignedPackage_AllowListWithRepositoryTarget_AndPrimaryPlacementOnly_ErrorAsync()
         {
             // Arrange
@@ -462,7 +462,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryCountersignedPackage_AllowListWithRepositoryTarget_AndCounterPlacement_SuccessAsync()
         {
             // Arrange
@@ -510,7 +510,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertFromAllowList_RequireMode_SuccessAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -554,7 +554,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertNotFromAllowList_RequireMode_ErrorAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -605,7 +605,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertFromAllowList_WithOwnerInOwnersList_RequireMode_SuccessAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -655,7 +655,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertFromAllowList_WithOwnerNotInOwnersList_RequireMode_ErrorAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -706,7 +706,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertFromAllowList_WithNoOwnersInPackage_RequireMode_ErrorAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -755,7 +755,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryCountersignedPackage_PackageSignedWithCertFromAllowList_WithOwnerInOwnersList_RequireMode_SuccessAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -807,7 +807,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryCountersignedPackage_PackageSignedWithCertFromAllowList_WithOwnerNotInOwnersList_RequireMode_ErrorAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -860,7 +860,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryCountersignedPackage_PackageSignedWithCertFromAllowList_WithOwnerNotInOwnersList_AuthorInList_RequireMode_SuccessAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -914,7 +914,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryCountersignedPackage_PackageSignedWithCertFromAllowList_WithNoOwnersInPackage_RequireMode_ErrorAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -966,7 +966,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertFromAllowList_WithEmptyOwnersList_RequireMode_SuccessAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -1016,7 +1016,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetTrustResultAsync_RepositoryPrimarySignedPackage_PackageSignedWithCertFromAllowList__WithNullOwnersList_RequireMode_SuccessAsync()
         {
             var nupkg = new SimpleTestPackageContext();

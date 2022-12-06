@@ -37,7 +37,7 @@ chmod +x scripts/funcTests/dotnet-install.sh
 # Get recommended version for bootstrapping testing version
 # Issue 8936 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
 scripts/funcTests/dotnet-install.sh -i cli -c 2.2 -NoPath
-
+scripts/funcTests/dotnet-install.sh -i cli -c 5.0 -NoPath
 DOTNET="$(pwd)/cli/dotnet"
 
 
@@ -157,7 +157,7 @@ if [ -z "$CI" ]; then
 fi
 
 #run mono test
-TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
+TestDir="$DIR/artifacts/NuGet.CommandLine.Test/win7-x64/"
 XunitConsole="$DIR/packages/xunit.runner.console/2.4.1/tools/net472/xunit.console.exe"
 
 #Clean System dll

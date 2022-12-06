@@ -14,6 +14,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class FindLocalPackagesResourceTests
     {
         private static readonly PackageIdentity PackageA1 = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));

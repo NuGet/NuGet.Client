@@ -6,16 +6,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     // Tests the Powershell autocomplete resource for V2 and v3 sources.  
     public class PowershellAutoCompleteResourceTests
     {

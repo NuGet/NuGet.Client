@@ -34,7 +34,7 @@ namespace NuGet.Packaging.FuncTest
             _fixture = fixture;
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void GetRepositoryCountersignature_WhenPrimarySignatureNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -43,7 +43,7 @@ namespace NuGet.Packaging.FuncTest
             Assert.Equal("primarySignature", exception.ParamName);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetRepositoryCountersignature_WithNoCountersignatures_ReturnsNull()
         {
             using (var test = await Test.CreateWithoutRepositoryCountersignatureAsync(_fixture.TrustedTestCertificate.Source.Cert))
@@ -54,7 +54,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetRepositoryCountersignature_WithRepositoryCountersignature_ReturnsInstance()
         {
             using (var test = await Test.CreateAsync(_fixture.TrustedTestCertificate.Source.Cert))
@@ -72,7 +72,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task GetSignatureValue_WithSha256_ReturnsValue()
         {
             using (var test = await Test.CreateAsync(_fixture.TrustedTestCertificate.Source.Cert))

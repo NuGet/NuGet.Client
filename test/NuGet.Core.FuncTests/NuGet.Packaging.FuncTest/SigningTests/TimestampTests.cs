@@ -28,7 +28,7 @@ namespace NuGet.Packaging.FuncTest
             _trustedTestCert = _testFixture.TrustedTestCertificate;
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task Timestamp_Verify_WithOfflineRevocation_ReturnsCorrectFlagsAndLogsAsync()
         {
             var nupkg = new SimpleTestPackageContext();

@@ -15,6 +15,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RestoreResultTests
     {
         [Fact]

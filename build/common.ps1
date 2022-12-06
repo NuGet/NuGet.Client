@@ -174,7 +174,7 @@ Function Install-DotnetCLI {
 
     #If "-force" is specified, or dotnet.exe under cli folder doesn't exist, create cli folder and download dotnet-install.ps1 into cli folder.
     if ($Force -or -not (Test-Path $DotNetExe)) {
-        Trace-Log "Downloading .NET CLI $CliBranchForTesting"
+        Trace-Log "Downloading .NET CLI $CliBranchListForTesting"
 
         New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
 
@@ -217,9 +217,10 @@ Function Install-DotnetCLI {
             $versionFile = Invoke-RestMethod -Method Get -Uri $httpGetUrl
 
             $stringReader = New-Object -TypeName System.IO.StringReader -ArgumentList $versionFile
+            
             [int]$count = 0
             while ( $line = $stringReader.ReadLine() ) {
-                if ($count -eq 1) {
+                if ($count -eq 0) {
                     $specificVersion = $line.trim()
                 }
                 $count += 1
@@ -254,6 +255,11 @@ Function Install-DotnetCLI {
     # Install the 2.x runtime because our tests target netcoreapp2x
     Trace-Log "$DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath"
     & $DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath
+
+    # Install the 5.x runtime because our tests target netcoreapp5x
+    Trace-Log "$DotNetInstall -Runtime dotnet -Channel 5.0 -i $CLIRoot -NoPath"
+    & $DotNetInstall -Runtime dotnet -Channel 5.0 -i $CLIRoot -NoPath
+
     # Display build info
     & $DotNetExe --info
 }

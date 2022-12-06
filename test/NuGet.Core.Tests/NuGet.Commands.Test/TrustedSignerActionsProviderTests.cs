@@ -26,6 +26,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class TrustedSignerActionsProviderTests
     {
         private const string _expectedCertificateFingerprint = "3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece";
@@ -331,7 +332,7 @@ namespace NuGet.Commands.Test
             ex.Message.Should().Be(Strings.Error_PackageNotSigned);
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task AddTrustedSignerAsync_TargetRepository_NonRepositorySignedPackage_ThrowsAsync()
         {
             // Arrange
@@ -363,7 +364,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]        
         public async Task AddTrustedSignerAsync_NameAlreadyExists_ThrowsAsync()
         {
             // Arrange
@@ -402,7 +403,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task AddTrustedSignerAsync_ServiceIndexAlreadyExists_ThrowsAsync()
         {
             // Arrange
@@ -442,7 +443,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task AddTrustedSignerAsync_WithUnknownPrimarySignature_ThrowsAsync()
         {
             // Arrange
@@ -490,7 +491,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task AddTrustedSignerAsync_RepositorySignedPackage_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -535,7 +536,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task AddTrustedSignerAsync_RepositorySignedPackage_WithOwners_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -581,7 +582,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task AddTrustedSignerAsync_RepositorySignedPackage_WithAllowUntrustedRoot_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -627,7 +628,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task AddTrustedSignerAsync_RepositoryCountersignedPackage_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -674,7 +675,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task AddTrustedSignerAsync_RepositoryCountersignedPackage_WithOwners_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -722,7 +723,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task AddTrustedSignerAsync_RepositoryCountersignedPackage_WithAllowUntrustedRoot_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
@@ -770,7 +771,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task AddTrustedSignerAsync_AuthorSignedPackage_AddsAuthorCorrectlyAsync()
         {
             // Arrange
@@ -812,7 +813,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [CIOnlyFact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public async Task AddTrustedSignerAsync_AuthorSignedPackage_WithAllowUntrustedRoot_AddsAuthorCorrectlyAsync()
         {
             // Arrange

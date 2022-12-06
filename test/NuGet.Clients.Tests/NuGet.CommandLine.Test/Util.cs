@@ -1246,29 +1246,5 @@ EndProject");
             // Verify traits of help message in stdout
             Assert.Contains("usage:", result.Item2);
         }
-
-        //This is a temporary change since the VS on CI doesn't have the latest hostfxr, it could not resolve the preview SDK.
-        //Will be removed when CI has the latest version of VS, or SDK3.0 released RTM version.
-        //Create a global.json file in temporary testing folder, to make sure msbuild could choose preview version of SDK.
-        public static void CreateTempGlobalJson(string solutionRoot)
-        {
-            //put the global.json at one level up to solutionRoot path
-            var pathToPlaceGlobalJsonFile = solutionRoot.Substring(0, solutionRoot.Length - 1 - solutionRoot.Split(Path.DirectorySeparatorChar).Last().Length);
-
-            var globalJsonFile =
-@"{
-    ""sdk"": {
-              ""version"": ""5.0.100-alpha1""
-             }
-}";
-
-            using (var outputFile = new StreamWriter(Path.Combine(pathToPlaceGlobalJsonFile, "global.json")))
-            {
-                outputFile.WriteLine(globalJsonFile);
-                outputFile.Close();
-            }
-
-        }
-
     }
 }
