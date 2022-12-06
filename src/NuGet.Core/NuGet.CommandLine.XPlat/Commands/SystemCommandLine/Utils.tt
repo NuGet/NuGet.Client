@@ -451,6 +451,7 @@ public class OptionData
             throw new ArgumentNullException(nameof(options));
         }
 
+        WriteLine("[GeneratedCode(\"GenerateBinderClass\", \"0.0.1\")]");
         WriteLine($"internal partial class {className} : BinderBase<{binderClassName}>");
         WriteLine("{");
         PushIndent(Indent(4));

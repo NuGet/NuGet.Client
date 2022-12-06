@@ -5,12 +5,14 @@
 // instead modify the neighboring .tt file (text template) and/or NuGet.CommandLine.Xplat\Commands\SystemCommandLine\Commands.xml (data file),
 // then re-execute the text template via "run custom tool" on VS context menu for .tt file, or via dotnet-t4 global tool.
 
+using System.CodeDom.Compiler;
 using System.CommandLine;
 using System.CommandLine.Binding;
 using NuGet.Commands;
 
 namespace NuGet.CommandLine.XPlat.Commands
 {
+    [GeneratedCode("GenerateBinderClass", "0.0.1")]
     internal partial class AddSourceCustomBinder : BinderBase<AddSourceArgs>
     {
         private readonly Argument<string> _source;
@@ -48,6 +50,7 @@ namespace NuGet.CommandLine.XPlat.Commands
         } // end GetBoundValue method
     } // end class
 
+    [GeneratedCode("GenerateBinderClass", "0.0.1")]
     internal partial class ListSourceCustomBinder : BinderBase<ListSourceArgs>
     {
         private readonly Option<string> _format;

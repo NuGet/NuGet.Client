@@ -6,11 +6,13 @@
 // then re-execute the text template via "run custom tool" on VS context menu for .tt file, or via dotnet-t4 global tool.
 
 using System;
+using System.CodeDom.Compiler;
 using System.CommandLine;
 using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat.Commands
 {
+    [GeneratedCode("CommandParsers.tt", "0.0.1")]
     internal static class CommandParsers
     {
         public static void Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)

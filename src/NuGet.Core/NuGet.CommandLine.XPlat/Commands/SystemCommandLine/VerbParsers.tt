@@ -19,6 +19,7 @@
 // then re-execute the text template via "run custom tool" on VS context menu for .tt file, or via dotnet-t4 global tool.
 
 using System;
+using System.CodeDom.Compiler;
 using System.CommandLine;
 using System.Threading.Tasks;
 using NuGet.Commands;
@@ -36,6 +37,7 @@ foreach (XElement verb in allElements)
     string commandFormalNameVar = commandFormalName + "Cmd";
     IEnumerable<XElement> verbOpts = verb.Elements().Where(n => isValidOption(n));
 #>
+    [GeneratedCode("VerbParsers.tt", "0.0.1")]
     internal partial class <#= commandFormalName #><#= verb.Name.LocalName #>Parser
     {
         internal static Func<ILogger> GetLoggerFunction;
