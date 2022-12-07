@@ -538,7 +538,7 @@ namespace NuGet.Commands
                             LibraryDependency parentDependency = rootNode.Item.Data.Dependencies.FirstOrDefault(i => i.Name.Equals(parentNode.Item.Key.Name, StringComparison.OrdinalIgnoreCase));
 
                             // A transitive dependency that is a few levels deep won't be a top-level dependency so skip it
-                            if (parentDependency == null)
+                            if (parentDependency == null || parentDependency.ReferenceType != LibraryDependencyReferenceType.Direct)
                             {
                                 continue;
                             }
