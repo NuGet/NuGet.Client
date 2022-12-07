@@ -72,7 +72,7 @@ steps:
     optimizationInputsDropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
     ShouldSkipOptimize: $(ShouldSkipOptimize)
     AccessToken: $(System.AccessToken)
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: false
 
 - task: PowerShell@1
   displayName: "Restore dotnet tools"
@@ -316,14 +316,14 @@ steps:
   inputs:
     command: 'custom'
     arguments: 'sources add -Name VS -Source $(VsPackageFeedUrl) -UserName $(VsPackageFeedUsername) -Password $(VsPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: false
 
 - task: NuGetCommand@2
   displayName: 'OptProfV2:  install the NuGet package for building .runsettingsproj file'
   inputs:
     command: 'custom'
     arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.308 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: false
 
 - task: ms-vseng.MicroBuildTasks.0e9d0d4d-71ec-4e4e-ae40-db9896f1ae74.MicroBuildBuildVSBootstrapper@2
   displayName: 'OptProfV2:  build a Visual Studio bootstrapper'
@@ -333,7 +333,7 @@ steps:
     manifests: '$(Build.Repository.LocalPath)\artifacts\$(VsixPublishDir)\Microsoft.VisualStudio.NuGet.Core.vsman'
     outputFolder: '$(Build.Repository.LocalPath)\artifacts\$(VsixPublishDir)'
   continueOnError: true
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: false
 
 - task: PublishBuildArtifacts@1
   displayName: 'OptProfV2:  publish BootstrapperInfo.json as a build artifact'
@@ -341,7 +341,7 @@ steps:
     PathtoPublish: $(Build.StagingDirectory)\MicroBuild\Output
     ArtifactName: MicroBuildOutputs
     ArtifactType: Container
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: false
 
 - task: PowerShell@1
   displayName: 'OptProfV2:  set the TestDrop environment variable'
@@ -355,7 +355,7 @@ steps:
       [string] $testDropPath = $buildDropPath.Replace('/Products/', '/Tests/').Substring('https://vsdrop.corp.microsoft.com/file/v1/'.Length)
       Write-Host "Test drop:  $testDropPath"
       Write-Host "##vso[task.setvariable variable=TestDrop]$testDropPath"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: false
 
 - task: MSBuild@1
   displayName: 'OptProfV2:  generate a .runsettings file'
@@ -363,7 +363,7 @@ steps:
     solution: 'build\NuGet.OptProfV2.runsettingsproj'
     msbuildVersion: '16.0'
     msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="$(TestDrop)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)"'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: false
 
 - task: ms-vscs-artifact.build-tasks.artifactDropTask-1.artifactDropTask@0
   displayName: 'OptProfV2:  publish the .runsettings file to artifact services'
@@ -374,7 +374,7 @@ steps:
     toLowerCase: false
     usePat: false
     dropMetadataContainerName: RunSettings
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['ShouldSkipOptimize'], 'false'))"
+  condition: false
 
 - task: ms-vscs-artifact.build-tasks.artifactDropTask-1.artifactDropTask@0
   displayName: 'OptProfV2:  publish profiling inputs to artifact services'
@@ -384,7 +384,7 @@ steps:
     sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
     toLowerCase: false
     usePat: false
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'), eq(variables['ShouldSkipOptimize'], 'false'))"
+  condition: false
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
