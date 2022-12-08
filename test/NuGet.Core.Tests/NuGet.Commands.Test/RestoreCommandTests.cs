@@ -2492,22 +2492,16 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_CentralVersion_AssetsFile_PrivateAssetsFlowsToPinnedDependenciesWithSingleParentProject(LibraryIncludeFlags privateAssets, int expectedCount)
         {
             // Arrange
-            using (var tmpPath = new SimpleTestPathContext())
+            using (var testPathContext = new SimpleTestPathContext())
             {
                 var logger = new TestLogger();
 
-                var project1Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project1"));
-                var project2Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project2"));
-
-                var globalPackages = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "globalPackages"));
-                var packageSource = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "packageSource"));
-
-                globalPackages.Create();
-                packageSource.Create();
+                var project1Directory = new DirectoryInfo(Path.Combine(testPathContext.SolutionRoot, "Project1"));
+                var project2Directory = new DirectoryInfo(Path.Combine(testPathContext.SolutionRoot, "Project2"));
 
                 // Project1 -> Project2 -> PackageA 1.0.0
                 var packageA = new SimpleTestPackageContext { Id = "PackageA", Version = "1.0.0", };
-                await SimpleTestPackageUtility.CreateFullPackageAsync(tmpPath.PackageSource, packageA);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(testPathContext.PackageSource, packageA);
 
                 var project2Spec = PackageReferenceSpecBuilder.Create("Project2", project2Directory.FullName)
                     .WithTargetFrameworks(new[]
@@ -2519,8 +2513,7 @@ namespace NuGet.Commands.Test
                             {
                                 new LibraryDependency
                                 {
-                                    LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"),
-                                        LibraryDependencyTarget.All),
+                                    LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.All),
                                     VersionCentrallyManaged = true,
                                 },
                             }),
@@ -2550,18 +2543,13 @@ namespace NuGet.Commands.Test
 
                 var restoreContext = new RestoreArgs()
                 {
-                    Sources = new List<string>() { packageSource.FullName },
-                    GlobalPackagesFolder = globalPackages.FullName,
+                    Sources = new List<string> { testPathContext.PackageSource },
+                    GlobalPackagesFolder = testPathContext.UserPackagesFolder,
                     Log = logger,
                     CacheContext = new TestSourceCacheContext(),
                 };
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(
-                    packageSource.FullName,
-                    packageA);
-
                 var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, project1Spec, project2Spec);
-
                 var restoreCommand = new RestoreCommand(request);
                 var result = await restoreCommand.ExecuteAsync();
                 var lockFile = result.LockFile;
