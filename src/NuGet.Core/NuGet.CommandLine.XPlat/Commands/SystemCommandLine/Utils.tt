@@ -359,7 +359,7 @@ public class OptionData
         PushIndent(Indent(indent));
         WriteLine($"{classVisibility} partial class {className}");
         WriteLine("{");
-        PushIndent(Indent(indent * 2));
+        PushIndent(Indent(indent));
         foreach (XElement option in nodeMembers.Elements())
         {
             if (IsArgumentOrOption(GetProperty(option)))
@@ -502,6 +502,10 @@ public class OptionData
             {
                 WriteLine($"{data.InitCapsName} = bindingContext.ParseResult.GetValueForArgument({data.PrivateMemberName}),");
             }
+            else
+            {
+                throw new ArgumentException("Unsupported OptionData.BaseClass option");
+            }
         }
         PopIndent();
         WriteLine("};");
@@ -555,7 +559,7 @@ public class OptionData
         WriteLine("}");
     }
 
-    void GenerateRegisterMehtodForCommandCall(string runnerPrefix, string commandNameVar, string loggerFuncNameVar)
+    void GenerateRegisterMethodForCommandCall(string runnerPrefix, string commandNameVar, string loggerFuncNameVar)
     {
         WriteLine($@"RegisterOptionsForCommand{runnerPrefix}({commandNameVar}, {loggerFuncNameVar});");
     }

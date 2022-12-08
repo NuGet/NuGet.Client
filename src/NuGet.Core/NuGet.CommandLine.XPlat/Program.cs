@@ -101,7 +101,7 @@ namespace NuGet.CommandLine.XPlat
             ParseResult result = command.Parse(args);
             if (result.Errors.Any())
             {
-                // Run with CommandLineUtils
+                // Fallback to old way for now: CommandLineUtils
                 try
                 {
                     exitCode = app.Execute(args);

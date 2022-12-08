@@ -52,7 +52,7 @@ foreach (XElement verb in allElements)
     PushIndent(Indent(12));
     if (verbOpts.Any())
     {
-        GenerateRegisterMehtodForCommandCall($@"{GetNodeFormalName(verb)}", commandFormalNameVar, "getLogger");
+        GenerateRegisterMethodForCommandCall($@"{GetNodeFormalName(verb)}", commandFormalNameVar, "getLogger");
     }
     PopIndent();
     
@@ -74,7 +74,7 @@ foreach (XElement verb in allElements)
 <#
         // Look for options directly under each noun
         PushIndent(Indent(12));
-        GenerateRegisterMehtodForCommandCall($@"{GetNodeFormalName(verb)}{GetNodeFormalName(noun)}", nounFormalNameVar, "getLogger");
+        GenerateRegisterMethodForCommandCall($@"{GetNodeFormalName(verb)}{GetNodeFormalName(noun)}", nounFormalNameVar, "getLogger");
         WriteLine(string.Empty);
         WriteLine($"{commandFormalNameVar}.AddCommand({nounFormalNameVar});");
         PopIndent();
