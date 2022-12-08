@@ -66,6 +66,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool _initialized;
         private bool _cacheInitialized;
+        private bool _isSolutionOpen;
         private string _solutionDirectory;
 
         //add solutionOpenedRasied to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
@@ -204,6 +205,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
             _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
+
+            if (ErrorHandler.Succeeded(_vsSolution.GetProperty((int)__VSPROPID.VSPROPID_IsSolutionOpen, out object isSoltuionOpen)))
+            {
+                _isSolutionOpen = (bool)isSoltuionOpen;
+            }
+            else
+            {
+                _isSolutionOpen = false;
+            }
 
             if (ErrorHandler.Succeeded(_vsSolution.GetProperty((int)__VSPROPID.VSPROPID_SolutionDirectory, out object solutionDirectory)))
             {
@@ -353,14 +363,11 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (_solutionEventsCookie != 0)
                 {
-                    return _solutionDirectory != null;
+                    return _isSolutionOpen;
                 }
                 else
                 {
-                    return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        return await IsSolutionOpenAsync();
-                    });
+                    return NuGetUIThreadHelper.JoinableTaskFactory.Run(IsSolutionOpenAsync);
                 }
             }
         }
@@ -369,7 +376,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (_solutionEventsCookie != 0)
             {
-                return _solutionDirectory != null;
+                return _isSolutionOpen;
             }
             else
             {
@@ -1123,7 +1130,16 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _solutionDirectory = (string)GetVSSolutionProperty((int)__VSPROPID.VSPROPID_SolutionDirectory);
+            if (ErrorHandler.Succeeded(_vsSolution.GetProperty((int)__VSPROPID.VSPROPID_SolutionDirectory, out object solutionDirectory)))
+            {
+                _solutionDirectory = (string)solutionDirectory;
+            }
+            else
+            {
+                // This may happen for "temporary" solutions - a file is open or created without a project or solution
+                _solutionDirectory = null;
+            }
+            _isSolutionOpen = true;
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 await OnSolutionExistsAndFullyLoadedAsync()).PostOnFailure(nameof(OnAfterOpenSolution));
@@ -1138,6 +1154,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public int OnBeforeCloseSolution(object pUnkReserved)
         {
             _solutionDirectory = null;
+            _isSolutionOpen = false;
             return VSConstants.S_OK;
         }
 
