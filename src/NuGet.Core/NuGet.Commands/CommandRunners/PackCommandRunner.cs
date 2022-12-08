@@ -529,14 +529,14 @@ namespace NuGet.Commands
                     }
 
                     builder.TargetFrameworks.Add(framework.FrameworkName);
-                    AddDependencyGroups(framework.Dependencies.Concat(spec.Dependencies), framework.FrameworkName, builder);
+                    AddDependencyGroups(framework.Dependencies.Concat(spec.Dependencies), framework.FrameworkName, builder, packPrivateAssetsFlow: false);
                 }
             }
             else
             {
                 if (spec.Dependencies.Any())
                 {
-                    AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder);
+                    AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder, packPrivateAssetsFlow: false);
                 }
             }
 
@@ -568,17 +568,32 @@ namespace NuGet.Commands
         public static void AddDependencyGroups(
             IEnumerable<LibraryDependency> dependencies,
             NuGetFramework framework,
-            PackageBuilder builder)
+            PackageBuilder builder,
+            bool packPrivateAssetsFlow)
         {
             ISet<PackageDependency> packageDependencies = new HashSet<PackageDependency>();
 
             foreach (LibraryDependency dependency in dependencies)
             {
-                LibraryIncludeFlags effectiveInclude = dependency.IncludeType | (~dependency.SuppressParent & LibraryIncludeFlags.All);
+                LibraryIncludeFlags effectiveInclude = default;
 
-                if (dependency.SuppressParent == LibraryIncludeFlags.All || effectiveInclude == LibraryIncludeFlags.None)
+                if (packPrivateAssetsFlow)
                 {
-                    continue;
+                    effectiveInclude = dependency.IncludeType | (~dependency.SuppressParent & LibraryIncludeFlags.All);
+
+                    if (dependency.SuppressParent == LibraryIncludeFlags.All || effectiveInclude == LibraryIncludeFlags.None)
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    effectiveInclude = dependency.IncludeType & ~dependency.SuppressParent;
+
+                    if (dependency.IncludeType == LibraryIncludeFlags.None || dependency.SuppressParent == LibraryIncludeFlags.All)
+                    {
+                        continue;
+                    }
                 }
 
                 if (dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference)

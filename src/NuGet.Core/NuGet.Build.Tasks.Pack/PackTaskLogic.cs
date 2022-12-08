@@ -39,6 +39,7 @@ namespace NuGet.Build.Tasks.Pack
                 NoPackageAnalysis = request.NoPackageAnalysis,
                 NoDefaultExcludes = request.NoDefaultExcludes,
                 WarningProperties = WarningProperties.GetWarningProperties(request.TreatWarningsAsErrors, request.WarningsAsErrors, request.NoWarn, request.WarningsNotAsErrors),
+                PackPrivateAssetsFlowProperties = request.PackPrivateAssetsFlow,
                 PackTargetArgs = new MSBuildPackTargetArgs()
             };
 
@@ -254,7 +255,8 @@ namespace NuGet.Build.Tasks.Pack
             PopulateProjectAndPackageReferences(builder,
                 assetsFile,
                 projectRefToVersionMap,
-                frameworksWithSuppressedDependencies);
+                frameworksWithSuppressedDependencies,
+                request.PackPrivateAssetsFlow);
 
             PopulateFrameworkAssemblyReferences(builder, request);
             PopulateFrameworkReferences(builder, assetsFile);
@@ -805,7 +807,8 @@ namespace NuGet.Build.Tasks.Pack
 
         private void PopulateProjectAndPackageReferences(PackageBuilder packageBuilder, LockFile assetsFile,
             IDictionary<string, string> projectRefToVersionMap,
-            ISet<NuGetFramework> frameworksWithSuppressedDependencies)
+            ISet<NuGetFramework> frameworksWithSuppressedDependencies,
+            bool packPrivateAssetsFlow)
         {
             var dependenciesByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
 
@@ -814,7 +817,7 @@ namespace NuGet.Build.Tasks.Pack
 
             foreach (var pair in dependenciesByFramework)
             {
-                PackCommandRunner.AddDependencyGroups(pair.Value, pair.Key, packageBuilder);
+                PackCommandRunner.AddDependencyGroups(pair.Value, pair.Key, packageBuilder, packPrivateAssetsFlow);
             }
         }
 

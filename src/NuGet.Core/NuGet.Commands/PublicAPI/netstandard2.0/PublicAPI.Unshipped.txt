@@ -1,1 +1,2 @@
 #nullable enable
+~static NuGet.Commands.PackCommandRunner.AddDependencyGroups(System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency> dependencies, NuGet.Frameworks.NuGetFramework framework, NuGet.Packaging.PackageBuilder builder, bool packPrivateAssetsFlow) -> void
