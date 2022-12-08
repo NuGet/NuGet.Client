@@ -89,7 +89,7 @@ namespace NuGet.Common.Test
             void AbandonMutex()
             {
                 _orphan.WaitOne();
-                // Abandon the mutexes by exiting without releasing the it by invoking _orphan1.ReleaseMutex() method.
+                // Abandon the mutexes by exiting without releasing it by invoking _orphan1.ReleaseMutex() method.
             }
         }
     }
