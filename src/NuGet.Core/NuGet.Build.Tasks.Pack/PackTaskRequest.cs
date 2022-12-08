@@ -64,6 +64,7 @@ namespace NuGet.Build.Tasks.Pack
         public string TreatWarningsAsErrors { get; set; }
         public string WarningsAsErrors { get; set; }
         public string WarningsNotAsErrors { get; set; }
+        public bool PackPrivateAssetsFlow { get; set; }
         public IMSBuildItem[] FrameworksWithSuppressedDependencies { get; set; }
         public string SymbolPackageFormat { get; set; }
         public string PackageLicenseFile { get; set; }

@@ -44,6 +44,9 @@ namespace NuGet.Commands
         public string Version { get; set; }
         public bool Deterministic { get; set; }
         public WarningProperties WarningProperties { get; set; }
+#pragma warning disable RS0016 // Add public types and members to the declared API
+        public bool PackPrivateAssetsFlowProperties { get; set; }
+#pragma warning restore RS0016 // Add public types and members to the declared API
         public MSBuildPackTargetArgs PackTargetArgs { get; set; }
         public Dictionary<string, string> Properties
         {

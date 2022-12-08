@@ -77,6 +77,8 @@ namespace NuGet.Build.Tasks.Pack
         public string Readme { get; set; }
         public bool Deterministic { get; set; }
         public string PackageIcon { get; set; }
+        public bool PackPrivateAssetsFlow { get; set; }
+
         public ILogger Logger => new MSBuildLogger(Log);
 
         private IPackTaskLogic _packTaskLogic;
@@ -204,6 +206,7 @@ namespace NuGet.Build.Tasks.Pack
                 NoWarn = MSBuildStringUtility.TrimAndGetNullForEmpty(NoWarn),
                 WarningsAsErrors = MSBuildStringUtility.TrimAndGetNullForEmpty(WarningsAsErrors),
                 WarningsNotAsErrors = MSBuildStringUtility.TrimAndGetNullForEmpty(WarningsNotAsErrors),
+                PackPrivateAssetsFlow = PackPrivateAssetsFlow,
                 PackageLicenseExpression = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseExpression),
                 PackageLicenseFile = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseFile),
                 PackageLicenseExpressionVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseExpressionVersion),

@@ -217,6 +217,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
       WarningsAsErrors="$(WarningsAsErrors)"
       WarningsNotAsErrors="$(WarningsNotAsErrors)"
+      PackPrivateAssetsFlow="$(PackPrivateAssetsFlow)"
       NoWarn="$(NoWarn)"
       ContinueOnError="$(CollectPackageReferencesContinueOnError)"
       >
@@ -253,6 +254,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
       WarningsAsErrors="$(WarningsAsErrors)"
       WarningsNotAsErrors="$(WarningsNotAsErrors)"
+      PackPrivateAssetsFlow="$(PackPrivateAssetsFlow)"
       NoWarn="$(NoWarn)"
       ContinueOnError="$(CollectCentralPackageVersionsContinueOnError)"
       >
@@ -290,6 +292,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
       WarningsAsErrors="$(WarningsAsErrors)"
       WarningsNotAsErrors="$(WarningsNotAsErrors)"
+      PackPrivateAssetsFlow="$(PackPrivateAssetsFlow)"
       NoWarn="$(NoWarn)"
       ContinueOnError="$(CollectPackageDownloadsContinueOnError)"
       >
@@ -842,6 +845,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <TreatWarningsAsErrors>$(TreatWarningsAsErrors)</TreatWarningsAsErrors>
         <WarningsAsErrors>$(WarningsAsErrors)</WarningsAsErrors>
         <WarningsNotAsErrors>$(WarningsNotAsErrors)</WarningsNotAsErrors>
+        <PackPrivateAssetsFlow>$(PackPrivateAssetsFlow)</PackPrivateAssetsFlow>
         <NoWarn>$(NoWarn)</NoWarn>
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>

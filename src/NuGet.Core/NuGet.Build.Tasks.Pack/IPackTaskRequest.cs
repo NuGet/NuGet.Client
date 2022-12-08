@@ -71,6 +71,7 @@ namespace NuGet.Build.Tasks.Pack
         string TreatWarningsAsErrors { get; }
         string WarningsAsErrors { get; }
         string WarningsNotAsErrors { get; }
+        bool PackPrivateAssetsFlow { get; }
         string PackageLicenseExpression { get; }
         string PackageLicenseExpressionVersion { get; }
         string PackageLicenseFile { get; }
