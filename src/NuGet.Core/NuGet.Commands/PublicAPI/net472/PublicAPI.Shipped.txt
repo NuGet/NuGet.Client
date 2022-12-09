@@ -952,6 +952,7 @@ override NuGet.Commands.WarningPropertiesCollection.GetHashCode() -> int
 ~static NuGet.Commands.NoOpRestoreUtilities.GetProjectCacheFilePath(string cacheRoot, string projectPath) -> string
 ~static NuGet.Commands.PackArgs.GetSymbolPackageFormat(string symbolPackageFormat) -> NuGet.Commands.SymbolPackageFormat
 ~static NuGet.Commands.PackCommand.PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(System.Collections.Generic.IDictionary<string, System.Collections.Generic.HashSet<(NuGet.Common.NuGetLogCode, NuGet.Frameworks.NuGetFramework)>> noWarnProperties) -> NuGet.Commands.PackCommand.PackageSpecificWarningProperties
+~static NuGet.Commands.PackCommandRunner.AddDependencyGroups(System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency> dependencies, NuGet.Frameworks.NuGetFramework framework, NuGet.Packaging.PackageBuilder builder) -> void
 ~static NuGet.Commands.PackCommandRunner.AddLibraryDependency(NuGet.LibraryModel.LibraryDependency dependency, System.Collections.Generic.ISet<NuGet.LibraryModel.LibraryDependency> list) -> void
 ~static NuGet.Commands.PackCommandRunner.AddPackageDependency(NuGet.Packaging.Core.PackageDependency dependency, System.Collections.Generic.ISet<NuGet.Packaging.Core.PackageDependency> set) -> void
 ~static NuGet.Commands.PackCommandRunner.GetInputFile(NuGet.Commands.PackArgs packArgs) -> string

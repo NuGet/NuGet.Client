@@ -1,1 +1,3 @@
 #nullable enable
+NuGet.ProjectModel.ProjectRestoreMetadata.PrivateAssetIndependent.get -> bool
+NuGet.ProjectModel.ProjectRestoreMetadata.PrivateAssetIndependent.set -> void

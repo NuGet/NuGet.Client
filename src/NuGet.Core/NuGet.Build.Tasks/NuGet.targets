@@ -61,6 +61,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GetReferenceNearestTargetFrameworkTaskSupportsTargetPlatformParameter>true</GetReferenceNearestTargetFrameworkTaskSupportsTargetPlatformParameter>
     <!-- Flag if the Central package file is enabled -->
     <_CentralPackageVersionsEnabled Condition="'$(ManagePackageVersionsCentrally)' == 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
+    <!-- Flag if the Private Asset Independent is enabled -->
+    <_PrivateAssetIndependentEnabled Condition="'$(PrivateAssetIndependent)' == 'true'">true</_PrivateAssetIndependentEnabled>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -210,7 +212,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
       WarningsAsErrors="$(WarningsAsErrors)"
       WarningsNotAsErrors="$(WarningsNotAsErrors)"
-      PackPrivateAssetsFlow="$(PackPrivateAssetsFlow)"
+      PrivateAssetIndependent="$(PrivateAssetIndependent)"
       NoWarn="$(NoWarn)"
       ContinueOnError="$(CollectPackageReferencesContinueOnError)"
       >
@@ -255,7 +257,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
       WarningsAsErrors="$(WarningsAsErrors)"
       WarningsNotAsErrors="$(WarningsNotAsErrors)"
-      PackPrivateAssetsFlow="$(PackPrivateAssetsFlow)"
+      PrivateAssetIndependent="$(PrivateAssetIndependent)"
       NoWarn="$(NoWarn)"
       ContinueOnError="$(CollectCentralPackageVersionsContinueOnError)"
       >
@@ -293,7 +295,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
       WarningsAsErrors="$(WarningsAsErrors)"
       WarningsNotAsErrors="$(WarningsNotAsErrors)"
-      PackPrivateAssetsFlow="$(PackPrivateAssetsFlow)"
+      PrivateAssetIndependent="$(PrivateAssetIndependent)"
       NoWarn="$(NoWarn)"
       ContinueOnError="$(CollectPackageDownloadsContinueOnError)"
       >
@@ -846,7 +848,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <TreatWarningsAsErrors>$(TreatWarningsAsErrors)</TreatWarningsAsErrors>
         <WarningsAsErrors>$(WarningsAsErrors)</WarningsAsErrors>
         <WarningsNotAsErrors>$(WarningsNotAsErrors)</WarningsNotAsErrors>
-        <PackPrivateAssetsFlow>$(PackPrivateAssetsFlow)</PackPrivateAssetsFlow>
+        <PrivateAssetIndependent>$(PrivateAssetIndependent)</PrivateAssetIndependent>
         <NoWarn>$(NoWarn)</NoWarn>
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
@@ -854,6 +856,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <_CentralPackageVersionsEnabled>$(_CentralPackageVersionsEnabled)</_CentralPackageVersionsEnabled>
         <CentralPackageVersionOverrideEnabled>$(CentralPackageVersionOverrideEnabled)</CentralPackageVersionOverrideEnabled>
         <CentralPackageTransitivePinningEnabled>$(CentralPackageTransitivePinningEnabled)</CentralPackageTransitivePinningEnabled>
+        <PrivateAssetIndependent>$(PrivateAssetIndependent)</PrivateAssetIndependent>
       </_RestoreGraphEntry>
     </ItemGroup>
 

@@ -306,7 +306,7 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         internal static bool IsPrivateAssetIndependentEnabled(IEnumerable tfms)
         {
-            return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.ManagePackageVersionsCentrally, MSBuildStringUtility.IsTrue);
+            return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.PrivateAssetIndependent, MSBuildStringUtility.IsTrue);
         }
 
         private static NuGetFramework GetToolFramework(IEnumerable targetFrameworks)

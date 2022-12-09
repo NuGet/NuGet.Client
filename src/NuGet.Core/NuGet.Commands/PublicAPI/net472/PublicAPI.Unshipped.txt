@@ -1,2 +1,4 @@
 #nullable enable
-~static NuGet.Commands.PackCommandRunner.AddDependencyGroups(System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency> dependencies, NuGet.Frameworks.NuGetFramework framework, NuGet.Packaging.PackageBuilder builder, bool packPrivateAssetsFlow) -> void
+NuGet.Commands.PackArgs.PrivateAssetIndependentProperties.get -> bool
+NuGet.Commands.PackArgs.PrivateAssetIndependentProperties.set -> void
+~static NuGet.Commands.PackCommandRunner.AddDependencyGroups(System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency> dependencies, NuGet.Frameworks.NuGetFramework framework, NuGet.Packaging.PackageBuilder builder, bool privateAssetIndependent) -> void

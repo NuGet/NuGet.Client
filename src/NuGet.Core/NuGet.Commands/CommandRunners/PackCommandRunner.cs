@@ -529,14 +529,14 @@ namespace NuGet.Commands
                     }
 
                     builder.TargetFrameworks.Add(framework.FrameworkName);
-                    AddDependencyGroups(framework.Dependencies.Concat(spec.Dependencies), framework.FrameworkName, builder, packPrivateAssetsFlow: false);
+                    AddDependencyGroups(framework.Dependencies.Concat(spec.Dependencies), framework.FrameworkName, builder, privateAssetIndependent: false);
                 }
             }
             else
             {
                 if (spec.Dependencies.Any())
                 {
-                    AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder, packPrivateAssetsFlow: false);
+                    AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder, privateAssetIndependent: false);
                 }
             }
 
@@ -568,8 +568,13 @@ namespace NuGet.Commands
         public static void AddDependencyGroups(
             IEnumerable<LibraryDependency> dependencies,
             NuGetFramework framework,
+            PackageBuilder builder) => AddDependencyGroups(dependencies, framework, builder, privateAssetIndependent: false);
+
+        public static void AddDependencyGroups(
+            IEnumerable<LibraryDependency> dependencies,
+            NuGetFramework framework,
             PackageBuilder builder,
-            bool packPrivateAssetsFlow)
+            bool privateAssetIndependent)
         {
             ISet<PackageDependency> packageDependencies = new HashSet<PackageDependency>();
 
@@ -577,7 +582,7 @@ namespace NuGet.Commands
             {
                 LibraryIncludeFlags effectiveInclude = default;
 
-                if (packPrivateAssetsFlow)
+                if (privateAssetIndependent)
                 {
                     effectiveInclude = dependency.IncludeType | (~dependency.SuppressParent & LibraryIncludeFlags.All);
 
