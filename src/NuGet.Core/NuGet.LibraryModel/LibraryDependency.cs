@@ -47,6 +47,10 @@ namespace NuGet.LibraryModel
         /// </summary>
         public VersionRange VersionOverride { get; set; }
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+        public bool PrivateAssetIndependentEnabled { get; set; }
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
         public LibraryDependency() { }
 
         internal LibraryDependency(
