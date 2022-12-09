@@ -90,7 +90,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         internal static TargetFrameworkInformation ToTargetFrameworkInformation(
-            IVsTargetFrameworkInfo targetFrameworkInfo, bool cpvmEnabled, string projectFullPath)
+            IVsTargetFrameworkInfo targetFrameworkInfo, bool cpvmEnabled, bool privateAssetIndependentEnabled, string projectFullPath)
         {
             var tfi = new TargetFrameworkInformation
             {
@@ -117,7 +117,7 @@ namespace NuGet.SolutionRestoreManager
                 tfi.Dependencies.AddRange(
                     targetFrameworkInfo.PackageReferences
                         .Cast<IVsReferenceItem>()
-                        .Select(pr => ToPackageLibraryDependency(pr, cpvmEnabled)));
+                        .Select(pr => ToPackageLibraryDependency(pr, cpvmEnabled, privateAssetIndependentEnabled)));
             }
 
             if (targetFrameworkInfo is IVsTargetFrameworkInfo2 targetFrameworkInfo2)
@@ -300,6 +300,15 @@ namespace NuGet.SolutionRestoreManager
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.CentralPackageTransitivePinningEnabled, MSBuildStringUtility.IsTrue);
         }
 
+        /// <summary>
+        /// Evaluates the msbuild properties and returns the value of the PrivateAssetIndependent property.
+        /// If it is not defined the default value will be disabled.
+        /// </summary>
+        internal static bool IsPrivateAssetIndependentEnabled(IEnumerable tfms)
+        {
+            return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.ManagePackageVersionsCentrally, MSBuildStringUtility.IsTrue);
+        }
+
         private static NuGetFramework GetToolFramework(IEnumerable targetFrameworks)
         {
             return GetSingleNonEvaluatedPropertyOrNull(
@@ -371,7 +380,7 @@ namespace NuGet.SolutionRestoreManager
 
         #region IVSReferenceItemAPIs
 
-        private static LibraryDependency ToPackageLibraryDependency(IVsReferenceItem item, bool cpvmEnabled)
+        private static LibraryDependency ToPackageLibraryDependency(IVsReferenceItem item, bool cpvmEnabled, bool privateAssetIndependentEnabled)
         {
             if (!TryGetVersionRange(item, "Version", out VersionRange versionRange))
             {
@@ -391,7 +400,8 @@ namespace NuGet.SolutionRestoreManager
                 AutoReferenced = GetPropertyBoolOrFalse(item, "IsImplicitlyDefined"),
                 GeneratePathProperty = GetPropertyBoolOrFalse(item, "GeneratePathProperty"),
                 Aliases = GetPropertyValueOrNull(item, "Aliases"),
-                VersionOverride = versionOverrideRange
+                VersionOverride = versionOverrideRange,
+                PrivateAssetIndependentEnabled = privateAssetIndependentEnabled
             };
 
             // Add warning suppressions

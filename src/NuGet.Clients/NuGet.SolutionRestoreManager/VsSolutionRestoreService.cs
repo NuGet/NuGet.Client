@@ -290,10 +290,11 @@ namespace NuGet.SolutionRestoreManager
         internal static PackageSpec ToPackageSpec(ProjectNames projectNames, IEnumerable TargetFrameworks, string originalTargetFrameworkstr, string msbuildProjectExtensionsPath)
         {
             var cpvmEnabled = VSNominationUtilities.IsCentralPackageVersionManagementEnabled(TargetFrameworks);
+            var privateAssetIndependentEnabled = VSNominationUtilities.IsPrivateAssetIndependentEnabled(TargetFrameworks);
 
             var tfis = TargetFrameworks
                 .Cast<IVsTargetFrameworkInfo>()
-                .Select(tfi => VSNominationUtilities.ToTargetFrameworkInformation(tfi, cpvmEnabled, projectNames.FullName))
+                .Select(tfi => VSNominationUtilities.ToTargetFrameworkInformation(tfi, cpvmEnabled, privateAssetIndependentEnabled, projectNames.FullName))
                 .ToArray();
 
             var projectFullPath = Path.GetFullPath(projectNames.FullName);
