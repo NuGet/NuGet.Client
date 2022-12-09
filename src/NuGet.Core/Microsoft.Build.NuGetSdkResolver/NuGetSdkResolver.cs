@@ -73,6 +73,10 @@ namespace Microsoft.Build.NuGetSdkResolver
             // Escape hatch to disable this resolver
             if (DisableNuGetSdkResolver.Value)
             {
+                // Errors returned to MSBuild aren't logged if another SDK resolver succeeds.  Returning errors on non-succcess is
+                // what all SDK resolvers should be doing and if no SDK resolver succeeds then MSBuild logs all of the errors as
+                // one.  In this case, the SDK resolver is disabled and it might be helpful for a user to see that they've disabled
+                // it in case it was a mistake.
                 return factory.IndicateFailure(errors: new List<string>() { Strings.Error_DisabledSdkResolver }, warnings: null);
             }
 
@@ -80,6 +84,9 @@ namespace Microsoft.Build.NuGetSdkResolver
             // Ignore invalid versions, there may be another resolver that can handle the version specified
             if (!TryGetNuGetVersionForSdk(sdkReference.Name, sdkReference.Version, resolverContext, out var parsedSdkVersion))
             {
+                // Errors returned to MSBuild aren't logged if another SDK resolver succeeds.  Returning errors on non-succcess is
+                // what all SDK resolvers should be doing and if no SDK resolver succeeds then MSBuild logs all of the errors as
+                // one.  In this case, the user might have mispelled global.json or the SDK name in global.json.
                 return factory.IndicateFailure(errors: new List<string>() { Strings.Error_NoSdkVersion }, warnings: null);
             }
 
