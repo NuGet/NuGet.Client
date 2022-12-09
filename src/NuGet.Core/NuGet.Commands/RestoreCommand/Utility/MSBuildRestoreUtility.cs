@@ -162,6 +162,7 @@ namespace NuGet.Commands
                 ProjectStyle restoreType = GetProjectStyle(specItem);
 
                 (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled) = GetCentralPackageManagementSettings(specItem, restoreType);
+                bool isPrivateAssetIndependentEnabled = GetPrivateAssetIndependentSettings(specItem, restoreType);
 
                 // Get base spec
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -225,6 +226,7 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.DotnetToolReference)
                 {
                     AddPackageReferences(result, items, isCentralPackageManagementEnabled);
+                    // Should add isPrivateAssetIndependentEnabled into LibraryDependency like CPVM?
                     AddPackageDownloads(result, items);
                     AddFrameworkReferences(result, items);
 
@@ -294,6 +296,7 @@ namespace NuGet.Commands
                 result.RestoreMetadata.CentralPackageVersionsEnabled = isCentralPackageManagementEnabled;
                 result.RestoreMetadata.CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled;
                 result.RestoreMetadata.CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled;
+                result.RestoreMetadata.PrivateAssetIndependent = isPrivateAssetIndependentEnabled;
             }
 
             return result;
@@ -1042,6 +1045,11 @@ namespace NuGet.Commands
                 frameworkInfo.CentralPackageVersions.AddRange(centralVersionsDependencies[targetAlias]);
                 LibraryDependency.ApplyCentralVersionInformation(frameworkInfo.Dependencies, frameworkInfo.CentralPackageVersions);
             }
+        }
+
+        internal static bool GetPrivateAssetIndependentSettings(IMSBuildItem projectSpecItem, ProjectStyle projectStyle)
+        {
+            return IsPropertyTrue(projectSpecItem, "PrivateAssetIndependent") && projectStyle == ProjectStyle.PackageReference;
         }
     }
 }

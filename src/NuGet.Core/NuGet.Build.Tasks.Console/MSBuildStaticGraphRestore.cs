@@ -798,6 +798,7 @@ namespace NuGet.Build.Tasks.Console
             ProjectStyle? projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
 
             (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled) = GetCentralPackageManagementSettings(project, projectStyleOrNull);
+            bool isPrivateAssetIndependentEnabled = GetPrivateAssetIndependentSettings(project, projectStyleOrNull);
 
             List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled);
 
@@ -843,6 +844,7 @@ namespace NuGet.Build.Tasks.Console
                     CentralPackageVersionsEnabled = isCentralPackageManagementEnabled && projectStyle == ProjectStyle.PackageReference,
                     CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled,
                     CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled,
+                    PrivateAssetIndependent = isPrivateAssetIndependentEnabled && projectStyle == ProjectStyle.PackageReference,
                 };
             }
 
@@ -1023,6 +1025,16 @@ namespace NuGet.Build.Tasks.Console
             }
 
             return (false, false, false);
+        }
+
+        internal static bool GetPrivateAssetIndependentSettings(IMSBuildProject project, ProjectStyle? projectStyle)
+        {
+            if (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
+            {
+                return project.IsPropertyTrue("PrivateAssetIndependent");
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -35,7 +35,7 @@ namespace NuGet.Build.Tasks
 
         public string WarningsNotAsErrors { get; set; }
 
-        public string PackPrivateAssetsFlow { get; set; }
+        public string PrivateAssetIndependent { get; set; }
 
         public string NoWarn { get; set; }
 

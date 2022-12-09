@@ -106,6 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
+            bool isPrivateAssetIndependentEnabled = await IsPrivateAssetIndependentEnabledAsync();
 
             var references = installedPackages
                 .Cast<string>()
@@ -130,7 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     return null;
                 })
                 .Where(p => p != null)
-                .Select(p => ToPackageLibraryDependency(p, isCpvmEnabled));
+                .Select(p => ToPackageLibraryDependency(p, isCpvmEnabled, isPrivateAssetIndependentEnabled));
 
             return references.ToList();
         }
@@ -200,7 +201,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return string.Empty;
         }
 
-        private static LibraryDependency ToPackageLibraryDependency(PackageReference reference, bool isCpvmEnabled)
+        private static LibraryDependency ToPackageLibraryDependency(PackageReference reference, bool isCpvmEnabled, bool isPrivateAssetIndependentEnabled)
         {
             var dependency = new LibraryDependency
             {
@@ -211,7 +212,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 LibraryRange = new LibraryRange(
                     name: reference.Name,
                     versionRange: ToVersionRange(reference.Version, isCpvmEnabled),
-                    typeConstraint: LibraryDependencyTarget.Package)
+                    typeConstraint: LibraryDependencyTarget.Package),
+                PrivateAssetIndependentEnabled = isPrivateAssetIndependentEnabled
             };
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
@@ -337,6 +339,11 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
         {
             return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
+        }
+
+        private async Task<bool> IsPrivateAssetIndependentEnabledAsync()
+        {
+            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.PrivateAssetIndependent));
         }
 
         private class ProjectReference

@@ -270,7 +270,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               WarningsAsErrors="$(WarningsAsErrors)"
               WarningsNotAsErrors="$(WarningsNotAsErrors)"
               TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
-              PackPrivateAssetsFlow="$(PackPrivateAssetsFlow)"
+              PrivateAssetIndependent="$(PrivateAssetIndependent)"
               OutputFileNamesWithoutVersion="$(OutputFileNamesWithoutVersion)"
               InstallPackageToOutputPath="$(InstallPackageToOutputPath)"
               SymbolPackageFormat="$(SymbolPackageFormat)"

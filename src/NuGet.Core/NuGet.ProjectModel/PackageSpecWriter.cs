@@ -180,6 +180,7 @@ namespace NuGet.ProjectModel
             SetValueIfTrue(writer, "centralPackageVersionsManagementEnabled", msbuildMetadata.CentralPackageVersionsEnabled);
             SetValueIfTrue(writer, "centralPackageVersionOverrideDisabled", msbuildMetadata.CentralPackageVersionOverrideDisabled);
             SetValueIfTrue(writer, "CentralPackageTransitivePinningEnabled", msbuildMetadata.CentralPackageTransitivePinningEnabled);
+            SetValueIfTrue(writer, "PrivateAssetIndependent", msbuildMetadata.PrivateAssetIndependent);
         }
 
 

@@ -156,12 +156,11 @@ namespace NuGet.Commands
                     {
                         // intersect the edges and remove any suppressParent flags
                         LibraryIncludeFlags typeIntersection = dependency.PrivateAssetIndependentEnabled ?
-                        node.DependencyType
-                            & (dependency.IncludeType
-                            | (~dependency.SuppressParent & LibraryIncludeFlags.All))
-                        : node.DependencyType
-                            & dependency.IncludeType
-                            & (~dependency.SuppressParent);
+                            node.DependencyType
+                                & (dependency.IncludeType | (~dependency.SuppressParent & LibraryIncludeFlags.All))
+                            : node.DependencyType
+                                & dependency.IncludeType
+                                & (~dependency.SuppressParent);
 
                         var childNode = new DependencyNode(child, typeIntersection);
                         nodeQueue.Enqueue(childNode);

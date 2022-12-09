@@ -1,1 +1,3 @@
 #nullable enable
+NuGet.LibraryModel.LibraryDependency.PrivateAssetIndependentEnabled.get -> bool
+NuGet.LibraryModel.LibraryDependency.PrivateAssetIndependentEnabled.set -> void
