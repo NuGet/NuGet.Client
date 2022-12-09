@@ -451,7 +451,8 @@ public class OptionData
             throw new ArgumentNullException(nameof(options));
         }
 
-        WriteLine("[GeneratedCode(\"GenerateBinderClass\", \"0.0.1\")]");
+        WriteLine($"/// <summary>Generated with {Host.TemplateFile}::{nameof(GenerateBinderClass)}</summary>");
+        WriteLine("[System.CodeDom.Compiler.GeneratedCode(\"dotnet-t4\", \"2.3.1+932110915c\")]");
         WriteLine($"internal partial class {className} : BinderBase<{binderClassName}>");
         WriteLine("{");
         PushIndent(Indent(4));
