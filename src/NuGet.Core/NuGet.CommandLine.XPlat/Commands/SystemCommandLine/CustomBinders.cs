@@ -10,7 +10,7 @@ using NuGet.Commands;
 
 namespace NuGet.CommandLine.XPlat.Commands
 {
-    /// <summary>Generated with .\CustomBinders.tt::GenerateBinderClass</summary>
+    /// <summary>Generated with CustomBinders.tt::GenerateBinderClass</summary>
     [System.CodeDom.Compiler.GeneratedCode("dotnet-t4", "2.3.1+932110915c")]
     internal partial class AddSourceCustomBinder : BinderBase<AddSourceArgs>
     {
@@ -49,7 +49,7 @@ namespace NuGet.CommandLine.XPlat.Commands
         } // end GetBoundValue method
     } // end class
 
-    /// <summary>Generated with .\CustomBinders.tt::GenerateBinderClass</summary>
+    /// <summary>Generated with CustomBinders.tt::GenerateBinderClass</summary>
     [System.CodeDom.Compiler.GeneratedCode("dotnet-t4", "2.3.1+932110915c")]
     internal partial class ListSourceCustomBinder : BinderBase<ListSourceArgs>
     {
