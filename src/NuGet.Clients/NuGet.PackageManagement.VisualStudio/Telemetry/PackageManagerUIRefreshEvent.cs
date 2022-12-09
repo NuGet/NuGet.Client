@@ -3,6 +3,7 @@
 
 using System;
 using NuGet.Common;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.Telemetry
 {
@@ -18,7 +19,8 @@ namespace NuGet.PackageManagement.Telemetry
             string tab,
             bool isUIFiltering,
             TimeSpan timeSinceLastRefresh,
-            double? duration) : base(EventName)
+            double? duration,
+            NuGetProjectKind projectType) : base(EventName)
         {
             base["ParentId"] = parentId.ToString();
             base["IsSolutionLevel"] = isSolutionLevel;
@@ -27,6 +29,11 @@ namespace NuGet.PackageManagement.Telemetry
             base["Tab"] = tab;
             base["IsUIFiltering"] = isUIFiltering;
             base["TimeSinceLastRefresh"] = timeSinceLastRefresh.TotalMilliseconds;
+
+            if (!isSolutionLevel)
+            {
+                base["ProjectKind"] = projectType;
+            }
 
             if (duration.HasValue)
             {

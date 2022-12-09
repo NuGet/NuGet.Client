@@ -351,6 +351,10 @@ namespace NuGet.PackageManagement.UI
             if (_isExecutingAction)
             {
                 _isRefreshRequired = true;
+                if (Model.IsSolution)
+                {
+                    
+                }
                 EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.NoOp, isUIFiltering: false, duration: 0);
             }
             else
@@ -359,7 +363,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false, double? duration = null)
+        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, NuGetProjectKind projectKind, bool isUIFiltering = false, double? duration = null)
         {
             TelemetryActivity.EmitTelemetryEvent(
                 new PackageManagerUIRefreshEvent(
@@ -370,7 +374,8 @@ namespace NuGet.PackageManagement.UI
                     _topPanel.Filter.ToString(),
                     isUIFiltering,
                     timeSpan,
-                    duration));
+                    duration,
+                    projectKind));
         }
 
         private void EmitPMUIClosingTelemetry()
@@ -1259,7 +1264,8 @@ namespace NuGet.PackageManagement.UI
             finally
             {
                 sw.Stop();
-                EmitRefreshEvent(lastRefresh, source, refreshStatus, isUIFiltering, sw.Elapsed.TotalMilliseconds);
+                NuGetProjectKind projectKind = Model.IsSolution ? NuGetProjectKind.Unknown : Model.Context.Projects.First().ProjectKind;
+                EmitRefreshEvent(lastRefresh, source, refreshStatus, projectKind, isUIFiltering, sw.Elapsed.TotalMilliseconds);
             }
         }
 
