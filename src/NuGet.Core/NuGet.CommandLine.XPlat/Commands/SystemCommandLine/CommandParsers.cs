@@ -12,7 +12,7 @@ using NuGet.Common;
 namespace NuGet.CommandLine.XPlat.Commands
 {
     /// <summary>Generated with CommandParsers.tt</summary>
-    [System.CodeDom.Compiler.GeneratedCode("Type:Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService; Assembly:Microsoft.VisualStudio.TextTemplating.VSHost, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", "AssemblyFileVersion:17.0.33201.384")]
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
     internal static class CommandParsers
     {
         public static void Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)

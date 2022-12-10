@@ -569,10 +569,8 @@ public class OptionData
     string GetGeneratedAttribute()
     {
         string typeName = Host.GetType().ToString();
-        string toolAssembly = Host.GetType().Assembly.FullName;
-        string fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(Host.GetType().Assembly.Location).FileVersion;
 
-        return $"[System.CodeDom.Compiler.GeneratedCode(\"Type:{typeName}; Assembly:{toolAssembly}\", \"AssemblyFileVersion:{fileVersion}\")]";
+        return $"[System.CodeDom.Compiler.GeneratedCode(\"{typeName}\", null)]";
     }
 
     string GetGeneratedClassComment()

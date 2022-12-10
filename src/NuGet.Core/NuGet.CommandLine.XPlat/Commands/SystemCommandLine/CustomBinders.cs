@@ -12,7 +12,7 @@ using NuGet.Commands;
 namespace NuGet.CommandLine.XPlat.Commands
 {
     /// <summary>Generated with CustomBinders.tt</summary>
-    [System.CodeDom.Compiler.GeneratedCode("Type:Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService; Assembly:Microsoft.VisualStudio.TextTemplating.VSHost, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", "AssemblyFileVersion:17.0.33201.384")]
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
     internal partial class AddSourceCustomBinder : BinderBase<AddSourceArgs>
     {
         private readonly Argument<string> _source;
@@ -51,7 +51,7 @@ namespace NuGet.CommandLine.XPlat.Commands
     } // end class
 
     /// <summary>Generated with CustomBinders.tt</summary>
-    [System.CodeDom.Compiler.GeneratedCode("Type:Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService; Assembly:Microsoft.VisualStudio.TextTemplating.VSHost, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", "AssemblyFileVersion:17.0.33201.384")]
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
     internal partial class ListSourceCustomBinder : BinderBase<ListSourceArgs>
     {
         private readonly Option<string> _format;

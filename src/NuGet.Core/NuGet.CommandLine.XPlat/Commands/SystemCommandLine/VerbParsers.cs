@@ -14,7 +14,7 @@ using NuGet.Common;
 namespace NuGet.CommandLine.XPlat.Commands
 {
     /// <summary>Generated with VerbParsers.tt</summary>
-    [System.CodeDom.Compiler.GeneratedCode("Type:Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService; Assembly:Microsoft.VisualStudio.TextTemplating.VSHost, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", "AssemblyFileVersion:17.0.33201.384")]
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
     internal partial class AddVerbParser
     {
         internal static Func<ILogger> GetLoggerFunction;
@@ -97,7 +97,7 @@ namespace NuGet.CommandLine.XPlat.Commands
     } // end class
 
     /// <summary>Generated with VerbParsers.tt</summary>
-    [System.CodeDom.Compiler.GeneratedCode("Type:Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService; Assembly:Microsoft.VisualStudio.TextTemplating.VSHost, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", "AssemblyFileVersion:17.0.33201.384")]
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
     internal partial class ListVerbParser
     {
         internal static Func<ILogger> GetLoggerFunction;
