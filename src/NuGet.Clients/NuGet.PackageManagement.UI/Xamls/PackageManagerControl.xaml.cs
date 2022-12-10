@@ -361,7 +361,14 @@ namespace NuGet.PackageManagement.UI
 
         private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false, double? duration = null)
         {
-            NuGetProjectKind projectKind = Model.IsSolution ? NuGetProjectKind.Unknown : Model.Context.Projects.First().ProjectKind;
+            NuGetProjectKind projectKind = NuGetProjectKind.Unknown;
+            string projectId = null;
+            if (Model.IsSolution)
+            {
+                IProjectContextInfo project = Model.Context.Projects.First();
+                projectId = project.ProjectId;
+                projectKind = project.ProjectKind;
+            }
 
             TelemetryActivity.EmitTelemetryEvent(
                 new PackageManagerUIRefreshEvent(
@@ -373,6 +380,7 @@ namespace NuGet.PackageManagement.UI
                     isUIFiltering,
                     timeSpan,
                     duration,
+                    projectId,
                     projectKind));
         }
 

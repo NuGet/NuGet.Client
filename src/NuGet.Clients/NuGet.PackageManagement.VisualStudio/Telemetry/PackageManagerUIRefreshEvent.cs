@@ -20,7 +20,8 @@ namespace NuGet.PackageManagement.Telemetry
             bool isUIFiltering,
             TimeSpan timeSinceLastRefresh,
             double? duration,
-            NuGetProjectKind projectType) : base(EventName)
+            string projectId,
+            NuGetProjectKind projectKind) : base(EventName)
         {
             base["ParentId"] = parentId.ToString();
             base["IsSolutionLevel"] = isSolutionLevel;
@@ -32,7 +33,8 @@ namespace NuGet.PackageManagement.Telemetry
 
             if (!isSolutionLevel)
             {
-                base["ProjectKind"] = projectType;
+                base["ProjectKind"] = projectKind;
+                base["ProjectId"] = projectId;
             }
 
             if (duration.HasValue)
