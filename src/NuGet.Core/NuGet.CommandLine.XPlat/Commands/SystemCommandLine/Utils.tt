@@ -452,8 +452,8 @@ public class OptionData
             throw new ArgumentNullException(nameof(options));
         }
 
-        WriteLine($"/// <summary>Generated with {Path.GetFileName(Host.TemplateFile)}::{nameof(GenerateBinderClass)}</summary>");
-        WriteLine("[System.CodeDom.Compiler.GeneratedCode(\"dotnet-t4\", \"2.3.1+932110915c\")]");
+        WriteLine(GetGeneratedClassComment());
+        WriteLine(GetGeneratedAttribute());
         WriteLine($"internal partial class {className} : BinderBase<{binderClassName}>");
         WriteLine("{");
         PushIndent(Indent(4));
@@ -564,5 +564,19 @@ public class OptionData
     void GenerateRegisterMethodForCommandCall(string runnerPrefix, string commandNameVar, string loggerFuncNameVar)
     {
         WriteLine($@"RegisterOptionsForCommand{runnerPrefix}({commandNameVar}, {loggerFuncNameVar});");
+    }
+
+    string GetGeneratedAttribute()
+    {
+        string typeName = Host.GetType().ToString();
+        string toolAssembly = Host.GetType().Assembly.FullName;
+        string fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(Host.GetType().Assembly.Location).FileVersion;
+
+        return $"[System.CodeDom.Compiler.GeneratedCode(\"Type:{typeName}; Assembly:{toolAssembly}\", \"AssemblyFileVersion:{fileVersion}\")]";
+    }
+
+    string GetGeneratedClassComment()
+    {
+        return $"/// <summary>Generated with {Path.GetFileName(Host.TemplateFile)}</summary>";
     }
 #>

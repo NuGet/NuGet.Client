@@ -24,8 +24,8 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat.Commands
 {
-    /// <summary>Generated with CommandParserts.tt</summary>
-    [System.CodeDom.Compiler.GeneratedCode("dotnet-t4", "2.3.1+932110915c")]
+    <#= GetGeneratedClassComment() #>
+    <#= GetGeneratedAttribute() #>
     internal static class CommandParsers
     {
         public static void Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
