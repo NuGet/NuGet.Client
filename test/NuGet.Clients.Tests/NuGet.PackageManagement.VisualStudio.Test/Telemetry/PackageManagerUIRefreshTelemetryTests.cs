@@ -15,6 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public void PackageManagerUIRefreshEvent_Constructor_NoProjectKindIfIsSolutionLevelSetToTrue()
         {
             NuGetProjectKind kind = NuGetProjectKind.PackageReference;
+            string projectId = "simulated-project-id-Guid";
             var telemetryEvent = new PackageManagerUIRefreshEvent(
                 It.IsAny<Guid>(),
                 isSolutionLevel: true,
@@ -24,15 +25,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 isUIFiltering: It.IsAny<bool>(),
                 It.IsAny<TimeSpan>(),
                 It.IsAny<double?>(),
+                projectId,
                 kind);
 
             Assert.Null(telemetryEvent["ProjectKind"]);
+            Assert.Null(telemetryEvent["ProjectId"]);
         }
 
         [Fact]
         public void PackageManagerUIRefreshEvent_Constructor_ProjectKindIfIsSolutionLevelSetToFalse()
         {
             NuGetProjectKind kind = NuGetProjectKind.PackageReference;
+            string projectId = "simulated-project-id-Guid";
             var telemetryEvent = new PackageManagerUIRefreshEvent(
                 It.IsAny<Guid>(),
                 isSolutionLevel: false,
@@ -42,9 +46,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 isUIFiltering: It.IsAny<bool>(),
                 It.IsAny<TimeSpan>(),
                 It.IsAny<double?>(),
+                projectId,
                 kind);
 
             Assert.NotNull(telemetryEvent["ProjectKind"]);
+            Assert.NotNull(telemetryEvent["ProjectId"]);
         }
     }
 }
