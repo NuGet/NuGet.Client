@@ -7,6 +7,7 @@ using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -105,7 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var expectedTab = "All";
             var expectedTimeSinceLastRefresh = TimeSpan.FromSeconds(1);
             var expectedDuration = TimeSpan.FromSeconds(1);
-            var refreshEvent = new PackageManagerUIRefreshEvent(expectedGuid, expectedIsSolutionLevel, expectedRefreshSource, expectedRefreshStatus, expectedTab, isUIFiltering: expectedUiFiltering, expectedTimeSinceLastRefresh, expectedDuration.TotalMilliseconds);
+            var refreshEvent = new PackageManagerUIRefreshEvent(expectedGuid, expectedIsSolutionLevel, expectedRefreshSource, expectedRefreshStatus, expectedTab, isUIFiltering: expectedUiFiltering, expectedTimeSinceLastRefresh, expectedDuration.TotalMilliseconds, It.IsAny<NuGetProjectKind>());
             var target = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act

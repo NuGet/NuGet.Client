@@ -51,6 +51,7 @@
     <Compile Include="Services\TestSharedServiceState.cs" />
     <Compile Include="Services\NuGetPackageSearchServiceTests.cs" />
     <Compile Include="Telemetry\ActionsTelemetryServiceTests.cs" />
+    <Compile Include="Telemetry\PackageManagerUIRefreshTelemetryTests.cs" />
     <Compile Include="Telemetry\TelemetryOnceEmitterTests.cs" />
     <Compile Include="Telemetry\HyperlinkClickedTelemetryEventTests.cs" />
     <Compile Include="Telemetry\IntervalTrackerTests.cs" />
