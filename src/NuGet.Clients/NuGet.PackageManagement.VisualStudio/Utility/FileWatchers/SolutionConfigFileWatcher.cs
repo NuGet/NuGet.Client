@@ -4,16 +4,16 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
 {
-    internal sealed class SolutionConfigFileWatcher : IFileWatcher
+    internal class SolutionConfigFileWatcher : IFileWatcher
     {
         private bool _disposed;
-        private FileSystemWatcher _solutionWatcher;
-        private FileSystemWatcher? _dotNuGetWatcher;
+        private List<FileSystemWatcher> _watchers;
 
         public SolutionConfigFileWatcher(string solutionDirectory)
         {
@@ -21,12 +21,16 @@ namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
                 ? Path.GetDirectoryName(solutionDirectory)
                 : solutionDirectory;
 
-            _solutionWatcher = Create(solutionDirectory);
-
-            var dotNuGetPath = Path.Combine(solutionDirectory, NuGetConstants.NuGetSolutionSettingsFolder);
-            if (Directory.Exists(dotNuGetPath))
+            _watchers = new List<FileSystemWatcher>();
+            while (current != null)
             {
-                _dotNuGetWatcher = Create(dotNuGetPath);
+                if (Directory.Exists(current))
+                {
+                    var watcher = Create(current);
+                    _watchers.Add(watcher);
+                }
+
+                current = Path.GetDirectoryName(current);
             }
 
             FileSystemWatcher Create(string path)
@@ -50,8 +54,17 @@ namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
 
             _disposed = true;
 
-            _solutionWatcher.Dispose();
-            _dotNuGetWatcher?.Dispose();
+            foreach (var watcher in _watchers)
+            {
+                watcher.EnableRaisingEvents = false;
+                watcher.Created -= OnFileSystemEvent;
+                watcher.Changed -= OnFileSystemEvent;
+                watcher.Deleted -= OnFileSystemEvent;
+                watcher.Renamed -= OnFileSystemEvent;
+                watcher.Dispose();
+            }
+
+            _watchers.Clear();
 
             GC.SuppressFinalize(this);
         }

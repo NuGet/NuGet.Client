@@ -61,6 +61,7 @@
     <Compile Include="Telemetry\TestTelemetryUtility.cs" />
     <Compile Include="Utility\FileWatchers\FileWatcherFactoryTests.cs" />
     <Compile Include="Utility\FileWatchers\SolutionConfigFileWatcherTests.cs" />
+    <Compile Include="Utility\FileWatchers\UserConfigFileWatcherTests.cs" />
     <Compile Include="Utility\GetPackageReferenceUtilityTests.cs" />
     <Compile Include="VisualStudioCredentialProviderTests.cs" />
     <Compile Include="VsCredentialProviderAdapterTests.cs" />

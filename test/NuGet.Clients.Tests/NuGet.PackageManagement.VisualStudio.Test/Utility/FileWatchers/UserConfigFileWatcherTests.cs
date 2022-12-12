@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.IO;
 using System.Threading;
@@ -14,14 +12,14 @@ using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
 {
-    public class SolutionConfigFileWatcherTests
+    public class UserConfigFileWatcherTests
     {
         [Fact]
         public void FileChanged_WhenFileCreated_NotificationReceived()
         {
             // Arrange
             using TestDirectory testDirectory = TestDirectory.Create();
-            using SolutionConfigFileWatcher target = new(testDirectory.Path);
+            using UserConfigFileWatcher target = new(testDirectory.Path);
             ManualResetEventSlim mre = new(initialState: false, spinCount: 0);
             target.FileChanged += (s, e) => mre.Set();
             string configPath = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
@@ -43,11 +41,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             string configPath = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
             File.WriteAllText(configPath, string.Empty);
             ManualResetEventSlim mre = new(initialState: false, spinCount: 0);
-            using SolutionConfigFileWatcher target = new(testDirectory.Path);
+            using UserConfigFileWatcher target = new(testDirectory.Path);
             target.FileChanged += (s, e) => mre.Set();
 
             // Act
-            mre.Wait(1).Should().BeFalse();
+            mre.Wait(0).Should().BeFalse();
             File.WriteAllText(configPath, "1");
             // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromSeconds(10));
@@ -64,11 +62,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             string configPath = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
             File.WriteAllText(configPath, string.Empty);
             ManualResetEventSlim mre = new(initialState: false, spinCount: 0);
-            using SolutionConfigFileWatcher target = new(testDirectory.Path);
+            using UserConfigFileWatcher target = new(testDirectory.Path);
             target.FileChanged += (s, e) => mre.Set();
 
             // Act
-            mre.Wait(1).Should().BeFalse();
+            mre.Wait(0).Should().BeFalse();
             File.Delete(configPath);
             // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromSeconds(10));
@@ -88,11 +86,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             string configPath2 = Path.Combine(testDirectory.Path, filename2);
             File.WriteAllText(configPath1, string.Empty);
             ManualResetEventSlim mre = new(initialState: false, spinCount: 0);
-            using SolutionConfigFileWatcher target = new(testDirectory.Path);
+            using UserConfigFileWatcher target = new(testDirectory.Path);
             target.FileChanged += (s, e) => mre.Set();
 
             // Act
-            mre.Wait(1).Should().BeFalse();
+            mre.Wait(0).Should().BeFalse();
             File.Move(configPath1, configPath2);
             // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromSeconds(10));
@@ -102,15 +100,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
         }
 
         [Fact]
-        public void FileChanged_WhenFileCreatedInParentDirectory_NotificationReceived()
+        public void FileChanged_WhenFileCreatedInConfigSubdirectory_NotificationReceived()
         {
             // Arrange
             using TestDirectory testDirectory = TestDirectory.Create();
-            var solutionDirectory = Path.Combine(testDirectory, "solution");
-            using SolutionConfigFileWatcher target = new(solutionDirectory);
+            var configDirectory = Path.Combine(testDirectory, "config");
+            using UserConfigFileWatcher target = new(testDirectory.Path);
             ManualResetEventSlim mre = new(initialState: false, spinCount: 0);
             target.FileChanged += (s, e) => mre.Set();
-            string configPath = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
+            string configPath = Path.Combine(configDirectory, "contoso.config");
 
             // Act
             File.WriteAllText(configPath, string.Empty);
@@ -127,18 +125,18 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             // Arrange
             using TestDirectory testDirectory = TestDirectory.Create();
             ManualResetEventSlim mre = new(initialState: false, spinCount: 0);
-            using (SolutionConfigFileWatcher target = new(testDirectory.Path))
+            using (UserConfigFileWatcher target = new(testDirectory.Path))
             {
                 target.FileChanged += (s, e) => mre.Set();
             }
-            string slnPath = Path.Combine(testDirectory.Path, "solution.sln");
-            string packagesConfigPath = Path.Combine(testDirectory.Path, "packages.config");
-            string nugetConfigBakPath = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName + ".bak");
+            string nugetConfigBakPath = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName+".bak");
+            string otherConfigPath = Path.Combine(testDirectory.Path, "other.config");
+            string customConfigBak = Path.Combine(testDirectory.Path, "config", "custom.config.bak");
 
             // Act
-            File.WriteAllText(slnPath, string.Empty);
-            File.WriteAllText(packagesConfigPath, string.Empty);
             File.WriteAllText(nugetConfigBakPath, string.Empty);
+            File.WriteAllText(otherConfigPath, string.Empty);
+            File.WriteAllText(customConfigBak, string.Empty);
             // File system watchers are not real time, so we need to give a little time for all the async file IO to happen
             bool obtained = mre.Wait(TimeSpan.FromMilliseconds(10));
 
@@ -155,7 +153,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
             string configPath = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
 
             // Act
-            using (SolutionConfigFileWatcher target = new(testDirectory.Path))
+            using (UserConfigFileWatcher target = new(testDirectory.Path))
             {
                 target.FileChanged += (s, e) => mre.Set();
             }
@@ -165,6 +163,30 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Utility.FileWatchers
 
             // Assert
             obtained.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Delete_ConfigDirectory_Fails()
+        {
+            // Arrange
+            using TestDirectory testDirectory = TestDirectory.Create();
+            using (UserConfigFileWatcher target = new(testDirectory.Path))
+            {
+                // Act & Assert
+                Assert.ThrowsAny<Exception>(() => Directory.Delete(testDirectory.Path, recursive: true));
+            }
+        }
+
+        // Simulate two instances of Visual Studio being open at the same time by having two instances of the class at the same time.
+        [Fact]
+        public void ctor_TwoInstances_DoesNotFail()
+        {
+            // Arrange
+            using TestDirectory testDirectory = TestDirectory.Create();
+
+            // Act & Assert (does not throw)
+            using UserConfigFileWatcher target1 = new(testDirectory.Path);
+            using UserConfigFileWatcher target2 = new(testDirectory.Path);
         }
     }
 }

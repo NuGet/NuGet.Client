@@ -7,6 +7,11 @@ namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
 {
     internal class FileWatcherFactory : IFileWatcherFactory
     {
+        public IFileWatcher CreateUserConfigFileWatcher()
+        {
+            return new UserConfigFileWatcher();
+        }
+
         public IFileWatcher CreateSolutionConfigFileWatcher(string solutionDirectory)
         {
             return new SolutionConfigFileWatcher(solutionDirectory);
