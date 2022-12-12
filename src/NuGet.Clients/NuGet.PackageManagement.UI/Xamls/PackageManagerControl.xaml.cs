@@ -361,19 +361,24 @@ namespace NuGet.PackageManagement.UI
 
         private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false, double? duration = null)
         {
-            NuGetProjectKind projectKind = NuGetProjectKind.Unknown;
-            string projectId = null;
             if (Model.IsSolution)
             {
-                IProjectContextInfo project = Model.Context.Projects.First();
-                projectId = project.ProjectId;
-                projectKind = project.ProjectKind;
-            }
-
-            TelemetryActivity.EmitTelemetryEvent(
-                new PackageManagerUIRefreshEvent(
+                TelemetryActivity.EmitTelemetryEvent(PackageManagerUIRefreshEvent.ForSolution(
                     _sessionGuid,
-                    Model.IsSolution,
+                    refreshOperationSource,
+                    status,
+                    _topPanel.Filter.ToString(),
+                    isUIFiltering,
+                    timeSpan,
+                    duration));
+            }
+            else
+            {
+                IProjectContextInfo project = Model.Context.Projects.First();
+                string projectId = project.ProjectId;
+                NuGetProjectKind projectKind = project.ProjectKind;
+                TelemetryActivity.EmitTelemetryEvent(PackageManagerUIRefreshEvent.ForProject(
+                    _sessionGuid,
                     refreshOperationSource,
                     status,
                     _topPanel.Filter.ToString(),
@@ -382,6 +387,7 @@ namespace NuGet.PackageManagement.UI
                     duration,
                     projectId,
                     projectKind));
+            }
         }
 
         private void EmitPMUIClosingTelemetry()
