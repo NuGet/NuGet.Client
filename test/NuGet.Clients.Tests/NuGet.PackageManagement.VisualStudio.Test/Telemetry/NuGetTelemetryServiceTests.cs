@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var expectedTab = "All";
             var expectedTimeSinceLastRefresh = TimeSpan.FromSeconds(1);
             var expectedDuration = TimeSpan.FromSeconds(1);
-            var refreshEvent = new PackageManagerUIRefreshEvent(expectedGuid, expectedIsSolutionLevel, expectedRefreshSource, expectedRefreshStatus, expectedTab, isUIFiltering: expectedUiFiltering, expectedTimeSinceLastRefresh, expectedDuration.TotalMilliseconds, It.IsAny<string>(), It.IsAny<NuGetProjectKind>());
+            var refreshEvent = PackageManagerUIRefreshEvent.ForSolution(expectedGuid, expectedRefreshSource, expectedRefreshStatus, expectedTab, isUIFiltering: expectedUiFiltering, expectedTimeSinceLastRefresh, expectedDuration.TotalMilliseconds);
             var target = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act

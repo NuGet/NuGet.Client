@@ -12,34 +12,28 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     public class PackageManagerUIRefreshTelemetryTests
     {
         [Fact]
-        public void PackageManagerUIRefreshEvent_Constructor_NoProjectKindIfIsSolutionLevelSetToTrue()
+        public void ForSolution_SimulatedData_NoProjectKindIfIsSolutionLevelSetToTrue()
         {
-            NuGetProjectKind kind = NuGetProjectKind.PackageReference;
-            string projectId = "simulated-project-id-Guid";
-            var telemetryEvent = new PackageManagerUIRefreshEvent(
+            var telemetryEvent = PackageManagerUIRefreshEvent.ForSolution(
                 It.IsAny<Guid>(),
-                isSolutionLevel: true,
                 It.IsAny<RefreshOperationSource>(),
                 It.IsAny<RefreshOperationStatus>(),
                 tab: It.IsAny<string>(),
                 isUIFiltering: It.IsAny<bool>(),
                 It.IsAny<TimeSpan>(),
-                It.IsAny<double?>(),
-                projectId,
-                kind);
+                It.IsAny<double?>());
 
             Assert.Null(telemetryEvent["ProjectKind"]);
             Assert.Null(telemetryEvent["ProjectId"]);
         }
 
         [Fact]
-        public void PackageManagerUIRefreshEvent_Constructor_ProjectKindIfIsSolutionLevelSetToFalse()
+        public void ForProject_SimulatedData_ProjectKindAndProjectIdSet()
         {
             NuGetProjectKind kind = NuGetProjectKind.PackageReference;
             string projectId = "simulated-project-id-Guid";
-            var telemetryEvent = new PackageManagerUIRefreshEvent(
+            var telemetryEvent = PackageManagerUIRefreshEvent.ForProject(
                 It.IsAny<Guid>(),
-                isSolutionLevel: false,
                 It.IsAny<RefreshOperationSource>(),
                 It.IsAny<RefreshOperationStatus>(),
                 tab: It.IsAny<string>(),
