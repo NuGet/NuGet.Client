@@ -225,8 +225,7 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.DotnetCliTool
                     || restoreType == ProjectStyle.DotnetToolReference)
                 {
-                    AddPackageReferences(result, items, isCentralPackageManagementEnabled);
-                    // Should add isPrivateAssetIndependentEnabled into LibraryDependency like CPVM?
+                    AddPackageReferences(result, items, isCentralPackageManagementEnabled, isPrivateAssetIndependentEnabled);
                     AddPackageDownloads(result, items);
                     AddFrameworkReferences(result, items);
 
@@ -619,7 +618,7 @@ namespace NuGet.Commands
             return false;
         }
 
-        private static void AddPackageReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items, bool isCpvmEnabled)
+        private static void AddPackageReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items, bool isCpvmEnabled, bool isPrivateAssetIndependentEnabled)
         {
             foreach (var item in GetItemByType(items, "Dependency"))
             {
@@ -662,6 +661,11 @@ namespace NuGet.Commands
             if (isCpvmEnabled)
             {
                 AddCentralPackageVersions(spec, items);
+            }
+
+            if (isPrivateAssetIndependentEnabled)
+            {
+                AddPrivateAssetIndependent(spec, items);
             }
         }
 
@@ -1049,6 +1053,14 @@ namespace NuGet.Commands
         internal static bool GetPrivateAssetIndependentSettings(IMSBuildItem projectSpecItem, ProjectStyle projectStyle)
         {
             return IsPropertyTrue(projectSpecItem, "PrivateAssetIndependent") && projectStyle == ProjectStyle.PackageReference;
+        }
+
+        private static void AddPrivateAssetIndependent(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        {
+            foreach (TargetFrameworkInformation frameworkInfo in spec.TargetFrameworks)
+            {
+                LibraryDependency.ApplyPrivateAssetIndepentInformation(frameworkInfo.Dependencies);
+            }
         }
     }
 }

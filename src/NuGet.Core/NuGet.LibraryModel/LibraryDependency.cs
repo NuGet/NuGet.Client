@@ -61,7 +61,8 @@ namespace NuGet.LibraryModel
             bool versionCentrallyManaged,
             LibraryDependencyReferenceType libraryDependencyReferenceType,
             string aliases,
-            VersionRange versionOverride)
+            VersionRange versionOverride,
+            bool privateAssetIndependent = false)
         {
             LibraryRange = libraryRange;
             IncludeType = includeType;
@@ -70,6 +71,7 @@ namespace NuGet.LibraryModel
             AutoReferenced = autoReferenced;
             GeneratePathProperty = generatePathProperty;
             VersionCentrallyManaged = versionCentrallyManaged;
+            PrivateAssetIndependentEnabled = privateAssetIndependent;
             ReferenceType = libraryDependencyReferenceType;
             Aliases = aliases;
             VersionOverride = versionOverride;
@@ -135,7 +137,7 @@ namespace NuGet.LibraryModel
             var clonedLibraryRange = new LibraryRange(LibraryRange.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
             var clonedNoWarn = new List<NuGetLogCode>(NoWarn);
 
-            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases, VersionOverride);
+            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases, VersionOverride, PrivateAssetIndependentEnabled);
         }
 
         /// <summary>
@@ -169,6 +171,22 @@ namespace NuGet.LibraryModel
 
                     d.VersionCentrallyManaged = true;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Merge the PrivateAssetIndependent information to the package reference information.
+        /// </summary>
+        public static void ApplyPrivateAssetIndepentInformation(IList<LibraryDependency> packageReferences)
+        {
+            if (packageReferences == null)
+            {
+                throw new ArgumentNullException(nameof(packageReferences));
+            }
+
+            foreach (LibraryDependency d in packageReferences.Where(d => !d.AutoReferenced))
+            {
+                d.PrivateAssetIndependentEnabled = true;
             }
         }
     }
