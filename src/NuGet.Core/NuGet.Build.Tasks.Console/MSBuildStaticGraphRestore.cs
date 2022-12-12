@@ -585,7 +585,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="projectInnerNodes">An <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance} "/> containing the projects by their target framework.</param>
         /// <param name="isCpvmEnabled">A flag that is true if the Central Package Management was enabled.</param>
         /// <returns>A <see cref="List{TargetFrameworkInformation}" /> containing the target framework information for the specified project.</returns>
-        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<string, IMSBuildProject> projectInnerNodes, bool isCpvmEnabled)
+        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<string, IMSBuildProject> projectInnerNodes, bool isCpvmEnabled, bool isPrivateAssetIndependentEnabled)
         {
             var targetFrameworkInfos = new List<TargetFrameworkInformation>(projectInnerNodes.Count);
 
@@ -626,6 +626,11 @@ namespace NuGet.Build.Tasks.Console
                 {
                     targetFrameworkInformation.CentralPackageVersions.AddRange(GetCentralPackageVersions(msBuildProjectInstance));
                     LibraryDependency.ApplyCentralVersionInformation(targetFrameworkInformation.Dependencies, targetFrameworkInformation.CentralPackageVersions);
+                }
+
+                if (isPrivateAssetIndependentEnabled)
+                {
+                    LibraryDependency.ApplyPrivateAssetIndepentInformation(targetFrameworkInformation.Dependencies);
                 }
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);
@@ -800,7 +805,7 @@ namespace NuGet.Build.Tasks.Console
             (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled) = GetCentralPackageManagementSettings(project, projectStyleOrNull);
             bool isPrivateAssetIndependentEnabled = GetPrivateAssetIndependentSettings(project, projectStyleOrNull);
 
-            List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled);
+            List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled, isPrivateAssetIndependentEnabled);
 
             (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
                 restoreProjectStyle: projectStyleOrNull,

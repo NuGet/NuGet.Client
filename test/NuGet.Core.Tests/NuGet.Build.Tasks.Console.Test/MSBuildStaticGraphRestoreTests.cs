@@ -855,7 +855,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     }),
             };
 
-            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: true);
+            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: true, isPrivateAssetIndependentEnabled : false);
 
             // Assert
             Assert.Equal(4, targetFrameworkInfos.Count);
@@ -925,7 +925,8 @@ namespace NuGet.Build.Tasks.Console.Test
                     new Dictionary<string, IMSBuildProject>() {
                         { string.Empty, project }
                     },
-                    isCpvmEnabled: false);
+                    isCpvmEnabled: false,
+                    isPrivateAssetIndependentEnabled: false);
 
             // Assert
             targetFrameworkInfos.Should().HaveCount(1);
@@ -994,7 +995,7 @@ namespace NuGet.Build.Tasks.Console.Test
             };
 
             // Act
-            List<TargetFrameworkInformation> targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false);
+            List<TargetFrameworkInformation> targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false, isPrivateAssetIndependentEnabled: false);
 
             // Assert
             targetFrameworkInfos.Should().HaveCount(2);

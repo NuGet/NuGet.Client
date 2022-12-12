@@ -584,9 +584,9 @@ namespace NuGet.Commands
 
                 if (privateAssetIndependent)
                 {
-                    effectiveInclude = dependency.IncludeType | (~dependency.SuppressParent & LibraryIncludeFlags.All);
+                    effectiveInclude = ~dependency.SuppressParent & LibraryIncludeFlags.All;
 
-                    if (dependency.SuppressParent == LibraryIncludeFlags.All || effectiveInclude == LibraryIncludeFlags.None)
+                    if (effectiveInclude == LibraryIncludeFlags.None)
                     {
                         continue;
                     }
