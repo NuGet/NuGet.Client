@@ -206,22 +206,17 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
             _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
 
+            _isSolutionOpen = false;
+            _solutionDirectory = null;
+
             if (ErrorHandler.Succeeded(_vsSolution.GetProperty((int)__VSPROPID.VSPROPID_IsSolutionOpen, out object isSoltuionOpen)))
             {
                 _isSolutionOpen = (bool)isSoltuionOpen;
             }
-            else
-            {
-                _isSolutionOpen = false;
-            }
 
-            if (ErrorHandler.Succeeded(_vsSolution.GetProperty((int)__VSPROPID.VSPROPID_SolutionDirectory, out object solutionDirectory)))
+            if (_isSolutionOpen)
             {
-                _solutionDirectory = (string)solutionDirectory;
-            }
-            else
-            {
-                _solutionDirectory = null;
+                UpdateSolutionDirectory();
             }
 
             var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out _selectionEventsCookie);
@@ -250,6 +245,21 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionSaveAsEvent.AfterExecute += SolutionSaveAs_AfterExecute;
 
             _projectSystemCache.CacheUpdated += NuGetCacheUpdate_After;
+        }
+
+        private void UpdateSolutionDirectory()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (ErrorHandler.Succeeded(_vsSolution.GetProperty((int)__VSPROPID.VSPROPID_SolutionDirectory, out object solutionDirectory)))
+            {
+                _solutionDirectory = (string)solutionDirectory;
+            }
+            else
+            {
+                // This may happen for "temporary" solutions - a file is open or created without a project or solution
+                _solutionDirectory = null;
+            }
         }
 
         public async Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName)
@@ -594,6 +604,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void SolutionSaveAs_AfterExecute(string Guid, int ID, object CustomIn, object CustomOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            UpdateSolutionDirectory();
+
             // If SolutionDirectory before solution save was null
             // Or, if SolutionDirectory before solution save is different from the current one
             // Reset cache among other things
@@ -1130,15 +1143,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (ErrorHandler.Succeeded(_vsSolution.GetProperty((int)__VSPROPID.VSPROPID_SolutionDirectory, out object solutionDirectory)))
-            {
-                _solutionDirectory = (string)solutionDirectory;
-            }
-            else
-            {
-                // This may happen for "temporary" solutions - a file is open or created without a project or solution
-                _solutionDirectory = null;
-            }
+            UpdateSolutionDirectory();
             _isSolutionOpen = true;
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
