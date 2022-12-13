@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using NuGet.DependencyResolver;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
@@ -162,6 +164,34 @@ namespace NuGet.Commands
                                 & dependency.IncludeType
                                 & (~dependency.SuppressParent);
 
+                        var resultNew = node.DependencyType
+                                & (~dependency.SuppressParent);
+
+                        var resultOld = node.DependencyType
+                                & dependency.IncludeType
+                                & (~dependency.SuppressParent);
+
+                        string csvFile = string.Format("P2P-resolution-{0:yyyy-MM-dd}.csv", DateTime.Now);
+                        Mutex _orphan = new Mutex(false, csvFile);
+                        csvFile = Path.Combine("D:\\TestDeleteFolder", csvFile);
+
+                        _orphan.WaitOne(TimeSpan.FromMinutes(1), false);
+
+                        if (!File.Exists(csvFile))
+                        {
+                            using (StreamWriter file = new StreamWriter(csvFile))
+                            {
+                                file.WriteLine("Parent Project, Node, Node DepType, Dependency, Dep SuppressParent, Dep Include, PrivateAssetIndependentEnabled, Result Old,Result New");
+                            }
+                        }
+
+                        using (StreamWriter file = new StreamWriter(csvFile, append: true))
+                        {
+                            file.WriteLine($"{targetGraph.Graphs.First()}, {node.Item.Key}, {string.Join(" | ", node.DependencyType.ToString().Split(','))}, {dependency.LibraryRange}, {string.Join(" | ", dependency.SuppressParent.ToString().Split(','))}, {string.Join(" | ", dependency.IncludeType.ToString().Split(','))}, {dependency.PrivateAssetIndependentEnabled}, {string.Join(" | ", resultOld.ToString().Split(','))},{string.Join(" | ", resultNew.ToString().Split(','))}");
+                        }
+
+                        _orphan.ReleaseMutex();
+                        _orphan.Dispose();
                         var childNode = new DependencyNode(child, typeIntersection);
                         nodeQueue.Enqueue(childNode);
                     }
