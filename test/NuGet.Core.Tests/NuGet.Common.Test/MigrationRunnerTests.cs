@@ -67,28 +67,32 @@ namespace NuGet.Common.Test
         public void Run_WhenAThreadAbandonsMutexThenNextMigrationRunReleasesMutexAndCreatesMigrationFile_Success()
         {
             Mutex _orphan = new Mutex(false, "NuGet-Migrations");
+            bool signal = false;
 
             // Arrange
             Thread t = new Thread(new ThreadStart(AbandonMutex));
             t.Start();
             t.Join();
 
-            string directory = MigrationRunner.GetMigrationsDirectory();
-            if (Directory.Exists(directory))
-                Directory.Delete(path: directory, recursive: true);
+            if (signal)
+            {
+                string directory = MigrationRunner.GetMigrationsDirectory();
+                if (Directory.Exists(directory))
+                    Directory.Delete(path: directory, recursive: true);
 
-            // Act
-            MigrationRunner.Run();
+                // Act
+                MigrationRunner.Run();
 
-            // Assert
-            Assert.True(Directory.Exists(directory));
-            var files = Directory.GetFiles(directory);
-            Assert.Equal(1, files.Length);
-            Assert.Equal(Path.Combine(directory, "1"), files[0]);
+                // Assert
+                Assert.True(Directory.Exists(directory));
+                var files = Directory.GetFiles(directory);
+                Assert.Equal(1, files.Length);
+                Assert.Equal(Path.Combine(directory, "1"), files[0]);
+            }
 
             void AbandonMutex()
             {
-                _ = _orphan.WaitOne(TimeSpan.FromMinutes(1), false);
+                signal = _orphan.WaitOne(TimeSpan.FromMinutes(1), false);
                 // Abandon the mutex by exiting the method without releasing
             }
         }
