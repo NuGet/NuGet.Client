@@ -88,7 +88,7 @@ namespace NuGet.Common.Test
 
             void AbandonMutex()
             {
-                _orphan.WaitOne();
+                _orphan.WaitOne(TimeSpan.FromMinutes(1), false);
                 // Abandon the mutex by exiting the method without releasing
             }
         }
