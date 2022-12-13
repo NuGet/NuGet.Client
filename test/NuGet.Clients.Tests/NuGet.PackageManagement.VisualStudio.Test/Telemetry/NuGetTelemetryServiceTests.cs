@@ -140,7 +140,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var tab = lastTelemetryEvent["Tab"];
             Assert.NotNull(tab);
-            Assert.IsType<string>(tab);
+            Assert.IsType<ItemFilter>(tab);
             Assert.Equal(expectedTab, tab);
 
             var isUIFiltering = lastTelemetryEvent["IsUIFiltering"];
