@@ -375,8 +375,6 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 IProjectContextInfo project = Model.Context.Projects.First();
-                string projectId = project.ProjectId;
-                NuGetProjectKind projectKind = project.ProjectKind;
                 TelemetryActivity.EmitTelemetryEvent(PackageManagerUIRefreshEvent.ForProject(
                     _sessionGuid,
                     refreshOperationSource,
@@ -385,8 +383,8 @@ namespace NuGet.PackageManagement.UI
                     isUIFiltering,
                     timeSpan,
                     duration,
-                    projectId,
-                    projectKind));
+                    project.ProjectId,
+                    project.ProjectKind));
             }
         }
 
