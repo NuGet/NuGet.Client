@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.Telemetry
             bool isSolutionLevel,
             RefreshOperationSource refreshSource,
             RefreshOperationStatus refreshStatus,
-            string tab,
+            ItemFilter tab,
             bool isUIFiltering,
             TimeSpan timeSinceLastRefresh,
             double? duration,
@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.Telemetry
             base["IsSolutionLevel"] = isSolutionLevel;
             base["RefreshSource"] = refreshSource;
             base["RefreshStatus"] = refreshStatus;
-            base["Tab"] = tab ?? throw new ArgumentNullException(nameof(tab));
+            base["Tab"] = tab;
             base["IsUIFiltering"] = isUIFiltering;
             base["TimeSinceLastRefresh"] = timeSinceLastRefresh.TotalMilliseconds;
 
@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.Telemetry
             Guid parentId,
             RefreshOperationSource refreshSource,
             RefreshOperationStatus refreshStatus,
-            string tab,
+            ItemFilter tab,
             bool isUIFiltering,
             TimeSpan timeSinceLastRefresh,
             double? duration,
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.Telemetry
                 Guid parentId,
                 RefreshOperationSource refreshSource,
                 RefreshOperationStatus refreshStatus,
-                string tab,
+                ItemFilter tab,
                 bool isUIFiltering,
                 TimeSpan timeSinceLastRefresh,
                 double? duration)

@@ -367,7 +367,7 @@ namespace NuGet.PackageManagement.UI
                     _sessionGuid,
                     refreshOperationSource,
                     status,
-                    _topPanel.Filter.ToString(),
+                    UIUtility.ToContractsItemFilter(_topPanel.Filter),
                     isUIFiltering,
                     timeSpan,
                     duration));
@@ -381,7 +381,7 @@ namespace NuGet.PackageManagement.UI
                     _sessionGuid,
                     refreshOperationSource,
                     status,
-                    _topPanel.Filter.ToString(),
+                    UIUtility.ToContractsItemFilter(_topPanel.Filter),
                     isUIFiltering,
                     timeSpan,
                     duration,
