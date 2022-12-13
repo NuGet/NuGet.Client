@@ -140,6 +140,8 @@ namespace NuGet.PackageManagement.UI
             ApplySettings(settings, Settings);
             _initialized = true;
 
+            _detailModel.IsCentralPackageManagementEnabled = await IsCentralPackageManagementEnabledAsync(CancellationToken.None);
+
             NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
             _isTransitiveDependenciesExperimentEnabled = NuGetExperimentationService.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI);
 
@@ -565,6 +567,21 @@ namespace NuGet.PackageManagement.UI
             {
                 _dontStartNewSearch = false;
             }
+        }
+
+        private async Task<bool> IsCentralPackageManagementEnabledAsync(CancellationToken cancellationToken)
+        {
+            foreach (IProjectContextInfo project in Model.Context.Projects)
+            {
+                bool isCentralPackageManagementEnabled = await project.IsCentralPackageManagementEnabledAsync(Model.Context.ServiceBroker, cancellationToken);
+
+                if (isCentralPackageManagementEnabled)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private async Task<string> GetSettingsKeyAsync(CancellationToken cancellationToken)
