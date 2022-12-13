@@ -335,7 +335,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return _nugetProjects.Any() && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference);
+                return _nugetProjects.Any() && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference) && !IsCentralPackageManagementEnabled;
             }
         }
 

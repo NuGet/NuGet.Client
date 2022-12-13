@@ -1520,6 +1520,54 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(2, folders.Count);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        private async Task GetCentralPackageVersionsManagmentEnabled_SucceedsAsync(bool isCentralPackageVersionsEnabled)
+        {
+            string projectName = Guid.NewGuid().ToString();
+            string projectId = projectName;
+            var projectSystemCache = new ProjectSystemCache();
+            IVsProjectAdapter projectAdapter = Mock.Of<IVsProjectAdapter>();
+
+            using var pathContext = new SimpleTestPathContext();
+            Initialize();
+
+            // Prepare: Create project
+            string projectFullPath = Path.Combine(pathContext.SolutionRoot, projectName, $"{projectName}.csproj");
+
+            CpsPackageReferenceProject prProject = CreateCpsPackageReferenceProject(projectName, projectFullPath, projectSystemCache);
+
+            ProjectNames projectNames = GetTestProjectNames(projectFullPath, projectName);
+            string referenceSpec = $@"
+                {{
+                    ""frameworks"":
+                    {{
+                        ""net6.0"":
+                        {{
+                            ""dependencies"":
+                            {{
+                            }}
+                        }}
+                    }}
+                }}";
+            PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, projectFullPath).WithTestRestoreMetadata();
+            packageSpec.RestoreMetadata.CentralPackageVersionsEnabled = isCentralPackageVersionsEnabled;
+
+            // Restore info
+            DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+            projectSystemCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
+            projectSystemCache.AddProject(projectNames, projectAdapter, prProject).Should().BeTrue();
+
+            _solutionManager.NuGetProjects.Add(prProject);
+
+            // Act
+            bool isCentralPackageManagmentEnabled = await _projectManager.IsCentralPackageManagementEnabledAsync(projectId, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(isCentralPackageVersionsEnabled, isCentralPackageManagmentEnabled);
+        }
+
         [Fact]
         private async Task GetPackageFoldersAsync_CpsProjectWithFallbackFolder_ReturnsPackageFoldersAsync()
         {
