@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var expectedGuid = Guid.NewGuid();
             var expectedIsSolutionLevel = true;
-            var expectedTab = "All";
+            var expectedTab = ItemFilter.All;
             var expectedTimeSinceLastRefresh = TimeSpan.FromSeconds(1);
             var expectedDuration = TimeSpan.FromSeconds(1);
             var refreshEvent = PackageManagerUIRefreshEvent.ForSolution(expectedGuid, expectedRefreshSource, expectedRefreshStatus, expectedTab, isUIFiltering: expectedUiFiltering, expectedTimeSinceLastRefresh, expectedDuration.TotalMilliseconds);

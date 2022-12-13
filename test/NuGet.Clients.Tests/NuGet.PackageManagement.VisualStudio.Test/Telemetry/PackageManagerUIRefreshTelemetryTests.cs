@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 It.IsAny<Guid>(),
                 It.IsAny<RefreshOperationSource>(),
                 It.IsAny<RefreshOperationStatus>(),
-                tab: It.IsAny<string>(),
+                tab: It.IsAny<ItemFilter>(),
                 isUIFiltering: It.IsAny<bool>(),
                 It.IsAny<TimeSpan>(),
                 It.IsAny<double?>());
@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 It.IsAny<Guid>(),
                 It.IsAny<RefreshOperationSource>(),
                 It.IsAny<RefreshOperationStatus>(),
-                tab: It.IsAny<string>(),
+                tab: It.IsAny<ItemFilter>(),
                 isUIFiltering: It.IsAny<bool>(),
                 It.IsAny<TimeSpan>(),
                 It.IsAny<double?>(),
