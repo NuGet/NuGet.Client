@@ -8,10 +8,12 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio.Utility.FileWatchers;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -123,7 +125,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             _solutionSettings = new Tuple<string?, AsyncLazy<ISettings>>(
                 item1: solutionDirectory,
-                item2: new AsyncLazy<ISettings>(async () =>
+                item2: new AsyncLazy<ISettings>(() =>
                 {
                     ISettings settings;
                     try
@@ -133,11 +135,18 @@ namespace NuGet.PackageManagement.VisualStudio
                     catch (NuGetConfigurationException ex)
                     {
                         settings = NullSettings.Instance;
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        MessageHelper.ShowErrorMessage(Common.ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
+
+                        // Show the message box in a different task that does not block this AsyncLazy's GetValueAsync. For more details, see:
+                        // https://github.com/NuGet/NuGet.Client/pull/4939#issuecomment-1351481367
+                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                        {
+                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                            MessageHelper.ShowErrorMessage(Common.ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
+                        })
+                        .PostOnFailure(nameof(VSSettings), nameof(ResetSolutionSettings));
                     }
 
-                    return settings;
+                    return Task.FromResult(settings);
 
                 }, NuGetUIThreadHelper.JoinableTaskFactory));
         }
