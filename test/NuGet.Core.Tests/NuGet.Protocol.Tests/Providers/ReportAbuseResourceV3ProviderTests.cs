@@ -27,7 +27,7 @@ namespace NuGet.Protocol.Tests.Providers
         }
 
         [Fact]
-        public async Task TryCreate_WhenResourceDoesNotExist_ReturnsFallbackUri()
+        public async Task TryCreate_WhenResourceDoesNotExist_ReturnsFallbackUriAsync()
         {
             var resourceProviders = new ResourceProvider[]
             {
@@ -36,7 +36,7 @@ namespace NuGet.Protocol.Tests.Providers
             };
             var sourceRepository = new SourceRepository(_packageSource, resourceProviders);
 
-            var result = await _target.TryCreate(sourceRepository, CancellationToken.None);
+            Tuple<bool, INuGetResource> result = await _target.TryCreate(sourceRepository, CancellationToken.None);
 
             Assert.True(result.Item1);
             Assert.IsType<ReportAbuseResourceV3>(result.Item2);
@@ -51,7 +51,7 @@ namespace NuGet.Protocol.Tests.Providers
         [InlineData(null)]
         [InlineData("")]
         [InlineData("  \t\n")]
-        public async Task TryCreate_WhenResourceHasInvalidAbsoluteUri_ReturnsFallbackUri(string uri)
+        public async Task TryCreate_WhenResourceHasInvalidAbsoluteUri_ReturnsFallbackUriAsync(string uri)
         {
             var serviceEntry = new RawServiceIndexEntry(uri, ResourceType);
             var resourceProviders = new ResourceProvider[]
@@ -61,7 +61,7 @@ namespace NuGet.Protocol.Tests.Providers
             };
             var sourceRepository = new SourceRepository(_packageSource, resourceProviders);
 
-            var result = await _target.TryCreate(sourceRepository, CancellationToken.None);
+            Tuple<bool, INuGetResource> result = await _target.TryCreate(sourceRepository, CancellationToken.None);
 
             Assert.True(result.Item1);
             Assert.IsType<ReportAbuseResourceV3>(result.Item2);
@@ -69,11 +69,9 @@ namespace NuGet.Protocol.Tests.Providers
                          ((ReportAbuseResourceV3)result.Item2).GetReportAbuseUrl("MyPackage", NuGetVersion.Parse("1.0.0")).OriginalString);
         }
 
-        [Fact]
-        public async Task TryCreate_WhenResourceExists_ReturnsValidResource()
+        [Fact(Skip = "The behavior of ReportAbuseResourceV3Provider in this case is incorrect, and was reported in issue: https://github.com/NuGet/Home/issues/7478")]
+        public async Task TryCreate_WhenResourceExists_ReturnsValidResourceAsync()
         {
-            // The behavior of ReportAbuseResourceV3Provider in this case is incorrect, and was reported in issue: https://github.com/NuGet/Home/issues/7478
-
             var serviceEntry = new RawServiceIndexEntry("https://unit.test/packages/{id}/{version}/ReportAbuse", ResourceType);
             var resourceProviders = new ResourceProvider[]
             {
@@ -82,12 +80,12 @@ namespace NuGet.Protocol.Tests.Providers
             };
             var sourceRepository = new SourceRepository(_packageSource, resourceProviders);
 
-            var result = await _target.TryCreate(sourceRepository, CancellationToken.None);
+            Tuple<bool, INuGetResource> result = await _target.TryCreate(sourceRepository, CancellationToken.None);
 
             Assert.True(result.Item1);
             Assert.IsType<ReportAbuseResourceV3>(result.Item2);
             Assert.Equal(
-                "https://unit.test/packages/%7Bid%7D/%7Bversion%7D/ReportAbuse",
+                "https://unit.test/packages/MyPackage/1.0.0/ReportAbuse",
                 ((ReportAbuseResourceV3)result.Item2).GetReportAbuseUrl("MyPackage", NuGetVersion.Parse("1.0.0")).OriginalString);
         }
 
