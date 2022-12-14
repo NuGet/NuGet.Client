@@ -121,16 +121,39 @@ namespace NuGet.PackageManagement.VisualStudio
             return false;
         }
 
+        // ERROR_SHARING_VIOLATION = 0x20: https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
+        // HRESULT_FROM_WIN32 = 0x80070000 | (code & 0xffff): https://learn.microsoft.com/en-us/windows/win32/api/winerror/nf-winerror-hresult_from_win32
+        private const uint WindowsSharingViolationHResult = 0x80070020;
+
         private void ResetSolutionSettings(string? solutionDirectory)
         {
             _solutionSettings = new Tuple<string?, AsyncLazy<ISettings>>(
                 item1: solutionDirectory,
-                item2: new AsyncLazy<ISettings>(() =>
+                item2: new AsyncLazy<ISettings>(async () =>
                 {
                     ISettings settings;
                     try
                     {
-                        settings = Settings.LoadDefaultSettings(solutionDirectory, configFileName: null, machineWideSettings: MachineWideSettings);
+                        ISettings? loadedSettings = null;
+                        int retryCount = 0;
+                        while (loadedSettings == null)
+                        {
+                            try
+                            {
+                                loadedSettings = Settings.LoadDefaultSettings(solutionDirectory, configFileName: null, machineWideSettings: MachineWideSettings);
+                            }
+                            // If any config files are in use, retry after a short delay
+                            // Would be nice if there was a better way to detect file busy: https://github.com/dotnet/runtime/issues/79643
+                            catch (NuGetConfigurationException ex)
+                                when (ex.InnerException?.GetType() == typeof(IOException)
+                                && (uint)ex.InnerException.HResult == WindowsSharingViolationHResult
+                                && retryCount < 5)
+                            {
+                                retryCount++;
+                                await Task.Delay(100 * retryCount);
+                            }
+                        }
+                        settings = loadedSettings;
                     }
                     catch (NuGetConfigurationException ex)
                     {
@@ -146,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         .PostOnFailure(nameof(VSSettings), nameof(ResetSolutionSettings));
                     }
 
-                    return Task.FromResult(settings);
+                    return settings;
 
                 }, NuGetUIThreadHelper.JoinableTaskFactory));
         }
