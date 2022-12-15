@@ -285,11 +285,7 @@ namespace NuGet.CommandLine.XPlat
                     AddPackageReferenceIntoItemGroupCPM(project, itemGroup, libraryDependency);
                 }
 
-                // Get package version if it already exists in the props file. Returns null if there is no matching package version.
-                ProjectItem packageVersionInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_VERSION_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name, StringComparison.OrdinalIgnoreCase));
-
-                // If no <PackageVersion /> exists in the Directory.Packages.props file.
-                if (packageVersionInProps == null)
+                if (versionOverrideExists != null)
                 {
                     // Update if VersionOverride instead of Directory.Packages.props file
                     string packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString;
