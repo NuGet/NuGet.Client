@@ -782,6 +782,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="ListPkg_OutputVersionNotApplicable" xml:space="preserve">
     <value>'--output-version' option not applicable for console output, it can only be used together with `--format json` option.</value>
     <comment>Don't localize '--output-version' and `--format json`</comment>
+  </data>
   <data name="Error_CentralPackageVersions_VersionsNotAllowed" xml:space="preserve">
     <value>Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}</value>
     <comment>0 - package id</comment>
