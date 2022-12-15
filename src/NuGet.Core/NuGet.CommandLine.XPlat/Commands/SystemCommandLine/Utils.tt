@@ -1,5 +1,6 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
 <#+
     string InitCaps(string input)
     {
@@ -256,30 +257,18 @@ public class OptionData
 
     string GenerateOptionNameVar(OptionData data)
     {
-        return data.Name + "_" + data.BaseClass;
+        return data.CamelCaseName + "_" + data.BaseClass;
     }
 
-    void GenerateAddOptionOrArgument(XElement parentNode, string commandVarName, int indent = 4)
+    void GenerateAddOptionOrArgument(IReadOnlyCollection<OptionData> options, string commandVarName, int indent = 4)
     {
-        foreach (XElement option in parentNode.Elements())
+        foreach (OptionData data in options)
         {
-            var optionXName = option.Name;
-            if (!isValidOption(option))
-            {
-                continue;
-            }
-
-            var data = new OptionData(option);
-            string optionNameVar =  GenerateOptionNameVar(data);
+            string optionNameVar = GenerateOptionNameVar(data);
             if (data.BaseClass == "Argument")
             {
                 // Generate Argument
-#>
-<#= Indent(indent) #>var <#= optionNameVar #> = new Argument<<#= data.DataType #>>(name: "<#= data.LongNameOrName #>", description: <#= data.Help #>)
-<#= Indent(indent) #>{
-<#= Indent(indent) #>    Arity = <#= data.OptionType #>,
-<#= Indent(indent) #>};
-<#+
+                WriteLine($@"var {optionNameVar} = new Argument<{data.DataType}>(name: ""{data.LongNameOrName}"", description: {data.Help})");
                 // End Generate argument
             }
             else if (data.BaseClass == "Option")
@@ -287,26 +276,20 @@ public class OptionData
                 // Generate Option
                 if (data.HasShortcut)
                 {
-#>
-<#= Indent(indent) #>var <#= optionNameVar #> = new Option<<#= data.DataType #>>(aliases: new[] { "<#= data.ShortcutName #>", "<#= data.FullName #>" }, description: <#= data.Help #>)
-<#+
+                    WriteLine($@"var {optionNameVar} = new Option<{data.DataType}>(aliases: new[] {{ ""{data.ShortcutName}"", ""{data.FullName}"" }}, description: {data.Help})");
                 }
                 else
                 {
-#>
-<#= Indent(indent) #>var <#= optionNameVar #> = new Option<<#= data.DataType #>>(name: "<#= data.FullName #>", description: <#= data.Help #>)
-<#+
+                    WriteLine($@"var {optionNameVar} = new Option<{data.DataType}>(name: ""{data.FullName}"", description: {data.Help})");
                 }
-#>
-<#= Indent(indent) #>{
-<#= Indent(indent) #>    Arity = <#= data.OptionType #>,
-<#= Indent(indent) #>};
-<#+
                 // End Generate option
             }
-#>
-<#= Indent(indent) #><#= commandVarName #>.Add(<#= optionNameVar #>);
-<#+
+            WriteLine("{");
+            PushIndent(Indent(indent));
+            WriteLine($@"Arity = {data.OptionType},");
+            PopIndent();
+            WriteLine("};");
+            WriteLine($@"{commandVarName}.Add({optionNameVar});");
         }
     }
 
@@ -351,7 +334,21 @@ public class OptionData
         WriteLine($"{commandNameVar}.SetHandler((args) =>");
         WriteLine("{");
         PushIndent(Indent(4));
+        WriteLine("int exitCode;");
+        WriteLine("try");
+        WriteLine("{");
+        PushIndent(Indent(4));
         WriteLine($"{runnerClassName}.Run(args, getLogger);"); // logger comes from param arg
+        WriteLine("exitCode = 0;");
+        PopIndent();
+        WriteLine("}");
+        WriteLine("catch (Exception e)");
+        WriteLine("{");
+        PushIndent(Indent(4));
+        WriteLine("exitCode = CommandExceptionHandler(e);");
+        PopIndent();
+        WriteLine("}");
+        WriteLine("return Task.FromResult(exitCode);");
         PopIndent();
         Write($"}}, new {binderClassName}(");
         Write(GenerateCommandHandlerFunctionArgs(options, hasInitialComma: false, hasInitialSpace: false));
@@ -363,7 +360,7 @@ public class OptionData
         PushIndent(Indent(indent));
         WriteLine($"{classVisibility} partial class {className}");
         WriteLine("{");
-        PushIndent("    ");
+        PushIndent(Indent(indent));
         foreach (XElement option in nodeMembers.Elements())
         {
             if (IsArgumentOrOption(GetProperty(option)))
@@ -411,7 +408,7 @@ public class OptionData
 
     string GetNodeFormalName(XElement nodeWithArgs)
     {
-        string name = nodeWithArgs.Attribute(XName.Get("Name", ""))?.Value;
+        string name = nodeWithArgs?.Attribute(XName.Get("Name", ""))?.Value;
         string formalName = StringUtilities.GetFormalName(name);
 
         return formalName;
@@ -455,6 +452,8 @@ public class OptionData
             throw new ArgumentNullException(nameof(options));
         }
 
+        WriteLine(GetGeneratedClassComment());
+        WriteLine(GetGeneratedAttribute());
         WriteLine($"internal partial class {className} : BinderBase<{binderClassName}>");
         WriteLine("{");
         PushIndent(Indent(4));
@@ -501,9 +500,13 @@ public class OptionData
             {
                 WriteLine($"{data.InitCapsName} = bindingContext.ParseResult.GetValueForOption({data.PrivateMemberName}),");
             }
-            else
+            else if (data.BaseClass == "Argument")
             {
                 WriteLine($"{data.InitCapsName} = bindingContext.ParseResult.GetValueForArgument({data.PrivateMemberName}),");
+            }
+            else
+            {
+                throw new ArgumentException("Unsupported OptionData.BaseClass option");
             }
         }
         PopIndent();
@@ -533,5 +536,45 @@ public class OptionData
         IReadOnlyCollection<OptionData> options = GetOptionsFromNode(membersNode);
         GenerateBinderClass(binderClassName, binderTypeClassName, options);
         WriteLine(string.Empty);
+    }
+
+    void GenerateRegisterMethodForCommand(string runnerPrefix, XElement commandNode, string binderClassName)
+    {
+        IReadOnlyCollection<OptionData> options = GetOptionsFromNode(commandNode);
+        string customHandlerName = commandNode.Attribute(XName.Get("Handler", ""))?.Value;
+        bool hasHustomHandler = !string.IsNullOrEmpty(customHandlerName);
+
+        string cmdLocalName = "cmd";
+        WriteLine($@"private static void RegisterOptionsForCommand{runnerPrefix}(Command {cmdLocalName}, Func<ILogger> getLogger)");
+        WriteLine("{");
+        PushIndent(Indent(4));
+        GenerateAddOptionOrArgument(options, cmdLocalName);
+        if (hasHustomHandler)
+        {
+            GenerateSetCustomHandler(cmdLocalName, customHandlerName, options);
+        }
+        else
+        {
+            GenerateCommandHandlerCustomBinder(cmdLocalName, runnerPrefix, binderClassName, options);
+        }
+        PopIndent();
+        WriteLine("}");
+    }
+
+    void GenerateRegisterMethodForCommandCall(string runnerPrefix, string commandNameVar, string loggerFuncNameVar)
+    {
+        WriteLine($@"RegisterOptionsForCommand{runnerPrefix}({commandNameVar}, {loggerFuncNameVar});");
+    }
+
+    string GetGeneratedAttribute()
+    {
+        string typeName = Host.GetType().ToString();
+
+        return $"[System.CodeDom.Compiler.GeneratedCode(\"{typeName}\", null)]";
+    }
+
+    string GetGeneratedClassComment()
+    {
+        return $"/// <summary>Generated with {Path.GetFileName(Host.TemplateFile)}</summary>";
     }
 #>

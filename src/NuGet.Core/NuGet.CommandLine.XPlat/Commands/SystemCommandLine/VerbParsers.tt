@@ -20,6 +20,7 @@
 
 using System;
 using System.CommandLine;
+using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 
@@ -33,19 +34,27 @@ foreach (XElement verb in allElements)
     string commandName = verb.Attribute(XName.Get("Name", "")).Value;
     string commandFormalName = InitCaps(commandName);
     string commandFormalNameVar = commandFormalName + "Cmd";
-#>
+    IEnumerable<XElement> verbOpts = verb.Elements().Where(n => isValidOption(n));
+#>    <#= GetGeneratedClassComment() #>
+    <#= GetGeneratedAttribute() #>
     internal partial class <#= commandFormalName #><#= verb.Name.LocalName #>Parser
     {
         internal static Func<ILogger> GetLoggerFunction;
+        internal static Func<Exception, int> CommandExceptionHandler;
 
-        internal static Command Register(Command app, Func<ILogger> getLogger)
+        internal static Command Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
         {
             var <#= commandFormalNameVar #> = new Command(name: "<#= commandName #>", description: Strings.<#= getCommandHelpString(verb, $"{commandFormalName}_Description") #>);
 
             // Options directly under the verb '<#= commandName #>'
 <#
-    GenerateAddOptionOrArgument(verb, commandFormalNameVar, 12);
-
+    PushIndent(Indent(12));
+    if (verbOpts.Any())
+    {
+        GenerateRegisterMethodForCommandCall($@"{GetNodeFormalName(verb)}", commandFormalNameVar, "getLogger");
+    }
+    PopIndent();
+    
     foreach (XElement noun in verb.Descendants(XName.Get("Noun")))
     {
         string nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
@@ -55,9 +64,6 @@ foreach (XElement verb in allElements)
             throw new ArgumentException("nounFormalName cannot be null");
         }
         string nounFormalNameVar = nounFormalName + "Cmd";
-        IReadOnlyCollection<OptionData> options = GetOptionsFromNode(noun);
-        string customHandlerName = noun.Attribute(XName.Get("Handler", ""))?.Value;
-        bool hasHustomHandler = !string.IsNullOrEmpty(customHandlerName);
 #>
 
             // noun sub-command: <#= commandName #> <#= nounName #>
@@ -66,33 +72,39 @@ foreach (XElement verb in allElements)
             // Options under sub-command: <#= commandName #> <#= nounName #>
 <#
         // Look for options directly under each noun
-        GenerateAddOptionOrArgument(noun, nounFormalNameVar, 12);
-
-        // Generate handler for noun
         PushIndent(Indent(12));
-        if (hasHustomHandler)
-        {
-            GenerateSetCustomHandler(nounFormalNameVar, customHandlerName, options);
-        }
-        else
-        {
-            string binderClassName = GetCustomBinderClassName(verb, noun);
-            GenerateCommandHandlerCustomBinder(nounFormalNameVar, commandFormalName + nounFormalName, binderClassName, options);
-        }
-
+        GenerateRegisterMethodForCommandCall($@"{GetNodeFormalName(verb)}{GetNodeFormalName(noun)}", nounFormalNameVar, "getLogger");
         WriteLine(string.Empty);
         WriteLine($"{commandFormalNameVar}.AddCommand({nounFormalNameVar});");
         PopIndent();
     } // end noun foreach
-
-    // TODO: Generate handler for commands. See https://github.com/NuGet/Client.Engineering/issues/1817
 #>
 
             GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
             app.AddCommand(<#= commandFormalNameVar #>);
 
             return <#= commandFormalNameVar #>;
         } // End noun method
+<#
+    PushIndent(Indent(8));
+
+    // Generate handler for nouns
+    foreach (XElement noun in verb.Descendants(XName.Get("Noun")))
+    {
+        WriteLine("");
+        GenerateRegisterMethodForCommand($@"{GetNodeFormalName(verb)}{GetNodeFormalName(noun)}", noun, GetCustomBinderClassName(verb, noun));
+    }
+
+    // Generate handler for verbs or commands
+    if (verbOpts.Any())
+    {
+        WriteLine("");
+        GenerateRegisterMethodForCommand($@"{GetNodeFormalName(verb)}", verb, GetCustomBinderClassName(verb));
+    }
+
+    PopIndent();
+#>
     } // end class
 
 <#

@@ -11,11 +11,14 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat.Commands
 {
+    /// <summary>Generated with CommandParsers.tt</summary>
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
     internal static class CommandParsers
     {
-        public static void Register(Command app, Func<ILogger> getLogger)
+        public static void Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
         {
-            ListVerbParser.Register(app, getLogger);
+            AddVerbParser.Register(app, getLogger, commandExceptionHandler);
+            ListVerbParser.Register(app, getLogger, commandExceptionHandler);
         }
     }
 }

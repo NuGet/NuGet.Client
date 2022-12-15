@@ -11,6 +11,47 @@ using NuGet.Commands;
 
 namespace NuGet.CommandLine.XPlat.Commands
 {
+    /// <summary>Generated with CustomBinders.tt</summary>
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
+    internal partial class AddSourceCustomBinder : BinderBase<AddSourceArgs>
+    {
+        private readonly Argument<string> _source;
+        private readonly Option<string> _name;
+        private readonly Option<string> _username;
+        private readonly Option<string> _password;
+        private readonly Option<bool> _storePasswordInClearText;
+        private readonly Option<string> _validAuthenticationTypes;
+        private readonly Option<string> _configfile;
+
+        public AddSourceCustomBinder(Argument<string> source, Option<string> name, Option<string> username, Option<string> password, Option<bool> storePasswordInClearText, Option<string> validAuthenticationTypes, Option<string> configfile)
+        {
+            _source = source;
+            _name = name;
+            _username = username;
+            _password = password;
+            _storePasswordInClearText = storePasswordInClearText;
+            _validAuthenticationTypes = validAuthenticationTypes;
+            _configfile = configfile;
+        }
+
+        protected override AddSourceArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new AddSourceArgs()
+            {
+                Source = bindingContext.ParseResult.GetValueForArgument(_source),
+                Name = bindingContext.ParseResult.GetValueForOption(_name),
+                Username = bindingContext.ParseResult.GetValueForOption(_username),
+                Password = bindingContext.ParseResult.GetValueForOption(_password),
+                StorePasswordInClearText = bindingContext.ParseResult.GetValueForOption(_storePasswordInClearText),
+                ValidAuthenticationTypes = bindingContext.ParseResult.GetValueForOption(_validAuthenticationTypes),
+                Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
+    /// <summary>Generated with CustomBinders.tt</summary>
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
     internal partial class ListSourceCustomBinder : BinderBase<ListSourceArgs>
     {
         private readonly Option<string> _format;
