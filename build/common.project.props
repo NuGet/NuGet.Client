@@ -39,7 +39,6 @@
     <SharedDirectory>$(BuildCommonDirectory)Shared</SharedDirectory>
     <NupkgOutputDirectory>$(ArtifactsDirectory)nupkgs\</NupkgOutputDirectory>
     <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
-    <ILMergeExePath>$(SolutionPackagesFolder)ilmerge\3.0.21\tools\net452\ILMerge.exe</ILMergeExePath>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>

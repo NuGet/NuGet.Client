@@ -131,14 +131,14 @@ steps:
   inputs:
     solution: "build\\loc.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:AfterBuild /property:LocType=${{parameters.NuGetLocalizationType}} /binarylogger:$(Build.StagingDirectory)\\binlog\\03.Localize.binlog"
+    msbuildArguments: "/restore /property:LocType=${{parameters.NuGetLocalizationType}} /binarylogger:$(Build.StagingDirectory)\\binlog\\03.Localize.binlog"
 
 - task: MSBuild@1
   displayName: "Build NuGet.exe Localized"
   inputs:
     solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:Build /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\04.BuildNuGetExe.binlog"
+    msbuildArguments: "/restore:false /t:Build /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\04.BuildNuGetExe.binlog"
 
 - task: MSBuild@1
   displayName: "ILMerge NuGet.exe"
@@ -206,7 +206,7 @@ steps:
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:AfterBuild /binarylogger:$(Build.StagingDirectory)\\binlog\\07.SignAssemblies.binlog"
+    msbuildArguments: "/restore /binarylogger:$(Build.StagingDirectory)\\binlog\\07.SignAssemblies.binlog"
 
 - task: MSBuild@1
   displayName: "Pack Nupkgs"
@@ -227,7 +227,7 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:BuildVSIX /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\11.BuildVSIX.binlog"
+    msbuildArguments: "/restore:false /target:BuildVSIX /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\11.PackVSIX.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - ${{ if not(parameters.BuildRTM)}}:
@@ -249,7 +249,7 @@ steps:
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:AfterBuild /property:SignPackages=true /binarylogger:$(Build.StagingDirectory)\\binlog\\13.SignPackages.binlog"
+    msbuildArguments: "/restore /property:SignPackages=true /binarylogger:$(Build.StagingDirectory)\\binlog\\13.SignPackages.binlog"
 
 - task: NuGetToolInstaller@1
   displayName: Use NuGet 6.x
