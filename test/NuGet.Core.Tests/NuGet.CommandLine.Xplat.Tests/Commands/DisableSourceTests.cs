@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.CommandLine;
+using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.CommandLine.XPlat;
 using NuGet.Test.Utility;
@@ -17,6 +18,8 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Arrange
             string file1 = Path.GetTempFileName();
             string file2 = Path.GetTempFileName();
+            File.WriteAllText(file1, "<configuration></configuration>");
+            File.WriteAllText(file2, "<configuration></configuration>");
 
             var prepareSourceCmd1 = new[] {"add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", file1};
             var prepareSourceCmd2 = new[] {"add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", file2};
@@ -25,11 +28,17 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             var currentCli = new CommandLineApplication();
             var testLoggerCurrent = new TestLogger();
-            ListVerbParser.Register(currentCli, () => testLoggerCurrent);
+            AddVerbParser.Register(currentCli, () => testLoggerCurrent); // needed for add command
+            DisableVerbParser.Register(currentCli, () => testLoggerCurrent);
 
             var newCli = new RootCommand();
             var testLoggerNew = new TestLogger();
-            XPlat.Commands.ListVerbParser.Register(newCli, getLogger: () => testLoggerNew, commandExceptionHandler: e =>
+            XPlat.Commands.AddVerbParser.Register(newCli, getLogger: () => testLoggerNew, commandExceptionHandler: e =>
+            {
+                XPlat.Program.LogException(e, testLoggerNew);
+                return 1;
+            });
+            XPlat.Commands.DisableVerbParser.Register(newCli, getLogger: () => testLoggerNew, commandExceptionHandler: e =>
             {
                 XPlat.Program.LogException(e, testLoggerNew);
                 return 1;
@@ -37,7 +46,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Arrange sources
             Assert.Equal(0, currentCli.Execute(prepareSourceCmd1));
-            Assert.Equal(0, newCli.Execute(prepareSourceCmd2));
+            Assert.Equal(0, newCli.Invoke(prepareSourceCmd2));
 
             // Act
             int statusCurrent = currentCli.Execute(cmd1);
