@@ -42,8 +42,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private IMachineWideSettings MachineWideSettings { get; }
 
-        private IFileWatcherFactory _fileWatcherFactory;
-        private IFileWatcher _userConfigFileWatcher;
+        private readonly IFileWatcherFactory _fileWatcherFactory;
+        private readonly IFileWatcher _userConfigFileWatcher;
         private IFileWatcher? _solutionConfigFileWatcher;
 
         public event EventHandler? SettingsChanged;

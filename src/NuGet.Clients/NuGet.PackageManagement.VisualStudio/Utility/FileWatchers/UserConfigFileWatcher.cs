@@ -14,9 +14,9 @@ namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
     internal class UserConfigFileWatcher : IFileWatcher
     {
         private bool _disposed;
-        private FileSystemWatcher _userSettingsWatcher;
-        private FileSystemWatcher _configDirectoryWatcher;
-        private FileStream _lockFile;
+        private readonly FileSystemWatcher _userSettingsWatcher;
+        private readonly FileSystemWatcher _configDirectoryWatcher;
+        private readonly FileStream _lockFile;
 
         public UserConfigFileWatcher()
             : this(NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory))
@@ -30,7 +30,6 @@ namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
             string configDirectory = Path.Combine(userSettingsDirectory, "config");
             string lockFile = Path.Combine(configDirectory, ".lock");
 
-
             // FileSystemWatcher doesn't handle directories being deleted then recreated. So, take advantage that
             // Windows doesn't let directories to be deleted when a file in the directory is being used.
             // Since the config directory is in the user settings directory, a single lock can prevent both from
@@ -41,19 +40,20 @@ namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
             }
             _lockFile = new FileStream(lockFile, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
 
-            _userSettingsWatcher = new FileSystemWatcher(userSettingsDirectory, Settings.DefaultSettingsFileName);
-            _userSettingsWatcher.Created += OnFileSystemEvent;
-            _userSettingsWatcher.Changed += OnFileSystemEvent;
-            _userSettingsWatcher.Deleted += OnFileSystemEvent;
-            _userSettingsWatcher.Renamed += OnFileSystemEvent;
-            _userSettingsWatcher.EnableRaisingEvents = true;
+            _userSettingsWatcher = Create(userSettingsDirectory, Settings.DefaultSettingsFileName);
+            _configDirectoryWatcher = Create(configDirectory, "*.config");
 
-            _configDirectoryWatcher = new FileSystemWatcher(configDirectory, "*.config");
-            _configDirectoryWatcher.Created += OnFileSystemEvent;
-            _configDirectoryWatcher.Changed += OnFileSystemEvent;
-            _configDirectoryWatcher.Deleted += OnFileSystemEvent;
-            _configDirectoryWatcher.Renamed += OnFileSystemEvent;
-            _configDirectoryWatcher.EnableRaisingEvents = true;
+            FileSystemWatcher Create(string path, string filter)
+            {
+                var fileSystemWatcher = new FileSystemWatcher(path, filter);
+                fileSystemWatcher.Created += OnFileSystemEvent;
+                fileSystemWatcher.Changed += OnFileSystemEvent;
+                fileSystemWatcher.Deleted += OnFileSystemEvent;
+                fileSystemWatcher.Renamed += OnFileSystemEvent;
+                fileSystemWatcher.EnableRaisingEvents = true;
+
+                return fileSystemWatcher;
+            }
         }
 
         public event EventHandler? FileChanged;

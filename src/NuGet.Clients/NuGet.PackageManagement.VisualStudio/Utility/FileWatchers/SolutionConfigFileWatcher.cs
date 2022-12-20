@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility.FileWatchers
     internal class SolutionConfigFileWatcher : IFileWatcher
     {
         private bool _disposed;
-        private List<FileSystemWatcher> _watchers;
+        private readonly List<FileSystemWatcher> _watchers;
 
         public SolutionConfigFileWatcher(string solutionDirectory)
         {
