@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.Build.NoTargets/1.0.80" DefaultTargets="AfterBuild">
+<Project Sdk="Microsoft.Build.NoTargets" DefaultTargets="AfterBuild">
 
   <!-- Configuration/global properties -->
   <PropertyGroup>

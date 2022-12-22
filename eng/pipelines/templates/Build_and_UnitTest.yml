@@ -452,25 +452,27 @@ steps:
     dropMetadataContainerName: "DropMetadata-Product"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
-- task: PowerShell@1
+- task: MSBuild@1
   displayName: "LocValidation: Verify VSIX"
   inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
-    arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs -TmpPath $(Agent.TempDirectory) -ValidateVsix"
+    solution: "build\\BuildValidator.proj"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/target:ValidateVsix /property:BuildRTM=$(BuildRTM) /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\18.ValidateVsixLocalization.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PowerShell@1
+- task: MSBuild@1
   displayName: "LocValidation: Verify Artifacts"
   inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
-    arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs"
+    solution: "build\\BuildValidator.proj"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/target:ValidateArtifacts /property:BuildRTM=$(BuildRTM) /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\19.ValidateArtifactsLocalization.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PublishPipelineArtifact@1
   displayName: "LocValidation: Publish Logs as an artifact"
   inputs:
     artifactName: LocValidationLogs
-    targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
+    targetPath: "$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   # Use dotnet msbuild instead of MSBuild CLI.

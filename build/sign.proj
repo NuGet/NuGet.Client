@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.Build.NoTargets/1.0.80">
+<Project Sdk="Microsoft.Build.NoTargets">
   <!-- Configuration/global properties -->
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
