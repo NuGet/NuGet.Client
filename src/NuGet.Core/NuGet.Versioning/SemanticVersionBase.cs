@@ -45,7 +45,7 @@ namespace NuGet.Versioning
             if (formatProvider == null
                 || !TryFormatter(format, formatProvider, out string formattedString))
             {
-                formattedString = Major + "." + Minor + "." + Patch;
+                return ToString();
             }
 
             return formattedString;
