@@ -68,8 +68,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 { "https://api.nuget.org/v3/registration3-gz-semver2/microsoft.extensions.logging.abstractions/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.loggingAbstractions.json", GetType()) }
             };
             _componentModel = new Mock<IComponentModel>();
-            var expService = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(_experimentationFlags), new Lazy<IOutputConsoleProvider>(() => new TestOutputConsoleProvider()));
-            _componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(expService);
+            var outputProviderMock = new Mock<Lazy<IOutputConsoleProvider>>(new TestOutputConsoleProvider());
+            var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(_experimentationFlags), outputProviderMock.Object);
+            _componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(service);
 
             globalServiceProvider.AddService(typeof(SComponentModel), _componentModel.Object);
 
