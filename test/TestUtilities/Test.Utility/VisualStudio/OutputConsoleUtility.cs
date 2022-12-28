@@ -7,11 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using System.Windows.Navigation;
-using Microsoft.VisualStudio.Experimentation;
 using Moq;
 using NuGet.VisualStudio;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Test.Utility.VisualStudio
 {
@@ -20,13 +17,6 @@ namespace Test.Utility.VisualStudio
         public static (Mock<IOutputConsoleProvider> mockIOutputConsoleProvider, Mock<IOutputConsole> mockIOutputConsole) GetMock()
         {
             var mockIOutputConsole = new Mock<IOutputConsole>();
-            //IList<string> Messages = new List<string>();
-
-            //_outputConsole.SetupGet<IList<string>>(p => p).Returns(Messages);
-            //_outputConsole.verify
-            //_outputConsole.Setup(oc => oc.WriteLineAsync(It.IsAny<string>()))
-            //    .Callback((string text) => Messages.Add(text));
-
             var mockIOutputConsoleProvider = new Mock<IOutputConsoleProvider>();
             mockIOutputConsoleProvider.Setup(ocp => ocp.CreatePackageManagerConsoleAsync())
                                  .ReturnsAsync(mockIOutputConsole.Object);

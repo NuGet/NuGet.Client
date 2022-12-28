@@ -16,7 +16,7 @@ namespace NuGet.VisualStudio.Common.Test
         private protected object _msBuildOutputVerbosity;
 
         private protected readonly Mock<IVisualStudioShell> _visualStudioShell = new Mock<IVisualStudioShell>();
-        private protected readonly Mock<IOutputConsoleProvider> _outputConsoleProvider = new Mock<IOutputConsoleProvider>();
+        private protected readonly Mock<IOutputConsoleProvider> _outputConsoleProvider = new Mock<IOutputConsoleProvider>(); //todo
         private protected readonly Mock<IOutputConsole> _outputConsole = new Mock<IOutputConsole>();
         private protected readonly Mock<INuGetErrorList> _errorList = new Mock<INuGetErrorList>();
         private protected readonly OutputConsoleLogger _outputConsoleLogger;
