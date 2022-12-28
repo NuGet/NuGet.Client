@@ -16,12 +16,16 @@ namespace NuGet.VisualStudio.Common.Test
     [Collection(nameof(TestJoinableTaskFactoryCollection))]
     public class NuGetExperimentationServiceTests
     {
+        private readonly Mock<IOutputConsoleProvider> _outputConsoleProviderMock;
         private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
-        private IList<string> OutputMessages => ((TestOutputConsoleProvider)_outputConsoleProvider.Value).TestOutputConsole.Messages;
+        private readonly Mock<IOutputConsole> _outputConsoleMock;
 
         public NuGetExperimentationServiceTests()
         {
-            _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => new TestOutputConsoleProvider());
+            var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
+            _outputConsoleProviderMock = mockOutputConsoleUtility.mockIOutputConsoleProvider;
+            _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => _outputConsoleProviderMock.Object);
+            _outputConsoleMock = mockOutputConsoleUtility.mockIOutputConsole;
         }
 
         [Fact]
@@ -45,15 +49,22 @@ namespace NuGet.VisualStudio.Common.Test
         [Fact]
         public void IsEnabled_WithoutEnabledFlight_ReturnsFalse()
         {
+            // Arrange
             var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(), _outputConsoleProvider);
             var constant = ExperimentationConstants.PackageManagerBackgroundColor;
-            service.IsExperimentEnabled(constant).Should().BeFalse();
-            OutputMessages.Should().NotContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*");
+
+            // Act
+            bool isExperimentEnabled = service.IsExperimentEnabled(constant);
+
+            // Assert
+            isExperimentEnabled.Should().BeFalse();
+            _outputConsoleProviderMock.Verify(_ => _.CreatePackageManagerConsoleAsync(), Times.Never);
         }
 
         [Fact]
         public void IsEnabled_WithEnabledFlightAndForcedEnabledEnvVar_ReturnsTrue()
         {
+            // Arrange
             var constant = ExperimentationConstants.PackageManagerBackgroundColor;
             var envVars = new Dictionary<string, string>()
             {
@@ -62,15 +73,20 @@ namespace NuGet.VisualStudio.Common.Test
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
             var service = new NuGetExperimentationService(envVarWrapper, NuGetExperimentationServiceUtility.GetMock(), _outputConsoleProvider);
 
-            service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeTrue();
-            OutputMessages.Should().ContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*1*");
+            // Act
+            bool isExperimentEnabled = service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor);
+
+            // Assert
+            isExperimentEnabled.Should().BeTrue();
+            _outputConsoleMock.Verify(_ => _.WriteLineAsync(It.IsRegex(constant.FlightFlag + "(.*)" + constant.FlightEnvironmentVariable + "(.*)1")));
         }
 
         [Theory]
         [InlineData("2")]
         [InlineData("randomValue")]
-        public void IsEnabled_WithEnvVarWithIncorrectValue_WithEnvironmentVariable__ReturnsFalse(string value)
+        public void IsEnabled_WithEnvVarWithIncorrectValue_WithEnvironmentVariable_ReturnsFalse(string value)
         {
+            // Arrange
             var constant = ExperimentationConstants.PackageManagerBackgroundColor;
             var envVars = new Dictionary<string, string>()
             {
@@ -79,13 +95,18 @@ namespace NuGet.VisualStudio.Common.Test
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
             var service = new NuGetExperimentationService(envVarWrapper, NuGetExperimentationServiceUtility.GetMock(), _outputConsoleProvider);
 
-            service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeFalse();
-            OutputMessages.Should().NotContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*");
+            // Act
+            bool isExperimentEnabled = service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor);
+
+            // Assert
+            isExperimentEnabled.Should().BeFalse();
+            _outputConsoleProviderMock.Verify(_ => _.CreatePackageManagerConsoleAsync(), Times.Never);
         }
 
         [Fact]
         public void IsEnabled_WithEnabledFlight_WithExperimentalService_ReturnsTrue()
         {
+            // Arrange
             var constant = ExperimentationConstants.PackageManagerBackgroundColor;
             var flightsEnabled = new Dictionary<string, bool>()
             {
@@ -93,8 +114,12 @@ namespace NuGet.VisualStudio.Common.Test
             };
             var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(flightsEnabled), _outputConsoleProvider);
 
-            service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeTrue();
-            OutputMessages.Should().NotContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*");
+            // Act
+            bool isExperimentEnabled = service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor);
+
+            // Assert
+            isExperimentEnabled.Should().BeTrue();
+            _outputConsoleProviderMock.Verify(_ => _.CreatePackageManagerConsoleAsync(), Times.Never);
         }
 
         [Theory]
@@ -102,6 +127,7 @@ namespace NuGet.VisualStudio.Common.Test
         [InlineData(false, false)]
         public void IsEnabled_WithEnvVarNotSetAndExperimentalService_ReturnsExpectedResult(bool isFlightEnabled, bool expectedResult)
         {
+            // Arrange
             var constant = ExperimentationConstants.PackageManagerBackgroundColor;
             var flightsEnabled = new Dictionary<string, bool>()
             {
@@ -109,13 +135,18 @@ namespace NuGet.VisualStudio.Common.Test
             };
             var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(flightsEnabled), _outputConsoleProvider);
 
-            service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().Be(expectedResult);
-            OutputMessages.Should().NotContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*");
+            // Act
+            bool isExperimentEnabled = service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor);
+
+            // Assert
+            isExperimentEnabled.Should().Be(expectedResult);
+            _outputConsoleProviderMock.Verify(_ => _.CreatePackageManagerConsoleAsync(), Times.Never);
         }
 
         [Fact]
         public void IsEnabled_WithEnvVarEnabled_WithExperimentalServiceDisabled_ReturnsTrue()
         {
+            // Arrange
             var constant = ExperimentationConstants.PackageManagerBackgroundColor;
             var flightsEnabled = new Dictionary<string, bool>()
             {
@@ -130,13 +161,18 @@ namespace NuGet.VisualStudio.Common.Test
 
             var service = new NuGetExperimentationService(envVarWrapper, NuGetExperimentationServiceUtility.GetMock(flightsEnabled), _outputConsoleProvider);
 
-            service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeTrue();
-            OutputMessages.Should().ContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*1*");
+            // Act
+            bool isExperimentEnabled = service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor);
+
+            // Assert
+            isExperimentEnabled.Should().BeTrue();
+            _outputConsoleMock.Verify(_ => _.WriteLineAsync(It.IsRegex(constant.FlightFlag + "(.*)" + constant.FlightEnvironmentVariable + "(.*)1")));
         }
 
         [Fact]
         public void IsEnabled_WithEnvVarDisabled_WithExperimentalServiceEnabled_ReturnsFalse()
         {
+            // Arrange
             var constant = ExperimentationConstants.PackageManagerBackgroundColor;
             var flightsEnabled = new Dictionary<string, bool>()
             {
@@ -151,22 +187,33 @@ namespace NuGet.VisualStudio.Common.Test
 
             var service = new NuGetExperimentationService(envVarWrapper, NuGetExperimentationServiceUtility.GetMock(flightsEnabled), _outputConsoleProvider);
 
-            service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor).Should().BeFalse();
-            OutputMessages.Should().ContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*0*");
+            // Act
+            bool isExperimentEnabled = service.IsExperimentEnabled(ExperimentationConstants.PackageManagerBackgroundColor);
+
+            // Assert
+            isExperimentEnabled.Should().BeFalse();
+            _outputConsoleMock.Verify(_ => _.WriteLineAsync(It.IsRegex(constant.FlightFlag + "(.*)" + constant.FlightEnvironmentVariable + "(.*)0")));
         }
 
         [Fact]
         public void IsEnabled_WithNullEnvironmentVariableForConstant_HandlesGracefully()
         {
+            // Arrange
             var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(), _outputConsoleProvider);
             var constant = new ExperimentationConstants("flag", null);
-            service.IsExperimentEnabled(constant).Should().BeFalse();
-            OutputMessages.Should().NotContainMatch($"*{constant.FlightFlag}*{constant.FlightEnvironmentVariable}*");
+
+            // Act
+            bool isExperimentEnabled = service.IsExperimentEnabled(constant);
+
+            // Assert
+            isExperimentEnabled.Should().BeFalse();
+            _outputConsoleProviderMock.Verify(_ => _.CreatePackageManagerConsoleAsync(), Times.Never);
         }
 
         [Fact]
         public void IsEnabled_MultipleExperimentsOverriddenWithDifferentEnvVars_DoNotConflict()
         {
+            // Arrange
             var forcedOffExperiment = new ExperimentationConstants("TestExp1", "TEST_EXP_1");
             var forcedOnExperiment = new ExperimentationConstants("TestExp2", "TEST_EXP_2");
             var noOverrideExperiment = new ExperimentationConstants("TestExp3", "TEST_EXP_3");
@@ -184,12 +231,19 @@ namespace NuGet.VisualStudio.Common.Test
             var envVarWrapper = new TestEnvironmentVariableReader(envVars);
             var service = new NuGetExperimentationService(envVarWrapper, NuGetExperimentationServiceUtility.GetMock(flightsEnabled), _outputConsoleProvider);
 
-            service.IsExperimentEnabled(forcedOffExperiment).Should().BeFalse();
-            service.IsExperimentEnabled(forcedOnExperiment).Should().BeTrue();
-            service.IsExperimentEnabled(noOverrideExperiment).Should().BeTrue();
-            OutputMessages.Should().ContainMatch($"*{forcedOffExperiment.FlightFlag}*{forcedOffExperiment.FlightEnvironmentVariable}*0*");
-            OutputMessages.Should().ContainMatch($"*{forcedOnExperiment.FlightFlag}*{forcedOnExperiment.FlightEnvironmentVariable}*1*");
-            OutputMessages.Should().NotContainMatch($"*{noOverrideExperiment.FlightFlag}*{noOverrideExperiment.FlightEnvironmentVariable}*");
+            // Act
+            bool isForcedOffExperimentEnabled = service.IsExperimentEnabled(forcedOffExperiment);
+            bool isForcedOnExperimentEnabled = service.IsExperimentEnabled(forcedOnExperiment);
+            bool isNoOverrideExperimentEnabled = service.IsExperimentEnabled(noOverrideExperiment);
+
+            // Assert
+            isForcedOffExperimentEnabled.Should().BeFalse();
+            isForcedOnExperimentEnabled.Should().BeTrue();
+            isNoOverrideExperimentEnabled.Should().BeTrue();
+
+            _outputConsoleMock.Verify(_ => _.WriteLineAsync(It.IsRegex(forcedOffExperiment.FlightFlag + "(.*)" + forcedOffExperiment.FlightEnvironmentVariable + "(.*)0")));
+            _outputConsoleMock.Verify(_ => _.WriteLineAsync(It.IsRegex(forcedOnExperiment.FlightFlag + "(.*)" + forcedOnExperiment.FlightEnvironmentVariable + "(.*)1")));
+            _outputConsoleMock.VerifyNoOtherCalls();
         }
     }
 }
