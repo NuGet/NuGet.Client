@@ -10,11 +10,7 @@
     <!-- After changing versions here, run configure.ps1 -->
 
     <ItemGroup>
-        <PackageDownload Include="Microsoft.VisualStudioEng.MicroBuild.Core" version="[1.0.0]" />
-        <PackageDownload Include="Microsoft.DotNet.Build.Tasks.Feed" version="[6.0.0-beta.20528.5]" />  <!-- for publishing to the .NET Core build asset registry (BAR) -->
-        <PackageDownload Include="Microsoft.DotNet.Maestro.Tasks" version="[1.1.0-beta.21378.2]" />  <!-- for publishing to the .NET Core build asset registry (BAR) -->
         <PackageDownload Include="NuGet.Client.EndToEnd.TestData" version="[1.0.0]" />
-        
     </ItemGroup>
 
 </Project>

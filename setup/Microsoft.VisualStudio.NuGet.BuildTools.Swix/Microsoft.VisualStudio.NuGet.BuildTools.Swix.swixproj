@@ -1,8 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-
+<Project Sdk="Microsoft.Build.NoTargets">
   <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
     <OutputArchitecture>neutral</OutputArchitecture>
     <OutputLocalized>false</OutputLocalized>
     <OutputName>$(MSBuildProjectName)</OutputName>
@@ -11,6 +9,7 @@
     <MajorVSVersion>$([MSBuild]::Add($(MajorNuGetVersion), 11))</MajorVSVersion>
     <!-- We set this to false here so we can batch sign the vsix later -->
     <MicroBuild_SigningEnabled>false</MicroBuild_SigningEnabled>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -29,12 +28,12 @@
     <Package Include="Microsoft.VisualStudio.NuGet.BuildTools.swr" />
   </ItemGroup>
 
+  <Target Name="TriggerBuildDependsOn"
+        BeforeTargets="Build"
+        DependsOnTargets="$(BuildDependsOn)" />
+
   <Target Name="CopyToDropFolder" AfterTargets="Build">
     <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).vsix" DestinationFolder="$(VsixPublishDestination)" />
     <Copy SourceFiles="$(OutputPath)$(MSBuildProjectName).json" DestinationFolder="$(VsixPublishDestination)" />
   </Target>
-
-  <!-- MicroBuild plugin fails if GetNativeManifest is not found for some reason -->
-  <Target Name="GetNativeManifest" />
-  <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets" />
 </Project>

@@ -7,6 +7,6 @@
   // eng/source-build/global.json has the entry for the Arcade version we need for
   // Arcade-powered source-build.
   "msbuild-sdks": {
-    "Microsoft.Build.NoTargets": "1.0.80"
+    "Microsoft.Build.NoTargets": "3.7.0"
   }
 }

@@ -106,6 +106,4 @@
     <Copy SourceFiles="@(_EnglishBinaries)" DestinationFiles="@(_EnglishBinaries->'%(DestinationPath)')" />
     <Copy SourceFiles="@(_LocalizeFiles)" DestinationFiles="@(_LocalizeFiles->'%(DestinationPath)')" />
   </Target>
-
-  <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets" />
 </Project>

@@ -239,9 +239,9 @@ steps:
 - task: MSBuild@1
   displayName: "Generate Build Tools package"
   inputs:
-    solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
+    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\12.BuildToolsVSIX.binlog"
+    msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\12.BuildToolsVSIX.binlog"
   condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -287,7 +287,7 @@ steps:
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
   inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
+    solution: "setup\\Microsoft.VisualStudio.NuGet.Core\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\14.GenerateVSManifestForVSIX.binlog"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
@@ -295,9 +295,9 @@ steps:
 - task: MSBuild@1
   displayName: "Generate VSMAN file for Build Tools VSIX"
   inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
+    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\15.GenerateVSManifestForToolsVSIX.binlog"
+    msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\15.GenerateVSManifestForToolsVSIX.binlog"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: PowerShell@1
@@ -482,7 +482,7 @@ steps:
 - task: CmdLine@2
   displayName: "Publish to the .NET Core build asset registry (BAR)"
   inputs:
-    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /property:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /property:BUILD_BUILDNUMBER=$(Build.BuildNumber) /property:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /property:BUILD_SOURCEVERSION=$(Build.SourceVersion) /property:BUILD_REPOSITORY_URI=$(Build.Repository.Uri)  /property:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /property:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /property:MaestroApiEndpoint=$(MaestroApiEndpoint) /property:MaestroAccessToken=$(MaestroAccessToken) /binarylogger:$(Build.StagingDirectory)\binlog\PublishToBuildAssetRegistry.binlog
+    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /property:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /property:BUILD_BUILDNUMBER=$(Build.BuildNumber) /property:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /property:BUILD_SOURCEVERSION=$(Build.SourceVersion) /property:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) /property:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /property:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /property:MaestroApiEndpoint=$(MaestroApiEndpoint) /property:MaestroAccessToken=$(MaestroAccessToken) /binarylogger:$(Build.StagingDirectory)\binlog\PublishToBuildAssetRegistry.binlog
     workingDirectory: cli
     failOnStderr: true
   env:

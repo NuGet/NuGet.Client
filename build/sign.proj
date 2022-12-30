@@ -62,6 +62,4 @@
       </FilesToSign>
     </ItemGroup>
   </Target>
-
-  <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets" />
 </Project>

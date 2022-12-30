@@ -40,6 +40,8 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.3.1" />
     <PackageVersion Include="Microsoft.CSharp" Version="$(SystemPackagesVersion)" />
     <PackageVersion Include="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
+    <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Feed" Version="6.0.0-beta.20528.5" />
+    <PackageVersion Include="Microsoft.DotNet.Maestro.Tasks" Version="1.1.0-beta.21378.2" />
     <PackageVersion Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview6.19253.5" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
@@ -122,6 +124,7 @@
 
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" Condition="'$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'" />
+    <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'true' ">

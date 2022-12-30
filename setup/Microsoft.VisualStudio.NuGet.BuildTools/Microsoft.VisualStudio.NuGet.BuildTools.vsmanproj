@@ -1,8 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-
+<Project Sdk="Microsoft.Build.NoTargets">
   <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
     <!-- Define properties that drive the manifest creation here. -->
     <FinalizeManifest>true</FinalizeManifest>
     <FinalizeSkipLayout>true</FinalizeSkipLayout>
@@ -10,6 +8,7 @@
     <TargetName>$(MSBuildProjectName)</TargetName>
     <OutputPath>$(VsixPublishDestination)</OutputPath>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -21,16 +20,15 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsVsixBuild)' == 'true' ">
-    <ProjectReference Include="Microsoft.VisualStudio.NuGet.BuildTools.swixproj" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.NuGet.BuildTools.Swix\Microsoft.VisualStudio.NuGet.BuildTools.Swix.swixproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsVsixBuild)' != 'true' ">
     <MergeManifest Include="$(VsixPublishDestination)$(MSBuildProjectName).json"
-      SBOMFileLocation="$(ManifestDirPath)\_manifest\spdx_2.2\manifest.spdx.json"
+                   SBOMFileLocation="$(ManifestDirPath)\_manifest\spdx_2.2\manifest.spdx.json"
       />
   </ItemGroup>
 
-  <Import Project="$(MicroBuildDirectory)Microsoft.VisualStudioEng.MicroBuild.Core.targets" />
-
-  <Target Name="ValidateManifest" Condition="'$(IsVsixBuild)' == 'true'"/>
+  <Target Name="ValidateManifest"
+          Condition="'$(IsVsixBuild)' == 'true'" />
 </Project>
