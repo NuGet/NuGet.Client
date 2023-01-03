@@ -40,6 +40,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     [Collection(MockedVS.Collection)]
     public class CpsPackageReferenceProjectTests : MockedVSCollectionTests
     {
+        private readonly Mock<IOutputConsoleProvider> _outputConsoleProviderMock;
+        private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
+        private readonly Mock<IOutputConsole> _outputConsoleMock;
+
         public CpsPackageReferenceProjectTests(GlobalServiceProvider globalServiceProvider)
             : base(globalServiceProvider)
         {
@@ -53,18 +57,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 { constant.FlightFlag, true },
             };
 
-            var service = new NuGetExperimentationService(new TestEnvironmentVariableReader(new Dictionary<string, string>()), new TestVisualStudioExperimentalService(flightsEnabled), new Lazy<IOutputConsoleProvider>(() => new TestOutputConsoleProvider()));
+            var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
+            _outputConsoleProviderMock = mockOutputConsoleUtility.mockIOutputConsoleProvider;
+            _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => _outputConsoleProviderMock.Object);
+            _outputConsoleMock = mockOutputConsoleUtility.mockIOutputConsole;
+            var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(flightsEnabled), _outputConsoleProvider);
 
             service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(true);
             componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(service);
-
-            //WIP
-
-            //var outputProviderMock = new Mock<Lazy<IOutputConsoleProvider>>(new TestOutputConsoleProvider());
-            //var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(flightsEnabled), outputProviderMock.Object);
-
-            //service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(true);
-            //componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(service);
         }
 
         [Fact]
