@@ -35,7 +35,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
-using NuGet.VisualStudio.Telemetry;
 using StreamJsonRpc;
 using Test.Utility;
 using Test.Utility.VisualStudio;
@@ -59,6 +58,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private TestDirectory _testDirectory;
         private readonly IVsProjectThreadingService _threadingService;
         private readonly TestLogger _logger;
+        private readonly Mock<IOutputConsoleProvider> _outputConsoleProviderMock;
+        private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
+        private readonly Mock<IOutputConsole> _outputConsoleMock;
 
         public NuGetProjectManagerServiceTests(GlobalServiceProvider globalServiceProvider, ITestOutputHelper output)
             : base(globalServiceProvider)
@@ -76,10 +78,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 { constant.FlightFlag, true },
             };
-            var outputProviderMock = new Mock<Lazy<IOutputConsoleProvider>>(new TestOutputConsoleProvider());
-            var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(flightsEnabled), outputProviderMock.Object);
 
-            service.IsExperimentEnabled(constant).Should().Be(true);
+            var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
+            _outputConsoleProviderMock = mockOutputConsoleUtility.mockIOutputConsoleProvider;
+            _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => _outputConsoleProviderMock.Object);
+            _outputConsoleMock = mockOutputConsoleUtility.mockIOutputConsole;
+            var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(flightsEnabled), _outputConsoleProvider);
+
+            service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(true);
             componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(service);
 
             _logger = new TestLogger(output);
