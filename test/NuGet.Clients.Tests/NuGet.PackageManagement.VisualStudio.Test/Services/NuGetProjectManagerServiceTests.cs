@@ -81,7 +81,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
             _outputConsoleProviderMock = mockOutputConsoleUtility.mockIOutputConsoleProvider;
             _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => _outputConsoleProviderMock.Object);
-            _outputConsoleMock = mockOutputConsoleUtility.mockIOutputConsole;
             var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(flightsEnabled), _outputConsoleProvider);
 
             service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(true);
