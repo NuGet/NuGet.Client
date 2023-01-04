@@ -10,7 +10,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 {
     internal static class CommandTestUtils
     {
-        internal static void AssertBothCommandSuccessfulExecution(int statusCurrent, int statusNew, TestLogger loggerCurrent, TestLogger loggerNew)
+        internal static void AssertEqualCommandOutput(int statusCurrent, int statusNew, TestLogger loggerCurrent, TestLogger loggerNew)
         {
             Assert.Equal(0, statusCurrent);
             Assert.Equal(0, statusNew);

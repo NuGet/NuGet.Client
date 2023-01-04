@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             int statusNew = newCli.Invoke(cmd);
 
             // Assert
-            CommandTestUtils.AssertBothCommandSuccessfulExecution(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);
+            CommandTestUtils.AssertEqualCommandOutput(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);
         }
     }
 }

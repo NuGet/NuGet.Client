@@ -49,7 +49,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             int statusNew = newCli.Invoke(enableSourceCmd2);
 
             // Assert
-            CommandTestUtils.AssertBothCommandSuccessfulExecution(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);
+            CommandTestUtils.AssertEqualCommandOutput(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);
         }
     }
 }

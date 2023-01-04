@@ -39,7 +39,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             int statusNew = newCli.Invoke(new[] { "add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", file2 });
 
             // Assert
-            CommandTestUtils.AssertBothCommandSuccessfulExecution(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);
+            CommandTestUtils.AssertEqualCommandOutput(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);
         }
     }
 }
