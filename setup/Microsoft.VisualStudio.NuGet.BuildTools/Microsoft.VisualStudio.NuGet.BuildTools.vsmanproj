@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.Build.NoTargets">
+<Project>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <!-- Define properties that drive the manifest creation here. -->
@@ -8,7 +9,6 @@
     <TargetName>$(MSBuildProjectName)</TargetName>
     <OutputPath>$(VsixPublishDestination)</OutputPath>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -25,10 +25,11 @@
 
   <ItemGroup Condition=" '$(IsVsixBuild)' != 'true' ">
     <MergeManifest Include="$(VsixPublishDestination)$(MSBuildProjectName).json"
-                   SBOMFileLocation="$(ManifestDirPath)\_manifest\spdx_2.2\manifest.spdx.json"
-      />
+                   SBOMFileLocation="$(ManifestDirPath)\_manifest\spdx_2.2\manifest.spdx.json" />
   </ItemGroup>
 
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+  
   <Target Name="ValidateManifest"
           Condition="'$(IsVsixBuild)' == 'true'" />
 </Project>

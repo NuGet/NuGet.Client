@@ -325,18 +325,3 @@ Function Clear-Nupkgs {
         Remove-Item $Nupkgs\*.nupkg -Force
     }
 }
-
-Function Restore-SolutionPackages {
-    [CmdletBinding()]
-    param(
-    )
-    $opts = 'msbuild', '-t:restore'
-    $opts += "${NuGetClientRoot}\build\bootstrap.proj"
-
-    Trace-Log "Restoring packages @""$NuGetClientRoot"""
-    Trace-Log "dotnet $opts"
-    & dotnet $opts
-    if (-not $?) {
-        Error-Log "Restore failed @""$NuGetClientRoot"". Code: ${LASTEXITCODE}"
-    }
-}

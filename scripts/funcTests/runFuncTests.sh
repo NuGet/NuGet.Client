@@ -118,15 +118,6 @@ rm -rf "/tmp/"dotnet.*
 echo "second dotnet cli install finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 echo "================="
 
-#restore solution packages
-dotnet msbuild -t:restore "$DIR/build/bootstrap.proj" -bl:"$BUILD_STAGINGDIRECTORY/binlog/01.RestoreBootstrap.binlog"
-if [ $? -ne 0 ]; then
-    echo "Restore failed!!"
-    exit 1
-fi
-
-echo "bootstrap project restore finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
-
 # init the repo
 
 git submodule init
