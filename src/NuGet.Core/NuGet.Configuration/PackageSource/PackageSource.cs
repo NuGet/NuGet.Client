@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -55,7 +57,7 @@ namespace NuGet.Configuration
                 {
                     _isHttps = false;
                     _isHttp = false;
-                    Uri uri = TrySourceAsUri;
+                    Uri? uri = TrySourceAsUri;
                     _isLocal = uri != null ? uri.IsFile : false;
                 }
             }
@@ -64,7 +66,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Returns null if Source is an invalid URI
         /// </summary>
-        public Uri TrySourceAsUri => UriUtility.TryCreateSourceUri(Source, UriKind.Absolute);
+        public Uri? TrySourceAsUri => UriUtility.TryCreateSourceUri(Source, UriKind.Absolute);
 
         /// <summary>
         /// Throws if Source is an invalid URI
@@ -81,15 +83,15 @@ namespace NuGet.Configuration
 
         public bool IsEnabled { get; set; }
 
-        public PackageSourceCredential Credentials { get; set; }
+        public PackageSourceCredential? Credentials { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         public bool IsPersistable { get; private set; }
 
         public int MaxHttpRequestsPerSource { get; set; }
 
-        public IReadOnlyList<X509Certificate> ClientCertificates { get; set; }
+        public IReadOnlyList<X509Certificate>? ClientCertificates { get; set; }
 
         /// <summary>
         /// Gets or sets the protocol version of the source. Defaults to 2.
@@ -134,7 +136,7 @@ namespace NuGet.Configuration
             bool isPersistable = true)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            Source = source ?? throw new ArgumentNullException(nameof(source));
+            Source = _source = source ?? throw new ArgumentNullException(nameof(source));
             IsEnabled = isEnabled;
             IsOfficial = isOfficial;
             IsPersistable = isPersistable;
@@ -142,7 +144,7 @@ namespace NuGet.Configuration
 
         public SourceItem AsSourceItem()
         {
-            string protocolVersion = null;
+            string? protocolVersion = null;
             if (ProtocolVersion != DefaultProtocolVersion)
             {
                 protocolVersion = $"{ProtocolVersion}";
@@ -150,7 +152,7 @@ namespace NuGet.Configuration
             return new SourceItem(Name, Source, protocolVersion);
         }
 
-        public bool Equals(PackageSource other)
+        public bool Equals(PackageSource? other)
         {
             if (other == null)
             {
@@ -161,7 +163,7 @@ namespace NuGet.Configuration
                    Source.Equals(other.Source, StringComparison.OrdinalIgnoreCase);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var source = obj as PackageSource;
             if (source != null)
