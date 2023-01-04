@@ -14,15 +14,15 @@ namespace Test.Utility.VisualStudio
         public static IExperimentationService GetMock(Dictionary<string, bool>? flights = null)
         {
             var mock = new Mock<IExperimentationService>();
-            var d = mock.Setup(m => m.IsCachedFlightEnabled(It.IsAny<string>()));
+            Moq.Language.Flow.ISetup<IExperimentationService, bool> setupIsCachedFlightEnabled = mock.Setup(m => m.IsCachedFlightEnabled(It.IsAny<string>()));
 
             if (flights is null)
             {
-                d.Returns(false);
+                setupIsCachedFlightEnabled.Returns(false);
             }
             else
             {
-                d.Returns((string s) => flights.ContainsKey(s) && flights[s]);
+                setupIsCachedFlightEnabled.Returns((string s) => flights.ContainsKey(s) && flights[s]);
             }
 
             return mock.Object;

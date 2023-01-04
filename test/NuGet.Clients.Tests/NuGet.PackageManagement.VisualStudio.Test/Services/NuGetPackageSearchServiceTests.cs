@@ -46,7 +46,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly Mock<IComponentModel> _componentModel;
         private readonly Mock<IOutputConsoleProvider> _outputConsoleProviderMock;
         private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
-        private readonly Mock<IOutputConsole> _outputConsoleMock;
 
         public NuGetPackageSearchServiceTests(GlobalServiceProvider globalServiceProvider)
             : base(globalServiceProvider)
@@ -75,7 +74,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
             _outputConsoleProviderMock = mockOutputConsoleUtility.mockIOutputConsoleProvider;
             _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => _outputConsoleProviderMock.Object);
-            _outputConsoleMock = mockOutputConsoleUtility.mockIOutputConsole;
             var service = new NuGetExperimentationService(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(_experimentationFlags), _outputConsoleProvider);
 
             service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(false);

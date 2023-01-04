@@ -30,7 +30,6 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Test.Utility;
-using Test.Utility.VisualStudio;
 using Xunit;
 using Xunit.Abstractions;
 using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
@@ -40,32 +39,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     [Collection(MockedVS.Collection)]
     public class CpsPackageReferenceProjectTests : MockedVSCollectionTests
     {
-        //private readonly Mock<IOutputConsoleProvider> _outputConsoleProviderMock;
-        //private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
-        //private readonly Mock<IOutputConsole> _outputConsoleMock;
-
         public CpsPackageReferenceProjectTests(GlobalServiceProvider globalServiceProvider)
             : base(globalServiceProvider)
         {
             var componentModel = new Mock<IComponentModel>();
             AddService<SComponentModel>(Task.FromResult((object)componentModel.Object));
-
-            // Force Enable Transitive Origin experiment tests
-            //var constant = ExperimentationConstants.TransitiveDependenciesInPMUI;
-            //var flightsEnabled = new Dictionary<string, bool>()
-            //{
-            //    { constant.FlightFlag, true },
-            //};
-
-            //var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
-            //_outputConsoleProviderMock = mockOutputConsoleUtility.mockIOutputConsoleProvider;
-            //_outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => _outputConsoleProviderMock.Object);
-            //_outputConsoleMock = mockOutputConsoleUtility.mockIOutputConsole;
-            //var serviceMock = new Mock<NuGetExperimentationService>(Mock.Of<IEnvironmentVariableReader>(), NuGetExperimentationServiceUtility.GetMock(flightsEnabled), _outputConsoleProvider);
-            //INuGetExperimentationService service = serviceMock.Object;
-
-            //service.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI).Should().Be(true);
-            //componentModel.Setup(x => x.GetService<INuGetExperimentationService>()).Returns(service);
         }
 
         [Fact]

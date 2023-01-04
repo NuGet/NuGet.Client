@@ -60,7 +60,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly TestLogger _logger;
         private readonly Mock<IOutputConsoleProvider> _outputConsoleProviderMock;
         private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
-        private readonly Mock<IOutputConsole> _outputConsoleMock;
 
         public NuGetProjectManagerServiceTests(GlobalServiceProvider globalServiceProvider, ITestOutputHelper output)
             : base(globalServiceProvider)
