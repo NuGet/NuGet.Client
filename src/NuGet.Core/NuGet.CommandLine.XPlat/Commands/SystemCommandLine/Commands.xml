@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!-- Copyright (c) .NET Foundation. All rights reserved.
      Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. -->
+<!-- 
+Run CommandParsers.tt, CustomBinders.tt, VerbParsers.tt in this folder to update System.CommandLine command binding code
+-->
 <Commands>
   <Verb Name="add">
     <Noun Name="source" Version="3.1.200"
