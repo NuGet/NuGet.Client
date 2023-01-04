@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
@@ -26,7 +25,7 @@ namespace NuGet.Configuration
         private bool _isHttps;
         private bool _isLocal;
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
         public string Source
         {
@@ -87,7 +86,7 @@ namespace NuGet.Configuration
 
         public string? Description { get; set; }
 
-        public bool IsPersistable { get; private set; }
+        public bool IsPersistable { get; }
 
         public int MaxHttpRequestsPerSource { get; set; }
 
@@ -173,15 +172,9 @@ namespace NuGet.Configuration
             return base.Equals(obj);
         }
 
-        public override string ToString()
-        {
-            return Name + " [" + Source + "]";
-        }
+        public override string ToString() => Name + " [" + Source + "]";
 
-        public override int GetHashCode()
-        {
-            return _hashCode;
-        }
+        public override int GetHashCode() => _hashCode;
 
         public PackageSource Clone()
         {
