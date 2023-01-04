@@ -17,15 +17,49 @@ namespace NuGet.Configuration
         /// </summary>
         public const int DefaultProtocolVersion = 2;
 
-        private readonly int _hashCode;
+        private int _hashCode;
 
-        private bool? _isHttp;
-        private bool? _isHttps;
-        private bool? _isLocal;
+        private string _source;
+        private bool _isHttp;
+        private bool _isHttps;
+        private bool _isLocal;
 
         public string Name { get; private set; }
 
-        public string Source { get; set; }
+        public string Source
+        {
+            get => _source;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(paramName: nameof(value));
+                }
+
+                _source = value;
+                _hashCode = Name.ToUpperInvariant().GetHashCode() * 3137 + _source.ToUpperInvariant().GetHashCode();
+
+                if (value.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                {
+                    _isHttps = true;
+                    _isHttp = true;
+                    _isLocal = false;
+                }
+                else if (value.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+                {
+                    _isHttps = false;
+                    _isHttp = true;
+                    _isLocal = true;
+                }
+                else
+                {
+                    _isHttps = false;
+                    _isHttp = false;
+                    Uri uri = TrySourceAsUri;
+                    _isLocal = uri != null ? uri.IsFile : false;
+                }
+            }
+        }
 
         /// <summary>
         /// Returns null if Source is an invalid URI
@@ -65,62 +99,17 @@ namespace NuGet.Configuration
         /// <summary>
         /// Whether the source is using the HTTP protocol, including HTTPS.
         /// </summary>
-        public bool IsHttp
-        {
-            get
-            {
-                if (!_isHttp.HasValue)
-                {
-                    _isHttp = IsHttps || Source.StartsWith("http://", StringComparison.OrdinalIgnoreCase);
-                }
-
-                return _isHttp.Value;
-            }
-        }
+        public bool IsHttp => _isHttp;
 
         /// <summary>
         /// Whether the source is using the HTTPS protocol.
         /// </summary>
-        public bool IsHttps
-        {
-            get
-            {
-                if (!_isHttps.HasValue)
-                {
-                    _isHttps = Source.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
-                    if (_isHttps == true)
-                    {
-                        _isHttp = true;
-                    }
-                }
-
-                return _isHttps.Value;
-            }
-        }
+        public bool IsHttps => _isHttps;
 
         /// <summary>
         /// True if the source path is file based. Unc shares are not included.
         /// </summary>
-        public bool IsLocal
-        {
-            get
-            {
-                if (!_isLocal.HasValue)
-                {
-                    var uri = TrySourceAsUri;
-                    if (uri != null)
-                    {
-                        _isLocal = uri.IsFile;
-                    }
-                    else
-                    {
-                        _isLocal = false;
-                    }
-                }
-
-                return _isLocal.Value;
-            }
-        }
+        public bool IsLocal => _isLocal;
 
         public PackageSource(string source)
             : this(source, source, isEnabled: true)
@@ -149,7 +138,6 @@ namespace NuGet.Configuration
             IsEnabled = isEnabled;
             IsOfficial = isOfficial;
             IsPersistable = isPersistable;
-            _hashCode = Name.ToUpperInvariant().GetHashCode() * 3137 + Source.ToUpperInvariant().GetHashCode();
         }
 
         public SourceItem AsSourceItem()
