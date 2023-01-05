@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Moq;
+using Test.Utility.VisualStudio;
 using Xunit;
 
 namespace NuGet.VisualStudio.Common.Test
@@ -16,10 +17,11 @@ namespace NuGet.VisualStudio.Common.Test
         private protected object _msBuildOutputVerbosity;
 
         private protected readonly Mock<IVisualStudioShell> _visualStudioShell = new Mock<IVisualStudioShell>();
-        private protected readonly Mock<IOutputConsoleProvider> _outputConsoleProvider = new Mock<IOutputConsoleProvider>(); //todo
-        private protected readonly Mock<IOutputConsole> _outputConsole = new Mock<IOutputConsole>();
         private protected readonly Mock<INuGetErrorList> _errorList = new Mock<INuGetErrorList>();
         private protected readonly OutputConsoleLogger _outputConsoleLogger;
+
+        private protected readonly Mock<IOutputConsoleProvider> _outputConsoleProvider;
+        private protected readonly Mock<IOutputConsole> _outputConsole;
 
         protected OutputConsoleLoggerTests()
         {
@@ -34,8 +36,9 @@ namespace NuGet.VisualStudio.Common.Test
             _visualStudioShell.Setup(vss => vss.GetPropertyValueAsync("Environment", "ProjectsAndSolution", "MSBuildOutputVerbosity"))
                               .Returns(GetMSBuildOutputVerbosityAsync);
 
-            _outputConsoleProvider.Setup(ocp => ocp.CreatePackageManagerConsoleAsync())
-                                  .Returns(Task.FromResult(_outputConsole.Object));
+            var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
+            _outputConsole = mockOutputConsoleUtility.mockIOutputConsole;
+            _outputConsoleProvider = mockOutputConsoleUtility.mockIOutputConsoleProvider;
 
             _outputConsoleLogger = new OutputConsoleLogger(_visualStudioShell.Object, _outputConsoleProvider.Object, new Lazy<INuGetErrorList>(() => _errorList.Object));
         }
