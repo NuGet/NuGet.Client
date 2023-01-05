@@ -103,11 +103,14 @@ namespace NuGet.Protocol.Tests
         [InlineData("Custom Kernel 123)")]
         public void Build_OsDescriptionWithUnmatchedParenthesis_IsValid(string osDescription)
         {
-            var target = new UserAgentStringBuilder();
+            // Arrange
+            UserAgentStringBuilder target = new();
 
-            var result = target.WithOSDescription(osDescription).Build();
+            // Act
+            string result = target.WithOSDescription(osDescription).Build();
 
-            var httpRequest = new HttpRequestMessage();
+            // Assert
+            HttpRequestMessage httpRequest = new();
             httpRequest.Headers.Add("User-Agent", result);
         }
     }
