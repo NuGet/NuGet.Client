@@ -3,14 +3,15 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using Test.Utility.VisualStudio;
 using Xunit;
 
 namespace NuGet.VisualStudio.Common.Test
 {
-    [Collection(nameof(TestJoinableTaskFactoryCollection))]
-    public abstract partial class OutputConsoleLoggerTests : IDisposable
+    [Collection(MockedVS.Collection)]
+    public abstract partial class OutputConsoleLoggerTests : IDisposable, IAsyncLifetime
     {
         private protected Action _onBuildBegin;
         private protected Action _afterClosing;
@@ -23,8 +24,10 @@ namespace NuGet.VisualStudio.Common.Test
         private protected readonly Mock<IOutputConsoleProvider> _outputConsoleProvider;
         private protected readonly Mock<IOutputConsole> _outputConsole;
 
-        protected OutputConsoleLoggerTests()
+        protected OutputConsoleLoggerTests(GlobalServiceProvider sp)
         {
+            sp.Reset();
+
             _visualStudioShell.Setup(vss => vss.SubscribeToBuildBeginAsync(It.IsAny<Action>()))
                               .Returns(Task.CompletedTask)
                               .Callback((Action action) => { _onBuildBegin = action; });
@@ -44,28 +47,15 @@ namespace NuGet.VisualStudio.Common.Test
         }
 
         /// <summary>
-        /// Waits up to 100 * 100ms (100 seconds) for the <see cref="OutputConsoleLogger._semaphore" /> to reset.
+        /// Waits until the <see cref="OutputConsoleLogger._semaphore" /> has reset.
         /// </summary>
-        private async Task EnsureInitialized()
+        private async Task WaitForInitialization()
         {
-            if (_outputConsoleLogger._semaphore.CurrentCount == 0)
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                int maxDelays = 100;
-                await Task.Run(async () =>
-                {
-                    while (_outputConsoleLogger._semaphore.CurrentCount == 0 && maxDelays > 0)
-                    {
-                        await Task.Delay(100);
-                        maxDelays--;
-                        if (_outputConsoleLogger._semaphore.CurrentCount > 0)
-                        {
-                            return;
-                        }
-                    }
-                });
-
-                Assert.True(_outputConsoleLogger._semaphore.CurrentCount > 0, nameof(OutputConsoleLogger._semaphore) + " failed to reset within 100 seconds.");
-            }
+                // Wait on a task that does nothing so we know when the semaphore's enqueued real work is complete.
+                await _outputConsoleLogger._semaphore.ExecuteAsync(() => { return Task.CompletedTask; });
+            });
         }
 
         private Task<object> GetMSBuildOutputVerbosityAsync()
@@ -79,5 +69,10 @@ namespace NuGet.VisualStudio.Common.Test
         }
 
         public Task DisposeAsync() => Task.CompletedTask;
+
+        public async Task InitializeAsync()
+        {
+            await WaitForInitialization();
+        }
     }
 }
