@@ -43,6 +43,31 @@ namespace NuGet.VisualStudio.Common.Test
             _outputConsoleLogger = new OutputConsoleLogger(_visualStudioShell.Object, _outputConsoleProvider.Object, new Lazy<INuGetErrorList>(() => _errorList.Object));
         }
 
+        /// <summary>
+        /// Waits up to 100 * 100ms (100 seconds) for the <see cref="OutputConsoleLogger._semaphore" /> to reset.
+        /// </summary>
+        private async Task EnsureInitialized()
+        {
+            if (_outputConsoleLogger._semaphore.CurrentCount == 0)
+            {
+                int maxDelays = 100;
+                await Task.Run(async () =>
+                {
+                    while (_outputConsoleLogger._semaphore.CurrentCount == 0 && maxDelays > 0)
+                    {
+                        await Task.Delay(100);
+                        maxDelays--;
+                        if (_outputConsoleLogger._semaphore.CurrentCount > 0)
+                        {
+                            return;
+                        }
+                    }
+                });
+
+                Assert.True(_outputConsoleLogger._semaphore.CurrentCount > 0, nameof(OutputConsoleLogger._semaphore) + " failed to reset within 100 seconds.");
+            }
+        }
+
         private Task<object> GetMSBuildOutputVerbosityAsync()
         {
             return Task.FromResult(_msBuildOutputVerbosity);
@@ -52,5 +77,7 @@ namespace NuGet.VisualStudio.Common.Test
         {
             _outputConsoleLogger.Dispose();
         }
+
+        public Task DisposeAsync() => Task.CompletedTask;
     }
 }
