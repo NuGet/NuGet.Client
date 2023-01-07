@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Microsoft.VisualStudio.Experimentation;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.Common;
 using Test.Utility;
@@ -13,15 +14,17 @@ using Xunit;
 
 namespace NuGet.VisualStudio.Common.Test
 {
-    [Collection(nameof(TestJoinableTaskFactoryCollection))]
+    [Collection(MockedVS.Collection)]
     public class NuGetExperimentationServiceTests
     {
         private readonly Mock<IOutputConsoleProvider> _outputConsoleProviderMock;
         private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
         private readonly Mock<IOutputConsole> _outputConsoleMock;
 
-        public NuGetExperimentationServiceTests()
+        public NuGetExperimentationServiceTests(GlobalServiceProvider sp)
         {
+            sp.Reset();
+
             var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
             _outputConsoleProviderMock = mockOutputConsoleUtility.mockIOutputConsoleProvider;
             _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => _outputConsoleProviderMock.Object);
