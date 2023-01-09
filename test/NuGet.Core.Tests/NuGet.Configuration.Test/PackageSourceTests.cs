@@ -49,5 +49,29 @@ namespace NuGet.Configuration.Test
 
             SettingsTestUtils.DeepEquals(source.AsSourceItem(), expectedItem).Should().BeTrue();
         }
+
+        [Fact]
+        public void CalculatedMembers_ChangingSource_UpdatesValues()
+        {
+            // Arrange
+            PackageSource source = new(source: "https://my.test/v3/index.json", name: "MySource");
+            bool httpBefore = source.IsHttp;
+            bool httpsBefore = source.IsHttps;
+            bool localBefore = source.IsLocal;
+            int hashCodeBefore = source.GetHashCode();
+
+            // Act
+            source.Source = @"c:\path\to\packages";
+
+            // Assert
+            httpBefore.Should().BeTrue();
+            httpsBefore.Should().BeTrue();
+            localBefore.Should().BeFalse();
+
+            source.IsHttp.Should().BeFalse();
+            source.IsHttps.Should().BeFalse();
+            source.IsLocal.Should().BeTrue();
+            source.GetHashCode().Should().NotBe(hashCodeBefore);
+        }
     }
 }
