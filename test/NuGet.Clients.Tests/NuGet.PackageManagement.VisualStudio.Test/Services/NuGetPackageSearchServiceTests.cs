@@ -419,7 +419,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             // Recreate async lazy on each test
-            _experimentationFlags[ExperimentationConstants.TransitiveDependenciesInPMUI.FlightFlag] = transitiveDependenciesExperimentEnabled; //todo
+            _experimentationFlags[ExperimentationConstants.TransitiveDependenciesInPMUI.FlightFlag] = transitiveDependenciesExperimentEnabled;
             ExperimentUtility.ResetAsyncValues();
 
             using NuGetPackageSearchService searchService = SetupSearchService();
