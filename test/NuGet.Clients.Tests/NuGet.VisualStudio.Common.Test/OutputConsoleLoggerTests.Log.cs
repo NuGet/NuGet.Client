@@ -20,10 +20,10 @@ namespace NuGet.VisualStudio.Common.Test
             { }
 
             [Fact]
-            public async void Gets_MSBuild_verbosity_from_shell()
+            public async Task Gets_MSBuild_verbosity_from_shell()
             {
                 _outputConsoleLogger.Log(new LogMessage(LogLevel.Debug, "message"));
-                await WaitForInitialization();
+                await WaitForInitializationAsync();
                 _visualStudioShell.Verify(vss => vss.GetPropertyValueAsync("Environment", "ProjectsAndSolution", "MSBuildOutputVerbosity"));
             }
 
@@ -40,13 +40,13 @@ namespace NuGet.VisualStudio.Common.Test
 
             [Theory]
             [MemberData(nameof(GetMessageVariationsWhichAreLogged))]
-            public async void Writes_line_to_output_console(LogLevel logLevel, int verbosityLevel)
+            public async Task Writes_line_to_output_console(LogLevel logLevel, int verbosityLevel)
             {
                 _outputConsole.Reset();
                 _msBuildOutputVerbosity = verbosityLevel;
 
                 _outputConsoleLogger.Log(new LogMessage(logLevel, "message"));
-                await WaitForInitialization();
+                await WaitForInitializationAsync();
                 _outputConsole.Verify(oc => oc.WriteLineAsync("message"));
             }
 
@@ -80,7 +80,7 @@ namespace NuGet.VisualStudio.Common.Test
             [MemberData(nameof(GetMessageVariationsWhichAreReported))]
             public async Task Adds_entry_to_error_list(LogLevel logLevel, int verbosityLevel)
             {
-                await VerifyThatEntryToErrorListIsAdded(_outputConsoleLogger.Log, logLevel, verbosityLevel);
+                await VerifyThatEntryToErrorListIsAddedAsync(_outputConsoleLogger.Log, logLevel, verbosityLevel);
             }
 
             [Theory]

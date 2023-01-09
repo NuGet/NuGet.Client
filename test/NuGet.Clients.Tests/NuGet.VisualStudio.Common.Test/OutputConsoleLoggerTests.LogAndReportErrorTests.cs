@@ -20,7 +20,7 @@ namespace NuGet.VisualStudio.Common.Test
                 : base(sp)
             { }
 
-            protected async Task VerifyThatEntryToErrorListIsAdded(Action<LogMessage> action, LogLevel logLevel, int verbosityLevel)
+            protected async Task VerifyThatEntryToErrorListIsAddedAsync(Action<LogMessage> action, LogLevel logLevel, int verbosityLevel)
             {
                 ErrorListTableEntry[] errorListTableEntries = null;
 
@@ -31,7 +31,7 @@ namespace NuGet.VisualStudio.Common.Test
                 _msBuildOutputVerbosity = verbosityLevel;
 
                 action(new LogMessage(logLevel, "message"));
-                await WaitForInitialization();
+                await WaitForInitializationAsync();
                 _errorList.Verify(el => el.AddNuGetEntries(It.IsAny<ErrorListTableEntry[]>()));
 
                 errorListTableEntries.Length.Should().Be(1);

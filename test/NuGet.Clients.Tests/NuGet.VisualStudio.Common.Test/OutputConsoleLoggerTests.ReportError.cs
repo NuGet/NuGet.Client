@@ -22,7 +22,7 @@ namespace NuGet.VisualStudio.Common.Test
             [MemberData(nameof(GetAllMessageVariations))]
             public async Task Adds_entry_to_error_list(LogLevel logLevel, int verbosityLevel)
             {
-                await VerifyThatEntryToErrorListIsAdded(_outputConsoleLogger.ReportError, logLevel, verbosityLevel);
+                await VerifyThatEntryToErrorListIsAddedAsync(_outputConsoleLogger.ReportError, logLevel, verbosityLevel);
             }
 
             public static IEnumerable<object[]> GetAllMessageVariations()

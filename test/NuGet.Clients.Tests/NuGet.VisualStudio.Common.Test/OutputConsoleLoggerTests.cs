@@ -49,7 +49,7 @@ namespace NuGet.VisualStudio.Common.Test
         /// <summary>
         /// Waits until the <see cref="OutputConsoleLogger._semaphore" /> has reset.
         /// </summary>
-        private async Task WaitForInitialization()
+        private async Task WaitForInitializationAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
@@ -72,7 +72,7 @@ namespace NuGet.VisualStudio.Common.Test
 
         public async Task InitializeAsync()
         {
-            await WaitForInitialization();
+            await WaitForInitializationAsync();
         }
     }
 }
