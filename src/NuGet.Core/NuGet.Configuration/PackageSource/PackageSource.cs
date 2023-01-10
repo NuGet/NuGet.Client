@@ -17,7 +17,6 @@ namespace NuGet.Configuration
         public const int DefaultProtocolVersion = 2;
 
         private int _hashCode;
-
         private string _source;
         private bool _isHttp;
         private bool _isHttps;
@@ -48,7 +47,7 @@ namespace NuGet.Configuration
                 {
                     _isHttps = false;
                     _isHttp = true;
-                    _isLocal = true;
+                    _isLocal = false;
                 }
                 else
                 {
