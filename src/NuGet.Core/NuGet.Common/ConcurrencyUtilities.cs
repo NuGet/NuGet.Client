@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using AsyncKeyedLock;
 using System;
 using System.Globalization;
 using System.IO;
@@ -18,7 +19,11 @@ namespace NuGet.Common
         // To maintain SHA-1 backwards compatibility with respect to the length of the hex-encoded hash, the hash will be truncated to a length of 20 bytes.
         private const int HashLength = 20;
         private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
-        private static readonly KeyedLock PerFileLock = new KeyedLock();
+        private static readonly AsyncKeyedLocker<string> PerFileLock = new(o =>
+        {
+            o.PoolSize = 10;
+            o.PoolInitialFill = 1;
+        });
 
         // FileOptions.DeleteOnClose causes concurrency issues on Mac OS X and Linux.
         // These are fixed in .NET 7 (https://github.com/dotnet/runtime/pull/55327).
@@ -36,8 +41,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            await PerFileLock.EnterAsync(filePath, token);
-            try
+            using (await PerFileLock.LockAsync(filePath, token).ConfigureAwait(false))
             {
                 // limit the number of unauthorized, this should be around 30 seconds.
                 var unauthorizedAttemptsLeft = NumberOfRetries;
@@ -111,10 +115,6 @@ namespace NuGet.Common
                     }
                 }
             }
-            finally
-            {
-                await PerFileLock.ExitAsync(filePath);
-            }
         }
 
         public static void ExecuteWithFileLocked(string filePath,
@@ -125,8 +125,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            PerFileLock.Enter(filePath);
-            try
+            using (PerFileLock.Lock(filePath))
             {
                 // limit the number of unauthorized, this should be around 30 seconds.
                 var unauthorizedAttemptsLeft = NumberOfRetries;
@@ -196,10 +195,6 @@ namespace NuGet.Common
                         fs?.Dispose();
                     }
                 }
-            }
-            finally
-            {
-                PerFileLock.Exit(filePath);
             }
         }
 

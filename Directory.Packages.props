@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    
     <CryptographyPackagesVersion Condition="'$(CryptographyPackagesVersion)' == ''">5.0.0</CryptographyPackagesVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.0.0</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <NewtonsoftJsonPackageVersion Condition="'$(NewtonsoftJsonPackageVersion)' == ''">13.0.1</NewtonsoftJsonPackageVersion>
@@ -14,15 +13,14 @@
     <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'netstandard2.0'">16.8.0</MicrosoftBuildVersion>
     <!-- The last package version of MSBuild that works with net5.0 is 16.11.0.  Our assemblies are still compiled against MSBuild assembly version 15.1.0.0 which will work with all versions -->
     <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp5.0'">16.11.0</MicrosoftBuildVersion>
-    
     <!-- Overridden by source build to ensure the same version is used across products, do not remove these properties -->
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion Condition="'$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)' == ''">6.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)' == ''">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftWebXdtPackageVersion Condition="'$(MicrosoftWebXdtPackageVersion)' == ''">3.0.0</MicrosoftWebXdtPackageVersion>
     <SystemComponentModelCompositionPackageVersion Condition="'$(SystemComponentModelCompositionPackageVersion)' == ''">4.5.0</SystemComponentModelCompositionPackageVersion>
   </PropertyGroup>
-
   <ItemGroup>
+    <PackageVersion Include="AsyncKeyedLock" Version="6.0.5" />
     <PackageVersion Include="FluentAssertions" Version="6.6.0" />
     <PackageVersion Include="Lucene.Net" Version="3.0.3" />
     <PackageVersion Include="MessagePack" Version="2.2.60" />
@@ -100,7 +98,6 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
     <PackageVersion Include="Xunit.StaFact" Version="1.0.37" />
   </ItemGroup>
-
   <!--
     Packages that provide NuGet's Visual Studio extensibility APIs should not depend on the Visual Studio SDK, to ensure
     there are no circular references in case the VS SDK itself adds our package as a dependency. Everything else, however
@@ -109,38 +106,29 @@
     These individual package versions should be equal to or less than the package version within the VS SDK that our
     customers use, otherwise they might get NU1605 or MSB3277 warnings.
   -->
-  <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.csproj' OR
-              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Contracts.csproj' OR
-              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Interop.csproj' OR
-              '$(MSBuildProjectFile)' == 'NuGet.SolutionRestoreManager.Interop.csproj'">
+  <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.csproj' OR&#xD;&#xA;              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Contracts.csproj' OR&#xD;&#xA;              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Interop.csproj' OR&#xD;&#xA;              '$(MSBuildProjectFile)' == 'NuGet.SolutionRestoreManager.Interop.csproj'">
     <PackageVersion Include="Microsoft.ServiceHub.Framework" Version="2.7.327-preview" />
     <PackageVersion Include="Microsoft.VisualStudio.ComponentModelHost" Version="17.0.67-g9e37b637e6" />
     <PackageVersion Update="Microsoft.VisualStudio.SDK" Version="" />
     <PackageVersion Include="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
   </ItemGroup>
-
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" Condition="'$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'" />
   </ItemGroup>
-
   <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'true' ">
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)" />
-
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
   </ItemGroup>
-
   <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'perTfm' ">
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)" />
-
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
   </ItemGroup>
-
   <!-- FxCop Analyzers -->
   <ItemGroup Condition="'$(Shipping)' == 'true' AND '$(SkipAnalyzers)' != 'true' AND '$(DotNetBuildFromSource)' != 'true'">
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
