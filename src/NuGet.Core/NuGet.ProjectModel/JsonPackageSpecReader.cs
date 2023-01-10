@@ -1587,6 +1587,7 @@ namespace NuGet.ProjectModel
                             string includeAssets = null;
                             string privateAssets = null;
                             string projectReferenceProjectPath = null;
+                            string projectVersion = null;
 
                             jsonReader.ReadObject(projectReferenceObjectPropertyName =>
                             {
@@ -1607,8 +1608,14 @@ namespace NuGet.ProjectModel
                                     case "projectPath":
                                         projectReferenceProjectPath = jsonReader.ReadNextTokenAsString();
                                         break;
+                                    case "version":
+                                        projectVersion = jsonReader.ReadNextTokenAsString();
+                                        break;
                                 }
                             });
+
+                            VersionRange projectVersionRange = null;
+                            _ = VersionRange.TryParse(projectVersion, out projectVersionRange);
 
                             frameworkGroup.ProjectReferences.Add(new ProjectRestoreReference()
                             {
@@ -1626,6 +1633,8 @@ namespace NuGet.ProjectModel
                                 PrivateAssets = LibraryIncludeFlagUtils.GetFlags(
                                     flags: privateAssets,
                                     defaultFlags: LibraryIncludeFlagUtils.DefaultSuppressParent),
+
+                                VersionRange = projectVersionRange
                             });
                         });
                     }

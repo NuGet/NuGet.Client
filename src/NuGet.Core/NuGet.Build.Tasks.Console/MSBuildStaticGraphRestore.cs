@@ -351,7 +351,8 @@ namespace NuGet.Build.Tasks.Console
                     IncludeAssets = GetLibraryIncludeFlags(projectReferenceItem.GetProperty("IncludeAssets"), LibraryIncludeFlags.All),
                     PrivateAssets = GetLibraryIncludeFlags(projectReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
                     ProjectPath = fullPath,
-                    ProjectUniqueName = fullPath
+                    ProjectUniqueName = fullPath,
+                    VersionRange = VersionRange.Parse(projectReferenceItem.GetProperty("Version"))
                 });
             }
 

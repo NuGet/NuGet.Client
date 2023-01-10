@@ -568,6 +568,7 @@ namespace NuGet.Commands
             {
                 ProjectPath = item.GetProperty("ProjectPath"),
                 ProjectUniqueName = item.GetProperty("ProjectReferenceUniqueName"),
+                VersionRange = item.GetProperty("Version") != null ? VersionRange.Parse(item.GetProperty("Version")) : null
             };
 
             ApplyIncludeFlags(reference, item.GetProperty("IncludeAssets"), item.GetProperty("ExcludeAssets"), item.GetProperty("PrivateAssets"));
