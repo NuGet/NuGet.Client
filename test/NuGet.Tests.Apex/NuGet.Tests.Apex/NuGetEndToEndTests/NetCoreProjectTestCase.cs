@@ -258,5 +258,100 @@ namespace NuGet.Tests.Apex
         {
             yield return new object[] { ProjectTemplate.NetStandardClassLib };
         }
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetNetCoreProjects))]
+        public void InstallPackageToNetCoreProjectFromUI(ProjectTemplate projectTemplate, string projectName, string packageName, string packageVersion)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, projectName);
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var nugetTestService = GetNuGetTestService();
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(packageName, packageVersion);
+
+            // Assert
+            VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, packageName, packageVersion, XunitLogger);
+        }
+
+        public static IEnumerable<object[]> GetNetCoreProjects()
+        {
+            yield return new object[] { ProjectTemplate.NetStandardClassLib, "NetStandardClassLib", "NetStandard.Library", "2.0.1" };
+        }
+
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(UpdateNetCoreProjects))]
+        public void UpdatePackageToNetCoreProjectFromUI(ProjectTemplate projectTemplate, string projectName, string packageName, string installVersion, string updateVersion)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, projectName);
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var nugetTestService = GetNuGetTestService();
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(packageName, installVersion);
+            uiwindow.SwitchTabToUpdate();
+            uiwindow.UpdatePackageFromUI(packageName, updateVersion);
+
+            // Assert
+            VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, packageName, updateVersion, XunitLogger);
+        }
+
+        public static IEnumerable<object[]> UpdateNetCoreProjects()
+        {
+            yield return new object[] { ProjectTemplate.NetStandardClassLib, "NetStandardClassLib", "NetStandard.Library", "2.0.2", "2.0.3" };
+        }
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(UninstallNetCoreProjects))]
+        public void UninstallPackageFromNetCoreProjectFromUI(ProjectTemplate projectTemplate, string projectName, string packageName, string packageVersion)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, projectName);
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var nugetTestService = GetNuGetTestService();
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(packageName, packageVersion);
+            uiwindow.SwitchTabToInstalled();
+            uiwindow.UninstallPackageFromUI(packageName);
+
+            // Assert
+            VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+            CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, packageName, XunitLogger);
+        }
+
+        public static IEnumerable<object[]> UninstallNetCoreProjects()
+        {
+            yield return new object[] { ProjectTemplate.NetStandardClassLib, "NetStandardClassLib", "NetStandard.Library", "2.0.3" };
+        }
     }
 }
