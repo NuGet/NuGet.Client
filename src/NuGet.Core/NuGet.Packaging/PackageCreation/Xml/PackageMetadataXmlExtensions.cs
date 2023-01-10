@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -215,7 +214,7 @@ namespace NuGet.Packaging.Xml
 
             if (dependency.VersionRange != null && dependency.VersionRange != VersionRange.All)
             {
-                attributes.Add(new XAttribute("version", dependency.VersionRange.ToLegacyShortString()));
+                attributes.Add(new XAttribute("version", dependency.VersionRange.ToShortString()));
             }
 
             if (dependency.Include != null && dependency.Include.Any())
