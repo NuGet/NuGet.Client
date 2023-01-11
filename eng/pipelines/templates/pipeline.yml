@@ -146,6 +146,7 @@ stages:
       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       SDKVersionForBuild: $[stageDependencies.Initialize.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
       BuildRTM: "false"
+      DOTNET_NUGET_SIGNATURE_VERIFICATION: true
     pool:
       vmImage: ubuntu-latest
     steps:
