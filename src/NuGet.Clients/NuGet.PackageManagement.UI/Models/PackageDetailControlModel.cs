@@ -335,7 +335,15 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return _nugetProjects.Any() && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference) && !IsCentralPackageManagementEnabled;
+                return _nugetProjects.Any() && _nugetProjects.FirstOrDefault().ProjectStyle.Equals(ProjectModel.ProjectStyle.PackageReference);
+            }
+        }
+
+        public bool IsEditableComboboxEnabled
+        {
+            get
+            {
+                return IsProjectPackageReference && !IsCentralPackageManagementEnabled;
             }
         }
 

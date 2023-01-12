@@ -140,7 +140,10 @@ namespace NuGet.PackageManagement.UI
             ApplySettings(settings, Settings);
             _initialized = true;
 
-            _detailModel.IsCentralPackageManagementEnabled = await IsCentralPackageManagementEnabledAsync(CancellationToken.None);
+            if (!Model.IsSolution)
+            {
+                await IsCentralPackageManagementEnabledAsync(CancellationToken.None);
+            }
 
             NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
             _isTransitiveDependenciesExperimentEnabled = NuGetExperimentationService.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI);
@@ -569,19 +572,17 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task<bool> IsCentralPackageManagementEnabledAsync(CancellationToken cancellationToken)
+        private async Task IsCentralPackageManagementEnabledAsync(CancellationToken cancellationToken)
         {
-            foreach (IProjectContextInfo project in Model.Context.Projects)
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                bool isCentralPackageManagementEnabled = await project.IsCentralPackageManagementEnabledAsync(Model.Context.ServiceBroker, cancellationToken);
-
-                if (isCentralPackageManagementEnabled)
+                // Go off the UI thread to perform non-UI operations
+                await TaskScheduler.Default;
+                foreach (IProjectContextInfo project in Model.Context.Projects)
                 {
-                    return true;
+                    _detailModel.IsCentralPackageManagementEnabled = await project.IsCentralPackageManagementEnabledAsync(Model.Context.ServiceBroker, cancellationToken);
                 }
-            }
-
-            return false;
+            });
         }
 
         private async Task<string> GetSettingsKeyAsync(CancellationToken cancellationToken)
