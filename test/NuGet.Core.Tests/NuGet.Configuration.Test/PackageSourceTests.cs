@@ -55,7 +55,7 @@ namespace NuGet.Configuration.Test
         void CalculatedMembers_ForHttpsSource_HasExpectedValues()
         {
             // Arrange & Act
-            PackageSource source = new("https://my.test/v3.index.json");
+            PackageSource source = new PackageSource("https://my.test/v3.index.json");
 
             // Assert
             source.IsHttps.Should().BeTrue();
@@ -67,7 +67,7 @@ namespace NuGet.Configuration.Test
         void CalculatedMembers_ForHttpSource_HasExpectedValues()
         {
             // Arrange & Act
-            PackageSource source = new("http://my.test/v3.index.json");
+            PackageSource source = new PackageSource("http://my.test/v3.index.json");
 
             // Assert
             source.IsHttps.Should().BeFalse();
@@ -82,7 +82,7 @@ namespace NuGet.Configuration.Test
             var path = RuntimeEnvironmentHelper.IsWindows
                 ? @"c:\path\to\packages"
                 : "/path/to/packages";
-            PackageSource source = new(path);
+            PackageSource source = new PackageSource(path);
 
             // Assert
             source.IsHttps.Should().BeFalse();
@@ -94,7 +94,7 @@ namespace NuGet.Configuration.Test
         public void CalculatedMembers_ChangingSource_UpdatesValues()
         {
             // Arrange
-            PackageSource source = new(source: "https://my.test/v3/index.json", name: "MySource");
+            PackageSource source = new PackageSource(source: "https://my.test/v3/index.json", name: "MySource");
             bool httpBefore = source.IsHttp;
             bool httpsBefore = source.IsHttps;
             bool localBefore = source.IsLocal;
