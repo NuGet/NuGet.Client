@@ -530,7 +530,7 @@ namespace NuGet.Packaging
                 string signVerifyEnvVariable = _environmentVariableReader.GetEnvironmentVariable(
                     EnvironmentVariableConstants.DotNetNuGetSignatureVerification);
 
-                bool canVerify = false;
+                bool canVerify = RuntimeEnvironmentHelper.IsLinux && RuntimeSdkDetector.Is8OrGreater;
 
                 if (!string.IsNullOrEmpty(signVerifyEnvVariable))
                 {
