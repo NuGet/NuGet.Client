@@ -327,7 +327,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return SelectedVersion != null && !IsSelectedVersionInstalled && !InstalledVersionIsAutoReferenced;
+                return SelectedVersion != null && !IsSelectedVersionInstalled && !InstalledVersionIsAutoReferenced && !IsCentralPackageManagementEnabled;
             }
         }
 
