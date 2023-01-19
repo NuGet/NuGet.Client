@@ -13,7 +13,6 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Represents arguments to the out-of-proc static graph-based restore which can be written to disk by <see cref="RestoreTaskEx" /> and then read by NuGet.Build.Tasks.Console.
     /// </summary>
-    [Serializable]
     public sealed class StaticGraphRestoreArguments
     {
         /// <summary>
@@ -32,18 +31,25 @@ namespace NuGet.Build.Tasks
         /// </summary>
         /// <param name="stream">A <see cref="Stream" /> to read arguments from.</param>
         /// <returns>A <see cref="StaticGraphRestoreArguments" /> object read from the specified stream.</returns>
-        public static StaticGraphRestoreArguments Read(Stream stream)
+        public static StaticGraphRestoreArguments Read(Stream stream, Encoding encoding)
         {
-            using var reader = new BinaryReader(stream, Encoding.Default, leaveOpen: true);
+            using var reader = new BinaryReader(stream, encoding, leaveOpen: true);
+
+            int count = SkipPreamble();
 
             return new StaticGraphRestoreArguments
             {
-                GlobalProperties = ReadDictionary(count: reader.ReadInt32()),
-                Options = ReadDictionary(count: reader.ReadInt32())
+                GlobalProperties = ReadDictionary(count),
+                Options = ReadDictionary()
             };
 
-            Dictionary<string, string> ReadDictionary(int count)
+            Dictionary<string, string> ReadDictionary(int count = -1)
             {
+                if (count == -1)
+                {
+                    count = reader.ReadInt32();
+                }
+
                 var dictionary = new Dictionary<string, string>(capacity: count, StringComparer.OrdinalIgnoreCase);
 
                 for (int i = 0; i < count; i++)
@@ -55,15 +61,60 @@ namespace NuGet.Build.Tasks
 
                 return dictionary;
             }
+
+            int SkipPreamble()
+            {
+                // Get the preamble from the current encoding which should only be a maximum of 4 bytes
+                byte[] preamble = encoding.GetPreamble();
+
+                if (preamble.Length == 0)
+                {
+                    // Return -1 to the caller if there is no preamble for the encoding meaning that the stream is at the beginning of the expected content
+                    return -1;
+                }
+
+                // Create a buffer for the preamble which should be a maximum of 4 bytes
+                byte[] buffer = new byte[4];
+
+                // Read 
+                int readBytes = reader.Read(buffer, 0, buffer.Length);
+
+                int matchingPreambleLength = 0;
+
+                for (int i = 0; i < preamble.Length; i++)
+                {
+                    if (buffer[i] != preamble[i])
+                    {
+                        break;
+                    }
+
+                    matchingPreambleLength++;
+                }
+
+                if (matchingPreambleLength == preamble.Length)
+                {
+                    int index = matchingPreambleLength;
+
+                    for (int i = 0; i < buffer.Length - matchingPreambleLength; i++)
+                    {
+                        buffer[i] = buffer[index];
+                    }
+
+                    reader.Read(buffer, buffer.Length - matchingPreambleLength, matchingPreambleLength);
+
+                }
+
+                return BitConverter.ToInt32(buffer, 0);
+            }
         }
 
         /// <summary>
         /// Writes the current arguments to the specified stream.
         /// </summary>
         /// <param name="stream">A <see cref="Stream" /> to write the arguments to.</param>
-        public void Write(Stream stream)
+        public void Write(StreamWriter streamWriter)
         {
-            using BinaryWriter writer = new BinaryWriter(stream, Encoding.Default, leaveOpen: true);
+            using BinaryWriter writer = new BinaryWriter(streamWriter.BaseStream, streamWriter.Encoding, leaveOpen: true);
 
             WriteDictionary(GlobalProperties);
             WriteDictionary(Options);
