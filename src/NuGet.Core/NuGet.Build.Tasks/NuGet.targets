@@ -140,6 +140,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       Interactive="$(NuGetInteractive)"
       RestoreForceEvaluate="$(RestoreForceEvaluate)"
       RestorePackagesConfig="$(RestorePackagesConfig)"/>
+
+    <!-- When Restore fails, still try to embed the results of restore in the binary log -->
+    <OnError ExecuteTargets="EmbedNuGetFilesInBinLog" />
   </Target>
 
   <!--
@@ -1456,5 +1459,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Import Project="NuGet.RestoreEx.targets" Condition="'$(RestoreUseStaticGraphEvaluation)' == 'true' And Exists('NuGet.RestoreEx.targets')" />
+
+  <!--
+    ============================================================
+    EmbedNuGetFilesInBinLog
+    Adds files to be embedded in the binary log.  These files are results of a restore
+    so they need to be added after restore is complete.
+    ============================================================
+  -->
+  <Target Name="EmbedNuGetFilesInBinLog"
+        AfterTargets="Restore"
+        Condition="'$(EmbedNuGetFilesInBinLog)' != 'false'">
+    <ItemGroup>
+      <EmbedInBinlog Include="$(ProjectAssetsFile)" Condition="Exists('$(ProjectAssetsFile)') AND $(EmbedProjectAssetsFile) != false" />
+      <EmbedInBinlog Include="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).nuget.*" />
+    </ItemGroup>
+  </Target>
 
 </Project>

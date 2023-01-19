@@ -33,6 +33,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         ProcessFileName="$(NuGetConsoleProcessFileName)"
         MSBuildStartupDirectory="$(MSBuildStartupDirectory)"
         />
+
+    <!-- When Restore fails, still try to embed the results of restore in the binary log -->
+    <OnError ExecuteTargets="EmbedNuGetFilesInBinLog" />
   </Target>
 
  <!--
