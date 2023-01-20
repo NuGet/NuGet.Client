@@ -66,7 +66,12 @@ namespace NuGet.Protocol
 
             if (proxy != null)
             {
-                messageHandler = new ProxyAuthenticationHandler(clientHandler, HttpHandlerResourceV3.CredentialService?.Value, ProxyCache.Instance);
+                var innerHandler = messageHandler;
+
+                messageHandler = new ProxyAuthenticationHandler(clientHandler, HttpHandlerResourceV3.CredentialService?.Value, ProxyCache.Instance)
+                {
+                    InnerHandler = innerHandler
+                };
             }
 
 #if !IS_CORECLR
