@@ -196,7 +196,7 @@ namespace NuGet.VisualStudio.Common
         {
             foreach (PackageSpec Project in dgspec.Projects)
             {
-                if (Project.RestoreMetadata?.Sources == null)
+                if (Project?.RestoreMetadata?.Sources == null)
                     continue;
 
                 bool anyNonMSFeed = Project.RestoreMetadata.Sources.Any(source => string.IsNullOrWhiteSpace(PackageSourceTelemetry.GetMsFeed(source)));
