@@ -160,17 +160,11 @@ namespace NuGet.Build.Tasks
             // If the first set of bytes were the preamble then it needs to be skipped
             if (matchingPreambleLength == preamble.Length)
             {
-                int index = matchingPreambleLength;
+                // Copy the bytes after the preamble to the start of the buffer
+                Array.Copy(buffer, matchingPreambleLength, buffer, 0, buffer.Length - matchingPreambleLength);
 
-                // Copy the last set of bytes after the preamble back to the beginning of the buffer
-                for (int i = 0; i < buffer.Length - matchingPreambleLength; i++)
-                {
-                    buffer[i] = buffer[index];
-                }
-
-                // Read in the next set of bytes into the buffer so it contains the first 4 bytes after the preamble
+                // Read in the next bytes from the stream into the buffer so it contains the first 4 bytes after the preamble
                 reader.Read(buffer, buffer.Length - matchingPreambleLength, matchingPreambleLength);
-
             }
 
             // Convert the buffer to an integer
