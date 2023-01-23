@@ -14,7 +14,8 @@
              ResizeMode="NoResize"
              ShowInTaskbar="False"
              Title="{x:Static nuget:Resources.VSOptions_Label_AddPackageNamespace}"
-             WindowStartupLocation="CenterOwner">
+             WindowStartupLocation="CenterOwner"
+             Loaded="AddMappingDialogWindow_Loaded">
   <vsui:DialogWindow.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -140,7 +141,7 @@
       </Grid.ColumnDefinitions>
       <!-- The `Grid.Column="0"` is missing in order to push the next column to the far right of the grid. -->
       <Button Grid.Column="1" Style="{StaticResource PackageSourceMappingButtonStyle}" Command="{Binding AddMappingCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Add}"/>
-      <Button Grid.Column="2" Style="{StaticResource PackageSourceMappingButtonStyle}" Command ="{Binding HideDialogCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Cancel}"/>
+      <Button Grid.Column="2" Style="{StaticResource PackageSourceMappingButtonStyle}" Command ="{Binding HideDialogCommand}" Content="{x:Static nuget:Resources.VSOptions_Button_Cancel}" IsCancel="True"/>
     </Grid>
   </Grid>
 </vsui:DialogWindow>
