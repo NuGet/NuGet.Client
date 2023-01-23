@@ -126,7 +126,7 @@
                                  Margin="12,0,12,0"
                                  Watermark="{x:Static nuget:Resources.VSOptions_Watermark_AddPackageNamespace}"
                                  TextChanged="PackageID_TextChanged"/>
-      <nuget:ProjectsListView Grid.Row="2"
+      <nuget:ToggleableListView Grid.Row="2"
                     x:Name="_sourcesListBox"
                     AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Accessibility_SourcesList}"
                     ItemsSource="{Binding SourcesCollection}"
@@ -169,7 +169,7 @@
             </GridViewColumn>
           </GridView>
         </ListView.View>
-      </nuget:ProjectsListView>
+      </nuget:ToggleableListView>
     </Grid>
     <Grid Grid.Row="3" Margin="12,0,12,12">
       <Grid.ColumnDefinitions>
