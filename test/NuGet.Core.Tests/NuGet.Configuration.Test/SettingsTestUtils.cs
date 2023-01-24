@@ -14,6 +14,15 @@ namespace NuGet.Configuration.Test
 {
     public static class SettingsTestUtils
     {
+        public static void CreateConfigurationFile(string configurationPath, string configurationContent)
+        {
+            using (var file = File.Create(configurationPath))
+            {
+                var info = Encoding.UTF8.GetBytes(configurationContent);
+                file.Write(info, 0, info.Count());
+            }
+        }
+
         public static void CreateConfigurationFile(string configurationPath, string mockBaseDirectory, string configurationContent)
         {
             Directory.CreateDirectory(mockBaseDirectory);
