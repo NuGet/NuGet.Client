@@ -10,8 +10,10 @@
              mc:Ignorable="d" 
              x:Uid="AddMappingDialogWindow"
              Height="348"
+             MinHeight="348"
              Width="480"
-             ResizeMode="NoResize"
+             MinWidth="480"
+             ResizeMode="CanResize"
              ShowInTaskbar="False"
              Title="{x:Static nuget:Resources.VSOptions_Label_AddPackageNamespace}"
              WindowStartupLocation="CenterOwner"
@@ -25,6 +27,8 @@
   </vsui:DialogWindow.Resources>
   <Grid>
     <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
       <RowDefinition Height="*"/>
       <RowDefinition Height="Auto"/>
     </Grid.RowDefinitions>
@@ -71,15 +75,8 @@
         </Setter>
       </Style>
     </Grid.Resources>
-    <Grid Grid.Row="0">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="Auto"/>
-      </Grid.RowDefinitions>
-      <TextBlock Grid.Row="0" Text="{x:Static nuget:Resources.VSOptions_Label_PackagePattern}" Margin="12,12,12,9"/>
-      <vsui:WatermarkedTextBox Grid.Row="1"
+    <TextBlock Grid.Row="0" Text="{x:Static nuget:Resources.VSOptions_Label_PackagePattern}" Margin="12,12,12,9"/>
+    <vsui:WatermarkedTextBox Grid.Row="1"
                                  BorderBrush="{DynamicResource {x:Static vsui:CommonControlsColors.ButtonBorderBrushKey}}"
                                  BorderThickness="1"
                                  AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Watermark_AddPackageNamespace}"
@@ -88,52 +85,50 @@
                                  Margin="12,0,12,0"
                                  Watermark="{x:Static nuget:Resources.VSOptions_Watermark_AddPackageNamespace}"
                                  TextChanged="PackageID_TextChanged"/>
-      <nuget:ToggleableListView Grid.Row="2"
+    <nuget:ToggleableListView Grid.Row="2"
                     x:Name="_sourcesListBox"
                     AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Accessibility_SourcesList}"
                     ItemsSource="{Binding SourcesCollection}"
                     PreviewKeyUp="SourcesListBox_PreviewKeyUp"
-                    Margin="12"
-                    Height="184">
-        <ListView.ItemContainerStyle>
-          <Style>
-            <Setter Property="AutomationProperties.Name" Value="{Binding SourceInfo.Name}"/>
-          </Style>
-        </ListView.ItemContainerStyle>
-        <ListView.Resources>
-          <Style x:Key="{x:Static GridView.GridViewScrollViewerStyleKey}" TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.UnthemedGridViewScrollViewerStyleKey}}" />
-          <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.UnthemedScrollBarStyleKey}}"/>
-        </ListView.Resources>
-        <ListView.View>
-          <GridView>
-            <!-- checkbox column -->
-            <GridViewColumn>
-              <GridViewColumn.CellTemplate>
-                <DataTemplate>
-                  <CheckBox IsTabStop="False"
+                    Margin="12">
+      <ListView.ItemContainerStyle>
+        <Style>
+          <Setter Property="AutomationProperties.Name" Value="{Binding SourceInfo.Name}"/>
+        </Style>
+      </ListView.ItemContainerStyle>
+      <ListView.Resources>
+        <Style x:Key="{x:Static GridView.GridViewScrollViewerStyleKey}" TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.UnthemedGridViewScrollViewerStyleKey}}" />
+        <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.UnthemedScrollBarStyleKey}}"/>
+      </ListView.Resources>
+      <ListView.View>
+        <GridView>
+          <!-- checkbox column -->
+          <GridViewColumn>
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <CheckBox IsTabStop="False"
                                 AutomationProperties.Name="{x:Static nuget:Resources.CheckBox_Selected}"
                                 IsChecked="{Binding Path=IsSelected}"
                                 Checked="CheckBox_Checked"
                                 Unchecked="CheckBox_Checked"/>
-                </DataTemplate>
-              </GridViewColumn.CellTemplate>
-            </GridViewColumn>
-            <!-- the text column -->
-            <GridViewColumn>
-              <GridViewColumnHeader Content="{x:Static nuget:Resources.VSOptions_Label_Source}" HorizontalContentAlignment="Left"/>
-              <GridViewColumn.CellTemplate>
-                <DataTemplate>
-                  <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding SourceInfo.Name}"/>
-                  </StackPanel>
-                </DataTemplate>
-              </GridViewColumn.CellTemplate>
-            </GridViewColumn>
-          </GridView>
-        </ListView.View>
-      </nuget:ToggleableListView>
-    </Grid>
-    <Grid Grid.Row="1" Margin="12,0,12,12">
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+          <!-- the text column -->
+          <GridViewColumn>
+            <GridViewColumnHeader Content="{x:Static nuget:Resources.VSOptions_Label_Source}" HorizontalContentAlignment="Left"/>
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="{Binding SourceInfo.Name}"/>
+                </StackPanel>
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+        </GridView>
+      </ListView.View>
+    </nuget:ToggleableListView>
+    <Grid Grid.Row="3" Margin="12,0,12,12">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="Auto" />
