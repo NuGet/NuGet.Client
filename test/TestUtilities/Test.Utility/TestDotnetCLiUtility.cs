@@ -3,18 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Protocol;
-using NuGet.Test.Utility;
+using NuGet.Packaging.Signing;
 using NuGet.Versioning;
+using Test.Utility.Signing;
 
 namespace NuGet.Test.Utility
 {
@@ -44,6 +38,7 @@ namespace NuGet.Test.Utility
 
             return cliDirDestination;
         }
+
 #else
         // For fullframework code path, the test project dll could not be used to dynamically determine which SDK version to copy,
         // so we need to specify the sdkVersion and sdkTfm in order to patch the right version of SDK.
@@ -131,6 +126,14 @@ namespace NuGet.Test.Utility
 
             if (selectedVersion == null)
             {
+                selectedVersion = Directory.EnumerateDirectories(SdkDirSource)
+                    .Select(Path.GetFileName)
+                    .OrderByDescending(directoryName => NuGetVersion.Parse(directoryName))
+                    .FirstOrDefault();
+            }
+
+            if (selectedVersion == null)
+            {
                 var message = $@"Could not find suitable SDK to test in {SdkDirSource}
 TFM being tested: {testTfm.DotNetFrameworkName}
 SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Select(Path.GetFileName).Where(d => !string.Equals(d, "NuGetFallbackFolder", StringComparison.OrdinalIgnoreCase)))}";
@@ -188,7 +191,42 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
 #endif
             CopyPackSdkArtifacts(artifactsDirectory, pathToSdkInCli, configuration);
             CopyRestoreArtifacts(artifactsDirectory, pathToSdkInCli, configuration);
+
+#if NET5_0_OR_GREATER
+            CopyCertificateBundles(cliDirectory);
+#endif
         }
+
+#if NET5_0_OR_GREATER
+        private static void CopyCertificateBundles(string cliDirectory)
+        {
+            DirectoryInfo sdkDirectory = new(Path.Combine(cliDirectory, "sdk"));
+
+            foreach (DirectoryInfo versionedSdkDirectory in sdkDirectory.GetDirectories())
+            {
+                FileInfo codesignFile = new(
+                    Path.Combine(
+                        versionedSdkDirectory.FullName,
+                        FallbackCertificateBundleX509ChainFactory.SubdirectoryName,
+                        FallbackCertificateBundleX509ChainFactory.CodeSigningFileName));
+                FileInfo timestampFile = new(
+                    Path.Combine(
+                        versionedSdkDirectory.FullName,
+                        FallbackCertificateBundleX509ChainFactory.SubdirectoryName,
+                        FallbackCertificateBundleX509ChainFactory.TimestampingFileName));
+
+                if (codesignFile.Exists && !timestampFile.Exists)
+                {
+                    File.WriteAllBytes(
+                        codesignFile.FullName,
+                        SigningTestUtility.GetResourceBytes(FallbackCertificateBundleX509ChainFactory.CodeSigningFileName));
+                    File.WriteAllBytes(
+                        timestampFile.FullName,
+                        SigningTestUtility.GetResourceBytes(FallbackCertificateBundleX509ChainFactory.TimestampingFileName));
+                }
+            }
+        }
+#endif
 
         private static void CopyRestoreArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration)
         {
@@ -286,7 +324,7 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
                 {
                     File.Copy(sourceFileName: Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge", packFileName),
                         destFileName: Path.Combine(packAssemblyDestinationDirectory, packFileName),
-                        overwrite:true);
+                        overwrite: true);
                 }
             }
             else
