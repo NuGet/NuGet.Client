@@ -53,7 +53,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="NuGet.Core">
-      <HintPath>$(NuGetPackageRoot)nuget.core\$(NuGetCoreV2Version)\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)\nuget.core\$(NuGetCoreV2Version)\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Aliases>CoreV2</Aliases>
     </Reference>
   </ItemGroup>

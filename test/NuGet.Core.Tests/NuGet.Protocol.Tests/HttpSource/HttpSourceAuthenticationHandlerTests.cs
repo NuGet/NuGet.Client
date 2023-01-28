@@ -534,6 +534,138 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
+        [Fact]
+        public async Task Dispose_CalledMultipleTimes_DisposesInstanceAsync()
+        {
+            // Arrange
+            var packageSource = new PackageSource("http://package.source.test");
+            var clientHandler = new HttpClientHandler();
+            var credentialService = Mock.Of<ICredentialService>();
+            Mock.Get(credentialService)
+                .Setup(x => x.HandlesDefaultCredentials)
+                .Returns(true);
+            Mock.Get(credentialService)
+                .Setup(
+                    x => x.GetCredentialsAsync(
+                        It.IsAny<Uri>(),
+                        It.IsAny<IWebProxy>(),
+                        It.IsAny<CredentialRequestType>(),
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK) // avoid a network call
+            };
+
+            // Simulate some work
+            await SendAsync(handler);
+
+            // Act and Assert: Nothing should throw
+            handler.Dispose();
+            handler.Dispose();
+            handler.Dispose();
+            handler.Dispose();
+        }
+
+        [Fact]
+        public async Task Dispose_CalledInMultipleObjectsConcurrently_NoLocksAsync()
+        {
+            // Arrange
+            var packageSource = new PackageSource("http://package.source.test");
+            var clientHandler = new HttpClientHandler();
+            var credentialService = Mock.Of<ICredentialService>();
+            Mock.Get(credentialService)
+                .Setup(x => x.HandlesDefaultCredentials)
+                .Returns(true);
+            Mock.Get(credentialService)
+                .Setup(x => x.GetCredentialsAsync(
+                        It.IsAny<Uri>(),
+                        It.IsAny<IWebProxy>(),
+                        It.IsAny<CredentialRequestType>(),
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
+
+            var handler1 = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK) // avoid a network call
+            };
+            var handler2 = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK) // avoid a network call
+            };
+            var handler3 = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK) // avoid a network call
+            };
+
+            var workTasks = new Task[]
+            {
+                new Task(async () => { try { await SendAsync(handler1); } catch { throw; } }),
+                new Task(async () => { try { await SendAsync(handler2); } catch { throw; } }),
+                new Task(async () => { try { await SendAsync(handler3); } catch { throw; } }),
+            };
+
+            var disposeTasks = new Task[]
+            {
+                new Task(() => { try { handler1.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler2.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler3.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler1.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler2.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler3.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler1.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler2.Dispose(); } catch { throw; } }),
+                new Task(() => { try { handler3.Dispose(); } catch { throw; } }),
+            };
+
+            StartTasks(workTasks);
+            await Task.WhenAll(workTasks);
+
+            // Act
+            StartTasks(disposeTasks);
+            await Task.WhenAll(disposeTasks);
+
+            // Assert: Nothing should throw
+            Assert.All(workTasks, tsk => AssertTask(tsk));
+            Assert.All(disposeTasks, tsk => AssertTask(tsk));
+        }
+
+        private static void AssertTask(Task task)
+        {
+            Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+            Assert.Null(task.Exception);
+        }
+
+        private static void StartTasks(IEnumerable<Task> tasks)
+        {
+            // Act and Assert, nothing should throw
+            Parallel.ForEach(tasks, t =>
+            {
+                if (t.Status == TaskStatus.Created)
+                {
+                    t.Start();
+                }
+            });
+        }
+
+        [Fact]
+        public async Task SendAsync_AfterDispose_ThrowsAsync()
+        {
+            // Arrange
+            var packageSource = new PackageSource("http://package.source.test");
+            var clientHandler = new HttpClientHandler();
+
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService: null);
+
+            // Act
+            handler.Dispose();
+
+            // Assert
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await SendAsync(handler));
+        }
+
         private static LambdaMessageHandler GetLambdaMessageHandler(HttpStatusCode statusCode)
         {
             return new LambdaMessageHandler(
