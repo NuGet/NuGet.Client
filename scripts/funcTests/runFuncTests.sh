@@ -69,15 +69,9 @@ do
 	fi
 	unset IFS
 
-    # The quality option:
-    # Daily links are those from daily builds
-    # Signed have been post-build signed (in the case of 6.0+, pre-6.0 is signed even in daily builds)
-    # Validated have gone through CTI testing and other validation
-    # Preview are released bits that are preview versions
-    # GA are released servicing and GA builds
-	echo "cli/dotnet-install.sh --install-dir cli --channel $Channel --quality signed --version $Version -nopath"
-    cli/dotnet-install.sh --install-dir cli --channel $Channel --quality signed --version $Version -nopath
-
+	echo "cli/dotnet-install.sh --install-dir cli --channel $Channel --version $Version -nopath"
+	cli/dotnet-install.sh --install-dir cli --channel $Channel --version $Version -nopath
+ 
 	if (( $? )); then
 		echo "The .NET CLI Install for $DOTNET_BRANCH failed!!"
 		exit 1

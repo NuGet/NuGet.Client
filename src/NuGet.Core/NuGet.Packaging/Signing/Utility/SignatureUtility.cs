@@ -144,6 +144,7 @@ namespace NuGet.Packaging.Signing
                 isIssuerSerialRequired,
                 errors,
                 signingSpecifications,
+                CertificateType.Signature,
                 includeChain);
         }
 
@@ -258,6 +259,7 @@ namespace NuGet.Packaging.Signing
                 isIssuerSerialRequired,
                 errors,
                 signingSpecifications,
+                CertificateType.Signature,
                 includeChain);
         }
 
@@ -326,6 +328,7 @@ namespace NuGet.Packaging.Signing
                 isIssuerSerialRequired,
                 errors,
                 signingSpecifications,
+                CertificateType.Timestamp,
                 includeChain);
         }
 
@@ -336,6 +339,7 @@ namespace NuGet.Packaging.Signing
             bool isIssuerSerialRequired,
             Errors errors,
             SigningSpecifications signingSpecifications,
+            CertificateType certificateType,
             bool includeChain)
         {
             if (signedCms == null)
@@ -522,7 +526,11 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            var certificates = GetCertificateChain(signerInfo.Certificate, signedCms.Certificates, includeChain);
+            IX509CertificateChain certificates = GetCertificateChain(
+                signerInfo.Certificate,
+                signedCms.Certificates,
+                certificateType,
+                includeChain);
 
             if (certificates == null || certificates.Count == 0)
             {
@@ -610,6 +618,7 @@ namespace NuGet.Packaging.Signing
         private static IX509CertificateChain GetCertificateChain(
             X509Certificate2 certificate,
             X509Certificate2Collection extraStore,
+            CertificateType certificateType,
             bool includeCertificatesAfterSigningCertificate)
         {
             if (!includeCertificatesAfterSigningCertificate)
@@ -617,7 +626,8 @@ namespace NuGet.Packaging.Signing
                 return new X509CertificateChain() { certificate };
             }
 
-            using (var chainHolder = new X509ChainHolder())
+            using (X509ChainHolder chainHolder = certificateType == CertificateType.Signature
+                ? X509ChainHolder.CreateForCodeSigning() : X509ChainHolder.CreateForTimestamping())
             {
                 X509Chain chain = chainHolder.Chain;
 

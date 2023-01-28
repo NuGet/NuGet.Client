@@ -142,7 +142,7 @@ namespace NuGet.Packaging.Signing
 
                 var certificateExtraStore = SignedCms.Certificates;
 
-                using (var chainHolder = new X509ChainHolder())
+                using (X509ChainHolder chainHolder = X509ChainHolder.CreateForTimestamping())
                 {
                     var chain = chainHolder.Chain;
 
