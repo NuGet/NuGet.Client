@@ -24,9 +24,18 @@ namespace NuGet.VisualStudio
 
         public static string GetProjectPath(IVsHierarchy project)
         {
+            Assumes.Present(project);
             ThreadHelper.ThrowIfNotOnUIThread();
             var format = (IPersistFileFormat)project;
             format.GetCurFile(out string projectPath, out uint _);
+            return projectPath;
+        }
+
+        public static string GetProjectPathForWebsiteProject(IVsHierarchy project)
+        {
+            Assumes.Present(project);
+            ThreadHelper.ThrowIfNotOnUIThread();
+            project.GetCanonicalName((uint)VSConstants.VSITEMID.Root, out string projectPath);
             return projectPath;
         }
 
