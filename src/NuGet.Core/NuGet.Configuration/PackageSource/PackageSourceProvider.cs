@@ -561,8 +561,13 @@ namespace NuGet.Configuration
         {
             if (string.Equals(newSource.Name, existingSource.Name, StringComparison.OrdinalIgnoreCase))
             {
-                if ((!string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase) ||
-                    newSource.ProtocolVersion != existingSource.ProtocolVersion) && newSource.IsPersistable)
+                if ((newSource.ProtocolVersion != existingSource.ProtocolVersion) && newSource.IsPersistable)
+                {
+                    Settings.Remove(ConfigurationConstants.PackageSources, existingSource.AsSourceItem());
+                    Settings.AddOrUpdate(ConfigurationConstants.PackageSources, newSource.AsSourceItem());
+                    isDirty = true;
+                }
+                else if (!string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase) && newSource.IsPersistable)
                 {
                     Settings.AddOrUpdate(ConfigurationConstants.PackageSources, newSource.AsSourceItem());
                     isDirty = true;

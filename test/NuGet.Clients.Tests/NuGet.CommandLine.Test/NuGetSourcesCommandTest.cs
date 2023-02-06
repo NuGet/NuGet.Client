@@ -416,6 +416,193 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData(@"https://source.test", true)]
+        [InlineData(@"\\myserver\packages", false)]
+        public void SourcesCommandTest_AddWithProtocolVersion(string source, bool shouldWriteProtocolVersion)
+        {
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
+            {
+                TestDirectory workingPath = pathContext.WorkingDirectory;
+                SimpleTestSettingsContext settings = pathContext.Settings;
+
+                // Arrange
+                string nugetexe = Util.GetNuGetExePath();
+                var args = new string[] {
+                    "sources",
+                    "Add",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    source,
+                    "-ConfigFile",
+                    settings.ConfigPath,
+                    "-ProtocolVersion",
+                    "3"
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
+
+                // Assert
+                Assert.Equal(0, result.ExitCode);
+                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                var expectedProtocolVersion = shouldWriteProtocolVersion ? "3" : null;
+                Assert.Equal(expectedProtocolVersion, sourceItem.ProtocolVersion);
+            }
+        }
+
+        [Theory]
+        [InlineData("1", false)]
+        [InlineData("2", true)]
+        [InlineData("3", true)]
+        [InlineData("4", false)]
+        [InlineData("5", false)]
+        public void SourcesCommandTest_AddWithProtocolVersion_ValidateProtocolVersion(string protocolVersion, bool shouldSucceed)
+        {
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
+            {
+                TestDirectory workingPath = pathContext.WorkingDirectory;
+                SimpleTestSettingsContext settings = pathContext.Settings;
+
+                // Arrange
+                string nugetexe = Util.GetNuGetExePath();
+                var args = new string[] {
+                    "sources",
+                    "Add",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    "https://source.test",
+                    "-ConfigFile",
+                    settings.ConfigPath,
+                    "-ProtocolVersion",
+                    protocolVersion
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
+
+                // Assert
+                Assert.Equal(shouldSucceed, result.ExitCode.Equals(0));
+
+                if (!shouldSucceed)
+                {
+                    string expectedErrorMessage = "The protocol version specified is invalid.";
+
+                    VerifyResultFailure(result, expectedErrorMessage);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(@"https://source.test", true)]
+        [InlineData(@"\\myserver\packages", false)]
+        public void SourcesCommandTest_UpdateWithProtocolVersion(string source, bool shouldWriteProtocolVersion)
+        {
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
+            {
+                string nugetexe = Util.GetNuGetExePath();
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test.initial"" />
+  </packageSources>
+</configuration>";
+                Util.CreateFile(configFileDirectory, configFileName, nugetConfig);
+
+                // Arrange
+                var args = new string[] {
+                    "sources",
+                    "Update",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    source,
+                    "-ConfigFile",
+                    configFilePath,
+                    "-ProtocolVersion",
+                    "3"
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    nugetexe,
+                    configFileDirectory,
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Assert.Equal(0, result.ExitCode);
+                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                Assert.Single(packageSourcesSection.Items);
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                var expectedProtocolVersion = shouldWriteProtocolVersion ? "3" : null;
+                Assert.Equal(expectedProtocolVersion, sourceItem.ProtocolVersion);
+            }
+        }
+
+        [Theory]
+        [InlineData("1", false)]
+        [InlineData("2", true)]
+        [InlineData("3", true)]
+        [InlineData("4", false)]
+        [InlineData("5", false)]
+        public void SourcesCommandTest_UpdateWithProtocolVersion_ValidateProtocolVersion(string protocolVersion, bool shouldSucceed)
+        {
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
+            {
+                string nugetexe = Util.GetNuGetExePath();
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test.initial"" />
+  </packageSources>
+</configuration>";
+                Util.CreateFile(configFileDirectory, configFileName, nugetConfig);
+
+                // Arrange
+                var args = new string[] {
+                    "sources",
+                    "Update",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    "https://source.test",
+                    "-ConfigFile",
+                    configFilePath,
+                    "-ProtocolVersion",
+                    protocolVersion
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    nugetexe,
+                    configFileDirectory,
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Assert.Equal(shouldSucceed, result.ExitCode.Equals(0));
+
+                if (!shouldSucceed)
+                {
+                    string expectedErrorMessage = "The protocol version specified is invalid.";
+
+                    VerifyResultFailure(result, expectedErrorMessage);
+                }
+            }
+        }
+
         [Fact]
         public void SourcesCommandTest_EnableSource()
         {
@@ -567,7 +754,6 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-
         [Theory]
         [InlineData("sources a b")]
         [InlineData("sources a b c")]
@@ -660,6 +846,25 @@ namespace NuGet.CommandLine.Test
                 Assert.DoesNotContain("Encyclopaedia", result.Output);
                 Assert.DoesNotContain("Encyclopædia", result.Output);
             }
+        }
+
+        /// <summary>
+        /// Utility for asserting faulty executions of nuget.exe
+        ///
+        /// Asserts a non-zero status code and a message on stderr.
+        /// </summary>
+        /// <param name="result">An instance of <see cref="CommandRunnerResult"/> with command execution results</param>
+        /// <param name="expectedErrorMessage">A portion of the error message to be sent</param>
+        public static void VerifyResultFailure(CommandRunnerResult result,
+                                               string expectedErrorMessage)
+        {
+            Assert.False(
+                result.Success,
+                "nuget.exe DID NOT FAIL: Output is " + result.Output + ". Error is " + result.Errors);
+
+            Assert.True(
+                result.Errors.Contains(expectedErrorMessage),
+                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Output);
         }
     }
 }

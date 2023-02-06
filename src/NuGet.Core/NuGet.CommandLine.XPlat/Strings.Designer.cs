@@ -1602,6 +1602,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The NuGet server protocol version to be used. Currently supported versions are 2 and 3. See https://learn.microsoft.com/nuget/api/overview for information about the version 3 protocol. Defaults to &quot;2&quot; if not specified..
+        /// </summary>
+        internal static string SourcesCommandProtocolVersionDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandProtocolVersionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Path to the package source..
         /// </summary>
         internal static string SourcesCommandSourceDescription {
@@ -1634,6 +1643,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string SourcesCommandValidAuthenticationTypesDescription {
             get {
                 return ResourceManager.GetString("SourcesCommandValidAuthenticationTypesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The protocol version specified is invalid. Provide a valid protocol version..
+        /// </summary>
+        internal static string SourcesCommandValidProtocolVersion {
+            get {
+                return ResourceManager.GetString("SourcesCommandValidProtocolVersion", resourceCulture);
             }
         }
         

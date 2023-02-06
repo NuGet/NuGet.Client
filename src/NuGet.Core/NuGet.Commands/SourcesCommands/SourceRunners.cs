@@ -83,6 +83,11 @@ namespace NuGet.Commands
                 newPackageSource.Credentials = credentials;
             }
 
+            if (!newPackageSource.IsLocal && !string.IsNullOrEmpty(args.ProtocolVersion))
+            {
+                newPackageSource.ProtocolVersion = RunnerHelper.ParseProtocolVersion(args.ProtocolVersion);
+            }
+
             sourceProvider.AddPackageSource(newPackageSource);
             getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture,
                     Strings.SourcesCommandSourceAddedSuccessfully, args.Name));
@@ -305,6 +310,11 @@ namespace NuGet.Commands
                 existingSource.Credentials = credentials;
             }
 
+            if (!existingSource.IsLocal && !string.IsNullOrEmpty(args.ProtocolVersion))
+            {
+                existingSource.ProtocolVersion = RunnerHelper.ParseProtocolVersion(args.ProtocolVersion);
+            }
+
             sourceProvider.UpdatePackageSource(existingSource, updateCredentials: existingSource.Credentials != null, updateEnabled: false);
 
             getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture,
@@ -397,6 +407,18 @@ namespace NuGet.Commands
                 // can't specify auth types without credentials
                 throw new CommandException(Strings.SourcesCommandCredentialsRequiredWithAuthTypes);
             }
+        }
+
+        public static int ParseProtocolVersion(string protocolVersion)
+        {
+            var currentlySupportedProtocolVersions = new List<int> { 2, 3 };
+
+            if (!int.TryParse(protocolVersion, out var protocolVersionValue) || !currentlySupportedProtocolVersions.Contains(protocolVersionValue))
+            {
+                throw new CommandException(string.Format(Strings.SourcesCommandValidProtocolVersion, string.Join(", ", currentlySupportedProtocolVersions)));
+            }
+
+            return protocolVersionValue;
         }
     }
 }
