@@ -140,10 +140,7 @@ namespace NuGet.PackageManagement.UI
             ApplySettings(settings, Settings);
             _initialized = true;
 
-            if (!Model.IsSolution)
-            {
-                await IsCentralPackageManagementEnabledAsync(CancellationToken.None);
-            }
+            await IsCentralPackageManagementEnabledAsync(CancellationToken.None);
 
             NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
             _isTransitiveDependenciesExperimentEnabled = NuGetExperimentationService.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI);
@@ -578,9 +575,13 @@ namespace NuGet.PackageManagement.UI
             {
                 // Go off the UI thread to perform non-UI operations
                 await TaskScheduler.Default;
-                foreach (IProjectContextInfo project in Model.Context.Projects)
+
+                if (!Model.IsSolution)
                 {
-                    _detailModel.IsCentralPackageManagementEnabled = await project.IsCentralPackageManagementEnabledAsync(Model.Context.ServiceBroker, cancellationToken);
+                    foreach (IProjectContextInfo project in Model.Context.Projects)
+                    {
+                        _detailModel.IsCentralPackageManagementEnabled = await project.IsCentralPackageManagementEnabledAsync(Model.Context.ServiceBroker, cancellationToken);
+                    }
                 }
             });
         }
