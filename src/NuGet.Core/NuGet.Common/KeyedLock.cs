@@ -58,8 +58,9 @@ namespace NuGet.Common
                 // and is no longer waiting for it, decrease the count so that it will be eligible for cleanup
                 // when the code holding the lock releases it.
                 // If Exit[Async] ran for this key after the above WaitAsync failed, but before this catch block runs,
-                // it means that the LockState won't be removed from the dictionary, but there won't be more than one
-                // thread holding the key and executing.
+                // it means that the LockState won't be removed from the dictionary, so technically a memory leak.
+                // But there isn't a multi-threaded correctness problem, the key still only allows one thread at a time
+                // to access it.
                 Interlocked.Decrement(ref lockState.Count);
                 throw;
             }
@@ -96,9 +97,10 @@ namespace NuGet.Common
                 // GetOrCreate(key) increments the lock state counter. Since this task failed to obtain the lock
                 // and is no longer waiting for it, decrease the count so that it will be eligible for cleanup
                 // when the code holding the lock releases it.
-                // If Exit[Async] ran for this key after the above Wait failed, but before this catch block runs,
-                // it means that the LockState won't be removed from the dictionary, but there won't be more than one
-                // thread holding the key and executing.
+                // If Exit[Async] ran for this key after the above WaitAsync failed, but before this catch block runs,
+                // it means that the LockState won't be removed from the dictionary, so technically a memory leak.
+                // But there isn't a multi-threaded correctness problem, the key still only allows one thread at a time
+                // to access it.
                 Interlocked.Decrement(ref lockState.Count);
                 throw;
             }
