@@ -14,6 +14,7 @@ namespace NuGet.Common
     internal sealed class KeyedLock : IDisposable
     {
         /// <summary>The dictionary that contains a <see cref="LockState"/> for each key.</summary>
+        /// <remarks>Both reading and modifying this dictionary must be synchronized though <see cref="_dictionaryLock"/>.</remarks>
         private readonly Dictionary<string, LockState> _locks;
 
         /// <summary>A lock to synchronize reading and modifying <see cref="_locks"/>.</summary>
