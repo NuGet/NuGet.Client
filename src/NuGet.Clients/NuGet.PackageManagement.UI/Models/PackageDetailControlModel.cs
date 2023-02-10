@@ -339,7 +339,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsEditableComboboxEnabled
+        public bool IsFloatingVersionSupported
         {
             get
             {

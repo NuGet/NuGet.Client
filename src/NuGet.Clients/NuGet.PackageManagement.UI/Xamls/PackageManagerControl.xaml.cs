@@ -573,11 +573,10 @@ namespace NuGet.PackageManagement.UI
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                // Go off the UI thread to perform non-UI operations
-                await TaskScheduler.Default;
-
                 if (!Model.IsSolution)
                 {
+                    // Go off the UI thread to perform non-UI operations
+                    await TaskScheduler.Default;
                     foreach (IProjectContextInfo project in Model.Context.Projects)
                     {
                         _detailModel.IsCentralPackageManagementEnabled = await project.IsCentralPackageManagementEnabledAsync(Model.Context.ServiceBroker, cancellationToken);
