@@ -12,6 +12,7 @@ using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
 {
+    [Obsolete]
     public class PackageManagerProviderTest
     {
         [ImportMany(typeof(IVsPackageManagerProvider))]
