@@ -139,7 +139,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       HideWarningsAndErrors="$(HideWarningsAndErrors)"
       Interactive="$(NuGetInteractive)"
       RestoreForceEvaluate="$(RestoreForceEvaluate)"
-      RestorePackagesConfig="$(RestorePackagesConfig)"/>
+      RestorePackagesConfig="$(RestorePackagesConfig)">
+      <Output TaskParameter="EmbedInBinlog" ItemName="EmbedInBinlog" />
+    </RestoreTask>
   </Target>
 
   <!--
