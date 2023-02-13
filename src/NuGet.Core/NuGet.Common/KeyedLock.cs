@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace NuGet.Common
 {
     /// <summary>A class that allows one thread at a time synchronization, but is fine grained per key.
-    /// Ror example, the key can be a resource name that must only be accessed one at a time,
+    /// For example, the key can be a resource name that must only be accessed one at a time,
     /// but different resources can be accessed concurrently.</summary>
     internal sealed class KeyedLock : IDisposable
     {
