@@ -29,7 +29,7 @@
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
 
     <!-- NuGet SDK VS package Semantic Version -->
-    <NuGetSdkVsSemanticVersion>$(VsTargetMajorVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</NuGetSdkVsSemanticVersion>
+    <NuGetSdkVsSemanticVersion>$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</NuGetSdkVsSemanticVersion>
 
     <!-- This branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
