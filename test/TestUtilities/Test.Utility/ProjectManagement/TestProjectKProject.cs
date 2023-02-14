@@ -9,8 +9,9 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
+using Test.Utility.ProjectManagement;
 
-namespace Test.Utility.ProjectManagement
+namespace NuGet.PackageManagement.Test.Utility
 {
     public class NuGetPackageMoniker : INuGetPackageMoniker
     {
