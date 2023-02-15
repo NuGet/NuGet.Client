@@ -210,7 +210,10 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
                 {
                     foreach (FileInfo file in frameworkArtifactsFolder.EnumerateFiles($"*{fileExtension}"))
                     {
-                        file.CopyTo(Path.Combine(pathToSdkInCli, file.Name), overwrite: true);
+                        if (file.Name.Contains("NuGet"))
+                        {
+                            file.CopyTo(Path.Combine(pathToSdkInCli, file.Name), overwrite: true);
+                        }
                     }
                 }
 
