@@ -571,18 +571,15 @@ namespace NuGet.PackageManagement.UI
 
         private async Task IsCentralPackageManagementEnabledAsync(CancellationToken cancellationToken)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            if (!Model.IsSolution)
             {
-                if (!Model.IsSolution)
+                await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
                     // Go off the UI thread to perform non-UI operations
                     await TaskScheduler.Default;
-                    foreach (IProjectContextInfo project in Model.Context.Projects)
-                    {
-                        _detailModel.IsCentralPackageManagementEnabled = await project.IsCentralPackageManagementEnabledAsync(Model.Context.ServiceBroker, cancellationToken);
-                    }
-                }
-            });
+                    _detailModel.IsCentralPackageManagementEnabled = await Model.Context.Projects.First().IsCentralPackageManagementEnabledAsync(Model.Context.ServiceBroker, cancellationToken);
+                });
+            }
         }
 
         private async Task<string> GetSettingsKeyAsync(CancellationToken cancellationToken)
