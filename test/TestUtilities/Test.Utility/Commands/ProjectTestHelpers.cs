@@ -223,6 +223,21 @@ namespace NuGet.Commands.Test
             };
         }
 
+        public static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, SimpleTestPathContext pathContext, PackageSourceMapping packageSourceMappingConfiguration, ILogger logger)
+        {
+            var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+            var dgSpec = new DependencyGraphSpec();
+            dgSpec.AddProject(spec);
+            dgSpec.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
+
+            return new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, packageSourceMappingConfiguration, logger)
+            {
+                LockFilePath = Path.Combine(spec.FilePath, LockFileFormat.AssetsFileName),
+                DependencyGraphSpec = dgSpec,
+
+            };
+        }
+
         public static TestRestoreRequest CreateRestoreRequest(PackageSpec projectToRestore, IEnumerable<PackageSpec> packageSpecsClosure, SimpleTestPathContext pathContext, ILogger logger)
         {
             var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
