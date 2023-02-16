@@ -1,15 +1,12 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
+using System;
 
 namespace PackageReferenceSdk
 {
     public class Class1
     {
-        internal JObject JObject { get; }
 
         internal Class1()
         {
-            JObject = JObject.Parse("{}");
         }
     }
 }

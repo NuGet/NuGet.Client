@@ -1,22 +1,22 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using EnvDTE;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.Hosts.Services;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Shell.ToolWindows;
-using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace NuGet
 {
     [TestClass]
-    public class OptProfV2Tests : ApexTest
+    public class ATests : ApexTest
     {
         private static readonly Guid _packageManagerOutputWindowPaneGuid = Guid.Parse("CEC55EC8-CC51-40E7-9243-57B87A6F6BEB");
         private const string _testCategory = "OptProf";
@@ -25,7 +25,7 @@ namespace NuGet
         // Must be lazy because TestContext.DeploymentDirectory only returns a valid value within a test method.
         private readonly Lazy<DirectoryInfo> _lazyAssetsDirectory;
 
-        public OptProfV2Tests()
+        public ATests()
         {
             _lazyAssetsDirectory = new Lazy<DirectoryInfo>(() => new DirectoryInfo(Path.Combine(TestContext.DeploymentDirectory, "Assets")));
         }
@@ -41,40 +41,6 @@ namespace NuGet
             OpenSolutionAndBuild(solutionFile);
         }
 
-        [TestMethod]
-        [TestCategory(_testCategory)]
-        [Timeout(_timeoutInMilliseconds)]
-        [DeploymentItem(@"Assets\PackageReferenceSdk", @"Assets\PackageReferenceSdk")]
-        public void IVsPackageSourceProvider_GetSources()
-        {
-            FileInfo solutionFile = GetSolutionFile("PackageReferenceSdk");
-
-            UseService<TestIVsPackageSourceProvider>(solutionFile, service =>
-            {
-                IEnumerable<KeyValuePair<string, string>> sources = service.GetSources(includeUnOfficial: true, includeDisabled: true);
-
-                Assert.AreNotEqual(0, sources.Count());
-            });
-        }
-
-        [TestMethod]
-        [TestCategory(_testCategory)]
-        [Timeout(_timeoutInMilliseconds)]
-        [DeploymentItem(@"Assets\PackageReferenceSdk", @"Assets\PackageReferenceSdk")]
-        public void IVsPackageInstaller_InstallPackage()
-        {
-            FileInfo solutionFile = GetSolutionFile("PackageReferenceSdk");
-            var exists = false;
-            UseService<TestIVsPackageSourceProvider>(solutionFile, service =>
-            {
-                service.InstallPackage("PackageReferenceSdk", "newtonsoft.json", "13.0.0");
-
-                exists = service.IsPackageInstalled("newtonsoft.json");
-            });
-
-            Assert.IsTrue(exists);
-        }
-
         private void BuildSolution(VisualStudioHost visualStudio)
         {
             using (Scope.Enter("Build solution."))
@@ -87,20 +53,12 @@ namespace NuGet
 
         private VisualStudioHostConfiguration CreateVisualStudioHostConfiguration()
         {
-            var a = new DirectoryInfo("C:\\Users\\mruizmares\\Documents");
-            var config = new VisualStudioHostConfiguration()
+            return new VisualStudioHostConfiguration()
             {
                 RestoreUserSettings = false,
                 // Required in order to allow modules mapped to the test to generate IBC files.
-                InheritProcessEnvironment = true,
-                DebuggerCaptureCrashDumps = true,
-                CrashDumpDirectory = a,
+                InheritProcessEnvironment = true
             };
-
-            config.DebuggerSymbolServerPaths.Add(@"\\symbols\symbols\");
-            config.DebuggerSymbolServerPaths.Add(@"\\vbbass2\symbols\");
-
-            return config;
         }
 
         private FileInfo GetSolutionFile(string solutionName)
@@ -195,8 +153,7 @@ namespace NuGet
 
                 LoadSolution(visualStudio, solutionFile);
                 WaitForAutoRestoreToComplete(visualStudio, solutionFile);
-                visualStudio.HostProcess.Kill();
-                //System.Diagnostics.Debugger.Launch();
+
                 using (Scope.Enter("Get service."))
                 {
                     var service = visualStudio.Get<T>();
@@ -207,7 +164,7 @@ namespace NuGet
                     }
                 }
 
-                //ShutDownVisualStudio(visualStudio);
+                ShutDownVisualStudio(visualStudio);
             }
             catch (Exception ex)
             {
