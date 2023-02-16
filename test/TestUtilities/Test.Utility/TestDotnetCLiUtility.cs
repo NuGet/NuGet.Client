@@ -213,7 +213,7 @@ SDKs found: {string.Join(", ", Directory.EnumerateDirectories(SdkDirSource).Sele
                     {
                         var dependencyTargetPath = Path.Combine(pathToSdkInCli, file.Name);
 
-                        if (file.Name.StartsWith("NuGet"))
+                        if (file.Name.Contains("NuGet"))
                         {
                             file.CopyTo(dependencyTargetPath, overwrite: true);
                         }
