@@ -12,6 +12,7 @@ using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Shell.ToolWindows;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NuGet.VisualStudio;
 
 namespace NuGet
 {
@@ -87,7 +88,7 @@ namespace NuGet
 
         private VisualStudioHostConfiguration CreateVisualStudioHostConfiguration()
         {
-            var a = new DirectoryInfo("C:\\Users\\mruizmares\\Documents");
+            var a = new DirectoryInfo(@"C:\Users\mruizmares\Documents");
             var config = new VisualStudioHostConfiguration()
             {
                 RestoreUserSettings = false,
@@ -116,7 +117,7 @@ namespace NuGet
         {
             using (Scope.Enter("Handle exception."))
             {
-                if (visualStudio != null && visualStudio.IsRunning)
+                if (visualStudio != null)
                 {
                     visualStudio.CaptureHostProcessDumpIfRunning(MiniDumpType.WithFullMemory);
                     visualStudio.HostProcess.Kill();
@@ -206,6 +207,14 @@ namespace NuGet
                         action(service);
                     }
                 }
+
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    System.Diagnostics.Process.GetCurrentProcess().Kill();
+                    throw new NotSupportedException("Testing if this crashes VS");
+                });
 
                 //ShutDownVisualStudio(visualStudio);
             }
