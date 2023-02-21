@@ -208,7 +208,12 @@ namespace NuGet.Build.Tasks
                 }
                 else if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig)
                 {
-                    restoredProjectOutputPaths.Add(new TaskItem(Path.Combine(Path.GetDirectoryName(project.RestoreMetadata.ProjectPath), NuGetConstants.PackageReferenceFile)));
+                    string packagesConfigPath = BuildTasksUtility.GetPackagesConfigFilePath(project.RestoreMetadata.ProjectPath);
+
+                    if (packagesConfigPath != null)
+                    {
+                        restoredProjectOutputPaths.Add(new TaskItem(packagesConfigPath));
+                    }
                 }
             }
 

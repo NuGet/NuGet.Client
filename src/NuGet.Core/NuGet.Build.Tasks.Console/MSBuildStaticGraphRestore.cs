@@ -1096,7 +1096,12 @@ namespace NuGet.Build.Tasks.Console
                 }
                 else if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig)
                 {
-                    LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(Path.Combine(Path.GetDirectoryName(project.RestoreMetadata.ProjectPath), NuGetConstants.PackageReferenceFile)));
+                    string packagesConfigPath = BuildTasksUtility.GetPackagesConfigFilePath(project.RestoreMetadata.ProjectPath);
+
+                    if (packagesConfigPath != null)
+                    {
+                        LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(packagesConfigPath));
+                    }
                 }
             }
         }
