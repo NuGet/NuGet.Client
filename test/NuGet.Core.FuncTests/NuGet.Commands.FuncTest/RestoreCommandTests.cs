@@ -2233,8 +2233,6 @@ namespace NuGet.Commands.FuncTest
             var restoreContext = new RestoreArgs()
             {
                 Sources = new List<string>() { pathContext.PackageSource },
-                NewMappingID = packageA.Id, // Act
-                NewMappingSource = pathContext.PackageSource, // Act
                 GlobalPackagesFolder = pathContext.UserPackagesFolder,
                 Log = logger,
                 CacheContext = new SourceCacheContext()
@@ -2254,7 +2252,7 @@ namespace NuGet.Commands.FuncTest
                 // Assert
                 string loggerMessages = logger.ShowMessages();
                 result.Success.Should().BeTrue(because: loggerMessages);
-                loggerMessages.Should().Contain($"Package source mapping matches found for package ID '{packageA.Id}' are: '{pathContext.PackageSource}'.");
+                loggerMessages.Should().NotContain($"Package source mapping matches found for package ID '{packageA.Id}' are: '{pathContext.PackageSource}'.");
             }
         }
 

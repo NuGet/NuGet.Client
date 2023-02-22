@@ -33,6 +33,22 @@ namespace NuGet.Commands.Test
             PackageSpec project,
             IEnumerable<PackageSource> sources,
             string packagesDirectory,
+            PackageSourceMapping packageSourceMappingConfiguration,
+            ILogger log)
+            : this(
+                  project,
+                  sources,
+                  packagesDirectory,
+                  new TestSourceCacheContext(),
+                  packageSourceMappingConfiguration,
+                  log)
+        {
+        }
+
+        public TestRestoreRequest(
+            PackageSpec project,
+            IEnumerable<PackageSource> sources,
+            string packagesDirectory,
             ClientPolicyContext clientPolicyContext,
             ILogger log)
             : this(
