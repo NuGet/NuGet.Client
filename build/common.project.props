@@ -38,6 +38,7 @@
     <MicroBuildDirectory>$(SolutionPackagesFolder)Microsoft.VisualStudioEng.MicroBuild.Core.0.4.1\build\</MicroBuildDirectory>
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <BlobPublishTargetsPath>$(SolutionPackagesFolder)Microsoft.DotNet.Build.Tasks.Feed.2.1.0-prerelease-02419-02\build\Microsoft.DotNet.Build.Tasks.Feed.targets</BlobPublishTargetsPath>
+    <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
   </PropertyGroup>
 
   <!-- Defaults -->
@@ -267,7 +268,6 @@
 
   <ItemGroup>
       <AllSolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
-      <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
   </ItemGroup>
 
   <ItemGroup>
