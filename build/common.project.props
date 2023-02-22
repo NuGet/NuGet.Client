@@ -267,6 +267,7 @@
 
   <ItemGroup>
       <AllSolutionProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
+      <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
   </ItemGroup>
 
   <ItemGroup>
