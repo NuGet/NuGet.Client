@@ -285,7 +285,7 @@ namespace NuGet.PackageManagement.UI
         private static Tuple<string, string, string> CreatePackageTuple(IPackageReferenceContextInfo pkg)
         {
             PackageIdentity package = pkg.Identity;
-            return Tuple.Create(package.Id, package.Version == null ? string.Empty : package.Version.ToNormalizedString(), pkg.AllowedVersions.OriginalString);
+            return Tuple.Create(package.Id, package.Version == null ? string.Empty : package.Version.ToNormalizedString(), pkg?.AllowedVersions?.OriginalString ?? null);
         }
 
         private async Task PerformActionImplAsync(
@@ -562,6 +562,25 @@ namespace NuGet.PackageManagement.UI
                 }
             }, cancellationToken);
         }
+        internal static TelemetryEvent ToTelemetryPackage(string packageId, string packageVersion, string packageVersionRange)
+        {
+            var subEvent = new TelemetryEvent(eventName: null);
+            subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(packageId));
+            subEvent["version"] = packageVersion;
+            if (packageVersionRange != null)
+            {
+                subEvent["versionRange"] = packageVersionRange;
+            }
+
+            return subEvent;
+        }
+
+        internal static List<TelemetryEvent> ToTelemetryPackageList(List<Tuple<string, string>> packages)
+        {
+            var list = new List<TelemetryEvent>(packages.Count);
+            list.AddRange(packages.Select(p => ToTelemetryPackage(p.Item1, p.Item2, null)));
+            return list;
+        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "We require lowercase package names in telemetry so that the hashes are consistent")]
         internal static void AddUiActionEngineTelemetryProperties(
@@ -582,26 +601,6 @@ namespace NuGet.PackageManagement.UI
             List<Tuple<string, string>> updatedPackagesNew,
             IReadOnlyCollection<string> targetFrameworks)
         {
-            static TelemetryEvent ToTelemetryPackage(string packageId, string packageVersion, string packageVersionRange)
-            {
-                var subEvent = new TelemetryEvent(eventName: null);
-                subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(packageId));
-                subEvent["version"] = packageVersion;
-                if (packageVersionRange != null)
-                {
-                    subEvent["versionRange"] = packageVersionRange;
-                }
-
-                return subEvent;
-            }
-
-            static List<TelemetryEvent> ToTelemetryPackageList(List<Tuple<string, string>> packages)
-            {
-                var list = new List<TelemetryEvent>(packages.Count);
-                list.AddRange(packages.Select(p => ToTelemetryPackage(p.Item1, p.Item2, null)));
-                return list;
-            }
-
             // log possible cancel reasons
             if (!continueAfterPreview)
             {
