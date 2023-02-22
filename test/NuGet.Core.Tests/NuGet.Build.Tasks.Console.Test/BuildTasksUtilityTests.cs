@@ -12,17 +12,11 @@ namespace NuGet.Build.Tasks.Console.Test
 {
     public class BuildTasksUtilityTests
     {
-        [Theory]
-        [InlineData("packages.config")]
-        [InlineData("packages.Test.config")]
-        public void GetPackagesConfigFilePath_WithNonExistentPackagesConfig_ReturnsNull(string packagesConfigFilename)
+        [Fact]
+        public void GetPackagesConfigFilePath_WithNonExistentPackagesConfig_ReturnsNull()
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                string projectFullPath = Path.Combine(testDirectory, "Test.csproj");
-
-                string packagesConfigFilePath = Path.Combine(testDirectory, packagesConfigFilename);
-
                 BuildTasksUtility.GetPackagesConfigFilePath(testDirectory, "Test")
                     .Should().BeNull();
             }

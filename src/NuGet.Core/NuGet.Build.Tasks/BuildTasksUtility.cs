@@ -464,7 +464,7 @@ namespace NuGet.Build.Tasks
 
                 settings = settings ?? Settings.LoadSettingsGivenConfigPaths(pcRestoreMetadata.ConfigFilePaths);
 
-                var packagesConfigPath = GetPackagesConfigFilePath(pcRestoreMetadata.ProjectPath);
+                string packagesConfigPath = GetPackagesConfigFilePath(pcRestoreMetadata.ProjectPath);
 
                 firstPackagesConfigPath = firstPackagesConfigPath ?? packagesConfigPath;
 
