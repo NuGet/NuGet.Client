@@ -13,11 +13,12 @@ using Microsoft.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Contracts;
 using System.Linq;
+using NuGet.Tests.Apex;
 
 namespace NuGet
 {
     [Export(typeof(TestIVsPackageSourceProvider))]
-    public sealed class TestIVsPackageSourceProvider : VisualStudioTestService
+    public class TestIVsPackageSourceProvider : VisualStudioTestService
     {
         public IEnumerable<KeyValuePair<string, string>> GetSources(bool includeUnOfficial, bool includeDisabled)
         {
@@ -25,6 +26,14 @@ namespace NuGet
 
             return packageSourceProvider.GetSources(includeUnOfficial, includeDisabled);
         }
+
+        /// <summary>
+        /// Gets the NuGet IVsPackageUninstaller
+        /// </summary>
+        protected internal IVsPackageUninstaller PackageUninstaller => VisualStudioObjectProviders.GetComponentModelService<IVsPackageUninstaller>();
+
+
+        protected internal INuGetProjectService NuGetProjectService => VisualStudioObjectProviders.GetComponentModelService<INuGetProjectService>();
 
         /// <summary>
         /// Installs the specified NuGet package into the specified project
@@ -37,6 +46,7 @@ namespace NuGet
             Logger.WriteMessage("Now installing NuGet package [{0} {1}] into project [{2}]", packageName, packageVersion, packageName);
 
             var unique = VisualStudioObjectProviders.DTE.Solution.Projects.Item(1).UniqueName;
+
             InstallPackage(null, unique, packageName, packageVersion);
         }
 
@@ -88,6 +98,7 @@ namespace NuGet
                 throw new Exception($"Error calling {nameof(IVsSolution)}.{nameof(IVsSolution.GetProjectOfUniqueName)}: {result}");
             }
 
+
             result = solution.GetGuidOfProject(project, out Guid projectGuid);
             if (result != VSConstants.S_OK)
             {
@@ -97,18 +108,37 @@ namespace NuGet
             var serviceBrokerContainer = VisualStudioObjectProviders.GetService<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
             var serviceBroker = serviceBrokerContainer.GetFullAccessServiceBroker();
 
-            INuGetProjectService projectService = await serviceBroker.GetProxyAsync<INuGetProjectService>(NuGetServices.NuGetProjectServiceV1);
-            using (projectService as IDisposable)
-            {
-                var packagesResult = await projectService.GetInstalledPackagesAsync(projectGuid, CancellationToken.None);
-                if (packagesResult.Status != InstalledPackageResultStatus.Successful)
-                {
-                    throw new Exception("Unexpected result from GetInstalledPackagesAsync: " + packagesResult.Status);
-                }
+#pragma warning disable ISB001 // Dispose of proxies
+            var projectService = await serviceBroker.GetProxyAsync<INuGetProjectService>(NuGetServices.NuGetProjectServiceV1);
+#pragma warning restore ISB001 // Dispose of proxies
+            return null;
+        }
 
-                return packagesResult.Packages
-                    .Where(p => p.DirectDependency)
-                    .FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, packageName));
+        public void UninstallPackage(string projectName, string packageName)
+        {
+            var unique = VisualStudioObjectProviders.DTE.Solution.Projects.Item(1).UniqueName;
+            UninstallPackage(unique, packageName, false);
+        }
+
+        /// <summary>
+        /// Uninstalls the specified NuGet package from the project
+        /// </summary>
+        /// <param name="project">Project name</param>
+        /// <param name="packageName">NuGet package name</param>
+        /// <param name="removeDependencies">Whether to uninstall any package dependencies</param>
+        public void UninstallPackage(string projectName, string packageName, bool removeDependencies)
+        {
+            Logger.WriteMessage("Now uninstalling NuGet package [{0}] from project [{1}]", packageName, projectName);
+            
+            var project = VisualStudioObjectProviders.DTE.Solution.Projects.Item(projectName);
+
+            try
+            {
+                PackageUninstaller.UninstallPackage(project, packageName, removeDependencies);
+            }
+            catch (InvalidOperationException e)
+            {
+                Logger.WriteException(EntryType.Warning, e, string.Format("An error occured while attempting to uninstall package {0}", packageName));
             }
         }
     }

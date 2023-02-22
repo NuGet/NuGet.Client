@@ -2256,6 +2256,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
+            Debugger.Launch();
             // Step-1: Get the packageIdentity corresponding to packageId and check if it exists to be uninstalled
             var installedPackages = await nuGetProject.GetInstalledPackagesAsync(token);
             var packageReference = installedPackages.FirstOrDefault(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase));

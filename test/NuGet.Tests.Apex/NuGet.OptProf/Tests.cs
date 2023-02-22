@@ -9,9 +9,11 @@ using EnvDTE;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.Hosts.Services;
 using Microsoft.Test.Apex.VisualStudio;
+using Microsoft.Test.Apex.VisualStudio.Shell;
 using Microsoft.Test.Apex.VisualStudio.Shell.ToolWindows;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NuGet.VisualStudio;
 
 namespace NuGet
 {
@@ -75,6 +77,32 @@ namespace NuGet
             Assert.IsTrue(exists);
         }
 
+        [TestMethod]
+        [TestCategory(_testCategory)]
+        [Timeout(_timeoutInMilliseconds)]
+        [DeploymentItem(@"Assets\PackageReferenceSdk", @"Assets\PackageReferenceSdk")]
+        public void IVsPackageInstaller_UninstallPackage()
+        {
+            FileInfo solutionFile = GetSolutionFile("PackageReferenceSdk");
+            VisualStudioHostConfiguration configuration = CreateVisualStudioHostConfiguration();
+            var exists = false;
+
+            configuration.AddCompositionAssembly(Assembly.GetExecutingAssembly().Location);
+
+            VisualStudioHost visualStudio = LaunchVisualStudio(configuration);
+            LoadSolution(visualStudio, solutionFile);
+            WaitForAutoRestoreToComplete(visualStudio, solutionFile);
+            BuildSolution(visualStudio);
+
+            TestIVsPackageSourceProvider service = visualStudio.Get<TestIVsPackageSourceProvider>();
+
+            exists = service.IsPackageInstalled("newtonsoft.json");
+            Assert.IsTrue(exists);
+
+            service.UninstallPackage("PackageReferenceSdk", "newtonsoft.json");
+        }
+
+
         private void BuildSolution(VisualStudioHost visualStudio)
         {
             using (Scope.Enter("Build solution."))
@@ -87,7 +115,7 @@ namespace NuGet
 
         private VisualStudioHostConfiguration CreateVisualStudioHostConfiguration()
         {
-            var a = new DirectoryInfo("C:\\Users\\mruizmares\\Documents");
+            var a = new DirectoryInfo(@"C:\Users\mruizmares\Documents");
             var config = new VisualStudioHostConfiguration()
             {
                 RestoreUserSettings = false,
@@ -119,7 +147,7 @@ namespace NuGet
                 if (visualStudio != null && visualStudio.IsRunning)
                 {
                     visualStudio.CaptureHostProcessDumpIfRunning(MiniDumpType.WithFullMemory);
-                    visualStudio.HostProcess.Kill();
+                    //visualStudio.HostProcess.Kill();
                 }
 
                 Logger.WriteException(EntryType.Error, ex);
@@ -195,8 +223,7 @@ namespace NuGet
 
                 LoadSolution(visualStudio, solutionFile);
                 WaitForAutoRestoreToComplete(visualStudio, solutionFile);
-                visualStudio.HostProcess.Kill();
-                //System.Diagnostics.Debugger.Launch();
+
                 using (Scope.Enter("Get service."))
                 {
                     var service = visualStudio.Get<T>();
@@ -264,6 +291,14 @@ namespace NuGet
             packageManagerOutputWindowPane = visualStudio.ObjectModel.Shell.ToolWindows.OutputWindow.GetOutputPane(_packageManagerOutputWindowPaneGuid);
 
             return packageManagerOutputWindowPane != null;
+        }
+
+        [TestCleanup]
+        public override void TestCleanup()
+        {
+            // Test-specific cleanup
+
+            base.TestCleanup();
         }
     }
 }

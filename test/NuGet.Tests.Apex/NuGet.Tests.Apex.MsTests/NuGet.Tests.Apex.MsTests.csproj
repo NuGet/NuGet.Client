@@ -1,41 +1,44 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <NETCoreWPFProject>true</NETCoreWPFProject>
+    <Nullable>enable</Nullable>
+
     <IsPackable>false</IsPackable>
-    <Description>Optimization Profiling (OptProf) tests, used to generate partial ngen training data.</Description>
-    <DefaultItemExcludes>Assets/**;$(DefaultItemExcludes)</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="TestIVsPackageSourceProvider.cs" />
-    <Compile Include="Tests.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Assets\**">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Test.Apex.VisualStudio" ExcludeAssets="Compile" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="MSTest.TestAdapter" />
     <PackageReference Include="MSTest.TestFramework" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="Xunit.StaFact" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <!-- Manually consuming compile-time assets from Microsoft.Test.Apex.VisualStudio and excluding ones that cause compile warnings -->
+     <!--Manually consuming compile-time assets from Microsoft.Test.Apex.VisualStudio and excluding ones that cause compile warnings--> 
     <Reference Include="$(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\*.dll" Exclude="$(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.PrismIntegration.dll;&#xD;&#xA;                        $(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.RemoteCodeInjector.dll;&#xD;&#xA;                        $(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.RemoteCodeInjector.x64.dll" Name="%(Filename)" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="UnitTest1.cs" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <Platform>x86</Platform>
+    <RuntimeIdentifier>x86</RuntimeIdentifier>
+  </PropertyGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
-    <ProjectReference Include="..\NuGet.Tests.Apex\NuGet.Tests.Apex.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework">
+      <HintPath>..\..\..\..\..\..\..\_nugetpackages\mstest.testframework\2.2.10\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
