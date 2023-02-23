@@ -571,6 +571,9 @@ namespace NuGet.Commands
             while (queue.Count > 0)
             {
                 var node = queue.Dequeue();
+                if (!visitedNodes.Add(node))
+                    continue;
+
                 if (node.Item.IsCentralTransitive)
                 {
                     foreach (var parentNode in node.ParentNodes)
@@ -580,9 +583,6 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    if (!visitedNodes.Add(node))
-                        continue;
-
                     if (node.OuterNode == rootNode)
                     {
                         // It's what we are looking for
