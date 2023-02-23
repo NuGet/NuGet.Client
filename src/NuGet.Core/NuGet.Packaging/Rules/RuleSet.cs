@@ -31,6 +31,7 @@ namespace NuGet.Packaging.Rules
                 new ReferencesInNuspecMatchRefAssetsRule(),
                 new InvalidUndottedFrameworkRule(),
                 new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
+                new MissingReadmeRule(AnalysisResources.MissingReadmeInformation),
             }
         );
 
