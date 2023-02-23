@@ -45,7 +45,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
         }
 
-        [StaFact]
+        [StaFact(Skip = "https://github.com/NuGet/Home/issues/11308")]
         public void SimpleUninstallFromIVsInstaller()
         {
             // Arrange
@@ -82,7 +82,7 @@ namespace NuGet.Tests.Apex
             userPackagesFolder.Should().NotBe(_pathContext.UserPackagesFolder);
         }
 
-        [StaFact]
+        [StaFact(Skip = "https://github.com/NuGet/Home/issues/11308")]
         public async Task SimpleInstallFromIVsInstaller_PackageSourceMapping_WithSingleFeed()
         {
             // Arrange
@@ -133,7 +133,7 @@ namespace NuGet.Tests.Apex
             File.Exists(uniqueContentFile).Should().BeTrue($"'{uniqueContentFile}' should exist");
         }
 
-        [StaFact]
+        [StaFact(Skip = "https://github.com/NuGet/Home/issues/11308")]
         public async Task SimpleInstallFromIVsInstaller_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage()
         {
             // Arrange

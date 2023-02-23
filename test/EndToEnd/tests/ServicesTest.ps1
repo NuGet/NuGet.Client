@@ -707,6 +707,7 @@ function Test-RestorePackageAPINoPackage
 
 function Test-InstallPackageAPIBindingRedirect
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
     param($context)
 
     # Arrange
@@ -879,10 +880,6 @@ function Test-CreateVsPathContextWithConfiguration {
 
 	$settingFileContent -f $userPackageFolder, $fallbackPackageFolderA, $fallbackPackageFolderB `
 	    | Out-File -Encoding "UTF8" $settingFile
-
-	SaveAs-Solution($solutionFile)
-	Close-Solution
-	Open-Solution $solutionFile
 
 	$p = Get-Project
 

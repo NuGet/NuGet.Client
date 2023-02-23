@@ -203,7 +203,12 @@ namespace NuGet.Packaging
 
             using (var destination = File.OpenWrite(nupkgFilePath))
             {
-                await ZipReadStream.CopyToAsync(destination);
+#if NETCOREAPP2_0_OR_GREATER
+                await ZipReadStream.CopyToAsync(destination, cancellationToken);
+#else
+                const int BufferSize = 8192;
+                await ZipReadStream.CopyToAsync(destination, BufferSize, cancellationToken);
+#endif
             }
 
             return nupkgFilePath;
@@ -522,7 +527,8 @@ namespace NuGet.Packaging
             else if (RuntimeEnvironmentHelper.IsLinux || RuntimeEnvironmentHelper.IsMacOSX)
             {
                 // Please note: Linux/MAC case sensitive for env var name.
-                string signVerifyEnvVariable = _environmentVariableReader.GetEnvironmentVariable("DOTNET_NUGET_SIGNATURE_VERIFICATION");
+                string signVerifyEnvVariable = _environmentVariableReader.GetEnvironmentVariable(
+                    EnvironmentVariableConstants.DotNetNuGetSignatureVerification);
 
                 bool canVerify = false;
 

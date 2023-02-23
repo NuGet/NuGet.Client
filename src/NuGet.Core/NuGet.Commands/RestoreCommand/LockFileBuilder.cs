@@ -474,7 +474,7 @@ namespace NuGet.Commands
 
         private void AddCentralTransitiveDependencyGroupsForPackageReference(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
         {
-            if (project.RestoreMetadata == null || !project.RestoreMetadata.CentralPackageVersionsEnabled)
+            if (project.RestoreMetadata == null || !project.RestoreMetadata.CentralPackageVersionsEnabled || !project.RestoreMetadata.CentralPackageTransitivePinningEnabled)
             {
                 return;
             }
@@ -491,20 +491,17 @@ namespace NuGet.Commands
                 }
 
                 // The transitive dependencies enforced by the central package version management file are written to the assets to be used by the pack task.
-                if (project.RestoreMetadata.CentralPackageTransitivePinningEnabled)
+                List<LibraryDependency> centralEnforcedTransitiveDependencies = GetLibraryDependenciesForCentralTransitiveDependencies(targetGraph, targetFrameworkInformation).ToList();
+
+                if (centralEnforcedTransitiveDependencies.Any())
                 {
-                    List<LibraryDependency> centralEnforcedTransitiveDependencies = GetLibraryDependenciesForCentralTransitiveDependencies(targetGraph, targetFrameworkInformation).ToList();
+                    var centralEnforcedTransitiveDependencyGroup = new CentralTransitiveDependencyGroup
+                    (
+                        targetGraph.Framework,
+                        centralEnforcedTransitiveDependencies
+                    );
 
-                    if (centralEnforcedTransitiveDependencies.Any())
-                    {
-                        var centralEnforcedTransitiveDependencyGroup = new CentralTransitiveDependencyGroup
-                        (
-                            targetGraph.Framework,
-                            centralEnforcedTransitiveDependencies
-                        );
-
-                        lockFile.CentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
-                    }
+                    lockFile.CentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
                 }
             }
         }
@@ -514,6 +511,7 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="targetGraph">The <see cref="RestoreTargetGraph" /> to get centrally defined transitive dependencies for.</param>
         /// <param name="targetFrameworkInformation">The <see cref="TargetFrameworkInformation" /> for the target framework to get centrally defined transitive dependencies for.</param>
+        /// <param name="centralPackageTransitivePinningEnabled">A value indicating whether or not central transitive dependency version pinning is enabled.</param>
         /// <returns>An <see cref="IEnumerable{LibraryDependency}" /> representing the centrally defined transitive dependencies for the specified <see cref="RestoreTargetGraph" />.</returns>
         private IEnumerable<LibraryDependency> GetLibraryDependenciesForCentralTransitiveDependencies(RestoreTargetGraph targetGraph, TargetFrameworkInformation targetFrameworkInformation)
         {
@@ -530,21 +528,26 @@ namespace NuGet.Commands
                     }
 
                     CentralPackageVersion centralPackageVersion = targetFrameworkInformation.CentralPackageVersions[node.Item.Key.Name];
+                    Dictionary<string, LibraryIncludeFlags> dependenciesIncludeFlags = _includeFlagGraphs[targetGraph];
+
                     LibraryIncludeFlags suppressParent = LibraryIncludeFlags.All;
+
+                    // Centrally pinned dependencies are not directly declared but the intersection of all of the PrivateAssets of the parents that pulled it in should apply to it
                     foreach (GraphNode<RemoteResolveResult> dependencyNode in EnumerateNodesForDependencyChecks(rootNode, node))
                     {
                         var dependency = dependencyDictionary[dependencyNode.Key.Name];
                         suppressParent &= dependency.SuppressParent;
                     }
 
+                    // If all assets are suppressed then the dependency should not be added
                     if (suppressParent != LibraryIncludeFlags.All)
                     {
-                        yield return new LibraryDependency
+                        yield return new LibraryDependency()
                         {
                             LibraryRange = new LibraryRange(centralPackageVersion.Name, centralPackageVersion.VersionRange, LibraryDependencyTarget.Package),
                             ReferenceType = LibraryDependencyReferenceType.Transitive,
                             VersionCentrallyManaged = true,
-                            IncludeType = _includeFlagGraphs[targetGraph][centralPackageVersion.Name],
+                            IncludeType = dependenciesIncludeFlags[centralPackageVersion.Name],
                             SuppressParent = suppressParent,
                         };
                     }

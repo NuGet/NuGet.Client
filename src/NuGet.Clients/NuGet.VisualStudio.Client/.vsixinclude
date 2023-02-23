@@ -33,5 +33,12 @@ NuGet.Versioning.dll
 
 # 3rd party dlls to keep
 Lucene.Net.dll
+Microsoft.Extensions.FileProviders.Abstractions.dll
+Microsoft.Extensions.FileSystemGlobbing.dll
+Microsoft.Extensions.Primitives.dll
 Microsoft.Web.XmlTransform.dll
 Newtonsoft.Json.dll
+System.Buffers.dll
+System.Memory.dll
+System.Numerics.Vectors.dll
+System.Runtime.CompilerServices.Unsafe.dll

@@ -13,7 +13,7 @@
     <!-- **  Change for each new version -->
     <!-- when changing any of the NuGetVersion props below, run tools-local\ship-public-apis -->
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">6</MajorNuGetVersion>
-    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">5</MinorNuGetVersion>
+    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">6</MinorNuGetVersion>
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
 
@@ -44,7 +44,7 @@
          6.0:6.0.100-preview.7.21379.14 means install the preview version 6.0.100-preview.7.21379.14.
     Refer to https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script#options for more details.
     -->
-    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">7.0:7.0.100-rtm.22510.17</CliBranchForTesting>
+    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">7.0</CliBranchForTesting>
   </PropertyGroup>
 
   <!-- Config -->

@@ -2358,6 +2358,8 @@ namespace NuGet.Commands.Test
                 var result = await restoreCommand.ExecuteAsync();
                 var lockFile = result.LockFile;
 
+                var targetLib = lockFile.Targets.First().Libraries.Where(l => l.Name == packageA.Id).FirstOrDefault();
+
                 // Assert
                 Assert.True(result.Success);
                 Assert.Equal(1, lockFile.CentralTransitiveDependencyGroups.Count);
@@ -2464,6 +2466,8 @@ namespace NuGet.Commands.Test
                 var result = await restoreCommand.ExecuteAsync();
                 var lockFile = result.LockFile;
 
+                var targetLib = lockFile.Targets.First().Libraries.Where(l => l.Name == packageA.Id).FirstOrDefault();
+
                 // Assert
                 Assert.True(result.Success);
                 Assert.Equal(1, lockFile.CentralTransitiveDependencyGroups.Count);
@@ -2488,22 +2492,16 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_CentralVersion_AssetsFile_PrivateAssetsFlowsToPinnedDependenciesWithSingleParentProject(LibraryIncludeFlags privateAssets, int expectedCount)
         {
             // Arrange
-            using (var tmpPath = new SimpleTestPathContext())
+            using (var testPathContext = new SimpleTestPathContext())
             {
                 var logger = new TestLogger();
 
-                var project1Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project1"));
-                var project2Directory = new DirectoryInfo(Path.Combine(tmpPath.SolutionRoot, "Project2"));
-
-                var globalPackages = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "globalPackages"));
-                var packageSource = new DirectoryInfo(Path.Combine(tmpPath.WorkingDirectory, "packageSource"));
-
-                globalPackages.Create();
-                packageSource.Create();
+                var project1Directory = new DirectoryInfo(Path.Combine(testPathContext.SolutionRoot, "Project1"));
+                var project2Directory = new DirectoryInfo(Path.Combine(testPathContext.SolutionRoot, "Project2"));
 
                 // Project1 -> Project2 -> PackageA 1.0.0
                 var packageA = new SimpleTestPackageContext { Id = "PackageA", Version = "1.0.0", };
-                await SimpleTestPackageUtility.CreateFullPackageAsync(tmpPath.PackageSource, packageA);
+                await SimpleTestPackageUtility.CreateFullPackageAsync(testPathContext.PackageSource, packageA);
 
                 var project2Spec = PackageReferenceSpecBuilder.Create("Project2", project2Directory.FullName)
                     .WithTargetFrameworks(new[]
@@ -2515,8 +2513,7 @@ namespace NuGet.Commands.Test
                             {
                                 new LibraryDependency
                                 {
-                                    LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"),
-                                        LibraryDependencyTarget.All),
+                                    LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.All),
                                     VersionCentrallyManaged = true,
                                 },
                             }),
@@ -2546,18 +2543,13 @@ namespace NuGet.Commands.Test
 
                 var restoreContext = new RestoreArgs()
                 {
-                    Sources = new List<string>() { packageSource.FullName },
-                    GlobalPackagesFolder = globalPackages.FullName,
+                    Sources = new List<string> { testPathContext.PackageSource },
+                    GlobalPackagesFolder = testPathContext.UserPackagesFolder,
                     Log = logger,
                     CacheContext = new TestSourceCacheContext(),
                 };
 
-                await SimpleTestPackageUtility.CreatePackagesAsync(
-                    packageSource.FullName,
-                    packageA);
-
                 var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, project1Spec, project2Spec);
-
                 var restoreCommand = new RestoreCommand(request);
                 var result = await restoreCommand.ExecuteAsync();
                 var lockFile = result.LockFile;
@@ -2571,9 +2563,19 @@ namespace NuGet.Commands.Test
         /// <summary>
         /// Verifies that when a transitive package version is pinned and is referenced by multiple parents, the PrivateAssets flow from the package that pulled it into the graph to the pinned dependency.
         /// </summary>
-        /// <returns></returns>
-        [Fact]
-        public async Task RestoreCommand_CentralVersion_AssetsFile_PrivateAssetsFlowsToPinnedDependenciesWithMultipleParents()
+        [Theory]
+        [InlineData(
+            LibraryIncludeFlags.All, // PrivateAssets="All"
+            LibraryIncludeFlags.Build | LibraryIncludeFlags.ContentFiles | LibraryIncludeFlags.Analyzers, // Default PrivateAssets
+            LibraryIncludeFlags.Build | LibraryIncludeFlags.ContentFiles | LibraryIncludeFlags.Analyzers)] // Expect only the intersection, in this case the default
+        [InlineData(
+            LibraryIncludeFlags.Compile | LibraryIncludeFlags.Runtime, // PrivateAssets="Compile;Runtime"
+            LibraryIncludeFlags.Compile, // PrivateAssets="Compile"
+            LibraryIncludeFlags.Compile)] // The intersection is Compile
+        [InlineData(LibraryIncludeFlags.All, LibraryIncludeFlags.All, LibraryIncludeFlags.All)] // When both parents have PrivateAssets="All", expect that the dependency does not flow
+        [InlineData(LibraryIncludeFlags.None, LibraryIncludeFlags.None, LibraryIncludeFlags.None)] // When both parents have PrivateAssets="None", expect all assets of the dependency to flow
+        [InlineData(LibraryIncludeFlags.None, LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile, LibraryIncludeFlags.None)] // When both parents have PrivateAssets="None", expect that the dependency is completely suppressed
+        public async Task RestoreCommand_CentralVersion_AssetsFile_PrivateAssetsFlowsToPinnedDependenciesWithMultipleParents(LibraryIncludeFlags suppressParent1, LibraryIncludeFlags suppressParent2, LibraryIncludeFlags expected)
         {
             // Arrange
             var framework = new NuGetFramework("net46");
@@ -2625,7 +2627,7 @@ namespace NuGet.Commands.Test
                                 TypeConstraint = LibraryDependencyTarget.Package,
                             },
                             VersionCentrallyManaged = true,
-                            SuppressParent = LibraryIncludeFlags.Runtime | LibraryIncludeFlags.ContentFiles,
+                            SuppressParent = suppressParent1,
                         },
                         new LibraryDependency()
                         {
@@ -2635,7 +2637,7 @@ namespace NuGet.Commands.Test
                                 TypeConstraint = LibraryDependencyTarget.Package,
                             },
                             VersionCentrallyManaged = true,
-                            SuppressParent = LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.ContentFiles,
+                            SuppressParent = suppressParent2,
                         },
                     },
                     new List<CentralPackageVersion>
@@ -2670,15 +2672,22 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.True(result.Success);
-                Assert.Equal(1, lockFile.CentralTransitiveDependencyGroups.Count);
+                if (expected == LibraryIncludeFlags.All)
+                {
+                    Assert.Equal(0, lockFile.CentralTransitiveDependencyGroups.Count);
+                }
+                else
+                {
+                    Assert.Equal(1, lockFile.CentralTransitiveDependencyGroups.Count);
 
-                List<LibraryDependency> transitiveDependencies = lockFile.CentralTransitiveDependencyGroups.First().TransitiveDependencies.ToList();
+                    List<LibraryDependency> transitiveDependencies = lockFile.CentralTransitiveDependencyGroups.First().TransitiveDependencies.ToList();
 
-                Assert.Equal(1, transitiveDependencies.Count);
+                    Assert.Equal(1, transitiveDependencies.Count);
 
-                LibraryDependency transitiveDependencyC = transitiveDependencies.Single(i => i.Name.Equals(packageC2_0.Id));
+                    LibraryDependency transitiveDependencyC = transitiveDependencies.Single(i => i.Name.Equals(packageC2_0.Id));
 
-                Assert.Equal(LibraryIncludeFlags.ContentFiles, transitiveDependencyC.SuppressParent);
+                    Assert.Equal(expected, transitiveDependencyC.SuppressParent);
+                }
             }
         }
 
