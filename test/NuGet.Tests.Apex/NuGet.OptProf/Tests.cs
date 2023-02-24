@@ -144,7 +144,7 @@ namespace NuGet
         {
             using (Scope.Enter("Handle exception."))
             {
-                if (visualStudio != null && visualStudio.IsRunning)
+                if (visualStudio != null)
                 {
                     visualStudio.CaptureHostProcessDumpIfRunning(MiniDumpType.WithFullMemory);
                     //visualStudio.HostProcess.Kill();
@@ -233,6 +233,14 @@ namespace NuGet
                         action(service);
                     }
                 }
+
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    System.Diagnostics.Process.GetCurrentProcess().Kill();
+                    throw new NotSupportedException("Testing if this crashes VS");
+                });
 
                 //ShutDownVisualStudio(visualStudio);
             }
