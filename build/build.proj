@@ -9,7 +9,6 @@
       ReleaseLabel=$(ReleaseLabel);
       BuildNumber=$(BuildNumber);
       BuildRTM=$(BuildRTM);
-      RestoreIgnoreFailedSources=true;
     </CommonMSBuildProperties>
   </PropertyGroup>
 
