@@ -517,7 +517,7 @@ namespace NuGet.Commands
         {
             foreach (GraphNode<RemoteResolveResult> rootNode in targetGraph.Graphs)
             {
-                var dependencyDictionary = rootNode.Item.Data.Dependencies.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
+                Dictionary<string, LibraryDependency> dependencyDictionary = null;
 
                 foreach (GraphNode<RemoteResolveResult> node in rootNode.InnerNodes)
                 {
@@ -525,6 +525,11 @@ namespace NuGet.Commands
                     if (node?.Item == null || node.Disposition != Disposition.Accepted || !node.Item.IsCentralTransitive || !targetFrameworkInformation.CentralPackageVersions?.ContainsKey(node.Item.Key.Name) == true)
                     {
                         continue;
+                    }
+
+                    if (dependencyDictionary == null)
+                    {
+                        dependencyDictionary = rootNode.Item.Data.Dependencies.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
                     }
 
                     CentralPackageVersion centralPackageVersion = targetFrameworkInformation.CentralPackageVersions[node.Item.Key.Name];
@@ -535,7 +540,7 @@ namespace NuGet.Commands
                     // Centrally pinned dependencies are not directly declared but the intersection of all of the PrivateAssets of the parents that pulled it in should apply to it
                     foreach (GraphNode<RemoteResolveResult> dependencyNode in EnumerateNodesForDependencyChecks(rootNode, node))
                     {
-                        var dependency = dependencyDictionary[dependencyNode.Key.Name];
+                        LibraryDependency dependency = dependencyDictionary[dependencyNode.Key.Name];
                         suppressParent &= dependency.SuppressParent;
                     }
 
@@ -585,7 +590,8 @@ namespace NuGet.Commands
                 {
                     if (node.OuterNode == rootNode)
                     {
-                        // It's what we are looking for
+                        // We were traversing the graph upwards and now found a parent node (an inner node of the root node).
+                        // Now we return it, so it can be used to calculate the effective value of SuppressParent for the initial node.
                         yield return node;
                     }
                     else
