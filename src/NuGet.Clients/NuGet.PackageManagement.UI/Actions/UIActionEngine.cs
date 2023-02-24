@@ -562,6 +562,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }, cancellationToken);
         }
+
         internal static TelemetryEvent ToTelemetryPackage(string packageId, string packageVersion, string packageVersionRange)
         {
             var subEvent = new TelemetryEvent(eventName: null);
