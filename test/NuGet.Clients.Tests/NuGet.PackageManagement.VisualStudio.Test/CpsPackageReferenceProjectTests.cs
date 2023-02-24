@@ -18,7 +18,6 @@ using NuGet.Commands;
 using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio.Exceptions;
 using NuGet.Packaging;
@@ -534,7 +533,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Create project
                 var projectName = "a";
                 var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                 // We need to treat NU1605 warning as error.
                 project.IsNu1605Error = true;
@@ -645,7 +644,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Create project
                 var projectName = "a";
                 var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                 // We need to treat NU1605 warning as error.
                 project.IsNu1605Error = true;
@@ -766,7 +765,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -907,7 +906,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -1065,7 +1064,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -1200,7 +1199,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -1349,7 +1348,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.SolutionRoot, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -1499,7 +1498,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -1649,7 +1648,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -1799,7 +1798,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -1937,7 +1936,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -2071,7 +2070,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -2205,7 +2204,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -2345,7 +2344,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     //project.IsNu1605Error = true;
@@ -2443,7 +2442,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -2551,7 +2550,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -2706,7 +2705,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     var projectName = $"project{i}";
                     var projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -3023,7 +3022,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     string projectName = $"project{i}";
                     string projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    TestCpsPackageReferenceProject project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    TestCpsPackageReferenceProject project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -3165,7 +3164,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     string projectName = $"project{i}";
                     string projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    TestCpsPackageReferenceProject project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    TestCpsPackageReferenceProject project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -3310,7 +3309,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     string projectName = $"project{i}";
                     string projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    TestCpsPackageReferenceProject project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    TestCpsPackageReferenceProject project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -3454,7 +3453,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     string projectName = $"project{i}";
                     string projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    TestCpsPackageReferenceProject project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    TestCpsPackageReferenceProject project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -3600,7 +3599,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 {
                     string projectName = $"project{i}";
                     string projectFullPath = Path.Combine(testDirectory.Path, projectName, projectName + ".csproj");
-                    TestCpsPackageReferenceProject project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                    TestCpsPackageReferenceProject project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
 
                     // We need to treat NU1605 warning as error.
                     project.IsNu1605Error = true;
@@ -4244,7 +4243,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var projectCache = new ProjectSystemCache();
                 IVsProjectAdapter projectAdapter = (new Mock<IVsProjectAdapter>()).Object;
 
-                var project = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+                var project = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
                 testSolutionManager.NuGetProjects.Add(project);
 
                 var projectNames = GetTestProjectNames(projectFullPath, projectName);
@@ -4325,9 +4324,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectName = "project";
             var dependencyGraphSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(ProjectTestHelpers.GetPackageSpec(settings, projectName, rootPath: pathContext.SolutionRoot));
             var projectFullPath = dependencyGraphSpec.Projects[0].FilePath;
-            var cpsPackageReferenceProject = CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
+            var cpsPackageReferenceProject = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache);
             testSolutionManager.NuGetProjects.Add(cpsPackageReferenceProject);
-            AddProjectDetailsToCache(projectCache, dependencyGraphSpec, cpsPackageReferenceProject, GetTestProjectNames(projectFullPath, projectName));
+            TestCpsPackageReferenceProject.AddProjectDetailsToCache(projectCache, dependencyGraphSpec, cpsPackageReferenceProject, GetTestProjectNames(projectFullPath, projectName));
 
             //  Setup expectations
             var progressReporter = new Mock<IRestoreProgressReporter>(MockBehavior.Strict);
@@ -4372,7 +4371,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var childProjectPackageSpec = ProjectTestHelpers.GetPackageSpec(settings, childProject, rootPath: pathContext.SolutionRoot);
             var childDependencyGraphSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(childProjectPackageSpec);
             var childProjectFullPath = childDependencyGraphSpec.Projects[0].FilePath;
-            var childPackageReferenceProject = CreateTestCpsPackageReferenceProject(childProject, childProjectFullPath, projectCache);
+            var childPackageReferenceProject = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(childProject, childProjectFullPath, projectCache);
 
             // Parent project
             var parentProject = "parentProject";
@@ -4380,11 +4379,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             parentProjectPackageSpec = parentProjectPackageSpec.WithTestProjectReference(childProjectPackageSpec);
             var parentDependencyGraphSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(parentProjectPackageSpec);
             var parentProjectFullPath = parentDependencyGraphSpec.Projects[0].FilePath;
-            var parentPackageReferenceProject = CreateTestCpsPackageReferenceProject(parentProject, parentProjectFullPath, projectCache);
+            var parentPackageReferenceProject = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(parentProject, parentProjectFullPath, projectCache);
 
             // Populate caches
-            AddProjectDetailsToCache(projectCache, parentDependencyGraphSpec, parentPackageReferenceProject, GetTestProjectNames(parentProjectFullPath, parentProject));
-            AddProjectDetailsToCache(projectCache, childDependencyGraphSpec, childPackageReferenceProject, GetTestProjectNames(childProjectFullPath, childProject));
+            TestCpsPackageReferenceProject.AddProjectDetailsToCache(projectCache, parentDependencyGraphSpec, parentPackageReferenceProject, GetTestProjectNames(parentProjectFullPath, parentProject));
+            TestCpsPackageReferenceProject.AddProjectDetailsToCache(projectCache, childDependencyGraphSpec, childPackageReferenceProject, GetTestProjectNames(childProjectFullPath, childProject));
             testSolutionManager.NuGetProjects.Add(parentPackageReferenceProject);
             testSolutionManager.NuGetProjects.Add(childPackageReferenceProject);
 
@@ -4412,26 +4411,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert 
             progressReporter.VerifyAll();
-        }
-
-        private static void AddProjectDetailsToCache(ProjectSystemCache projectCache, DependencyGraphSpec parentDependencyGraphSpec, TestCpsPackageReferenceProject parentPackageReferenceProject, ProjectNames parentProjectNames)
-        {
-            projectCache.AddProjectRestoreInfo(parentProjectNames, parentDependencyGraphSpec, new List<IAssetsLogMessage>());
-            projectCache.AddProject(parentProjectNames, vsProjectAdapter: (new Mock<IVsProjectAdapter>()).Object, parentPackageReferenceProject).Should().BeTrue();
-        }
-
-        private TestCpsPackageReferenceProject CreateTestCpsPackageReferenceProject(string projectName, string projectFullPath, ProjectSystemCache projectSystemCache, TestProjectSystemServices projectServices = null)
-        {
-            projectServices = projectServices == null ? new TestProjectSystemServices() : projectServices;
-
-            return new TestCpsPackageReferenceProject(
-                    projectName: projectName,
-                    projectUniqueName: projectName,
-                    projectFullPath: projectFullPath,
-                    projectSystemCache: projectSystemCache,
-                    unconfiguredProject: null,
-                    projectServices: projectServices,
-                    projectId: projectName);
         }
 
         private static PackageSpec GetPackageSpecNoPackages(string projectName, string testDirectory)
@@ -4489,182 +4468,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.NotEmpty(packagesWithOrigins.InstalledPackages);
             Assert.NotEmpty(packagesWithOrigins.TransitivePackages);
             Assert.All(packagesWithOrigins.TransitivePackages, pkg => Assert.NotEmpty(pkg.TransitiveOrigins));
-        }
-
-        private class TestCpsPackageReferenceProject
-            : CpsPackageReferenceProject
-            , IProjectScriptHostService
-            , IProjectSystemReferencesReader
-        {
-            public HashSet<PackageIdentity> ExecuteInitScriptAsyncCalls { get; }
-                = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-
-            public List<TestExternalProjectReference> ProjectReferences { get; }
-                = new List<TestExternalProjectReference>();
-
-            public bool IsCacheEnabled { get; set; }
-
-            public bool IsNu1605Error { get; set; }
-
-            public HashSet<PackageSource> ProjectLocalSources { get; set; } = new HashSet<PackageSource>();
-
-            public TestCpsPackageReferenceProject(
-                string projectName,
-                string projectUniqueName,
-                string projectFullPath,
-                IProjectSystemCache projectSystemCache,
-                UnconfiguredProject unconfiguredProject,
-                INuGetProjectServices projectServices,
-                string projectId)
-                : base(projectName, projectUniqueName, projectFullPath, projectSystemCache, unconfiguredProject, projectServices, projectId)
-            {
-                ProjectServices = projectServices;
-            }
-
-            public override string MSBuildProjectPath => base.MSBuildProjectPath;
-
-            public override string ProjectName => base.ProjectName;
-
-            public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
-            {
-                var packageSpecs = await base.GetPackageSpecsAsync(context);
-
-                if (IsNu1605Error)
-                {
-                    foreach (var packageSpec in packageSpecs)
-                    {
-                        if (packageSpec?.RestoreMetadata != null)
-                        {
-                            var allWarningsAsErrors = false;
-                            var noWarn = new HashSet<NuGetLogCode>();
-                            var warnAsError = new HashSet<NuGetLogCode>();
-
-                            if (packageSpec.RestoreMetadata.ProjectWideWarningProperties != null)
-                            {
-                                var warningProperties = packageSpec.RestoreMetadata.ProjectWideWarningProperties;
-                                allWarningsAsErrors = warningProperties.AllWarningsAsErrors;
-                                warnAsError.AddRange<NuGetLogCode>(warningProperties.WarningsAsErrors);
-                                noWarn.AddRange<NuGetLogCode>(warningProperties.NoWarn);
-                            }
-
-                            warnAsError.Add(NuGetLogCode.NU1605);
-                            noWarn.Remove(NuGetLogCode.NU1605);
-
-                            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
-
-                            packageSpec.RestoreMetadata.ProjectWideWarningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors, warningsNotAsErrors);
-
-                            packageSpec?.RestoreMetadata.Sources.AddRange(new List<PackageSource>(ProjectLocalSources));
-                        }
-                    }
-                }
-
-                return packageSpecs;
-            }
-
-            public Task ExecutePackageScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, string scriptRelativePath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<bool> ExecutePackageInitScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
-            {
-                ExecuteInitScriptAsyncCalls.Add(packageIdentity);
-                return Task.FromResult(true);
-            }
-
-            public Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(NuGetFramework targetFramework, CancellationToken token)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(Common.ILogger logger, CancellationToken token)
-            {
-                var projectRefs = ProjectReferences.Select(e => new ProjectRestoreReference()
-                {
-                    ProjectUniqueName = e.MSBuildProjectPath,
-                    ProjectPath = e.MSBuildProjectPath,
-                });
-
-                return Task.FromResult(projectRefs);
-            }
-
-            public override Task PreProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)
-            {
-                return base.PreProcessAsync(nuGetProjectContext, token);
-            }
-
-            public override Task PostProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)
-            {
-                return base.PostProcessAsync(nuGetProjectContext, token);
-            }
-
-            public override Task<string> GetAssetsFilePathAsync()
-            {
-                return base.GetAssetsFilePathAsync();
-            }
-
-            public override Task<string> GetAssetsFilePathOrNullAsync()
-            {
-                return base.GetAssetsFilePathOrNullAsync();
-            }
-
-            public override Task AddFileToProjectAsync(string filePath)
-            {
-                return base.AddFileToProjectAsync(filePath);
-            }
-
-            public override Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
-            {
-                return base.GetPackageSpecsAndAdditionalMessagesAsync(context);
-            }
-
-            public override async Task<bool> InstallPackageAsync(string packageId, VersionRange range, INuGetProjectContext nuGetProjectContext, BuildIntegratedInstallationContext installationContext, CancellationToken token)
-            {
-                var dependency = new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange(
-                        name: packageId,
-                        versionRange: range,
-                        typeConstraint: LibraryDependencyTarget.Package),
-                    SuppressParent = installationContext.SuppressParent,
-                    IncludeType = installationContext.IncludeType
-                };
-
-                await ProjectServices.References.AddOrUpdatePackageReferenceAsync(dependency, token);
-
-                return true;
-            }
-
-            public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
-            {
-                await ProjectServices.References.RemovePackageReferenceAsync(packageIdentity.Id);
-
-                return true;
-            }
-
-            public override Task<string> GetCacheFilePathAsync()
-            {
-                return base.GetCacheFilePathAsync();
-            }
-        }
-
-        private class TestExternalProjectReference
-        {
-            public IDependencyGraphProject Project { get; set; }
-
-            public IDependencyGraphProject[] Children { get; set; }
-
-            public TestExternalProjectReference(
-                IDependencyGraphProject project,
-                params IDependencyGraphProject[] children)
-            {
-                Project = project;
-                Children = children;
-                MSBuildProjectPath = project.MSBuildProjectPath;
-            }
-
-            public string MSBuildProjectPath { get; set; }
         }
     }
 }
