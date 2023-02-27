@@ -1276,7 +1276,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 Assert.True(result.Success);
-                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, CancellationToken.None);
 
                 // Assert
                 packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
@@ -1334,7 +1334,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 Assert.True(result.Success);
-                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, CancellationToken.None);
 
                 // Assert
                 packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
@@ -1377,7 +1377,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 Assert.True(result.Success);
-                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, CancellationToken.None);
 
                 // Assert
                 packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
@@ -1428,11 +1428,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 RestoreResult result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 Assert.True(result.Success);
-                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+                ProjectPackages packages = await testProject.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, CancellationToken.None);
                 DateTime lastWriteTime = File.GetLastWriteTimeUtc(lockFilePath);
                 File.WriteAllText(lockFilePath, "** replaced file content to test cache **");
                 File.SetLastWriteTimeUtc(lockFilePath, lastWriteTime);
-                ProjectPackages cache_packages = await testProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+                ProjectPackages cache_packages = await testProject.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, CancellationToken.None);
 
                 // Assert
                 cache_packages.InstalledPackages.Should().Contain(a => a.PackageIdentity.Equals(new PackageIdentity("packageA", new NuGetVersion("2.15.3"))));
