@@ -316,7 +316,7 @@ namespace NuGet.Commands
             {
                 foreach (var framework in project.RestoreMetadata.TargetFrameworks)
                 {
-                    foreach (var projectReference in framework.ProjectReferences.ToArray())
+                    foreach (var projectReference in framework.ProjectReferences)
                     {
                         if (!existingProjects.Contains(projectReference.ProjectPath))
                         {
