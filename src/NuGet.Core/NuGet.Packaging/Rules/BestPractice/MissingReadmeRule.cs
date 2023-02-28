@@ -12,7 +12,7 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
-    public class MissingReadmeRule : IPackageRule
+    internal class MissingReadmeRule : IPackageRule
     {
         public string MessageFormat { get; }
 

@@ -313,7 +313,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The created package is missing a readme. Go to https://learn.microsoft.com/en-us/nuget/create-packages/package-authoring-best-practices#readme to learn why package readmes are important..
+        ///   Looks up a localized string similar to The created package is missing a readme. Go to aka.ms/nuget/authoring-best-practices#readme to learn why package readmes are important..
         /// </summary>
         public static string MissingReadmeInformation {
             get {
