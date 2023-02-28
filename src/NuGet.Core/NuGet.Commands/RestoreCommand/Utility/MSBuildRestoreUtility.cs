@@ -316,6 +316,7 @@ namespace NuGet.Commands
             {
                 foreach (var framework in project.RestoreMetadata.TargetFrameworks)
                 {
+                    // Loop through the items in reverse order so items can be removed from the collection safely
                     for (int i = framework.ProjectReferences.Count - 1; i >= 0; i--)
                     {
                         if (!existingProjects.Contains(framework.ProjectReferences[i].ProjectPath))
