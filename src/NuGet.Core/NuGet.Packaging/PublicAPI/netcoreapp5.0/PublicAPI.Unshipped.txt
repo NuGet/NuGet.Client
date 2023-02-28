@@ -1,6 +1,2 @@
 #nullable enable
-NuGet.Packaging.Rules.MissingReadmeRule
-~NuGet.Packaging.Rules.MissingReadmeRule.MessageFormat.get -> string
-~NuGet.Packaging.Rules.MissingReadmeRule.MissingReadmeRule(string messageFormat) -> void
-~NuGet.Packaging.Rules.MissingReadmeRule.Validate(NuGet.Packaging.PackageArchiveReader builder) -> System.Collections.Generic.IEnumerable<NuGet.Common.PackagingLogMessage>
 ~static NuGet.Packaging.Rules.AnalysisResources.MissingReadmeInformation.get -> string
