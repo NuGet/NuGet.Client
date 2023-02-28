@@ -515,6 +515,9 @@ namespace NuGet.Commands
         /// <returns>An <see cref="IEnumerable{LibraryDependency}" /> representing the centrally defined transitive dependencies for the specified <see cref="RestoreTargetGraph" />.</returns>
         private IEnumerable<LibraryDependency> GetLibraryDependenciesForCentralTransitiveDependencies(RestoreTargetGraph targetGraph, TargetFrameworkInformation targetFrameworkInformation)
         {
+            HashSet<GraphNode<RemoteResolveResult>> visitedNodes = new HashSet<GraphNode<RemoteResolveResult>>();
+            Queue<GraphNode<RemoteResolveResult>> queue = new Queue<GraphNode<RemoteResolveResult>>();
+
             foreach (GraphNode<RemoteResolveResult> rootNode in targetGraph.Graphs)
             {
                 Dictionary<string, LibraryDependency> dependencyDictionary = null;
@@ -538,7 +541,7 @@ namespace NuGet.Commands
                     LibraryIncludeFlags suppressParent = LibraryIncludeFlags.All;
 
                     // Centrally pinned dependencies are not directly declared but the intersection of all of the PrivateAssets of the parents that pulled it in should apply to it
-                    foreach (GraphNode<RemoteResolveResult> dependencyNode in EnumerateNodesForDependencyChecks(rootNode, node))
+                    foreach (GraphNode<RemoteResolveResult> dependencyNode in EnumerateNodesForDependencyChecks(visitedNodes, queue, rootNode, node))
                     {
                         LibraryDependency dependency = dependencyDictionary[dependencyNode.Key.Name];
                         suppressParent &= dependency.SuppressParent;
@@ -564,13 +567,16 @@ namespace NuGet.Commands
         /// Enumerates all inner nodes of the root node which directly or transitively reference the particular graph node.
         /// </summary>
         /// <typeparam name="T">The type of the node.</typeparam>
+        /// <param name="visitedNodes">Reusable <see cref="HashSet{GraphNode{T}}" /> for graph traversal algorithm.</param>
+        /// <param name="queue">Reusable <see cref="Queue{GraphNode{T}}" /> for graph traversal algorithm.</param>
         /// <param name="rootNode">The <see cref="GraphNode{TItem}" /> to know which nodes are first level inner nodes.</param>
         /// <param name="graphNode">The <see cref="GraphNode{TItem}" /> to enumerate the parent nodes of.</param>
         /// <returns>An <see cref="IEnumerable{T}" /> containing list of parent nodes of the specified node.</returns>
-        private static IEnumerable<GraphNode<T>> EnumerateNodesForDependencyChecks<T>( GraphNode<T> rootNode, GraphNode<T> graphNode)
+        private static IEnumerable<GraphNode<T>> EnumerateNodesForDependencyChecks<T>(HashSet<GraphNode<T>> visitedNodes, Queue<GraphNode<T>> queue, GraphNode<T> rootNode, GraphNode<T> graphNode)
         {
-            var visitedNodes = new HashSet<GraphNode<T>>();
-            var queue = new Queue<GraphNode<T>>();
+            visitedNodes.Clear();
+            queue.Clear();
+
             queue.Enqueue(graphNode);
 
             while (queue.Count > 0)
