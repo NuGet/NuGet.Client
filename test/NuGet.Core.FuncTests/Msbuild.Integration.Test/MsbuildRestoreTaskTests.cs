@@ -810,7 +810,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
         [InlineData(false)]
-        public void MsbuildRestore_WithMissingProjectReferences_HandlesProjectReferencesToUnsupportedProjects(bool restoreUseStaticGraphEvaluation)
+        public async Task MsbuildRestore_WithMissingProjectReferences_HandlesProjectReferencesToUnsupportedProjects(bool restoreUseStaticGraphEvaluation)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -818,16 +818,13 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
-                NuGetFramework targetFramework = NuGetFramework.Parse("net461");
+                var net461 = NuGetFramework.Parse("net472");
 
-                var projectA = new SimpleTestProjectContext("ProjectA", ProjectStyle.PackageReference, pathContext.SolutionRoot)
-                {
-                    ToolingVersion15 = true
-                };
+                var projectA = new SimpleTestProjectContext("a", ProjectStyle.PackageReference, pathContext.SolutionRoot);
 
                 var projectB = new SimpleTestProjectContext("b", ProjectStyle.PackageReference, pathContext.SolutionRoot);
 
-                var projectAFrameworkContext = new SimpleTestProjectFrameworkContext(targetFramework);
+                var projectAFrameworkContext = new SimpleTestProjectFrameworkContext(net461);
 
                 projectAFrameworkContext.ProjectReferences.Add(projectB);
 
@@ -845,15 +842,15 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 solution.Create(pathContext.SolutionRoot);
 
                 File.WriteAllText(
-                    projectB.ProjectPath,
-                    @"<Project />");
+                   projectB.ProjectPath,
+                   @"<Project />");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
 
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore /p:RestoreUseStaticGraphEvaluation={restoreUseStaticGraphEvaluation} {projectA.ProjectPath}", ignoreExitCode: true);
 
                 // Assert
                 result.ExitCode.Should().Be(0, result.AllOutput);
-
-                //result.AllOutput.Should().Contain($"error MSB4025: The project file could not be loaded. Could not find file '{projectB.ProjectPath}'");
             }
         }
 

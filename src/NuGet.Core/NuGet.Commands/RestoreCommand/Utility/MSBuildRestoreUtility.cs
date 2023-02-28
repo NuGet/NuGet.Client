@@ -316,11 +316,11 @@ namespace NuGet.Commands
             {
                 foreach (var framework in project.RestoreMetadata.TargetFrameworks)
                 {
-                    foreach (var projectReference in framework.ProjectReferences)
+                    for (int i = framework.ProjectReferences.Count - 1; i >= 0; i--)
                     {
-                        if (!existingProjects.Contains(projectReference.ProjectPath))
+                        if (!existingProjects.Contains(framework.ProjectReferences[i].ProjectPath))
                         {
-                            framework.ProjectReferences.Remove(projectReference);
+                            framework.ProjectReferences.Remove(framework.ProjectReferences[i]);
                         }
                     }
                 }
