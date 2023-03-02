@@ -17,8 +17,7 @@ namespace NuGet.Packaging.Test
 {
     //Package authoring best practices are an ever evolving set of rules and guidelines.
     //Those soft recommendations are non-breaking validation message. 
-    public class MissingReadmeRuleTest
-
+    public class MissingReadmeRuleTests
     {
         [Theory]
         [InlineData("<readme>readme.md</readme>", true)]
