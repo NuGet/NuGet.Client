@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Rules
             if (readmeMetadata == null)
             {
                 yield return PackagingLogMessage.CreateMessage(
-                    string.Format(CultureInfo.CurrentCulture, Environment.NewLine + MessageFormat),
+                    string.Format(CultureInfo.CurrentCulture, MessageFormat),
                     LogLevel.Minimal);
             }
         }

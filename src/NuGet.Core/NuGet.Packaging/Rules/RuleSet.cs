@@ -31,7 +31,13 @@ namespace NuGet.Packaging.Rules
                 new ReferencesInNuspecMatchRefAssetsRule(),
                 new InvalidUndottedFrameworkRule(),
                 new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
-                new MissingReadmeRule(AnalysisResources.MissingReadmeInformation),
+            }
+        );
+
+        // Non-breaking best practice rules.  
+        private static readonly ReadOnlyCollection<IPackageRule> PackageCreationBestPracticeRules = new ReadOnlyCollection<IPackageRule>(
+            new IPackageRule[] {
+                new MissingReadmeRule(AnalysisResources.MissingReadmeInformation)
             }
         );
 
@@ -49,6 +55,14 @@ namespace NuGet.Packaging.Rules
             get
             {
                 return PackageCreationRules;
+            }
+        }
+
+        public static IEnumerable<IPackageRule> PackageCreationBestPracticeRuleSet
+        {
+            get
+            {
+                return PackageCreationBestPracticeRules;
             }
         }
 

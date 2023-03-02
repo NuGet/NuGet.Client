@@ -1,2 +1,3 @@
 #nullable enable
 ~static NuGet.Packaging.Rules.AnalysisResources.MissingReadmeInformation.get -> string
+~static NuGet.Packaging.Rules.RuleSet.PackageCreationBestPracticeRuleSet.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Rules.IPackageRule>
