@@ -6555,41 +6555,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackReadme_MissingReadme_Succeeds()
-        {
-            var nuspec = NuspecBuilder.Create();
-            var testDirBuilder = TestDirectoryBuilder.Create();
-            var s = Path.DirectorySeparatorChar;
-
-            nuspec
-                .WithPackageId("test")
-                .WithFile("dummy.txt");
-
-            testDirBuilder
-                .WithFile("dummy.txt", 6)
-                .WithNuspec(nuspec);
-
-            using (testDirBuilder.Build())
-            {
-                var nupkgPath = Path.Combine(testDirBuilder.BaseDir, $"{testDirBuilder.NuspecBuilder.PackageIdEntry}.{testDirBuilder.NuspecBuilder.PackageVersionEntry}.nupkg");
-
-                // Act
-                var result = CommandRunner.Run(
-                    Util.GetNuGetExePath(),
-                    testDirBuilder.BaseDir,
-                    $"pack {testDirBuilder.NuspecPath}",
-                    waitForExit: true);
-
-                // Assert
-                Assert.Equal(0, result.ExitCode);
-                Assert.True(File.Exists(nupkgPath));
-
-                // MissingReadmeInformation in output.
-                Assert.Contains(AnalysisResources.MissingReadmeInformation, result.Output);
-            }
-        }
-
-        [Fact]
         public void PackCommand_PackReadme_EmptyReadmeEntry_Fails()
         {
             var nuspecBuilder = NuspecBuilder.Create();

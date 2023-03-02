@@ -12,7 +12,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
-using NuGet.Packaging.Rules;
 using NuGet.ProjectManagement;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -5358,9 +5357,6 @@ namespace ClassLibrary
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
                 var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
 
-                // No MissingReadmeInformation in output.
-                Assert.DoesNotContain(AnalysisResources.MissingReadmeInformation, result.Output);
-
                 // Validate embedded readme in package
                 ValidatePackReadme(projectBuilder);
 
@@ -5497,12 +5493,9 @@ namespace ClassLibrary
             using (TestDirectory srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
+                msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
 
                 // Assert
-                // No MissingReadmeInformation in output.
-                Assert.DoesNotContain(AnalysisResources.MissingReadmeInformation, result.Output);
-
                 // Validate embedded readme in package
                 ValidatePackReadme(projectBuilder);
 
@@ -5517,30 +5510,6 @@ namespace ClassLibrary
 
                 string snupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.snupkg");
                 Assert.True(File.Exists(snupkgPath), "No snupkg was produced");
-            }
-        }
-
-        [PlatformFact(Platform.Windows)]
-        public void PackCommand_PackageReadmeFile_MissingReadmeFile_ShowInfo()
-        {
-            var testDirBuilder = TestDirectoryBuilder.Create();
-            var projectBuilder = ProjectFileBuilder.Create();
-
-            testDirBuilder
-                .WithFile("test\\readme.md", 0);
-
-            projectBuilder
-                .WithProjectName("test")
-                .WithProperty("IncludeSymbols", "true")
-                .WithProperty("SymbolPackageFormat", "snupkg");
-
-            using (var srcDir = msbuildFixture.Build(testDirBuilder))
-            {
-                projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
-
-                Assert.Equal(0, result.ExitCode);
-                Assert.Contains(AnalysisResources.MissingReadmeInformation, result.Output);
             }
         }
 
