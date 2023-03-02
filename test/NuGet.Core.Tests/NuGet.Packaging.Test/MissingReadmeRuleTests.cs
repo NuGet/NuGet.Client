@@ -66,7 +66,7 @@ readmeMetadata +
 
                 Assert.True(runner.RunPackageBuild());
 
-                var ruleSet = RuleSet.PackageCreationRuleSet;
+                var ruleSet = RuleSet.PackageCreationRuleSet.Concat(RuleSet.PackageCreationBestPracticeRuleSet); ;
                 var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
 
                 using (var reader = new PackageArchiveReader(nupkgPath))
