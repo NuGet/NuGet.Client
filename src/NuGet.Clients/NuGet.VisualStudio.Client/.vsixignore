@@ -14,7 +14,6 @@ Microsoft.Internal.VisualStudio.Interop.dll
 Microsoft.Internal.VisualStudio.Shell.Framework.dll
 Microsoft.IO.Redist.dll
 Microsoft.NET.StringTools.dll
-Microsoft.ServiceHub.Client.dll
 Microsoft.ServiceHub.Framework.dll
 Microsoft.ServiceHub.Framework.resources.dll
 Microsoft.ServiceHub.Resources.dll
