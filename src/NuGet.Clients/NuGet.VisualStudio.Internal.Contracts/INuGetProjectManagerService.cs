@@ -21,6 +21,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         ValueTask<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
             IReadOnlyCollection<string> projectIds,
             CancellationToken cancellationToken);
+
         /// <summary>
         /// Obtains the installed and transitive packages from all given projects, optionally including transitive origins for transitive packages.
         /// </summary>

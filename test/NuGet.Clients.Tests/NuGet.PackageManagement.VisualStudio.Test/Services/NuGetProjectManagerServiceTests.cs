@@ -673,7 +673,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Act I: We will not have transitive packages data
 
-            var installedProject1 = await prProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+            var installedProject1 = await prProject.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, CancellationToken.None);
             Assert.NotEmpty(installedProject1.InstalledPackages);
             Assert.Empty(installedProject1.TransitivePackages);
 
@@ -694,7 +694,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Act II: From this point, we will have transitive packages
 
-            var installedProject2 = await prProject.GetInstalledAndTransitivePackagesAsync(CancellationToken.None);
+            var installedProject2 = await prProject.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: false, CancellationToken.None);
             Assert.NotEmpty(installedProject2.InstalledPackages);
             Assert.NotEmpty(installedProject2.TransitivePackages);
 
