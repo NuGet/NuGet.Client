@@ -282,6 +282,29 @@ namespace NuGet.CommandLine.XPlat
         }
     }
 
+    internal partial class ConfigVerbParser
+    {
+        internal static void Register(CommandLineApplication app,
+                                      Func<ILogger> getLogger)
+        {
+            app.Command("config", ConfigCmd =>
+            {
+                ConfigCmd.Command("paths", PathsCmd =>
+                {
+                    PathsCmd.OnExecute(() =>
+                    {
+                        var args = new ListSourceArgs()
+                        {
+                        };
+
+                        ListSourceRunner.Run(args, getLogger);
+                        return 0;
+                    });
+                });
+            });
+        }
+    }
+
     internal partial class RemoveVerbParser
     {
         internal static void Register(CommandLineApplication app,
