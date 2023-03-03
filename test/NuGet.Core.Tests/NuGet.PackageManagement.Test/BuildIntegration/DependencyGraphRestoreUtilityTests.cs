@@ -433,19 +433,25 @@ namespace NuGet.PackageManagement.Test
             //GetPackageSpecsAndAdditionalMessagesAsync
             //  Setup expectations
             var progressReporter = new Mock<IRestoreProgressReporter>(MockBehavior.Strict);
+
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, testSolutionManager, new TestDeleteOnRestartManager(), progressReporter.Object);
+            var resolutionContext = new ResolutionContext();
+            var projectContext = new TestNuGetProjectContext();
+            var sourceRepositories = sourceRepositoryProvider.GetRepositories();
+
+            // Act (Preview the Restore)
+            IEnumerable<NuGetProjectAction> actions = await nuGetPackageManager.PreviewInstallPackageAsync(cpsPackageReferenceProject, packageA.Identity, resolutionContext, projectContext,
+                    sourceRepositories.First(), sourceRepositories, CancellationToken.None);
+
+            // Assert (Preview the Restore)
+            actions.Should().HaveCount(1);
+            progressReporter.Verify(e => e.StartProjectUpdate(It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()), Times.Never);
+            progressReporter.Verify(e => e.EndProjectUpdate(It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()), Times.Never);
+
             progressReporter.Setup(e => e.StartProjectUpdate(It.Is<string>(path => path == projectFullPath), It.IsAny<IReadOnlyList<string>>())).Verifiable();
             progressReporter.Setup(e => e.EndProjectUpdate(It.Is<string>(path => path == projectFullPath), It.IsAny<IReadOnlyList<string>>())).Verifiable();
 
-            
-
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, testSolutionManager, new TestDeleteOnRestartManager(), progressReporter.Object);
-            var actions = await nuGetPackageManager.PreviewInstallPackageAsync(cpsPackageReferenceProject, packageA.Identity, new ResolutionContext(), new TestNuGetProjectContext(),
-                    sourceRepositoryProvider.GetRepositories().First(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
-
-            // Preconditions
-            actions.Should().HaveCount(1);
-
-            // Act
+            // Act (Commit the Restore)
             await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
                 cpsPackageReferenceProject,
                 actions,
@@ -453,7 +459,8 @@ namespace NuGet.PackageManagement.Test
                 new SourceCacheContext(),
                 CancellationToken.None);
 
-            // Assert 
+            // Assert
+            
             progressReporter.VerifyAll();
         }
 
