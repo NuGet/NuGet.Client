@@ -192,7 +192,7 @@ namespace NuGet.Packaging.Signing
                 timestamp = timestamp ?? new Timestamp();
                 using (X509ChainHolder chainHolder = X509ChainHolder.CreateForCodeSigning())
                 {
-                    var chain = chainHolder.Chain;
+                    IX509Chain chain = chainHolder.Chain2;
 
                     // This flag should only be set for verification scenarios, not signing.
                     chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
@@ -209,7 +209,7 @@ namespace NuGet.Packaging.Signing
                     }
 
                     var chainBuildingSucceeded = CertificateChainUtility.BuildCertificateChain(chain, certificate, out var chainStatuses);
-                    var x509ChainString = CertificateUtility.X509ChainToString(chain, fingerprintAlgorithm);
+                    string x509ChainString = CertificateUtility.X509ChainToString(chain.PrivateReference, fingerprintAlgorithm);
 
                     if (!string.IsNullOrWhiteSpace(x509ChainString))
                     {
@@ -249,6 +249,8 @@ namespace NuGet.Packaging.Signing
                         {
                             if (settings.ReportUntrustedRoot)
                             {
+                                LogAdditionalContext(chain, issues);
+
                                 issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue_UntrustedRoot, FriendlyName)));
                             }
 
@@ -420,6 +422,21 @@ namespace NuGet.Packaging.Signing
             }
 
             return timestampList;
+        }
+
+        private static void LogAdditionalContext(IX509Chain chain, List<SignatureLog> issues)
+        {
+            ILogMessage logMessage = chain.AdditionalContext;
+
+            if (logMessage is not null)
+            {
+                SignatureLog issue = SignatureLog.Issue(
+                    fatal: false,
+                    logMessage.Code,
+                    logMessage.Message);
+
+                issues.Add(issue);
+            }
         }
 #endif
     }

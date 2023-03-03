@@ -629,7 +629,7 @@ namespace NuGet.Packaging.Signing
             using (X509ChainHolder chainHolder = certificateType == CertificateType.Signature
                 ? X509ChainHolder.CreateForCodeSigning() : X509ChainHolder.CreateForTimestamping())
             {
-                X509Chain chain = chainHolder.Chain;
+                IX509Chain chain = chainHolder.Chain2;
 
                 chain.ChainPolicy.ExtraStore.AddRange(extraStore);
 
@@ -645,7 +645,7 @@ namespace NuGet.Packaging.Signing
                     return null;
                 }
 
-                return CertificateChainUtility.GetCertificateChain(chain);
+                return CertificateChainUtility.GetCertificateChain(chain.PrivateReference);
             }
         }
 
