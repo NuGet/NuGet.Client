@@ -110,4 +110,9 @@
       <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
     </Noun>
   </Verb>
+  <Verb Name="config">
+    <Noun Name="paths" Version="3.1.200">
+      
+    </Noun>
+  </Verb>
 </Commands>

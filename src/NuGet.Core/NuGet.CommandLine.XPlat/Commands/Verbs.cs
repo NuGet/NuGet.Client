@@ -475,4 +475,36 @@ namespace NuGet.CommandLine.XPlat
         }
     }
 
+    internal partial class ConfigVerbParser
+    {
+        internal static void Register(CommandLineApplication app,
+                                      Func<ILogger> getLogger)
+        {
+            app.Command("config", ConfigCmd =>
+            {
+                ConfigCmd.Command("paths", PathsCmd =>
+                {
+                    //PathsCmd.HelpOption("-h|--help");
+                    //PathsCmd.Description = Strings.ConfigPathsCommandDescription;
+                    PathsCmd.OnExecute(() =>
+                    {
+                        //var args = new ConfigPathsArgs()
+                        //{
+                        //};
+
+                        ConfigPathsRunner.Run(getLogger);
+                        return 0;
+                    });
+                });
+                ConfigCmd.HelpOption("-h|--help");
+                //ConfigCmd.Description = Strings.Config_Description;
+                ConfigCmd.OnExecute(() =>
+                {
+                    app.ShowHelp("config");
+                    return 0;
+                });
+            });
+        }
+    }
+
 }
