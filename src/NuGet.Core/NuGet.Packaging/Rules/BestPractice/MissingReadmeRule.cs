@@ -26,10 +26,12 @@ namespace NuGet.Packaging.Rules
             var nuspecReader = builder?.NuspecReader;
             var readmeMetadata = nuspecReader?.GetReadme();
 
+            var packageIdentity = nuspecReader?.GetIdentity().ToString();
+
             if (readmeMetadata == null)
             {
                 yield return PackagingLogMessage.CreateMessage(
-                    string.Format(CultureInfo.CurrentCulture, MessageFormat),
+                    string.Format(CultureInfo.CurrentCulture, MessageFormat, packageIdentity),
                     LogLevel.Minimal);
             }
         }

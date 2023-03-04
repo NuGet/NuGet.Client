@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging.Rules;
@@ -83,7 +81,7 @@ readmeMetadata +
                     }
                     else
                     {
-                        Assert.True(issues.Any(p => p.Message.Contains(AnalysisResources.MissingReadmeInformation) &&
+                        Assert.True(issues.Any(p => p.Message.Contains(string.Format(AnalysisResources.MissingReadmeInformation, "test.1.0.0")) &&
                         p.Code == NuGetLogCode.Undefined &&
                         p.Level == LogLevel.Minimal));
                     }
