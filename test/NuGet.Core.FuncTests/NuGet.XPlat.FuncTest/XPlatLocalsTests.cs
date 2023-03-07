@@ -15,6 +15,25 @@ namespace NuGet.XPlat.FuncTest
         private static readonly string DotnetCli = TestFileSystemUtility.GetDotnetCli();
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
 
+        public static void CreateFile(string directory, string fileName, string fileContent)
+        {
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var fileFullName = Path.Combine(directory, fileName);
+            CreateFile(fileFullName, fileContent);
+        }
+
+        public static void CreateFile(string fileFullName, string fileContent)
+        {
+            using (var writer = new StreamWriter(fileFullName))
+            {
+                writer.Write(fileContent);
+            }
+        }
+
         [Theory]
         [InlineData("locals all --list")]
         [InlineData("locals all -l")]
@@ -53,6 +72,25 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCliUtil.CreateTestFiles(mockHttpCacheDirectory.FullName);
                 DotnetCliUtil.CreateTestFiles(mockTmpCacheDirectory.FullName);
                 DotnetCliUtil.CreateTestFiles(mockPluginsCacheDirectory.FullName);
+
+                var ConfigFile = Path.Combine(Directory.GetCurrentDirectory(), "NuGet.config");
+                CreateFile(Path.GetDirectoryName(ConfigFile),
+                           Path.GetFileName(ConfigFile),
+                           $@"
+<configuration>
+    <packageSources>
+        <add key=""Bar"" value=""https://contoso.com/v3/index.json"" />
+    </packageSources>
+</configuration>
+");
+
+                var c = "config paths";
+                var b = Directory.GetCurrentDirectory();
+                var a = CommandRunner.Run(
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} {c}",
+                    waitForExit: true);
 
                 // Act
                 var result = CommandRunner.Run(

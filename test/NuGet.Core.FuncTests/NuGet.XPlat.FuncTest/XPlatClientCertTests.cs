@@ -78,6 +78,30 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
+        public void test()
+        {
+            using (var testInfo = new TestInfo())
+            {
+                var args = new[]
+                {
+                    "config",
+                    "paths",
+                };
+
+                var log = new TestCommandOutputLogger();
+
+                // Act
+                var exitCode = Program.MainInternal(args.ToArray(), log);
+
+                // Assert
+                var expectedError = "Invalid combination of arguments";
+                var a = log.ShowErrors();
+                Assert.Contains(expectedError, log.ShowErrors());
+                Assert.Equal(1, exitCode);
+            }
+        }
+
+        [Fact]
         public void ClientCertAddCommand_Fail_FileCertificateNotExist()
         {
             // Arrange
