@@ -15,8 +15,7 @@ namespace NuGet.Commands
     {
         public static void Run(ConfigPathsArgs args, Func<ILogger> getLogger)
         {
-            // Do I need to explicitly add something to handle null arg values? code already seems to work w/ null value
-            var settings = RunnerHelper.GetSettings(args.WorkingDirectory);
+            var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory);
             var filePaths = settings.GetConfigFilePaths();
 
             foreach (var filePath in filePaths)

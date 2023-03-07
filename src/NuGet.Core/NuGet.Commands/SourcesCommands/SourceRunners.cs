@@ -336,6 +336,20 @@ namespace NuGet.Commands
             }
         }
 
+        public static ISettings GetSettingsFromDirectory(string directory)
+        {
+            if (Directory.Exists(directory))
+            {
+                return NuGet.Configuration.Settings.LoadDefaultSettings(directory,
+                   configFileName: null,
+                   machineWideSettings: new XPlatMachineWideSetting());
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public static PackageSourceProvider GetSourceProvider(ISettings settings)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
