@@ -1,3 +1,7 @@
 #nullable enable
+NuGet.Commands.ConfigPathsArgs
+NuGet.Commands.ConfigPathsArgs.ConfigPathsArgs() -> void
 NuGet.Commands.ConfigPathsRunner
-~static NuGet.Commands.ConfigPathsRunner.Run(System.Func<NuGet.Common.ILogger> getLogger) -> void
+~NuGet.Commands.ConfigPathsArgs.WorkingDirectory.get -> string
+~NuGet.Commands.ConfigPathsArgs.WorkingDirectory.set -> void
+~static NuGet.Commands.ConfigPathsRunner.Run(NuGet.Commands.ConfigPathsArgs args, System.Func<NuGet.Common.ILogger> getLogger) -> void

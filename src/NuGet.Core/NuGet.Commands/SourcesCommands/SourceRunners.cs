@@ -399,15 +399,4 @@ namespace NuGet.Commands
             }
         }
     }
-
-    public static class ConfigPathsRunner
-    {
-        public static void Run(Func<ILogger> getLogger)
-        {
-            var settings = RunnerHelper.GetSettings(null);
-            var filePaths = settings.GetConfigFilePaths();
-            getLogger().LogMinimal($"{filePaths.Count} files");
-        }
-
-    }
 }
