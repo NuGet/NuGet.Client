@@ -111,8 +111,10 @@
     </Noun>
   </Verb>
   <Verb Name="config">
-    <Noun Name="paths" Version="3.1.200">
-      
+    <Noun Name="paths" Version="3.1.200"
+       Description="lists all the paths of NuGet configuration files that will be applied." >
+      <Argument Name="working-directory" Help="ConfigPathsWorkingDirectoryDescription"/>
+      <Example Title="List configuration files that will be applied in the current directory:" Command="dotnet nuget config paths" />
     </Noun>
   </Verb>
 </Commands>
