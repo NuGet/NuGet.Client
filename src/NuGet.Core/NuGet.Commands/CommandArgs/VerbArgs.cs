@@ -96,4 +96,9 @@ namespace NuGet.Commands
         public string Configfile { get; set; }
     }
 
+    public partial class ConfigPathsArgs
+    {
+        public string WorkingDirectory { get; set; }
+    }
+
 }

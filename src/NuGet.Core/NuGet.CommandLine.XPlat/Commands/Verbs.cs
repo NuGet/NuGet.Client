@@ -484,20 +484,23 @@ namespace NuGet.CommandLine.XPlat
             {
                 ConfigCmd.Command("paths", PathsCmd =>
                 {
-                    //PathsCmd.HelpOption("-h|--help");
-                    //PathsCmd.Description = Strings.ConfigPathsCommandDescription;
+                    CommandArgument workingdirectory = PathsCmd.Argument(
+                        "working-directory", Strings.ConfigPathsWorkingDirectoryDescription);
+                    PathsCmd.HelpOption("-h|--help");
+                    PathsCmd.Description = Strings.ConfigPathsCommandDescription;
                     PathsCmd.OnExecute(() =>
                     {
-                        //var args = new ConfigPathsArgs()
-                        //{
-                        //};
+                        var args = new ConfigPathsArgs()
+                        {
+                            WorkingDirectory = workingdirectory.Value,
+                        };
 
-                        ConfigPathsRunner.Run(getLogger);
+                        ConfigPathsRunner.Run(args, getLogger);
                         return 0;
                     });
                 });
                 ConfigCmd.HelpOption("-h|--help");
-                //ConfigCmd.Description = Strings.Config_Description;
+                ConfigCmd.Description = Strings.Config_Description;
                 ConfigCmd.OnExecute(() =>
                 {
                     app.ShowHelp("config");
