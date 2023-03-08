@@ -112,6 +112,9 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public string MSBuildStartupDirectory { get; set; }
 
+        [Output]
+        public ITaskItem[] EmbedInBinlog { get; set; }
+
         /// <inheritdoc cref="ICancelableTask.Cancel" />
         public void Cancel() => _cancellationTokenSource.Cancel();
 
@@ -174,6 +177,8 @@ namespace NuGet.Build.Tasks
                                 // The process may have exited, in this case ignore the exception
                             }
                         }
+
+                        EmbedInBinlog = loggingQueue.FilesToEmbedInBinlog.Select(i => new TaskItem(i)).ToArray();
                     }
                     catch (Exception e) when (
                         e is OperationCanceledException
