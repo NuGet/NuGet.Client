@@ -17,13 +17,7 @@ namespace NuGet.Commands
 
         // Add in ignore inaccessible directory arg functionality
         {
-            var settings = RunnerHelper.GetSettings(args.WorkingDirectory);
-            //var filePaths = settings.GetConfigFilePaths();
-
-            //foreach (var filePath in filePaths)
-            //{
-            //    getLogger().LogMinimal(filePath);
-            //}
+            var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory);
 
             if (settings != null)
             {
