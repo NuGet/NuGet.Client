@@ -338,7 +338,7 @@ namespace NuGet.Commands
 
         public static ISettings GetSettingsFromDirectory(string directory)
         {
-            if (Directory.Exists(directory))
+            if (Directory.Exists(directory) | string.IsNullOrEmpty(directory))
             {
                 return NuGet.Configuration.Settings.LoadDefaultSettings(directory,
                    configFileName: null,
