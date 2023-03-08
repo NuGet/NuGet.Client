@@ -124,7 +124,7 @@ namespace NuGet.Build.Tasks
 
                         process.Start();
 
-                        WriteArguments(process.StandardInput);
+                        WriteArguments(process.StandardInput.BaseStream);
 
                         process.BeginOutputReadLine();
 
@@ -264,7 +264,7 @@ namespace NuGet.Build.Tasks
             };
         }
 
-        internal void WriteArguments(StreamWriter streamWriter)
+        internal void WriteArguments(Stream stream)
         {
             var arguments = new StaticGraphRestoreArguments
             {
@@ -272,7 +272,7 @@ namespace NuGet.Build.Tasks
                 Options = GetOptions(),
             };
 
-            arguments.Write(streamWriter);
+            arguments.Write(stream);
         }
     }
 }
