@@ -18,58 +18,41 @@ using static NuGet.XPlat.FuncTest.XPlatClientCertTests.TestInfo;
 namespace NuGet.XPlat.FuncTest
 {
     [Collection("NuGet XPlat Config Test Collection")]
-    // Make sure config file is created in a directory that config settings will actually be applied to!
     public class XPlatConfigTests
     {
+
         [Fact]
-        public void ConfigPathsCommand_ListConfigPathsNoArgs_Success()
+        public void ConfigPathsCommand_ListConfigPathsWithArgs_Success()
         {
             // Arrange
-            using (var testInfo = new TestInfo("NuGet.config", ".test/work/"))
+            using (var testInfo = new TestInfo("NuGet.Config", ".test/work"))
             {
                 var args = new[]
                 {
                     "config",
-                    "paths"
+                    "paths",
+                    testInfo.WorkingPath
                 };
                 var log = new TestCommandOutputLogger();
 
                 // Act
-
                 var exitCode = Program.MainInternal(args.ToArray(), log);
 
                 // Assert
                 Assert.Equal(string.Empty, log.ShowErrors());
                 Assert.Equal(0, exitCode);
-                Assert.Contains(".test/work/NuGet.config", log.ShowMessages());
+                Assert.Contains(Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"), log.Messages);
             }
+
         }
 
-        //[Fact]
-        //public void ConfigPathsCommand_ListConfigPathsWithArgs_Success()
-        //{
-        //    // Arrange
-        //    using (var testInfo = new TestInfo())
-        //    {
-        //        var args = new[]
-        //        {
-        //            "config",
-        //            "paths"
-        //            // testInfo.Directory
-        //        };
-        //        // Act
+            // Test for non-existing working directory argument
 
+            // Test for inaccessible working directory argument
 
-        //        // Assert
-        //    }
+            // Test for displaying help message
 
-        //}
-
-        // Test for non-existing working directory argument
-
-        // Test for inaccessible working directory argument
-
-        // Test for displaying help message
+            // Tests for displaying other error messages
 
         internal class TestInfo : IDisposable
         {
@@ -97,7 +80,7 @@ namespace NuGet.XPlat.FuncTest
                 WorkingPath = TestDirectory.Create();
                 ConfigFile = configPath;
                 //InvalidWorkingPath = @"C:\Test\NonExistingRepos";
-                CreateFile(Path.GetDirectoryName(configDirectory),
+                CreateFile(WorkingPath.Path,
                            Path.GetFileName(ConfigFile),
                            $@"
 <configuration>
