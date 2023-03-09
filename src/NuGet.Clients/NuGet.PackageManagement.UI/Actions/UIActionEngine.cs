@@ -1029,7 +1029,7 @@ namespace NuGet.PackageManagement.UI
                 if (completed.Length != allPackages.Length)
                 {
                     // get remaining package's metadata from remote repositories
-                    var remainingPackages = allPackages.Where(package => package != null && !completed.Any(pack => pack != null && pack.Identity.Equals(package)));
+                    var remainingPackages = allPackages.Where(package => package != null && !completed.Any(packageMetadata => packageMetadata != null && packageMetadata.Identity.Equals(package)));
 #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
                     IPackageSearchMetadata[] remoteResults = (await TaskCombinators.ThrottledAsync(
                         remainingPackages,
@@ -1043,8 +1043,7 @@ namespace NuGet.PackageManagement.UI
             // check if missing metadata for any package
             if (allPackages.Length != results.Count)
             {
-                var package = allPackages.First(pkg => !results.Any(result => result != null && result.Identity.Equals(pkg)));
-
+                PackageIdentity package = allPackages.First(pkg => !results.Any(result => result != null && result.Identity.Equals(pkg)));
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "Unable to find metadata of {0}", package));
             }
 
