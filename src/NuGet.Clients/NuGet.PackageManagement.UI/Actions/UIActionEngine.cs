@@ -714,7 +714,7 @@ namespace NuGet.PackageManagement.UI
             if (projectUpgrader == null)
             {
                 return false;
-            } // todo nk?
+            }
 
             IReadOnlyCollection<string> projectIds = uiService.Projects.Select(project => project.ProjectId).ToArray();
             IReadOnlyCollection<IProjectContextInfo> upgradeableProjects = await projectUpgrader.GetUpgradeableProjectsAsync(
