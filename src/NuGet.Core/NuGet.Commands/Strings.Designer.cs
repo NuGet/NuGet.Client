@@ -655,6 +655,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The path &apos;{0}&apos; doesn&apos;t exist..
+        /// </summary>
+        internal static string Error_PathNotFound {
+            get {
+                return ResourceManager.GetString("Error_PathNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Platform version is not present for one or more target frameworks, even though they have specified a platform: {0}.
         /// </summary>
         internal static string Error_PlatformVersionNotPresent {
