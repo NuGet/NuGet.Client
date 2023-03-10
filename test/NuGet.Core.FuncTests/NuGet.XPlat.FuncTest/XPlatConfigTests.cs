@@ -25,7 +25,7 @@ namespace NuGet.XPlat.FuncTest
         public void ConfigPathsCommand_ListConfigPathsWithArgs_Success()
         {
             // Arrange
-            using (var testInfo = new TestInfo("NuGet.Config", ".test/work"))
+            using (var testInfo = new TestInfo("NuGet.Config"))
             {
                 var args = new[]
                 {
@@ -46,13 +46,60 @@ namespace NuGet.XPlat.FuncTest
 
         }
 
-            // Test for non-existing working directory argument
+        [Fact]
+        public void ConfigPathsCommand_ListConfigPathsNonExistingDirectory_Fail()
+        {
+            // Arrange
+            using (var testInfo = new TestInfo("NuGet.Config"))
+            {
+                var args = new[]
+                {
+                    "config",
+                    "paths",
+                    @"C:\Test\NonExistingRepos"
+                };
+                var log = new TestCommandOutputLogger();
 
-            // Test for inaccessible working directory argument
+                // Act
+                var exitCode = Program.MainInternal(args.ToArray(), log);
+                var expectedError = @"The path 'C:\Test\NonExistingRepos' doesn't exist.";
 
-            // Test for displaying help message
+                // Assert
+                Assert.Contains(expectedError, log.ShowErrors());
+                Assert.Equal(0, exitCode);
+            }
 
-            // Tests for displaying other error messages
+        }
+
+        // Test for inaccessible working directory argument
+
+        // Test for displaying help message
+        [Fact]
+        public void ConfigPathsCommand_ListConfigPathsHelpMessage_Success()
+        {
+            // Arrange
+            using (var testInfo = new TestInfo("NuGet.Config"))
+            {
+                var args = new[]
+                {
+                    "config",
+                    "paths",
+                    "--help"
+                };
+                var log = new TestCommandOutputLogger();
+
+                // Act
+                var exitCode = Program.MainInternal(args.ToArray(), log);
+                var helpMessage = "";
+
+                // Assert
+                Assert.Equal(string.Empty, log.ShowErrors());
+                Assert.Equal(0, exitCode);
+                Assert.Contains(helpMessage, log.Messages);
+            }
+
+        }
+
 
         internal class TestInfo : IDisposable
         {
@@ -75,7 +122,7 @@ namespace NuGet.XPlat.FuncTest
                 }
             }
 
-            public TestInfo(string configPath, string configDirectory)
+            public TestInfo(string configPath)
             {
                 WorkingPath = TestDirectory.Create();
                 ConfigFile = configPath;
