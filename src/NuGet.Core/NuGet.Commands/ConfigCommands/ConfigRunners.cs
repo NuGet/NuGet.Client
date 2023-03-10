@@ -14,8 +14,6 @@ namespace NuGet.Commands
     public static class ConfigPathsRunner
     {
         public static void Run(ConfigPathsArgs args, Func<ILogger> getLogger)
-
-        // Todo: Add in ignore inaccessible directory arg functionality
         {
             var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory);
 
@@ -28,8 +26,8 @@ namespace NuGet.Commands
                 }
             }
             else
-            {   // Raise error for non-existing directory arg
-                getLogger().LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, args.WorkingDirectory));
+            {
+                throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, args.WorkingDirectory));
             }
 
         }
