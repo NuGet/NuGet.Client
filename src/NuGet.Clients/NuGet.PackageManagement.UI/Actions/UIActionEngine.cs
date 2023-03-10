@@ -369,6 +369,7 @@ namespace NuGet.PackageManagement.UI
                         bool isAcceptedFormat = await CheckPackageManagementFormatAsync(projectUpgrader, uiService, cancellationToken);
                         if (!isAcceptedFormat)
                         {
+                            status = NuGetOperationStatus.Cancelled;
                             return;
                         }
                     }
