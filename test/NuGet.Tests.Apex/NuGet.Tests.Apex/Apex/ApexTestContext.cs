@@ -52,8 +52,19 @@ namespace NuGet.Tests.Apex
         public void Dispose()
         {
             _logger.LogInformation("Test complete, closing solution.");
-
-            SolutionService.SaveAndClose();
+            for (int attempt = 1; attempt <= 3; attempt++)
+            {
+                try
+                {
+                    SolutionService.SaveAndClose();
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogInformation($"Failed to close VS on dispose. Attempt #{attempt}");
+                    ExceptionUtilities.LogException(ex, _logger);
+                }
+            }
             _pathContext.Dispose();
         }
     }
