@@ -682,6 +682,41 @@ namespace NuGet.Tests.Apex
             solutionService.Save();
         }
 
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetPackagesConfigTemplates))]
+        public async Task VerifyCatchFileInsideObjFolder(ProjectTemplate projectTemplate)
+        {
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            {
+                //Arrange
+                var packageName = "TestPackage";
+                var packageVersion = "1.0.0";
+                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
+                var project = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreConsoleApp, "NetCore");
+                var solutionService = VisualStudio.Get<SolutionService>();
+                var nugetConsole = GetConsole(testContext.Project);
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+                FileInfo CatchFilePath = CommonUtility.GetCatchFilePath(project.FullPath);
+
+                //Act
+                testContext.SolutionService.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
+                CommonUtility.WaitForFileExists(CatchFilePath);
+
+                project.Rebuild();
+                CommonUtility.WaitForFileExists(CatchFilePath);
+
+                project.Clean();
+                CommonUtility.WaitForFileNotExists(CatchFilePath);
+
+                nugetConsole.Execute("dotnet restore");
+                CommonUtility.WaitForFileExists(CatchFilePath);
+
+                nugetConsole.Clear();
+                solutionService.Save();
+            }
+        }
+
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()
