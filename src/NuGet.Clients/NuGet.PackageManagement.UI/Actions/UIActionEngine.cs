@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.UI
                 string htmlLogFile = GenerateUpgradeReport(projectName, backupPath, upgradeInformationWindowModel);
                 try
                 {
-                    var process = Process.Start(htmlLogFile);
+                    using var process = Process.Start(htmlLogFile);
                 }
                 catch { }
             }
