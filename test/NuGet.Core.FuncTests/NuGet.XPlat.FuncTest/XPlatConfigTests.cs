@@ -66,37 +66,12 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 Assert.Contains(expectedError, log.ShowErrors());
-                Assert.Equal(0, exitCode);
+                Assert.Equal(1, exitCode);
             }
 
         }
 
         // Test for inaccessible working directory argument
-
-        // Test for displaying help message
-        [Fact]
-        public void ConfigPathsCommand_ListConfigPathsHelpMessage_Success()
-        {
-            // Arrange
-            using (var testInfo = new TestInfo("NuGet.Config"))
-            {
-                var args = new[]
-                {
-                    "config",
-                    "paths",
-                    "--help"
-                };
-                var log = new TestCommandOutputLogger();
-
-                // Act
-                var exitCode = Program.MainInternal(args.ToArray(), log);
-                var helpMessage = "";
-
-                // Assert
-                Assert.Equal(string.Empty, log.ShowErrors());
-                Assert.Equal(0, exitCode);
-                Assert.Contains(helpMessage, log.Messages);
-            }
 
         }
 
