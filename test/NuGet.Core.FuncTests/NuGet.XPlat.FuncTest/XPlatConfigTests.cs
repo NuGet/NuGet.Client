@@ -2,18 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using NuGet.CommandLine.XPlat;
-using NuGet.Configuration;
 using NuGet.Test.Utility;
-using Org.BouncyCastle.Asn1.Mozilla;
 using Xunit;
-using static NuGet.XPlat.FuncTest.XPlatClientCertTests.TestInfo;
 
 namespace NuGet.XPlat.FuncTest
 {
@@ -68,10 +61,6 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Contains(expectedError, log.ShowErrors());
                 Assert.Equal(1, exitCode);
             }
-
-        }
-
-        // Test for inaccessible working directory argument
 
         }
 
