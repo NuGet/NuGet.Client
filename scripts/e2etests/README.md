@@ -19,7 +19,7 @@ These tests run on the Visual Studio instance you need to test. They do not need
 1. Open the Package Manager Console and load the module from the zip, [NuGet.Tests.psm1](./../../test/EndToEnd/NuGet.Tests.psm1), by running `Import-Module <NuGet.Tests.psm1 file path>`.
 1. Run a test:
     - `Run-Test <TestName>` - The test name is the function name without a prefix `Test-`.
-    - Run-Test <FileName> - The file name is a filename from the generated zip file.
+    - `Run-Test <FileName>` - The file name is a filename from the generated zip file.
     - Run-Test - Runs all tests the runner can discover based on the relative file location.
 
 ## Debugging End-to-End tests
