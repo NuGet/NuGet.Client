@@ -1,3 +1,7 @@
 #nullable enable
 ~static readonly NuGet.Protocol.ServiceTypes.Version300rc -> string
 ~static readonly NuGet.Protocol.ServiceTypes.Version360 -> string
+NuGet.Protocol.VulnerabilityInfoResource
+NuGet.Protocol.VulnerabilityInfoResource.VulnerabilityInfoResource() -> void
+~static readonly NuGet.Protocol.ServiceTypes.Version660 -> string
+~static readonly NuGet.Protocol.ServiceTypes.VulnerabilityInfo -> string[]
