@@ -14,7 +14,7 @@ Note that the scripts assume certain relative paths that are correct within the 
 
 These tests run on the Visual Studio instance you need to test. They do not need Xunit or any other runner.
 
-1. Create or download the end to end test zip file, and extract it to a directory. It is recommended you extract the files in the `artifacts` directory at the repo root.
+1. Create or download the end-to-end test ZIP file and extract it to a directory. It is recommended you extract the files in the `artifacts` directory at the repo root.
 1. Run [SetupFunctionalTests.ps1](./SetupFunctionalTests.ps1). This step is executed once per machine.
 1. Start the Visual Studio instance you want to test. This can be a regular Visual Studio instance, with or without a VSIX that you want to test installed, but it can also be an [experimental Visual Studio instance](./../../docs/debugging.md#debugging-and-testing-nuget-in-visual-studio) you want to debug.
 1. Open the Package Manager Console and load the module from the zip, [NuGet.Tests.psm1](./../../test/EndToEnd/NuGet.Tests.psm1), by running `Import-Module <NuGet.Tests.psm1 file path>`.
