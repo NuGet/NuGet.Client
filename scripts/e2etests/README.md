@@ -1,6 +1,6 @@
 # NuGet E2E test scripts
 
-This is a collection scripts for Visual Studio End-to-End tests that run via the Package Manager Console.
+This is a collection of scripts for Visual Studio End-to-End tests that run via the Package Manager Console.
 
 The End-to-End test depend on an integration provided by the [API.Test](./../../test/TestExtensions/API.Test/API.Test.csproj) project and the Package Manager Console's access to Visual Studio services.
 
