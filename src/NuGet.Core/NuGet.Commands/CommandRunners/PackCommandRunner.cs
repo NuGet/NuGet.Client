@@ -72,7 +72,7 @@ namespace NuGet.Commands
         {
             _createProjectFactory = createProjectFactory;
             _packArgs = packArgs;
-            Rules = RuleSet.PackageCreationRuleSet.Concat(RuleSet.PackageCreationBestPracticeRuleSet);
+            Rules = RuleSet.PackageCreationRuleSet;
             GenerateNugetPackage = true;
         }
 

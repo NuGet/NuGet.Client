@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging.Rules;
@@ -40,41 +42,28 @@ readmeMetadata +
 
             var readmeContent = "Test readme file.";
 
-            using (var testDirectory = TestDirectory.Create())
+            // Arrange
+            using (var stream = new MemoryStream())
             {
-                var nuspecPath = Path.Combine(testDirectory, "test.nuspec");
-                File.AppendAllText(nuspecPath, nuspecContent);
-
-                var readmePath = Path.Combine(testDirectory, "readme.md");
-                File.AppendAllText(readmePath, readmeContent);
-
-                var builder = new PackageBuilder();
-                var runner = new PackCommandRunner(
-                    new PackArgs
+                using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
+                {
+                    zip.AddEntry("package.nuspec", nuspecContent, Encoding.UTF8);
+                    if (readmeMetadataExists)
                     {
-                        CurrentDirectory = testDirectory,
-                        OutputDirectory = testDirectory,
-                        Path = nuspecPath,
-                        Exclude = Array.Empty<string>(),
-                        Symbols = true,
-                        Logger = NullLogger.Instance
-                    },
-                    MSBuildProjectFactory.ProjectCreator,
-                    builder);
+                        zip.AddEntry("README.md", readmeContent, Encoding.UTF8);
+                    }
+                }
 
-                Assert.True(runner.RunPackageBuild());
-
-                var ruleSet = RuleSet.PackageCreationRuleSet.Concat(RuleSet.PackageCreationBestPracticeRuleSet); ;
-                var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
-
-                using (var reader = new PackageArchiveReader(nupkgPath))
+                // Act
+                var ruleSet = RuleSet.PackageCreationRuleSet;
+                using (var reader = new PackageArchiveReader(stream))
                 {
                     var issues = new List<PackagingLogMessage>();
                     foreach (var rule in ruleSet)
                     {
                         issues.AddRange(rule.Validate(reader).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
                     }
-
+                    // Assert
                     if (readmeMetadataExists)
                     {
                         Assert.False(issues.Any(p => p.Message.Contains(AnalysisResources.MissingReadmeInformation)));
