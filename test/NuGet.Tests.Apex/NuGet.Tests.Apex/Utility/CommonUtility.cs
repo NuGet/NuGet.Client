@@ -443,6 +443,9 @@ namespace NuGet.Tests.Apex
                 logger.LogInformation("Adding project");
                 var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
 
+                logger.LogInformation("Saving all open and dirty files");
+                solutionService.SaveAll();
+
                 logger.LogInformation("Saving solution");
                 solutionService.Save();
 
@@ -453,7 +456,7 @@ namespace NuGet.Tests.Apex
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.ToString());
+                logger.LogInformation("DGTEST " + ex.ToString());
                 throw ex;
             }
         }
