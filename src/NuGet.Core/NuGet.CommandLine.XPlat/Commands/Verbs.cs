@@ -509,5 +509,4 @@ namespace NuGet.CommandLine.XPlat
             });
         }
     }
-
 }
