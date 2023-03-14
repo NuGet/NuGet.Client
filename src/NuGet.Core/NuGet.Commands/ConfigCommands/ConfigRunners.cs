@@ -25,8 +25,6 @@ namespace NuGet.Commands
             {
                 throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, args.WorkingDirectory));
             }
-
         }
-
     }
 }

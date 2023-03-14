@@ -36,7 +36,6 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(0, exitCode);
                 Assert.Contains(Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"), log.Messages);
             }
-
         }
 
         [Fact]
@@ -61,9 +60,7 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Contains(expectedError, log.ShowErrors());
                 Assert.Equal(1, exitCode);
             }
-
         }
-
 
         internal class TestInfo : IDisposable
         {
@@ -90,7 +87,6 @@ namespace NuGet.XPlat.FuncTest
             {
                 WorkingPath = TestDirectory.Create();
                 ConfigFile = configPath;
-                //InvalidWorkingPath = @"C:\Test\NonExistingRepos";
                 CreateFile(WorkingPath.Path,
                            Path.GetFileName(ConfigFile),
                            $@"
@@ -104,7 +100,6 @@ namespace NuGet.XPlat.FuncTest
 
             public TestDirectory WorkingPath { get; }
             public string ConfigFile { get; }
-            //public string InvalidWorkingPath { get; }
             public void Dispose()
             {
                 WorkingPath.Dispose();
