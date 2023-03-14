@@ -435,19 +435,27 @@ namespace NuGet.Tests.Apex
 
         internal static ProjectTestExtension CreateAndInitProject(ProjectTemplate projectTemplate, SimpleTestPathContext pathContext, SolutionService solutionService, ILogger logger)
         {
-            logger.LogInformation("Creating solution");
-            solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
+            try
+            {
+                logger.LogInformation("Creating solution");
+                solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
 
-            logger.LogInformation("Adding project");
-            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
+                logger.LogInformation("Adding project");
+                var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
 
-            logger.LogInformation("Saving solution");
-            solutionService.Save();
+                logger.LogInformation("Saving solution");
+                solutionService.Save();
 
-            logger.LogInformation("Building solution");
-            project.Build();
+                logger.LogInformation("Building solution");
+                project.Build();
 
-            return project;
+                return project;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.ToString());
+                throw ex;
+            }
         }
 
         public static string AppendErrors(string s, VisualStudioHost visualStudio)
