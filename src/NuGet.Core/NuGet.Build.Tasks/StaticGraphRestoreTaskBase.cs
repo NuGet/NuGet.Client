@@ -6,17 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-
 #if !IS_CORECLR
-
 using System.Reflection;
-
 #endif
-
 using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using NuGet.Common;
 
 namespace NuGet.Build.Tasks
 {
@@ -25,12 +20,20 @@ namespace NuGet.Build.Tasks
     /// </summary>
     public abstract class StaticGraphRestoreTaskBase : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
     {
+        internal readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
+        protected StaticGraphRestoreTaskBase()
+            : base(Strings.ResourceManager)
+        {
+        }
+
         /// <summary>
         /// Gets the full path to this assembly.
         /// </summary>
         protected static readonly Lazy<FileInfo> ThisAssemblyLazy = new Lazy<FileInfo>(() => new FileInfo(typeof(RestoreTaskEx).Assembly.Location));
 
-        internal readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        [Output]
+        public ITaskItem[] EmbedInBinlog { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether or not <see cref="SolutionPath" /> contains a value.
@@ -63,9 +66,6 @@ namespace NuGet.Build.Tasks
         /// Get or sets a value indicating whether or not the restore should restore all projects or just the entry project.
         /// </summary>
         public bool Recursive { get; set; }
-
-        [Output]
-        public ITaskItem[] EmbedInBinlog { get; set; }
 
         /// <summary>
         /// Gets or sets the full path to the solution file (if any) that is being built.
@@ -104,7 +104,7 @@ namespace NuGet.Build.Tasks
                     process.EnableRaisingEvents = true;
                     process.StartInfo = new ProcessStartInfo
                     {
-                        Arguments = GetCommandLineArguments(MSBuildBinPath),
+                        Arguments = $"\"{string.Join("\" \"", GetCommandLineArguments())}\"",
                         CreateNoWindow = true,
                         FileName = GetProcessFileName(ProcessFileName),
                         RedirectStandardInput = true,
@@ -120,11 +120,9 @@ namespace NuGet.Build.Tasks
 
                     try
                     {
-                        Log.LogMessage(MessageImportance.Low, "Running command: \"{0}\" {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+                        Log.LogMessageFromResources(MessageImportance.Low, nameof(Strings.Log_RunningStaticGraphRestoreCommand), process.StartInfo.FileName, process.StartInfo.Arguments);
 
                         process.Start();
-
-                        WriteArguments(process.StandardInput);
 
                         process.BeginOutputReadLine();
 
@@ -142,12 +140,25 @@ namespace NuGet.Build.Tasks
                             }
                         }
 
+                        if (_cancellationTokenSource.IsCancellationRequested)
+                        {
+                            return true;
+                        }
+
+                        if (process.ExitCode > 0 && !Log.HasLoggedErrors)
+                        {
+                            // All non-zero exit codes should have logged an error, if not its unexpected so log an error asking the user to file an issue
+                            Log.LogErrorFromResources(nameof(Strings.Error_StaticGraphNonZeroExitCode), process.ExitCode);
+                        }
+
                         EmbedInBinlog = loggingQueue.FilesToEmbedInBinlog.Select(i => new TaskItem(i)).ToArray();
                     }
                     catch (Exception e) when (
                         e is OperationCanceledException
                         || (e is AggregateException aggregateException && aggregateException.InnerException is OperationCanceledException))
                     {
+                        // Build was canceled
+                        return true;
                     }
                 }
             }
@@ -162,16 +173,35 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Gets the command-line arguments to use when launching the process that executes the restore.
         /// </summary>
-        internal string GetCommandLineArguments(string msbuildBinPath)
+        internal IEnumerable<string> GetCommandLineArguments()
         {
-            return string.Concat(
 #if IS_CORECLR
-                "\"", Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.dll")), "\"",
-                " \"", Path.Combine(msbuildBinPath, "MSBuild.dll"), "\"",
-#else
-                "\"", Path.Combine(msbuildBinPath, "MSBuild.exe"), "\"",
+            // The full path to the executable for dotnet core
+            yield return Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.dll"));
 #endif
-                " \"", IsSolutionPathDefined ? SolutionPath : ProjectFullPath, "\"");
+
+            var options = GetOptions();
+
+            // Semicolon delimited list of options
+            yield return string.Join(";", options.Select(i => $"{i.Key}={i.Value}"));
+
+            // Full path to MSBuild.exe or MSBuild.dll
+#if IS_CORECLR
+            yield return Path.Combine(MSBuildBinPath, "MSBuild.dll");
+#else
+            yield return Path.Combine(MSBuildBinPath, "MSBuild.exe");
+
+#endif
+            // Full path to the entry project.  If its a solution file, it will be the full path to solution, otherwise SolutionPath is either empty
+            // or is the value "*Undefined*" and ProjectFullPath is set instead.
+            yield return IsSolutionPathDefined
+                    ? SolutionPath
+                    : ProjectFullPath;
+
+            // Semicolon delimited list of MSBuild global properties
+            var globalProperties = GetGlobalProperties().Select(i => $"{i.Key}={i.Value}");
+
+            yield return string.Join(";", globalProperties);
         }
 
         /// <summary>
@@ -262,17 +292,6 @@ namespace NuGet.Build.Tasks
             {
                 [nameof(Recursive)] = Recursive.ToString()
             };
-        }
-
-        internal void WriteArguments(StreamWriter streamWriter)
-        {
-            var arguments = new StaticGraphRestoreArguments
-            {
-                GlobalProperties = GetGlobalProperties(),
-                Options = GetOptions(),
-            };
-
-            arguments.Write(streamWriter);
         }
     }
 }
