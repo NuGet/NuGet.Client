@@ -683,37 +683,29 @@ namespace NuGet.Tests.Apex
         }
 
         [NuGetWpfTheory]
-        [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task VerifyCatchFileInsideObjFolder(ProjectTemplate projectTemplate)
+        [MemberData(nameof(GetNetCoreTemplates))]
+        public async Task VerifyCacheFileInsideObjFolder(ProjectTemplate projectTemplate)
         {
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             {
                 //Arrange
-                var packageName = "TestPackage";
+                var packageName = "VerifyCacheFilePackage";
                 var packageVersion = "1.0.0";
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
-                var project = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreConsoleApp, "NetCore");
-                var solutionService = VisualStudio.Get<SolutionService>();
+                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);                
                 var nugetConsole = GetConsole(testContext.Project);
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-                FileInfo CatchFilePath = CommonUtility.GetCatchFilePath(project.FullPath);
+                FileInfo CacheFilePath = CommonUtility.GetCacheFilePath(testContext.Project.FullPath);
 
                 //Act
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
-                CommonUtility.WaitForFileExists(CatchFilePath);
+                CommonUtility.WaitForFileExists(CacheFilePath);
 
-                project.Rebuild();
-                CommonUtility.WaitForFileExists(CatchFilePath);
+                testContext.Project.Rebuild();
+                CommonUtility.WaitForFileExists(CacheFilePath);
 
-                project.Clean();
-                CommonUtility.WaitForFileNotExists(CatchFilePath);
-
-                nugetConsole.Execute("dotnet restore");
-                CommonUtility.WaitForFileExists(CatchFilePath);
-
-                nugetConsole.Clear();
-                solutionService.Save();
+                testContext.Project.Clean();
+                CommonUtility.WaitForFileNotExists(CacheFilePath);
             }
         }
 

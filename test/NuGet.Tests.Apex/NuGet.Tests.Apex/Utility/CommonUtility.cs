@@ -417,7 +417,7 @@ namespace NuGet.Tests.Apex
             return Path.Combine(projectDirectory, "obj", "project.assets.json");
         }
 
-        public static FileInfo GetCatchFilePath(string projectPath)
+        public static FileInfo GetCacheFilePath(string projectPath)
         {
             var projectDirectory = Path.GetDirectoryName(projectPath);
             return new FileInfo(Path.Combine(projectDirectory, "obj", "project.nuget.cache"));
