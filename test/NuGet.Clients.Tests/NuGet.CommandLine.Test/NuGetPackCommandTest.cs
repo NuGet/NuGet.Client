@@ -4374,7 +4374,7 @@ namespace Proj2
 
                 // Assert
 
-                Assert.True(r.Errors.Contains($"MSBuildPath : {msbuildPath}  does not exist."));
+                Assert.True(r.Errors.Contains($"MSBuildPath : {msbuildPath} does not exist."));
             }
         }
 
