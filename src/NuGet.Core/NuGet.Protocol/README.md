@@ -2,19 +2,11 @@
 
 NuGet.Protocol is a NuGet client SDK library that provides a set of APIs for interacting with NuGet feeds. It provides a way for developers to query NuGet feeds to discover packages and their dependencies, and also to download packages and their associated assets.
 
-## Getting started
+# Usage
 
-NuGet.Protocol can be installed from the NuGet Package Manager or using the dotnet CLI:
+## List package versions
 
-```
-dotnet add package NuGet.Protocol
-```
-
-## Usage
-
-### List package versions
-
-Find all versions of Newtonsoft.Json using the [NuGet V3 Package Content API](https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource#enumerate-package-versions):
+Find all versions of Newtonsoft.Json using the [NuGet V3 Package Content API](https://learn.microsoft.com/nuget/api/package-base-address-resource#enumerate-package-versions):
 
 ```c#
 ILogger logger = NullLogger.Instance;
@@ -36,9 +28,38 @@ foreach (NuGetVersion version in versions)
 }
 ```
 
+### GetAllVersionsAsync(id,cacheContext,logger,cancellationToken) `method`
+
+##### Summary
+
+Asynchronously gets all package versions for a package ID.
+
+##### Returns
+
+A task that represents the asynchronous operation.
+The task result ([Result](https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1.result?view=net-7.0#system-threading-tasks-task-1-result 'System.Threading.Tasks.Task`1.Result')) returns an
+[IEnumerable\`1](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1?view=net-7.0 'System.Collections.Generic.IEnumerable`1').
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| id | System.String| A package ID. |
+| cacheContext | NuGet.Protocol.Core.Types.SourceCacheContext | A source cache context. |
+| logger | NuGet.Common.ILogger | A logger. |
+| cancellationToken | System.Threading.CancellationToken | A cancellation token. |
+
+##### Exceptions
+
+| Name | Description |
+| ---- | ----------- |
+| [System.ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception?view=net-7.0 'System.ArgumentException') | Thrown if `id` is either `null` or an empty string. |
+| [System.ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception?view=net-7.0 'System.ArgumentNullException') | Thrown if `cacheContext` `null`. |
+| [System.ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception?view=net-7.0 'System.ArgumentNullException') | Thrown if `logger` `null`. |
+| [System.OperationCanceledException](https://learn.microsoft.com/dotnet/api/system.operationcanceledexception?view=net-7.0 'System.OperationCanceledException') | Thrown if `cancellationToken` is cancelled. |
 ### Download a package
 
-Download Newtonsoft.Json v12.0.1 using the [NuGet V3 Package Content API](https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource):
+Download Newtonsoft.Json v12.0.1 using the [NuGet V3 Package Content API](https://learn.microsoft.com/nuget/api/package-base-address-resource):
 
 ```c#
 ILogger logger = NullLogger.Instance;
@@ -69,9 +90,9 @@ Console.WriteLine($"Tags: {nuspecReader.GetTags()}");
 Console.WriteLine($"Description: {nuspecReader.GetDescription()}");
 ```
 
-### Get package metadata
+## Get package metadata
 
-Get the metadata for the "Newtonsoft.Json" package using the [NuGet V3 Package Metadata API](https://learn.microsoft.com/en-us/nuget/api/registration-base-url-resource):
+Get the metadata for the "Newtonsoft.Json" package using the [NuGet V3 Package Metadata API](https://learn.microsoft.com/nuget/api/registration-base-url-resource):
 
 ```c#
 ILogger logger = NullLogger.Instance;
@@ -98,9 +119,9 @@ foreach (IPackageSearchMetadata package in packages)
 }
 ```
 
-### Search packages
+## Search packages
 
-Search for "json" packages using the [NuGet V3 Search API](https://learn.microsoft.com/en-us/nuget/api/search-query-service-resource):
+Search for "json" packages using the [NuGet V3 Search API](https://learn.microsoft.com/nuget/api/search-query-service-resource):
 
 ```c#
 ILogger logger = NullLogger.Instance;
@@ -124,9 +145,9 @@ foreach (IPackageSearchMetadata result in results)
 }
 ```
 
-### Push a package
+## Push a package
 
-Push a package using the [NuGet V3 Push and Delete API](https://learn.microsoft.com/en-us/nuget/api/package-publish-resource):
+Push a package using the [NuGet V3 Push and Delete API](https://learn.microsoft.com/nuget/api/package-publish-resource):
 
 ```c#
 ILogger logger = NullLogger.Instance;
@@ -151,9 +172,9 @@ await resource.Push(
     logger);
 ```
 
-### Delete a package
+## Delete a package
 
-Delete a package using the [NuGet V3 Push and Delete API](https://learn.microsoft.com/en-us/nuget/api/package-publish-resource):
+Delete a package using the [NuGet V3 Push and Delete API](https://learn.microsoft.com/nuget/api/package-publish-resource):
 
 ```c#
 ILogger logger = NullLogger.Instance;
@@ -174,7 +195,7 @@ await resource.Delete(
     logger);
 ```
 
-### Work with authenticated feeds
+## Work with authenticated feeds
 
 Use [NuGet.Protocol](https://www.nuget.org/packages/NuGet.Protocol) to work with authenticated feeds.
 
@@ -213,6 +234,6 @@ foreach (IPackageSearchMetadata package in packages)
 }
 ```
 
-## Aditional documentation
+# Aditional documentation
 
-More information about the NuGet.Protocol library can be found on the [official Microsoft documentation page](https://learn.microsoft.com/en-us/nuget/reference/nuget-client-sdk#nugetprotocol).
+More information about the NuGet.Protocol library can be found on the [official Microsoft documentation page](https://learn.microsoft.com/nuget/reference/nuget-client-sdk#nugetprotocol).
