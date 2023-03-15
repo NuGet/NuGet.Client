@@ -686,17 +686,21 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetNetCoreTemplates))]
         public async Task VerifyCacheFileInsideObjFolder(ProjectTemplate projectTemplate)
         {
+            // Arrange
+            EnsureVisualStudioHost();
+
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {
-                //Arrange
+            {                
                 var packageName = "VerifyCacheFilePackage";
                 var packageVersion = "1.0.0";
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);                
                 var nugetConsole = GetConsole(testContext.Project);
+
+                //Act
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
                 FileInfo CacheFilePath = CommonUtility.GetCacheFilePath(testContext.Project.FullPath);
 
-                //Act
+                // Assert
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
                 CommonUtility.WaitForFileExists(CacheFilePath);
