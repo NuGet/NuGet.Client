@@ -456,7 +456,7 @@ namespace NuGet.Tests.Apex
             }
             catch (Exception ex)
             {
-                logger.LogInformation("DGTEST " + ex.ToString());
+                logger.LogInformation("[NuGet Fault in Apex]: " + ex.ToString());
                 throw ex;
             }
         }
