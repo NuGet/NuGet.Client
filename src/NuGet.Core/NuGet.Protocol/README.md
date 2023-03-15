@@ -33,18 +33,14 @@ FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackage
 Find all versions of Newtonsoft.Json using the [NuGet V3 Package Content API](https://learn.microsoft.com/nuget/api/package-base-address-resource#enumerate-package-versions):
 
 ```c#
-ILogger logger = NullLogger.Instance;
-CancellationToken cancellationToken = CancellationToken.None;
-
-SourceCacheContext cache = new SourceCacheContext();
 SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
 FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>();
 
 IEnumerable<NuGetVersion> versions = await resource.GetAllVersionsAsync(
     "Newtonsoft.Json",
-    cache,
-    logger,
-    cancellationToken);
+    new SourceCacheContext(),
+    NullLogger.Instance,
+    CancellationToken.None);
 
 foreach (NuGetVersion version in versions)
 {
@@ -57,10 +53,6 @@ foreach (NuGetVersion version in versions)
 Download Newtonsoft.Json v12.0.1 using the [NuGet V3 Package Content API](https://learn.microsoft.com/nuget/api/package-base-address-resource):
 
 ```c#
-ILogger logger = NullLogger.Instance;
-CancellationToken cancellationToken = CancellationToken.None;
-
-SourceCacheContext cache = new SourceCacheContext();
 SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
 FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>();
 
@@ -72,9 +64,9 @@ await resource.CopyNupkgToStreamAsync(
     packageId,
     packageVersion,
     packageStream,
-    cache,
-    logger,
-    cancellationToken);
+    new SourceCacheContext(),
+    NullLogger.Instance,
+    CancellationToken.None);
 
 Console.WriteLine($"Downloaded package {packageId} {packageVersion}");
 
@@ -90,10 +82,6 @@ Console.WriteLine($"Description: {nuspecReader.GetDescription()}");
 Get the metadata for the "Newtonsoft.Json" package using the [NuGet V3 Package Metadata API](https://learn.microsoft.com/nuget/api/registration-base-url-resource):
 
 ```c#
-ILogger logger = NullLogger.Instance;
-CancellationToken cancellationToken = CancellationToken.None;
-
-SourceCacheContext cache = new SourceCacheContext();
 SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
 PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>();
 
@@ -101,9 +89,9 @@ IEnumerable<IPackageSearchMetadata> packages = await resource.GetMetadataAsync(
     "Newtonsoft.Json",
     includePrerelease: true,
     includeUnlisted: false,
-    cache,
-    logger,
-    cancellationToken);
+    new SourceCacheContext(),
+    NullLogger.Instance,
+    CancellationToken.None);
 
 foreach (IPackageSearchMetadata package in packages)
 {
@@ -119,9 +107,6 @@ foreach (IPackageSearchMetadata package in packages)
 Search for "json" packages using the [NuGet V3 Search API](https://learn.microsoft.com/nuget/api/search-query-service-resource):
 
 ```c#
-ILogger logger = NullLogger.Instance;
-CancellationToken cancellationToken = CancellationToken.None;
-
 SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
 PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>();
 SearchFilter searchFilter = new SearchFilter(includePrerelease: true);
@@ -131,8 +116,8 @@ IEnumerable<IPackageSearchMetadata> results = await resource.SearchAsync(
     searchFilter,
     skip: 0,
     take: 20,
-    logger,
-    cancellationToken);
+    NullLogger.Instance,
+    CancellationToken.None);
 
 foreach (IPackageSearchMetadata result in results)
 {
@@ -145,10 +130,6 @@ foreach (IPackageSearchMetadata result in results)
 Push a package using the [NuGet V3 Push and Delete API](https://learn.microsoft.com/nuget/api/package-publish-resource):
 
 ```c#
-ILogger logger = NullLogger.Instance;
-CancellationToken cancellationToken = CancellationToken.None;
-
-SourceCacheContext cache = new SourceCacheContext();
 SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
 PackageUpdateResource resource = await repository.GetResourceAsync<PackageUpdateResource>();
 
@@ -164,30 +145,7 @@ await resource.Push(
     noServiceEndpoint: false,
     skipDuplicate: false,
     symbolPackageUpdateResource: null,
-    logger);
-```
-
-### Delete a package
-
-Delete a package using the [NuGet V3 Push and Delete API](https://learn.microsoft.com/nuget/api/package-publish-resource):
-
-```c#
-ILogger logger = NullLogger.Instance;
-CancellationToken cancellationToken = CancellationToken.None;
-
-SourceCacheContext cache = new SourceCacheContext();
-SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
-PackageUpdateResource resource = await repository.GetResourceAsync<PackageUpdateResource>();
-
-string apiKey = "my-api-key";
-
-await resource.Delete(
-    "MyPackage",
-    "1.0.0-beta",
-    getApiKey: packageSource => apiKey,
-    confirm: packageSource => true,
-    noServiceEndpoint: false,
-    logger);
+    NullLogger.Instance);
 ```
 
 ### Work with authenticated feeds
@@ -195,9 +153,6 @@ await resource.Delete(
 Use [NuGet.Protocol](https://www.nuget.org/packages/NuGet.Protocol) to work with authenticated feeds.
 
 ```c#
-ILogger logger = NullLogger.Instance;
-CancellationToken cancellationToken = CancellationToken.None;
-SourceCacheContext cache = new SourceCacheContext();
 var sourceUri = "https://contoso.privatefeed/v3/index.json";
 var packageSource = new PackageSource(sourceUri)
 {
@@ -208,6 +163,7 @@ var packageSource = new PackageSource(sourceUri)
         isPasswordClearText: true,
         validAuthenticationTypesText: null)
 };
+
 // If the `SourceRepository` is created with a `PackageSource`, the rest of APIs will consume the credentials attached to `PackageSource.Credentials`.
 SourceRepository repository = Repository.Factory.GetCoreV3(packageSource);
 PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>();
@@ -216,9 +172,9 @@ IEnumerable<IPackageSearchMetadata> packages = await resource.GetMetadataAsync(
     "MyPackage",
     includePrerelease: true,
     includeUnlisted: false,
-    cache,
-    logger,
-    cancellationToken);
+    new SourceCacheContext(),
+    NullLogger.Instance,
+    CancellationToken.None);
 
 foreach (IPackageSearchMetadata package in packages)
 {
