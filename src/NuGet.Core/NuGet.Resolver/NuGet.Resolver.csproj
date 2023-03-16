@@ -1,13 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>NuGet's dependency resolver for packages.config based projects.</Description>
-    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
+    <TargetFrameworks>$(TargetFrameworksLibraryForSigning)</TargetFrameworks>
+    <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1573;RS0041</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
+    <XPLATProject>true</XPLATProject>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
+    <TargetFrameworks />
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Protocol\NuGet.Protocol.csproj" />
