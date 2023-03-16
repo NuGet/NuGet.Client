@@ -15,16 +15,16 @@ namespace NuGet.Versioning
         /// <summary>
         /// Find the version that best matches the VersionRange and the floating behavior.
         /// </summary>
-        public static T FindBestMatch<T>(this IEnumerable<T> items,
-            VersionRange ideal,
-            Func<T, NuGetVersion> selector) where T : class
+        public static T? FindBestMatch<T>(this IEnumerable<T> items,
+            VersionRange? ideal,
+            Func<T?, NuGetVersion> selector) where T : class
         {
             if (ideal == null)
             {
                 return items.FirstOrDefault();
             }
 
-            T bestMatch = null;
+            T? bestMatch = null;
 
             foreach (var item in items)
             {
@@ -47,9 +47,12 @@ namespace NuGet.Versioning
         /// <summary>
         /// Find the version that best matches the VersionRange and the floating behavior.
         /// </summary>
-        public static INuGetVersionable FindBestMatch(this IEnumerable<INuGetVersionable> items, VersionRange ideal)
+        public static INuGetVersionable? FindBestMatch(this IEnumerable<INuGetVersionable> items, VersionRange ideal)
         {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+            // Looks like a NRE bug
             return FindBestMatch<INuGetVersionable>(items, ideal, (e => e.Version));
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
     }
 }

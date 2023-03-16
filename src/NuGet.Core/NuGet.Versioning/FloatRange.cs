@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using NuGet.Shared;
 
@@ -12,9 +13,9 @@ namespace NuGet.Versioning
     /// </summary>
     public class FloatRange : IEquatable<FloatRange>
     {
-        private readonly NuGetVersion _minVersion;
+        private readonly NuGetVersion? _minVersion;
         private readonly NuGetVersionFloatBehavior _floatBehavior;
-        private readonly string _releasePrefix;
+        private readonly string? _releasePrefix;
 
         /// <summary>
         /// Create a floating range.
@@ -41,7 +42,7 @@ namespace NuGet.Versioning
         /// <param name="floatBehavior">Section to float.</param>
         /// <param name="minVersion">Min version of the range.</param>
         /// <param name="releasePrefix">The original release label. Invalid labels are allowed here.</param>
-        public FloatRange(NuGetVersionFloatBehavior floatBehavior, NuGetVersion minVersion, string releasePrefix)
+        public FloatRange(NuGetVersionFloatBehavior floatBehavior, NuGetVersion? minVersion, string? releasePrefix)
         {
             _floatBehavior = floatBehavior;
             _minVersion = minVersion;
@@ -63,7 +64,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// The minimum version of the float range. This is null for cases such as *
         /// </summary>
-        public NuGetVersion MinVersion => _minVersion;
+        public NuGetVersion? MinVersion => _minVersion;
 
         /// <summary>
         /// Defined float behavior
@@ -73,7 +74,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// The original release label. Invalid labels are allowed here.
         /// </summary>
-        public string OriginalReleasePrefix => _releasePrefix;
+        public string? OriginalReleasePrefix => _releasePrefix;
 
         /// <summary>
         /// True if the given version falls into the floating range.
@@ -162,9 +163,9 @@ namespace NuGet.Versioning
         /// <summary>
         /// Parse a floating version into a FloatRange
         /// </summary>
-        public static FloatRange Parse(string versionString)
+        public static FloatRange? Parse(string versionString)
         {
-            _ = TryParse(versionString, out FloatRange range);
+            _ = TryParse(versionString, out FloatRange? range);
 
             return range;
         }
@@ -172,7 +173,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Parse a floating version into a FloatRange
         /// </summary>
-        public static bool TryParse(string versionString, out FloatRange range)
+        public static bool TryParse(string versionString, [NotNullWhen(true)] out FloatRange? range)
         {
             range = null;
 
@@ -180,7 +181,7 @@ namespace NuGet.Versioning
             {
                 var firstStarPosition = versionString.IndexOf('*');
                 var lastStarPosition = versionString.LastIndexOf('*');
-                string releasePrefix = null;
+                string? releasePrefix = null;
 
                 if (versionString.Length == 1
                     && firstStarPosition == 0)
@@ -196,7 +197,7 @@ namespace NuGet.Versioning
                     var behavior = NuGetVersionFloatBehavior.None;
                     // 2 *s are only allowed in prerelease versions.
                     var dashPosition = versionString.IndexOf('-');
-                    string actualVersion = null;
+                    string? actualVersion = null;
 
                     if (dashPosition != -1 &&
                         lastStarPosition == versionString.Length - 1 && // Last star is at the end of the full string
@@ -237,7 +238,7 @@ namespace NuGet.Versioning
                         actualVersion = stablePart + "-" + releasePart;
                     }
 
-                    if (NuGetVersion.TryParse(actualVersion, out NuGetVersion version))
+                    if (NuGetVersion.TryParse(actualVersion, out NuGetVersion? version))
                     {
                         range = new FloatRange(behavior, version, releasePrefix);
                     }
@@ -293,8 +294,7 @@ namespace NuGet.Versioning
                         }
                     }
 
-                    NuGetVersion version = null;
-                    if (NuGetVersion.TryParse(actualVersion, out version))
+                    if (NuGetVersion.TryParse(actualVersion, out NuGetVersion? version))
                     {
                         range = new FloatRange(behavior, version, releasePrefix);
                     }
@@ -302,8 +302,7 @@ namespace NuGet.Versioning
                 else
                 {
                     // normal version parse
-                    NuGetVersion version = null;
-                    if (NuGetVersion.TryParse(versionString, out version))
+                    if (NuGetVersion.TryParse(versionString, out NuGetVersion? version))
                     {
                         // there is no float range for this version
                         range = new FloatRange(NuGetVersionFloatBehavior.None, version);
@@ -336,6 +335,7 @@ namespace NuGet.Versioning
         public override string ToString()
         {
             var result = string.Empty;
+#pragma warning disable CS8602 // Dereference of a possibly null reference. - possible bugs?
             switch (_floatBehavior)
             {
                 case NuGetVersionFloatBehavior.None:
@@ -374,6 +374,7 @@ namespace NuGet.Versioning
                 default:
                     break;
             }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
             return result;
         }
@@ -381,10 +382,13 @@ namespace NuGet.Versioning
         /// <summary>
         /// Equals
         /// </summary>
-        public bool Equals(FloatRange other)
+        public bool Equals(FloatRange? other)
         {
-            return FloatBehavior == other.FloatBehavior
-                   && VersionComparer.Default.Equals(MinVersion, other.MinVersion);
+            return FloatBehavior == other?.FloatBehavior
+#pragma warning disable CS8604 // Possible null reference argument.
+                   // BCL is missing nullable annotations on IComparer<T> before net5.0
+                   && VersionComparer.Default.Equals(MinVersion, other?.MinVersion);
+#pragma warning restore CS8604 // Possible null reference argument.
         }
 
         /// <summary>
@@ -392,7 +396,7 @@ namespace NuGet.Versioning
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as FloatRange);
         }

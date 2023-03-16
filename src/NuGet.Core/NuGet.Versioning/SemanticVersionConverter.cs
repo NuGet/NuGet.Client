@@ -33,7 +33,7 @@ namespace NuGet.Versioning
         /// <returns>An <see cref="object" /> that represents the converted value.</returns>
         /// <exception cref="ArgumentException"><c>value</c> is not a valid value for the target type.</exception>
         /// <exception cref="NotSupportedException">The conversion cannot be performed.</exception>
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        public override object? ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             if (value is null)
             {
@@ -68,7 +68,7 @@ namespace NuGet.Versioning
         /// <param name="destinationType">The <see cref="Type"/> to convert the value to.</param>
         /// <returns>An <see cref="object" /> that represents the converted value.</returns>
         /// <exception cref="NotSupportedException">The conversion cannot be performed.</exception>
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        public override object? ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
             if (value is null)
             {

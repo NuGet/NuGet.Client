@@ -22,19 +22,19 @@ namespace NuGet.Versioning
         /// <summary>
         /// Format a version range string.
         /// </summary>
-        public string Format(string format, object arg, IFormatProvider formatProvider)
+        public string Format(string? format, object? arg, IFormatProvider? formatProvider)
         {
             if (arg == null)
             {
                 throw new ArgumentNullException(nameof(arg));
             }
 
-            string formatted = null;
             var argType = arg.GetType();
 
             if (argType == typeof(IFormattable))
             {
-                formatted = ((IFormattable)arg).ToString(format, formatProvider);
+                string formatted = ((IFormattable)arg).ToString(format, formatProvider);
+                return formatted;
             }
             else if (!string.IsNullOrEmpty(format))
             {
@@ -43,9 +43,13 @@ namespace NuGet.Versioning
                 if (range != null)
                 {
                     // single char identifiers
-                    if (format.Length == 1)
+                    if (format!.Length == 1)
                     {
-                        formatted = Format(format[0], range);
+                        string? formatted = Format(format[0], range);
+#pragma warning disable CS8603 // Possible null reference return.
+                        // is this bug?
+                        return formatted;
+#pragma warning restore CS8603 // Possible null reference return.
                     }
                     else
                     {
@@ -65,18 +69,22 @@ namespace NuGet.Versioning
                             }
                         }
 
-                        formatted = sb.ToString();
+                        string formatted = sb.ToString();
+                        return formatted;
                     }
                 }
             }
 
-            return formatted;
+#pragma warning disable CS8603 // Possible null reference return.
+            // bug? ICustomFormatter.Format doesn't appear to allow null return values
+            return null;
+#pragma warning restore CS8603 // Possible null reference return.
         }
 
         /// <summary>
         /// Format type.
         /// </summary>
-        public object GetFormat(Type formatType)
+        public object? GetFormat(Type? formatType)
         {
             if (formatType == typeof(ICustomFormatter)
                 || formatType == typeof(VersionRange))
@@ -87,9 +95,9 @@ namespace NuGet.Versioning
             return null;
         }
 
-        private string Format(char c, VersionRange range)
+        private string? Format(char c, VersionRange range)
         {
-            string s = null;
+            string? s = null;
 
             switch (c)
             {
@@ -127,14 +135,14 @@ namespace NuGet.Versioning
 
         private string GetShortString(VersionRange range)
         {
-            string s = null;
+            string s;
 
             if (range.HasLowerBound
                 && range.IsMinInclusive
                 && !range.HasUpperBound)
             {
                 s = range.IsFloating ?
-                    range.Float.ToString() :
+                    range.Float!.ToString() :
                     string.Format(VersionFormatter, ZeroN, range.MinVersion);
             }
             else if (range.HasLowerAndUpperBounds
@@ -167,7 +175,7 @@ namespace NuGet.Versioning
             {
                 if (range.IsFloating)
                 {
-                    sb.Append(range.Float.ToString());
+                    sb.Append(range.Float!.ToString());
                 }
                 else
                 {
@@ -192,7 +200,7 @@ namespace NuGet.Versioning
         /// </summary>
         private string GetToString(VersionRange range)
         {
-            string s = null;
+            string s;
 
             if (range.HasLowerBound
                 && range.IsMinInclusive
@@ -223,7 +231,7 @@ namespace NuGet.Versioning
         /// </summary>
         private string GetLegacyShortString(VersionRangeBase range)
         {
-            string s = null;
+            string s;
 
             if (range.HasLowerBound
                 && range.IsMinInclusive

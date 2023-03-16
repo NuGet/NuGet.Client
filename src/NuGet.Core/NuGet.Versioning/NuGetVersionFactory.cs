@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 
@@ -15,15 +16,14 @@ namespace NuGet.Versioning
         /// </summary>
         public new static NuGetVersion Parse(string value)
         {
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, value), nameof(value));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, value), nameof(value));
             }
 
-            NuGetVersion ver = null;
-            if (!TryParse(value, out ver))
+            if (!TryParse(value, out NuGetVersion? ver))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Invalidvalue, value), nameof(value));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Invalidvalue, value), nameof(value));
             }
 
             return ver;
@@ -33,21 +33,21 @@ namespace NuGet.Versioning
         /// Parses a version string using loose semantic versioning rules that allows 2-4 version components followed
         /// by an optional special version.
         /// </summary>
-        public static bool TryParse(string value, out NuGetVersion version)
+        public static bool TryParse(string? value, [NotNullWhen(true)] out NuGetVersion? version)
         {
             version = null;
 
             if (value != null)
             {
-                Version systemVersion = null;
+                Version systemVersion;
 
                 // trim the value before passing it in since we not strict here
-                ParseSections(value.Trim(), out string versionString, out string[] releaseLabels, out string buildMetadata);
+                ParseSections(value.Trim(), out string? versionString, out string[]? releaseLabels, out string? buildMetadata);
 
                 // null indicates the string did not meet the rules
                 if (!string.IsNullOrEmpty(versionString))
                 {
-                    var versionPart = versionString;
+                    string versionPart = versionString!;
 
                     if (versionPart.IndexOf('.') < 0)
                     {
@@ -101,12 +101,11 @@ namespace NuGet.Versioning
         /// <summary>
         /// Parses a version string using strict SemVer rules.
         /// </summary>
-        public static bool TryParseStrict(string value, out NuGetVersion version)
+        public static bool TryParseStrict(string value, [NotNullWhen(true)] out NuGetVersion? version)
         {
             version = null;
 
-            SemanticVersion semVer = null;
-            if (TryParse(value, out semVer))
+            if (TryParse(value, out SemanticVersion? semVer))
             {
                 version = new NuGetVersion(semVer.Major, semVer.Minor, semVer.Patch, 0, semVer.ReleaseLabels, semVer.Metadata);
                 return true;
@@ -118,16 +117,16 @@ namespace NuGet.Versioning
         /// <summary>
         /// Creates a legacy version string using System.Version
         /// </summary>
-        private static string GetLegacyString(Version version, IEnumerable<string> releaseLabels, string metadata)
+        private static string GetLegacyString(Version version, IEnumerable<string>? releaseLabels, string? metadata)
         {
             var sb = new StringBuilder(version.ToString());
 
             if (releaseLabels != null)
             {
-                sb.AppendFormat(CultureInfo.InvariantCulture, "-{0}", String.Join(".", releaseLabels));
+                sb.AppendFormat(CultureInfo.InvariantCulture, "-{0}", string.Join(".", releaseLabels));
             }
 
-            if (!String.IsNullOrEmpty(metadata))
+            if (!string.IsNullOrEmpty(metadata))
             {
                 sb.AppendFormat(CultureInfo.InvariantCulture, "+{0}", metadata);
             }
@@ -135,11 +134,11 @@ namespace NuGet.Versioning
             return sb.ToString();
         }
 
-        private static IEnumerable<string> ParseReleaseLabels(string releaseLabels)
+        private static IEnumerable<string>? ParseReleaseLabels(string? releaseLabels)
         {
-            if (!String.IsNullOrEmpty(releaseLabels))
+            if (!string.IsNullOrEmpty(releaseLabels))
             {
-                return releaseLabels.Split('.');
+                return releaseLabels!.Split('.');
             }
 
             return null;

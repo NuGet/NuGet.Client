@@ -20,8 +20,13 @@ namespace NuGet.Versioning
         /// <summary>
         /// Format a version string.
         /// </summary>
-        public string Format(string format, object arg, IFormatProvider formatProvider)
+        public string Format(string? format, object? arg, IFormatProvider? formatProvider)
         {
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
             if (arg == null)
             {
                 throw new ArgumentNullException(nameof(arg));
@@ -29,7 +34,10 @@ namespace NuGet.Versioning
 
             if (string.IsNullOrEmpty(format) || arg is not SemanticVersion version)
             {
+#pragma warning disable CS8603 // Possible null reference return.
+                // Looks like a violation of the ICustomFormatter.Format interface
                 return null;
+#pragma warning restore CS8603 // Possible null reference return.
             }
 
             StringBuilder builder = StringBuilderPool.Shared.Rent(256);
@@ -50,7 +58,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Get version format type.
         /// </summary>
-        public object GetFormat(Type formatType)
+        public object? GetFormat(Type? formatType)
         {
             if (formatType == typeof(ICustomFormatter)
                 || formatType == typeof(NuGetVersion)

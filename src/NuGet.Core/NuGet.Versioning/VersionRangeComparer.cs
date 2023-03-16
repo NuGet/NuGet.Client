@@ -69,10 +69,13 @@ namespace NuGet.Versioning
                 return false;
             }
 
+#pragma warning disable CS8604 // Possible null reference argument.
+            // Do we have a null bug here?
             return x.IsMinInclusive == y.IsMinInclusive
                 && y.IsMaxInclusive == x.IsMaxInclusive
                 && _versionComparer.Equals(y.MinVersion, x.MinVersion)
                 && _versionComparer.Equals(y.MaxVersion, x.MaxVersion);
+#pragma warning restore CS8604 // Possible null reference argument.
         }
 
         /// <summary>
@@ -90,8 +93,11 @@ namespace NuGet.Versioning
 
             combiner.AddObject(obj.IsMinInclusive);
             combiner.AddObject(obj.IsMaxInclusive);
+#pragma warning disable CS8604 // Possible null reference argument.
+            // Do we have a null bug here?
             combiner.AddObject(_versionComparer.GetHashCode(obj.MinVersion));
             combiner.AddObject(_versionComparer.GetHashCode(obj.MaxVersion));
+#pragma warning restore CS8604 // Possible null reference argument.
 
             return combiner.CombinedHash;
         }
