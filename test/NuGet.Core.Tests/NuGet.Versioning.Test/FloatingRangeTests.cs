@@ -83,7 +83,7 @@ namespace NuGet.Versioning.Test
                     NuGetVersion.Parse("101.0.0")
                 };
 
-            Assert.Equal("101.0.0", range.FindBestMatch(versions).ToNormalizedString());
+            Assert.Equal("101.0.0", range.FindBestMatch(versions)?.ToNormalizedString());
         }
 
         [Theory]
@@ -92,8 +92,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse(version);
 
-            Assert.Equal(range.MinVersion, range.MinVersion);
-            Assert.Equal(range.FloatBehavior, NuGetVersionFloatBehavior.None);
+            Assert.Equal(range?.MinVersion, range?.MinVersion);
+            Assert.Equal(range?.FloatBehavior, NuGetVersionFloatBehavior.None);
         }
 
         [Fact]
@@ -101,12 +101,12 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("1.0.0-*");
 
-            Assert.True(range.Satisfies(NuGetVersion.Parse("1.0.0-alpha")));
-            Assert.True(range.Satisfies(NuGetVersion.Parse("1.0.0-beta")));
-            Assert.True(range.Satisfies(NuGetVersion.Parse("1.0.0")));
+            Assert.True(range?.Satisfies(NuGetVersion.Parse("1.0.0-alpha")));
+            Assert.True(range?.Satisfies(NuGetVersion.Parse("1.0.0-beta")));
+            Assert.True(range?.Satisfies(NuGetVersion.Parse("1.0.0")));
 
-            Assert.False(range.Satisfies(NuGetVersion.Parse("1.0.1-alpha")));
-            Assert.False(range.Satisfies(NuGetVersion.Parse("1.0.1")));
+            Assert.False(range?.Satisfies(NuGetVersion.Parse("1.0.1-alpha")));
+            Assert.False(range?.Satisfies(NuGetVersion.Parse("1.0.1")));
         }
 
         [Fact]
@@ -114,8 +114,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("1.0.0");
 
-            Assert.Equal("1.0.0", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.None, range.FloatBehavior);
+            Assert.Equal("1.0.0", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.None, range?.FloatBehavior);
         }
 
         [Fact]
@@ -123,8 +123,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("1.0.0-*");
 
-            Assert.Equal("1.0.0-0", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.Prerelease, range.FloatBehavior);
+            Assert.Equal("1.0.0-0", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.Prerelease, range?.FloatBehavior);
         }
 
         [Fact]
@@ -132,8 +132,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("1.0.0-alpha-*");
 
-            Assert.Equal("1.0.0-alpha-", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.Prerelease, range.FloatBehavior);
+            Assert.Equal("1.0.0-alpha-", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.Prerelease, range?.FloatBehavior);
         }
 
         [Fact]
@@ -141,8 +141,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("1.0.0.*");
 
-            Assert.Equal("1.0.0", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.Revision, range.FloatBehavior);
+            Assert.Equal("1.0.0", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.Revision, range?.FloatBehavior);
         }
 
         [Fact]
@@ -150,8 +150,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("1.0.*");
 
-            Assert.Equal("1.0.0", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.Patch, range.FloatBehavior);
+            Assert.Equal("1.0.0", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.Patch, range?.FloatBehavior);
         }
 
         [Fact]
@@ -159,8 +159,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("1.*");
 
-            Assert.Equal("1.0.0", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.Minor, range.FloatBehavior);
+            Assert.Equal("1.0.0", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.Minor, range?.FloatBehavior);
         }
 
         [Fact]
@@ -168,8 +168,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("*");
 
-            Assert.Equal("0.0.0", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.Major, range.FloatBehavior);
+            Assert.Equal("0.0.0", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.Major, range?.FloatBehavior);
         }
 
         [Fact]
@@ -184,7 +184,7 @@ namespace NuGet.Versioning.Test
                     NuGetVersion.Parse("2.0.0"),
                 };
 
-            Assert.Equal("1.0.0", range.FindBestMatch(versions).ToNormalizedString());
+            Assert.Equal("1.0.0", range.FindBestMatch(versions)?.ToNormalizedString());
         }
 
         [Fact]
@@ -200,7 +200,7 @@ namespace NuGet.Versioning.Test
                     NuGetVersion.Parse("2.0.0"),
                 };
 
-            Assert.Equal("1.2.0", range.FindBestMatch(versions).ToNormalizedString());
+            Assert.Equal("1.2.0", range.FindBestMatch(versions)?.ToNormalizedString());
         }
 
         [Fact]
@@ -217,7 +217,7 @@ namespace NuGet.Versioning.Test
                 };
 
             // take the nearest when the prefix is not matched
-            Assert.Equal("2.0.0", range.FindBestMatch(versions).ToNormalizedString());
+            Assert.Equal("2.0.0", range.FindBestMatch(versions)?.ToNormalizedString());
         }
 
         [Fact]
@@ -233,7 +233,7 @@ namespace NuGet.Versioning.Test
                     NuGetVersion.Parse("3.3.0"),
                 };
 
-            Assert.Equal("3.3.0", range.FindBestMatch(versions).ToNormalizedString());
+            Assert.Equal("3.3.0", range.FindBestMatch(versions)?.ToNormalizedString());
         }
 
         [Fact]
@@ -250,7 +250,7 @@ namespace NuGet.Versioning.Test
                     NuGetVersion.Parse("2.0.1"),
                 };
 
-            Assert.Equal("1.0.0-alpha02", range.FindBestMatch(versions).ToNormalizedString());
+            Assert.Equal("1.0.0-alpha02", range.FindBestMatch(versions)?.ToNormalizedString());
         }
 
         [Fact]
@@ -267,7 +267,7 @@ namespace NuGet.Versioning.Test
                     NuGetVersion.Parse("2.0.1"),
                 };
 
-            Assert.Equal("1.0.1-alpha01", range.FindBestMatch(versions).ToNormalizedString());
+            Assert.Equal("1.0.1-alpha01", range.FindBestMatch(versions)?.ToNormalizedString());
         }
 
         [Fact]
@@ -284,7 +284,7 @@ namespace NuGet.Versioning.Test
                     NuGetVersion.Parse("2.0.1"),
                 };
 
-            Assert.Equal("1.0.0-alpha02", range.FindBestMatch(versions).ToNormalizedString());
+            Assert.Equal("1.0.0-alpha02", range.FindBestMatch(versions)?.ToNormalizedString());
         }
 
         [Fact]
@@ -343,7 +343,7 @@ namespace NuGet.Versioning.Test
         public void FloatingRange_TryParse_Invalid(string floatVersionString)
         {
             // Arrange
-            FloatRange range;
+            FloatRange? range;
 
             // Act
             var valid = FloatRange.TryParse(floatVersionString, out range);
@@ -407,7 +407,7 @@ namespace NuGet.Versioning.Test
         public void FloatingRange_TryParse_Valid(string floatVersionString)
         {
             // Arrange
-            FloatRange range;
+            FloatRange? range;
 
             // Act
             var valid = FloatRange.TryParse(floatVersionString, out range);
@@ -422,8 +422,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("1.0.0.*-*");
 
-            Assert.Equal("1.0.0-0", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.PrereleaseRevision, range.FloatBehavior);
+            Assert.Equal("1.0.0-0", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.PrereleaseRevision, range?.FloatBehavior);
         }
 
         [Fact]
@@ -431,8 +431,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("1.0.*-*");
 
-            Assert.Equal("1.0.0-0", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.PrereleasePatch, range.FloatBehavior);
+            Assert.Equal("1.0.0-0", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.PrereleasePatch, range?.FloatBehavior);
         }
 
         [Fact]
@@ -440,8 +440,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("1.*-*");
 
-            Assert.Equal("1.0.0-0", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.PrereleaseMinor, range.FloatBehavior);
+            Assert.Equal("1.0.0-0", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.PrereleaseMinor, range?.FloatBehavior);
         }
 
         [Fact]
@@ -449,8 +449,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("*-rc.*");
 
-            Assert.Equal("0.0.0-rc.0", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.PrereleaseMajor, range.FloatBehavior);
+            Assert.Equal("0.0.0-rc.0", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.PrereleaseMajor, range?.FloatBehavior);
         }
 
         [Fact]
@@ -458,8 +458,8 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse("*-*");
 
-            Assert.Equal("0.0.0-0", range.MinVersion.ToNormalizedString());
-            Assert.Equal(NuGetVersionFloatBehavior.AbsoluteLatest, range.FloatBehavior);
+            Assert.Equal("0.0.0-0", range?.MinVersion?.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.AbsoluteLatest, range?.FloatBehavior);
         }
 
         [Theory]
@@ -484,7 +484,7 @@ namespace NuGet.Versioning.Test
         {
             var range = FloatRange.Parse(versionRange);
 
-            Assert.Equal(normalizedMinVersion, range.MinVersion.ToNormalizedString());
+            Assert.Equal(normalizedMinVersion, range?.MinVersion?.ToNormalizedString());
         }
     }
 }
