@@ -138,10 +138,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
                 installedPackages = new T();
-                if (includeTransitivePackages)
-                {
-                    transitivePackages = new T();
-                }
+                transitivePackages = new T();
                 targetsList = await GetTargetsListAsync(assetsFilePath, token);
             }
             else
@@ -186,7 +183,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // get transitive packages
             IEnumerable<PackageReference> calculatedTransitivePackages = Enumerable.Empty<PackageReference>();
-            if (includeTransitivePackages)
+            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded)
             {
                 calculatedTransitivePackages = packageSpec
                     .TargetFrameworks
@@ -197,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins = Enumerable.Empty<TransitivePackageReference>();
-            if (includeTransitivePackages)
+            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded)
             {
                 if (includeTransitiveOrigins && await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
                 {
@@ -254,7 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 InstalledPackages = installedPackages;
             }
-            if (includeTransitivePackages)
+            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded)
             {
                 lock (_installedAndTransitivePackagesLock)
                 {
