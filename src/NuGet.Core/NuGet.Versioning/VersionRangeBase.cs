@@ -272,13 +272,16 @@ namespace NuGet.Versioning
             if (possibleSubSet.HasLowerBound)
             {
                 // normal check
-                if (!target.Satisfies(possibleSubSet.MinVersion!))
+                if (!target.Satisfies(possibleSubSet.MinVersion))
                 {
                     // it's possible we didn't need that version, do a special non inclusive check
                     if (!possibleSubSet.IsMinInclusive
                         && !target.IsMinInclusive)
                     {
-                        result &= comparer.Equals(target.MinVersion!, possibleSubSet.MinVersion!);
+#pragma warning disable CS8604 // Possible null reference argument.
+                        // BCL missing annotations on IEqualityComparer<T> before .NET 5
+                        result &= comparer.Equals(target.MinVersion, possibleSubSet.MinVersion);
+#pragma warning restore CS8604 // Possible null reference argument.
                     }
                     else
                     {
