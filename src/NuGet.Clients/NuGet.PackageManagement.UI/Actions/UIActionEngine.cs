@@ -845,15 +845,15 @@ namespace NuGet.PackageManagement.UI
             bool removeDependencies,
             bool forceRemove,
             CancellationToken token,
-            string newMappingID = null,
-            string newMappingSource = null)
+            string? newMappingID = null,
+            string? newMappingSource = null)
         {
             var results = new List<ProjectAction>();
 
             // Allow prerelease packages only if the target is prerelease
             bool includePrelease =
                 userAction.Action == NuGetProjectActionType.Uninstall ||
-                userAction.Version.IsPrerelease == true;
+                userAction.Version?.IsPrerelease == true;
 
             IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
             string[] projectIds = projects

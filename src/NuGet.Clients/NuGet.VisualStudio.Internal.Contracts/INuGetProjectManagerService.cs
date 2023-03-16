@@ -71,7 +71,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             bool includePrelease,
             DependencyBehavior dependencyBehavior,
             IReadOnlyList<string> packageSourceNames,
-            VersionRange versionRange,
+            VersionRange? versionRange,
             CancellationToken cancellationToken,
             string? newMappingID = null,
             string? newMappingSource = null);
