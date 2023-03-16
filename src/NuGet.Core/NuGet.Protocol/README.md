@@ -12,7 +12,7 @@ dotnet add package NuGet.Protocol
 
 ## Usage
 
-At the center of this library are the PackageSource and SourceRepository types, which represent a NuGet source that may be a file source or an http based source implementing the V2 or [V3](https://learn.microsoft.com/en-us/nuget/api/overview#versioning) protocol.
+At the center of this library are the PackageSource and SourceRepository types, which represent a NuGet source that may be a file source or an http based source implementing the V2 or [V3](https://learn.microsoft.com/nuget/api/overview#versioning) protocol.
 
 ```
 PackageSource localSource = new PackageSource("D:\LocalSource");
@@ -21,7 +21,7 @@ SourceRepository localRepository = Repository.Factory.GetCoreV3(localSource);
 SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
 ```
 
-The SourceRepository then has a GetResourceAsync method that you can use to acquire implementations of INuGetResource that often correlate to resources on V3.
+The SourceRepository then has a GetResourceAsync method that you can use to acquire implementations of INuGetResource that often are resources.
 
 ```
 FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>(); 
@@ -77,31 +77,6 @@ Console.WriteLine($"Tags: {nuspecReader.GetTags()}");
 Console.WriteLine($"Description: {nuspecReader.GetDescription()}");
 ```
 
-### Get package metadata
-
-Get the metadata for the "Newtonsoft.Json" package using the [NuGet V3 Package Metadata API](https://learn.microsoft.com/nuget/api/registration-base-url-resource):
-
-```c#
-SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
-PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>();
-
-IEnumerable<IPackageSearchMetadata> packages = await resource.GetMetadataAsync(
-    "Newtonsoft.Json",
-    includePrerelease: true,
-    includeUnlisted: false,
-    new SourceCacheContext(),
-    NullLogger.Instance,
-    CancellationToken.None);
-
-foreach (IPackageSearchMetadata package in packages)
-{
-    Console.WriteLine($"Version: {package.Identity.Version}");
-    Console.WriteLine($"Listed: {package.IsListed}");
-    Console.WriteLine($"Tags: {package.Tags}");
-    Console.WriteLine($"Description: {package.Description}");
-}
-```
-
 ### Search packages
 
 Search for "json" packages using the [NuGet V3 Search API](https://learn.microsoft.com/nuget/api/search-query-service-resource):
@@ -148,43 +123,8 @@ await resource.Push(
     NullLogger.Instance);
 ```
 
-### Work with authenticated feeds
-
-Use [NuGet.Protocol](https://www.nuget.org/packages/NuGet.Protocol) to work with authenticated feeds.
-
-```c#
-var sourceUri = "https://contoso.privatefeed/v3/index.json";
-var packageSource = new PackageSource(sourceUri)
-{
-    Credentials = new PackageSourceCredential(
-        source: sourceUri,
-        username: "myUsername",
-        passwordText: "myVerySecretPassword",
-        isPasswordClearText: true,
-        validAuthenticationTypesText: null)
-};
-
-// If the `SourceRepository` is created with a `PackageSource`, the rest of APIs will consume the credentials attached to `PackageSource.Credentials`.
-SourceRepository repository = Repository.Factory.GetCoreV3(packageSource);
-PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>();
-
-IEnumerable<IPackageSearchMetadata> packages = await resource.GetMetadataAsync(
-    "MyPackage",
-    includePrerelease: true,
-    includeUnlisted: false,
-    new SourceCacheContext(),
-    NullLogger.Instance,
-    CancellationToken.None);
-
-foreach (IPackageSearchMetadata package in packages)
-{
-    Console.WriteLine($"Version: {package.Identity.Version}");
-    Console.WriteLine($"Listed: {package.IsListed}");
-    Console.WriteLine($"Tags: {package.Tags}");
-    Console.WriteLine($"Description: {package.Description}");
-}
-```
-
 ## Aditional documentation
 
-More information about the NuGet.Protocol library can be found on the [official Microsoft documentation page](https://learn.microsoft.com/nuget/reference/nuget-client-sdk#nugetprotocol).
+You can browse these and more samples on our [NuGet Client SDK documentation](https://docs.microsoft.com/en-us/nuget/reference/nuget-client-sdk).
+
+More information about the NuGet.Protocol library can be found on the [official Microsoft documentation page](https://learn.microsoft.com/nuget/reference/nuget-client-sdk#nugetprotocol) and [NuGet API docs](https://learn.microsoft.com/en-us/nuget/api/overview).
