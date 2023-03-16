@@ -21,30 +21,33 @@ SourceRepository localRepository = Repository.Factory.GetCoreV3(localSource);
 SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
 ```
 
-The SourceRepository then has a GetResourceAsync method that you can use to acquire implementations of INuGetResource that often are resources.
+The SourceRepository then has a GetResourceAsync method that you can use to acquire implementations of INuGetResource that often are [V3](https://learn.microsoft.com/nuget/api/overview#versioning) resources.
 
 ```
 FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>(); 
 ```
 
 ## Examples
-### List package versions
+### Search packages
 
-Find all versions of Newtonsoft.Json using the [NuGet V3 Package Content API](https://learn.microsoft.com/nuget/api/package-base-address-resource#enumerate-package-versions):
+Search for "json" packages using the [NuGet V3 Search API](https://learn.microsoft.com/nuget/api/search-query-service-resource):
 
 ```c#
 SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
-FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>();
+PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>();
+SearchFilter searchFilter = new SearchFilter(includePrerelease: true);
 
-IEnumerable<NuGetVersion> versions = await resource.GetAllVersionsAsync(
-    "Newtonsoft.Json",
-    new SourceCacheContext(),
+IEnumerable<IPackageSearchMetadata> results = await resource.SearchAsync(
+    "json",
+    searchFilter,
+    skip: 0,
+    take: 20,
     NullLogger.Instance,
     CancellationToken.None);
 
-foreach (NuGetVersion version in versions)
+foreach (IPackageSearchMetadata result in results)
 {
-    Console.WriteLine($"Found version {version}");
+    Console.WriteLine($"Found package {result.Identity.Id} {result.Identity.Version}");
 }
 ```
 
@@ -77,29 +80,6 @@ Console.WriteLine($"Tags: {nuspecReader.GetTags()}");
 Console.WriteLine($"Description: {nuspecReader.GetDescription()}");
 ```
 
-### Search packages
-
-Search for "json" packages using the [NuGet V3 Search API](https://learn.microsoft.com/nuget/api/search-query-service-resource):
-
-```c#
-SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
-PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>();
-SearchFilter searchFilter = new SearchFilter(includePrerelease: true);
-
-IEnumerable<IPackageSearchMetadata> results = await resource.SearchAsync(
-    "json",
-    searchFilter,
-    skip: 0,
-    take: 20,
-    NullLogger.Instance,
-    CancellationToken.None);
-
-foreach (IPackageSearchMetadata result in results)
-{
-    Console.WriteLine($"Found package {result.Identity.Id} {result.Identity.Version}");
-}
-```
-
 ### Push a package
 
 Push a package using the [NuGet V3 Push and Delete API](https://learn.microsoft.com/nuget/api/package-publish-resource):
@@ -125,6 +105,6 @@ await resource.Push(
 
 ## Aditional documentation
 
-You can browse these and more samples on our [NuGet Client SDK documentation](https://docs.microsoft.com/en-us/nuget/reference/nuget-client-sdk).
+You can browse these and more samples on our [NuGet Client SDK documentation](https://docs.microsoft.com/nuget/reference/nuget-client-sdk).
 
-More information about the NuGet.Protocol library can be found on the [official Microsoft documentation page](https://learn.microsoft.com/nuget/reference/nuget-client-sdk#nugetprotocol) and [NuGet API docs](https://learn.microsoft.com/en-us/nuget/api/overview).
+More information about the NuGet.Protocol library can be found on the [official Microsoft documentation page](https://learn.microsoft.com/nuget/reference/nuget-client-sdk#nugetprotocol) and [NuGet API docs](https://learn.microsoft.com/nuget/api/overview).
