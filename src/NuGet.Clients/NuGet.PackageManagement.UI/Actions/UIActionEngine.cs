@@ -37,6 +37,10 @@ namespace NuGet.PackageManagement.UI
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly NuGetPackageManager _packageManager;
         private readonly INuGetLockService _lockService;
+
+        /// <summary>
+        /// Property is referenced by the Preview Window.
+        /// </summary>
         public bool IsPackageSourceMappingEnabled { get; private set; }
 
         /// <summary>
@@ -356,6 +360,11 @@ namespace NuGet.PackageManagement.UI
             {
                 // don't teardown the process if we have a telemetry failure
             }
+
+            var mappingProvider = new PackageSourceMappingProvider(uiService.Settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappings = mappingProvider.GetPackageSourceMappingItems();
+            IsPackageSourceMappingEnabled = packageSourceMappings.Count > 0;
+
             packageEnumerationTime.Stop();
 
             await _lockService.ExecuteNuGetOperationAsync(async () =>
@@ -521,9 +530,6 @@ namespace NuGet.PackageManagement.UI
                         uiService.Projects,
                         cancellationToken)).ToArray();
 
-                    var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(uiService.Settings);
-                    bool isPackageSourceMappingEnabled = packageSourceMapping?.IsEnabled ?? false;
-                    IsPackageSourceMappingEnabled = isPackageSourceMappingEnabled;
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         projectIds,
@@ -534,7 +540,7 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         DateTimeOffset.Now,
                         duration.TotalSeconds,
-                        isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
+                        IsPackageSourceMappingEnabled);
 
                     var nuGetUI = uiService as NuGetUI;
                     AddUiActionEngineTelemetryProperties(
