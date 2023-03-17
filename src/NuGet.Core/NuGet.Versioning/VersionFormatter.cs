@@ -22,11 +22,6 @@ namespace NuGet.Versioning
         /// </summary>
         public string Format(string? format, object? arg, IFormatProvider? formatProvider)
         {
-            if (format == null)
-            {
-                throw new ArgumentNullException(nameof(format));
-            }
-
             if (arg == null)
             {
                 throw new ArgumentNullException(nameof(arg));
@@ -42,7 +37,7 @@ namespace NuGet.Versioning
 
             StringBuilder builder = StringBuilderPool.Shared.Rent(256);
 
-            foreach (char c in format)
+            foreach (char c in format!)
             {
                 Format(builder, c, version);
             }
