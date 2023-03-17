@@ -39,7 +39,7 @@ namespace NuGet.Versioning
 
             if (value != null)
             {
-                Version systemVersion;
+                Version? systemVersion;
 
                 // trim the value before passing it in since we not strict here
                 ParseSections(value.Trim(), out string? versionString, out string[]? releaseLabels, out string? buildMetadata);
@@ -49,7 +49,7 @@ namespace NuGet.Versioning
                 {
                     string versionPart = versionString!;
 
-                    if (versionPart.IndexOf('.') < 0)
+                    if (IndexOf(versionPart, '.') < 0)
                     {
                         // System.Version requires at least a 2 part version to parse.
                         versionPart += ".0";
@@ -80,9 +80,14 @@ namespace NuGet.Versioning
 
                         var originalVersion = value;
 
-                        if (originalVersion.IndexOf(' ') > -1)
+                        if (IndexOf(originalVersion, ' ') > -1)
                         {
-                            originalVersion = value.Replace(" ", string.Empty);
+                            originalVersion =
+#if NETCOREAPP2_0_OR_GREATER
+                                value.Replace(" ", string.Empty, StringComparison.Ordinal);
+#else
+                                value.Replace(" ", string.Empty);
+#endif
                         }
 
                         version = new NuGetVersion(version: ver,
@@ -96,6 +101,15 @@ namespace NuGet.Versioning
             }
 
             return false;
+
+            int IndexOf(string str, char c)
+            {
+#if NETCOREAPP2_1_OR_GREATER
+                return str.IndexOf(c, StringComparison.Ordinal);
+#else
+                return str.IndexOf(c);
+#endif
+            }
         }
 
         /// <summary>

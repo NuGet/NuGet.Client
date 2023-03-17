@@ -41,7 +41,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Custom string format.
         /// </summary>
-        public virtual string ToString(string format, IFormatProvider formatProvider)
+        public virtual string ToString(string? format, IFormatProvider? formatProvider)
         {
             if (formatProvider == null
                 || !TryFormatter(format, formatProvider, out string? formattedString))
@@ -55,7 +55,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Internal string formatter.
         /// </summary>
-        protected bool TryFormatter(string format, IFormatProvider formatProvider, [NotNullWhen(true)] out string? formattedString)
+        protected bool TryFormatter(string? format, IFormatProvider formatProvider, [NotNullWhen(true)] out string? formattedString)
         {
             var formatted = false;
             formattedString = null;

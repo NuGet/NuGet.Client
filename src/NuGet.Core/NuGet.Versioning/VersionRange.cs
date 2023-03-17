@@ -127,7 +127,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Format the version range with an IFormatProvider
         /// </summary>
-        public string ToString(string format, IFormatProvider formatProvider)
+        public string ToString(string? format, IFormatProvider? formatProvider)
         {
             string? formattedString = null;
 
@@ -143,7 +143,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Format the range
         /// </summary>
-        protected bool TryFormatter(string format, IFormatProvider formatProvider, [NotNullWhen(true)] out string? formattedString)
+        protected bool TryFormatter(string? format, IFormatProvider formatProvider, [NotNullWhen(true)] out string? formattedString)
         {
             var formatted = false;
             formattedString = null;

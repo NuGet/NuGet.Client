@@ -56,7 +56,7 @@ namespace NuGet.Versioning
         /// Checks if two version ranges are equivalent. This follows the rules of the version comparer
         /// when checking the bounds.
         /// </summary>
-        public bool Equals(VersionRangeBase x, VersionRangeBase y)
+        public bool Equals(VersionRangeBase? x, VersionRangeBase? y)
         {
             if (ReferenceEquals(x, y))
             {

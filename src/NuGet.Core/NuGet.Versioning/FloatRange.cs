@@ -106,12 +106,13 @@ namespace NuGet.Versioning
                     return _minVersion.Major == version.Major
                        && _minVersion.Minor == version.Minor
                        && _minVersion.Patch == version.Patch
-                       && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
+                       && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix!, StringComparison.OrdinalIgnoreCase))
                            || !version.IsPrerelease);
                 }
                 else if (_floatBehavior == NuGetVersionFloatBehavior.PrereleasePatch)
                 {
                     // allow the stable version to match
+#pragma warning disable CS8604 // Possible null reference argument. - usage of _releasePrefix don't appear to be null-safe
                     return _minVersion.Major == version.Major
                        && _minVersion.Minor == version.Minor
                        && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
@@ -136,6 +137,7 @@ namespace NuGet.Versioning
                     return VersionComparer.Version.Equals(_minVersion, version)
                            && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
                                || !version.IsPrerelease);
+#pragma warning restore CS8604 // Possible null reference argument.
                 }
                 else if (_floatBehavior == NuGetVersionFloatBehavior.Revision)
                 {
@@ -179,7 +181,7 @@ namespace NuGet.Versioning
 
             if (versionString != null && !string.IsNullOrWhiteSpace(versionString))
             {
-                var firstStarPosition = versionString.IndexOf('*');
+                var firstStarPosition = IndexOf(versionString, '*');
                 var lastStarPosition = versionString.LastIndexOf('*');
                 string? releasePrefix = null;
 
@@ -192,11 +194,11 @@ namespace NuGet.Versioning
                 {
                     range = new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest, new NuGetVersion("0.0.0-0"), releasePrefix: string.Empty);
                 }
-                else if (firstStarPosition != lastStarPosition && lastStarPosition != -1 && versionString.IndexOf('+') == -1)
+                else if (firstStarPosition != lastStarPosition && lastStarPosition != -1 && IndexOf(versionString, '+') == -1)
                 {
                     var behavior = NuGetVersionFloatBehavior.None;
                     // 2 *s are only allowed in prerelease versions.
-                    var dashPosition = versionString.IndexOf('-');
+                    var dashPosition = IndexOf(versionString, '-');
                     string? actualVersion = null;
 
                     if (dashPosition != -1 &&
@@ -245,13 +247,13 @@ namespace NuGet.Versioning
                 }
                 // A single * can only appear as the last char in the string. 
                 // * cannot appear in the metadata section after the +
-                else if (lastStarPosition == versionString.Length - 1 && versionString.IndexOf('+') == -1)
+                else if (lastStarPosition == versionString.Length - 1 && IndexOf(versionString, '+') == -1)
                 {
                     var behavior = NuGetVersionFloatBehavior.None;
 
                     var actualVersion = versionString.Substring(0, versionString.Length - 1);
 
-                    if (versionString.IndexOf('-') == -1)
+                    if (IndexOf(versionString, '-') == -1)
                     {
                         // replace the * with a 0
                         actualVersion += "0";
@@ -276,7 +278,7 @@ namespace NuGet.Versioning
                         behavior = NuGetVersionFloatBehavior.Prerelease;
 
                         // check for a prefix
-                        if (versionString.IndexOf('-') == versionString.LastIndexOf('-'))
+                        if (IndexOf(versionString, '-') == versionString.LastIndexOf('-'))
                         {
                             releasePrefix = actualVersion.Substring(versionString.LastIndexOf('-') + 1);
 
@@ -311,6 +313,15 @@ namespace NuGet.Versioning
             }
 
             return range != null;
+
+            int IndexOf(string str, char c)
+            {
+#if NETCOREAPP2_0_OR_GREATER
+                return str.IndexOf(c, StringComparison.Ordinal);
+#else
+                return str.IndexOf(c);
+#endif
+            }
         }
 
         private static int CalculateVersionParts(string line)

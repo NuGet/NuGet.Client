@@ -200,7 +200,11 @@ namespace NuGet.Versioning
             if (!string.IsNullOrWhiteSpace(minVersionString))
             {
                 // parse the min version string
+#if NETCOREAPP2_1_OR_GREATER
+                if (allowFloating && minVersionString.Contains('*', StringComparison.Ordinal))
+#else
                 if (allowFloating && minVersionString.Contains('*'))
+#endif
                 {
                     // single floating version
                     if (FloatRange.TryParse(minVersionString, out floatRange)

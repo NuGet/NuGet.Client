@@ -167,7 +167,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Compares the object as a VersionRange with the default comparer
         /// </summary>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var range = obj as VersionRangeBase;
 
@@ -190,7 +190,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Default compare
         /// </summary>
-        public bool Equals(VersionRangeBase other)
+        public bool Equals(VersionRangeBase? other)
         {
             return Equals(other, VersionRangeComparer.Default);
         }
@@ -198,20 +198,23 @@ namespace NuGet.Versioning
         /// <summary>
         /// Use the VersionRangeComparer for equality checks
         /// </summary>
-        public bool Equals(VersionRangeBase other, IVersionRangeComparer comparer)
+        public bool Equals(VersionRangeBase? other, IVersionRangeComparer comparer)
         {
             if (comparer == null)
             {
                 throw new ArgumentNullException(nameof(comparer));
             }
 
+#pragma warning disable CS8604 // Possible null reference argument.
+            // IEqualtyComparer<T>.Equals doesn't have nullable annotations before .NET 5.0
             return comparer.Equals(this, other);
+#pragma warning restore CS8604 // Possible null reference argument.
         }
 
         /// <summary>
         /// Use a specific VersionComparison for comparison
         /// </summary>
-        public bool Equals(VersionRangeBase other, VersionComparison versionComparison)
+        public bool Equals(VersionRangeBase? other, VersionComparison versionComparison)
         {
             IVersionRangeComparer comparer = new VersionRangeComparer(versionComparison);
             return Equals(other, comparer);
@@ -220,7 +223,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Use a specific IVersionComparer for comparison
         /// </summary>
-        public bool Equals(VersionRangeBase other, IVersionComparer versionComparer)
+        public bool Equals(VersionRangeBase? other, IVersionComparer versionComparer)
         {
             IVersionRangeComparer comparer = new VersionRangeComparer(versionComparer);
             return Equals(other, comparer);
