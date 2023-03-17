@@ -363,6 +363,7 @@ namespace NuGet.PackageManagement.UI
                 try
                 {
                     uiService.BeginOperation();
+
                     using (INuGetProjectUpgraderService? projectUpgrader = await serviceBroker.GetProxyAsync<INuGetProjectUpgraderService>(
                         NuGetServices.ProjectUpgraderService,
                         cancellationToken))
@@ -424,9 +425,6 @@ namespace NuGet.PackageManagement.UI
                     // Show the preview window.
                     if (uiService.DisplayPreviewWindow)
                     {
-                        var mappingProvider = new PackageSourceMappingProvider(uiService.Settings);
-                        IsPackageSourceMappingEnabled = mappingProvider.IsEnabled();
-
                         bool shouldContinue = uiService.PromptForPreviewAcceptance(results);
                         if (!shouldContinue)
                         {
@@ -523,13 +521,9 @@ namespace NuGet.PackageManagement.UI
                         uiService.Projects,
                         cancellationToken)).ToArray();
 
-                    // If Package Source Mapping wasn't yet enabled before the action, perhaps now it is.
-                    if (!IsPackageSourceMappingEnabled)
-                    {
-                        var mappingProvider = new PackageSourceMappingProvider(uiService.Settings);
-                        IsPackageSourceMappingEnabled = mappingProvider.IsEnabled();
-                    }
-
+                    var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(uiService.Settings);
+                    bool isPackageSourceMappingEnabled = packageSourceMapping?.IsEnabled ?? false;
+                    IsPackageSourceMappingEnabled = isPackageSourceMappingEnabled;
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         projectIds,
@@ -540,7 +534,7 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         DateTimeOffset.Now,
                         duration.TotalSeconds,
-                        IsPackageSourceMappingEnabled);
+                        isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
 
                     var nuGetUI = uiService as NuGetUI;
                     AddUiActionEngineTelemetryProperties(
