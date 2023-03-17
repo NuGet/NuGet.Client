@@ -16,6 +16,12 @@ namespace NuGet.Configuration
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
+        public bool IsEnabled()
+        {
+            SettingSection packageSourceMappingSection = _settings.GetSection(ConfigurationConstants.PackageSourceMapping);
+            return packageSourceMappingSection != null && packageSourceMappingSection.Items.OfType<PackageSourceMappingSourceItem>().Any();
+        }
+
         public IReadOnlyList<PackageSourceMappingSourceItem> GetPackageSourceMappingItems()
         {
             SettingSection packageSourceMappingSection = _settings.GetSection(ConfigurationConstants.PackageSourceMapping);
