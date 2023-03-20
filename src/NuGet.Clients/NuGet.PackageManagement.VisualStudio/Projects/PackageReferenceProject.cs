@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IList<LockFileTarget> targetsList = null;
             T installedPackages;
             T transitivePackages = default;
-            if (IsInstalledAndTransitiveComputationNeeded)
+            if (IsInstalledAndTransitiveComputationNeeded) // Cache invalidation
             {
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
                 installedPackages = new T();
@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // get transitive packages
             IEnumerable<PackageReference> calculatedTransitivePackages = Enumerable.Empty<PackageReference>();
-            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded)
+            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded) // Cache invalidation
             {
                 calculatedTransitivePackages = packageSpec
                     .TargetFrameworks
@@ -194,14 +194,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
             CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins = Enumerable.Empty<TransitivePackageReference>();
-            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded)
+            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded) // Cache invalidation
             {
                 if (includeTransitiveOrigins && await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
                 {
                     // Compute Transitive Origins
                     Dictionary<string, TransitiveEntry> transitiveOrigins;
-                    if (IsInstalledAndTransitiveComputationNeeded // Cache invalidation
-                        || TransitiveOriginsCache == null // If any data race left the cache as null
+                    if (TransitiveOriginsCache == null // If any data race left the cache as null
                         || (!TransitiveOriginsCache.Any() && calculatedTransitivePackages.Any())) // We have transitive packages, but no transitive origins and the call is requesting transitive origins
                     {
                         // Special case: Installed and Transitive lists (<see cref="InstalledPackages" />, <see cref="TransitivePackages" /> respectively) are populated,
