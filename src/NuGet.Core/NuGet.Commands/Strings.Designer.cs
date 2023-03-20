@@ -655,7 +655,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The path &apos;{0}&apos; doesn&apos;t exist..
+        ///   Looks up a localized string similar to The specified path &apos;{0}&apos; does not exist..
         /// </summary>
         internal static string Error_PathNotFound {
             get {

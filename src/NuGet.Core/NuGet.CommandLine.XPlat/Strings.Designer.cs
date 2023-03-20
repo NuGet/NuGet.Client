@@ -232,7 +232,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lists all the paths of NuGet configuration files that will be applied when invoking NuGet command in a specific directory.
+        ///   Looks up a localized string similar to Lists the paths to all NuGet configuration files that will be applied when invoking NuGet command in a specific directory.
         /// </summary>
         internal static string ConfigPathsCommandDescription {
             get {
@@ -241,7 +241,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Run this command as if working directory is set to the specified directory. If it&apos;s not specified, the current working directory will be used..
+        ///   Looks up a localized string similar to Specifies the directory to start from when listing configuration files. If not specified, the current directory is used..
         /// </summary>
         internal static string ConfigPathsWorkingDirectoryDescription {
             get {

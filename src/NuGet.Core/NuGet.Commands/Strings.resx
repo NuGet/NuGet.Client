@@ -1042,7 +1042,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>{0} is a warning message</comment>
   </data>
   <data name="Error_PathNotFound" xml:space="preserve">
-    <value>The path '{0}' doesn't exist.</value>
+    <value>The specified path '{0}' does not exist.</value>
     <comment>0 - path</comment>
   </data>
 </root>
