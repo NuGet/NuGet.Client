@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // get transitive packages
             IEnumerable<PackageReference> calculatedTransitivePackages = Enumerable.Empty<PackageReference>();
-            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded) // Cache invalidation
+            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded)
             {
                 calculatedTransitivePackages = packageSpec
                     .TargetFrameworks
