@@ -12,18 +12,12 @@ namespace NuGet.Commands
         public static void Run(ConfigPathsArgs args, Func<ILogger> getLogger)
         {
             var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory);
+            ILogger logger = getLogger();
 
-            if (settings != null)
+            var filePaths = settings.GetConfigFilePaths();
+            foreach (var filePath in filePaths)
             {
-                var filePaths = settings.GetConfigFilePaths();
-                foreach (var filePath in filePaths)
-                {
-                    getLogger().LogMinimal(filePath);
-                }
-            }
-            else
-            {
-                throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, args.WorkingDirectory));
+                logger.LogMinimal(filePath);
             }
         }
     }

@@ -338,23 +338,23 @@ namespace NuGet.Commands
 
         public static ISettings GetSettingsFromDirectory(string directory)
         {
-            if (Directory.Exists(directory))
-            {
-                return NuGet.Configuration.Settings.LoadDefaultSettings(directory,
-                   configFileName: null,
-                   machineWideSettings: new XPlatMachineWideSetting());
-            }
-            else if (string.IsNullOrEmpty(directory))
+            if (string.IsNullOrEmpty(directory))
             {
                 var currentDirectory = Directory.GetCurrentDirectory();
-                return NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory,
+                return NuGet.Configuration.Settings.LoadDefaultSettings(
+                   currentDirectory,
                    configFileName: null,
                    machineWideSettings: new XPlatMachineWideSetting());
             }
-            else
+            if (Directory.Exists(directory))
             {
-                return null;
+                return NuGet.Configuration.Settings.LoadDefaultSettings(
+                   directory,
+                   configFileName: null,
+                   machineWideSettings: new XPlatMachineWideSetting());
             }
+
+            throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, directory));
         }
 
         public static PackageSourceProvider GetSourceProvider(ISettings settings)

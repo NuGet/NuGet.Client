@@ -2,63 +2,57 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Moq;
 using NuGet.CommandLine.XPlat;
+using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
 {
-    [Collection("NuGet XPlat Config Test Collection")]
     public class XPlatConfigTests
     {
+        private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
+        private static readonly string DotnetCli = TestFileSystemUtility.GetDotnetCli();
 
         [Fact]
         public void ConfigPathsCommand_ListConfigPathsWithArgs_Success()
         {
-            // Arrange
-            using (var testInfo = new TestInfo("NuGet.Config"))
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
             {
-                var args = new[]
-                {
-                    "config",
-                    "paths",
-                    testInfo.WorkingPath
-                };
-                var log = new TestCommandOutputLogger();
-
-                // Act
-                var exitCode = Program.MainInternal(args.ToArray(), log);
+                var result = CommandRunner.Run(
+                      DotnetCli,
+                      Directory.GetCurrentDirectory(),
+                      $"{XplatDll} config paths {testInfo.WorkingPath}",
+                      waitForExit: true
+                      );
 
                 // Assert
-                Assert.Equal(string.Empty, log.ShowErrors());
-                Assert.Equal(0, exitCode);
-                Assert.Contains(Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"), log.Messages);
+                DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
             }
         }
 
         [Fact]
         public void ConfigPathsCommand_ListConfigPathsNonExistingDirectory_Fail()
         {
-            // Arrange
-            using (var testInfo = new TestInfo("NuGet.Config"))
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
             {
-                var args = new[]
-                {
-                    "config",
-                    "paths",
-                    @"C:\Test\NonExistingRepos"
-                };
-                var log = new TestCommandOutputLogger();
-
-                // Act
-                var exitCode = Program.MainInternal(args.ToArray(), log);
-                var expectedError = @"The path 'C:\Test\NonExistingRepos' doesn't exist.";
+                var result = CommandRunner.Run(
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config paths {@"C:\Test\NonExistingRepos"}",
+                    waitForExit: true
+                    );
+                var expectedError = @"The specified path 'C:\Test\NonExistingRepos' does not exist.";
 
                 // Assert
-                Assert.Contains(expectedError, log.ShowErrors());
-                Assert.Equal(1, exitCode);
+                DotnetCliUtil.VerifyResultFailure(result, expectedError);
             }
         }
 
@@ -92,7 +86,7 @@ namespace NuGet.XPlat.FuncTest
                            $@"
 <configuration>
     <packageSources>
-        <add key=""Foo"" value=""https://contoso.com/v3/index.json"" />
+        <add key=""Foo"" value=""https://contoso.test/v3/index.json"" />
     </packageSources>
 </configuration>
 ");

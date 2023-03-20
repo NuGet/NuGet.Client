@@ -813,10 +813,10 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>0 - packagereference name</comment>
   </data>
   <data name="ConfigPathsCommandDescription" xml:space="preserve">
-    <value>Lists all the paths of NuGet configuration files that will be applied when invoking NuGet command in a specific directory</value>
+    <value>Lists the paths to all NuGet configuration files that will be applied when invoking NuGet command in a specific directory</value>
   </data>
   <data name="ConfigPathsWorkingDirectoryDescription" xml:space="preserve">
-    <value>Run this command as if working directory is set to the specified directory. If it's not specified, the current working directory will be used.</value>
+    <value>Specifies the directory to start from when listing configuration files. If not specified, the current directory is used.</value>
   </data>
   <data name="Config_Description" xml:space="preserve">
     <value>NuGet configuration CLI</value>
