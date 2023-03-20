@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IList<LockFileTarget> targetsList = null;
             T installedPackages;
             T transitivePackages = default;
-            if (IsInstalledAndTransitiveComputationNeeded) // Cache invalidation
+            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded)
             {
                 // clear the transitive packages cache, since we don't know when a dependency has been removed
                 installedPackages = new T();
@@ -194,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins = Enumerable.Empty<TransitivePackageReference>();
-            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded) // Cache invalidation
+            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded)
             {
                 if (includeTransitiveOrigins && await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
                 {
