@@ -62,7 +62,7 @@ NuGet.Versioning.SemanticVersionConverter.SemanticVersionConverter() -> void
 NuGet.Versioning.VersionComparer
 NuGet.Versioning.VersionComparer.Compare(NuGet.Versioning.SemanticVersion? x, NuGet.Versioning.SemanticVersion? y) -> int
 NuGet.Versioning.VersionComparer.Equals(NuGet.Versioning.SemanticVersion? x, NuGet.Versioning.SemanticVersion? y) -> bool
-NuGet.Versioning.VersionComparer.GetHashCode(NuGet.Versioning.SemanticVersion? version) -> int
+NuGet.Versioning.VersionComparer.GetHashCode(NuGet.Versioning.SemanticVersion! version) -> int
 NuGet.Versioning.VersionComparer.VersionComparer() -> void
 NuGet.Versioning.VersionComparer.VersionComparer(NuGet.Versioning.VersionComparison versionComparison) -> void
 NuGet.Versioning.VersionComparison
@@ -135,7 +135,7 @@ override NuGet.Versioning.VersionRange.GetHashCode() -> int
 override NuGet.Versioning.VersionRange.ToString() -> string!
 override NuGet.Versioning.VersionRangeBase.Equals(object? obj) -> bool
 override NuGet.Versioning.VersionRangeBase.GetHashCode() -> int
-static NuGet.Versioning.FloatRange.Parse(string! versionString) -> NuGet.Versioning.FloatRange?
+static NuGet.Versioning.FloatRange.Parse(string! versionString) -> NuGet.Versioning.FloatRange!
 static NuGet.Versioning.FloatRange.TryParse(string! versionString, out NuGet.Versioning.FloatRange? range) -> bool
 static NuGet.Versioning.NuGetVersion.Parse(string! value) -> NuGet.Versioning.NuGetVersion!
 static NuGet.Versioning.NuGetVersion.TryParse(string? value, out NuGet.Versioning.NuGetVersion? version) -> bool
@@ -150,7 +150,7 @@ static NuGet.Versioning.SemanticVersion.operator >(NuGet.Versioning.SemanticVers
 static NuGet.Versioning.SemanticVersion.operator >=(NuGet.Versioning.SemanticVersion! version1, NuGet.Versioning.SemanticVersion! version2) -> bool
 static NuGet.Versioning.VersionComparer.Compare(NuGet.Versioning.SemanticVersion? version1, NuGet.Versioning.SemanticVersion? version2, NuGet.Versioning.VersionComparison versionComparison) -> int
 static NuGet.Versioning.VersionExtensions.FindBestMatch(this System.Collections.Generic.IEnumerable<NuGet.Versioning.INuGetVersionable!>! items, NuGet.Versioning.VersionRange! ideal) -> NuGet.Versioning.INuGetVersionable?
-static NuGet.Versioning.VersionExtensions.FindBestMatch<T>(this System.Collections.Generic.IEnumerable<T!>! items, NuGet.Versioning.VersionRange? ideal, System.Func<T?, NuGet.Versioning.NuGetVersion!>! selector) -> T?
+static NuGet.Versioning.VersionExtensions.FindBestMatch<T>(this System.Collections.Generic.IEnumerable<T!>! items, NuGet.Versioning.VersionRange? ideal, System.Func<T!, NuGet.Versioning.NuGetVersion!>! selector) -> T?
 static NuGet.Versioning.VersionRange.Combine(System.Collections.Generic.IEnumerable<NuGet.Versioning.NuGetVersion!>! versions) -> NuGet.Versioning.VersionRange!
 static NuGet.Versioning.VersionRange.Combine(System.Collections.Generic.IEnumerable<NuGet.Versioning.NuGetVersion!>! versions, NuGet.Versioning.IVersionComparer! comparer) -> NuGet.Versioning.VersionRange!
 static NuGet.Versioning.VersionRange.Combine(System.Collections.Generic.IEnumerable<NuGet.Versioning.VersionRange!>! ranges) -> NuGet.Versioning.VersionRange!

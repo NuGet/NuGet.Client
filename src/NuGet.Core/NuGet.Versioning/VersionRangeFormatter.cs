@@ -29,56 +29,44 @@ namespace NuGet.Versioning
                 throw new ArgumentNullException(nameof(arg));
             }
 
-            var argType = arg.GetType();
-
-            if (argType == typeof(IFormattable))
+            var range = arg as VersionRange;
+            if (range == null)
             {
-                string formatted = ((IFormattable)arg).ToString(format, formatProvider);
+                throw ResourcesFormatter.TypeNotSupported(arg.GetType(), nameof(arg));
+            }
+
+            if (string.IsNullOrEmpty(format))
+            {
+                format = "N";
+            }
+
+            // single char identifiers
+            if (format!.Length == 1)
+            {
+                string formatted = Format(format[0], range);
                 return formatted;
             }
-            else if (!string.IsNullOrEmpty(format))
+            else
             {
-                var range = arg as VersionRange;
+                var sb = new StringBuilder(format.Length);
 
-                if (range != null)
+                for (var i = 0; i < format.Length; i++)
                 {
-                    // single char identifiers
-                    if (format!.Length == 1)
+                    var s = Format(format[i], range);
+
+                    if (s == null)
                     {
-                        string? formatted = Format(format[0], range);
-#pragma warning disable CS8603 // Possible null reference return.
-                        // is this bug?
-                        return formatted;
-#pragma warning restore CS8603 // Possible null reference return.
+                        sb.Append(format[i]);
                     }
                     else
                     {
-                        var sb = new StringBuilder(format.Length);
-
-                        for (var i = 0; i < format.Length; i++)
-                        {
-                            var s = Format(format[i], range);
-
-                            if (s == null)
-                            {
-                                sb.Append(format[i]);
-                            }
-                            else
-                            {
-                                sb.Append(s);
-                            }
-                        }
-
-                        string formatted = sb.ToString();
-                        return formatted;
+                        sb.Append(s);
                     }
                 }
-            }
 
-#pragma warning disable CS8603 // Possible null reference return.
-            // bug? ICustomFormatter.Format doesn't appear to allow null return values
-            return null;
-#pragma warning restore CS8603 // Possible null reference return.
+                string formatted = sb.ToString();
+                return formatted;
+            }
         }
 
         /// <summary>
@@ -86,8 +74,7 @@ namespace NuGet.Versioning
         /// </summary>
         public object? GetFormat(Type? formatType)
         {
-            if (formatType == typeof(ICustomFormatter)
-                || formatType == typeof(VersionRange))
+            if (typeof(VersionRange).IsAssignableFrom(formatType))
             {
                 return this;
             }
@@ -95,9 +82,9 @@ namespace NuGet.Versioning
             return null;
         }
 
-        private string? Format(char c, VersionRange range)
+        private string Format(char c, VersionRange range)
         {
-            string? s = null;
+            string s = string.Empty;
 
             switch (c)
             {

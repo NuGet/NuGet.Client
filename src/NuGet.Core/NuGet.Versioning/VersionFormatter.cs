@@ -27,12 +27,19 @@ namespace NuGet.Versioning
                 throw new ArgumentNullException(nameof(arg));
             }
 
-            if (string.IsNullOrEmpty(format) || arg is not SemanticVersion version)
+            if (arg is string stringValue)
             {
-#pragma warning disable CS8603 // Possible null reference return.
-                // Looks like a violation of the ICustomFormatter.Format interface
-                return null;
-#pragma warning restore CS8603 // Possible null reference return.
+                return stringValue;
+            }
+
+            if (arg is not SemanticVersion version)
+            {
+                throw ResourcesFormatter.TypeNotSupported(arg.GetType(), nameof(arg));
+            }
+
+            if (string.IsNullOrEmpty(format))
+            {
+                format = "N";
             }
 
             StringBuilder builder = StringBuilderPool.Shared.Rent(256);

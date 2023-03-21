@@ -165,9 +165,17 @@ namespace NuGet.Versioning
         /// <summary>
         /// Parse a floating version into a FloatRange
         /// </summary>
-        public static FloatRange? Parse(string versionString)
+        public static FloatRange Parse(string versionString)
         {
-            _ = TryParse(versionString, out FloatRange? range);
+            if (versionString == null)
+            {
+                throw new ArgumentNullException(nameof(versionString));
+            }
+
+            if (!TryParse(versionString, out FloatRange? range))
+            {
+                throw new FormatException(string.Format(Resources.InvalidFloatRangeValue, versionString));
+            }
 
             return range;
         }

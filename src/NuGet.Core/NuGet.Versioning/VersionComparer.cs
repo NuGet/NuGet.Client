@@ -80,7 +80,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Gives a hash code based on the normalized version string.
         /// </summary>
-        public int GetHashCode(SemanticVersion? version)
+        public int GetHashCode(SemanticVersion version)
         {
             if (ReferenceEquals(version, null))
             {

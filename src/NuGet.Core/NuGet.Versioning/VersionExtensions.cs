@@ -17,28 +17,29 @@ namespace NuGet.Versioning
         /// </summary>
         public static T? FindBestMatch<T>(this IEnumerable<T> items,
             VersionRange? ideal,
-            Func<T?, NuGetVersion> selector) where T : class
+            Func<T, NuGetVersion> selector) where T : class
         {
             if (ideal == null)
             {
                 return items.FirstOrDefault();
             }
 
-            T? bestMatch = null;
-
-            foreach (var item in items)
-            {
-                if (ideal.IsBetter(
-                    current: selector(bestMatch),
-                    considering: selector(item)))
-                {
-                    bestMatch = item;
-                }
-            }
-
-            if (bestMatch == null)
+            using IEnumerator<T> enumerator = items.GetEnumerator();
+            if (!enumerator.MoveNext())
             {
                 return null;
+            }
+
+            T bestMatch = enumerator.Current;
+            while (enumerator.MoveNext())
+            {
+                T current = enumerator.Current;
+                if (ideal.IsBetter(
+                    current: selector(bestMatch),
+                    considering: selector(current)))
+                {
+                    bestMatch = current;
+                }
             }
 
             return bestMatch;
@@ -49,10 +50,7 @@ namespace NuGet.Versioning
         /// </summary>
         public static INuGetVersionable? FindBestMatch(this IEnumerable<INuGetVersionable> items, VersionRange ideal)
         {
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-            // Looks like a NRE bug
             return FindBestMatch<INuGetVersionable>(items, ideal, (e => e.Version));
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
     }
 }

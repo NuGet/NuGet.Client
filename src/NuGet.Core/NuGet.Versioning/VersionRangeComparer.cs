@@ -93,11 +93,14 @@ namespace NuGet.Versioning
 
             combiner.AddObject(obj.IsMinInclusive);
             combiner.AddObject(obj.IsMaxInclusive);
-#pragma warning disable CS8604 // Possible null reference argument.
-            // Do we have a null bug here?
-            combiner.AddObject(_versionComparer.GetHashCode(obj.MinVersion));
-            combiner.AddObject(_versionComparer.GetHashCode(obj.MaxVersion));
-#pragma warning restore CS8604 // Possible null reference argument.
+            if (obj.HasLowerBound)
+            {
+                combiner.AddObject(_versionComparer.GetHashCode(obj.MinVersion));
+            }
+            if (obj.HasUpperBound)
+            {
+                combiner.AddObject(_versionComparer.GetHashCode(obj.MaxVersion));
+            }
 
             return combiner.CombinedHash;
         }

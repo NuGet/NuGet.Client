@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -383,15 +384,18 @@ namespace NuGet.Versioning.Test
         [InlineData("1.0.*--")]
         [InlineData("1.0.*-alpha*+")]
         [InlineData("1.0.*-")]
-        [InlineData(null)]
         [InlineData("")]
         public void FloatingRange_Parse_Invalid(string floatVersionString)
         {
-            // Arrange && Act
-            var range = FloatRange.Parse(floatVersionString);
+            // Arrange, Act, and Assert
+            Assert.Throws<FormatException>(() => FloatRange.Parse(floatVersionString));
+        }
 
-            // Assert
-            Assert.Null(range);
+        [Fact]
+        public void FloatingRange_Parse_Null()
+        {
+            // Arrange, Act, and Assert
+            Assert.Throws<ArgumentNullException>(() => FloatRange.Parse(null!));
         }
 
         [Theory]
