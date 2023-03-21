@@ -25,20 +25,28 @@ namespace NuGet.Versioning
             }
 
             using IEnumerator<T> enumerator = items.GetEnumerator();
-            if (!enumerator.MoveNext())
-            {
-                return null;
-            }
+            T? bestMatch = null;
 
-            T bestMatch = enumerator.Current;
-            while (enumerator.MoveNext())
+            while (bestMatch == null && enumerator.MoveNext())
             {
                 T current = enumerator.Current;
-                if (ideal.IsBetter(
-                    current: selector(bestMatch),
-                    considering: selector(current)))
+                if (ideal.Satisfies(selector(current)))
                 {
                     bestMatch = current;
+                }
+            }
+
+            if (bestMatch != null)
+            {
+                while (enumerator.MoveNext())
+                {
+                    T current = enumerator.Current;
+                    if (ideal.IsBetter(
+                        current: selector(bestMatch),
+                        considering: selector(current)))
+                    {
+                        bestMatch = current;
+                    }
                 }
             }
 
