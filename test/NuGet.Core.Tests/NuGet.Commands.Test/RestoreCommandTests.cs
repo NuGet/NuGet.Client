@@ -1524,67 +1524,6 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [Fact]
-        public async Task RestoreCommand_CentralVersion_NoErrorForCleanProjectWhenVersionOverrideDisabled()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var projectName = "TestProject";
-                var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
-                var outputPath = Path.Combine(projectPath, "obj");
-                var dependencyBar = new LibraryDependency(new LibraryRange("bar", LibraryDependencyTarget.All),
-                        LibraryIncludeFlags.All,
-                        LibraryIncludeFlags.All,
-                        new List<NuGetLogCode>(),
-                        autoReferenced: false,
-                        generatePathProperty: true,
-                        versionCentrallyManaged: false,
-                        LibraryDependencyReferenceType.Direct,
-                        aliases: null,
-                        versionOverride: null);
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    new SimpleTestPackageContext("foo", "1.0.0"),
-                    new SimpleTestPackageContext("bar", "2.0.0")
-                    );
-
-                var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
-                var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
-
-                var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyBar }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
-                var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
-                packageSpec.RestoreMetadata = new ProjectRestoreMetadata()
-                {
-                    ProjectUniqueName = projectName,
-                    CentralPackageVersionsEnabled = true,
-                    CentralPackageVersionOverrideDisabled = true,
-                    ProjectStyle = ProjectStyle.PackageReference,
-                    OutputPath = outputPath,
-                };
-                packageSpec.FilePath = projectPath;
-                packageSpec.Name = projectName;
-
-                var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
-                var logger = new TestLogger();
-
-                var request = new TestRestoreRequest(packageSpec, sources, "", logger)
-                {
-                    LockFilePath = Path.Combine(projectPath, "project.assets.json"),
-                    ProjectStyle = ProjectStyle.PackageReference
-                };
-
-                var restoreCommand = new RestoreCommand(request);
-
-                var result = await restoreCommand.ExecuteAsync();
-
-                // Assert
-                Assert.True(result.Success);
-            }
-        }
-
         [Theory]
         [InlineData("bar")]
         [InlineData("Bar")]
@@ -2757,9 +2696,11 @@ namespace NuGet.Commands.Test
         /// </summary>
         /// <returns></returns>
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task RestoreCommand_CentralVersion_ErrorWhenVersionOverrideUsedButIsDisabled(bool isCentralPackageVersionOverrideDisabled)
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        public async Task RestoreCommand_CentralVersion_ErrorWhenVersionOverrideUsedButIsDisabled(bool isCentralPackageVersionOverrideDisabled, bool isVersionOverrideUsed)
         {
             const string projectName = "TestProject";
 
@@ -2773,18 +2714,21 @@ namespace NuGet.Commands.Test
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, PackageSaveMode.Defaultv3, new SimpleTestPackageContext(packageName, "1.0.0"), new SimpleTestPackageContext(packageName, "2.0.0"));
 
-                var packageRefDependecyFoo = new LibraryDependency()
+                var packageRefDependencyFoo = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange(packageName, versionRange: null, typeConstraint: LibraryDependencyTarget.Package),
-                    VersionOverride = new VersionRange(NuGetVersion.Parse("2.0.0"))
                 };
+                if (isVersionOverrideUsed)
+                {
+                    packageRefDependencyFoo.VersionOverride = new VersionRange(NuGetVersion.Parse("2.0.0"));
+                }
 
                 var packageVersion = new CentralPackageVersion(packageName, VersionRange.Parse("1.0.0"));
 
                 TargetFrameworkInformation targetFrameworkInformation = CreateTargetFrameworkInformation(
                     new List<LibraryDependency>
                     {
-                        packageRefDependecyFoo
+                        packageRefDependencyFoo
                     },
                     new List<CentralPackageVersion>
                     {
@@ -2814,7 +2758,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
 
-                if (isCentralPackageVersionOverrideDisabled)
+                if (isCentralPackageVersionOverrideDisabled && isVersionOverrideUsed)
                 {
                     Assert.False(result.Success);
 
