@@ -7,7 +7,7 @@ NuGet.Protocol is a NuGet client SDK library that provides a set of APIs for int
 At the center of this library are the PackageSource and SourceRepository types, which represent a NuGet source that may be a file source or an http based source implementing the V2 or [V3](https://learn.microsoft.com/nuget/api/overview#versioning) protocol.
 
 ```
-PackageSource localSource = new PackageSource("D:\LocalSource");
+PackageSource localSource = new PackageSource(@"D:\LocalSource");
 SourceRepository localRepository = Repository.Factory.GetCoreV3(localSource);
 
 SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
