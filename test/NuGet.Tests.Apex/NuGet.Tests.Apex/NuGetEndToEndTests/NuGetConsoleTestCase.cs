@@ -740,7 +740,6 @@ namespace NuGet.Tests.Apex
                     // Act
                     nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
                     nugetConsole.InstallPackageFromPMC(packageName2, packageVersion3);
-
                     nugetConsole.Execute("update-package");
 
                     //Asset
@@ -783,9 +782,9 @@ namespace NuGet.Tests.Apex
                     nugetConsole.Execute("update-package");
 
                     // Assert
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
                     CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
                     CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
-                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
                     Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
