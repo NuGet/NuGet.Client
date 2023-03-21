@@ -357,6 +357,27 @@ namespace NuGet.Commands.Test
             return GetPackageSpecWithProjectNameAndSpec(projectName, rootPath, spec);
         }
 
+        public static PackageSpec GetPackageSpec(string projectName, string rootPath, string framework, string dependencyName, string secondDependencyName, bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "", bool asAssetTargetFallback = true)
+        {
+            var actualAssetTargetFallback = GetFallbackString(useAssetTargetFallback, assetTargetFallbackFrameworks, asAssetTargetFallback);
+
+            const string referenceSpec = @"
+                {
+                    ""frameworks"": {
+                        ""TARGET_FRAMEWORK"": {
+                            ""dependencies"": {
+                                ""DEPENDENCY_NAME"" : ""1.0.0"",
+                                ""SECOND_DEPENDENCY_NAME"" : ""2.0.0""
+                            }
+                            ASSET_TARGET_FALLBACK
+                        }
+                    }
+                }";
+
+            var spec = referenceSpec.Replace("TARGET_FRAMEWORK", framework).Replace("SECOND_DEPENDENCY_NAME", secondDependencyName).Replace("DEPENDENCY_NAME", dependencyName).Replace("ASSET_TARGET_FALLBACK", actualAssetTargetFallback);
+            return GetPackageSpecWithProjectNameAndSpec(projectName, rootPath, spec);
+        }
+
         private static string GetFallbackString(bool useAssetTargetFallback, string assetTargetFallbackFrameworks, bool asAssetTargetFallback = true)
         {
             const string assetTargetFallback = @",

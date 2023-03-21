@@ -165,6 +165,23 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 });
         }
 
+        internal static async Task CreatePackagesAsyncMulitple(SimpleTestPathContext rootDir, string packageAVersion = "2.15.3", string packageBVersion = "1.0.0", string packageCVersion = " 2.0.0", string packageDVersion = "2.0.0")
+        {
+            await SimpleTestPackageUtility.CreateFullPackageAsync(rootDir.PackageSource, "packageB", packageBVersion);
+            await SimpleTestPackageUtility.CreateFullPackageAsync(rootDir.PackageSource, "packageA", packageAVersion,
+                new Packaging.Core.PackageDependency[]
+                {
+                    new Packaging.Core.PackageDependency("packageB", VersionRange.Parse(packageBVersion))
+                });
+
+            await SimpleTestPackageUtility.CreateFullPackageAsync(rootDir.PackageSource, "packageD", packageDVersion);
+            await SimpleTestPackageUtility.CreateFullPackageAsync(rootDir.PackageSource, "packageC", packageCVersion,
+                new Packaging.Core.PackageDependency[]
+                {
+                    new Packaging.Core.PackageDependency("packageD", VersionRange.Parse(packageDVersion))
+                });
+        }
+
         internal static CpsPackageReferenceProject PrepareCpsRestoredProject(PackageSpec packageSpec, IProjectSystemCache projectSystemCache = null)
         {
             var projectCache = projectSystemCache ?? new ProjectSystemCache();

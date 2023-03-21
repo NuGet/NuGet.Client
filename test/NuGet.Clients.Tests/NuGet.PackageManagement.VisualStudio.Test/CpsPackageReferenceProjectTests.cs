@@ -4110,6 +4110,53 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_SimulateMultiplePackageInstallation_Success()
+        {
+            using var rootDir = new SimpleTestPathContext();
+            await CreatePackagesAsyncMulitple(rootDir, packageAVersion: "1.0.0", packageCVersion: " 2.0.0", packageDVersion: "2.0.0");
+            IProjectSystemCache cache = new ProjectSystemCache();
+
+            // Arrange I: A project with no packages
+            PackageSpec initialProjectSpec = ProjectTestHelpers.GetPackageSpec("MyProject", rootDir.SolutionRoot, framework: "net472");
+            await RestorePackageSpecsAsync(rootDir, output: null, initialProjectSpec);
+
+            CpsPackageReferenceProject project = PrepareCpsRestoredProject(initialProjectSpec, cache);
+
+            // Act I
+            ProjectPackages result = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert I
+            Assert.Empty(result.InstalledPackages);
+            Assert.Empty(result.TransitivePackages);
+
+            // Arrange II: Simulate package install by changing the package spec
+            PackageSpec projectSpec = ProjectTestHelpers.GetPackageSpec("MyProject", rootDir.SolutionRoot, framework: "net472", dependencyName: "PackageA");
+            await RestorePackageSpecsAsync(rootDir, output: null, projectSpec);
+            UpdateProjectSystemCache(cache, projectSpec, project);
+
+            // Act II
+            ProjectPackages result2 = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert II
+            Assert.NotEmpty(result2.InstalledPackages);
+            Assert.NotEmpty(result2.TransitivePackages);
+            Assert.All(result2.TransitivePackages, pkg => Assert.NotEmpty(pkg.TransitiveOrigins));
+
+            // Arrange III: Simulate package install by changing the package spec
+            projectSpec = ProjectTestHelpers.GetPackageSpec("MyProject", rootDir.SolutionRoot, framework: "net472", dependencyName: "PackageA", secondDependencyName: "PackageC");
+            await RestorePackageSpecsAsync(rootDir, output: null, projectSpec);
+            UpdateProjectSystemCache(cache, projectSpec, project);
+
+            // Act III
+            ProjectPackages result3 = await project.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert III
+            Assert.Equal(2, result3.InstalledPackages.Count);
+            Assert.Equal(2, result3.TransitivePackages.Count);
+            Assert.All(result3.TransitivePackages, pkg => Assert.NotEmpty(pkg.TransitiveOrigins));
+        }
+
+        [Fact]
         public async Task GetInstalledAndTransitivePackagesAsync_TransitiveOriginsParamSetToTrue_ReturnsPackagesWithTransitiveOriginsAsync()
         {
             using SimpleTestPathContext rootDir = new();

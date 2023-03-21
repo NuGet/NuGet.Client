@@ -194,53 +194,51 @@ namespace NuGet.PackageManagement.VisualStudio
 
             CounterfactualLoggers.TransitiveDependencies.EmitIfNeeded(); // Emit only one event per VS session
             IEnumerable<TransitivePackageReference> transitivePackagesWithOrigins = Enumerable.Empty<TransitivePackageReference>();
-            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded)
+            if (includeTransitiveOrigins && await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
             {
-                if (includeTransitiveOrigins && await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(token))
+                // Compute Transitive Origins
+                Dictionary<string, TransitiveEntry> transitiveOrigins;
+                if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded
+                    || TransitiveOriginsCache == null // If any data race left the cache as null
+                    || (TransitiveOriginsCache.Any() && calculatedTransitivePackages.Any())) // We have transitive packages, but no transitive origins and the call is requesting transitive origins
                 {
-                    // Compute Transitive Origins
-                    Dictionary<string, TransitiveEntry> transitiveOrigins;
-                    if (TransitiveOriginsCache == null // If any data race left the cache as null
-                        || (!TransitiveOriginsCache.Any() && calculatedTransitivePackages.Any())) // We have transitive packages, but no transitive origins and the call is requesting transitive origins
+                    // Special case: Installed and Transitive lists (<see cref="InstalledPackages" />, <see cref="TransitivePackages" /> respectively) are populated,
+                    // but Transitive Origins Cache <see cref="TransitiveOriginsCache" /> is not populated.
+                    // Then, we need targets section from project.assets.json file on disk to populate Transitive Origins cache
+                    if (targetsList == null)
                     {
-                        // Special case: Installed and Transitive lists (<see cref="InstalledPackages" />, <see cref="TransitivePackages" /> respectively) are populated,
-                        // but Transitive Origins Cache <see cref="TransitiveOriginsCache" /> is not populated.
-                        // Then, we need targets section from project.assets.json file on disk to populate Transitive Origins cache
-                        if (targetsList == null)
-                        {
-                            targetsList = await GetTargetsListAsync(assetsFilePath, token);
-                        }
-
-                        transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedInstalledPackages, targetsList, token) : new Dictionary<string, TransitiveEntry>();
-                    }
-                    else
-                    {
-                        lock (_transitiveOriginsLock)
-                        {
-                            // Make a copy of the cache to prevent concurrency issues.
-                            transitiveOrigins = new Dictionary<string, TransitiveEntry>(TransitiveOriginsCache);
-                        }
+                        targetsList = await GetTargetsListAsync(assetsFilePath, token);
                     }
 
-                    // 4. Return cached result for specific transitive dependency
-                    transitivePackagesWithOrigins = calculatedTransitivePackages
-                        .Select(packageRef =>
-                        {
-                            transitiveOrigins.TryGetValue(packageRef.PackageIdentity.Id, out TransitiveEntry cacheEntry);
-                            return MergeTransitiveOrigin(packageRef, cacheEntry);
-                        });
-
-                    lock (_transitiveOriginsLock)
-                    {
-                        TransitiveOriginsCache = transitiveOrigins;
-                    }
+                    transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedInstalledPackages, targetsList, token) : new Dictionary<string, TransitiveEntry>();
                 }
                 else
                 {
-                    // Get Transitive packages without Transitive Origins
-                    transitivePackagesWithOrigins = calculatedTransitivePackages
-                        .Select(packageRef => new TransitivePackageReference(packageRef));
+                    lock (_transitiveOriginsLock)
+                    {
+                        // Make a copy of the cache to prevent concurrency issues.
+                        transitiveOrigins = new Dictionary<string, TransitiveEntry>(TransitiveOriginsCache);
+                    }
                 }
+
+                // 4. Return cached result for specific transitive dependency
+                transitivePackagesWithOrigins = calculatedTransitivePackages
+                    .Select(packageRef =>
+                    {
+                        transitiveOrigins.TryGetValue(packageRef.PackageIdentity.Id, out TransitiveEntry cacheEntry);
+                        return MergeTransitiveOrigin(packageRef, cacheEntry);
+                    });
+
+                lock (_transitiveOriginsLock)
+                {
+                    TransitiveOriginsCache = transitiveOrigins;
+                }
+            }
+            else
+            {
+                // Get Transitive packages without Transitive Origins
+                transitivePackagesWithOrigins = calculatedTransitivePackages
+                    .Select(packageRef => new TransitivePackageReference(packageRef));
             }
 
             List<TransitivePackageReference> transitivePkgsResult = transitivePackagesWithOrigins.ToList(); // Materialize results before setting IsInstalledAndTransitiveComputationNeeded flag to false
