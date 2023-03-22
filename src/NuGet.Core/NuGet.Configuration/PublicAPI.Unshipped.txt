@@ -1,2 +1,3 @@
 #nullable enable
+~NuGet.Configuration.PackageSourceMapping.UnsavedPatterns.get -> System.Lazy<System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>>
 ~NuGet.Configuration.PackageSourceMappingProvider.AddOrUpdatePackageSourceMappingSourceItem(NuGet.Configuration.PackageSourceMappingSourceItem packageSourceMappingSourceItem) -> void

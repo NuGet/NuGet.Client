@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -123,8 +124,8 @@ namespace NuGet.Commands
             {
                 telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
 
-                bool isPackageSourceMappingEnabled = _request?.PackageSourceMapping.IsEnabled ?? false;
-                telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
+                bool isPackageSourceMappingAlreadyEnabled = _request.PackageSourceMapping?.IsEnabled ?? false;
+                telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingAlreadyEnabled;
                 telemetry.TelemetryEvent[SourcesCount] = _request.DependencyProviders.RemoteProviders.Count;
                 int httpSourcesCount = _request.DependencyProviders.RemoteProviders.Where(e => e.IsHttp).Count();
                 telemetry.TelemetryEvent[HttpSourcesCount] = httpSourcesCount;
@@ -243,6 +244,12 @@ namespace NuGet.Commands
                     _success &= result;
                 }
 
+                bool hasUnsavedPackageSourceMappings =
+                    _request.PackageSourceMapping.UnsavedPatterns.IsValueCreated
+                    && _request.PackageSourceMapping.UnsavedPatterns.Value.Count > 0;
+
+                PackageSourceMapping unsavedPackageSourceMappingPatterns = hasUnsavedPackageSourceMappings ? _request.PackageSourceMapping : null;
+
                 IEnumerable<RestoreTargetGraph> graphs = null;
                 if (_success)
                 {
@@ -254,7 +261,9 @@ namespace NuGet.Commands
                         _request.DependencyProviders.FallbackPackageFolders,
                         contextForProject,
                         token,
-                        telemetry);
+                        telemetry,
+                        unsavedPackageSourceMappingPatterns
+                        );
                     }
                 }
                 else
@@ -1000,7 +1009,8 @@ namespace NuGet.Commands
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             RemoteWalkContext context,
             CancellationToken token,
-            TelemetryActivity telemetryActivity)
+            TelemetryActivity telemetryActivity,
+            PackageSourceMapping unsavedPackageSourceMappings)
         {
             if (_request.Project.TargetFrameworks.Count == 0)
             {

@@ -928,7 +928,7 @@ namespace NuGet.PackageManagement.UI
             PackagePatternItem packagePatternItem = new(currentPackagePattern);
 
             IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems();
-            List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new(capacity: existingPackageSourceMappingItems.Count + 1);
+            List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new();
 
             PackageSourceMappingSourceItem newPackageSourceMappingItemForSource = new(
                     sourceName,

@@ -20,6 +20,11 @@ namespace NuGet.Configuration
         /// </summary>
         internal IReadOnlyDictionary<string, IReadOnlyList<string>> Patterns { get; }
 
+        /// <summary>
+        /// Desired Source name to package patterns list.
+        /// </summary>
+        public Lazy<Dictionary<string, List<string>>> UnsavedPatterns { get; }
+
         private Lazy<SearchTree> SearchTree { get; }
 
         /// <summary>
@@ -43,6 +48,7 @@ namespace NuGet.Configuration
             Patterns = patterns ?? throw new ArgumentNullException(nameof(patterns));
             IsEnabled = Patterns.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
+            UnsavedPatterns = new Lazy<Dictionary<string, List<string>>>();
         }
 
         /// <summary>

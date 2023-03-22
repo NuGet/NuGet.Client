@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -49,7 +50,8 @@ namespace NuGet.Commands
             bool forceRuntimeGraphCreation,
             CancellationToken token,
             TelemetryActivity telemetryActivity,
-            string telemetryPrefix)
+            string telemetryPrefix,
+            PackageSourceMapping unsavedPackageSourceMappings)
         {
             var allRuntimes = RuntimeGraph.Empty;
             var frameworkTasks = new List<Task<RestoreTargetGraph>>();
