@@ -45,5 +45,33 @@ namespace NuGet.Versioning.Test
             // Assert
             result.Should().BeNull();
         }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void FindBestMatch_FeedWithPrereleaseVersions_PrereleaseUsedOnlyIfRangeAllows(bool usePrerelease)
+        {
+            List<NuGetVersion> available = new()
+            {
+                NuGetVersion.Parse("1.0.1-beta.1"),
+                NuGetVersion.Parse("1.0.1")
+            };
+            string rangeString = usePrerelease ? "1.0.0-*" : "1.0.0";
+            VersionRange range = VersionRange.Parse(rangeString);
+
+            // Act
+            NuGetVersion? result = available.FindBestMatch(range, v => v);
+
+            // Assert
+            result.Should().NotBeNull();
+            if (usePrerelease)
+            {
+                result!.OriginalVersion.Should().Be("1.0.1-beta.1");
+            }
+            else
+            {
+                result!.OriginalVersion.Should().Be("1.0.1");
+            }
+        }
     }
 }

@@ -30,7 +30,9 @@ namespace NuGet.Versioning
             while (bestMatch == null && enumerator.MoveNext())
             {
                 T current = enumerator.Current;
-                if (ideal.Satisfies(selector(current)))
+                if (ideal.IsBetter(
+                    current: null,
+                    considering: selector(current)))
                 {
                     bestMatch = current;
                 }
