@@ -1074,7 +1074,8 @@ namespace NuGet.Commands
                         forceRuntimeGraphCreation: hasSupports,
                         token: token,
                         telemetryActivity: telemetryActivity,
-                        telemetryPrefix: string.Empty);
+                        telemetryPrefix: string.Empty,
+                        unsavedPackageSourceMappings);
                 }
                 catch (FatalProtocolException)
                 {
@@ -1142,7 +1143,8 @@ namespace NuGet.Commands
                     forceRuntimeGraphCreation: true,
                     token: token,
                     telemetryActivity: telemetryActivity,
-                    telemetryPrefix: "Additional-");
+                    telemetryPrefix: "Additional-",
+                    unsavedPackageSourceMappings);
                 }
 
                 _success = compatibilityResult.Item1;

@@ -76,6 +76,32 @@ namespace NuGet.Commands
 
             graphs.AddRange(frameworkGraphs);
 
+            // Track new Source Mappings for all package dependencies.
+            if (unsavedPackageSourceMappings is not null
+                && unsavedPackageSourceMappings.UnsavedPatterns.IsValueCreated
+                && unsavedPackageSourceMappings.UnsavedPatterns.Value.Count > 0)
+            {
+                IEnumerable<string> unresolvedPackageNamesDistinct =
+                    graphs
+                    .SelectMany(g => g.Unresolved)
+                    .Where(libraryRange => libraryRange.TypeConstraint.HasFlag(LibraryDependencyTarget.Package))
+                    .Select(libraryRange => libraryRange.Name)
+                    .Distinct();
+
+                Dictionary<string, List<string>> dictionaryUnsavedSourceToPackageIds = unsavedPackageSourceMappings.UnsavedPatterns.Value;
+                foreach (string source in dictionaryUnsavedSourceToPackageIds.Keys)
+                {
+                    List<string> packageIds = dictionaryUnsavedSourceToPackageIds[source];
+                    foreach (string unresolvedPackageName in unresolvedPackageNamesDistinct)
+                    {
+                        if (!packageIds.Contains(unresolvedPackageName))
+                        {
+                            packageIds.Add(unresolvedPackageName);
+                        }
+                    }
+                }
+            }
+
             telemetryActivity.EndIntervalMeasure(telemetryPrefix + WalkFrameworkDependencyDuration);
 
             telemetryActivity.StartIntervalMeasure();
