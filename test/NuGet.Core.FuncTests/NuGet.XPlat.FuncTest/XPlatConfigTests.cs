@@ -2,13 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-using System.Linq;
-using Moq;
 using NuGet.CommandLine.XPlat;
-using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -43,13 +39,15 @@ namespace NuGet.XPlat.FuncTest
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
             {
+                var nonExistingDirectory = Path.Combine(testInfo.WorkingPath.Path, @"\NonExistingRepos");
                 var result = CommandRunner.Run(
                     DotnetCli,
                     Directory.GetCurrentDirectory(),
-                    $"{XplatDll} config paths {@"C:\Test\NonExistingRepos"}",
+                    $"{XplatDll} config paths {nonExistingDirectory}",
                     waitForExit: true
                     );
-                var expectedError = @"The specified path 'C:\Test\NonExistingRepos' does not exist.";
+                //var expectedError = $"The specified path '{nonExistingDirectory}' does not exist.";
+                var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
 
                 // Assert
                 DotnetCliUtil.VerifyResultFailure(result, expectedError);
@@ -71,7 +69,7 @@ namespace NuGet.XPlat.FuncTest
 
             public static void CreateFile(string fileFullName, string fileContent)
             {
-                using (var writer = new StreamWriter(fileFullName))
+                using var writer = new StreamWriter(fileFullName);
                 {
                     writer.Write(fileContent);
                 }
