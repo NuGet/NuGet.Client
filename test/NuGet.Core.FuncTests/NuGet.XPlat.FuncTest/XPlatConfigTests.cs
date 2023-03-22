@@ -46,7 +46,6 @@ namespace NuGet.XPlat.FuncTest
                     $"{XplatDll} config paths {nonExistingDirectory}",
                     waitForExit: true
                     );
-                //var expectedError = $"The specified path '{nonExistingDirectory}' does not exist.";
                 var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
 
                 // Assert
