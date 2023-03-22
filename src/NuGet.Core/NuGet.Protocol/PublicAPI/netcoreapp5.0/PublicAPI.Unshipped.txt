@@ -1,6 +1,11 @@
 #nullable enable
 ~static readonly NuGet.Protocol.ServiceTypes.Version300rc -> string
 ~static readonly NuGet.Protocol.ServiceTypes.Version360 -> string
+NuGet.Protocol.Model.VulnerabilityInfo
+NuGet.Protocol.Model.VulnerabilityInfo.Severity.get -> int
+NuGet.Protocol.Model.VulnerabilityInfo.Url.get -> System.Uri!
+NuGet.Protocol.Model.VulnerabilityInfo.Versions.get -> NuGet.Versioning.VersionRange!
+NuGet.Protocol.Model.VulnerabilityInfo.VulnerabilityInfo(System.Uri! url, int severity, NuGet.Versioning.VersionRange! versions) -> void
 NuGet.Protocol.VulnerabilityInfoResource
 NuGet.Protocol.VulnerabilityInfoResource.VulnerabilityInfoResource() -> void
 ~static readonly NuGet.Protocol.ServiceTypes.Version660 -> string
