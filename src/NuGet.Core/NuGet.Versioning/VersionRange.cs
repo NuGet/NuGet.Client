@@ -254,10 +254,7 @@ namespace NuGet.Versioning
                 else
                 {
                     // neither are in range
-#pragma warning disable CS8604 // Possible null reference argument.
-                    // possible bug?
                     var curToLower = current < _floatRange.MinVersion;
-#pragma warning restore CS8604 // Possible null reference argument.
                     var conToLower = considering < _floatRange.MinVersion;
 
                     if (curToLower && !conToLower)

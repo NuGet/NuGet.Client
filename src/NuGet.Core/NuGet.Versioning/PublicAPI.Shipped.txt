@@ -4,9 +4,9 @@ NuGet.Versioning.FloatRange.Equals(NuGet.Versioning.FloatRange? other) -> bool
 NuGet.Versioning.FloatRange.FloatBehavior.get -> NuGet.Versioning.NuGetVersionFloatBehavior
 NuGet.Versioning.FloatRange.FloatRange(NuGet.Versioning.NuGetVersionFloatBehavior floatBehavior) -> void
 NuGet.Versioning.FloatRange.FloatRange(NuGet.Versioning.NuGetVersionFloatBehavior floatBehavior, NuGet.Versioning.NuGetVersion! minVersion) -> void
-NuGet.Versioning.FloatRange.FloatRange(NuGet.Versioning.NuGetVersionFloatBehavior floatBehavior, NuGet.Versioning.NuGetVersion? minVersion, string? releasePrefix) -> void
+NuGet.Versioning.FloatRange.FloatRange(NuGet.Versioning.NuGetVersionFloatBehavior floatBehavior, NuGet.Versioning.NuGetVersion! minVersion, string? releasePrefix) -> void
 NuGet.Versioning.FloatRange.HasMinVersion.get -> bool
-NuGet.Versioning.FloatRange.MinVersion.get -> NuGet.Versioning.NuGetVersion?
+NuGet.Versioning.FloatRange.MinVersion.get -> NuGet.Versioning.NuGetVersion!
 NuGet.Versioning.FloatRange.OriginalReleasePrefix.get -> string?
 NuGet.Versioning.FloatRange.Satisfies(NuGet.Versioning.NuGetVersion! version) -> bool
 NuGet.Versioning.INuGetVersionable

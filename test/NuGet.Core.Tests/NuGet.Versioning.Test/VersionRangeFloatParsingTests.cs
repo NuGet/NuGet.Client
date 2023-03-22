@@ -85,7 +85,7 @@ namespace NuGet.Versioning.Test
         {
             var range = VersionRange.Parse(rangeString);
 
-            Assert.Equal(versionLabel, range.Float?.MinVersion?.Release);
+            Assert.Equal(versionLabel, range.Float?.MinVersion.Release);
             Assert.Equal(originalLabel, range.Float?.OriginalReleasePrefix);
         }
 

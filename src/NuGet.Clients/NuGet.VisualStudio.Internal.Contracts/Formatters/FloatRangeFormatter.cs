@@ -52,7 +52,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
             Assumes.True(floatBehavior.HasValue);
 
-            return new FloatRange(floatBehavior.Value, minVersion, releasePrefix);
+            return new FloatRange(floatBehavior.Value, minVersion!, releasePrefix);
         }
 
         protected override void SerializeCore(ref MessagePackWriter writer, FloatRange value, MessagePackSerializerOptions options)

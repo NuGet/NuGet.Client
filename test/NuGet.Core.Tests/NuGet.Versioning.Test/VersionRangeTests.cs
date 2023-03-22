@@ -868,7 +868,7 @@ namespace NuGet.Versioning.Test
 
             Assert.Equal("[*-*, )", range.ToNormalizedString());
             Assert.Equal("0.0.0-0", range.MinVersion?.ToNormalizedString());
-            Assert.Equal("0.0.0-0", range.Float?.MinVersion?.ToNormalizedString());
+            Assert.Equal("0.0.0-0", range.Float?.MinVersion.ToNormalizedString());
             Assert.Equal(NuGetVersionFloatBehavior.AbsoluteLatest, range.Float?.FloatBehavior);
         }
 
@@ -879,7 +879,7 @@ namespace NuGet.Versioning.Test
 
             Assert.Equal("[*-rc.*, )", range.ToNormalizedString());
             Assert.Equal("0.0.0-rc.0", range.MinVersion?.ToNormalizedString());
-            Assert.Equal("0.0.0-rc.0", range.Float?.MinVersion?.ToNormalizedString());
+            Assert.Equal("0.0.0-rc.0", range.Float?.MinVersion.ToNormalizedString());
             Assert.Equal(NuGetVersionFloatBehavior.PrereleaseMajor, range.Float?.FloatBehavior);
         }
 

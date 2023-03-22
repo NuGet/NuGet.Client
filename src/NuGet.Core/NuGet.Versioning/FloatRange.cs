@@ -13,7 +13,7 @@ namespace NuGet.Versioning
     /// </summary>
     public class FloatRange : IEquatable<FloatRange>
     {
-        private readonly NuGetVersion? _minVersion;
+        private readonly NuGetVersion _minVersion;
         private readonly NuGetVersionFloatBehavior _floatBehavior;
         private readonly string? _releasePrefix;
 
@@ -22,7 +22,7 @@ namespace NuGet.Versioning
         /// </summary>
         /// <param name="floatBehavior">Section to float.</param>
         public FloatRange(NuGetVersionFloatBehavior floatBehavior)
-            : this(floatBehavior, null, null)
+            : this(floatBehavior, new NuGetVersion(0, 0, 0), null)
         {
         }
 
@@ -42,10 +42,10 @@ namespace NuGet.Versioning
         /// <param name="floatBehavior">Section to float.</param>
         /// <param name="minVersion">Min version of the range.</param>
         /// <param name="releasePrefix">The original release label. Invalid labels are allowed here.</param>
-        public FloatRange(NuGetVersionFloatBehavior floatBehavior, NuGetVersion? minVersion, string? releasePrefix)
+        public FloatRange(NuGetVersionFloatBehavior floatBehavior, NuGetVersion minVersion, string? releasePrefix)
         {
             _floatBehavior = floatBehavior;
-            _minVersion = minVersion;
+            _minVersion = minVersion ?? throw new ArgumentNullException(nameof(minVersion));
             _releasePrefix = releasePrefix;
 
             if (_releasePrefix == null
@@ -64,7 +64,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// The minimum version of the float range. This is null for cases such as *
         /// </summary>
-        public NuGetVersion? MinVersion => _minVersion;
+        public NuGetVersion MinVersion => _minVersion;
 
         /// <summary>
         /// Defined float behavior
@@ -354,7 +354,6 @@ namespace NuGet.Versioning
         public override string ToString()
         {
             var result = string.Empty;
-#pragma warning disable CS8602 // Dereference of a possibly null reference. - possible bugs?
             switch (_floatBehavior)
             {
                 case NuGetVersionFloatBehavior.None:
@@ -393,7 +392,6 @@ namespace NuGet.Versioning
                 default:
                     break;
             }
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
             return result;
         }
