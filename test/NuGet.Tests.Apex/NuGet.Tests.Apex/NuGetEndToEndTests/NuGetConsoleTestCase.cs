@@ -21,7 +21,7 @@ namespace NuGet.Tests.Apex
         {
         }
 
-        [NuGetWpfTheory]
+        [NuGetWpfTheory(Skip = "https://github.com/NuGet/Home/issues/11308")]
         [MemberData(nameof(GetPackageReferenceTemplates))]
         public async Task InstallPackageFromPMCWithNoAutoRestoreVerifyAssetsFileAsync(ProjectTemplate projectTemplate)
         {
@@ -680,6 +680,37 @@ namespace NuGet.Tests.Apex
 
             nugetConsole.Clear();
             solutionService.Save();
+        }
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetNetCoreTemplates))]
+        public async Task VerifyCacheFileInsideObjFolder(ProjectTemplate projectTemplate)
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            {                
+                var packageName = "VerifyCacheFilePackage";
+                var packageVersion = "1.0.0";
+                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);                
+                var nugetConsole = GetConsole(testContext.Project);
+
+                //Act
+                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+                FileInfo CacheFilePath = CommonUtility.GetCacheFilePath(testContext.Project.FullPath);
+
+                // Assert
+                testContext.SolutionService.Build();
+                testContext.NuGetApexTestService.WaitForAutoRestore();
+                CommonUtility.WaitForFileExists(CacheFilePath);
+
+                testContext.Project.Rebuild();
+                CommonUtility.WaitForFileExists(CacheFilePath);
+
+                testContext.Project.Clean();
+                CommonUtility.WaitForFileNotExists(CacheFilePath);
+            }
         }
 
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk

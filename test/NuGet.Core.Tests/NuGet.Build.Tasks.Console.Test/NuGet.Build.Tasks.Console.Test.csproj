@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
+    <TargetFrameworks>$(MinimalTargetFrameworksExeSigning)</TargetFrameworks>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.Build.Tasks.Console.</Description>
   </PropertyGroup>
@@ -8,7 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Build.Tasks.Console\NuGet.Build.Tasks.Console.csproj" />
-    <ProjectReference Include="..\NuGet.Build.Tasks.Test\NuGet.Build.Tasks.Test.csproj" />
   </ItemGroup>
 
   <ItemGroup>

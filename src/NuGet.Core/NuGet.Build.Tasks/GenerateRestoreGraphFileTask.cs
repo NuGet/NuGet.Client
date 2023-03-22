@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.Build.Framework;
 
 namespace NuGet.Build.Tasks
 {
     /// <summary>
-    /// Represents an MSBuild task that generates a restore graph file using MSBuild's static graph evaluation.
+    /// Represents an MSBuild task that performs a command-line based restore.
     /// </summary>
     public sealed class GenerateRestoreGraphFileTask : StaticGraphRestoreTaskBase
     {
@@ -23,7 +24,7 @@ namespace NuGet.Build.Tasks
         {
             Dictionary<string, string> options = base.GetOptions();
 
-            options["GenerateRestoreGraphFile"] = bool.TrueString;
+            options["GenerateRestoreGraphFile"] = true.ToString(CultureInfo.CurrentCulture);
             options[nameof(RestoreGraphOutputPath)] = RestoreGraphOutputPath;
 
             return options;
