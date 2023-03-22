@@ -336,27 +336,6 @@ namespace NuGet.Commands
             }
         }
 
-        public static ISettings GetSettingsFromDirectory(string directory)
-        {
-            if (string.IsNullOrEmpty(directory))
-            {
-                var currentDirectory = Directory.GetCurrentDirectory();
-                return NuGet.Configuration.Settings.LoadDefaultSettings(
-                   currentDirectory,
-                   configFileName: null,
-                   machineWideSettings: new XPlatMachineWideSetting());
-            }
-            if (Directory.Exists(directory))
-            {
-                return NuGet.Configuration.Settings.LoadDefaultSettings(
-                   directory,
-                   configFileName: null,
-                   machineWideSettings: new XPlatMachineWideSetting());
-            }
-
-            throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, directory));
-        }
-
         public static PackageSourceProvider GetSourceProvider(ISettings settings)
         {
 #pragma warning disable CS0618 // Type or member is obsolete

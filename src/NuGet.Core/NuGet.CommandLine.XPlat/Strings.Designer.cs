@@ -511,6 +511,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The specified path &apos;{0}&apos; does not exist..
+        /// </summary>
+        internal static string Error_PathNotFound {
+            get {
+                return ResourceManager.GetString("Error_PathNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to {0} package. Argument &apos;{1}&apos; not provided..
         /// </summary>
         internal static string Error_PkgMissingArgument {

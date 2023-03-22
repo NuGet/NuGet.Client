@@ -1041,8 +1041,4 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Warning As Error: {0}</value>
     <comment>{0} is a warning message</comment>
   </data>
-  <data name="Error_PathNotFound" xml:space="preserve">
-    <value>The specified path '{0}' does not exist.</value>
-    <comment>0 - path</comment>
-  </data>
 </root>
