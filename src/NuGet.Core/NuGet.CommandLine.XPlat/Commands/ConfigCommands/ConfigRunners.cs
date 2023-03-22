@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -22,6 +23,31 @@ namespace NuGet.CommandLine.XPlat
             {
                 logger.LogMinimal(filePath);
             }
+        }
+    }
+
+    internal static class ConfigGetRunner
+    {
+        public static void Run(ConfigGetArgs args, Func<ILogger> getLogger)
+        {
+
+            if (args.AllOrConfigKey.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                // Get All; will return something
+            }
+
+            var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory);
+            ILogger logger = getLogger();
+
+            var configValue = SettingsUtility.GetConfigValue(settings, args.AllOrConfigKey);
+            if (string.IsNullOrEmpty(configValue))
+            {
+                // Need to add actual message to strings.resx
+                logger.LogMinimal("Config key does not exist");
+            }
+
+            logger.LogMinimal(configValue);
+
         }
     }
 

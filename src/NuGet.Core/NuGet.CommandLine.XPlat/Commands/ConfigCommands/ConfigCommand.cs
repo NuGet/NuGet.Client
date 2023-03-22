@@ -32,6 +32,27 @@ namespace NuGet.CommandLine.XPlat
                         return 0;
                     });
                 });
+                ConfigCmd.Command("get", GetCmd =>
+                {
+                    CommandArgument allOrConfigKey = GetCmd.Argument(
+                        "all/config-key",
+                        "String description goes here");
+                    CommandArgument workingDirectory = GetCmd.Argument(
+                        "working-directory",
+                        Strings.ConfigPathsWorkingDirectoryDescription);
+                    GetCmd.OnExecute(() =>
+                    {
+                        var args = new ConfigGetArgs()
+                        {
+                            AllOrConfigKey = allOrConfigKey.Value,
+                            WorkingDirectory = workingDirectory.Value
+                        };
+
+                        ConfigGetRunner.Run(args, getLogger);
+                        return 0;
+                    });
+
+                });
                 ConfigCmd.HelpOption("-h|--help");
                 ConfigCmd.Description = Strings.Config_Description;
                 ConfigCmd.OnExecute(() =>
