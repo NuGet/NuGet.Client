@@ -6,7 +6,7 @@ namespace NuGet.Protocol
     public static class ServiceTypes
     {
         public static readonly string[] SearchQueryService = { "SearchQueryService" + ClientVersions.Versioned, "SearchQueryService" + ClientVersions.Version340, "SearchQueryService" + ClientVersions.Version300beta };
-        public static readonly string[] RegistrationsBaseUrl = { "RegistrationsBaseUrl" + ClientVersions.Versioned, "RegistrationsBaseUrl" + ClientVersions.Version340, "RegistrationsBaseUrl" + ClientVersions.Version300beta };
+        public static readonly string[] RegistrationsBaseUrl = RegistrationsBaseUrlTypes.RegistrationsBaseUrls;
         public static readonly string[] SearchAutocompleteService = { "SearchAutocompleteService" + ClientVersions.Versioned, "SearchAutocompleteService" + ClientVersions.Version300beta };
         public static readonly string[] ReportAbuse = { "ReportAbuseUriTemplate" + ClientVersions.Versioned, "ReportAbuseUriTemplate" + ClientVersions.Version300 };
         public static readonly string[] PackageDetailsUriTemplate = { "PackageDetailsUriTemplate" + ClientVersions.Version510 };
