@@ -1,1 +1,5 @@
 #nullable enable
+NuGet.Protocol.RegistrationsBaseUrlTypes
+~static readonly NuGet.Protocol.RegistrationsBaseUrlTypes.RegistrationsBaseUrl -> string[]
+~static readonly NuGet.Protocol.RegistrationsBaseUrlTypes.RegistrationsBaseUrlVersion340 -> string[]
+~static readonly NuGet.Protocol.RegistrationsBaseUrlTypes.RegistrationsBaseUrlVersion360 -> string[]
