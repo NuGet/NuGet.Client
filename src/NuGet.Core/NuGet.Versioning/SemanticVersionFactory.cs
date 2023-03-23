@@ -174,7 +174,7 @@ namespace NuGet.Versioning
         /// to parsing and validating a semver. Regex would be much cleaner, but
         /// due to the number of versions created in NuGet Regex is too slow.
         /// </summary>
-        internal static void ParseSections(string value, [NotNullWhen(true)] out string? versionString, out string[]? releaseLabels, out string? buildMetadata)
+        internal static void ParseSections(string value, out string? versionString, out string[]? releaseLabels, out string? buildMetadata)
         {
             versionString = null;
             releaseLabels = null;
