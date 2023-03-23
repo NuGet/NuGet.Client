@@ -232,6 +232,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Key &apos;{0}&apos; not found..
+        /// </summary>
+        internal static string ConfigCommandKeyNotFound {
+            get {
+                return ResourceManager.GetString("ConfigCommandKeyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Lists the paths to all NuGet configuration files that will be applied when invoking NuGet command in a specific directory.
         /// </summary>
         internal static string ConfigPathsCommandDescription {

@@ -46,11 +46,49 @@ namespace NuGet.XPlat.FuncTest
                     $"{XplatDll} config paths {nonExistingDirectory}",
                     waitForExit: true
                     );
-                //var expectedError = $"The specified path '{nonExistingDirectory}' does not exist.";
                 var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
 
                 // Assert
                 DotnetCliUtil.VerifyResultFailure(result, expectedError);
+            }
+        }
+
+        // Change to theory and test with multiple keys?
+        [Fact]
+        public void ConfigGetCommand_ConfigKeyArg_Success()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            {
+                var result = CommandRunner.Run(
+                      DotnetCli,
+                      Directory.GetCurrentDirectory(),
+                      $"{XplatDll} config get http_proxy",
+                      waitForExit: true
+                      );
+
+                // Assert
+                DotnetCliUtil.VerifyResultSuccess(result, @"http://company-squid:3128@contoso.test");
+            }
+        }
+
+        [Fact]
+        public void ConfigGetCommand_InvalidConfigKeyArg_Fail()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            {
+                var invalidKey = "invalidKey";
+                var result = CommandRunner.Run(
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config get {invalidKey}",
+                    waitForExit: true
+                    );
+                var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, invalidKey);
+
+                // Assert
+                DotnetCliUtil.VerifyResultFailure(result, expectedError );
             }
         }
 
@@ -86,6 +124,9 @@ namespace NuGet.XPlat.FuncTest
     <packageSources>
         <add key=""Foo"" value=""https://contoso.test/v3/index.json"" />
     </packageSources>
+    <config>
+		<add key=""http_proxy"" value=""http://company-squid:3128@contoso.test"" />
+	</config>
 </configuration>
 ");
             }
