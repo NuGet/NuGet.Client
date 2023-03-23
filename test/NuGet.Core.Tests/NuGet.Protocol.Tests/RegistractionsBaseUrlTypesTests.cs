@@ -9,24 +9,54 @@ namespace NuGet.Protocol.Tests
     public class RegistrationsBaseUrlTypesTests
     {
         [Fact]
-        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrl_Contains_AllAliases()
+        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrl_Has_Correct_Coresponding_String_Literal()
         {
-            RegistrationsBaseUrlTypes.RegistrationsBaseUrl.Should().Contain("RegistrationsBaseUrl");
-            RegistrationsBaseUrlTypes.RegistrationsBaseUrl.Should().Contain("RegistrationsBaseUrl/3.0.0-beta");
-            RegistrationsBaseUrlTypes.RegistrationsBaseUrl.Should().Contain("RegistrationsBaseUrl/3.0.0-rc");
+            RegistrationsBaseUrlTypes.RegistrationsBaseUrl.Should().Be("RegistrationsBaseUrl");
         }
 
         [Fact]
-        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrlVersion340_OnlyVersion340()
+        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrl300beta_Has_Correct_Coresponding_String_Literal()
         {
-            RegistrationsBaseUrlTypes.RegistrationsBaseUrlVersion340.Should().Contain("RegistrationsBaseUrl/3.4.0");
+            RegistrationsBaseUrlTypes.RegistrationsBaseUrlVersion300beta.Should().Be("RegistrationsBaseUrl/3.0.0-beta");
         }
 
         [Fact]
-        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrlVersion360_Contains_AllAliases()
+        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrl300rc_Has_Correct_Coresponding_String_Literal()
         {
-            RegistrationsBaseUrlTypes.RegistrationsBaseUrl.Should().Contain("RegistrationsBaseUrl/3.6.0");
-            RegistrationsBaseUrlTypes.RegistrationsBaseUrl.Should().Contain("RegistrationsBaseUrl/Versioned");
+            RegistrationsBaseUrlTypes.RegistrationsBaseUrlVersion300rc.Should().Be("RegistrationsBaseUrl/3.0.0-rc");
+        }
+
+        [Fact]
+        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrl340_Has_Correct_Coresponding_String_Literal()
+        {
+            RegistrationsBaseUrlTypes.RegistrationsBaseUrlVersion340.Should().Be("RegistrationsBaseUrl/3.4.0");
+        }
+
+        [Fact]
+        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrl360_Has_Correct_Coresponding_String_Literal()
+        {
+            RegistrationsBaseUrlTypes.RegistrationsBaseUrlVersion360.Should().Be("RegistrationsBaseUrl/3.6.0");
+        }
+
+        [Fact]
+        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrlVersioned_Has_Correct_Coresponding_String_Literal()
+        {
+            RegistrationsBaseUrlTypes.RegistrationsBaseUrlVersioned.Should().Be("RegistrationsBaseUrl/Versioned");
+        }
+
+        [Fact]
+        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrls_Contains_All_Versions()
+        {
+            string[] expected =
+            {
+                "RegistrationsBaseUrl",
+                "RegistrationsBaseUrl/3.0.0-beta",
+                "RegistrationsBaseUrl/3.0.0-rc",
+                "RegistrationsBaseUrl/3.4.0",
+                "RegistrationsBaseUrl/3.6.0",
+                "RegistrationsBaseUrl/Versioned",
+            };
+            RegistrationsBaseUrlTypes.RegistrationsBaseUrls.Should().BeEquivalentTo(expected);
         }
     }
 }
