@@ -120,6 +120,11 @@
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Value cannot be null or an empty string.</value>
   </data>
+  <data name="CannotBeNullWhenParameterIsNotNull" xml:space="preserve">
+    <value>Parameter '{0}' cannot be null when parameter '{1}' is not null.</value>
+    <comment>Customers are not expected to see this message, only developers using NuGet.Version in their app.
+Both {0} and {1} are method parameter names</comment>
+  </data>
   <data name="InvalidFloatRangeValue" xml:space="preserve">
     <value>'{0}' is not a valid float range string.</value>
     <comment>{0} is the customer input value</comment>

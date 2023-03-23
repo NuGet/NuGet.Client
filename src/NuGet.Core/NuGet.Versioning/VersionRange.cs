@@ -63,6 +63,11 @@ namespace NuGet.Versioning
             bool includeMaxVersion = false, FloatRange? floatRange = null, string? originalString = null)
             : base(minVersion, includeMinVersion, maxVersion, includeMaxVersion)
         {
+            if (floatRange != null && minVersion == null)
+            {
+                throw ResourcesFormatter.CannotBeNullWhenParameterIsNull(nameof(minVersion), nameof(floatRange));
+            }
+
             _floatRange = floatRange;
             _originalString = originalString;
         }
@@ -70,12 +75,40 @@ namespace NuGet.Versioning
         /// <summary>
         /// True if the range has a floating version above the min version.
         /// </summary>
+        [MemberNotNullWhen(true, nameof(MinVersion))]
         [MemberNotNullWhen(true, nameof(Float))]
         [MemberNotNullWhen(true, nameof(_floatRange))]
         public bool IsFloating
         {
             get { return Float != null && Float.FloatBehavior != NuGetVersionFloatBehavior.None; }
         }
+
+        /// <inheritdoc cref="VersionRangeBase.MinVersion"/>
+        public new NuGetVersion? MinVersion => base.MinVersion;
+
+        /// <inheritdoc cref="VersionRangeBase.MaxVersion"/>
+        public new NuGetVersion? MaxVersion => base.MaxVersion;
+
+        /// <inheritdoc cref="VersionRangeBase.HasLowerBound"/>
+        [MemberNotNullWhen(true, nameof(MinVersion))]
+        public new bool HasLowerBound => base.HasLowerBound;
+
+        /// <inheritdoc cref="VersionRangeBase.IsMinInclusive"/>
+        [MemberNotNullWhen(true, nameof(MinVersion))]
+        public new bool IsMinInclusive => base.IsMinInclusive;
+
+        /// <inheritdoc cref="VersionRangeBase.HasUpperBound"/>
+        [MemberNotNullWhen(true, nameof(MaxVersion))]
+        public new bool HasUpperBound => base.HasUpperBound;
+
+        /// <inheritdoc cref="VersionRangeBase.IsMaxInclusive"/>
+        [MemberNotNullWhen(true, nameof(MaxVersion))]
+        public new bool IsMaxInclusive => base.IsMaxInclusive;
+
+        /// <inheritdoc cref="VersionRangeBase.HasLowerAndUpperBounds"/>
+        [MemberNotNullWhen(true, nameof(MinVersion))]
+        [MemberNotNullWhen(true, nameof(MaxVersion))]
+        public new bool HasLowerAndUpperBounds => base.HasLowerAndUpperBounds;
 
         /// <summary>
         /// Optional floating range used to determine the best version match.
@@ -302,11 +335,7 @@ namespace NuGet.Versioning
 
                 if (Float.FloatBehavior == NuGetVersionFloatBehavior.Prerelease)
                 {
-#pragma warning disable CS8604 // Possible null reference argument.
-                    // MinRange is always not null when floating versions are used, but the class
-                    // design doesn't allow that to be represented with nullable annotations.
                     minVersion = GetNonSnapshotVersion(minVersion);
-#pragma warning restore CS8604 // Possible null reference argument.
                 }
 
                 // Drop the floating range from the new range regardless of the float type

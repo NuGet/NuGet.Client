@@ -70,6 +70,15 @@ namespace NuGet.Versioning {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; cannot be null when parameter &apos;{1}&apos; is not null..
+        /// </summary>
+        internal static string CannotBeNullWhenParameterIsNotNull {
+            get {
+                return ResourceManager.GetString("CannotBeNullWhenParameterIsNotNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid float range string..
         /// </summary>
         internal static string InvalidFloatRangeValue {

@@ -195,9 +195,9 @@ namespace NuGet.Versioning.Test
             // Act & Assert
             Assert.Equal("(, )", VersionRange.All.ToNormalizedString());
 #pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Equal("(, )", VersionRange.AllFloating.ToNormalizedString());
+            Assert.Equal("[*-*, )", VersionRange.AllFloating.ToNormalizedString());
             Assert.Equal("(, )", VersionRange.AllStable.ToNormalizedString());
-            Assert.Equal("(, )", VersionRange.AllStableFloating.ToNormalizedString());
+            Assert.Equal("[*, )", VersionRange.AllStableFloating.ToNormalizedString());
 #pragma warning restore CS0618 // Type or member is obsolete
 
         }

@@ -17,5 +17,12 @@ namespace NuGet.Versioning
                 message: string.Format(Resources.TypeNotSupported, type.FullName),
                 paramName: paramName);
         }
+
+        internal static ArgumentNullException CannotBeNullWhenParameterIsNull(string parameterThatIsNull, string parameterThisIsNotNull)
+        {
+            return new ArgumentNullException(
+                message: string.Format(Resources.CannotBeNullWhenParameterIsNotNull, parameterThatIsNull, parameterThisIsNotNull),
+                paramName: parameterThatIsNull);
+        }
     }
 }
