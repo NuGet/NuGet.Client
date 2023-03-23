@@ -1,1 +1,2 @@
 #nullable enable
+NuGet.Versioning.FloatRange.IncludePrerelease.get -> bool

@@ -55,6 +55,11 @@ namespace NuGet.Versioning
                 // use the actual label if one was not given
                 _releasePrefix = minVersion.Release;
             }
+
+            if (IncludePrerelease && _releasePrefix == null)
+            {
+                throw new ArgumentNullException(nameof(releasePrefix));
+            }
         }
 
         /// <summary>
@@ -77,6 +82,23 @@ namespace NuGet.Versioning
         public string? OriginalReleasePrefix => _releasePrefix;
 
         /// <summary>
+        /// Indicates if the <see cref=" FloatBehavior"/> includes prerelease versions.
+        /// </summary>
+        [MemberNotNullWhen(true, nameof(OriginalReleasePrefix))]
+        [MemberNotNullWhen(true, nameof(_releasePrefix))]
+        public bool IncludePrerelease
+            => _floatBehavior switch
+            {
+                NuGetVersionFloatBehavior.AbsoluteLatest => true,
+                NuGetVersionFloatBehavior.Prerelease => true,
+                NuGetVersionFloatBehavior.PrereleaseMajor => true,
+                NuGetVersionFloatBehavior.PrereleaseMinor => true,
+                NuGetVersionFloatBehavior.PrereleasePatch => true,
+                NuGetVersionFloatBehavior.PrereleaseRevision => true,
+                _ => false
+            };
+
+        /// <summary>
         /// True if the given version falls into the floating range.
         /// </summary>
         public bool Satisfies(NuGetVersion version)
@@ -97,66 +119,64 @@ namespace NuGet.Versioning
                 return true;
             }
 
-            if (_minVersion != null)
+            if (IncludePrerelease)
             {
                 // everything beyond this point requires a version
                 if (_floatBehavior == NuGetVersionFloatBehavior.PrereleaseRevision)
                 {
                     // allow the stable version to match
                     return _minVersion.Major == version.Major
-                       && _minVersion.Minor == version.Minor
-                       && _minVersion.Patch == version.Patch
-                       && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix!, StringComparison.OrdinalIgnoreCase))
-                           || !version.IsPrerelease);
+                        && _minVersion.Minor == version.Minor
+                        && _minVersion.Patch == version.Patch
+                        && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
+                            || !version.IsPrerelease);
                 }
                 else if (_floatBehavior == NuGetVersionFloatBehavior.PrereleasePatch)
                 {
                     // allow the stable version to match
-#pragma warning disable CS8604 // Possible null reference argument. - usage of _releasePrefix don't appear to be null-safe
                     return _minVersion.Major == version.Major
-                       && _minVersion.Minor == version.Minor
-                       && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
-                           || !version.IsPrerelease);
+                        && _minVersion.Minor == version.Minor
+                        && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
+                            || !version.IsPrerelease);
                 }
                 else if (FloatBehavior == NuGetVersionFloatBehavior.PrereleaseMinor)
                 {
                     // allow the stable version to match
                     return _minVersion.Major == version.Major
-                       && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
-                           || !version.IsPrerelease);
+                        && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
+                            || !version.IsPrerelease);
                 }
                 else if (FloatBehavior == NuGetVersionFloatBehavior.PrereleaseMajor)
                 {
                     // allow the stable version to match
                     return (version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
-                           || !version.IsPrerelease;
+                            || !version.IsPrerelease;
                 }
                 else if (_floatBehavior == NuGetVersionFloatBehavior.Prerelease)
                 {
                     // allow the stable version to match
                     return VersionComparer.Version.Equals(_minVersion, version)
-                           && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
-                               || !version.IsPrerelease);
-#pragma warning restore CS8604 // Possible null reference argument.
+                            && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
+                                || !version.IsPrerelease);
                 }
-                else if (_floatBehavior == NuGetVersionFloatBehavior.Revision)
-                {
-                    return _minVersion.Major == version.Major
-                           && _minVersion.Minor == version.Minor
-                           && _minVersion.Patch == version.Patch
-                           && !version.IsPrerelease;
-                }
-                else if (_floatBehavior == NuGetVersionFloatBehavior.Patch)
-                {
-                    return _minVersion.Major == version.Major
-                           && _minVersion.Minor == version.Minor
-                           && !version.IsPrerelease;
-                }
-                else if (_floatBehavior == NuGetVersionFloatBehavior.Minor)
-                {
-                    return _minVersion.Major == version.Major
-                           && !version.IsPrerelease;
-                }
+            }
+            else if (_floatBehavior == NuGetVersionFloatBehavior.Revision)
+            {
+                return _minVersion.Major == version.Major
+                        && _minVersion.Minor == version.Minor
+                        && _minVersion.Patch == version.Patch
+                        && !version.IsPrerelease;
+            }
+            else if (_floatBehavior == NuGetVersionFloatBehavior.Patch)
+            {
+                return _minVersion.Major == version.Major
+                        && _minVersion.Minor == version.Minor
+                        && !version.IsPrerelease;
+            }
+            else if (_floatBehavior == NuGetVersionFloatBehavior.Minor)
+            {
+                return _minVersion.Major == version.Major
+                        && !version.IsPrerelease;
             }
 
             return false;
