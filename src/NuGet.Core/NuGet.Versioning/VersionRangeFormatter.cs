@@ -129,7 +129,7 @@ namespace NuGet.Versioning
                 && !range.HasUpperBound)
             {
                 s = range.IsFloating ?
-                    range.Float!.ToString() :
+                    range.Float.ToString() :
                     string.Format(VersionFormatter, ZeroN, range.MinVersion);
             }
             else if (range.HasLowerAndUpperBounds
@@ -162,7 +162,7 @@ namespace NuGet.Versioning
             {
                 if (range.IsFloating)
                 {
-                    sb.Append(range.Float!.ToString());
+                    sb.Append(range.Float.ToString());
                 }
                 else
                 {

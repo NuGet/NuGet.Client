@@ -70,6 +70,8 @@ namespace NuGet.Versioning
         /// <summary>
         /// True if the range has a floating version above the min version.
         /// </summary>
+        [MemberNotNullWhen(true, nameof(Float))]
+        [MemberNotNullWhen(true, nameof(_floatRange))]
         public bool IsFloating
         {
             get { return Float != null && Float.FloatBehavior != NuGetVersionFloatBehavior.None; }
@@ -233,7 +235,7 @@ namespace NuGet.Versioning
             if (IsFloating)
             {
                 // check if either version is in the floating range
-                var curInRange = _floatRange!.Satisfies(current);
+                var curInRange = _floatRange.Satisfies(current);
                 var conInRange = _floatRange.Satisfies(considering);
 
                 if (curInRange && !conInRange)
@@ -298,10 +300,11 @@ namespace NuGet.Versioning
             {
                 var minVersion = MinVersion;
 
-                if (Float!.FloatBehavior == NuGetVersionFloatBehavior.Prerelease)
+                if (Float.FloatBehavior == NuGetVersionFloatBehavior.Prerelease)
                 {
 #pragma warning disable CS8604 // Possible null reference argument.
-                    // Possible bug?
+                    // MinRange is always not null when floating versions are used, but the class
+                    // design doesn't allow that to be represented with nullable annotations.
                     minVersion = GetNonSnapshotVersion(minVersion);
 #pragma warning restore CS8604 // Possible null reference argument.
                 }
