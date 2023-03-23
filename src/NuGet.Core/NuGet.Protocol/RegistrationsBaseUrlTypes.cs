@@ -8,7 +8,7 @@ namespace NuGet.Protocol
     /// </summary>
     public static class RegistrationsBaseUrlTypes
     {
-        private const string TypeName = "RegistrationsBaseUrl";
+        //private const string TypeName = "RegistrationsBaseUrl";
 
         /// <summary>
         /// These registrations are not compressed (meaning they use an implied Content-Encoding: identity).
@@ -27,12 +27,5 @@ namespace NuGet.Protocol
         /// SemVer 2.0.0 packages are included in this hive.
         /// </summary>
         public static readonly string[] RegistrationsBaseUrlVersion360;
-
-        static RegistrationsBaseUrlTypes()
-        {
-            
-        }
-
-        private static string CreateVersionedType(string version) => $"{TypeName}{version}";
     }
 }

@@ -2033,15 +2033,6 @@ static readonly NuGet.Protocol.ProxyAuthenticationHandler.MaxAuthRetries -> int
 ~static readonly NuGet.Protocol.ServiceTypes.SearchAutocompleteService -> string[]
 ~static readonly NuGet.Protocol.ServiceTypes.SearchQueryService -> string[]
 ~static readonly NuGet.Protocol.ServiceTypes.SymbolPackagePublish -> string[]
-~static readonly NuGet.Protocol.ServiceTypes.Version200 -> string
-~static readonly NuGet.Protocol.ServiceTypes.Version300 -> string
-~static readonly NuGet.Protocol.ServiceTypes.Version300beta -> string
-~static readonly NuGet.Protocol.ServiceTypes.Version340 -> string
-~static readonly NuGet.Protocol.ServiceTypes.Version470 -> string
-~static readonly NuGet.Protocol.ServiceTypes.Version490 -> string
-~static readonly NuGet.Protocol.ServiceTypes.Version500 -> string
-~static readonly NuGet.Protocol.ServiceTypes.Version510 -> string
-~static readonly NuGet.Protocol.ServiceTypes.Versioned -> string
 static readonly NuGet.Protocol.StreamExtensions.BufferSize -> int
 ~virtual NuGet.Protocol.Core.Types.DependencyInfoResource.ResolvePackages(string packageId, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.RemoteSourceDependencyInfo>>
 ~virtual NuGet.Protocol.Core.Types.Repository.ProviderFactory.GetCoreV3() -> System.Collections.Generic.IEnumerable<System.Lazy<NuGet.Protocol.Core.Types.INuGetResourceProvider>>
