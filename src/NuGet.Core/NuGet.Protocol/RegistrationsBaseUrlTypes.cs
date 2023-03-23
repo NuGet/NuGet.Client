@@ -24,7 +24,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// An alias for RegistrationsBaseUrl
         /// </summary>
-        public static readonly string RegistrationsBaseUrlVersion300rc= $"{TypeName}{ClientVersions.Version300rc}";
+        public static readonly string RegistrationsBaseUrlVersion300rc = $"{TypeName}{ClientVersions.Version300rc}";
 
         /// <summary>
         /// These registrations are compressed using Content-Encoding: gzip.
@@ -48,12 +48,12 @@ namespace NuGet.Protocol
         /// </summary>
         public static readonly string[] RegistrationsBaseUrls =
         {
-            RegistrationsBaseUrl,
-            RegistrationsBaseUrlVersion300beta,
-            RegistrationsBaseUrlVersion300rc,
-            RegistrationsBaseUrlVersion340,
+            RegistrationsBaseUrlVersioned,
             RegistrationsBaseUrlVersion360,
-            RegistrationsBaseUrlVersioned
+            RegistrationsBaseUrlVersion340,
+            RegistrationsBaseUrlVersion300rc,
+            RegistrationsBaseUrlVersion300beta,
+            RegistrationsBaseUrl
         };
 
     }

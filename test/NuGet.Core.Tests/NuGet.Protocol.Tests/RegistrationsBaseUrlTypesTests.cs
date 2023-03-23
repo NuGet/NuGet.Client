@@ -45,18 +45,18 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrls_Contains_All_Versions()
+        public void RegistrationsBaseUrlTypes_RegistrationsBaseUrls_Returns_All_Versions_In_Desc_Order()
         {
             string[] expected =
             {
-                "RegistrationsBaseUrl",
-                "RegistrationsBaseUrl/3.0.0-beta",
-                "RegistrationsBaseUrl/3.0.0-rc",
-                "RegistrationsBaseUrl/3.4.0",
-                "RegistrationsBaseUrl/3.6.0",
                 "RegistrationsBaseUrl/Versioned",
+                "RegistrationsBaseUrl/3.6.0",
+                "RegistrationsBaseUrl/3.4.0",
+                "RegistrationsBaseUrl/3.0.0-rc",
+                "RegistrationsBaseUrl/3.0.0-beta",
+                "RegistrationsBaseUrl"
             };
-            RegistrationsBaseUrlTypes.RegistrationsBaseUrls.Should().BeEquivalentTo(expected);
+            RegistrationsBaseUrlTypes.RegistrationsBaseUrls.Should().ContainInOrder(expected);
         }
     }
 }
