@@ -1,2 +1,3 @@
+#nullable enable
 ~static readonly NuGet.Protocol.ServiceTypes.Version300rc -> string
 ~static readonly NuGet.Protocol.ServiceTypes.Version360 -> string
