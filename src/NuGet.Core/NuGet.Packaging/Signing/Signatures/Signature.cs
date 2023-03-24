@@ -249,7 +249,7 @@ namespace NuGet.Packaging.Signing
                         {
                             if (settings.ReportUntrustedRoot)
                             {
-                                LogAdditionalContext(chain, issues);
+                                SignatureUtility.LogAdditionalContext(chain, issues);
 
                                 issues.Add(SignatureLog.Issue(!settings.AllowUntrusted, NuGetLogCode.NU3018, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue_UntrustedRoot, FriendlyName)));
                             }
@@ -422,21 +422,6 @@ namespace NuGet.Packaging.Signing
             }
 
             return timestampList;
-        }
-
-        private static void LogAdditionalContext(IX509Chain chain, List<SignatureLog> issues)
-        {
-            ILogMessage logMessage = chain.AdditionalContext;
-
-            if (logMessage is not null)
-            {
-                SignatureLog issue = SignatureLog.Issue(
-                    fatal: false,
-                    logMessage.Code,
-                    logMessage.Message);
-
-                issues.Add(issue);
-            }
         }
 #endif
     }

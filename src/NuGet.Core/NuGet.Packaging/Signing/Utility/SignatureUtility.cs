@@ -3,6 +3,7 @@
 
 #if IS_SIGNING_SUPPORTED
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
@@ -287,6 +288,31 @@ namespace NuGet.Packaging.Signing
             }
 
             return false;
+        }
+
+        internal static void LogAdditionalContext(IX509Chain chain, List<SignatureLog> issues)
+        {
+            if (chain is null)
+            {
+                throw new ArgumentNullException(nameof(chain));
+            }
+
+            if (issues is null)
+            {
+                throw new ArgumentNullException(nameof(issues));
+            }
+
+            ILogMessage logMessage = chain.AdditionalContext;
+
+            if (logMessage is not null)
+            {
+                SignatureLog issue = SignatureLog.Issue(
+                    fatal: false,
+                    logMessage.Code,
+                    logMessage.Message);
+
+                issues.Add(issue);
+            }
         }
 
         internal static IX509CertificateChain GetTimestampCertificates(

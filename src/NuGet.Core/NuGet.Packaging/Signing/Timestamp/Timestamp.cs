@@ -195,7 +195,7 @@ namespace NuGet.Packaging.Signing
 
                     if (CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, X509ChainStatusFlags.UntrustedRoot, out messages))
                     {
-                        LogAdditionalContext(chain, issues);
+                        SignatureUtility.LogAdditionalContext(chain, issues);
 
                         issues.Add(SignatureLog.Error(NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.VerifyTimestampChainBuildingIssue_UntrustedRoot, signature.FriendlyName)));
 
@@ -272,21 +272,6 @@ namespace NuGet.Packaging.Signing
             }
 
             return flags;
-        }
-
-        private static void LogAdditionalContext(IX509Chain chain, List<SignatureLog> issues)
-        {
-            ILogMessage logMessage = chain.AdditionalContext;
-
-            if (logMessage is not null)
-            {
-                SignatureLog issue = SignatureLog.Issue(
-                    fatal: false,
-                    logMessage.Code,
-                    logMessage.Message);
-
-                issues.Add(issue);
-            }
         }
 #endif
     }
