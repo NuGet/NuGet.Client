@@ -41,16 +41,26 @@ namespace NuGet.Configuration
         /// <exception cref="ArgumentException"> if <paramref name="packageId"/> is null, empty, or whitespace only.</exception>
         public IReadOnlyList<string> GetConfiguredPackageSources(string packageId)
         {
-            IReadOnlyList<string> idk = UnsavedPatterns.IsValueCreated ? UnsavedPatterns.Value.Keys.ToList() : null;
+            IReadOnlyList<string> unsavedSources = UnsavedPatterns.IsValueCreated ? UnsavedPatterns.Value.Keys.ToList() : null;
+            IReadOnlyList<string> persistedSources = SearchTree.Value?.GetConfiguredPackageSources(packageId);
 
-            var persistedPackageSources = SearchTree.Value?.GetConfiguredPackageSources(packageId);
-            if (idk != null)
+            if (unsavedSources != null && persistedSources != null)
             {
-                var persistedAndUnsavedPackageSources = persistedPackageSources.Union(idk);
+                IEnumerable<string> persistedAndUnsavedPackageSources = persistedSources.Union(unsavedSources);
                 return persistedAndUnsavedPackageSources.ToList().AsReadOnly();
             }
 
-            return persistedPackageSources;
+            if (persistedSources != null)
+            {
+                return persistedSources;
+            }
+
+            if (unsavedSources != null)
+            {
+                return unsavedSources;
+            }
+
+            return null;
         }
 
         public PackageSourceMapping(IReadOnlyDictionary<string, IReadOnlyList<string>> patterns)
