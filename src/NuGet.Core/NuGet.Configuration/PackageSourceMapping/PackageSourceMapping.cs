@@ -33,14 +33,24 @@ namespace NuGet.Configuration
         public bool IsEnabled { get; }
 
         /// <summary>
-        /// Get package source names with matching prefix "packageId" from package source mapping section.
+        /// Get package source names with matching prefix "packageId" from package source mapping section plus
+        /// any <see cref="UnsavedPatterns"/> sources.
         /// </summary>
         /// <param name="packageId">Search packageId. Cannot be null, empty, or whitespace only. </param>
         /// <returns>Package source names with matching prefix "packageId" from package patterns.</returns>
         /// <exception cref="ArgumentException"> if <paramref name="packageId"/> is null, empty, or whitespace only.</exception>
         public IReadOnlyList<string> GetConfiguredPackageSources(string packageId)
         {
-            return SearchTree.Value?.GetConfiguredPackageSources(packageId);
+            IReadOnlyList<string> idk = UnsavedPatterns.IsValueCreated ? UnsavedPatterns.Value.Keys.ToList() : null;
+
+            var persistedPackageSources = SearchTree.Value?.GetConfiguredPackageSources(packageId);
+            if (idk != null)
+            {
+                var persistedAndUnsavedPackageSources = persistedPackageSources.Union(idk);
+                return persistedAndUnsavedPackageSources.ToList().AsReadOnly();
+            }
+
+            return persistedPackageSources;
         }
 
         public PackageSourceMapping(IReadOnlyDictionary<string, IReadOnlyList<string>> patterns)
