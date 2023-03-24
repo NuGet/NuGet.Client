@@ -483,10 +483,13 @@ namespace NuGet.PackageManagement.UI
                             .Distinct()
                             .ToArray();
 
+                        //string[] packageIds = actions
+                        //    .Select(action => action.PackageIdentity.Id)
+                        //    .Distinct()
+                        //    .OrderBy(package => package)
+                        //    .ToArray();
                         string[] packageIds = actions
-                            .Select(action => action.PackageIdentity.Id)
-                            .Distinct()
-                            .OrderBy(package => package)
+                            .SelectMany(action => action.ImplicitActions.Select(action => action.PackageIdentity.Id))
                             .ToArray();
 
                         if (userAction?.SourceMappingSourceName != null)

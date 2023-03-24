@@ -83,9 +83,10 @@ namespace NuGet.Commands
             {
                 IEnumerable<string> unresolvedPackageNamesDistinct =
                     graphs
-                    .SelectMany(g => g.Unresolved)
-                    .Where(libraryRange => libraryRange.TypeConstraint.HasFlag(LibraryDependencyTarget.Package))
-                    .Select(libraryRange => libraryRange.Name)
+                    .SelectMany(g => g.Flattened)
+                    //.Where(graphItem => graphItem.Key.lTypeConstraint.HasFlag(LibraryDependencyTarget.Package))
+                    //.Select(libraryRange => libraryRange.Name)
+                    .Select(graphItem => graphItem.Key.Name)
                     .Distinct();
 
                 Dictionary<string, List<string>> dictionaryUnsavedSourceToPackageIds = unsavedPackageSourceMappings.UnsavedPatterns.Value;

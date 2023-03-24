@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Packaging.Signing;
@@ -159,11 +161,106 @@ namespace NuGet.Commands
             var settings = Settings.LoadImmutableSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths, settingsLoadingContext);
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
-            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            PackageSourceMapping packageSourceMapping = null;
+
             if (restoreArgs.NewMappingSource != null && restoreArgs.NewMappingID != null)
             {
-                packageSourceMapping.UnsavedPatterns.Value.Add(restoreArgs.NewMappingSource, new List<string>() { restoreArgs.NewMappingID });
+                var mappingProvider = new PackageSourceMappingProvider(settings);
+
+                PackagePatternItem packagePatternItem = new(restoreArgs.NewMappingID);
+
+                IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems();
+                List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new();
+
+                PackageSourceMappingSourceItem newPackageSourceMappingItemForSource = new(
+                        restoreArgs.NewMappingSource,
+                        packagePatternItems: new List<PackagePatternItem>() { packagePatternItem });
+
+                // No Package Source Mappings existed, so simply create the new mapping.
+                if (existingPackageSourceMappingItems.Count == 0)
+                {
+                    newAndExistingPackageSourceMappingItems.Add(newPackageSourceMappingItemForSource);
+                }
+                else // Mappings existed for some source.
+                {
+                    newAndExistingPackageSourceMappingItems.AddRange(existingPackageSourceMappingItems);
+
+                    PackageSourceMappingSourceItem existingPackageSourceMappingItemForSource =
+                        existingPackageSourceMappingItems
+                        .Where(mappingItem => mappingItem.Key == restoreArgs.NewMappingSource)
+                        .FirstOrDefault();
+
+                    // Source is being mapped for the first time.
+                    if (existingPackageSourceMappingItemForSource is null)
+                    {
+                        newAndExistingPackageSourceMappingItems.Add(newPackageSourceMappingItemForSource);
+                    }
+                    else // Source already had an existing mapping.
+                    {
+                        if (!existingPackageSourceMappingItemForSource.Patterns.Contains(packagePatternItem))
+                        {
+                            existingPackageSourceMappingItemForSource.Patterns.Add(packagePatternItem);
+                        }
+                    }
+                }
+
+                Dictionary<string, IReadOnlyList<string>> patternsReadOnly = newAndExistingPackageSourceMappingItems
+                    .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)(pair.Patterns.Select(p => p.Pattern).ToList()));
+
+                //IEnumerable<IGrouping<string, PackageSourceMappingSourceItem>> groupthing =
+                //    newAndExistingPackageSourceMappingItems
+                //    .GroupBy(sourceItem => sourceItem.Key);
+
+                //foreach (var thing in groupthing)
+                //{
+                //    string source = thing.Key;
+                //    IEnumerable<PackagePatternItem> patternItems = thing.SelectMany(_ => _.Patterns);
+
+                //}
+                //IReadOnlyDictionary<string, List<string>> dictMappingSourceItem = new ReadOnlyDictionary();
+
+                //.ToDictionary(
+                //    sourceItem => sourceItem.Key,
+                //    sourceItem => sourceItem.SelectMany(_ => _.Patterns.Select(packagePatternItem => packagePatternItem.Pattern)).ToList());
+
+                //IReadOnlyDictionary<string, IReadOnlyList<string>> dictMappingSourceItem =
+                //    new ReadOnlyDictionary<string, IReadOnlyList<string>>(
+                //    newAndExistingPackageSourceMappingItems.ToDictionary(
+                //        mappingItem => mappingItem.Key,
+                //        mappingItem => mappingItem.Patterns.Select(pattern => pattern.Pattern) as IReadOnlyList<string>
+                //    ));
+                //packageSourceMapping = new PackageSourceMapping((IReadOnlyDictionary<string, IReadOnlyList<string>>)dictMappingSourceItem);
+                packageSourceMapping = new PackageSourceMapping(patternsReadOnly);
+                packageSourceMapping.UnsavedPatterns.Value.Add(
+                    newPackageSourceMappingItemForSource.Key,
+                    newPackageSourceMappingItemForSource.Patterns.Select(p => p.Pattern).ToList());
             }
+            else
+            {
+                packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            }
+
+            //if (restoreArgs.NewMappingSource != null && restoreArgs.NewMappingID != null)
+            //{
+            //    PackageSourceMappingProvider mappingProvider = new PackageSourceMappingProvider(settings);
+            //    IReadOnlyList<PackageSourceMappingSourceItem> mappingSourceItems = mappingProvider.GetPackageSourceMappingItems();
+            //    PackageSourceMappingSourceItem existingSource = mappingSourceItems.FirstOrDefault(_ => _.Key == restoreArgs.NewMappingSource);
+
+            //    PackageSourceMapping newPackageSourceMapping = null;
+            //    if (existingSource is default(PackageSourceMappingSourceItem))
+            //    {
+            //        var dictionary = new Dictionary<string, IReadOnlyList<string>>
+            //        {
+            //            { restoreArgs.NewMappingSource, new List<string>() { restoreArgs.NewMappingID } }
+            //        };
+
+            //        newPackageSourceMapping = new PackageSourceMapping(dictionary);
+            //    }
+            //    else
+            //    {
+            //        IReadOnlyList<PackageSourceMappingSourceItem> items = mappingProvider.GetPackageSourceMappingItems();
+            //    }
+            //}
 
             var updateLastAccess = SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings);
 
