@@ -23,8 +23,8 @@ namespace NuGet.Protocol.Tests.Resources
               ""resources"": [
                 {
                   ""@id"": ""https://api.nuget.org/v5/registrations-gz-semver3"",
-                  ""@type"": ""RegistrationsBaseUrl"",
-                  ""comment"": ""Fancy new unsupported semver 3""
+                  ""@type"": ""RegistrationsBaseUrl/7.0.0"",
+                  ""comment"": ""Fancy new semver 3 url that this client doesn't support""
                 }]}";
 
             var serviceIndexJObject = JObject.Parse(rawServiceIndex);
