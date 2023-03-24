@@ -927,71 +927,35 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            string currentPackagePattern = packageIds[0]; //TODO: iterate?
-            PackagePatternItem packagePatternItem = new(currentPackagePattern);
+            IEnumerable<PackagePatternItem> newPackagePatternItems = packageIds.Select(packageId => new PackagePatternItem(packageId));
 
             IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems();
-            List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new();
+            List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new(existingPackageSourceMappingItems);
 
-            PackageSourceMappingSourceItem newPackageSourceMappingItemForSource = new(
-                    sourceName,
-                    packagePatternItems: new List<PackagePatternItem>() { packagePatternItem });
+            PackageSourceMappingSourceItem existingPackageSourceMappingItemForSource =
+                        existingPackageSourceMappingItems
+                        .Where(mappingItem => mappingItem.Key == sourceName)
+                        .FirstOrDefault();
 
-            // No Package Source Mappings existed, so simply create the new mapping.
-            if (existingPackageSourceMappingItems.Count == 0)
+            // Source is being mapped for the first time.
+            if (existingPackageSourceMappingItemForSource is null)
             {
-                newAndExistingPackageSourceMappingItems.Add(newPackageSourceMappingItemForSource);
+                existingPackageSourceMappingItemForSource = new(sourceName, newPackagePatternItems);
+                newAndExistingPackageSourceMappingItems.Add(existingPackageSourceMappingItemForSource);
             }
-            else // Mappings existed for some source.
+            else // Source already had an existing mapping.
             {
-                PackageSourceMappingSourceItem existingPackageSourceMappingItemForSource =
-                    existingPackageSourceMappingItems
-                    .Where(mappingItem => mappingItem.Key == sourceName)
-                    .FirstOrDefault();
-
-                // Source is being mapped for the first time.
-                if (existingPackageSourceMappingItemForSource is null)
+                foreach (var newPattern in newPackagePatternItems)
                 {
-                    newAndExistingPackageSourceMappingItems.AddRange(existingPackageSourceMappingItems);
-                    newAndExistingPackageSourceMappingItems.Add(newPackageSourceMappingItemForSource);
-                }
-                else // Source already had an existing mapping.
-                {
-                    if (existingPackageSourceMappingItemForSource.Patterns.Contains(packagePatternItem))
+                    if (!existingPackageSourceMappingItemForSource.Patterns.Contains(newPattern))
                     {
-                        return;
+                        existingPackageSourceMappingItemForSource.Patterns.Add(newPattern);
                     }
-                    existingPackageSourceMappingItemForSource.Patterns.Add(packagePatternItem);
-                    newAndExistingPackageSourceMappingItems.AddRange(existingPackageSourceMappingItems);
                 }
             }
 
             mappingProvider.SavePackageSourceMappings(newAndExistingPackageSourceMappingItems);
         }
-
-        //private void SavePackageSourceMappings(string sourceName, string[] packageIds, PackageSourceMappingProvider provider)
-        //{
-        //    List<PackagePatternItem> existingPackagePatterns =
-        //        provider.GetPackageSourceMappingItems()
-        //        .Where(mappingItem => mappingItem.Key == sourceName)
-        //        .SelectMany(mappingItem => mappingItem.Patterns)
-        //        .ToList();
-
-
-        //    //// Add distinct patterns
-        //    //foreach (string packageId in packageIds)
-        //    //{
-        //    //    if (existingPackagePatterns.Contains()
-        //    //}
-
-        //    PackageSourceMappingSourceItem mappingSourceItemForSourceName = new(sourceName, );
-
-        //    IEnumerable<PackagePatternItem> packagePatterns = packageIds.Select(packageId => new PackagePatternItem(packageId));
-        //    existingAndNewSourceItems
-        //    existingPackagePatterns.Add(newMappingSourceItem);
-
-        //    provider.SavePackageSourceMappings(existingPackagePatterns);
-        //}
 
         // Non-private only to facilitate testing.
         internal static async ValueTask<IReadOnlyList<PreviewResult>> GetPreviewResultsAsync(
