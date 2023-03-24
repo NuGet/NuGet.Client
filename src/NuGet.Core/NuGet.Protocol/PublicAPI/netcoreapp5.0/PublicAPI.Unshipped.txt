@@ -1,12 +1,19 @@
 #nullable enable
 ~static readonly NuGet.Protocol.ServiceTypes.Version300rc -> string
 ~static readonly NuGet.Protocol.ServiceTypes.Version360 -> string
+NuGet.Protocol.IVulnerabilityInfoResource
+NuGet.Protocol.IVulnerabilityInfoResource.GetVulnerabilityInfoAsync(NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Model.GetVulnerabilityInfoResult!>!
+NuGet.Protocol.Model.GetVulnerabilityInfoResult
+NuGet.Protocol.Model.GetVulnerabilityInfoResult.Exceptions.get -> System.Collections.Generic.IReadOnlyList<System.Exception!>?
+NuGet.Protocol.Model.GetVulnerabilityInfoResult.GetVulnerabilityInfoResult(System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Model.VulnerabilityInfo!>!>!>? knownVulnerabilities, System.Collections.Generic.IReadOnlyList<System.Exception!>? exceptions) -> void
+NuGet.Protocol.Model.GetVulnerabilityInfoResult.KnownVulnerabilities.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Model.VulnerabilityInfo!>!>!>?
 NuGet.Protocol.Model.VulnerabilityInfo
+NuGet.Protocol.Model.VulnerabilityInfo.Equals(NuGet.Protocol.Model.VulnerabilityInfo? other) -> bool
 NuGet.Protocol.Model.VulnerabilityInfo.Severity.get -> int
 NuGet.Protocol.Model.VulnerabilityInfo.Url.get -> System.Uri!
 NuGet.Protocol.Model.VulnerabilityInfo.Versions.get -> NuGet.Versioning.VersionRange!
 NuGet.Protocol.Model.VulnerabilityInfo.VulnerabilityInfo(System.Uri! url, int severity, NuGet.Versioning.VersionRange! versions) -> void
-NuGet.Protocol.VulnerabilityInfoResource
-NuGet.Protocol.VulnerabilityInfoResource.VulnerabilityInfoResource() -> void
+override NuGet.Protocol.Model.VulnerabilityInfo.Equals(object? obj) -> bool
+override NuGet.Protocol.Model.VulnerabilityInfo.GetHashCode() -> int
 ~static readonly NuGet.Protocol.ServiceTypes.Version660 -> string
 ~static readonly NuGet.Protocol.ServiceTypes.VulnerabilityInfo -> string[]
