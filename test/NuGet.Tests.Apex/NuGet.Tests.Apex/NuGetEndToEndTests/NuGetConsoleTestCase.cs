@@ -713,61 +713,17 @@ namespace NuGet.Tests.Apex
         }
 
         [NuGetWpfTheory]
-        [MemberData(nameof(GetPackagesConfigTemplates))]
-        public async Task UpdateAllPCPackagesInPMC(ProjectTemplate projectTemplate)
+        [InlineData(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")]
+        [InlineData(ProjectTemplate.NetStandardClassLib, "PackageC", "1.0.0", "2.0.0", "PackageD", "1.1.0", "2.2.0")]
+
+        public async Task UpdateAllPackagesInPMC(ProjectTemplate projectTemplate, string packageName1, string packageVersion1, string packageVersion2, string packageName2, string packageVersion3, string packageVersion4)
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
             {
                 // Arrange
-                var packageName1 = "UpdateAllPCPackage1";
-                var packageVersion1 = "1.0.0";
-                var packageVersion2 = "2.0.0";
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName1, packageVersion1);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName1, packageVersion2);
-
-                var packageName2 = "UpdateAllPCPackage2";
-                var packageVersion3 = "1.0.1";
-                var packageVersion4 = "2.0.1";
-                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion3);
-                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion4);
-
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
-                {
-                    var solutionService = VisualStudio.Get<SolutionService>();
-                    var nugetConsole = GetConsole(testContext.Project);
-
-                    // Act
-                    nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
-                    nugetConsole.InstallPackageFromPMC(packageName2, packageVersion3);
-                    nugetConsole.Execute("update-package");
-
-                    //Asset
-                    CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
-                    CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
-                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
-                }
-            }
-        }
-
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetNetCoreTemplates))]
-        public async Task UpdateAllPRPackagesInPMC(ProjectTemplate projectTemplate)
-        {
-            EnsureVisualStudioHost();
-            using (var simpleTestPathContext = new SimpleTestPathContext())
-            {
-                // Arrange
-                var packageName1 = "UpdateAllPRPackage1";
-                var packageVersion1 = "1.0.0";
-                var packageVersion2 = "2.0.0";
-                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName1, packageVersion1);
-                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName1, packageVersion2);
-
-                var packageName2 = "UpdateAllPRPackage2";
-                var packageVersion3 = "1.1.0";
-                var packageVersion4 = "2.1.0";
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion3);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion4);
 
@@ -783,8 +739,16 @@ namespace NuGet.Tests.Apex
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
-                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
+                    if (testContext.Project.ProjectTemplate == ProjectTemplate.ClassLibrary)
+                    {
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
+                    }
+                    else
+                    {
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
+                    }
                     Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
