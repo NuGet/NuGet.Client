@@ -50,8 +50,7 @@ namespace NuGet.Commands
             bool forceRuntimeGraphCreation,
             CancellationToken token,
             TelemetryActivity telemetryActivity,
-            string telemetryPrefix,
-            PackageSourceMapping unsavedPackageSourceMappings)
+            string telemetryPrefix)
         {
             var allRuntimes = RuntimeGraph.Empty;
             var frameworkTasks = new List<Task<RestoreTargetGraph>>();
@@ -76,10 +75,11 @@ namespace NuGet.Commands
 
             graphs.AddRange(frameworkGraphs);
 
+            var packageSourceMappingsWithUnsaved = context.PackageSourceMapping;
             // Track new Source Mappings for all package dependencies.
-            if (unsavedPackageSourceMappings is not null
-                && unsavedPackageSourceMappings.UnsavedPatterns.IsValueCreated
-                && unsavedPackageSourceMappings.UnsavedPatterns.Value.Count > 0)
+            if (packageSourceMappingsWithUnsaved is not null
+                && packageSourceMappingsWithUnsaved.UnsavedPatterns.IsValueCreated
+                && packageSourceMappingsWithUnsaved.UnsavedPatterns.Value.Count > 0)
             {
                 IEnumerable<string> unresolvedPackageNamesDistinct =
                     graphs
@@ -89,7 +89,7 @@ namespace NuGet.Commands
                     .Select(graphItem => graphItem.Key.Name)
                     .Distinct();
 
-                Dictionary<string, List<string>> dictionaryUnsavedSourceToPackageIds = unsavedPackageSourceMappings.UnsavedPatterns.Value;
+                Dictionary<string, List<string>> dictionaryUnsavedSourceToPackageIds = packageSourceMappingsWithUnsaved.UnsavedPatterns.Value;
                 foreach (string source in dictionaryUnsavedSourceToPackageIds.Keys)
                 {
                     List<string> packageIds = dictionaryUnsavedSourceToPackageIds[source];

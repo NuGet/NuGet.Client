@@ -244,12 +244,6 @@ namespace NuGet.Commands
                     _success &= result;
                 }
 
-                bool hasUnsavedPackageSourceMappings =
-                    _request.PackageSourceMapping.UnsavedPatterns.IsValueCreated
-                    && _request.PackageSourceMapping.UnsavedPatterns.Value.Count > 0;
-
-                PackageSourceMapping unsavedPackageSourceMappingPatterns = hasUnsavedPackageSourceMappings ? _request.PackageSourceMapping : null;
-
                 IEnumerable<RestoreTargetGraph> graphs = null;
                 if (_success)
                 {
@@ -261,8 +255,7 @@ namespace NuGet.Commands
                         _request.DependencyProviders.FallbackPackageFolders,
                         contextForProject,
                         token,
-                        telemetry,
-                        unsavedPackageSourceMappingPatterns
+                        telemetry
                         );
                     }
                 }
@@ -1009,8 +1002,7 @@ namespace NuGet.Commands
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             RemoteWalkContext context,
             CancellationToken token,
-            TelemetryActivity telemetryActivity,
-            PackageSourceMapping unsavedPackageSourceMappings)
+            TelemetryActivity telemetryActivity)
         {
             if (_request.Project.TargetFrameworks.Count == 0)
             {
@@ -1074,8 +1066,7 @@ namespace NuGet.Commands
                         forceRuntimeGraphCreation: hasSupports,
                         token: token,
                         telemetryActivity: telemetryActivity,
-                        telemetryPrefix: string.Empty,
-                        unsavedPackageSourceMappings);
+                        telemetryPrefix: string.Empty);
                 }
                 catch (FatalProtocolException)
                 {
@@ -1143,8 +1134,7 @@ namespace NuGet.Commands
                     forceRuntimeGraphCreation: true,
                     token: token,
                     telemetryActivity: telemetryActivity,
-                    telemetryPrefix: "Additional-",
-                    unsavedPackageSourceMappings);
+                    telemetryPrefix: "Additional-");
                 }
 
                 _success = compatibilityResult.Item1;
