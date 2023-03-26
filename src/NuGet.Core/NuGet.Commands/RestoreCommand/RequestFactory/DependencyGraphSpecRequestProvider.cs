@@ -167,7 +167,7 @@ namespace NuGet.Commands
             {
                 var mappingProvider = new PackageSourceMappingProvider(settings);
 
-                PackagePatternItem packagePatternItem = new(restoreArgs.NewMappingID);
+                PackagePatternItem packagePatternItem = new("*");
 
                 IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems();
                 List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new();
@@ -207,29 +207,6 @@ namespace NuGet.Commands
                 Dictionary<string, IReadOnlyList<string>> patternsReadOnly = newAndExistingPackageSourceMappingItems
                     .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)(pair.Patterns.Select(p => p.Pattern).ToList()));
 
-                //IEnumerable<IGrouping<string, PackageSourceMappingSourceItem>> groupthing =
-                //    newAndExistingPackageSourceMappingItems
-                //    .GroupBy(sourceItem => sourceItem.Key);
-
-                //foreach (var thing in groupthing)
-                //{
-                //    string source = thing.Key;
-                //    IEnumerable<PackagePatternItem> patternItems = thing.SelectMany(_ => _.Patterns);
-
-                //}
-                //IReadOnlyDictionary<string, List<string>> dictMappingSourceItem = new ReadOnlyDictionary();
-
-                //.ToDictionary(
-                //    sourceItem => sourceItem.Key,
-                //    sourceItem => sourceItem.SelectMany(_ => _.Patterns.Select(packagePatternItem => packagePatternItem.Pattern)).ToList());
-
-                //IReadOnlyDictionary<string, IReadOnlyList<string>> dictMappingSourceItem =
-                //    new ReadOnlyDictionary<string, IReadOnlyList<string>>(
-                //    newAndExistingPackageSourceMappingItems.ToDictionary(
-                //        mappingItem => mappingItem.Key,
-                //        mappingItem => mappingItem.Patterns.Select(pattern => pattern.Pattern) as IReadOnlyList<string>
-                //    ));
-                //packageSourceMapping = new PackageSourceMapping((IReadOnlyDictionary<string, IReadOnlyList<string>>)dictMappingSourceItem);
                 packageSourceMapping = new PackageSourceMapping(patternsReadOnly);
                 packageSourceMapping.UnsavedPatterns.Value.Add(
                     newPackageSourceMappingItemForSource.Key,
