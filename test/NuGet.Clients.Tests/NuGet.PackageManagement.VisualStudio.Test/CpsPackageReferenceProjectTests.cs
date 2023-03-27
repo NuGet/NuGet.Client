@@ -12,7 +12,6 @@ using FluentAssertions;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Sdk.TestFramework;
-using Microsoft.VisualStudio.Services.TestManagement.TestPlanning.WebApi;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Commands;
@@ -4111,13 +4110,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetInstalledAndTransitivePackagesAsync_IncludeTranstivePackages_TransitiveOriginsParamSetToTrue_ReturnsPackagesWithTransitiveOriginsAsync()
+        public async Task GetInstalledAndTransitivePackagesAsync_DontIncludeTranstivePackages_TransitiveOriginsParamSetToTrue_ReturnsNoPackagesWithTransitiveOriginsAsync()
         {
             using var rootDir = new SimpleTestPathContext();
             await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
             IProjectSystemCache cache = new ProjectSystemCache();
 
-            // Arrange I: A project with no packages
+            // Arrange
             PackageSpec initialProjectSpec = ProjectTestHelpers.GetPackageSpec("MyProject", rootDir.SolutionRoot, framework: "net472", dependencyName: "PackageA");
             await RestorePackageSpecsAsync(rootDir, output: null, initialProjectSpec);
 
@@ -4128,8 +4127,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert
             Assert.NotEmpty(result.InstalledPackages);
-            Assert.NotEmpty(result.TransitivePackages);
-            Assert.All(result.TransitivePackages, pkg => Assert.NotEmpty(pkg.TransitiveOrigins));
+            Assert.Empty(result.TransitivePackages);
         }
 
         [Fact]
