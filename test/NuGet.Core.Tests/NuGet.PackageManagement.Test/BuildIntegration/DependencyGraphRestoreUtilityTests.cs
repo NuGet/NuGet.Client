@@ -384,15 +384,9 @@ namespace NuGet.PackageManagement.Test
         }
 
 #if NETFRAMEWORK
-        // Copying TestPackageManager_ExecuteNuGetProjectActionsAsync_WithProgressReporter_WhenPackageIsInstalled_AssetsFileWritesAreReported
         [Fact]
-        public async Task PreviewRestoreAsync_SourceMapping_A()
+        public async Task PreviewRestoreAsync_WithoutNewSourceMapping_Succeeds()
         {
-            // Preview - CpsPackageReferenceProjectTests - find one that sets up projects, use here.
-            // probably ProgressReporter tests
-            // 
-
-
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager();
 
@@ -407,41 +401,38 @@ namespace NuGet.PackageManagement.Test
             var mockedDependencyGraphSpec = new Mock<DependencyGraphSpec>().Object;
             var mockedAssetLogMessage = new Mock<IReadOnlyList<IAssetsLogMessage>>().Object;
 
-
             var projectName = "project";
             PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(settings, projectName, rootPath: pathContext.SolutionRoot);
             var dependencyGraphSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
             mockProjectCache.Setup(pc => pc.TryGetProjectRestoreInfo(It.IsAny<string>(), out dependencyGraphSpec, out It.Ref<IReadOnlyList<IAssetsLogMessage>>.IsAny)).Returns(true);
 
             var projectCache = mockProjectCache.Object;
-
-
             var projectFullPath = dependencyGraphSpec.Projects[0].FilePath;
             string assetsFilePath = packageSpec.RestoreMetadata.OutputPath;
 
             var cpsPackageReferenceProject = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache, projectServices: null, assetsFilePath, packageSpec);
-            //var mockCpsPackageReferenceProject = new Mock<CpsPackageReferenceProject>(delegate()
-            //{
-            //    return TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache, projectServices: null, assetsFilePath);
-            //});
-
-            //var cpsPackageReferenceProject = mockCpsPackageReferenceProject.Object;
-            //cpsPackageReferenceProject.GetInstalledPackagesAsync(cancellation)
 
             testSolutionManager.NuGetProjects.Add(cpsPackageReferenceProject);
             TestCpsPackageReferenceProject.AddProjectDetailsToCache(projectCache, dependencyGraphSpec, cpsPackageReferenceProject, GetTestProjectNames(projectFullPath, projectName));
-            //GetPackageSpecsAndAdditionalMessagesAsync
-            //  Setup expectations
+
             var progressReporter = new Mock<IRestoreProgressReporter>(MockBehavior.Strict);
 
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, testSolutionManager, new TestDeleteOnRestartManager(), progressReporter.Object);
             var resolutionContext = new ResolutionContext();
             var projectContext = new TestNuGetProjectContext();
-            var sourceRepositories = sourceRepositoryProvider.GetRepositories();
+            var sourceRepositories = sourceRepositoryProvider.GetRepositories().ToList().AsReadOnly();
 
             // Act (Preview the Restore)
-            IEnumerable<NuGetProjectAction> actions = await nuGetPackageManager.PreviewInstallPackageAsync(cpsPackageReferenceProject, packageA.Identity, resolutionContext, projectContext,
-                    sourceRepositories.First(), sourceRepositories, CancellationToken.None);
+            var actions = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                nuGetProjects: new List<NuGetProject>() { cpsPackageReferenceProject },
+                packageA.Identity,
+                resolutionContext,
+                projectContext,
+                sourceRepositories,
+                versionRange: null,
+                CancellationToken.None,
+                newMappingID: null, //packageA.Id
+                newMappingSource: null); //pathContext.PackageSource
 
             // Assert (Preview the Restore)
             actions.Should().HaveCount(1);
@@ -453,14 +444,14 @@ namespace NuGet.PackageManagement.Test
 
             // Act (Commit the Restore)
             await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                cpsPackageReferenceProject,
-                actions,
+                new List<NuGetProject>() { cpsPackageReferenceProject },
+                new List<NuGetProjectAction>() { actions.First().Action },
                 new TestNuGetProjectContext(),
                 new SourceCacheContext(),
                 CancellationToken.None);
 
             // Assert
-            
+
             progressReporter.VerifyAll();
         }
 
