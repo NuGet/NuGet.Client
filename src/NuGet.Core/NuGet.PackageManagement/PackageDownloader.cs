@@ -103,7 +103,6 @@ namespace NuGet.PackageManagement
 
                 if (isPackageSourceMappingEnabled)
                 {
-                    //Add source to this list if the add mapping is chosen
                     configuredPackageSources = downloadContext.PackageSourceMapping.GetConfiguredPackageSources(packageIdentity.Id);
 
                     if (configuredPackageSources != null)

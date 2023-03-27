@@ -15,7 +15,6 @@ using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging;

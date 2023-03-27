@@ -4,7 +4,6 @@
 #nullable enable
 
 using System;
-using System.Runtime.CompilerServices;
 using NuGet.Versioning;
 using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 

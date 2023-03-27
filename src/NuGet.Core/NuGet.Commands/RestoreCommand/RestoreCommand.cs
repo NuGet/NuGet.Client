@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -255,8 +254,7 @@ namespace NuGet.Commands
                         _request.DependencyProviders.FallbackPackageFolders,
                         contextForProject,
                         token,
-                        telemetry
-                        );
+                        telemetry);
                     }
                 }
                 else

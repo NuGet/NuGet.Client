@@ -226,7 +226,8 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Reads existing Package Source Mappings from settings and adds a globbing "*" pattern for  <see cref="RestoreArgs.NewMappingSource"/>.
+        /// Reads existing Package Source Mappings from settings and adds a new mapping to pattern, <see cref="RestoreArgs.NewMappingID"/>, and
+        /// a glob "*" pattern for the <see cref="RestoreArgs.NewMappingSource"/>.
         /// The intention is that Preview Restore can run and expect all newly installed packages being source mapped to the new source.
         /// Does not write to settings.
         /// </summary>
@@ -238,14 +239,16 @@ namespace NuGet.Commands
             PackageSourceMapping packageSourceMapping;
             var mappingProvider = new PackageSourceMappingProvider(settings);
 
-            PackagePatternItem packagePatternItem = new("*");
+            PackagePatternItem newMappingIdPatternItem = new(restoreArgs.NewMappingID);
+            PackagePatternItem globPackagePatternItem = new("*");
+            List<PackagePatternItem> newPatternItems = new() { newMappingIdPatternItem, globPackagePatternItem };
 
             IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems();
             List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new();
 
             PackageSourceMappingSourceItem newPackageSourceMappingItemForSource = new(
                     restoreArgs.NewMappingSource,
-                    packagePatternItems: new List<PackagePatternItem>() { packagePatternItem });
+                    packagePatternItems: newPatternItems);
 
             // No Package Source Mappings existed, so simply create the new mapping.
             if (existingPackageSourceMappingItems.Count == 0)
@@ -268,9 +271,12 @@ namespace NuGet.Commands
                 }
                 else // Source already had an existing mapping.
                 {
-                    if (!existingPackageSourceMappingItemForSource.Patterns.Contains(packagePatternItem))
+                    foreach (PackagePatternItem newPatternItem in newPatternItems)
                     {
-                        existingPackageSourceMappingItemForSource.Patterns.Add(packagePatternItem);
+                        if (!existingPackageSourceMappingItemForSource.Patterns.Contains(newPatternItem))
+                        {
+                            existingPackageSourceMappingItemForSource.Patterns.Add(newPatternItem);
+                        }
                     }
                 }
             }
