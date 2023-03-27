@@ -4,7 +4,7 @@
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal partial class ConfigPathsArgs
+    internal class ConfigPathsArgs
     {
         public string? WorkingDirectory { get; set; }
     }

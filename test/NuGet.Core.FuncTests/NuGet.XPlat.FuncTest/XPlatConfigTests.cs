@@ -34,6 +34,56 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
+        public void ConfigPathsCommand_NoDirectoryArg_Success()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            {
+                var result = CommandRunner.Run(
+                      DotnetCli,
+                      testInfo.WorkingPath,
+                      $"{XplatDll} config paths",
+                      waitForExit: true
+                      );
+
+                // Assert
+                DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
+            }
+        }
+
+        [Fact]
+        public void ConfigPathsCommand_HelpMessage_Success()
+        {
+            // Arrange
+            var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigPathsWorkingDirectoryDescription);
+            // Act
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config paths --help",
+                waitForExit: true
+                );
+            // Assert
+            DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
+        }
+
+        [Fact]
+        public void ConfigCommand_HelpMessage_Success()
+        {
+            // Arrange
+            var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigPathsCommandDescription);
+            // Act
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config --help",
+                waitForExit: true
+                );
+            // Assert
+            DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
+        }
+
+        [Fact]
         public void ConfigPathsCommand_ListConfigPathsNonExistingDirectory_Fail()
         {
             // Arrange & Act
@@ -50,6 +100,46 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 DotnetCliUtil.VerifyResultFailure(result, expectedError);
+            }
+        }
+
+        [Fact]
+        public void ConfigPathsCommand_NullArgs_Fail()
+        {
+            // Arrange
+            var log = new TestCommandOutputLogger();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ConfigPathsRunner.Run(null, () => log));
+        }
+
+        [Fact]
+        public void ConfigPathsCommand_NullGetLogger_Fail()
+        {
+            // Arrange
+            var args = new ConfigPathsArgs()
+            {
+            };
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ConfigPathsRunner.Run(args, null));
+        }
+
+        [Fact]
+        public void ConfigPathsCommand_TypoInCommand_Fail()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            {
+                var result = CommandRunner.Run(
+                      DotnetCli,
+                      testInfo.WorkingPath,
+                      $"{XplatDll} config pathss",
+                      waitForExit: true
+                      );
+
+                // Assert
+                DotnetCliUtil.VerifyResultFailure(result, "error: Unrecognized command or argument 'pathss'");
             }
         }
 

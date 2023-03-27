@@ -7,7 +7,7 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal partial class ConfigCommand
+    internal class ConfigCommand
     {
         internal static void Register(CommandLineApplication app,
                                       Func<ILogger> getLogger)

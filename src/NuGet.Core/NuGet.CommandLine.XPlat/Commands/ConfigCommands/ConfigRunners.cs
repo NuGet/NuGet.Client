@@ -14,6 +14,21 @@ namespace NuGet.CommandLine.XPlat
     {
         public static void Run(ConfigPathsArgs args, Func<ILogger> getLogger)
         {
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
+            if (getLogger == null)
+            {
+                throw new ArgumentNullException(nameof(getLogger));
+            }
+
+            if (string.IsNullOrEmpty(args.WorkingDirectory))
+            {
+                args.WorkingDirectory = Directory.GetCurrentDirectory();
+            }
+
             var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory);
             ILogger logger = getLogger();
 
@@ -29,10 +44,6 @@ namespace NuGet.CommandLine.XPlat
     {
         public static ISettings GetSettingsFromDirectory(string directory)
         {
-            if (string.IsNullOrEmpty(directory))
-            {
-                directory = Directory.GetCurrentDirectory();
-            }
             if (!Directory.Exists(directory))
             {
                 throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, directory));
