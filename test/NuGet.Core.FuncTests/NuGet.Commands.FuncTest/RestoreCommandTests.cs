@@ -2207,9 +2207,8 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        //copied public async Task Restore_WithMultipleProjects_WhenSourceDoesNotExist_ReportsNU1301InAssetsFileForAllProjects()
         [Fact]
-        public async Task Restore_WithSourceMapping_WhenSourceDoesNotExist_TBD()
+        public async Task Restore_WhenMappingNewSourceDoesNotExist_FailsWithNU1100()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -2230,13 +2229,12 @@ namespace NuGet.Commands.FuncTest
                 pathContext.PackageSource,
                 PackageSaveMode.Defaultv3,
                 packageA);
-                //,packageB);
 
             var restoreContext = new RestoreArgs()
             {
                 Sources = new List<string>() { pathContext.PackageSource },
                 NewMappingID = packageA.Id, // Act
-                NewMappingSource = pathContext.PackageSource, // Act
+                NewMappingSource = "InvalidSource", // Act
                 GlobalPackagesFolder = pathContext.UserPackagesFolder,
                 Log = logger,
                 CacheContext = new SourceCacheContext()
@@ -2254,26 +2252,9 @@ namespace NuGet.Commands.FuncTest
                 RestoreResult result = await command.ExecuteAsync();
 
                 // Assert
-                result.Success.Should().BeTrue(because: logger.ShowMessages());
-                //result.LockFile.Libraries.Should().HaveCount(0);
-                //result.LockFile.LogMessages.Should().HaveCount(1);
-                //result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1301);
-                
-                //"C:\NuGet.Client\.test\work\0739073c\17f7451b\source is in the RestoreArgs Sources but not in the passed in dgSpecSources"
-                //"C:\NuGet.Client\.test\work\0739073c\17f7451b\source is in the RestoreArgs Sources but not in the passed in dgSpecSources"
-                //"Restoring packages for C:\NuGet.Client\.test\work\0739073c\17f7451b\solution\Project1\Project1\Project1.csproj..."
-                //"Restoring packages for .NETCoreApp,Version=v5.0..."
-                //"Package source mapping matches found for package ID 'a' are: 'C:\NuGet.Client\.test\work\0739073c\17f7451b\source'."
-                //"Resolving conflicts for net5.0..."
-                //"Acquiring lock for the installation of a 1.0.0"
-                //"Acquired lock for the installation of a 1.0.0"
-                //"Installed a 1.0.0 from C:\NuGet.Client\.test\work\0739073c\17f7451b\source with content hash OkzGk2HZ7wH1xQz7fA1o8k8FSLq2I/RfiBC6peLXiiA+uxUPhcmwnriGKEQTFuUrg0IQo88MZGqUN8+27UvSYg==."
-                //"Checking compatibility of packages on net5.0."
-                //"Checking compatibility for Project1 1.0.0 with net5.0."
-                //"Checking compatibility for a 1.0.0 with net5.0."
-                //"All packages and projects are compatible with net5.0."
-
-
+                result.Success.Should().BeFalse(because: logger.ShowMessages());
+                result.LogMessages.Should().HaveCount(1);
+                result.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1100);
             }
         }
 

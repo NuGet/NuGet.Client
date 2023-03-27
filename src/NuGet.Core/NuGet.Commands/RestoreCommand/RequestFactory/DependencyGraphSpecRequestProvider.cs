@@ -172,28 +172,6 @@ namespace NuGet.Commands
                 packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
             }
 
-            //if (restoreArgs.NewMappingSource != null && restoreArgs.NewMappingID != null)
-            //{
-            //    PackageSourceMappingProvider mappingProvider = new PackageSourceMappingProvider(settings);
-            //    IReadOnlyList<PackageSourceMappingSourceItem> mappingSourceItems = mappingProvider.GetPackageSourceMappingItems();
-            //    PackageSourceMappingSourceItem existingSource = mappingSourceItems.FirstOrDefault(_ => _.Key == restoreArgs.NewMappingSource);
-
-            //    PackageSourceMapping newPackageSourceMapping = null;
-            //    if (existingSource is default(PackageSourceMappingSourceItem))
-            //    {
-            //        var dictionary = new Dictionary<string, IReadOnlyList<string>>
-            //        {
-            //            { restoreArgs.NewMappingSource, new List<string>() { restoreArgs.NewMappingID } }
-            //        };
-
-            //        newPackageSourceMapping = new PackageSourceMapping(dictionary);
-            //    }
-            //    else
-            //    {
-            //        IReadOnlyList<PackageSourceMappingSourceItem> items = mappingProvider.GetPackageSourceMappingItems();
-            //    }
-            //}
-
             var updateLastAccess = SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
