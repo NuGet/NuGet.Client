@@ -736,10 +736,11 @@ namespace NuGet.Tests.Apex
                     nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
                     nugetConsole.InstallPackageFromPMC(packageName2, packageVersion3);
                     nugetConsole.Execute("update-package");
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Assert
-                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    if (testContext.Project.ProjectTemplate == ProjectTemplate.ClassLibrary)
+                    if (testContext.Project.ProjectTemplate.ToString().Equals("ClassLibrary"))
                     {
                         CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
                         CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
@@ -749,6 +750,7 @@ namespace NuGet.Tests.Apex
                         CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
                         CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
                     }
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
                     Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
