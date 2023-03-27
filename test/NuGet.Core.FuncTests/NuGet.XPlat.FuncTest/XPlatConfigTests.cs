@@ -56,6 +56,7 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigPathsWorkingDirectoryDescription);
+
             // Act
             var result = CommandRunner.Run(
                 DotnetCli,
@@ -63,6 +64,7 @@ namespace NuGet.XPlat.FuncTest
                 $"{XplatDll} config paths --help",
                 waitForExit: true
                 );
+
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
         }
@@ -72,6 +74,7 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigPathsCommandDescription);
+
             // Act
             var result = CommandRunner.Run(
                 DotnetCli,
@@ -79,6 +82,7 @@ namespace NuGet.XPlat.FuncTest
                 $"{XplatDll} config --help",
                 waitForExit: true
                 );
+
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
         }
