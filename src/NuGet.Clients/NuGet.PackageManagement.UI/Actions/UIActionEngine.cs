@@ -12,8 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
-using Microsoft.TeamFoundation.WorkItemTracking.Common;
-using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -24,7 +22,6 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
-using static Microsoft.TeamFoundation.WorkItemTracking.Client.WorkItemLinkValidationException;
 using Task = System.Threading.Tasks.Task;
 using TelemetryPiiProperty = Microsoft.VisualStudio.Telemetry.TelemetryPiiProperty;
 
@@ -368,6 +365,11 @@ namespace NuGet.PackageManagement.UI
             var sourceMappingProvider = new PackageSourceMappingProvider(uiService.Settings);
             IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappings = sourceMappingProvider.GetPackageSourceMappingItems();
             IsPackageSourceMappingEnabled = packageSourceMappings.Count > 0;
+            string[] existingMappingPackageIds = packageSourceMappings
+                .SelectMany(mapping => mapping.Patterns)
+                .Select(pattern => pattern.Pattern)
+                .Distinct()
+                .ToArray();
 
             packageEnumerationTime.Stop();
 
@@ -483,18 +485,20 @@ namespace NuGet.PackageManagement.UI
                             .Distinct()
                             .ToArray();
 
-                        //string[] packageIds = actions
-                        //    .Select(action => action.PackageIdentity.Id)
-                        //    .Distinct()
-                        //    .OrderBy(package => package)
-                        //    .ToArray();
-                        string[] packageIds = actions
-                            .SelectMany(action => action.ImplicitActions.Select(action => action.PackageIdentity.Id))
-                            .ToArray();
-
-                        if (userAction?.SourceMappingSourceName != null)
+                        if (userAction?.SourceMappingSourceName != null && addedPackages != null)
                         {
-                            CreateAndSavePackageSourceMappings(userAction.SourceMappingSourceName, packageIds, sourceMappingProvider);
+                            // Get all newly added package IDs that were not previously Source Mapped.
+                            // Always include the Package ID being installed since it takes precedence over any globbing.
+                            string[] packageIdsNeedingNewSourceMappings = addedPackages
+                               .Select(action => action.Item1)
+                               .Except(existingMappingPackageIds)
+                               .Union(new string[] { userAction.PackageId })
+                               .ToArray();
+
+                            CreateAndSavePackageSourceMappings(
+                                sourceName: userAction.SourceMappingSourceName,
+                                newPackageIdsToSourceMap: packageIdsNeedingNewSourceMappings,
+                                sourceMappingProvider);
                         }
 
                         uiService.UIContext.RaiseProjectActionsExecuted(projectIds);
@@ -920,14 +924,14 @@ namespace NuGet.PackageManagement.UI
             return results;
         }
 
-        private static void CreateAndSavePackageSourceMappings(string sourceName, string[] packageIds, PackageSourceMappingProvider mappingProvider)
+        private static void CreateAndSavePackageSourceMappings(string sourceName, string[] newPackageIdsToSourceMap, PackageSourceMappingProvider mappingProvider)
         {
-            if (string.IsNullOrWhiteSpace(sourceName) || packageIds is null || packageIds.Length == 0)
+            if (string.IsNullOrWhiteSpace(sourceName) || newPackageIdsToSourceMap is null || newPackageIdsToSourceMap.Length == 0)
             {
                 return;
             }
 
-            IEnumerable<PackagePatternItem> newPackagePatternItems = packageIds.Select(packageId => new PackagePatternItem(packageId));
+            IEnumerable<PackagePatternItem> newPackagePatternItems = newPackageIdsToSourceMap.Select(packageId => new PackagePatternItem(packageId));
 
             IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems();
             List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new(existingPackageSourceMappingItems);
