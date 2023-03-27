@@ -385,7 +385,7 @@ namespace NuGet.PackageManagement.Test
 
 #if NETFRAMEWORK
         [Fact]
-        public async Task PreviewRestoreAsync_WithoutNewSourceMapping_Succeeds()
+        public async Task PreviewRestoreAsync_WithoutPreviewNewSourceMapping_RestoreSucceeds()
         {
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager();
@@ -431,8 +431,8 @@ namespace NuGet.PackageManagement.Test
                 sourceRepositories,
                 versionRange: null,
                 CancellationToken.None,
-                newMappingID: null, //packageA.Id
-                newMappingSource: null); //pathContext.PackageSource
+                newMappingID: null,
+                newMappingSource: null);
 
             // Assert (Preview the Restore)
             actions.Should().HaveCount(1);
@@ -452,6 +452,82 @@ namespace NuGet.PackageManagement.Test
 
             // Assert
 
+            progressReporter.VerifyAll();
+        }
+
+        [Fact]
+        public async Task PreviewRestoreAsync_PreviewNewSourceMapping_RestoreLogsError()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            using var testSolutionManager = new TestSolutionManager();
+
+            // Arrange - Setup project
+            var packageA = new SimpleTestPackageContext("packageA", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            var sources = new PackageSource[] { new PackageSource(pathContext.PackageSource) };
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
+            var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var mockProjectCache = new Mock<IProjectSystemCache>();
+            mockProjectCache.Setup(pc => pc.AddProject(It.IsAny<ProjectNames>(), It.IsAny<IVsProjectAdapter>(), It.IsAny<NuGetProject>())).Returns(true);
+            var mockedDependencyGraphSpec = new Mock<DependencyGraphSpec>().Object;
+            var mockedAssetLogMessage = new Mock<IReadOnlyList<IAssetsLogMessage>>().Object;
+
+            var projectName = "project";
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(settings, projectName, rootPath: pathContext.SolutionRoot);
+            var dependencyGraphSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(packageSpec);
+            mockProjectCache.Setup(pc => pc.TryGetProjectRestoreInfo(It.IsAny<string>(), out dependencyGraphSpec, out It.Ref<IReadOnlyList<IAssetsLogMessage>>.IsAny)).Returns(true);
+
+            var projectCache = mockProjectCache.Object;
+            var projectFullPath = dependencyGraphSpec.Projects[0].FilePath;
+            string assetsFilePath = packageSpec.RestoreMetadata.OutputPath;
+
+            var cpsPackageReferenceProject = TestCpsPackageReferenceProject.CreateTestCpsPackageReferenceProject(projectName, projectFullPath, projectCache, projectServices: null, assetsFilePath, packageSpec);
+
+            testSolutionManager.NuGetProjects.Add(cpsPackageReferenceProject);
+            TestCpsPackageReferenceProject.AddProjectDetailsToCache(projectCache, dependencyGraphSpec, cpsPackageReferenceProject, GetTestProjectNames(projectFullPath, projectName));
+
+            var progressReporter = new Mock<IRestoreProgressReporter>(MockBehavior.Strict);
+
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, testSolutionManager, new TestDeleteOnRestartManager(), progressReporter.Object);
+            var resolutionContext = new ResolutionContext();
+            var projectContext = new TestNuGetProjectContext();
+            var sourceRepositories = sourceRepositoryProvider.GetRepositories().ToList().AsReadOnly();
+
+            // Act (Preview the Restore)
+            var actions = await nuGetPackageManager.PreviewProjectsInstallPackageAsync(
+                nuGetProjects: new List<NuGetProject>() { cpsPackageReferenceProject },
+                packageA.Identity,
+                resolutionContext,
+                projectContext,
+                sourceRepositories,
+                versionRange: null,
+                CancellationToken.None,
+                newMappingID: packageA.Id,
+                newMappingSource: pathContext.PackageSource);
+
+            // Assert (Preview the Restore)
+            actions.Should().HaveCount(1);
+
+            progressReporter.Verify(e => e.StartProjectUpdate(It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()), Times.Never);
+            progressReporter.Verify(e => e.EndProjectUpdate(It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()), Times.Never);
+            progressReporter.VerifyAll();
+
+            // Act (Attempt to Commit the Restore)
+            var exception = await Assert.ThrowsAsync<PackageReferenceRollbackException>(
+                    async () =>
+                    {
+                        await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                            new List<NuGetProject>() { cpsPackageReferenceProject },
+                            new List<NuGetProjectAction>() { actions.First().Action },
+                            new TestNuGetProjectContext(),
+                            new SourceCacheContext(),
+                            CancellationToken.None);
+                    });
+
+            // Assert (Attempt to Commit the Restore)
+            exception.LogMessages.Should().HaveCount(1);
+            exception.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1100);
+            exception.LogMessages.Select(e => e.Message).Should().Contain("Unable to resolve 'packageA (>= 1.0.0)' for 'net5.0'. PackageSourceMapping is enabled, the following source(s) were not considered: source.");
             progressReporter.VerifyAll();
         }
 
