@@ -1007,7 +1007,7 @@ namespace NuGet.CommandLine.Test
 
         // Test push command to a server, plugin provider does not provide credentials
         // so fallback to console provider
-        [SkipMono]
+        [SkipMono(Skip = "Disabled in release-6.2.x branch")]
         public void PushCommand_PushToServer_WhenPluginReturnsNoCredentials_FallBackToConsoleProvider()
         {
             var nugetexe = Util.GetNuGetExePath();

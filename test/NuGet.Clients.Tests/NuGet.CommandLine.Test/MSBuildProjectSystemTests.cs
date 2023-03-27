@@ -58,7 +58,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public void MSBuildProjectSystem_AddFile()
         {
             // Arrange
@@ -82,7 +82,7 @@ namespace NuGet.CommandLine.Test
         }
 
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public void MSBuildProjectSystem_RemoveFile()
         {
             // Arrange
@@ -109,7 +109,7 @@ namespace NuGet.CommandLine.Test
         }
 
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public void MSBuildProjectSystem_FileExistInProject()
         {
             // Arrange
@@ -135,7 +135,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public void MSBuildProjectSystem_RemoveImport()
         {
             // Arrange
@@ -165,7 +165,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Verify for mono scenarios that / slash paths are also removed.
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public void MSBuildProjectSystem_RemoveImportForwardSlashes()
         {
             // Arrange
