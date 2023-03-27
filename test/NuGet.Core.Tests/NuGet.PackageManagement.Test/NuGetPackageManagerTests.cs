@@ -23,6 +23,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
@@ -7115,6 +7116,135 @@ namespace NuGet.Test
                 Assert.Contains("Either should have value in", ex.Message);
                 Assert.Contains(buildIntegratedProjectA.MSBuildProjectPath, ex.Message);
             }
+        }
+
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(false, true, false)]
+        [InlineData(true, false, false)]
+        [InlineData(true, true, true)]
+        public async Task TestPacMan_PreviewInstallPackage_NewSourceMapping_TBD(bool validNewMappingSource, bool validNewMappingID, bool expectSuccess)
+        {
+            // Arrange
+            
+            bool expectNewMapping = validNewMappingID && validNewMappingSource;
+
+            var package = _packageWithDependents[0];
+            
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo(package, new PackageDependency[] { }, listed: true, source: null, downloadUri: null, packageHash: null),
+            };
+
+            SourceRepositoryProvider sourceRepositoryProvider = CreateSource(packages);
+            var primarySources = sourceRepositoryProvider.GetRepositories() as IReadOnlyCollection<SourceRepository>;
+
+            //TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            // Set up NuGetProject
+            var fwk45 = NuGetFramework.Parse("net45");
+
+            IEnumerable<PackageReference> packageReferences = _packageWithDependents
+                .Select(packageIdentity => new PackageReference(packageIdentity, fwk45));
+
+            //var installedPackages = new List<PackageReference>();
+            //for (var i = 1; i <= 30; i++)
+            //{
+            //    installedPackages.Add(new PackageReference(new PackageIdentity($"Package{i}", new NuGetVersion(1, 0, 0)), fwk45, true));
+            //}
+
+            //var nuGetProject = new TestNuGetProject(installedPackages);
+
+            //var nugetProjectContext = new TestNuGetProjectContext();
+
+            // Create Package Manager
+            using var solutionManager = new TestSolutionManager();
+            
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                NullSettings.Instance,
+                solutionManager,
+                new TestDeleteOnRestartManager());
+
+            //var buildIntegratedProjectA =
+            //    solutionManager.AddBuildIntegratedProject("projectA", projectTargetFramework: fwk45) as BuildIntegratedNuGetProject;
+
+            var projectName = "projectA";
+            string projectFullPath = Path.Combine(solutionManager.SolutionDirectory, projectName);
+
+            // Act
+
+            PackageIdentity target = _packageWithDependents[0];
+            var mockBuildIntegratedProjectA = new Mock<BuildIntegratedNuGetProject>();
+            mockBuildIntegratedProjectA.Setup(setup => setup.ProjectName).Returns(projectName);
+            mockBuildIntegratedProjectA.Setup(setup => setup.MSBuildProjectPath).Returns(projectName);
+            mockBuildIntegratedProjectA.Setup(setup => setup.GetPackageSpecsAsync(It.IsAny<DependencyGraphCacheContext>()))
+                .ReturnsAsync(new List<PackageSpec>() { new PackageSpec(new List<TargetFrameworkInformation>() { new TargetFrameworkInformation() { FrameworkName = fwk45 } }) });
+            var mockedBuildIntegratedProjectA = mockBuildIntegratedProjectA.Object;
+
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(targetFramework: fwk45, new TestNuGetProjectContext(),
+                projectFullPath, projectName);
+
+            //var projectFilePath = Path.Combine(projectFullPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+            //NuGetProject nuGetProject = new ProjectJsonNuGetProject(projectJsonPath, projectFilePath);
+            //NuGetProjects.Add(nuGetProject);
+
+            IReadOnlyList<BuildIntegratedNuGetProject> projects = new List<BuildIntegratedNuGetProject>()
+            {
+                mockedBuildIntegratedProjectA
+            };
+            //TestNuGetProjectContext
+            SourceRepository primarySource = primarySources.First();
+            string newMappingSource = validNewMappingSource ? primarySource.PackageSource.Name : "invalidSource";
+            string newMappingID = validNewMappingID ? "jQuery" : "invalidPackage";
+
+            var nugetAction = NuGetProjectAction.CreateInstallProjectAction(target, primarySource, mockedBuildIntegratedProjectA);
+            NuGetProjectAction[] actions = new NuGetProjectAction[] { nugetAction };
+
+            Dictionary<string, NuGetProjectAction[]> nugetProjectActionsLookup =
+                new Dictionary<string, NuGetProjectAction[]>(PathUtility.GetStringComparerBasedOnOS())
+            {
+                { primarySource.PackageSource.Name, actions }
+            };
+
+            //var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
+            //{
+            IEnumerable<ResolvedAction> resolvedActions = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
+                projects,
+                nugetProjectActionsLookup: nugetProjectActionsLookup,
+                packageIdentity: target,
+                primarySources,
+                nuGetProjectContext: msBuildNuGetProjectSystem.NuGetProjectContext,
+                versionRange: null,
+                CancellationToken.None,
+                newMappingID,
+                newMappingSource);
+            //});
+
+            // Assert
+
+            // `Request` Assertions
+
+            Assert.Single(resolvedActions);
+            ResolvedAction resolvedAction = resolvedActions.Single();
+            Assert.IsType(typeof(BuildIntegratedProjectAction), resolvedAction.Action);
+
+            BuildIntegratedProjectAction buildIntegratedProjectAction = resolvedAction.Action as BuildIntegratedProjectAction;
+            RestoreSummaryRequest summaryRequest = buildIntegratedProjectAction.RestoreResultPair.SummaryRequest;
+
+            // Request should have "*" Pattern Mapping for the requested new mapping source.
+            PackageSourceMapping requestedSourceMapping = summaryRequest.Request.PackageSourceMapping;
+            Assert.Equal(expectNewMapping, requestedSourceMapping.IsEnabled);
+            IReadOnlyList<string> mappedSources = requestedSourceMapping.GetConfiguredPackageSources(newMappingID);
+            Assert.Contains(newMappingSource, mappedSources);
+
+            // `Result` Assertions
+            RestoreResult restoreResult = buildIntegratedProjectAction.RestoreResult;
+            Assert.Equal(expectSuccess, restoreResult.Success);
+            
+
+            //Assert.Contains("Either should have value in", ex.Message);
+            // Assert.Contains(buildIntegratedProjectA.MSBuildProjectPath, ex.Message);
         }
 
         /// <summary>
