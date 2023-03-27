@@ -140,49 +140,6 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(packageIdentityC.Id, addedResults[2].Id);
         }
 
-        //[Fact]
-        //public async Task GetPreviewResultsAsync_WithNewSourceMapping_Succeeds()
-        //{
-        //    string projectId = Guid.NewGuid().ToString();
-        //    var packageIdentityA = new PackageIdentitySubclass(id: "a", NuGetVersion.Parse("1.0.0"));
-        //    var packageIdentityB = new PackageIdentitySubclass(id: "b", NuGetVersion.Parse("2.0.0"));
-        //    var packageIdentityC = new PackageIdentitySubclass(id: "c", NuGetVersion.Parse("3.0.0"));
-        //    var installAction = new ProjectAction(
-        //        id: Guid.NewGuid().ToString(),
-        //        projectId,
-        //        packageIdentityB,
-        //        NuGetProjectActionType.Install,
-        //        implicitActions: new[]
-        //        {
-        //            new ImplicitProjectAction(
-        //                id: Guid.NewGuid().ToString(),
-        //                packageIdentityA,
-        //                NuGetProjectActionType.Install),
-        //            new ImplicitProjectAction(
-        //                id: Guid.NewGuid().ToString(),
-        //                packageIdentityB,
-        //                NuGetProjectActionType.Install),
-        //            new ImplicitProjectAction(
-        //                id: Guid.NewGuid().ToString(),
-        //                packageIdentityC,
-        //                NuGetProjectActionType.Install)
-        //        });
-
-        //    IReadOnlyList<PreviewResult> previewResults = await UIActionEngine.GetPreviewResultsAsync(
-        //        Mock.Of<INuGetProjectManagerService>(),
-        //        new[] { installAction },
-        //        CancellationToken.None);
-
-        //    Assert.Equal(1, previewResults.Count);
-        //    AccessiblePackageIdentity[] addedResults = previewResults[0].Added.ToArray();
-
-        //    Assert.Equal(3, addedResults.Length);
-
-        //    Assert.Equal(packageIdentityA.Id, addedResults[0].Id);
-        //    Assert.Equal(packageIdentityB.Id, addedResults[1].Id);
-        //    Assert.Equal(packageIdentityC.Id, addedResults[2].Id);
-        //}
-
         [Theory]
         [MemberData(nameof(GetInstallActionTestData))]
         public async Task CreateInstallAction_OnInstallingProject_WithNewSourceMappingSucceeds(ContractsItemFilter activeTab, bool isSolutionLevel, string packageIdToInstall, bool? expectedPkgWasTransitive)
