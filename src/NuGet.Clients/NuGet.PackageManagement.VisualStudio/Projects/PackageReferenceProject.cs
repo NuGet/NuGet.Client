@@ -250,7 +250,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 InstalledPackages = installedPackages;
             }
-            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded)
+            if (includeTransitivePackages)
             {
                 lock (_installedAndTransitivePackagesLock)
                 {
