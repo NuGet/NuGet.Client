@@ -2259,6 +2259,56 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
+        public async Task Restore_WhenMappingNewSourceExists_Succeeds()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            var logger = new TestLogger();
+
+            PackageSpec project1Spec = ProjectTestHelpers.GetPackageSpec(projectName: "Project1",
+                                                                 rootPath: pathContext.SolutionRoot,
+                                                                 framework: "net5.0",
+                                                                 dependencyName: packageA.Id);
+
+            PackageSpec project2Spec = ProjectTestHelpers.GetPackageSpec(projectName: "Project2",
+                                                                 rootPath: pathContext.SolutionRoot,
+                                                                 framework: "net5.0",
+                                                                 dependencyName: packageA.Id);
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA);
+
+            var restoreContext = new RestoreArgs()
+            {
+                Sources = new List<string>() { pathContext.PackageSource },
+                NewMappingID = packageA.Id, // Act
+                NewMappingSource = pathContext.PackageSource, // Act
+                GlobalPackagesFolder = pathContext.UserPackagesFolder,
+                Log = logger,
+                CacheContext = new SourceCacheContext()
+            };
+
+            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            var dgProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgSpec);
+
+            IReadOnlyList<RestoreSummaryRequest> restoreSummaryRequests = await dgProvider.CreateRequests(restoreContext);
+
+            foreach (RestoreSummaryRequest request in restoreSummaryRequests)
+            {
+                var command = new RestoreCommand(request.Request);
+
+                // Act
+                RestoreResult result = await command.ExecuteAsync();
+
+                // Assert
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+            }
+        }
+
+        [Fact]
         public async Task RestoreCommand_RestoreWithPreviewSourceMapping_Succeeds()
         {
             //// Arrange
