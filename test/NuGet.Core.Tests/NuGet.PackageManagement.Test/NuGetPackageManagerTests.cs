@@ -7118,15 +7118,15 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData(false, false, false)]
-        [InlineData(false, true, false)]
-        [InlineData(true, false, false)]
-        [InlineData(true, true, true)]
-        public async Task TestPacMan_PreviewInstallPackage_NewSourceMapping_TBD(bool validNewMappingSource, bool validNewMappingID, bool expectSuccess)
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task TestPacMan_PreviewInstallPackage_NewSourceMapping_TBD(bool validNewMappingSource, bool validNewMappingID)
         {
             // Arrange
             var package = _packageWithDependents[0];
-            
+
             var packages = new List<SourcePackageDependencyInfo>
             {
                 new SourcePackageDependencyInfo(package.Id, package.Version, new PackageDependency[] { }, listed: true, source: null),
@@ -7138,7 +7138,7 @@ namespace NuGet.Test
 
             // Create Package Manager
             using var solutionManager = new TestSolutionManager();
-            
+
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 NullSettings.Instance,
@@ -7195,17 +7195,6 @@ namespace NuGet.Test
             Assert.Equal(true, requestedSourceMapping.IsEnabled);
             IReadOnlyList<string> mappedSources = requestedSourceMapping.GetConfiguredPackageSources(newMappingID);
             Assert.Contains(newMappingSource, mappedSources);
-
-            // `Result` Assertions
-
-            //TODO:
-            //RestoreResult restoreResult = buildIntegratedProjectAction.RestoreResult;
-            Assert.Equal(expectSuccess, expectSuccess); //restoreResult.Success
-            //IAssetsLogMessage,IAssetsLogMessage.Level,IAssetsLogMessage.Code,IAssetsLogMessage.Message,IAssetsLogMessage.ProjectPath,IAssetsLogMessage.WarningLevel,IAssetsLogMessage.FilePath,IAssetsLogMessage.StartLineNumber,IAssetsLogMessage.StartColumnNumber,IAssetsLogMessage.EndLineNumber,IAssetsLogMessage.EndColumnNumber,IAssetsLogMessage.LibraryId
-            //NuGet.ProjectModel.AssetsLogMessage,Error,NU1100,"Unable to resolve 'entityframework (>= 7.0.0-beta)' for '.NETFramework,Version=v4.6'.","",Severe,C:\NuGet.Client\.test\work\4f2a2a70\af5634b5\projectA\projectA.csproj,0,0,0,0,entityframework
-            //NuGet.ProjectModel.AssetsLogMessage,Error,NU1100,"Unable to resolve 'jQuery (>= 1.4.4)' for '.NETFramework,Version=v4.6'.","",Severe,C:\NuGet.Client\.test\work\4f2a2a70\af5634b5\projectA\projectA.csproj,0,0,0,0,jQuery
-            //NuGet.ProjectModel.AssetsLogMessage,Error,NU1100,"Unable to resolve 'entityframework (>= 7.0.0-beta)' for '.NETFramework,Version=v4.6/win-anycpu'.","",Severe,C:\NuGet.Client\.test\work\4f2a2a70\af5634b5\projectA\projectA.csproj,0,0,0,0,entityframework
-            //NuGet.ProjectModel.AssetsLogMessage,Error,NU1100,"Unable to resolve 'jQuery (>= 1.4.4)' for '.NETFramework,Version=v4.6/win-anycpu'.","",Severe,C:\NuGet.Client\.test\work\4f2a2a70\af5634b5\projectA\projectA.csproj,0,0,0,0,jQuery
         }
 
         /// <summary>

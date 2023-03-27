@@ -390,7 +390,7 @@ namespace NuGet.PackageManagement.Test
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager();
 
-            // Arrange - Setup project 
+            // Arrange - Setup project
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
             var sources = new PackageSource[] { new PackageSource(pathContext.PackageSource) };
