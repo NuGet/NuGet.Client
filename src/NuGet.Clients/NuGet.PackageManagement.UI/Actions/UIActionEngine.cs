@@ -483,12 +483,21 @@ namespace NuGet.PackageManagement.UI
 
                             PackageSourceMapping packageSourceMapping = new(patternsReadOnly);
 
-                            // Get all newly added package IDs that were not previously Source Mapped.
                             // Expand all patterns/globs so we can later check if this package ID was already mapped.
+                            var addedPackageIds = addedPackages.Select(action => action.Item1);
+                            var addedPackageIdsWithoutExistingMappings = new List<string>();
+                            foreach (var addedPackageId in addedPackageIds)
+                            {
+                                var configuredSource = packageSourceMapping.GetConfiguredPackageSources(addedPackageId);
+                                if (configuredSource == null || configuredSource.Count == 0)
+                                {
+                                    addedPackageIdsWithoutExistingMappings.Add(addedPackageId);
+                                }
+                            }
+
+                            // Get all newly added package IDs that were not previously Source Mapped.
                             // Always include the Package ID being installed since it takes precedence over any globbing.
-                            string[] packageIdsNeedingNewSourceMappings = addedPackages
-                               .Select(action => action.Item1)
-                               .Where(packageId => packageSourceMapping.GetConfiguredPackageSources(packageId)?.Count == 0)
+                            string[] packageIdsNeedingNewSourceMappings = addedPackageIdsWithoutExistingMappings
                                .Union(new string[] { userAction.PackageId })
                                .ToArray();
 
