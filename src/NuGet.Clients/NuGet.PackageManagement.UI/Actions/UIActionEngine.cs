@@ -363,9 +363,9 @@ namespace NuGet.PackageManagement.UI
             }
 
             var sourceMappingProvider = new PackageSourceMappingProvider(uiService.Settings);
-            IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappings = sourceMappingProvider.GetPackageSourceMappingItems();
-            IsPackageSourceMappingEnabled = packageSourceMappings.Count > 0;
-            string[] existingMappingPackageIds = packageSourceMappings
+            IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingSourceItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            IsPackageSourceMappingEnabled = existingPackageSourceMappingSourceItems.Count > 0;
+            string[] existingMappingPackageIds = existingPackageSourceMappingSourceItems
                 .SelectMany(mapping => mapping.Patterns)
                 .Select(pattern => pattern.Pattern)
                 .Distinct()
@@ -478,11 +478,30 @@ namespace NuGet.PackageManagement.UI
                     {
                         if (userAction?.SourceMappingSourceName != null && addedPackages != null)
                         {
+                            Dictionary<string, IReadOnlyList<string>> patternsReadOnly = existingPackageSourceMappingSourceItems
+                                .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)(pair.Patterns.Select(p => p.Pattern).ToList()));
+
+                            PackageSourceMapping packageSourceMapping = new(patternsReadOnly);
+
+                            // Expand all patterns/globs so we can later check if this package ID was already mapped.
+                            List<string> expandedExistingMappingPackageIds = new List<string>();
+                            foreach (string existingMappingPackageId in existingMappingPackageIds)
+                            {
+                                var expandedPackageIds = packageSourceMapping.GetConfiguredPackageSources(existingMappingPackageId);
+                                foreach (var expandedPackageId in expandedPackageIds)
+                                {
+                                    if (!expandedExistingMappingPackageIds.Contains(expandedPackageId))
+                                    {
+                                        expandedExistingMappingPackageIds.Add(expandedPackageId);
+                                    }
+                                }
+                            }
+
                             // Get all newly added package IDs that were not previously Source Mapped.
                             // Always include the Package ID being installed since it takes precedence over any globbing.
                             string[] packageIdsNeedingNewSourceMappings = addedPackages
                                .Select(action => action.Item1)
-                               .Except(existingMappingPackageIds)
+                               .Except(expandedExistingMappingPackageIds)
                                .Union(new string[] { userAction.PackageId })
                                .ToArray();
 
