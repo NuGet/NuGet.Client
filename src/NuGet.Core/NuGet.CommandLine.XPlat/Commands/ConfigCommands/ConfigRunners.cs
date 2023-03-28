@@ -54,7 +54,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                var configValue = SettingsUtility.GetConfigValue(settings, args.AllOrConfigKey);
+                var configValue = SettingsUtility.GetConfigValue(settings, args.AllOrConfigKey, false, true);
                 if (string.IsNullOrEmpty(configValue))
                 {
                     throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, args.AllOrConfigKey));

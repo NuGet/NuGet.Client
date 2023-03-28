@@ -152,6 +152,44 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
+        [Fact]
+        public void ConfigGetCommand_ConfigKeyArg_Success()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            {
+                var result = CommandRunner.Run(
+                      DotnetCli,
+                      Directory.GetCurrentDirectory(),
+                      $"{XplatDll} config get http_proxy {testInfo.WorkingPath}",
+                      waitForExit: true
+                      );
+
+                // Assert
+                DotnetCliUtil.VerifyResultSuccess(result, @"http://company-squid:3128@contoso.test");
+            }
+        }
+
+        [Fact]
+        public void ConfigGetCommand_InvalidConfigKeyArg_Fail()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            {
+                var invalidKey = "invalidKey";
+                var result = CommandRunner.Run(
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config get {invalidKey} {testInfo.WorkingPath}",
+                    waitForExit: true
+                    );
+                var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, invalidKey);
+
+                // Assert
+                DotnetCliUtil.VerifyResultFailure(result, expectedError);
+            }
+        }
+
         internal class TestInfo : IDisposable
         {
             public static void CreateFile(string directory, string fileName, string fileContent)
