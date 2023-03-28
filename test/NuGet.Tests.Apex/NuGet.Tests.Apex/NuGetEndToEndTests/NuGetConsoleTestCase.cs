@@ -740,7 +740,7 @@ namespace NuGet.Tests.Apex
                     testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Assert
-                    if (testContext.Project.ProjectTemplate.ToString().Equals("ClassLibrary"))
+                    if (projectTemplate.ToString().Equals("ClassLibrary"))
                     {
                         CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
                         CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
