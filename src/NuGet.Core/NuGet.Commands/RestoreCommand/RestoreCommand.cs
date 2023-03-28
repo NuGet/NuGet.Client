@@ -130,6 +130,7 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent[HttpSourcesCount] = httpSourcesCount;
                 telemetry.TelemetryEvent[LocalSourcesCount] = _request.DependencyProviders.RemoteProviders.Count - httpSourcesCount;
                 telemetry.TelemetryEvent[FallbackFoldersCount] = _request.DependencyProviders.FallbackPackageFolders.Count;
+                telemetry.TelemetryEvent[IsLockFileEnabled] = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
 
                 _operationId = telemetry.OperationId;
 
@@ -231,8 +232,6 @@ namespace NuGet.Commands
 
                 using (telemetry.StartIndependentInterval(EvaluateLockFileDuration))
                 {
-                    telemetry.TelemetryEvent[IsLockFileEnabled] = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
-
                     bool result;
                     (result, isLockFileValid, packagesLockFile) = await EvaluatePackagesLockFileAsync(packagesLockFilePath, contextForProject, telemetry);
 
