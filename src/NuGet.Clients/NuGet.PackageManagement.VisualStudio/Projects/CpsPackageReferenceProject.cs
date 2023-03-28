@@ -205,7 +205,7 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override IEnumerable<PackageReference> ResolvedInstalledPackagesList(
             IEnumerable<LibraryDependency> libraries,
             NuGetFramework targetFramework,
-            IList<LockFileTarget> targets,
+            IReadOnlyList<LockFileTarget> targets,
             List<FrameworkInstalledPackages> installedPackagesInCache)
         {
             FrameworkInstalledPackages targetFrameworkPackages = installedPackagesInCache.FirstOrDefault(t => t.TargetFramework.Equals(targetFramework));
@@ -227,7 +227,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         protected override IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(
             NuGetFramework targetFramework,
-            IList<LockFileTarget> targets,
+            IReadOnlyList<LockFileTarget> targets,
             List<FrameworkInstalledPackages> installedPackagesInCache,
             List<FrameworkInstalledPackages> transitivePackagesInCache)
         {
@@ -377,8 +377,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath));
         }
 
-        /// <inheritdoc/>
-        protected override List<FrameworkInstalledPackages> GetCollectionCopy(List<FrameworkInstalledPackages> collection) => new(collection);
+        // To avoid race condition, we work on copy of cache InstalledPackages and TransitivePackages.
+        protected override (List<FrameworkInstalledPackages> installedPackagesCopy, List<FrameworkInstalledPackages> transitivePackagesCopy) GetInstalledAndTransitivePackagesCacheCopy()
+        {
+            return (new List<FrameworkInstalledPackages>(InstalledPackages), new List<FrameworkInstalledPackages>(TransitivePackages));
+        }
 
         #endregion
     }
