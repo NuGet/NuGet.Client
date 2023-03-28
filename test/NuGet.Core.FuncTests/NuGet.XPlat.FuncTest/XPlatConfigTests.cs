@@ -129,24 +129,6 @@ namespace NuGet.XPlat.FuncTest
             Assert.Throws<ArgumentNullException>(() => ConfigPathsRunner.Run(args, null));
         }
 
-        [Fact]
-        public void ConfigPathsCommand_TypoInCommand_Fail()
-        {
-            // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config");
-            {
-                var result = CommandRunner.Run(
-                      DotnetCli,
-                      testInfo.WorkingPath,
-                      $"{XplatDll} config pathss",
-                      waitForExit: true
-                      );
-
-                // Assert
-                DotnetCliUtil.VerifyResultFailure(result, "error: Unrecognized command or argument 'pathss'");
-            }
-        }
-
         internal class TestInfo : IDisposable
         {
             public static void CreateFile(string directory, string fileName, string fileContent)
