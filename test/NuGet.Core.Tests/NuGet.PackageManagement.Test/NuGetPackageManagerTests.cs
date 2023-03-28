@@ -7117,6 +7117,86 @@ namespace NuGet.Test
             }
         }
 
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task TestPacMan_PreviewInstallPackage_NewSourceMapping_TBD(bool validNewMappingSource, bool validNewMappingID)
+        {
+            // Arrange
+            var package = _packageWithDependents[0];
+
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo(package.Id, package.Version, new PackageDependency[] { }, listed: true, source: null),
+            };
+            SourceRepositoryProvider sourceRepositoryProvider = CreateSource(packages);
+
+            // Set up NuGetProject
+            var nugetProjectContext = new TestNuGetProjectContext();
+
+            // Create Package Manager
+            using var solutionManager = new TestSolutionManager();
+
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                NullSettings.Instance,
+                solutionManager,
+                new TestDeleteOnRestartManager());
+
+            var buildIntegratedProjectA = solutionManager.AddBuildIntegratedProject("projectA") as BuildIntegratedNuGetProject;
+
+            // Act
+            var primarySources = sourceRepositoryProvider.GetRepositories() as IReadOnlyCollection<SourceRepository>;
+            PackageIdentity target = _packageWithDependents[0];
+            IReadOnlyList<BuildIntegratedNuGetProject> projects = new List<BuildIntegratedNuGetProject>()
+            {
+                buildIntegratedProjectA
+            };
+
+            SourceRepository primarySource = primarySources.First();
+            string newMappingSource = validNewMappingSource ? primarySource.PackageSource.Name : "invalidSource";
+            string newMappingID = validNewMappingID ? "jQuery" : "invalidPackage";
+
+            var nugetAction = NuGetProjectAction.CreateInstallProjectAction(target, primarySource, buildIntegratedProjectA);
+            NuGetProjectAction[] actions = new NuGetProjectAction[] { nugetAction };
+
+            Dictionary<string, NuGetProjectAction[]> nugetProjectActionsLookup =
+                new Dictionary<string, NuGetProjectAction[]>(PathUtility.GetStringComparerBasedOnOS())
+            {
+                { primarySource.PackageSource.Name, actions }
+            };
+
+            IEnumerable<ResolvedAction> resolvedActions = await nuGetPackageManager.PreviewBuildIntegratedProjectsActionsAsync(
+                projects,
+                nugetProjectActionsLookup: nugetProjectActionsLookup,
+                packageIdentity: target,
+                primarySources,
+                nugetProjectContext,
+                versionRange: null,
+                CancellationToken.None,
+                newMappingID,
+                newMappingSource);
+
+            // Assert
+
+            // `Request` Assertions
+
+            Assert.Single(resolvedActions);
+            ResolvedAction resolvedAction = resolvedActions.Single();
+            Assert.IsType(typeof(BuildIntegratedProjectAction), resolvedAction.Action);
+
+            BuildIntegratedProjectAction buildIntegratedProjectAction = resolvedAction.Action as BuildIntegratedProjectAction;
+            RestoreSummaryRequest summaryRequest = buildIntegratedProjectAction.RestoreResultPair.SummaryRequest;
+
+            // Request should have "*" Pattern Mapping for the requested new mapping source.
+            PackageSourceMapping requestedSourceMapping = summaryRequest.Request.PackageSourceMapping;
+            Assert.Equal(true, requestedSourceMapping.IsEnabled);
+            IReadOnlyList<string> mappedSources = requestedSourceMapping.GetConfiguredPackageSources(newMappingID);
+            Assert.Contains(newMappingSource, mappedSources);
+        }
+
         /// <summary>
         /// Repro for a bug caused by a NullReferenceException being thrown due to a null <see cref="PackageIdentity.Version"/>
         /// (https://github.com/NuGet/Home/issues/9882).
