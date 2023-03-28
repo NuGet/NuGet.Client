@@ -237,11 +237,13 @@ namespace NuGet.Commands
         private static PackageSourceMapping GetExistingMappingsWithGlobPatternToNewSource(RestoreArgs restoreArgs, ISettings settings)
         {
             PackageSourceMapping packageSourceMapping;
-            var mappingProvider = new PackageSourceMappingProvider(settings);
+            PackageSourceMappingProvider mappingProvider = new(settings);
 
-            PackagePatternItem newMappingIdPatternItem = new(restoreArgs.NewMappingID);
-            PackagePatternItem globPackagePatternItem = new("*");
-            List<PackagePatternItem> newPatternItems = new() { newMappingIdPatternItem, globPackagePatternItem };
+            List<PackagePatternItem> newPatternItems = new()
+            {
+                new PackagePatternItem(restoreArgs.NewMappingID),
+                new PackagePatternItem("*")
+            };
 
             IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems();
             List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new();
@@ -285,9 +287,6 @@ namespace NuGet.Commands
                 .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)(pair.Patterns.Select(p => p.Pattern).ToList()));
 
             packageSourceMapping = new PackageSourceMapping(patternsReadOnly);
-            packageSourceMapping.UnsavedPatterns.Value.Add(
-                newPackageSourceMappingItemForSource.Key,
-                newPackageSourceMappingItemForSource.Patterns.Select(p => p.Pattern).ToList());
             return packageSourceMapping;
         }
 

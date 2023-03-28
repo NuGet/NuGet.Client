@@ -20,11 +20,6 @@ namespace NuGet.Configuration
         /// </summary>
         internal IReadOnlyDictionary<string, IReadOnlyList<string>> Patterns { get; }
 
-        /// <summary>
-        /// Desired Source name to package patterns list.
-        /// </summary>
-        public Lazy<Dictionary<string, List<string>>> UnsavedPatterns { get; }
-
         private Lazy<SearchTree> SearchTree { get; }
 
         /// <summary>
@@ -33,34 +28,14 @@ namespace NuGet.Configuration
         public bool IsEnabled { get; }
 
         /// <summary>
-        /// Get package source names with matching prefix "packageId" from package source mapping section plus
-        /// any <see cref="UnsavedPatterns"/> sources.
+        /// Get package source names with matching prefix "packageId" from package source mapping section.
         /// </summary>
         /// <param name="packageId">Search packageId. Cannot be null, empty, or whitespace only. </param>
         /// <returns>Package source names with matching prefix "packageId" from package patterns.</returns>
         /// <exception cref="ArgumentException"> if <paramref name="packageId"/> is null, empty, or whitespace only.</exception>
         public IReadOnlyList<string> GetConfiguredPackageSources(string packageId)
         {
-            IReadOnlyList<string> unsavedSources = UnsavedPatterns.IsValueCreated ? UnsavedPatterns.Value.Keys.ToList() : null;
-            IReadOnlyList<string> persistedSources = SearchTree.Value?.GetConfiguredPackageSources(packageId);
-
-            if (unsavedSources != null && persistedSources != null)
-            {
-                IEnumerable<string> persistedAndUnsavedPackageSources = persistedSources.Union(unsavedSources);
-                return persistedAndUnsavedPackageSources.ToList().AsReadOnly();
-            }
-
-            if (persistedSources != null)
-            {
-                return persistedSources;
-            }
-
-            if (unsavedSources != null)
-            {
-                return unsavedSources;
-            }
-
-            return null;
+            return SearchTree.Value?.GetConfiguredPackageSources(packageId);
         }
 
         public PackageSourceMapping(IReadOnlyDictionary<string, IReadOnlyList<string>> patterns)
@@ -68,7 +43,6 @@ namespace NuGet.Configuration
             Patterns = patterns ?? throw new ArgumentNullException(nameof(patterns));
             IsEnabled = Patterns.Count > 0;
             SearchTree = new Lazy<SearchTree>(() => GetSearchTree());
-            UnsavedPatterns = new Lazy<Dictionary<string, List<string>>>();
         }
 
         /// <summary>

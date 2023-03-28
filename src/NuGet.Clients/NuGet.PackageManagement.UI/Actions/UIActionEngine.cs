@@ -476,15 +476,6 @@ namespace NuGet.PackageManagement.UI
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        await projectManagerService.ExecuteActionsAsync(
-                            actions,
-                            cancellationToken);
-
-                        string[] projectIds = actions
-                            .Select(action => action.ProjectId)
-                            .Distinct()
-                            .ToArray();
-
                         if (userAction?.SourceMappingSourceName != null && addedPackages != null)
                         {
                             // Get all newly added package IDs that were not previously Source Mapped.
@@ -500,6 +491,15 @@ namespace NuGet.PackageManagement.UI
                                 newPackageIdsToSourceMap: packageIdsNeedingNewSourceMappings,
                                 sourceMappingProvider);
                         }
+
+                        await projectManagerService.ExecuteActionsAsync(
+                            actions,
+                            cancellationToken);
+
+                        string[] projectIds = actions
+                            .Select(action => action.ProjectId)
+                            .Distinct()
+                            .ToArray();
 
                         uiService.UIContext.RaiseProjectActionsExecuted(projectIds);
                     }
