@@ -2927,7 +2927,6 @@ namespace NuGet.Commands.Test
             projectInformationEvent["LocalSourcesCount"].Should().Be(1);
             projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
             projectInformationEvent["IsLockFileEnabled"].Should().Be(false);
-
         }
 
         [Fact]
