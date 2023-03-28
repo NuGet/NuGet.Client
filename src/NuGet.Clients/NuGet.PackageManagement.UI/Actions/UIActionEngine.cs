@@ -488,7 +488,7 @@ namespace NuGet.PackageManagement.UI
                             // Always include the Package ID being installed since it takes precedence over any globbing.
                             string[] packageIdsNeedingNewSourceMappings = addedPackages
                                .Select(action => action.Item1)
-                               .Where(packageId => packageSourceMapping.GetConfiguredPackageSources(packageId).Count == 0)
+                               .Where(packageId => packageSourceMapping.GetConfiguredPackageSources(packageId)?.Count == 0)
                                .Union(new string[] { userAction.PackageId })
                                .ToArray();
 
