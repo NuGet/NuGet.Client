@@ -39,8 +39,9 @@ namespace NuGet.XPlat.FuncTest
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
             {
+                var nonExistingDirectory = Path.Combine(testInfo.WorkingPath.Path, @"\NonExistingRepos");
                 var result = CommandRunner.Run(
-                      DotnetCli,
+                    DotnetCli,
                       testInfo.WorkingPath,
                       $"{XplatDll} config paths",
                       waitForExit: true
@@ -60,14 +61,15 @@ namespace NuGet.XPlat.FuncTest
             // Act
             var result = CommandRunner.Run(
                 DotnetCli,
-                Directory.GetCurrentDirectory(),
+                    Directory.GetCurrentDirectory(),
                 $"{XplatDll} config paths --help",
-                waitForExit: true
-                );
+                    waitForExit: true
+                    );
+                var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
 
-            // Assert
+                // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
-        }
+            }
 
         [Fact]
         public void ConfigCommand_HelpMessage_Success()
@@ -87,6 +89,7 @@ namespace NuGet.XPlat.FuncTest
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
         }
 
+        // Change to theory and test with multiple keys?
         [Fact]
         public void ConfigPathsCommand_ListConfigPathsNonExistingDirectory_Fail()
         {
@@ -95,11 +98,11 @@ namespace NuGet.XPlat.FuncTest
             {
                 var nonExistingDirectory = Path.Combine(testInfo.WorkingPath.Path, @"\NonExistingRepos");
                 var result = CommandRunner.Run(
-                    DotnetCli,
-                    Directory.GetCurrentDirectory(),
+                      DotnetCli,
+                      Directory.GetCurrentDirectory(),
                     $"{XplatDll} config paths {nonExistingDirectory}",
-                    waitForExit: true
-                    );
+                      waitForExit: true
+                      );
                 var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
 
                 // Assert
@@ -115,7 +118,7 @@ namespace NuGet.XPlat.FuncTest
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => ConfigPathsRunner.Run(null, () => log));
-        }
+            }
 
         [Fact]
         public void ConfigPathsCommand_NullGetLogger_Fail()
@@ -135,12 +138,14 @@ namespace NuGet.XPlat.FuncTest
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
             {
+                var invalidKey = "invalidKey";
                 var result = CommandRunner.Run(
-                      DotnetCli,
+                    DotnetCli,
                       testInfo.WorkingPath,
                       $"{XplatDll} config pathss",
-                      waitForExit: true
-                      );
+                    waitForExit: true
+                    );
+                var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, invalidKey);
 
                 // Assert
                 DotnetCliUtil.VerifyResultFailure(result, "error: Unrecognized command or argument 'pathss'");
@@ -179,6 +184,9 @@ namespace NuGet.XPlat.FuncTest
     <packageSources>
         <add key=""Foo"" value=""https://contoso.test/v3/index.json"" />
     </packageSources>
+    <config>
+		<add key=""http_proxy"" value=""http://company-squid:3128@contoso.test"" />
+	</config>
 </configuration>
 ");
             }

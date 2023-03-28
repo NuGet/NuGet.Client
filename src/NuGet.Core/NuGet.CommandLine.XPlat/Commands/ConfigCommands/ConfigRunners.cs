@@ -45,24 +45,23 @@ namespace NuGet.CommandLine.XPlat
     {
         public static void Run(ConfigGetArgs args, Func<ILogger> getLogger)
         {
-
-            if (args.AllOrConfigKey.Equals("all", StringComparison.OrdinalIgnoreCase))
-            {
-                // Get All; will return something
-            }
-
             var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory);
             ILogger logger = getLogger();
 
-            var configValue = SettingsUtility.GetConfigValue(settings, args.AllOrConfigKey);
-            if (string.IsNullOrEmpty(configValue))
+            if (args.AllOrConfigKey.Equals("all", StringComparison.OrdinalIgnoreCase))
             {
-                // Need to add actual message to strings.resx
-                logger.LogMinimal("Config key does not exist");
+                // Get All
             }
+            else
+            {
+                var configValue = SettingsUtility.GetConfigValue(settings, args.AllOrConfigKey);
+                if (string.IsNullOrEmpty(configValue))
+                {
+                    throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, args.AllOrConfigKey));
+                }
 
-            logger.LogMinimal(configValue);
-
+                logger.LogMinimal(configValue);
+            }
         }
     }
 
@@ -70,6 +69,10 @@ namespace NuGet.CommandLine.XPlat
     {
         public static ISettings GetSettingsFromDirectory(string directory)
         {
+            if (string.IsNullOrEmpty(directory))
+            {
+                directory = Directory.GetCurrentDirectory();
+            }
             if (!Directory.Exists(directory))
             {
                 throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, directory));

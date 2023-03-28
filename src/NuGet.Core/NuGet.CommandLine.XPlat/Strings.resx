@@ -825,4 +825,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>The specified path '{0}' does not exist.</value>
     <comment>0 - path</comment>
   </data>
+  <data name="ConfigCommandKeyNotFound" xml:space="preserve">
+    <value>Key '{0}' not found.</value>
+  </data>
 </root>
