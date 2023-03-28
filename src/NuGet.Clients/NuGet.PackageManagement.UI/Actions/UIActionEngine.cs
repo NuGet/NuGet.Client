@@ -39,6 +39,11 @@ namespace NuGet.PackageManagement.UI
         private readonly INuGetLockService _lockService;
 
         /// <summary>
+        /// Property is referenced by the Preview Window.
+        /// </summary>
+        public bool IsPackageSourceMappingEnabled { get; private set; }
+
+        /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
         /// </summary>
         public UIActionEngine(
@@ -77,7 +82,9 @@ namespace NuGet.PackageManagement.UI
                     userAction,
                     uiService.RemoveDependencies,
                     uiService.ForceRemove,
-                    cancellationToken),
+                    cancellationToken,
+                    newMappingID: userAction.PackageId,
+                    newMappingSource: userAction.SourceMappingSourceName),
                 cancellationToken);
         }
 
@@ -354,6 +361,16 @@ namespace NuGet.PackageManagement.UI
             {
                 // don't teardown the process if we have a telemetry failure
             }
+
+            var sourceMappingProvider = new PackageSourceMappingProvider(uiService.Settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingSourceItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            IsPackageSourceMappingEnabled = existingPackageSourceMappingSourceItems.Count > 0;
+            string[] existingMappingPackageIds = existingPackageSourceMappingSourceItems
+                .SelectMany(mapping => mapping.Patterns)
+                .Select(pattern => pattern.Pattern)
+                .Distinct()
+                .ToArray();
+
             packageEnumerationTime.Stop();
 
             await _lockService.ExecuteNuGetOperationAsync(async () =>
@@ -459,6 +476,28 @@ namespace NuGet.PackageManagement.UI
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
+                        if (userAction?.SourceMappingSourceName != null && addedPackages != null)
+                        {
+                            Dictionary<string, IReadOnlyList<string>> patternsReadOnly = existingPackageSourceMappingSourceItems
+                                .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)(pair.Patterns.Select(p => p.Pattern).ToList()));
+
+                            PackageSourceMapping packageSourceMapping = new(patternsReadOnly);
+
+                            // Get all newly added package IDs that were not previously Source Mapped.
+                            // Expand all patterns/globs so we can later check if this package ID was already mapped.
+                            // Always include the Package ID being installed since it takes precedence over any globbing.
+                            string[] packageIdsNeedingNewSourceMappings = addedPackages
+                               .Select(action => action.Item1)
+                               .Where(packageId => packageSourceMapping.GetConfiguredPackageSources(packageId)?.Count == 0)
+                               .Union(new string[] { userAction.PackageId })
+                               .ToArray();
+
+                            CreateAndSavePackageSourceMappings(
+                                sourceName: userAction.SourceMappingSourceName,
+                                newPackageIdsToSourceMap: packageIdsNeedingNewSourceMappings,
+                                sourceMappingProvider);
+                        }
+
                         await projectManagerService.ExecuteActionsAsync(
                             actions,
                             cancellationToken);
@@ -519,8 +558,6 @@ namespace NuGet.PackageManagement.UI
                         uiService.Projects,
                         cancellationToken)).ToArray();
 
-                    var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(uiService.Settings);
-                    bool isPackageSourceMappingEnabled = packageSourceMapping?.IsEnabled ?? false;
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         projectIds,
@@ -531,7 +568,7 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         DateTimeOffset.Now,
                         duration.TotalSeconds,
-                        isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
+                        IsPackageSourceMappingEnabled);
 
                     var nuGetUI = uiService as NuGetUI;
                     AddUiActionEngineTelemetryProperties(
@@ -841,14 +878,16 @@ namespace NuGet.PackageManagement.UI
             UserAction userAction,
             bool removeDependencies,
             bool forceRemove,
-            CancellationToken token)
+            CancellationToken token,
+            string? newMappingID = null,
+            string? newMappingSource = null)
         {
             var results = new List<ProjectAction>();
 
             // Allow prerelease packages only if the target is prerelease
             bool includePrelease =
                 userAction.Action == NuGetProjectActionType.Uninstall ||
-                userAction.Version.IsPrerelease == true;
+                userAction.Version?.IsPrerelease == true;
 
             IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
             string[] projectIds = projects
@@ -868,7 +907,9 @@ namespace NuGet.PackageManagement.UI
                     uiService.DependencyBehavior,
                     packageSourceNames,
                     userAction.VersionRange,
-                    token);
+                    token,
+                    newMappingID,
+                    newMappingSource);
 
                 results.AddRange(actions);
             }
@@ -887,6 +928,43 @@ namespace NuGet.PackageManagement.UI
             }
 
             return results;
+        }
+
+        private static void CreateAndSavePackageSourceMappings(string sourceName, string[] newPackageIdsToSourceMap, PackageSourceMappingProvider mappingProvider)
+        {
+            if (string.IsNullOrWhiteSpace(sourceName) || newPackageIdsToSourceMap is null || newPackageIdsToSourceMap.Length == 0)
+            {
+                return;
+            }
+
+            IEnumerable<PackagePatternItem> newPackagePatternItems = newPackageIdsToSourceMap.Select(packageId => new PackagePatternItem(packageId));
+
+            IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems();
+            List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new(existingPackageSourceMappingItems);
+
+            PackageSourceMappingSourceItem existingPackageSourceMappingItemForSource =
+                        existingPackageSourceMappingItems
+                        .Where(mappingItem => mappingItem.Key == sourceName)
+                        .FirstOrDefault();
+
+            // Source is being mapped for the first time.
+            if (existingPackageSourceMappingItemForSource is null)
+            {
+                existingPackageSourceMappingItemForSource = new(sourceName, newPackagePatternItems);
+                newAndExistingPackageSourceMappingItems.Add(existingPackageSourceMappingItemForSource);
+            }
+            else // Source already had an existing mapping.
+            {
+                foreach (var newPattern in newPackagePatternItems)
+                {
+                    if (!existingPackageSourceMappingItemForSource.Patterns.Contains(newPattern))
+                    {
+                        existingPackageSourceMappingItemForSource.Patterns.Add(newPattern);
+                    }
+                }
+            }
+
+            mappingProvider.SavePackageSourceMappings(newAndExistingPackageSourceMappingItems);
         }
 
         // Non-private only to facilitate testing.

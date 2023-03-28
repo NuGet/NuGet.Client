@@ -441,7 +441,9 @@ namespace NuGet.PackageManagement.VisualStudio
             DependencyBehavior dependencyBehavior,
             IReadOnlyList<string> packageSourceNames,
             VersionRange? versionRange,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            string? newMappingID = null,
+            string? newMappingSource = null)
         {
             Assumes.NotNullOrEmpty(projectIds);
             Assumes.NotNull(packageIdentity);
@@ -481,7 +483,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     projectContext,
                     sourceRepositories,
                     versionRange,
-                    cancellationToken);
+                    cancellationToken,
+                    newMappingID,
+                    newMappingSource);
 
                 var projectActions = new List<ProjectAction>();
 

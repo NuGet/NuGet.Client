@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Packaging.Signing;
@@ -159,7 +161,16 @@ namespace NuGet.Commands
             var settings = Settings.LoadImmutableSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths, settingsLoadingContext);
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
-            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            PackageSourceMapping packageSourceMapping;
+            if (restoreArgs.NewMappingSource != null && restoreArgs.NewMappingID != null)
+            {
+                packageSourceMapping = GetExistingMappingsWithGlobPatternToNewSource(restoreArgs, settings);
+            }
+            else
+            {
+                packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            }
+
             var updateLastAccess = SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
@@ -212,6 +223,71 @@ namespace NuGet.Commands
                 sources);
 
             return summaryRequest;
+        }
+
+        /// <summary>
+        /// Reads existing Package Source Mappings from settings and adds a new mapping to pattern, <see cref="RestoreArgs.NewMappingID"/>, and
+        /// a glob "*" pattern for the <see cref="RestoreArgs.NewMappingSource"/>.
+        /// The intention is that Preview Restore can run and expect all newly installed packages being source mapped to the new source.
+        /// Does not write to settings.
+        /// </summary>
+        /// <param name="restoreArgs">Reads <see cref="RestoreArgs.NewMappingSource"/>.</param>
+        /// <param name="settings">Reads existing Package Source Mappings, but does not write them.</param>
+        /// <returns></returns>
+        private static PackageSourceMapping GetExistingMappingsWithGlobPatternToNewSource(RestoreArgs restoreArgs, ISettings settings)
+        {
+            PackageSourceMapping packageSourceMapping;
+            PackageSourceMappingProvider mappingProvider = new(settings);
+
+            List<PackagePatternItem> newPatternItems = new()
+            {
+                new PackagePatternItem(restoreArgs.NewMappingID),
+                new PackagePatternItem("*")
+            };
+
+            IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems();
+            List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new();
+
+            PackageSourceMappingSourceItem newPackageSourceMappingItemForSource = new(
+                    restoreArgs.NewMappingSource,
+                    packagePatternItems: newPatternItems);
+
+            // No Package Source Mappings existed, so simply create the new mapping.
+            if (existingPackageSourceMappingItems.Count == 0)
+            {
+                newAndExistingPackageSourceMappingItems.Add(newPackageSourceMappingItemForSource);
+            }
+            else // Mappings existed for some source.
+            {
+                newAndExistingPackageSourceMappingItems.AddRange(existingPackageSourceMappingItems);
+
+                PackageSourceMappingSourceItem existingPackageSourceMappingItemForSource =
+                    existingPackageSourceMappingItems
+                    .Where(mappingItem => mappingItem.Key == restoreArgs.NewMappingSource)
+                    .FirstOrDefault();
+
+                // Source is being mapped for the first time.
+                if (existingPackageSourceMappingItemForSource is null)
+                {
+                    newAndExistingPackageSourceMappingItems.Add(newPackageSourceMappingItemForSource);
+                }
+                else // Source already had an existing mapping.
+                {
+                    foreach (PackagePatternItem newPatternItem in newPatternItems)
+                    {
+                        if (!existingPackageSourceMappingItemForSource.Patterns.Contains(newPatternItem))
+                        {
+                            existingPackageSourceMappingItemForSource.Patterns.Add(newPatternItem);
+                        }
+                    }
+                }
+            }
+
+            Dictionary<string, IReadOnlyList<string>> patternsReadOnly = newAndExistingPackageSourceMappingItems
+                .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)(pair.Patterns.Select(p => p.Pattern).ToList()));
+
+            packageSourceMapping = new PackageSourceMapping(patternsReadOnly);
+            return packageSourceMapping;
         }
 
         private string GetPackagesPath(RestoreArgs restoreArgs, PackageSpec project)

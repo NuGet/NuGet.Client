@@ -160,7 +160,9 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
             Guid parentId,
-            CancellationToken token)
+            CancellationToken token,
+            string newMappingID = null,
+            string newMappingSource = null)
         {
             token.ThrowIfCancellationRequested();
 
@@ -189,7 +191,9 @@ namespace NuGet.PackageManagement
                     isRestoreOriginalAction: false,
                     restoreForceEvaluate: true,
                     additionalMessasges: null,
-                    progressReporter: null);
+                    progressReporter: null,
+                    newMappingID,
+                    newMappingSource);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -211,7 +215,9 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> sources,
             Guid parentId,
             ILogger log,
-            CancellationToken token)
+            CancellationToken token,
+            string newMappingID,
+            string newMappingSource)
         {
             token.ThrowIfCancellationRequested();
 
@@ -243,7 +249,9 @@ namespace NuGet.PackageManagement
                     isRestoreOriginalAction: false,
                     restoreForceEvaluate: true,
                     additionalMessasges: null,
-                    progressReporter: null);
+                    progressReporter: null,
+                    newMappingID,
+                    newMappingSource);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -414,7 +422,9 @@ namespace NuGet.PackageManagement
             bool isRestoreOriginalAction,
             bool restoreForceEvaluate,
             IReadOnlyList<IAssetsLogMessage> additionalMessasges,
-            IRestoreProgressReporter progressReporter)
+            IRestoreProgressReporter progressReporter,
+            string newMappingID = null,
+            string newMappingSource = null)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings, enablePackageSourcesChangedEvent: false));
@@ -438,6 +448,8 @@ namespace NuGet.PackageManagement
                 RestoreForceEvaluate = restoreForceEvaluate,
                 AdditionalMessages = additionalMessasges,
                 ProgressReporter = progressReporter,
+                NewMappingID = newMappingID,
+                NewMappingSource = newMappingSource
             };
 
             return restoreContext;
