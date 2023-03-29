@@ -36,10 +36,15 @@ namespace NuGet.CommandLine.XPlat
                 {
                     CommandArgument allOrConfigKey = GetCmd.Argument(
                         "all/config-key",
-                        "String description goes here");
+                        Strings.ConfigGetAllOrConfigKeyDescription);
                     CommandArgument workingDirectory = GetCmd.Argument(
                         "working-directory",
                         Strings.ConfigPathsWorkingDirectoryDescription);
+                    GetCmd.Option(
+                        "--show-path",
+                        Strings.ConfigGetShowPathDescription,
+                        CommandOptionType.NoValue
+                        );
                     GetCmd.OnExecute(() =>
                     {
                         var args = new ConfigGetArgs()

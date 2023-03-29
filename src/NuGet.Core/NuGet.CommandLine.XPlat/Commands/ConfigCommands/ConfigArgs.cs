@@ -11,7 +11,9 @@ namespace NuGet.CommandLine.XPlat
 
     internal partial class ConfigGetArgs
     {
-        public string AllOrConfigKey { get; set; }
-        public string WorkingDirectory { get; set; }
+        // Added ? to avoid build errors
+        public string? AllOrConfigKey { get; set; }
+        public string? WorkingDirectory { get; set; }
+        public bool ShowPath { get; set; }
     }
 }

@@ -1,1 +1,2 @@
 #nullable enable
+~NuGet.Configuration.AddItem.GetConfigFilePath() -> string

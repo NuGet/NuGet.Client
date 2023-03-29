@@ -54,7 +54,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                var configValue = SettingsUtility.GetConfigValue(settings, args.AllOrConfigKey, false, true);
+                var configValue = RunnerHelper.GetValueForConfigKey(settings, args.AllOrConfigKey);
                 if (string.IsNullOrEmpty(configValue))
                 {
                     throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, args.AllOrConfigKey));
@@ -82,6 +82,30 @@ namespace NuGet.CommandLine.XPlat
                 directory,
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
+        }
+
+
+        public static string GetValueForConfigKey(ISettings settings, string key, bool isPath = false)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            var sectionElement = settings.GetSection(ConfigurationConstants.Config);
+            var item = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
+
+            if (item == null)
+            {
+                return null;
+            }
+
+            if (isPath)
+            {
+                return item.Value + " " + item.GetConfigFilePath();
+            }
+
+            return item.Value;
         }
     }
 }

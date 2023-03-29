@@ -76,6 +76,16 @@ namespace NuGet.Configuration
             return Value;
         }
 
+        public string GetConfigFilePath()
+        {
+            if (Origin != null)
+            {
+                return Origin.ConfigFilePath;
+            }
+
+            return string.Empty;
+        }
+
         public void AddOrUpdateAdditionalAttribute(string attributeName, string value)
         {
             if (Origin != null && Origin.IsReadOnly)
