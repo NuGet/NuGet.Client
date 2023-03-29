@@ -57,6 +57,15 @@ namespace NuGet.Test
             return Task.FromResult(true);
         }
 
+        public override Task<bool> UpdatePackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            return Task.FromResult(true);
+        }
+
         public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             throw new NotImplementedException();

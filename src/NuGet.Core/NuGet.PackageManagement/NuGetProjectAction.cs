@@ -23,7 +23,12 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Uninstall
         /// </summary>
-        Uninstall
+        Uninstall,
+
+        /// <summary>
+        /// Update
+        /// </summary>
+        Update
     }
 
     /// <summary>
@@ -77,6 +82,11 @@ namespace NuGet.PackageManagement
         public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository, NuGetProject project)
         {
             return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, project, sourceRepository);
+        }
+
+        public static NuGetProjectAction CreateUpdateProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository, NuGetProject project)
+        {
+            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Update, project, sourceRepository);
         }
 
         public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository, NuGetProject project, VersionRange versionRange)

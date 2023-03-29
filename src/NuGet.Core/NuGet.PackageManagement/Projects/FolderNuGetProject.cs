@@ -93,6 +93,33 @@ namespace NuGet.ProjectManagement
         }
 
         /// <summary>
+        /// Asynchronously updates a package.
+        /// </summary>
+        /// <param name="packageIdentity">A package identity.</param>
+        /// <param name="downloadResourceResult">A download resource result.</param>
+        /// <param name="nuGetProjectContext">A NuGet project context.</param>
+        /// <param name="token">A cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="bool" />
+        /// indication successfulness of the operation.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="downloadResourceResult" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="nuGetProjectContext" />
+        /// is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown if the package stream for
+        /// <paramref name="downloadResourceResult" /> is not seekable.</exception>
+        public override Task<bool> UpdatePackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            return InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
+        }
+
+        /// <summary>
         /// Asynchronously installs a package.
         /// </summary>
         /// <param name="packageIdentity">A package identity.</param>

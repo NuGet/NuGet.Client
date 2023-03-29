@@ -304,7 +304,7 @@ namespace NuGet.PackageManagement.UI.Test
             var action = UserAction.CreateInstallAction(packageIdToInstall, NuGetVersion.Parse("1.0.0"), isSolutionLevel, activeTab);
 
             // Act
-            await uiEngine.PerformInstallOrUninstallAsync(uiService.Object, action, CancellationToken.None);
+            await uiEngine.PerformActionAsync(uiService.Object, action, CancellationToken.None);
 
             // Assert
             Assert.NotNull(lastTelemetryEvent);

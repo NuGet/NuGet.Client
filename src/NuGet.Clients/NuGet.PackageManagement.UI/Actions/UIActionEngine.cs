@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -12,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -55,7 +57,7 @@ namespace NuGet.PackageManagement.UI
         /// Perform an install or uninstall user action.
         /// </summary>
         /// <remarks>This needs to be called from a background thread. It may make the UI thread stop responding.</remarks>
-        public async Task PerformInstallOrUninstallAsync(
+        public async Task PerformActionAsync(
             INuGetUI uiService,
             UserAction userAction,
             CancellationToken cancellationToken)
@@ -64,6 +66,10 @@ namespace NuGet.PackageManagement.UI
             if (userAction.Action == NuGetProjectActionType.Uninstall)
             {
                 operationType = NuGetOperationType.Uninstall;
+            }
+            else if (userAction.Action == NuGetProjectActionType.Update)
+            {
+                operationType = NuGetOperationType.Update;
             }
 
             await PerformActionAsync(
@@ -868,6 +874,23 @@ namespace NuGet.PackageManagement.UI
                     uiService.DependencyBehavior,
                     packageSourceNames,
                     userAction.VersionRange,
+                    token);
+
+                results.AddRange(actions);
+            }
+            else if (userAction.Action == NuGetProjectActionType.Update)
+            {
+                var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
+                List<PackageIdentity> pIds = new();
+                pIds.Add(packageIdentity);
+
+                IReadOnlyList<ProjectAction> actions = await projectManagerService.GetUpdateActionsAsync(
+                    projectIds,
+                    new ReadOnlyCollection<PackageIdentity>(pIds),
+                    VersionConstraints.None, // TODO: correct constraint for update?
+                    includePrelease,
+                    uiService.DependencyBehavior,
+                    packageSourceNames,
                     token);
 
                 results.AddRange(actions);

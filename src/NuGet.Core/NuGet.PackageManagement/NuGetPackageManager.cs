@@ -944,7 +944,7 @@ namespace NuGet.PackageManagement
                     //  if the package is not currently installed, or the installed one is auto referenced ignore it
                     if (installed != null && !autoReferenced)
                     {
-                        lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity,
+                        lowLevelActions.Add(NuGetProjectAction.CreateUpdateProjectAction(packageIdentity,
                             primarySources.FirstOrDefault(), nuGetProject));
                     }
                 }
@@ -2528,10 +2528,10 @@ namespace NuGet.PackageManagement
 
                     var actionsList = nuGetProjectActions.ToList();
 
-                    var hasInstalls = actionsList.Any(action =>
-                        action.NuGetProjectActionType == NuGetProjectActionType.Install);
+                    var hasInstallsOrUpdates = actionsList.Any(action =>
+                        action.NuGetProjectActionType == NuGetProjectActionType.Install || action.NuGetProjectActionType == NuGetProjectActionType.Update);
 
-                    if (hasInstalls)
+                    if (hasInstallsOrUpdates)
                     {
                         // Make this independently cancelable.
                         downloadTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
@@ -2638,6 +2638,39 @@ namespace NuGet.PackageManagement
                                 nuGetProjectContext.Log(
                                     ProjectManagement.MessageLevel.Info,
                                     Strings.SuccessfullyInstalled,
+                                    identityString,
+                                    nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                            }
+                            else if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Update)
+                            {
+                                executedNuGetProjectActions.Push(nuGetProjectAction);
+
+                                // Retrieve the downloaded package
+                                // This will wait on the package if it is still downloading
+                                var preFetchResult = downloadTasks[nuGetProjectAction.PackageIdentity];
+                                using (var downloadPackageResult = await preFetchResult.GetResultAsync())
+                                {
+                                    // use the version exactly as specified in the nuspec file
+                                    var packageIdentity = await downloadPackageResult.PackageReader.GetIdentityAsync(token);
+
+                                    await ExecuteUpdateAsync(
+                                        nuGetProject,
+                                        packageIdentity,
+                                        downloadPackageResult,
+                                        packageWithDirectoriesToBeDeleted,
+                                        nuGetProjectContext,
+                                        token);
+                                }
+
+                                var identityString = string.Format(CultureInfo.InvariantCulture, "{0} {1}",
+                                    nuGetProjectAction.PackageIdentity.Id,
+                                    nuGetProjectAction.PackageIdentity.Version.ToNormalizedString());
+
+                                preFetchResult.EmitTelemetryEvent(nuGetProjectContext.OperationId);
+
+                                nuGetProjectContext.Log(
+                                    ProjectManagement.MessageLevel.Info,
+                                    Strings.SuccessfullyUpdated,
                                     identityString,
                                     nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                             }
@@ -2979,22 +3012,36 @@ namespace NuGet.PackageManagement
 
                 foreach (var action in nuGetProjectActions)
                 {
-                    if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                    switch (action.NuGetProjectActionType)
                     {
-                        // Remove the package from all frameworks and dependencies section.
-                        PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id);
-                    }
-                    else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
-                    {
-                        if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
-                        {
-                            var packageDependency = new PackageDependency(action.PackageIdentity.Id, action.VersionRange ?? new VersionRange(action.PackageIdentity.Version));
-                            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
-                        }
-                        else
-                        {
-                            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity);
-                        }
+                        case NuGetProjectActionType.Uninstall:
+                            // Remove the package from all frameworks and dependencies section.
+                            PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id);
+                            break;
+                        case NuGetProjectActionType.Install:
+                            if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                            {
+                                var packageDependency = new PackageDependency(action.PackageIdentity.Id, action.VersionRange ?? new VersionRange(action.PackageIdentity.Version));
+                                PackageSpecOperations.AddDependency(updatedPackageSpec, packageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+                            }
+                            else
+                            {
+                                PackageSpecOperations.AddDependency(updatedPackageSpec, action.PackageIdentity);
+                            }
+
+                            break;
+                        case NuGetProjectActionType.Update:
+                            if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                            {
+                                var packageDependency = new PackageDependency(action.PackageIdentity.Id, action.VersionRange ?? new VersionRange(action.PackageIdentity.Version));
+                                PackageSpecOperations.UpdateDependency(updatedPackageSpec, packageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+                            }
+                            else
+                            {
+                                PackageSpecOperations.UpdateDependency(updatedPackageSpec, action.PackageIdentity);
+                            }
+
+                            break;
                     }
 
                     updatedNugetPackageSpecLookup[buildIntegratedProject.MSBuildProjectPath] = updatedPackageSpec;
@@ -3062,7 +3109,7 @@ namespace NuGet.PackageManagement
                 {
                     updatedPackageSpec = originalPackageSpec.Clone();
 
-                    PackageSpecOperations.AddOrUpdateDependency(
+                    PackageSpecOperations.AddDependency(
                         updatedPackageSpec,
                         firstAction.PackageIdentity,
                         successfulFrameworks);
@@ -3346,7 +3393,7 @@ namespace NuGet.PackageManagement
                 if (dgSpecForParents.Restore.Count > 0)
                 {
                     // Restore and commit the lock file to disk regardless of the result
-                    // This will restore all parents in a single restore 
+                    // This will restore all parents in a single restore
                     await DependencyGraphRestoreUtility.RestoreAsync(
                         dgSpecForParents,
                         referenceContext,
@@ -3555,6 +3602,22 @@ namespace NuGet.PackageManagement
             packageWithDirectoriesToBeDeleted.Remove(packageIdentity);
 
             await nuGetProject.InstallPackageAsync(packageIdentity, resourceResult, nuGetProjectContext, token);
+        }
+
+        private async Task ExecuteUpdateAsync(
+            NuGetProject nuGetProject,
+            PackageIdentity packageIdentity,
+            DownloadResourceResult resourceResult,
+            HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            // TODO: EnsurePackageCompatibility check should be performed in preview. Can easily avoid a lot of rollback
+            await InstallationCompatibility.EnsurePackageCompatibilityAsync(nuGetProject, packageIdentity, resourceResult, token);
+
+            packageWithDirectoriesToBeDeleted.Remove(packageIdentity);
+
+            await nuGetProject.UpdatePackageAsync(packageIdentity, resourceResult, nuGetProjectContext, token);
         }
 
         private async Task ExecuteUninstallAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, HashSet<PackageIdentity> packageWithDirectoriesToBeDeleted,

@@ -78,5 +78,14 @@ namespace NuGet.ProjectManagement.Projects
         {
             throw new NotImplementedException("This API should not be called for BuildIntegratedNuGetProject.");
         }
+
+        public override sealed Task<bool> UpdatePackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            throw new NotImplementedException("This API should not be called for BuildIntegratedNuGetProject.");
+        }
     }
 }

@@ -77,6 +77,16 @@ namespace NuGet.ProjectManagement
             PackagesProjectNameConfigPath = Path.Combine(folderPath, "packages." + projectName + ".config");
         }
 
+
+        public override async Task<bool> UpdatePackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            return await InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
+        }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public override async Task<bool> InstallPackageAsync(
             PackageIdentity packageIdentity,
@@ -206,7 +216,7 @@ namespace NuGet.ProjectManagement
                 if (installedPackagesList.Any())
                 {
                     // Matching packageReference is found and is the only entry
-                    // Then just delete the packages.config file 
+                    // Then just delete the packages.config file
                     if (installedPackagesList.Count == 1 && nuGetProjectContext.ActionType == NuGetActionType.Uninstall)
                     {
                         FileSystemUtility.DeleteFile(FullPath, nuGetProjectContext);

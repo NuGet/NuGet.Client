@@ -155,7 +155,7 @@
       MinHeight="24"
       HorizontalAlignment="Left"
       AutomationProperties.AutomationId="Project_Button_Update"
-      Click="InstallButton_Clicked"
+      Click="UpdateButton_Clicked"
       Visibility="{Binding IsInstalledVersionTopLevel, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
       IsEnabled="{Binding IsInstallorUpdateButtonEnabled, Mode=OneWay}"
       Content="{x:Static local:Resources.Button_Update}" />

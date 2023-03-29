@@ -61,5 +61,25 @@ namespace NuGet.PackageManagement.UI
         {
             return new UserAction(NuGetProjectActionType.Uninstall, packageId, packageVersion: null, isSolutionLevel, activeTab);
         }
+
+        public static UserAction CreateUpdateAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, VersionRange versionRange)
+        {
+            if (packageVersion == null && versionRange == null)
+            {
+                throw new ArgumentNullException(nameof(packageVersion));
+            }
+
+            return new UserAction(NuGetProjectActionType.Update, packageId, packageVersion, isSolutionLevel, activeTab, versionRange);
+        }
+
+        public static UserAction CreateUpdateAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab)
+        {
+            if (packageVersion == null)
+            {
+                throw new ArgumentNullException(nameof(packageVersion));
+            }
+
+            return new UserAction(NuGetProjectActionType.Update, packageId, packageVersion, isSolutionLevel, activeTab);
+        }
     }
 }

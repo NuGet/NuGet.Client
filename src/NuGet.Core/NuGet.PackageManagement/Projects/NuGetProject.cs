@@ -44,6 +44,21 @@ namespace NuGet.ProjectManagement
             CancellationToken token);
 
         /// <summary>
+        /// This updates a package into the NuGetProject using the <see cref="Stream"/> passed in
+        /// <param name="downloadResourceResult"></param>
+        /// should be seekable
+        /// </summary>
+        /// <returns>
+        /// Returns false if the package was already present in the NuGetProject. On successful update,
+        /// returns true
+        /// </returns>
+        public abstract Task<bool> UpdatePackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token);
+
+        /// <summary>
         /// This uninstalls the package from the NuGetProject, if found
         /// </summary>
         /// <returns>Returns false if the package was not found. On successful uninstallation, returns true</returns>

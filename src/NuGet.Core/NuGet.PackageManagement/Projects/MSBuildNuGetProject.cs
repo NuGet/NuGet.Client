@@ -137,8 +137,28 @@ namespace NuGet.ProjectManagement
             return msBuildNuGetProjectContext != null && msBuildNuGetProjectContext.SkipAssemblyReferences;
         }
 
+        public override async Task<bool> UpdatePackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            return await InstallOrUpdatePackageAsync(packageIdentity, NuGetActionType.Update, downloadResourceResult, nuGetProjectContext, token);
+
+        }
+
         public override async Task<bool> InstallPackageAsync(
             PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            return await InstallOrUpdatePackageAsync(packageIdentity, NuGetActionType.Install, downloadResourceResult, nuGetProjectContext, token);
+        }
+
+        private async Task<bool> InstallOrUpdatePackageAsync(
+            PackageIdentity packageIdentity,
+            NuGetActionType nugetActionType,
             DownloadResourceResult downloadResourceResult,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
@@ -294,7 +314,15 @@ namespace NuGet.ProjectManagement
             PackageEventsProvider.Instance.NotifyInstalling(packageEventArgs);
 
             // Step-6: Install package to FolderNuGetProject
-            await FolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
+            if (nugetActionType == NuGetActionType.Update)
+            {
+                await FolderNuGetProject.UpdatePackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
+            }
+            else
+            {
+                await FolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
+            }
+
 
             // Step-7: Raise PackageInstalled event
             // Call GetInstalledPath to get the package installed path
@@ -364,7 +392,14 @@ namespace NuGet.ProjectManagement
             }
 
             // Step-9: Install package to PackagesConfigNuGetProject
-            await PackagesConfigNuGetProject.InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
+            if (nugetActionType == NuGetActionType.Update)
+            {
+                await PackagesConfigNuGetProject.UpdatePackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
+            }
+            else
+            {
+                await PackagesConfigNuGetProject.InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
+            }
 
             // Step-10: Add packages.config to MSBuildNuGetProject
             ProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));

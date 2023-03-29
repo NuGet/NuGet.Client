@@ -45,17 +45,21 @@ namespace NuGet.PackageManagement.UI
             if (dataContext.IsSolution)
             {
                 _solutionView.InstallButtonClicked += SolutionInstallButtonClicked;
+                _solutionView.UpdateButtonClicked += SolutionUpdateButtonClicked;
                 _solutionView.UninstallButtonClicked += SolutionUninstallButtonClicked;
 
                 _projectView.InstallButtonClicked -= ProjectInstallButtonClicked;
+                _projectView.UpdateButtonClicked -= ProjectUpdateButtonClicked;
                 _projectView.UninstallButtonClicked -= ProjectUninstallButtonClicked;
             }
             else
             {
                 _projectView.InstallButtonClicked += ProjectInstallButtonClicked;
+                _projectView.UpdateButtonClicked += ProjectUpdateButtonClicked;
                 _projectView.UninstallButtonClicked += ProjectUninstallButtonClicked;
 
                 _solutionView.InstallButtonClicked -= SolutionInstallButtonClicked;
+                _solutionView.UpdateButtonClicked -= SolutionUpdateButtonClicked;
                 _solutionView.UninstallButtonClicked -= SolutionUninstallButtonClicked;
             }
         }
@@ -121,6 +125,23 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void ProjectUpdateButtonClicked(object sender, EventArgs e)
+        {
+            var model = (PackageDetailControlModel)DataContext;
+
+            if (model != null && model.SelectedVersion != null)
+            {
+                var userAction = UserAction.CreateUpdateAction(
+                    model.Id,
+                    model.SelectedVersion.Version,
+                    Control.Model.IsSolution,
+                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
+                    model.SelectedVersion.Range);
+
+                ExecuteUserAction(userAction, NuGetActionType.Update);
+            }
+        }
+
         private void ProjectUninstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageDetailControlModel)DataContext;
@@ -148,6 +169,22 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void SolutionUpdateButtonClicked(object sender, EventArgs e)
+        {
+            var model = (PackageSolutionDetailControlModel)DataContext;
+
+            if (model != null && model.SelectedVersion != null)
+            {
+                var userAction = UserAction.CreateUpdateAction(
+                    model.Id,
+                    model.SelectedVersion.Version,
+                    Control.Model.IsSolution,
+                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter));
+
+                ExecuteUserAction(userAction, NuGetActionType.Update);
+            }
+        }
+
         private void SolutionUninstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageSolutionDetailControlModel)DataContext;
@@ -164,7 +201,7 @@ namespace NuGet.PackageManagement.UI
             Control.ExecuteAction(
                 () =>
                 {
-                    return Control.Model.Context.UIActionEngine.PerformInstallOrUninstallAsync(
+                    return Control.Model.Context.UIActionEngine.PerformActionAsync(
                         Control.Model.UIController,
                         action,
                         CancellationToken.None);

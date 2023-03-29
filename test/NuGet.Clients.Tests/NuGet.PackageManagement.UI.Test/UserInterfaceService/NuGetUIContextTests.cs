@@ -184,6 +184,15 @@ namespace NuGet.PackageManagement.UI.Test.UserInterfaceService
                 throw new NotImplementedException();
             }
 
+            public override Task<bool> UpdatePackageAsync(
+                PackageIdentity packageIdentity,
+                DownloadResourceResult downloadResourceResult,
+                INuGetProjectContext nuGetProjectContext,
+                CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
             public override Task<bool> UninstallPackageAsync(
                 PackageIdentity packageIdentity,
                 INuGetProjectContext nuGetProjectContext,

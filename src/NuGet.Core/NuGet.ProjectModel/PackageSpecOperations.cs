@@ -15,6 +15,16 @@ namespace NuGet.ProjectModel
     {
         public static void AddOrUpdateDependency(PackageSpec spec, PackageDependency dependency)
         {
+            AddDependency(spec, dependency);
+        }
+
+        public static void AddOrUpdateDependency(PackageSpec spec, PackageIdentity identity)
+        {
+            AddDependency(spec, identity);
+        }
+
+        public static void AddDependency(PackageSpec spec, PackageDependency dependency)
+        {
             var existing = GetExistingDependencies(spec, dependency.Id);
 
             var range = dependency.VersionRange;
@@ -30,9 +40,28 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public static void AddOrUpdateDependency(PackageSpec spec, PackageIdentity identity)
+        public static void AddDependency(PackageSpec spec, PackageIdentity identity)
         {
-            AddOrUpdateDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)));
+            AddDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)));
+        }
+
+        public static void UpdateDependency(PackageSpec spec, PackageDependency dependency)
+        {
+            var existing = GetExistingDependencies(spec, dependency.Id);
+
+            var range = dependency.VersionRange;
+
+            foreach (var existingDependency in existing)
+            {
+                existingDependency.LibraryRange.VersionRange = range;
+            }
+
+            // TODO: removed if (!existing.Any()) block...right thing?
+        }
+
+        public static void UpdateDependency(PackageSpec spec, PackageIdentity identity)
+        {
+            UpdateDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)));
         }
 
         public static bool HasPackage(PackageSpec spec, string packageId)
@@ -45,6 +74,14 @@ namespace NuGet.ProjectModel
             PackageDependency dependency,
             IEnumerable<NuGetFramework> frameworksToAdd)
         {
+            AddDependency(spec, dependency, frameworksToAdd);
+        }
+
+        public static void AddDependency(
+            PackageSpec spec,
+            PackageDependency dependency,
+            IEnumerable<NuGetFramework> frameworksToAdd)
+        {
             var lists = GetDependencyLists(
                 spec,
                 includeGenericDependencies: false,
@@ -52,7 +89,28 @@ namespace NuGet.ProjectModel
 
             foreach (var list in lists)
             {
-                AddOrUpdateDependencyInDependencyList(spec, list, dependency.Id, dependency.VersionRange);
+                AddDependencyInDependencyList(spec, list, dependency.Id, dependency.VersionRange);
+            }
+
+            foreach (IDictionary<string, CentralPackageVersion> centralPackageVersionList in GetCentralPackageVersionLists(spec, frameworksToAdd))
+            {
+                centralPackageVersionList[dependency.Id] = new CentralPackageVersion(dependency.Id, dependency.VersionRange);
+            }
+        }
+
+        public static void UpdateDependency(
+            PackageSpec spec,
+            PackageDependency dependency,
+            IEnumerable<NuGetFramework> frameworksToAdd)
+        {
+            var lists = GetDependencyLists(
+                spec,
+                includeGenericDependencies: false,
+                frameworksToConsider: frameworksToAdd);
+
+            foreach (var list in lists)
+            {
+                UpdateDependencyInDependencyList(spec, list, dependency.Id, dependency.VersionRange);
             }
 
             foreach (IDictionary<string, CentralPackageVersion> centralPackageVersionList in GetCentralPackageVersionLists(spec, frameworksToAdd))
@@ -66,7 +124,23 @@ namespace NuGet.ProjectModel
             PackageIdentity identity,
             IEnumerable<NuGetFramework> frameworksToAdd)
         {
-            AddOrUpdateDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)), frameworksToAdd);
+            AddDependency(spec, identity, frameworksToAdd);
+        }
+
+        public static void AddDependency(
+            PackageSpec spec,
+            PackageIdentity identity,
+            IEnumerable<NuGetFramework> frameworksToAdd)
+        {
+            AddDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)), frameworksToAdd);
+        }
+
+        public static void UpdateDependency(
+            PackageSpec spec,
+            PackageIdentity identity,
+            IEnumerable<NuGetFramework> frameworksToAdd)
+        {
+            UpdateDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)), frameworksToAdd);
         }
 
         public static void RemoveDependency(
@@ -146,7 +220,7 @@ namespace NuGet.ProjectModel
                     .ToList();
         }
 
-        private static void AddOrUpdateDependencyInDependencyList(
+        private static void AddDependencyInDependencyList(
             PackageSpec spec,
             IList<LibraryDependency> list,
             string packageId,
@@ -167,6 +241,24 @@ namespace NuGet.ProjectModel
                 AddDependency(list, packageId, range, spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false);
             }
 
+        }
+
+        private static void UpdateDependencyInDependencyList(
+            PackageSpec spec,
+            IList<LibraryDependency> list,
+            string packageId,
+            VersionRange range)
+        {
+
+            var dependencies = list.Where(e => StringComparer.OrdinalIgnoreCase.Equals(e.Name, packageId)).ToList();
+
+            if (dependencies.Count != 0)
+            {
+                foreach (var library in dependencies)
+                {
+                    library.LibraryRange.VersionRange = range;
+                }
+            }
         }
 
         private static void AddDependency(

@@ -1609,6 +1609,22 @@ namespace NuGet.PackageManagement.UI
             InstallPackage(package.Id, versionToInstall, new[] { package });
         }
 
+        private void ExecuteUpdatePackageCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            var package = e.Parameter as PackageItemViewModel;
+            if (package == null || Model.IsSolution)
+            {
+                return;
+            }
+            var versionToInstall = package.LatestVersion ?? package.Version;
+            //package.Id, versionToInstall, new[] { package });
+            List<PackageIdentity> packagesToUpdate = new List<PackageIdentity>();
+            packagesToUpdate.Add(new PackageIdentity(package.Id, package.Version)); //or versionToInstall?
+            List<PackageItemViewModel> packageInfos = new List<PackageItemViewModel>();
+            packageInfos.Add(package);
+            UpdatePackage(packagesToUpdate, packageInfos);
+        }
+
         private void PackageList_UpdateButtonClicked(PackageItemViewModel[] selectedPackages)
         {
             var packagesToUpdate = selectedPackages
@@ -1677,7 +1693,7 @@ namespace NuGet.PackageManagement.UI
             ExecuteAction(
                 () =>
                 {
-                    return Model.Context.UIActionEngine.PerformInstallOrUninstallAsync(
+                    return Model.Context.UIActionEngine.PerformActionAsync(
                         Model.UIController,
                         action,
                         CancellationToken.None);
@@ -1697,7 +1713,7 @@ namespace NuGet.PackageManagement.UI
             ExecuteAction(
                 () =>
                 {
-                    return Model.Context.UIActionEngine.PerformInstallOrUninstallAsync(
+                    return Model.Context.UIActionEngine.PerformActionAsync(
                         Model.UIController,
                         action,
                         CancellationToken.None);
