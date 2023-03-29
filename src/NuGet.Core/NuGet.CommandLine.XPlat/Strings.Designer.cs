@@ -223,6 +223,33 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet configuration CLI.
+        /// </summary>
+        internal static string Config_Description {
+            get {
+                return ResourceManager.GetString("Config_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lists the paths to all NuGet configuration files that will be applied when invoking NuGet command in a specific directory.
+        /// </summary>
+        internal static string ConfigPathsCommandDescription {
+            get {
+                return ResourceManager.GetString("ConfigPathsCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the directory to start from when listing configuration files. If not specified, the current directory is used..
+        /// </summary>
+        internal static string ConfigPathsWorkingDirectoryDescription {
+            get {
+                return ResourceManager.GetString("ConfigPathsWorkingDirectoryDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} (y/N).
         /// </summary>
         internal static string ConsoleConfirmMessage {
@@ -394,6 +421,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+<<<<<<< HEAD
         ///   Looks up a localized string similar to Failed to obtain a search resource..
         /// </summary>
         internal static string Error_CannotObtainSearchSource {
@@ -403,6 +431,8 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+=======
+>>>>>>> 303c8c7f8 (Dotnet NuGet Config CLI Config Paths Command (#5088))
         ///   Looks up a localized string similar to The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs.
         /// </summary>
         internal static string Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed {
@@ -516,6 +546,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_NoVersionsAvailable {
             get {
                 return ResourceManager.GetString("Error_NoVersionsAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The specified path &apos;{0}&apos; does not exist..
+        /// </summary>
+        internal static string Error_PathNotFound {
+            get {
+                return ResourceManager.GetString("Error_PathNotFound", resourceCulture);
             }
         }
         
