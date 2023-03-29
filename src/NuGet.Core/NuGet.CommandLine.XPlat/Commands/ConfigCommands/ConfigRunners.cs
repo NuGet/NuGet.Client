@@ -54,7 +54,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                var configValue = RunnerHelper.GetValueForConfigKey(settings, args.AllOrConfigKey);
+                var configValue = RunnerHelper.GetValueForConfigKey(settings, args.AllOrConfigKey, args.ShowPath);
                 if (string.IsNullOrEmpty(configValue))
                 {
                     throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, args.AllOrConfigKey));
@@ -85,7 +85,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
 
-        public static string GetValueForConfigKey(ISettings settings, string key, bool isPath = false)
+        public static string GetValueForConfigKey(ISettings settings, string key, bool showPath)
         {
             if (settings == null)
             {
@@ -100,7 +100,7 @@ namespace NuGet.CommandLine.XPlat
                 return null;
             }
 
-            if (isPath)
+            if (showPath)
             {
                 return item.Value + " " + item.GetConfigFilePath();
             }

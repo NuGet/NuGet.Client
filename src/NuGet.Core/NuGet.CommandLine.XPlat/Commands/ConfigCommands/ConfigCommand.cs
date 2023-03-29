@@ -40,7 +40,7 @@ namespace NuGet.CommandLine.XPlat
                     CommandArgument workingDirectory = GetCmd.Argument(
                         "working-directory",
                         Strings.ConfigPathsWorkingDirectoryDescription);
-                    GetCmd.Option(
+                    var showPath = GetCmd.Option(
                         "--show-path",
                         Strings.ConfigGetShowPathDescription,
                         CommandOptionType.NoValue
@@ -50,7 +50,8 @@ namespace NuGet.CommandLine.XPlat
                         var args = new ConfigGetArgs()
                         {
                             AllOrConfigKey = allOrConfigKey.Value,
-                            WorkingDirectory = workingDirectory.Value
+                            WorkingDirectory = workingDirectory.Value,
+                            ShowPath = showPath.HasValue()
                         };
 
                         ConfigGetRunner.Run(args, getLogger);
