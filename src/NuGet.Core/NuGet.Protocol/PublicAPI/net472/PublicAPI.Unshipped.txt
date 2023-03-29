@@ -13,7 +13,10 @@ NuGet.Protocol.Model.VulnerabilityInfo.Severity.get -> int
 NuGet.Protocol.Model.VulnerabilityInfo.Url.get -> System.Uri!
 NuGet.Protocol.Model.VulnerabilityInfo.Versions.get -> NuGet.Versioning.VersionRange!
 NuGet.Protocol.Model.VulnerabilityInfo.VulnerabilityInfo(System.Uri! url, int severity, NuGet.Versioning.VersionRange! versions) -> void
+NuGet.Protocol.Providers.VulnerabilityInfoResourceV3Provider
+NuGet.Protocol.Providers.VulnerabilityInfoResourceV3Provider.VulnerabilityInfoResourceV3Provider() -> void
 override NuGet.Protocol.Model.VulnerabilityInfo.Equals(object? obj) -> bool
 override NuGet.Protocol.Model.VulnerabilityInfo.GetHashCode() -> int
+override NuGet.Protocol.Providers.VulnerabilityInfoResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 ~static readonly NuGet.Protocol.ServiceTypes.Version660 -> string
 ~static readonly NuGet.Protocol.ServiceTypes.VulnerabilityInfo -> string[]
