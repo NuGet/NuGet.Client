@@ -257,13 +257,18 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 InstalledPackages = installedPackages;
             }
-            lock (_transitiveOriginsLock)
+            // if includeTransitivePackages, update the cache with the new transitive packages information
+            // or if IsInstalledAndTransitiveComputationNeeded, clear the transitive packages cache, since we don't know when a dependency has been removed
+            if (includeTransitivePackages || IsInstalledAndTransitiveComputationNeeded)
             {
-                TransitiveOriginsCache = transitiveOrigins;
-            }
-            lock (_installedAndTransitivePackagesLock)
-            {
-                TransitivePackages = transitivePackages;
+                lock (_transitiveOriginsLock)
+                {
+                    TransitiveOriginsCache = transitiveOrigins;
+                }
+                lock (_installedAndTransitivePackagesLock)
+                {
+                    TransitivePackages = transitivePackages;
+                }
             }
 
             IsInstalledAndTransitiveComputationNeeded = false;
