@@ -20,6 +20,7 @@
     "Microsoft.VisualStudio.Component.VSSDK",
     "Microsoft.VisualStudio.ComponentGroup.VisualStudioExtension.Prerequisites",
     "Microsoft.VisualStudio.Workload.VisualStudioExtension",
-    "Microsoft.VisualStudio.Workload.NetCoreTools"
+    "Microsoft.VisualStudio.Workload.NetCoreTools",
+    "Component.Xamarin"
   ]
 }

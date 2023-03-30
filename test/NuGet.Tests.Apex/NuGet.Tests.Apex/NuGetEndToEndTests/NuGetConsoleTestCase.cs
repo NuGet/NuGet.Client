@@ -711,6 +711,7 @@ namespace NuGet.Tests.Apex
                 CommonUtility.WaitForFileNotExists(CacheFilePath);
             }
         }
+
         [NuGetWpfTheory]
         [MemberData(nameof(GetIOSTemplates))]
         public async Task InstallPackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
@@ -760,7 +761,6 @@ namespace NuGet.Tests.Apex
 
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
                 {
-
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
                     testContext.SolutionService.Build();
@@ -787,7 +787,6 @@ namespace NuGet.Tests.Apex
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
             {
-
                 //Arrange
                 var PackageName = "IOSTestPackage";
                 var V100 = "1.0.0";
