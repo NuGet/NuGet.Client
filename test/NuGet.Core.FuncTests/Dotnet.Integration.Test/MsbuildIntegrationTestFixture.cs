@@ -33,7 +33,8 @@ namespace Dotnet.Integration.Test
 
         public MsbuildIntegrationTestFixture()
         {
-            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli();
+            string testAssemblyPath = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
+            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(testAssemblyPath);
             var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
             TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
 
@@ -81,11 +82,21 @@ namespace Dotnet.Integration.Test
 
             if (!templateDirectory.Exists)
             {
+                // According to https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/configure-language-version
+                // The latest C# compiler will set default language version based on the TFM.
+                // When the version of testing dotnet changed from 5.x to 6.x, the default TFM is changed to net6.0.
+                // so the default C# language version for project targeting net6.0 will be set to 10, and it's not compatible with other TFMs.
+                // We manually set the langVersion to the lowest 7.3, to make it compatible with other TFMs.
+                string templateArgs = args;
+                if (!templateArgs.Contains("langVersion") && (templateArgs.Equals("console") || templateArgs.Equals("classlib")))
+                {
+                    templateArgs = templateArgs + " --langVersion 7.3";
+                }
                 templateDirectory.Create();
 
                 var result = CommandRunner.Run(TestDotnetCli,
                     templateDirectory.FullName,
-                    $"new {args}",
+                    $"new {templateArgs}",
                     waitForExit: true,
                     timeOutInMilliseconds: timeOut,
                     environmentVariables: _processEnvVars);

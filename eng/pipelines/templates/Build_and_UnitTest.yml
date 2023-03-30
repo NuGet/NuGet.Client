@@ -219,6 +219,11 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:AfterBuild /p:SignPackages=true"
 
+- task: NuGetToolInstaller@1
+  displayName: Use NuGet 6.x
+  inputs:
+    versionSpec: 6.x
+
 - task: NuGetCommand@2
   displayName: "Verify Nupkg Signatures"
   inputs:

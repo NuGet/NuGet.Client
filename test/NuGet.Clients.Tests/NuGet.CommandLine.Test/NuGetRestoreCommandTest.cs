@@ -245,8 +245,8 @@ namespace NuGet.CommandLine.Test
                 var packagesPath = Path.Combine(workingPath, "packages");
                 Directory.CreateDirectory(packagesPath);
 
-                var packageA = new ZipPackage(Util.CreateTestPackage("PackageA", "1.1.0", sourcePath));
-                var packageB = new ZipPackage(Util.CreateTestPackage("PackageB", "2.2.0", sourcePath));
+                var packageA = new FileInfo(Util.CreateTestPackage("PackageA", "1.1.0", sourcePath));
+                var packageB = new FileInfo(Util.CreateTestPackage("PackageB", "2.2.0", sourcePath));
 
                 Util.CreateFile(workingPath, "packages.config",
 @"<packages>
@@ -353,7 +353,7 @@ namespace NuGet.CommandLine.Test
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -621,7 +621,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project='..\packages\a.targets' />
 </Project>");
@@ -720,7 +720,7 @@ EndProject");
                 string optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
-                    NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+                    NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                 Assert.Contains(optOutMessage.Replace("\r\n", "\n"), r.Item2.Replace("\r\n", "\n"));
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
@@ -760,7 +760,7 @@ EndProject");
                 string optOutMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
-                    NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+                    NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                 Assert.DoesNotContain(optOutMessage, r.Item2);
                 var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
@@ -847,7 +847,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -864,7 +864,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -920,7 +920,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -937,7 +937,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1004,7 +1004,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1169,7 +1169,7 @@ EndProject");
                 var workingDirectory = pathContext.WorkingDirectory;
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package = new ZipPackage(packageFileName);
+                var package = new FileInfo(packageFileName);
 
                 Util.CreateFile(
                     workingDirectory,
@@ -1191,7 +1191,7 @@ EndProject");
                         {
                             getPackageByVersionIsCalled = true;
                             response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
-                            var odata = server.ToOData(package);
+                            var odata = server.ToOData(new PackageArchiveReader(package.OpenRead()));
                             MockServer.SetResponseContent(response, odata);
                         }));
 
@@ -1200,7 +1200,7 @@ EndProject");
                         {
                             packageDownloadIsCalled = true;
                             response.ContentType = "application/zip";
-                            using (var stream = package.GetStream())
+                            using (var stream = package.OpenRead())
                             {
                                 var content = stream.ReadAllBytes();
                                 MockServer.SetResponseContent(response, content);
@@ -1518,7 +1518,7 @@ EndProject";
                 Directory.CreateDirectory(nugetFolderAtSolutionDirectory);
 
                 File.WriteAllText(
-                    Path.Combine(nugetFolderAtSolutionDirectory, Constants.PackageReferenceFile),
+                    Path.Combine(nugetFolderAtSolutionDirectory, ProjectManagement.Constants.PackageReferenceFile),
 @"<packages>
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
@@ -1533,7 +1533,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1591,7 +1591,7 @@ EndProject";
                 Directory.CreateDirectory(nugetFolderAtSolutionDirectory);
 
                 File.WriteAllText(
-                    Path.Combine(nugetFolderAtSolutionDirectory, Constants.PackageReferenceFile),
+                    Path.Combine(nugetFolderAtSolutionDirectory, ProjectManagement.Constants.PackageReferenceFile),
 @"<packages>
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
@@ -1606,7 +1606,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1664,7 +1664,7 @@ EndProject";
                 Directory.CreateDirectory(nugetFolderAtSolutionDirectory);
 
                 File.WriteAllText(
-                    Path.Combine(nugetFolderAtSolutionDirectory, Constants.PackageReferenceFile),
+                    Path.Combine(nugetFolderAtSolutionDirectory, ProjectManagement.Constants.PackageReferenceFile),
 @"<packages>
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
@@ -1679,7 +1679,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1742,7 +1742,7 @@ EndProject";
                 Directory.CreateDirectory(nugetFolderAtSolutionDirectory);
 
                 File.WriteAllText(
-                    Path.Combine(nugetFolderAtSolutionDirectory, Constants.PackageReferenceFile),
+                    Path.Combine(nugetFolderAtSolutionDirectory, ProjectManagement.Constants.PackageReferenceFile),
 @"<packages>
   <package id=""packageB"" version=""1.0.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.0.0"" targetFramework=""net45"" />
@@ -1762,7 +1762,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1837,7 +1837,7 @@ EndProject";
                 Directory.CreateDirectory(nugetFolderAtSolutionDirectory);
 
                 File.WriteAllText(
-                    Path.Combine(nugetFolderAtSolutionDirectory, Constants.PackageReferenceFile),
+                    Path.Combine(nugetFolderAtSolutionDirectory, ProjectManagement.Constants.PackageReferenceFile),
 @"<packages>
   <package id=""packageA"" version=""1.0.0"" targetFramework=""net45"" />
   <package id=""packageA"" version=""1.0.0"" targetFramework=""net45"" />
@@ -1856,7 +1856,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -1955,7 +1955,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='project.json' />
@@ -1979,7 +1979,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include=""..\A\A.Util\A.Util.csproj"">
@@ -2251,7 +2251,7 @@ EndProject";
     <OutputType>Library</OutputType>
     <RootNamespace>ClassLibrary1</RootNamespace>
     <AssemblyName>ClassLibrary1</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
     <OutputPath>bin\Debug\</OutputPath>
@@ -2404,7 +2404,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2568,7 +2568,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2656,7 +2656,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2742,7 +2742,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2817,7 +2817,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2900,7 +2900,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -2978,7 +2978,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -3045,7 +3045,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -3130,7 +3130,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />
@@ -3219,7 +3219,7 @@ EndProject";
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='packages.config' />

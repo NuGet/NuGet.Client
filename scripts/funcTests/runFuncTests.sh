@@ -35,14 +35,6 @@ curl -o cli/dotnet-install.sh -L https://dot.net/v1/dotnet-install.sh
 # Run install.sh
 chmod +x cli/dotnet-install.sh
 
-# Get recommended version for bootstrapping testing version
-cli/dotnet-install.sh -i cli -c 3.1 -nopath
-
-if (( $? )); then
-	echo "The .NET CLI Install failed!!"
-	exit 1
-fi
-
 # Disable .NET CLI Install Lookup
 DOTNET_MULTILEVEL_LOOKUP=0
 
@@ -77,9 +69,14 @@ do
 	fi
 	unset IFS
 
-	echo "Channel is: $Channel"
-	echo "Version is: $Version"
-	cli/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
+    # The quality option:
+    # Daily links are those from daily builds
+    # Signed have been post-build signed (in the case of 6.0+, pre-6.0 is signed even in daily builds)
+    # Validated have gone through CTI testing and other validation
+    # Preview are released bits that are preview versions
+    # GA are released servicing and GA builds
+	echo "cli/dotnet-install.sh --install-dir cli --channel $Channel --quality signed --version $Version -nopath"
+    cli/dotnet-install.sh --install-dir cli --channel $Channel --quality signed --version $Version -nopath
 
 	if (( $? )); then
 		echo "The .NET CLI Install for $DOTNET_BRANCH failed!!"
@@ -89,6 +86,30 @@ done
 
 # Display .NET CLI info
 $DOTNET --info
+if (( $? )); then
+	echo "DOTNET --info failed!!"
+	exit 1
+fi
+
+# Install .NET 5 runtimes and .NETCoreapp3.1 runtimes
+
+echo "cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 5.0 -nopath"
+cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 5.0 -nopath
+
+echo "cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 3.1 -nopath"
+cli/dotnet-install.sh --install-dir cli --runtime dotnet --channel 3.1 -nopath
+
+if (( $? )); then
+	echo "The .NET CLI Install failed!!"
+	exit 1
+fi
+
+# Display .NET CLI info
+$DOTNET --info
+if (( $? )); then
+	echo "DOTNET --info failed!!"
+	exit 1
+fi
 
 echo "initial dotnet cli install finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 

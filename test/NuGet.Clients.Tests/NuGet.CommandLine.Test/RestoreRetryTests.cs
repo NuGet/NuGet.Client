@@ -8,6 +8,7 @@ using System.IO;
 using System.Net;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -27,7 +28,7 @@ namespace NuGet.CommandLine.Test
                 var workingDirectory = pathContext.WorkingDirectory;
                 var packageDirectory = pathContext.PackageSource;
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package = new ZipPackage(packageFileName);
+                var package = new FileInfo(packageFileName);
 
                 Util.CreateFile(
                     workingDirectory,
@@ -69,7 +70,7 @@ namespace NuGet.CommandLine.Test
                             return new Action<HttpListenerResponse>(response =>
                             {
                                 response.ContentType = "application/zip";
-                                using (var stream = package.GetStream())
+                                using (var stream = package.OpenRead())
                                 {
                                     var content = stream.ReadAllBytes();
                                     MockServer.SetResponseContent(response, content);
@@ -81,7 +82,7 @@ namespace NuGet.CommandLine.Test
                             return new Action<HttpListenerResponse>(response =>
                             {
                                 response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
-                                var odata = server.ToOData(package);
+                                var odata = server.ToOData(new PackageArchiveReader(package.OpenRead()));
                                 MockServer.SetResponseContent(response, odata);
                             });
                         }
@@ -116,7 +117,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(Util.IsSuccess(r1), r1.Item2 + " " + r1.Item3);
+                    Assert.True(r1.Success, r1.Item2 + " " + r1.Item3);
 
                     var path = Path.Combine(pathContext.PackagesV2, "testpackage1.1.1.0", "testpackage1.1.1.0.nupkg");
 
@@ -137,7 +138,7 @@ namespace NuGet.CommandLine.Test
                 var workingDirectory = pathContext.WorkingDirectory;
                 var packageDirectory = pathContext.PackageSource;
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package = new ZipPackage(packageFileName);
+                var package = new FileInfo(packageFileName);
 
                 var projectJson = @"{
                     ""dependencies"": {
@@ -183,7 +184,7 @@ namespace NuGet.CommandLine.Test
                             return new Action<HttpListenerResponse>(response =>
                             {
                                 response.ContentType = "application/zip";
-                                using (var stream = package.GetStream())
+                                using (var stream = package.OpenRead())
                                 {
                                     var content = stream.ReadAllBytes();
                                     MockServer.SetResponseContent(response, content);
@@ -232,7 +233,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(Util.IsSuccess(r1), r1.Item2 + " " + r1.Item3);
+                    Assert.True(r1.Success, r1.Item2 + " " + r1.Item3);
 
                     Assert.True(
                         File.Exists(
@@ -267,7 +268,7 @@ namespace NuGet.CommandLine.Test
                 var workingDirectory = pathContext.WorkingDirectory;
                 var packageDirectory = pathContext.PackageSource;
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package = new ZipPackage(packageFileName);
+                var package = new FileInfo(packageFileName);
 
                 var projectJsonContent = @"{
                     ""dependencies"": {
@@ -319,7 +320,7 @@ namespace NuGet.CommandLine.Test
                             return new Action<HttpListenerResponse>(response =>
                             {
                                 response.ContentType = "application/zip";
-                                using (var stream = package.GetStream())
+                                using (var stream = package.OpenRead())
                                 {
                                     var content = stream.ReadAllBytes();
                                     MockServer.SetResponseContent(response, content);
@@ -374,7 +375,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.True(Util.IsSuccess(r1), r1.Item2 + " " + r1.Item3);
+                    Assert.True(r1.Success, r1.Item2 + " " + r1.Item3);
 
                     Assert.True(
                         File.Exists(
@@ -410,7 +411,7 @@ namespace NuGet.CommandLine.Test
                 var packageDirectory = pathContext.PackageSource;
 
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                var package = new ZipPackage(packageFileName);
+                var package = new FileInfo(packageFileName);
 
                 Util.CreateFile(
                     workingDirectory,
@@ -458,7 +459,7 @@ namespace NuGet.CommandLine.Test
                             return new Action<HttpListenerResponse>(response =>
                             {
                                 response.ContentType = "application/zip";
-                                using (var stream = package.GetStream())
+                                using (var stream = package.OpenRead())
                                 {
                                     var content = stream.ReadAllBytes();
                                     MockServer.SetResponseContent(response, content);

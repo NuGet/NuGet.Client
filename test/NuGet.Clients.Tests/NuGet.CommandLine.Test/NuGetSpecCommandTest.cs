@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Xml.Linq;
+using NuGet.Shared;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -167,7 +168,7 @@ namespace NuGet.CommandLine.Test
 
                 Util.VerifyResultSuccess(r);
 
-                XDocument xdoc = XmlUtility.LoadSafe(Path.Combine(workingDirectory, "Package.nuspec"));
+                XDocument xdoc = XmlUtility.Load(Path.Combine(workingDirectory, "Package.nuspec"));
 
                 AssertWithoutNamespace(xdoc.Root);
             }

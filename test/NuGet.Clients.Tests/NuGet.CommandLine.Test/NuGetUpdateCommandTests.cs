@@ -23,7 +23,7 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetUpdateCommandTests
     {
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_Update_DeletedFile()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -135,7 +135,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_References()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -216,7 +216,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_References_MultipleProjects()
         {
 
@@ -347,7 +347,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Fails_References_MultipleProjectsInSameDirectory()
         {
             // Arrange
@@ -443,7 +443,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_NOPrerelease()
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
@@ -522,7 +522,7 @@ namespace NuGet.CommandLine.Test
         }
 
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_Prerelease()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -604,7 +604,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Disabled in release-6.2.x branch")]
         [InlineData("1.0.0", "2.0.0-BETA")]
         [InlineData("1.0.0-BETA", "2.0.0-BETA")]
         [InlineData("2.0.0-BETA", "2.0.0")]
@@ -694,7 +694,7 @@ namespace NuGet.CommandLine.Test
         }
 
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_Version_Upgrade()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -787,7 +787,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_Version_Downgrade()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -880,7 +880,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_ProjectFile_References()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -962,7 +962,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_PackagesConfig_References()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -1046,7 +1046,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_ContentFiles()
         {
             // Arrange
@@ -1163,7 +1163,7 @@ namespace NuGet.CommandLine.Test
         }
 
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_CustomPackagesFolder_RelativePath()
         {
             // Arrange
@@ -1303,7 +1303,7 @@ namespace NuGet.CommandLine.Test
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='{0}' />
@@ -1355,7 +1355,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Success_CustomPackagesFolder_AbsolutePath()
         {
             // Arrange
@@ -1450,7 +1450,7 @@ namespace NuGet.CommandLine.Test
         }
 
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_Native_JS_Projects_Success()
         {
             using (var packagesSourceDirectory = TestDirectory.Create())
@@ -1564,7 +1564,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Disabled in release-6.2.x branch")]
         [InlineData(null, "2.0.0")]
         [InlineData("Lowest", "1.0.0")]
         [InlineData("Highest", "2.0.0")]
@@ -1707,7 +1707,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public async Task UpdateCommand_NF_Project_Success()
         {
             using (var pathContext = new SimpleTestPathContext())

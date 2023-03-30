@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,6 +13,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
 using NuGet.Packaging.Rules;
 using NuGet.Test.Utility;
@@ -22,13 +22,8 @@ using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
-    public class NuGetPackCommandTest : IDisposable
+    public class NuGetPackCommandTest
     {
-        public void Dispose()
-        {
-            OptimizedZipPackage.PurgeCache();
-        }
-
         [Fact]
         public void PackCommand_IncludeExcludePackageFromNuspec()
         {
@@ -83,7 +78,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
-                var package = new OptimizedZipPackage(path);
+                var package = new PackageArchiveReader(File.OpenRead(path));
                 using (var zip = new ZipArchive(File.OpenRead(path)))
                 using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
@@ -103,9 +98,9 @@ namespace NuGet.CommandLine.Test
   </group>
 </dependencies>".Replace("\r\n", "\n"), actual);
 
-                    var files = package.GetFiles().Select(f => f.Path).ToArray();
-                    Assert.Contains(Path.Combine("Content", "image.jpg"), files);
-                    Assert.Contains(Path.Combine("Content", "other", "image2.jpg"), files);
+                    var files = package.GetNonPackageDefiningFiles();
+                    Assert.Contains("Content/image.jpg", files);
+                    Assert.Contains("Content/other/image2.jpg", files);
                 }
             }
         }
@@ -162,14 +157,14 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
-                var package = new OptimizedZipPackage(path);
+                var package = new PackageArchiveReader(File.OpenRead(path));
                 using (var zip = new ZipArchive(File.OpenRead(path)))
                 using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
-                    var files = package.GetFiles().Select(f => f.Path).ToArray();
+                    var files = package.GetNonPackageDefiningFiles();
                     // All of the nuspecs should be excluded.
                     Assert.Equal(files.Length, 1);
-                    Assert.Contains(Path.Combine("Content", "image.jpg"), files);
+                    Assert.Contains("Content/image.jpg", files);
                 }
             }
         }
@@ -216,7 +211,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
-                var package = new OptimizedZipPackage(path);
+                var package = new PackageArchiveReader(File.OpenRead(path));
                 using (var zip = new ZipArchive(File.OpenRead(path)))
                 using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
@@ -282,9 +277,9 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
-                var package = new OptimizedZipPackage(path);
+                var package = new PackageArchiveReader(File.OpenRead(path));
 
-                var files = package.GetFiles();
+                var files = package.GetNonPackageDefiningFiles();
                 Assert.Equal(0, files.Count());
             }
         }
@@ -330,9 +325,9 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
-                var package = new OptimizedZipPackage(path);
+                var package = new PackageArchiveReader(File.OpenRead(path));
 
-                var files = package.GetFiles();
+                var files = package.GetNonPackageDefiningFiles();
                 Assert.Equal(1, files.Count());
             }
         }
@@ -392,16 +387,16 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
-                var package = new OptimizedZipPackage(path);
-                var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(path));
+                var files = package.GetNonPackageDefiningFiles().OrderBy(s => s).ToArray();
 
                 Assert.Equal(
                     new string[]
                     {
-                            Path.Combine("lib", "uap10.0", "a.dll"),
-                            Path.Combine("native", "a.dll"),
-                            Path.Combine("ref", "uap10.0", "a.dll"),
-                            Path.Combine("runtimes", "win-x86", "lib", "uap10.0", "a.dll"),
+                            "lib/uap10.0/a.dll",
+                            "native/a.dll",
+                            "ref/uap10.0/a.dll",
+                            "runtimes/win-x86/lib/uap10.0/a.dll",
                     },
                     files);
 
@@ -447,14 +442,14 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
-                var package = new OptimizedZipPackage(path);
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(path));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("analyzers", "cs", "code", "a.dll"),
+                        "analyzers/cs/code/a.dll",
                     },
                     files);
 
@@ -762,7 +757,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
-                var package = new OptimizedZipPackage(path);
+                var package = new PackageArchiveReader(File.OpenRead(path));
                 using (var zip = new ZipArchive(File.OpenRead(path)))
                 using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
@@ -770,14 +765,14 @@ namespace NuGet.CommandLine.Test
 
                     var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "contentFiles");
 
-                    var files = package.GetFiles().Select(f => f.Path).ToArray();
+                    var files = package.GetNonPackageDefiningFiles();
                     Array.Sort(files);
 
                     Assert.Equal(
                         new string[]
                         {
-                            Path.Combine("contentFiles", "any", "any", "image.jpg"),
-                            Path.Combine("contentFiles", "cs", "net45", "code.cs"),
+                            "contentFiles/any/any/image.jpg",
+                            "contentFiles/cs/net45/code.cs",
                         },
                         files);
 
@@ -812,7 +807,7 @@ namespace NuGet.CommandLine.Test
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -848,7 +843,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include='..\proj1\proj1.csproj' />
@@ -880,15 +875,15 @@ namespace Proj2
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
+                        "content/proj1_file2.txt",
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj2.dll"
                     },
                     files);
             }
@@ -984,13 +979,13 @@ namespace Proj1
                     Assert.True(0 == r.Item1, r.AllOutput);
                     var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
                     Assert.True(File.Exists(nupkgName));
-                    var package = new OptimizedZipPackage(nupkgName);
-                    var files = package.GetFiles().Select(f => f.Path).ToArray();
+                    var package = new PackageArchiveReader(File.OpenRead(nupkgName));
+                    var files = package.GetNonPackageDefiningFiles();
                     Array.Sort(files);
                     Assert.Equal(
                         new string[]
                         {
-                        Path.Combine("lib", "netstandard1.3", "proj1.dll")
+                            "lib/netstandard1.3/proj1.dll"
                         },
                         files);
 
@@ -1028,7 +1023,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs'/>
@@ -1114,7 +1109,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -1150,7 +1145,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include='..\proj1\proj1.csproj' />
@@ -1192,22 +1187,22 @@ namespace Proj2
                         new string[]
                         {
                             Path.Combine("content", "proj1_file2.txt"),
-                            Path.Combine("lib", "net40", "proj1.dll"),
-                            Path.Combine("lib", "net40", "proj1.pdb"),
-                            Path.Combine("lib", "net40", "proj2.dll"),
-                            Path.Combine("lib", "net40", "proj2.pdb"),
+                            Path.Combine("lib", "net472", "proj1.dll"),
+                            Path.Combine("lib", "net472", "proj1.pdb"),
+                            Path.Combine("lib", "net472", "proj2.dll"),
+                            Path.Combine("lib", "net472", "proj2.pdb"),
                             "proj2.nuspec",
                             Path.Combine("src", "proj1", "proj1_file1.cs"),
                             Path.Combine("src", "proj2", "proj2_file1.cs"),
                         }
                         : new string[]
                         {
-                            Path.Combine("lib", "net40", "proj1.pdb"),
-                            Path.Combine("lib", "net40", "proj2.pdb"),
+                            Path.Combine("lib", "net472", "proj1.pdb"),
+                            Path.Combine("lib", "net472", "proj2.pdb"),
                             "proj2.nuspec"
                         };
                     actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
-                    Assert.Equal(actual, files);
+                    Assert.Equal(files, actual);
                 }
             }
         }
@@ -1231,7 +1226,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='B.cs' />
@@ -1267,17 +1262,17 @@ namespace Proj2
                     var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
                         {
                         "A.nuspec",
-                        "lib/net40/A.dll",
-                        "lib/net40/A.pdb",
+                        "lib/net472/A.dll",
+                        "lib/net472/A.pdb",
                         "src/B.cs"
                         }
                         : new string[]
                         {
                         "A.nuspec",
-                        "lib/net40/A.pdb"
+                        "lib/net472/A.pdb"
                         };
                     actual = actual.Select(t => NuGet.Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
-                    Assert.Equal(actual, files);
+                    Assert.Equal(files, actual);
                 }
             }
         }
@@ -1301,7 +1296,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>exe</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='B.cs' />
@@ -1337,14 +1332,14 @@ public class B
                     var actual = symbolPackageFormat == SymbolPackageFormat.SymbolsNupkg ? new string[]
                         {
                         "A.nuspec",
-                        "lib/net40/A.exe",
-                        "lib/net40/A.pdb",
+                        "lib/net472/A.exe",
+                        "lib/net472/A.pdb",
                         "src/B.cs"
                         }
                         : new string[]
                         {
                         "A.nuspec",
-                        "lib/net40/A.pdb"
+                        "lib/net472/A.pdb"
                         };
                     Assert.Equal(actual, files);
                 }
@@ -1368,7 +1363,7 @@ public class B
   <PropertyGroup>
     <OutputType>library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <DocumentationFile>out\A.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
@@ -1399,15 +1394,15 @@ public class B
                 Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(projDirectory, "A.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(file => file.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(projDirectory, "A.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "A.dll"),
-                        Path.Combine("lib", "net40", "A.xml"),
+                        "lib/net472/A.dll",
+                        "lib/net472/A.xml",
                     },
                     files);
             }
@@ -1496,30 +1491,29 @@ public class B
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 // proj3 and proj7 are included in the package.
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj3.dll"),
-                        Path.Combine("lib", "net40", "proj7.dll")
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj3.dll",
+                        "lib/net472/proj7.dll",
                     },
                     files);
 
                 // proj2 and proj6 are added as dependencies.
-                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
+                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id); ;
                 Assert.Equal(
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
-                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
+                        new PackageDependency("proj2", VersionRange.Parse("1.0.0")),
+                        new PackageDependency("proj6", VersionRange.Parse("2.0.0"))
                     },
-                    dependencies,
-                    new PackageDepencyComparer());
+                    dependencies);
             }
         }
 
@@ -1613,30 +1607,29 @@ public class B
                 Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 // proj3 and proj7 are included in the package.
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj3.dll"),
-                        Path.Combine("lib", "net40", "proj7.dll")
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj3.dll",
+                        "lib/net472/proj7.dll",
                     },
                     files);
 
                 // proj2 and proj6 are added as dependencies.
-                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
+                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id); ;
                 Assert.Equal(
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
-                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
+                        new PackageDependency("proj2", VersionRange.Parse("1.0.0")),
+                        new PackageDependency("proj6", VersionRange.Parse("2.0.0"))
                     },
-                    dependencies,
-                    new PackageDepencyComparer());
+                    dependencies);
             }
         }
 
@@ -1725,8 +1718,8 @@ public class B
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                var files = package.GetFiles().ToArray();
                 Array.Sort(files);
 
                 // proj3 and proj7 are included in the package.
@@ -1740,15 +1733,14 @@ public class B
                     files);
 
                 // proj2 and proj6 are added as dependencies.
-                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
+                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id);
                 Assert.Equal(
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
-                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
+                        new PackageDependency("proj2", VersionRange.Parse("1.0.0")),
+                        new PackageDependency("proj6", VersionRange.Parse("2.0.0"))
                     },
-                    dependencies,
-                    new PackageDepencyComparer());
+                    dependencies);
             }
         }
 
@@ -1831,30 +1823,29 @@ public class B
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 // proj3 and proj7 are included in the package.
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj3.dll"),
-                        Path.Combine("lib", "net40", "proj7.dll")
+                        Path.Combine("lib", "net472", "proj1.dll"),
+                        Path.Combine("lib", "net472", "proj3.dll"),
+                        Path.Combine("lib", "net472", "proj7.dll")
                     },
                     files);
 
                 // proj2 and proj6 are added as dependencies.
-                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
+                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id);
                 Assert.Equal(
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
-                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
+                        new PackageDependency("proj2", VersionRange.Parse("1.0.0")),
+                        new PackageDependency("proj6", VersionRange.Parse("2.0.0"))
                     },
-                    dependencies,
-                    new PackageDepencyComparer());
+                    dependencies);
             }
         }
 
@@ -1950,8 +1941,8 @@ public class B
                 Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Item2);
                 Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
 
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                var files = package.GetFiles().ToArray();
                 Array.Sort(files);
 
                 // proj3 and proj7 are included in the package.
@@ -1965,15 +1956,14 @@ public class B
                     files);
 
                 // proj2 and proj6 are added as dependencies.
-                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
+                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id);
                 Assert.Equal(
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
-                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
+                        new PackageDependency("proj2", VersionRange.Parse("1.0.0")),
+                        new PackageDependency("proj6", VersionRange.Parse("2.0.0"))
                     },
-                    dependencies,
-                    new PackageDepencyComparer());
+                    dependencies);
             }
         }
 
@@ -2062,30 +2052,29 @@ public class B
                 Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj2"), r.Item2);
                 Assert.Contains(string.Format(NuGetResources.ProjectJsonPack_Deprecated, "proj6"), r.Item2);
 
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 // proj3 and proj7 are included in the package.
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj3.dll"),
-                        Path.Combine("lib", "net40", "proj7.dll")
+                        Path.Combine("lib", "net472", "proj1.dll"),
+                        Path.Combine("lib", "net472", "proj3.dll"),
+                        Path.Combine("lib", "net472", "proj7.dll")
                     },
                     files);
 
                 // proj2 and proj6 are added as dependencies.
-                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
+                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id);
                 Assert.Equal(
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
-                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
+                        new PackageDependency("proj2", VersionRange.Parse("1.0.0")),
+                        new PackageDependency("proj6", VersionRange.Parse("2.0.0"))
                     },
-                    dependencies,
-                    new PackageDepencyComparer());
+                    dependencies);
             }
         }
 
@@ -2174,18 +2163,17 @@ public class B
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
 
                 // proj2 and proj6 are added as dependencies.
-                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
+                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id);
                 Assert.Equal(
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
-                        new PackageDependency(prefixTokenValue + "proj6", VersionUtility.ParseVersionSpec("2.0.0"))
+                        new PackageDependency("proj2", VersionRange.Parse("1.0.0")),
+                        new PackageDependency(prefixTokenValue + "proj6", VersionRange.Parse("2.0.0"))
                     }.OrderBy(d => d.ToString()),
-                    dependencies.OrderBy(d => d.ToString()),
-                    new PackageDepencyComparer());
+                    dependencies.OrderBy(d => d.ToString()));
             }
         }
 
@@ -2211,11 +2199,11 @@ public class B
 
                 // The assembly version was used, not the informational version
                 var outputPackageFileName = Path.Combine(projectDirectory, $"Foo.{version}.nupkg");
-                var outputPackage = new OptimizedZipPackage(outputPackageFileName);
+                var outputPackage = new PackageArchiveReader(File.OpenRead(outputPackageFileName));
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3); // Exited successfully
-                Assert.Equal(new SemanticVersion(version), outputPackage.Version);
+                Assert.Equal(new NuGetVersion(version), outputPackage.NuspecReader.GetVersion());
             }
         }
 
@@ -2239,16 +2227,16 @@ public class B
 
                 // The informational version without the build metadata part was used
                 var outputPackageFileName = Path.Combine(projectDirectory, $"Foo.{semverVersion}.nupkg");
-                var outputPackage = new OptimizedZipPackage(outputPackageFileName);
+                var outputPackage = new PackageArchiveReader(File.OpenRead(outputPackageFileName));
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3); // Exited successfully
-                Assert.Equal(new SemanticVersion(semverVersion), outputPackage.Version);
+                Assert.Equal(new NuGetVersion(semverVersion), outputPackage.NuspecReader.GetVersion());
             }
         }
 
         // This test is a bit redundant with the ones before, but still useful for debugging
-        [Fact]
+        [Fact(Skip = "Disabled in release-6.2.x branch")]
         public void PackCommandRunner_WhenInformationalVersionIsInvalid_DoesNotThrow()
         {
             // Arrange
@@ -2280,11 +2268,11 @@ public class B
 
                 // The assembly version was used, not the informational version
                 var outputPackageFileName = Path.Combine(projectDirectory, $"Foo.{version}.nupkg");
-                var outputPackage = new OptimizedZipPackage(outputPackageFileName);
+                var outputPackage = new PackageArchiveReader(File.OpenRead(outputPackageFileName));
 
                 // Assert
                 Assert.Null(exception);
-                Assert.Equal(new SemanticVersion(version), outputPackage.Version);
+                Assert.Equal(new NuGetVersion(version), outputPackage.NuspecReader.GetVersion());
             }
         }
 
@@ -2314,7 +2302,7 @@ public class B
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='file1.cs' />
@@ -2389,7 +2377,7 @@ namespace " + projectName + @"
                     new string[] {
                         @"..\proj2\proj2.csproj"
                     });
-                CreateTestProject(workingDirectory, "proj2", null, "v4.0", "1.2");
+                CreateTestProject(workingDirectory, "proj2", null, "4.7.2", "1.2");
                 Util.CreateFile(
                     Path.Combine(workingDirectory, "proj2"),
                     "proj2.nuspec",
@@ -2418,26 +2406,25 @@ namespace " + projectName + @"
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll")
+                        "lib/net472/proj1.dll"
                     },
                     files);
 
                 // proj2 is added as dependencies.
-                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
+                var dependencies = package.NuspecReader.GetDependencyGroups().First().Packages.OrderBy(d => d.Id);
                 Assert.Equal(
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.2.0"))
+                        new PackageDependency("proj2", VersionRange.Parse("1.2.0"))
                     },
-                    dependencies,
-                    new PackageDepencyComparer());
+                    dependencies);
             }
         }
 
@@ -2722,14 +2709,14 @@ namespace " + projectName + @"
                 Assert.True(0 == r.Item1, r.Item2 + Environment.NewLine + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(outputDirectory, "proj1.0.0.0.nupkg"));
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(outputDirectory, "proj1.0.0.0.nupkg")));
 
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var files = package.GetNonPackageDefiningFiles();
 
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll")
+                        "lib/net472/proj1.dll"
                     },
                     files);
             }
@@ -2771,16 +2758,16 @@ namespace " + projectName + @"
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 Assert.Equal(
                     new string[]
                     {
-                       Path.Combine("lib", "net40", "proj1.dll"),
-                       Path.Combine("lib", "net40", "proj2.dll"),
-                       Path.Combine("lib", "net40", "proj3.dll")
+                       "lib/net472/proj1.dll",
+                       "lib/net472/proj2.dll",
+                       "lib/net472/proj3.dll"
                     },
                     files);
             }
@@ -2814,15 +2801,15 @@ namespace " + projectName + @"
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj2.dll"
                     },
                     files);
             }
@@ -2857,7 +2844,7 @@ namespace " + projectName + @"
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -2899,7 +2886,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -2943,8 +2930,8 @@ namespace Proj2
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
+                var files = package.GetFiles().ToArray();
                 Array.Sort(files);
 
                 Assert.Equal(
@@ -2978,7 +2965,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3020,7 +3007,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3062,15 +3049,15 @@ namespace Proj2
                 // Verify that proj1 was not built using the default config "Debug".
                 Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
 
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
+                        "content/proj1_file2.txt",
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj2.dll"
                     },
                     files);
             }
@@ -3119,14 +3106,14 @@ namespace Proj2
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(projDirectory, "ExcludeBug.0.1.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(projDirectory, "ExcludeBug.0.1.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
 
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("Content", "package", "include.me")
+                        "Content/package/include.me"
                     },
                     files);
             }
@@ -3156,7 +3143,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -3208,16 +3195,16 @@ namespace Proj1
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                Assert.Equal(1, package.DependencySets.Count());
-                var dependencySet = package.DependencySets.First();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                Assert.Equal(1, package.NuspecReader.GetDependencyGroups().Count());
+                var dependencySet = package.NuspecReader.GetDependencyGroups().First();
 
                 // verify that only testPackage1 is added as dependency. testPackage2 is not adde
                 // as dependency because its developmentDependency is true.
-                Assert.Equal(1, dependencySet.Dependencies.Count);
-                var dependency = dependencySet.Dependencies.First();
+                Assert.Equal(1, dependencySet.Packages.Count());
+                var dependency = dependencySet.Packages.First();
                 Assert.Equal("testPackage1", dependency.Id);
-                Assert.Equal("1.1.0", dependency.VersionSpec.ToString());
+                Assert.Equal("[1.1.0, )", dependency.VersionRange.ToString());
             }
         }
 
@@ -3245,7 +3232,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -3292,16 +3279,16 @@ namespace Proj1
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                Assert.Equal(1, package.DependencySets.Count());
-                var dependencySet = package.DependencySets.First();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                Assert.Equal(1, package.NuspecReader.GetDependencyGroups().Count());
+                var dependencySet = package.NuspecReader.GetDependencyGroups().First();
 
                 // verify that only testPackage1 is added as dependency. testPackage2 is not adde
                 // as dependency because its developmentDependency is true.
-                Assert.Equal(1, dependencySet.Dependencies.Count);
-                var dependency = dependencySet.Dependencies.First();
+                Assert.Equal(1, dependencySet.Packages.Count());
+                var dependency = dependencySet.Packages.First();
                 Assert.Equal("testPackage1", dependency.Id);
-                Assert.Equal("1.1.0", dependency.VersionSpec.ToString());
+                Assert.Equal("[1.1.0, )", dependency.VersionRange.ToString());
             }
         }
 
@@ -3330,7 +3317,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -3408,21 +3395,21 @@ namespace Proj1
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                Assert.Equal(1, package.DependencySets.Count());
-                var dependencySet = package.DependencySets.First();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                Assert.Equal(1, package.NuspecReader.GetDependencyGroups().Count());
+                var dependencySet = package.NuspecReader.GetDependencyGroups().First();
 
                 // Verify that testPackage2 is added as dependency in addition to testPackage1.
                 // testPackage3 and testPackage4 are not added because they are already referenced by testPackage1 with the correct version range.
-                Assert.Equal(4, dependencySet.Dependencies.Count);
-                var dependency1 = dependencySet.Dependencies.Single(d => d.Id == "testPackage1");
-                Assert.Equal("1.1.0", dependency1.VersionSpec.ToString());
-                var dependency2 = dependencySet.Dependencies.Single(d => d.Id == "testPackage2");
-                Assert.Equal("1.2.0", dependency2.VersionSpec.ToString());
-                var dependency4 = dependencySet.Dependencies.Single(d => d.Id == "testPackage4");
-                Assert.Equal("1.4.0", dependency4.VersionSpec.ToString());
-                var dependency5 = dependencySet.Dependencies.Single(d => d.Id == "testPackage5");
-                Assert.Equal("1.5.0", dependency5.VersionSpec.ToString());
+                Assert.Equal(4, dependencySet.Packages.Count());
+                var dependency1 = dependencySet.Packages.Single(d => d.Id == "testPackage1");
+                Assert.Equal("[1.1.0, )", dependency1.VersionRange.ToString());
+                var dependency2 = dependencySet.Packages.Single(d => d.Id == "testPackage2");
+                Assert.Equal("[1.2.0, )", dependency2.VersionRange.ToString());
+                var dependency4 = dependencySet.Packages.Single(d => d.Id == "testPackage4");
+                Assert.Equal("[1.4.0, )", dependency4.VersionRange.ToString());
+                var dependency5 = dependencySet.Packages.Single(d => d.Id == "testPackage5");
+                Assert.Equal("[1.5.0, )", dependency5.VersionRange.ToString());
             }
         }
 
@@ -3451,7 +3438,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -3520,17 +3507,17 @@ namespace Proj1
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
-                Assert.Equal(1, package.DependencySets.Count());
-                var dependencySet = package.DependencySets.First();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
+                Assert.Equal(1, package.NuspecReader.GetDependencyGroups().Count());
+                var dependencySet = package.NuspecReader.GetDependencyGroups().First();
 
                 // Verify that testPackage1 is added as dependency in addition to testPackage3.
                 // testPackage2 is not added because it is already referenced by testPackage3 with the correct version range.
-                Assert.Equal(2, dependencySet.Dependencies.Count);
-                var dependency1 = dependencySet.Dependencies.Single(d => d.Id == "testPackage1");
-                Assert.Equal("1.1.0", dependency1.VersionSpec.ToString());
-                var dependency2 = dependencySet.Dependencies.Single(d => d.Id == "testPackage3");
-                Assert.Equal("1.3.0", dependency2.VersionSpec.ToString());
+                Assert.Equal(2, dependencySet.Packages.Count());
+                var dependency1 = dependencySet.Packages.Single(d => d.Id == "testPackage1");
+                Assert.Equal("[1.1.0, )", dependency1.VersionRange.ToString());
+                var dependency2 = dependencySet.Packages.Single(d => d.Id == "testPackage3");
+                Assert.Equal("[1.3.0, )", dependency2.VersionRange.ToString());
             }
         }
 
@@ -3562,7 +3549,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3656,7 +3643,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3701,7 +3688,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3746,8 +3733,8 @@ namespace Proj2
                 // Verify that proj1 was not built using the default config "Debug".
                 Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
 
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
+                var files = package.GetFiles().ToArray();
                 Array.Sort(files);
                 Assert.Equal(
                     new string[]
@@ -3781,7 +3768,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3826,7 +3813,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3871,15 +3858,15 @@ namespace Proj2
                 // Verify that proj1 was not built using the default config "Debug".
                 Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
 
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
                 Assert.Equal(
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
+                        Path.Combine("lib", "net472", "proj1.dll"),
+                        Path.Combine("lib", "net472", "proj2.dll")
                     },
                     files);
             }
@@ -3905,7 +3892,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3950,7 +3937,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -3995,8 +3982,8 @@ namespace Proj2
                 // Verify that proj1 was not built using the default config "Debug".
                 Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
 
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
+                var files = package.GetFiles().ToArray();
                 Array.Sort(files);
                 Assert.Equal(
                     new string[]
@@ -4028,7 +4015,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4073,7 +4060,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4124,16 +4111,16 @@ namespace Proj2
                 Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
                 Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
 
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
                 Assert.Equal(
                     files,
                     new string[]
                     {
-                        Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
+                        "content/proj1_file2.txt",
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj2.dll"
                     });
             }
         }
@@ -4157,7 +4144,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4202,7 +4189,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4254,17 +4241,17 @@ namespace Proj2
                 Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
                 Assert.True(r.Item2.Contains($"MsbuildPath : {msbuildPath} is using, ignore MsBuildVersion: 12."));
 
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
                 Assert.Equal(
-                    files,
                     new string[]
                     {
-                        Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj2.dll")
-                    });
+                        "content/proj1_file2.txt",
+                        "lib/net472/proj1.dll",
+                        "lib/net472/proj2.dll"
+                    },
+                    files);
             }
         }
 
@@ -4287,7 +4274,7 @@ namespace Proj2
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4332,7 +4319,7 @@ namespace Proj1
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
     <OutputPath>debug_out</OutputPath>
@@ -4398,8 +4385,8 @@ namespace Proj2
 
                 // Assert
                 Assert.True(r.Success, r.AllOutput);
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0-alpha.nupkg"));
-                Assert.Equal("0.0.0-alpha", package.Version.ToString());
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1Directory, "proj1.0.0.0-alpha.nupkg")));
+                Assert.Equal("0.0.0-alpha", package.NuspecReader.GetVersion().ToString());
             }
         }
 
@@ -4419,7 +4406,7 @@ namespace Proj2
             string baseDirectory,
             string projectName,
             string[] referencedProject,
-            string targetFrameworkVersion = "v4.0",
+            string targetFrameworkVersion = "v4.7.2",
             string version = "0.0.0.0")
         {
             var projectDirectory = Path.Combine(baseDirectory, projectName);
@@ -4511,7 +4498,7 @@ stuff \n &lt;&lt;
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
-                var package = new OptimizedZipPackage(path);
+                var package = new PackageArchiveReader(File.OpenRead(path));
                 using (var zip = new ZipArchive(File.OpenRead(path)))
                 using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
@@ -4571,7 +4558,7 @@ stuff \n <<".Replace("\r\n", "\n");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>");
@@ -4685,7 +4672,7 @@ stuff \n <<".Replace("\r\n", "\n");
     <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
     <OutputType>Library</OutputType>
     <OutputPath>out\$(Configuration)\</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include=""proj1_file1.cs"" />
@@ -4724,14 +4711,14 @@ namespace Proj1
                 // Assert
                 Assert.True(Directory.Exists(Path.Combine(proj1ProjectDirectory, "out", "Release")));
                 Assert.True(File.Exists(Path.Combine(proj1ProjectDirectory, "out", "Release", "proj1.dll")));
-                var package = new OptimizedZipPackage(Path.Combine(proj1ProjectDirectory, "proj1.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj1ProjectDirectory, "proj1.0.0.0.nupkg")));
+                var files = package.GetNonPackageDefiningFiles();
                 Array.Sort(files);
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("content", "proj1_file2.txt"),
-                        Path.Combine("lib", "net40", "proj1.dll")
+                        "content/proj1_file2.txt",
+                        "lib/net472/proj1.dll"
                     },
                     files);
             }
@@ -4757,7 +4744,7 @@ $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <NoWarn>{value}</NoWarn>
   </PropertyGroup>
   <ItemGroup>
@@ -4825,7 +4812,7 @@ $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <{property}>{value}</{property}>
   </PropertyGroup>
   <ItemGroup>
@@ -5584,7 +5571,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
    <PropertyGroup>
      <OutputType>library</OutputType>
      <OutputPath>out</OutputPath>
-     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
    </PropertyGroup>
    <ItemGroup>
      <Compile Include='B.cs' />
@@ -5675,15 +5662,15 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                         {
 
                          $"{packageName}.nuspec",
-                         $"lib/net40/{packageName}.dll",
-                         $"lib/net40/{packageName}.pdb",
+                         $"lib/net472/{packageName}.dll",
+                         $"lib/net472/{packageName}.pdb",
                          "LICENSE.txt",
                          "src/B.cs"
                         }
                         : new string[]
                         {
                          $"{packageName}.nuspec",
-                         $"lib/net40/{packageName}.pdb",
+                         $"lib/net472/{packageName}.pdb",
                          "LICENSE.txt"
                         };
                     actual = actual.Select(t => Common.PathUtility.GetPathWithForwardSlashes(t)).ToArray();
@@ -5738,7 +5725,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
-                var package = new OptimizedZipPackage(path);
+                var package = new PackageArchiveReader(File.OpenRead(path));
                 using (var zip = new ZipArchive(File.OpenRead(path)))
                 using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
@@ -5806,7 +5793,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
                 // Assert
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
-                var package = new OptimizedZipPackage(path);
+                var package = new PackageArchiveReader(File.OpenRead(path));
                 using (var zip = new ZipArchive(File.OpenRead(path)))
                 using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
@@ -6069,7 +6056,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='B.cs' />
@@ -6140,7 +6127,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <PackageIconUrl>https://test/icon.jpg</PackageIconUrl>
     <Authors>Alice</Authors>
   </PropertyGroup>
@@ -6628,23 +6615,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             }
         }
 
-        private class PackageDepencyComparer : IEqualityComparer<PackageDependency>
-        {
-            public bool Equals(PackageDependency x, PackageDependency y)
-            {
-                return string.Equals(x.Id, y.Id, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(
-                        x.VersionSpec.ToString(),
-                        y.VersionSpec.ToString(),
-                        StringComparison.OrdinalIgnoreCase);
-            }
-
-            public int GetHashCode(PackageDependency obj)
-            {
-                return obj.GetHashCode();
-            }
-        }
-
         private static void VerifyNuspecRoundTrips(PackageArchiveReader nupkgReader, string nuspecName)
         {
             // Validate the nuspec round trips.
@@ -6755,7 +6725,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>");
@@ -6805,7 +6775,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>");
@@ -6859,7 +6829,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include='..\proj2\proj2.csproj' />
@@ -6873,7 +6843,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='Program.cs' />
@@ -6989,7 +6959,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -7049,7 +7019,7 @@ namespace Proj1
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include='System'/>
@@ -7164,7 +7134,7 @@ using System.Runtime.InteropServices;
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include='System'/>
@@ -7280,7 +7250,7 @@ using System.Runtime.InteropServices;
   <PropertyGroup>
     <OutputType>library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>");
@@ -7384,7 +7354,7 @@ using System.Runtime.InteropServices;
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='file1.cs' />
@@ -7437,7 +7407,7 @@ namespace proj1
                     Assert.Equal(
                         new string[]
                         {
-                          "lib/net40/proj1.dll"
+                          "lib/net472/proj1.dll"
                         },
                         files);
 

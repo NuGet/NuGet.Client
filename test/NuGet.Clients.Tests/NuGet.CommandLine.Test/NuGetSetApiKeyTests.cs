@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using NuGet.Configuration;
+using NuGet.Shared;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -45,7 +46,7 @@ namespace NuGet.CommandLine.Test
                 var actualApiKey = SettingsUtility.GetDecryptedValueForAddItem(settings, ConfigurationConstants.ApiKeys, NuGetConstants.DefaultGalleryServerUrl);
                 Assert.NotNull(actualApiKey);
                 Assert.Equal(testApiKey, actualApiKey);
-                XElement apiKeySection = SimpleTestSettingsContext.GetOrAddSection(XmlUtility.LoadSafe(configFile), ConfigurationConstants.ApiKeys);
+                XElement apiKeySection = SimpleTestSettingsContext.GetOrAddSection(XmlUtility.Load(configFile), ConfigurationConstants.ApiKeys);
                 Assert.Equal(1, apiKeySection.Elements().Count());
             }
         }
@@ -105,7 +106,7 @@ namespace NuGet.CommandLine.Test
 
                 var actualApiKey = SettingsUtility.GetDecryptedValueForAddItem(iSettings, ConfigurationConstants.ApiKeys, serverUri);
                 Assert.Equal(testApiKey, actualApiKey);
-                XElement apiKeySection = SimpleTestSettingsContext.GetOrAddSection(XmlUtility.LoadSafe(settings.ConfigPath), ConfigurationConstants.ApiKeys);
+                XElement apiKeySection = SimpleTestSettingsContext.GetOrAddSection(XmlUtility.Load(settings.ConfigPath), ConfigurationConstants.ApiKeys);
                 Assert.Equal(1, apiKeySection.Elements().Count());
             }
         }
@@ -156,7 +157,7 @@ namespace NuGet.CommandLine.Test
 
                 var actualApiKey = SettingsUtility.GetDecryptedValueForAddItem(iSettings, ConfigurationConstants.ApiKeys, serverUri);
                 Assert.Equal(testApiKey, actualApiKey);
-                XElement apiKeySection = SimpleTestSettingsContext.GetOrAddSection(XmlUtility.LoadSafe(settings.ConfigPath), ConfigurationConstants.ApiKeys);
+                XElement apiKeySection = SimpleTestSettingsContext.GetOrAddSection(XmlUtility.Load(settings.ConfigPath), ConfigurationConstants.ApiKeys);
                 Assert.Equal(1, apiKeySection.Elements().Count());
             }
         }
