@@ -4198,8 +4198,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // do a restore
             project = PrepareCpsRestoredProject(initialProjectSpec, cache);
-
-            var installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None); // This will change IsInstalledAndTransitiveComputationNeeded to false
             result = await project.GetInstalledAndTransitivePackagesAsync(false, false, CancellationToken.None);
 
             // Assert I: Cache for transitive was cleared
@@ -4207,7 +4205,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(0, result.TransitivePackages.Count);
             Assert.All(result.TransitivePackages, pkg => Assert.Equal(0, pkg.TransitiveOrigins.Count()));
 
-            project = PrepareCpsRestoredProject(initialProjectSpec, cache);
             result = await project.GetInstalledAndTransitivePackagesAsync(true, true, CancellationToken.None);
 
             // Assert II: Transitive packages calculated correctly
