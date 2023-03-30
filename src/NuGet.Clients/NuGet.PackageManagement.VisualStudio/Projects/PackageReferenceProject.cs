@@ -163,6 +163,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     if (TransitivePackages == null)
                     {
                         transitivePackages = new T();
+                        transitiveOrigins = new Dictionary<string, TransitiveEntry>();
                     }
                     else
                     {
