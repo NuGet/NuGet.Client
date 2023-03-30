@@ -256,6 +256,16 @@ namespace NuGet.ProjectManagement.Projects
             return (new[] { packageSpec }, null);
         }
 
+        public async override Task<bool> UpdatePackageAsync(
+            string packageId,
+            VersionRange range,
+            INuGetProjectContext nuGetProjectContext,
+            BuildIntegratedInstallationContext installationContext,
+            CancellationToken token)
+        {
+            return await InstallPackageAsync(packageId, range, nuGetProjectContext, installationContext, token);
+        }
+
         public async override Task<bool> InstallPackageAsync(
             string packageId,
             VersionRange range,

@@ -1617,9 +1617,9 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
             var versionToInstall = package.LatestVersion ?? package.Version;
-            //package.Id, versionToInstall, new[] { package });
+
             List<PackageIdentity> packagesToUpdate = new List<PackageIdentity>();
-            packagesToUpdate.Add(new PackageIdentity(package.Id, package.Version)); //or versionToInstall?
+            packagesToUpdate.Add(new PackageIdentity(package.Id, versionToInstall));
             List<PackageItemViewModel> packageInfos = new List<PackageItemViewModel>();
             packageInfos.Add(package);
             UpdatePackage(packagesToUpdate, packageInfos);

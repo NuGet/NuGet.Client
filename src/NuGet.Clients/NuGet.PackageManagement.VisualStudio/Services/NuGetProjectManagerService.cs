@@ -752,10 +752,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return sourceRepositories;
         }
 
+        // add a comment about what a directinstall is!
         private bool IsDirectInstall(IReadOnlyList<ProjectAction> projectActions)
         {
             return _state.PackageIdentity != null
-                && projectActions.Any(projectAction => projectAction.ProjectActionType == NuGetProjectActionType.Install);
+                && projectActions.Any(projectAction => projectAction.ProjectActionType == NuGetProjectActionType.Install || projectAction.ProjectActionType == NuGetProjectActionType.Update);
         }
 
         private async ValueTask CatchAndRethrowExceptionAsync(Func<Task> taskFunc)

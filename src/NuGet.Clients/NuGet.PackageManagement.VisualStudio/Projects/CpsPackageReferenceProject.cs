@@ -120,6 +120,20 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.FromResult(GetPackageSpec());
         }
 
+        #region BuildIntegratedNuGetProject
+
+        public override async Task<bool> UpdatePackageAsync(
+            string packageId,
+            VersionRange range,
+            INuGetProjectContext nuGetProjectContext,
+            BuildIntegratedInstallationContext installationContext,
+            CancellationToken token)
+        {
+            return await InstallPackageAsync(packageId, range, nuGetProjectContext, installationContext, token);
+        }
+
+        #endregion BuildIntegratedNuGetProject
+
         #region IDependencyGraphProject
 
 

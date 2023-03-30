@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement
             // Find all of the installed package identities.
             var requestedPackageIds = new HashSet<string>(
                 nuGetProjectActions
-                    .Where(action => action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    .Where(action => action.NuGetProjectActionType == NuGetProjectActionType.Install || action.NuGetProjectActionType == NuGetProjectActionType.Update)
                     .Select(action => action.PackageIdentity.Id),
                 StringComparer.OrdinalIgnoreCase);
 

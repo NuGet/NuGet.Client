@@ -27,7 +27,6 @@ namespace NuGet.PackageManagement.UI
     public partial class SolutionView : UserControl
     {
         public event EventHandler<EventArgs> InstallButtonClicked;
-        public event EventHandler<EventArgs> UpdateButtonClicked;
 
         public event EventHandler<EventArgs> UninstallButtonClicked;
 
@@ -110,11 +109,6 @@ namespace NuGet.PackageManagement.UI
         private void InstallButton_Clicked(object sender, RoutedEventArgs e)
         {
             InstallButtonClicked?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void UpdateButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            UpdateButtonClicked?.Invoke(this, EventArgs.Empty);
         }
 
         private void ColumnHeader_Clicked(object sender, RoutedEventArgs e)

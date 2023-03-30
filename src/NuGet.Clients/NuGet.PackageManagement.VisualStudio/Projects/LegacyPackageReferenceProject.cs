@@ -105,6 +105,16 @@ namespace NuGet.PackageManagement.VisualStudio
             return Path.Combine(msbuildProjectExtensionsPath, LockFileFormat.AssetsFileName);
         }
 
+        public override async Task<bool> UpdatePackageAsync(
+            string packageId,
+            VersionRange range,
+            INuGetProjectContext nuGetProjectContext,
+            BuildIntegratedInstallationContext installationContext,
+            CancellationToken token)
+        {
+            return await InstallPackageAsync(packageId, range, nuGetProjectContext, installationContext, token);
+        }
+
         #endregion BuildIntegratedNuGetProject
 
         #region IDependencyGraphProject

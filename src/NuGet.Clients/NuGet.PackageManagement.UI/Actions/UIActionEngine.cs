@@ -329,7 +329,7 @@ namespace NuGet.PackageManagement.UI
                 // collect the install state of the existing packages
                 foreach (IProjectContextInfo project in uiService.Projects) // only one project when PM UI is in project mode
                 {
-                    if (projectsCount == 1 && userAction != null && !userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install && project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && project.ProjectKind == NuGetProjectKind.PackageReference)
+                    if (projectsCount == 1 && userAction != null && !userAction.IsSolutionLevel && (userAction.Action == NuGetProjectActionType.Install || userAction.Action == NuGetProjectActionType.Update) && project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && project.ProjectKind == NuGetProjectKind.PackageReference)
                     {
                         IInstalledAndTransitivePackages installedAndTransitives = await project.GetInstalledAndTransitivePackagesAsync(sb, cancellationToken);
                         installedPackages = installedAndTransitives.InstalledPackages;
@@ -960,7 +960,7 @@ namespace NuGet.PackageManagement.UI
 
                     packageIds.Add(packageIdentity.Id);
 
-                    if (action.ProjectActionType == NuGetProjectActionType.Install)
+                    if (action.ProjectActionType == NuGetProjectActionType.Install || action.ProjectActionType == NuGetProjectActionType.Update)
                     {
                         installed[packageIdentity.Id] = packageIdentity;
                     }

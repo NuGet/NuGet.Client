@@ -3152,12 +3152,16 @@ namespace NuGet.PackageManagement
                     restoreResult.Result);
 
                 // If this build integrated project action represents only uninstalls, mark the entire operation
-                // as an uninstall. Otherwise, mark it as an install. This is important because install operations
+                // as an uninstall. Otherwise, mark it as an update or install. This is important because update and install operations
                 // are a bit more sensitive to errors (thus resulting in rollbacks).
-                var actionType = NuGetProjectActionType.Install;
-                if (nuGetProjectActions.All(x => x.NuGetProjectActionType == NuGetProjectActionType.Uninstall))
+                var actionType = NuGetProjectActionType.Uninstall;
+                if (nuGetProjectActions.All(x => x.NuGetProjectActionType == NuGetProjectActionType.Update))
                 {
-                    actionType = NuGetProjectActionType.Uninstall;
+                    actionType = NuGetProjectActionType.Update;
+                }
+                else if (nuGetProjectActions.All(x => x.NuGetProjectActionType == NuGetProjectActionType.Install))
+                {
+                    actionType = NuGetProjectActionType.Install;
                 }
 
                 var nugetProjectAction = new BuildIntegratedProjectAction(
@@ -3237,7 +3241,8 @@ namespace NuGet.PackageManagement
 
                 foreach (var action in projectAction.OriginalActions.Reverse())
                 {
-                    if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    if (action.NuGetProjectActionType == NuGetProjectActionType.Install
+                        || action.NuGetProjectActionType == NuGetProjectActionType.Update)
                     {
                         installedIds.Add(action.PackageIdentity.Id);
                     }
@@ -3272,6 +3277,31 @@ namespace NuGet.PackageManagement
 
                         // Install the package to the project
                         await buildIntegratedProject.InstallPackageAsync(
+                            originalAction.PackageIdentity.Id,
+                            originalAction.VersionRange ?? new VersionRange(originalAction.PackageIdentity.Version),
+                            nuGetProjectContext,
+                            projectAction.InstallationContext,
+                            token: token);
+                    }
+                    else if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Update)
+                    {
+                        if (buildIntegratedProject.ProjectStyle == ProjectStyle.PackageReference)
+                        {
+                            BuildIntegratedRestoreUtility.UpdatePackageReferenceMetadata(
+                                projectAction.RestoreResult.LockFile,
+                                pathResolver,
+                                originalAction.PackageIdentity);
+
+                            var framework = projectAction.InstallationContext.SuccessfulFrameworks.FirstOrDefault();
+                            var resolvedAction = projectAction.RestoreResult.LockFile.PackageSpec.TargetFrameworks.FirstOrDefault(fm => fm.FrameworkName.Equals(framework))
+                                .Dependencies.First(dependency => dependency.Name.Equals(originalAction.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase));
+
+                            projectAction.InstallationContext.SuppressParent = resolvedAction.SuppressParent;
+                            projectAction.InstallationContext.IncludeType = resolvedAction.IncludeType;
+                        }
+
+                        // Install the package to the project
+                        await buildIntegratedProject.UpdatePackageAsync(
                             originalAction.PackageIdentity.Id,
                             originalAction.VersionRange ?? new VersionRange(originalAction.PackageIdentity.Version),
                             nuGetProjectContext,
@@ -3334,6 +3364,14 @@ namespace NuGet.PackageManagement
                         nuGetProjectContext.Log(
                             MessageLevel.Info,
                             Strings.SuccessfullyInstalled,
+                            identityString,
+                            buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                    }
+                    else if (action.NuGetProjectActionType == NuGetProjectActionType.Update)
+                    {
+                        nuGetProjectContext.Log(
+                            MessageLevel.Info,
+                            Strings.SuccessfullyUpdated,
                             identityString,
                             buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                     }
@@ -3466,6 +3504,10 @@ namespace NuGet.PackageManagement
                     {
                         // Rolling back an install would be to uninstall the package
                         await ExecuteUninstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                    }
+                    else if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Update)
+                    {
+                        throw new NotImplementedException("should never hit this case???");
                     }
                     else
                     {
