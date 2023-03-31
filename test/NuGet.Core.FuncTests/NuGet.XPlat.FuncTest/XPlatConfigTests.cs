@@ -88,6 +88,57 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
+        public void ConfigGetCommand_HelpMessage_Success()
+        {
+            // Arrange
+            var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigGetAllOrConfigKeyDescription);
+            // Act
+            var result = CommandRunner.Run(
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config get --help",
+                    waitForExit: true
+                    );
+
+            // Assert
+            DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
+        }
+
+        [Fact]
+        public void ConfigGetAllCommand_HelpMessage_Success()
+        {
+            // Arrange
+            var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigGetAllOrConfigKeyDescription); ;
+            // Act
+            var result = CommandRunner.Run(
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config get all --help",
+                    waitForExit: true
+                    );
+
+            // Assert
+            DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
+        }
+
+        [Fact]
+        public void ConfigGetConfigKeyCommand_HelpMessage_Success()
+        {
+            // Arrange
+            var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigGetAllOrConfigKeyDescription); ;
+            // Act
+            var result = CommandRunner.Run(
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config get http_proxy --help",
+                    waitForExit: true
+                    );
+
+            // Assert
+            DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
+        }
+
+            [Fact]
         public void ConfigCommand_HelpMessage_Success()
         {
             // Arrange
@@ -199,6 +250,9 @@ namespace NuGet.XPlat.FuncTest
     <packageSources>
         <add key=""Foo"" value=""https://contoso.test/v3/index.json"" />
     </packageSources>
+    <config>
+        <add key=""http_proxy"" value=""http://company-squid:3128@contoso.test"" />
+    </config>
 </configuration>
 ");
             }
