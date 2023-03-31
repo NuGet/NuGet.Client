@@ -19,9 +19,9 @@
 
     <!-- ** Change for each new preview/rc -->
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview.3</ReleaseLabel>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">rc</ReleaseLabel>
 
-    <IsEscrowMode>false</IsEscrowMode>
+    <IsEscrowMode>true</IsEscrowMode>
 
     <!-- Visual Studio Insertion Logic -->
     <VsTargetMajorVersion>$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
@@ -44,7 +44,7 @@
          6.0:6.0.100-preview.7.21379.14 means install the preview version 6.0.100-preview.7.21379.14.
     Refer to https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script#options for more details.
     -->
-    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">7.0</CliBranchForTesting>
+    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">7.0;7.0.2xx</CliBranchForTesting>
   </PropertyGroup>
 
   <!-- Config -->
