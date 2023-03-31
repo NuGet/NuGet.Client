@@ -45,6 +45,16 @@ namespace NuGet.CommandLine.XPlat
     {
         public static void Run(ConfigGetArgs args, Func<ILogger> getLogger)
         {
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
+            if (getLogger == null)
+            {
+                throw new ArgumentNullException(nameof(getLogger));
+            }
+
             var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory);
             ILogger logger = getLogger();
 

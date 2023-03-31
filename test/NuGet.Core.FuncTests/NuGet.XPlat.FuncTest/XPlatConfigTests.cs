@@ -218,6 +218,28 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
+        [Fact]
+        public void ConfigGetCommand_NullArgs_Fail()
+        {
+            // Arrange
+            var log = new TestCommandOutputLogger();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ConfigGetRunner.Run(null, () => log));
+        }
+
+        [Fact]
+        public void ConfigGetCommand_NullGetLogger_Fail()
+        {
+            // Arrange
+            var args = new ConfigGetArgs()
+            {
+            };
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ConfigGetRunner.Run(args, null));
+        }
+
         internal class TestInfo : IDisposable
         {
             public static void CreateFile(string directory, string fileName, string fileContent)
