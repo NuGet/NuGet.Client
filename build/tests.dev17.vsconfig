@@ -9,6 +9,7 @@
     "Microsoft.VisualStudio.Component.MSSQL.CMDLnUtils",
     "Microsoft.VisualStudio.Component.SQL.LocalDB.Runtime",
     "Microsoft.VisualStudio.Component.SQL.CLR",
+    "Component.Xamarin",
     "Microsoft.VisualStudio.Component.CoreEditor",
     "Microsoft.VisualStudio.Workload.CoreEditor",
     "Microsoft.NetCore.Component.Runtime.6.0",
