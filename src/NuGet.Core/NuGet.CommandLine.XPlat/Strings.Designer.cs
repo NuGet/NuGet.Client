@@ -250,6 +250,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Gets the NuGet configuration settings that will be applied..
+        /// </summary>
+        internal static string ConfigGetCommandDescription {
+            get {
+                return ResourceManager.GetString("ConfigGetCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Indicate that the NuGet configuration file path will be shown besides the configuration settings..
         /// </summary>
         internal static string ConfigGetShowPathDescription {

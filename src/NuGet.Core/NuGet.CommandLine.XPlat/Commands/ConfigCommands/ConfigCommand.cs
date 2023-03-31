@@ -45,6 +45,8 @@ namespace NuGet.CommandLine.XPlat
                         Strings.ConfigGetShowPathDescription,
                         CommandOptionType.NoValue
                         );
+                    GetCmd.HelpOption("-h|--help");
+                    GetCmd.Description = Strings.ConfigGetCommandDescription;
                     GetCmd.OnExecute(() =>
                     {
                         var args = new ConfigGetArgs()
