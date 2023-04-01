@@ -590,7 +590,7 @@ namespace NuGet.Configuration
                         }
                     }
                 }
-                else if (!string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase) && newSource.IsPersistable)
+                else if (newSource.IsPersistable && !string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase))
                 {
                     Settings.AddOrUpdate(ConfigurationConstants.PackageSources, newSource.AsSourceItem());
                     isDirty = true;
