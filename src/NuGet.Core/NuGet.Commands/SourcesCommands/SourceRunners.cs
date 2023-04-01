@@ -409,16 +409,21 @@ namespace NuGet.Commands
             }
         }
 
-        public static int ParseProtocolVersion(string protocolVersion)
+        public static int ParseProtocolVersion(string protocolVersionString)
         {
-            var currentlySupportedProtocolVersions = new List<int> { 2, 3 };
+            var minSupportedProtocolVersion = PackageSource.DefaultProtocolVersion;
+            var maxSupportedProtocolVersion = PackageSource.MaxProtocolVersion;
 
-            if (!int.TryParse(protocolVersion, out var protocolVersionValue) || !currentlySupportedProtocolVersions.Contains(protocolVersionValue))
+            if (int.TryParse(protocolVersionString, out var protocolVersion))
             {
-                throw new CommandException(string.Format(Strings.SourcesCommandValidProtocolVersion, string.Join(", ", currentlySupportedProtocolVersions)));
+                if (protocolVersion >= minSupportedProtocolVersion && protocolVersion <= maxSupportedProtocolVersion)
+                {
+                    return protocolVersion;
+                }
             }
 
-            return protocolVersionValue;
+            // specified protocol version is invalid
+            throw new CommandException(string.Format(Strings.SourcesCommandValidProtocolVersion, minSupportedProtocolVersion, maxSupportedProtocolVersion));
         }
     }
 }

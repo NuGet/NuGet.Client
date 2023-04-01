@@ -17,6 +17,7 @@ namespace NuGet.Configuration
         /// The feed version for NuGet prior to v3.
         /// </summary>
         public const int DefaultProtocolVersion = 2;
+        public const int MaxProtocolVersion = 3;
 
         private int _hashCode;
         private string _source;

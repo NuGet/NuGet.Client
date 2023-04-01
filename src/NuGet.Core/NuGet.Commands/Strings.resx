@@ -1042,6 +1042,6 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>{0} is a warning message</comment>
   </data>
   <data name="SourcesCommandValidProtocolVersion" xml:space="preserve">
-    <value>The protocol version specified is invalid. Valid protocol versions are: {0}.</value>
+    <value>The protocol version specified is invalid. Valid protocol versions are from {0} to {1}.</value>
   </data>
 </root>

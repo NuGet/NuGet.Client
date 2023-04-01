@@ -2096,7 +2096,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The protocol version specified is invalid. Valid protocol versions are: {0}..
+        ///   Looks up a localized string similar to The protocol version specified is invalid. Valid protocol versions are from {0} to {1}..
         /// </summary>
         internal static string SourcesCommandValidProtocolVersion {
             get {
