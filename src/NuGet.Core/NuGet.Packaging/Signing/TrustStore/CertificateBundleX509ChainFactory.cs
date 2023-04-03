@@ -15,8 +15,6 @@ namespace NuGet.Packaging.Signing
 {
     internal abstract class CertificateBundleX509ChainFactory : IX509ChainFactory
     {
-        internal const string NU3042HelpUrl = "https://aka.ms/nuget/nu3042";
-
         public X509Certificate2Collection Certificates { get; }
         public string FilePath { get; }
 
@@ -95,7 +93,6 @@ namespace NuGet.Packaging.Signing
                     message = string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.UntrustedRoot_WithoutCertificateBundle,
-                        NU3042HelpUrl,
                         subject,
                         fingerprint,
                         pem);
@@ -106,7 +103,6 @@ namespace NuGet.Packaging.Signing
                         CultureInfo.CurrentCulture,
                         Strings.UntrustedRoot_WithCertificateBundle,
                         FilePath,
-                        NU3042HelpUrl,
                         subject,
                         fingerprint,
                         pem);

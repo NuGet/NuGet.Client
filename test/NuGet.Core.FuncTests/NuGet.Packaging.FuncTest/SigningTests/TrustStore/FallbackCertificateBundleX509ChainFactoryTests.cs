@@ -40,7 +40,6 @@ namespace NuGet.Packaging.FuncTest.SigningTests
                         CultureInfo.CurrentCulture,
                         Strings.UntrustedRoot_WithCertificateBundle,
                         certificateBundle.FullName,
-                        CertificateBundleX509ChainFactory.NU3042HelpUrl,
                         certificate.Subject,
                         GetCertificateFingerprint(certificate),
                         GetPemEncodedCertificate(certificate));

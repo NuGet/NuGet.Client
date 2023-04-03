@@ -32,7 +32,6 @@ namespace NuGet.Packaging.FuncTest.SigningTests
                 string expectedMessage = string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.UntrustedRoot_WithoutCertificateBundle,
-                    CertificateBundleX509ChainFactory.NU3042HelpUrl,
                     certificate.Subject,
                     GetCertificateFingerprint(certificate),
                     GetPemEncodedCertificate(certificate));

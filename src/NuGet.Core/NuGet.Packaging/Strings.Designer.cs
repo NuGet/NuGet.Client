@@ -1726,11 +1726,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The following X.509 root certificate is untrusted because it is not present in the certificate bundle at {0}.  For more information, visit {1}.
-        ///    Subject:  {2}
-        ///    Fingerprint (SHA-256):  {3}
+        ///   Looks up a localized string similar to The following X.509 root certificate is untrusted because it is not present in the certificate bundle at {0}.  For more information, see documentation for NU3042.
+        ///    Subject:  {1}
+        ///    Fingerprint (SHA-256):  {2}
         ///    Certificate (PEM):
-        ///{4}.
+        ///{3}.
         /// </summary>
         internal static string UntrustedRoot_WithCertificateBundle {
             get {
@@ -1739,11 +1739,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The following X.509 root certificate is untrusted because no certificate bundle was found.  For more information, visit {0}.
-        ///    Subject:  {1}
-        ///    Fingerprint (SHA-256):  {2}
+        ///   Looks up a localized string similar to The following X.509 root certificate is untrusted because no certificate bundle was found.  For more information, see documentation for NU3042.
+        ///    Subject:  {0}
+        ///    Fingerprint (SHA-256):  {1}
         ///    Certificate (PEM):
-        ///{3}.
+        ///{2}.
         /// </summary>
         internal static string UntrustedRoot_WithoutCertificateBundle {
             get {
