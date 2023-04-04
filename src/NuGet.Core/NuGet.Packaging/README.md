@@ -57,4 +57,4 @@ foreach (PackageDependencyGroup dependencyGroup in nuspec.GetDependencyGroups())
 
 ## Aditional documentation
 
-More information about the NuGet.Protocol library can be found on the [official Microsoft documentation page](https://learn.microsoft.com/nuget/reference/nuget-client-sdk#nugetprotocol) and [NuGet API docs](https://learn.microsoft.com/nuget/reference/nuget-client-sdk).
+More information about the NuGet.Packaging library can be found on the [official Microsoft documentation page](https://learn.microsoft.com/nuget/reference/nuget-client-sdk#nugetpackaging) and [NuGet API docs](https://learn.microsoft.com/nuget/reference/nuget-client-sdk).
