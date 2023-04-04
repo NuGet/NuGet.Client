@@ -28,6 +28,6 @@ using (nugetProjectService as IDisposable)
 }
 ```
 
-## Aditional documentation
+## Additional documentation
 
 More information about the NuGet.VisualStudio.Contracts library can be found on the [NuGet API docs](https://learn.microsoft.com/nuget/visual-studio-extensibility/nuget-api-in-visual-studio).

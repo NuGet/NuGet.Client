@@ -16,13 +16,13 @@ From NuGet 6.0, all of these APIs are available in the package [NuGet.VisualStud
 To use a service, import it through the [MEF Import attribute](https://learn.microsoft.com/dotnet/framework/mef/#imports-and-exports-with-attributes), or through the [IComponentModel service](https://learn.microsoft.com/dotnet/api/microsoft.visualstudio.componentmodelhost.icomponentmodel?view=visualstudiosdk-2022).
 
 ```c#
-//Using the Import attribute
+// Using the Import attribute
 [Import(typeof(IVsPackageInstaller2))]
 public IVsPackageInstaller2 packageInstaller;
 packageInstaller.InstallLatestPackage(source: null, currentProject,
     "Newtonsoft.Json", includePrerelease: false, ignoreDependencies: false);
 
-//Using the IComponentModel service
+// Using the IComponentModel service
 var componentModel = (IComponentModel)GetService(typeof(SComponentModel));
 IVsPackageUninstaller uninstallerServices =
     componentModel.GetService<IVsPackageUninstaller>();
@@ -30,6 +30,6 @@ IVsPackageUninstaller uninstallerServices =
 var uninstallerServices = installerServices.UninstallPackage(currentProject, "Newtonsoft.json", removeDependencies: true);
 ```
 
-## Aditional documentation
+## Additional documentation
 
 More information about the NuGet.VisualStudio library can be found on the [NuGet API docs](https://learn.microsoft.com/nuget/visual-studio-extensibility/nuget-api-in-visual-studio).
