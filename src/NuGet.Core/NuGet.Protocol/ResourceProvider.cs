@@ -87,6 +87,7 @@ namespace NuGet.Protocol.Core.Types
             get { return _resourceType; }
         }
 
+        /// <inheritdoc cref="INuGetResourceProvider.TryCreate(SourceRepository, CancellationToken)"/>
         public abstract Task<Tuple<bool, INuGetResource?>> TryCreate(SourceRepository source, CancellationToken token);
 
         private static IEnumerable<string> ToArray(string? s)

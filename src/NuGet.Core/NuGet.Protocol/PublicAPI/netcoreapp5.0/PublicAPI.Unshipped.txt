@@ -4,8 +4,8 @@
 NuGet.Protocol.IVulnerabilityInfoResource
 NuGet.Protocol.IVulnerabilityInfoResource.GetVulnerabilityInfoAsync(NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Model.GetVulnerabilityInfoResult!>!
 NuGet.Protocol.Model.GetVulnerabilityInfoResult
-NuGet.Protocol.Model.GetVulnerabilityInfoResult.Exceptions.get -> System.Collections.Generic.IReadOnlyList<System.Exception!>?
-NuGet.Protocol.Model.GetVulnerabilityInfoResult.GetVulnerabilityInfoResult(System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Model.VulnerabilityInfo!>!>!>? knownVulnerabilities, System.Collections.Generic.IReadOnlyList<System.Exception!>? exceptions) -> void
+NuGet.Protocol.Model.GetVulnerabilityInfoResult.Exceptions.get -> System.AggregateException?
+NuGet.Protocol.Model.GetVulnerabilityInfoResult.GetVulnerabilityInfoResult(System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Model.VulnerabilityInfo!>!>!>? knownVulnerabilities, System.AggregateException? exceptions) -> void
 NuGet.Protocol.Model.GetVulnerabilityInfoResult.KnownVulnerabilities.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Model.VulnerabilityInfo!>!>!>?
 NuGet.Protocol.Model.VulnerabilityInfo
 NuGet.Protocol.Model.VulnerabilityInfo.Equals(NuGet.Protocol.Model.VulnerabilityInfo? other) -> bool
@@ -18,5 +18,3 @@ NuGet.Protocol.Providers.VulnerabilityInfoResourceV3Provider.VulnerabilityInfoRe
 override NuGet.Protocol.Model.VulnerabilityInfo.Equals(object? obj) -> bool
 override NuGet.Protocol.Model.VulnerabilityInfo.GetHashCode() -> int
 override NuGet.Protocol.Providers.VulnerabilityInfoResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
-~static readonly NuGet.Protocol.ServiceTypes.Version660 -> string
-~static readonly NuGet.Protocol.ServiceTypes.VulnerabilityInfo -> string[]
