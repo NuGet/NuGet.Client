@@ -55,6 +55,6 @@ foreach (PackageDependencyGroup dependencyGroup in nuspec.GetDependencyGroups())
 }
 ```
 
-## Aditional documentation
+## Additional documentation
 
 More information about the NuGet.Packaging library can be found on the [official Microsoft documentation page](https://learn.microsoft.com/nuget/reference/nuget-client-sdk#nugetpackaging) and [NuGet API docs](https://learn.microsoft.com/nuget/reference/nuget-client-sdk).
