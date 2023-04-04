@@ -1,4 +1,4 @@
-# NuGet.VisualStudio.Contracts
+# NuGet.VisualStudio
 
 This package provides APIs for invoking NuGet services in Visual Studio. It contains NuGet’s older services that are available via the [Managed Extensibility Framework (MEF)](https://learn.microsoft.com/dotnet/framework/mef/).
 
@@ -19,17 +19,17 @@ To use a service, import it through the [MEF Import attribute](https://learn.mic
 //Using the Import attribute
 [Import(typeof(IVsPackageInstaller2))]
 public IVsPackageInstaller2 packageInstaller;
-packageInstaller.InstallLatestPackage(null, currentProject,
-    "Newtonsoft.Json", false, false);
+packageInstaller.InstallLatestPackage(source: null, currentProject,
+    "Newtonsoft.Json", includePrerelease: false, ignoreDependencies: false);
 
 //Using the IComponentModel service
 var componentModel = (IComponentModel)GetService(typeof(SComponentModel));
-IVsPackageInstallerServices installerServices =
-    componentModel.GetService<IVsPackageInstallerServices>();
+IVsPackageUninstaller uninstallerServices =
+    componentModel.GetService<IVsPackageUninstaller>();
 
-var installedPackages = installerServices.GetInstalledPackages();
+var uninstallerServices = installerServices.UninstallPackage(currentProject, "Newtonsoft.json", removeDependencies: true);
 ```
 
 ## Aditional documentation
 
-More information about the NuGet.Protocol library can be found on the [official Microsoft documentation page](https://learn.microsoft.com/nuget/reference/nuget-client-sdk#nugetprotocol) and [NuGet API docs](https://learn.microsoft.com/nuget/visual-studio-extensibility/nuget-api-in-visual-studio).
+More information about the NuGet.VisualStudio library can be found on the [NuGet API docs](https://learn.microsoft.com/nuget/visual-studio-extensibility/nuget-api-in-visual-studio).

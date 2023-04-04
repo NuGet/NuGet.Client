@@ -12,8 +12,8 @@ Use the IAsyncServiceProvider to get Visual Studio's service broker, and use tha
 // Your AsyncPackage implements IAsyncServiceProvider
 IAsyncServiceProvider asyncServiceProvider = this;
 var brokeredServiceContainer = await asyncServiceProvider.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
-var serviceBroker = brokeredServiceContainer.GetFullAccessServiceBroker();
-var nugetProjectService = await serviceBroker.GetProxyAsync<INuGetProjectService>(NuGetServices.NuGetProjectServiceV1);
+IServiceBroker serviceBroker = brokeredServiceContainer.GetFullAccessServiceBroker();
+INuGetProjectService nugetProjectService = await serviceBroker.GetProxyAsync<INuGetProjectService>(NuGetServices.NuGetProjectServiceV1);
 ```
 
 ## Example
@@ -24,10 +24,10 @@ var nugetProjectService = await serviceBroker.GetProxyAsync<INuGetProjectService
 InstalledPackagesResult installedPackagesResult;
 using (nugetProjectService as IDisposable)
 {
-    installedPackagesResult = await nugetProjectService.GetInstalledPackages(projectGuid, cancellationToken);
+    installedPackagesResult = await nugetProjectService.GetInstalledPackagesAsync(projectGuid, cancellationToken);
 }
 ```
 
 ## Aditional documentation
 
-More information about the NuGet.Protocol library can be found on the [official Microsoft documentation page](https://learn.microsoft.com/nuget/reference/nuget-client-sdk#nugetprotocol) and [NuGet API docs](https://learn.microsoft.com/nuget/visual-studio-extensibility/nuget-api-in-visual-studio).
+More information about the NuGet.VisualStudio.Contracts library can be found on the [NuGet API docs](https://learn.microsoft.com/nuget/visual-studio-extensibility/nuget-api-in-visual-studio).
