@@ -1,10 +1,10 @@
 # Nuget.Packaging
 
-NuGet.Packaging is a NuGet client SDK library that provides a set of APIs to interact with `.nupkg` and `.nuspec` files from a stram. It provides a way for developers to create and read packages and work with the package metadata.
+NuGet.Packaging is a NuGet client SDK library that provides a set of APIs to interact with `.nupkg` and `.nuspec` files from a stream. It provides a way for developers to create and read packages and work with the package metadata.
 
 ## Usage
 
-> It is strongly recommended that NuGet packages are created using the official NuGet tooling and not using this low-level API. There are a variety of characteristics important for a well-formed package and the latest version of tooling helps incorporate these best practices.
+> It is strongly recommended that NuGet packages are created using the official NuGet tooling and instead of this low-level API. There are a variety of characteristics important for a well-formed package and the latest version of tooling helps incorporate these best practices.
 
 > For more information about creating NuGet packages, see the overview of the [package creation workflow](https://learn.microsoft.com/nuget/create-packages/overview-and-workflow) and the documentation for official pack tooling (for example, [using the dotnet CLI](https://learn.microsoft.com/nuget/create-packages/creating-a-package-dotnet-cli)).
 ## Examples
@@ -45,7 +45,7 @@ Console.WriteLine($"Description: {nuspec.GetDescription()}");
 Console.WriteLine($"Authors: {nuspec.GetAuthors()}");
 
 Console.WriteLine("Dependencies:");
-foreach (var dependencyGroup in nuspec.GetDependencyGroups())
+foreach (PackageDependencyGroup dependencyGroup in nuspec.GetDependencyGroups())
 {
     Console.WriteLine($" - {dependencyGroup.TargetFramework.GetShortFolderName()}");
     foreach (var dependency in dependencyGroup.Packages)
