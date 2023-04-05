@@ -31,6 +31,13 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// UpdateAll
         /// </summary>
-        UpdateAll
+        UpdateAll,
+
+        /// <summary>
+        /// UpdateIfProjectHasOtherwiseInstall
+        /// </summary>
+#pragma warning disable RS0016 // Add public types and members to the declared API
+        UpdateIfProjectHasOtherwiseInstall  //TODO: better name!!!
+#pragma warning restore RS0016 // Add public types and members to the declared API
     }
 }

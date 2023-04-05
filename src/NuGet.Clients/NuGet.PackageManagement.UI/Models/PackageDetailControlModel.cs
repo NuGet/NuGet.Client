@@ -353,5 +353,12 @@ namespace NuGet.PackageManagement.UI
         {
             return _nugetProjects;
         }
+
+        public override IEnumerable<NuGetProjectActionType> GetActionTypes(UserAction action)
+        {
+            var actionTypes = new List<NuGetProjectActionType>();
+            actionTypes.Add(action.Action);
+            return actionTypes;
+        }
     }
 }

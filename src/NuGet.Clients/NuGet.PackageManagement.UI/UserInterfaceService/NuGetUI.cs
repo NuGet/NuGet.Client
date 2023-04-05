@@ -294,6 +294,8 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<IProjectContextInfo> Projects { get; set; }
 
+        public IEnumerable<NuGetProjectActionType> ProjectActionTypes { get; set; }
+
         public bool DisplayPreviewWindow { get; set; }
 
         public bool DisplayDeprecatedFrameworkWindow { get; set; }

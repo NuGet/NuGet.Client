@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Perform an install or uninstall user action.
+        /// Perform an install, update, or uninstall user action.
         /// </summary>
         /// <remarks>This needs to be called from a background thread. It may make the UI thread stop responding.</remarks>
         public async Task PerformActionAsync(
@@ -80,6 +80,7 @@ namespace NuGet.PackageManagement.UI
                     projectManagerService,
                     uiService,
                     uiService.Projects,
+                    uiService.ProjectActionTypes,
                     userAction,
                     uiService.RemoveDependencies,
                     uiService.ForceRemove,
@@ -844,6 +845,7 @@ namespace NuGet.PackageManagement.UI
             INuGetProjectManagerService projectManagerService,
             INuGetUI uiService,
             IEnumerable<IProjectContextInfo> projects,
+            IEnumerable<NuGetProjectActionType> projectActions,
             UserAction userAction,
             bool removeDependencies,
             bool forceRemove,
@@ -857,56 +859,68 @@ namespace NuGet.PackageManagement.UI
                 userAction.Version.IsPrerelease == true;
 
             IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
-            string[] projectIds = projects
-                .Select(project => project.ProjectId)
-                .Distinct()
-                .ToArray();
 
-            if (userAction.Action == NuGetProjectActionType.Install)
+            //string[] projectIds = projects
+            //.Select(project => project.ProjectId)
+            //.Distinct()
+            //.ToArray();
+
+            //TODO: need to make sure we never repeat...Distinct from above.
+
+            var actionsEnum = projectActions.GetEnumerator();
+            foreach (var project in projects)
             {
-                var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
 
-                IReadOnlyList<ProjectAction> actions = await projectManagerService.GetInstallActionsAsync(
-                    projectIds,
-                    packageIdentity,
-                    VersionConstraints.None,
-                    includePrelease,
-                    uiService.DependencyBehavior,
-                    packageSourceNames,
-                    userAction.VersionRange,
-                    token);
+                string[] projectIds = new string[1] { project.ProjectId };
+                actionsEnum.MoveNext();
+                var projectAction = actionsEnum.Current;
+                if (projectAction == NuGetProjectActionType.Install)
+                {
+                    var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
 
-                results.AddRange(actions);
-            }
-            else if (userAction.Action == NuGetProjectActionType.Update)
-            {
-                var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
-                List<PackageIdentity> pIds = new();
-                pIds.Add(packageIdentity);
+                    IReadOnlyList<ProjectAction> actions = await projectManagerService.GetInstallActionsAsync(
+                        projectIds,
+                        packageIdentity,
+                        VersionConstraints.None,
+                        includePrelease,
+                        uiService.DependencyBehavior,
+                        packageSourceNames,
+                        userAction.VersionRange,
+                        token);
 
-                IReadOnlyList<ProjectAction> actions = await projectManagerService.GetUpdateActionsAsync(
-                    projectIds,
-                    new ReadOnlyCollection<PackageIdentity>(pIds),
-                    VersionConstraints.None, // TODO: correct constraint for update?
-                    includePrelease,
-                    uiService.DependencyBehavior,
-                    packageSourceNames,
-                    token);
+                    results.AddRange(actions);
+                }
+                else if (projectAction == NuGetProjectActionType.Update)
+                {
+                    var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
+                    List<PackageIdentity> pIds = new();
+                    pIds.Add(packageIdentity);
 
-                results.AddRange(actions);
-            }
-            else
-            {
-                var packageIdentity = new PackageIdentity(userAction.PackageId, version: null);
+                    IReadOnlyList<ProjectAction> actions = await projectManagerService.GetUpdateActionsAsync(
+                        projectIds,
+                        new ReadOnlyCollection<PackageIdentity>(pIds),
+                        VersionConstraints.None, // TODO: correct constraint for update?
+                        includePrelease,
+                        uiService.DependencyBehavior,
+                        packageSourceNames,
+                        token);
 
-                IReadOnlyList<ProjectAction> actions = await projectManagerService.GetUninstallActionsAsync(
-                    projectIds,
-                    packageIdentity,
-                    removeDependencies,
-                    forceRemove,
-                    token);
+                    results.AddRange(actions);
+                }
+                else
+                {
+                    var packageIdentity = new PackageIdentity(userAction.PackageId, version: null);
 
-                results.AddRange(actions);
+                    IReadOnlyList<ProjectAction> actions = await projectManagerService.GetUninstallActionsAsync(
+                        projectIds,
+                        packageIdentity,
+                        removeDependencies,
+                        forceRemove,
+                        token);
+
+                    results.AddRange(actions);
+                }
+
             }
 
             return results;

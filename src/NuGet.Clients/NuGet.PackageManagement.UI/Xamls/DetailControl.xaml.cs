@@ -163,7 +163,7 @@ namespace NuGet.PackageManagement.UI
                     Control.Model.IsSolution,
                     UIUtility.ToContractsItemFilter(Control._topPanel.Filter));
 
-                ExecuteUserAction(userAction, NuGetActionType.Install);
+                ExecuteUserAction(userAction, NuGetActionType.UpdateIfProjectHasOtherwiseInstall);
             }
         }
 
@@ -198,6 +198,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.RemoveDependencies = model.Options.RemoveDependencies;
                     nugetUi.ForceRemove = model.Options.ForceRemove;
                     nugetUi.Projects = model.GetSelectedProjects(action);
+                    nugetUi.ProjectActionTypes = model.GetActionTypes(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
                     nugetUi.DisplayDeprecatedFrameworkWindow = model.Options.ShowDeprecatedFrameworkWindow;
                     nugetUi.ProjectContext.ActionType = actionType;

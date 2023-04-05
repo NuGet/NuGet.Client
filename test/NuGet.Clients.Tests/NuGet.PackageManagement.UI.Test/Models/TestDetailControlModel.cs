@@ -26,6 +26,11 @@ namespace NuGet.PackageManagement.UI.Test
             throw new NotImplementedException();
         }
 
+        public override IEnumerable<NuGetProjectActionType> GetActionTypes(UserAction action)
+        {
+            throw new NotImplementedException();
+        }
+
         public override Task RefreshAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();

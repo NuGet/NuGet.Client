@@ -11,6 +11,7 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -543,6 +544,49 @@ namespace NuGet.PackageManagement.UI
             }
 
             return selectedProjects;
+        }
+
+        public override IEnumerable<NuGetProjectActionType> GetActionTypes(UserAction action)
+        {
+            var actionTypes = new List<NuGetProjectActionType>();
+
+            foreach (var project in _projects)
+            {
+                if (project.IsSelected == false)
+                {
+                    continue;
+                }
+
+                if (action.Action == NuGetProjectActionType.Install || action.Action == NuGetProjectActionType.Update)
+                {
+                    // for install, the installed version can't be the same as the version to be installed.
+                    // AutoReferenced packages should be ignored
+                    if (!project.AutoReferenced &&
+                        VersionComparer.Default.Compare(
+                        project.InstalledVersion,
+                        action.Version) != 0)
+                    {
+                        if (project.InstalledVersion != null)
+                        {
+                            actionTypes.Add(NuGetProjectActionType.Update);
+                        }
+                        else
+                        {
+                            actionTypes.Add(NuGetProjectActionType.Install);
+                        }
+                    }
+                }
+                else
+                {
+                    // for uninstall, the package must be already installed
+                    if (project.InstalledVersion != null && !project.AutoReferenced)
+                    {
+                        actionTypes.Add(NuGetProjectActionType.Uninstall);
+                    }
+                }
+            }
+
+            return actionTypes;
         }
 
         private void BatchUnselectAllProjects()

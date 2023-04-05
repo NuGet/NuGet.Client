@@ -95,6 +95,11 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public abstract IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action);
 
+        /// <summary>
+        /// Returns an action for each selected project.
+        /// </summary>
+        public abstract IEnumerable<NuGetProjectActionType> GetActionTypes(UserAction action);
+
         public int SelectedIndex { get; private set; }
         public int RecommendedCount { get; private set; }
         public bool RecommendPackages { get; private set; }

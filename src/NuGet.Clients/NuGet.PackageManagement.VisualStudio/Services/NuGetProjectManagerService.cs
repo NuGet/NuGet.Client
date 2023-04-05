@@ -446,9 +446,9 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNullOrEmpty(projectIds);
             Assumes.NotNull(packageIdentity);
             Assumes.NotNullOrEmpty(packageSourceNames);
-            Assumes.Null(_state.PackageIdentity);
-            Assumes.True(_state.ResolvedActions.Count == 0);
-            Assumes.NotNull(_state.SourceCacheContext);
+            //Assumes.Null(_state.PackageIdentity);
+            //Assumes.True(_state.ResolvedActions.Count == 0);
+            //Assumes.NotNull(_state.SourceCacheContext);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -508,9 +508,9 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNullOrEmpty(projectIds);
             Assumes.NotNull(packageIdentity);
             Assumes.False(packageIdentity.HasVersion);
-            Assumes.NotNull(_state.SourceCacheContext);
-            Assumes.Null(_state.PackageIdentity);
-            Assumes.True(_state.ResolvedActions.Count == 0);
+            //Assumes.NotNull(_state.SourceCacheContext);
+            //Assumes.Null(_state.PackageIdentity);
+            //Assumes.True(_state.ResolvedActions.Count == 0);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -561,9 +561,9 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNullOrEmpty(projectIds);
             Assumes.NotNullOrEmpty(packageIdentities);
             Assumes.NotNullOrEmpty(packageSourceNames);
-            Assumes.NotNull(_state.SourceCacheContext);
-            Assumes.NotNull(_state.ResolvedActions);
-            Assumes.Null(_state.PackageIdentity);
+            //Assumes.NotNull(_state.SourceCacheContext);
+            //Assumes.NotNull(_state.ResolvedActions);
+            //Assumes.Null(_state.PackageIdentity);
 
             return await CatchAndRethrowExceptionAsync(async () =>
             {

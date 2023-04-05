@@ -70,6 +70,11 @@ namespace NuGet.PackageManagement.UI
         IEnumerable<IProjectContextInfo> Projects { get; }
 
         /// <summary>
+        /// ActionTypes for each Project
+        /// </summary>
+        public IEnumerable<NuGetProjectActionType> ProjectActionTypes { get; set; }
+
+        /// <summary>
         /// True if the option to preview actions first is checked
         /// </summary>
         bool DisplayPreviewWindow { get; }
