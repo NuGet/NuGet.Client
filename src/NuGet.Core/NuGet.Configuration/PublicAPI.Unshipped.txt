@@ -1,2 +1,7 @@
 #nullable enable
 ~NuGet.Configuration.AddItem.GetConfigFilePath() -> string
+~NuGet.Configuration.ISettings.GetComputedSections() -> System.Collections.Generic.Dictionary<string, NuGet.Configuration.VirtualSettingSection>
+~NuGet.Configuration.NullSettings.GetComputedSections() -> System.Collections.Generic.Dictionary<string, NuGet.Configuration.VirtualSettingSection>
+~NuGet.Configuration.SettingItem.GetConfigPath() -> string
+~NuGet.Configuration.SettingItem.GetXElementAttributes() -> System.Collections.Generic.IEnumerable<System.Xml.Linq.XAttribute>
+~NuGet.Configuration.Settings.GetComputedSections() -> System.Collections.Generic.Dictionary<string, NuGet.Configuration.VirtualSettingSection>

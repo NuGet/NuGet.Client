@@ -43,6 +43,11 @@ namespace NuGet.Configuration
 
         private readonly Dictionary<string, VirtualSettingSection> _computedSections;
 
+        public Dictionary<string, VirtualSettingSection> GetComputedSections()
+        {
+            return _computedSections;
+        }
+
         public SettingSection GetSection(string sectionName)
         {
             if (_computedSections.TryGetValue(sectionName, out var section))

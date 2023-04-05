@@ -25,5 +25,7 @@ namespace NuGet.Configuration
         public IList<string> GetConfigFilePaths() => Enumerable.Empty<string>().ToList();
 
         public IList<string> GetConfigRoots() => Enumerable.Empty<string>().ToList();
+
+        public Dictionary<string, VirtualSettingSection> GetComputedSections() => null;
     }
 }

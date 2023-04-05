@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
@@ -44,7 +45,8 @@ namespace NuGet.CommandLine.XPlat
 
             if (args.AllOrConfigKey.Equals("all", StringComparison.OrdinalIgnoreCase))
             {
-                // Get All
+                var sections = settings.GetComputedSections();
+                RunnerHelper.LogSections(sections, logger, args.ShowPath);
             }
             else
             {
@@ -98,8 +100,30 @@ namespace NuGet.CommandLine.XPlat
             {
                 return item.Value + " " + item.GetConfigFilePath();
             }
-
             return item.Value;
+        }
+
+        public static void LogSections(Dictionary<string, VirtualSettingSection> sections, ILogger logger, bool showPath)
+        {
+            foreach (var section in sections)
+            {
+                logger.LogMinimal(section.Key + ":");
+                var items = section.Value.Items;
+                foreach (var item in items)
+                {
+                    var setting = $" {item.ElementName}";
+                    var attributes = item.GetXElementAttributes();
+                    foreach (var attribute in attributes)
+                    {
+                        setting += " " + attribute;
+                    }
+                    if (showPath)
+                    {
+                        setting += $"    file: {item.GetConfigPath()}";
+                    }
+                    logger.LogMinimal(setting);
+                }
+            }
         }
 
         public static void ValidateArguments<TArgs>(TArgs args, Func<ILogger> logger)
