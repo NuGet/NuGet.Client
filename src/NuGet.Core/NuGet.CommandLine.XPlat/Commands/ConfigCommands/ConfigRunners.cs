@@ -63,6 +63,11 @@ namespace NuGet.CommandLine.XPlat
 
     internal static class RunnerHelper
     {
+        /// <summary>
+        /// Creates a settings object using the directory argument,
+        /// or using the current directory if no argument is passed.
+        /// </summary>
+        /// <exception cref="CommandException"></exception>
         public static ISettings GetSettingsFromDirectory(string directory)
         {
             if (string.IsNullOrEmpty(directory))
@@ -80,7 +85,12 @@ namespace NuGet.CommandLine.XPlat
                 machineWideSettings: new XPlatMachineWideSetting());
         }
 
-
+        /// <summary>
+        /// Returns a string holding the value of the key in the config section
+        /// of the settings. If showPath is true, this will also return the path
+        /// to the configuration file where the key is located.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"></exception>
         public static string GetValueForConfigKey(ISettings settings, string key, bool showPath)
         {
             if (settings == null)
@@ -126,6 +136,10 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        /// <summary>
+        /// Throws an exception if any of the arguments for the config runners are null.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"></exception>
         public static void ValidateArguments<TArgs>(TArgs args, Func<ILogger> logger)
         {
             if (args == null)
