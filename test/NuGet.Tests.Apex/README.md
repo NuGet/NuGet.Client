@@ -46,7 +46,7 @@ If you have more than 1 Visual Studio instance and you do not attempt to run fro
     $env:VisualStudio.InstallationUnderTest.Path="C:\Program Files (x86)\Microsoft Visual Studio\2022\Preview"
 ```
 
-Should you want to run the tests on the experimental instance, set the follow environment variable.
+Should you want to run the tests on the experimental instance, set the following environment variable.
 
 ```powershell
     $env:VisualStudio.InstallationUnderTest.RootSuffix="Exp" 
