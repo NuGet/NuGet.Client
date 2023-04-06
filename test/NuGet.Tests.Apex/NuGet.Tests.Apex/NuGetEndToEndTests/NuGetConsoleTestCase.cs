@@ -735,6 +735,9 @@ namespace NuGet.Tests.Apex
                     // Act
                     nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
                     nugetConsole.InstallPackageFromPMC(packageName2, packageVersion3);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
                     nugetConsole.Execute("update-package");
                     testContext.SolutionService.Build();
                     testContext.NuGetApexTestService.WaitForAutoRestore();
