@@ -39,14 +39,13 @@ The below runs all the Apex tests:
 msbuild .\build\build.proj /t:ApexTestsStandalone
 ```
 
-Running all the Apex tests with `dotnet test` currently does not work.
-It is very likely that we are not configuring everything correctly. Should that change, this doc will be updated with that guidance.
-
 To run a specific test from the commandline, run:
 
 ```cli
  dotnet test .\test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\Debug\NuGet.Tests.Apex.dll --filter NuGet.Tests.Apex.NuGetConsoleTestCase.MyTestCase
  ```
+
+ If you are seeing issues with loading the Package Manager UI or the Package Manager Console, you may attempt cleaning the repo, and reverting the VSIX.
 
 ## Debugging Apex tests
 
