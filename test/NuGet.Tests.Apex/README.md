@@ -47,6 +47,7 @@ If you have more than 1 Visual Studio instance and you do not attempt to run fro
 ```
 
 Should you want to run the tests on the experimental instance, set the following environment variable.
+You will need to build NuGet.VisualStudio.Client from Visual Studio, as building on the command line does not deploy to the experimental instance.
 
 ```powershell
     $env:VisualStudio.InstallationUnderTest.RootSuffix="Exp" 
