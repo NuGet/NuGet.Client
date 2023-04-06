@@ -6989,7 +6989,7 @@ namespace NuGet.Test
 
                 // Assert
                 Assert.Equal(1, result.Count);
-                Assert.Equal(NuGetProjectActionType.Install, result[0].NuGetProjectActionType);
+                Assert.Equal(NuGetProjectActionType.Update, result[0].NuGetProjectActionType);
                 Assert.Equal(new PackageIdentity("a", new NuGetVersion(2, 0, 0)), result[0].PackageIdentity);
             }
         }
@@ -7057,7 +7057,7 @@ namespace NuGet.Test
                 Assert.All(results,
                     result =>
                     {
-                        Assert.Equal(NuGetProjectActionType.Install, result.NuGetProjectActionType);
+                        Assert.Equal(NuGetProjectActionType.Update, result.NuGetProjectActionType);
                         Assert.Equal(new PackageIdentity("a", new NuGetVersion(2, 0, 0)), result.PackageIdentity);
                     });
             }

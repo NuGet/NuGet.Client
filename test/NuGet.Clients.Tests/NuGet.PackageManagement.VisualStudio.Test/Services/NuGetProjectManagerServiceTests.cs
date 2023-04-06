@@ -512,7 +512,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     ProjectAction action = actions[0];
 
                     Assert.Equal(packageV1.Identity, action.PackageIdentity);
-                    Assert.Equal(NuGetProjectActionType.Install, action.ProjectActionType);
+                    Assert.Equal(NuGetProjectActionType.Update, action.ProjectActionType);
                     Assert.Equal(projectId, action.ProjectId);
 
                     Assert.Equal(1, action.ImplicitActions.Count);
@@ -520,7 +520,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     ImplicitProjectAction implicitAction = action.ImplicitActions[0];
 
                     Assert.Equal(packageV1.Identity, implicitAction.PackageIdentity);
-                    Assert.Equal(NuGetProjectActionType.Install, implicitAction.ProjectActionType);
+                    Assert.Equal(NuGetProjectActionType.Update, implicitAction.ProjectActionType);
 
                     await projectManager.ExecuteActionsAsync(actions, CancellationToken.None);
 
