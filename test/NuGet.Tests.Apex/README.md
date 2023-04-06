@@ -14,14 +14,14 @@ Apex tests call into the NuGet assemblies, and since Visual Studio doesn't have 
 ### Running Apex tests in Visual Studio
 
 The Apex tests are easiest to run from within the Test Explorer in Visual Studio.
+
 ![Running Apex tests](./running-apex-test.png)
 
 ### Running Apex tests on the commandline
 
 To run the tests on the commandline, you first need to start by installing the VSIX you want to test.
 
-Then you can execute the following command from the developer command prompt or developer powershell of the Visual Studio instance you installed the VSIX in.
-If you have more than 1 Visual Studio instance and you do not attempt to run from a developer powershell or developer command prompt, you need to set an environment variable to point Apex to the Visual Studio instance you want it to use.
+cIf you have more than 1 Visual Studio instance and you do not attempt to run from a developer powershell or developer command prompt, you need to set an environment variable to point Apex to the Visual Studio instance you want it to use.
 
 ```powershell
     $env:VisualStudio.InstallationUnderTest.Path="C:\Program Files (x86)\Microsoft Visual Studio\2022\Preview"
