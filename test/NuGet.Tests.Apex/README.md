@@ -1,7 +1,7 @@
 # NuGet.Client Apex Tests
 
 This is a collection of end to end Visual Studio tests built on top of the Apex framework.
-All the tests cases are contained within the [NuGet.Tests.Apex](../NuGet.Tests.Apex/NuGet.Tests.Apex.csproj) project. 
+All the tests cases are contained within the [NuGet.Tests.Apex](../NuGet.Tests.Apex/NuGet.Tests.Apex.csproj) project.
 
 Each individual tests starts a runner which will kick off a new Visual Studio process and execute the commands listed.
 Due to the fact that each tests starts its own Visual Studio process, these tests are repeatable and are not affected by state left from previous tests unlike the powershell based [End-to-End tests](../../scripts/e2etests/README.md) tests which run in sequence.
@@ -21,10 +21,16 @@ The Apex tests are easiest to run from within the Test Explorer in Visual Studio
 
 To run the tests on the commandline, you first need to start by installing the VSIX you want to test.
 
-cIf you have more than 1 Visual Studio instance and you do not attempt to run from a developer powershell or developer command prompt, you need to set an environment variable to point Apex to the Visual Studio instance you want it to use.
+If you have more than 1 Visual Studio instance and you do not attempt to run from a developer powershell or developer command prompt, you need to set an environment variable to point Apex to the Visual Studio instance you want it to use.
 
 ```powershell
     $env:VisualStudio.InstallationUnderTest.Path="C:\Program Files (x86)\Microsoft Visual Studio\2022\Preview"
+```
+
+Should you want to run the tests on the experimental instance, set the follow environment variable.
+
+```powershell
+    $env:VisualStudio.InstallationUnderTest.RootSuffix="Exp" 
 ```
 
 The below runs all the Apex tests:
