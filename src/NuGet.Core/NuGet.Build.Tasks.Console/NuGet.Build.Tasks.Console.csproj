@@ -15,6 +15,7 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
