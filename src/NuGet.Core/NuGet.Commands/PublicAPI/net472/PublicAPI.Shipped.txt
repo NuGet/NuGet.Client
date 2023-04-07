@@ -934,8 +934,6 @@ override NuGet.Commands.WarningPropertiesCollection.GetHashCode() -> int
 ~static NuGet.Commands.MSBuildProjectFrameworkUtility.GetProjectFrameworks(System.Collections.Generic.IEnumerable<string> frameworkStrings) -> System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework>
 ~static NuGet.Commands.MSBuildRestoreItemGroup.Create(string rootName, System.Collections.Generic.IEnumerable<System.Xml.Linq.XElement> items, int position, System.Collections.Generic.IEnumerable<string> conditions) -> NuGet.Commands.MSBuildRestoreItemGroup
 ~static NuGet.Commands.MSBuildRestoreUtility.AggregateSources(System.Collections.Generic.IEnumerable<string> values, System.Collections.Generic.IEnumerable<string> excludeValues) -> System.Collections.Generic.IEnumerable<string>
-~static NuGet.Commands.MSBuildRestoreUtility.ApplyIncludeFlags(NuGet.LibraryModel.LibraryDependency dependency, string includeAssets, string excludeAssets, string privateAssets) -> void
-~static NuGet.Commands.MSBuildRestoreUtility.ApplyIncludeFlags(NuGet.ProjectModel.ProjectRestoreReference dependency, string includeAssets, string excludeAssets, string privateAssets) -> void
 ~static NuGet.Commands.MSBuildRestoreUtility.ContainsClearKeyword(System.Collections.Generic.IEnumerable<string> values) -> bool
 ~static NuGet.Commands.MSBuildRestoreUtility.Dump(System.Collections.Generic.IEnumerable<NuGet.Commands.IMSBuildItem> items, NuGet.Common.ILogger log) -> void
 ~static NuGet.Commands.MSBuildRestoreUtility.FixSourcePath(string s) -> string

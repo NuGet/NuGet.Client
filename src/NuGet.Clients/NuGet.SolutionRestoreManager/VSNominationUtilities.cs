@@ -418,7 +418,8 @@ namespace NuGet.SolutionRestoreManager
                 dependency,
                 includeAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.IncludeAssets),
                 excludeAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.ExcludeAssets),
-                privateAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.PrivateAssets));
+                privateAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.PrivateAssets),
+                excludedAssetsFlow: GetPropertyValueOrNull(item, ProjectBuildProperties.ExcludedAssetsFlow));
 
             return dependency;
         }
@@ -483,7 +484,8 @@ namespace NuGet.SolutionRestoreManager
                 dependency,
                 includeAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.IncludeAssets),
                 excludeAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.ExcludeAssets),
-                privateAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.PrivateAssets));
+                privateAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.PrivateAssets),
+                excludedAssetsFlow: GetPropertyValueOrNull(item, ProjectBuildProperties.ExcludedAssetsFlow));
 
             return dependency;
         }

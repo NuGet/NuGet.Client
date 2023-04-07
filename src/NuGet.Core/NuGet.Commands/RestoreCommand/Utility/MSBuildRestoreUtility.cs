@@ -122,11 +122,13 @@ namespace NuGet.Commands
         /// <summary>
         /// Insert asset flags into dependency, based on ;-delimited string args
         /// </summary>
-        public static void ApplyIncludeFlags(LibraryDependency dependency, string includeAssets, string excludeAssets, string privateAssets)
+        public static void ApplyIncludeFlags(LibraryDependency dependency, string includeAssets, string excludeAssets, string privateAssets, string excludedAssetsFlow)
         {
             var includeFlags = GetIncludeFlags(includeAssets, LibraryIncludeFlags.All);
             var excludeFlags = GetIncludeFlags(excludeAssets, LibraryIncludeFlags.None);
+            bool excludedAssetsFlowFlags = GetExcludedAssetsFlowFlags(excludedAssetsFlow);
 
+            // To do
             dependency.IncludeType = includeFlags & ~excludeFlags;
             dependency.SuppressParent = GetIncludeFlags(privateAssets, LibraryIncludeFlagUtils.DefaultSuppressParent);
         }
@@ -134,8 +136,9 @@ namespace NuGet.Commands
         /// <summary>
         /// Insert asset flags into project dependency, based on ;-delimited string args
         /// </summary>
-        public static void ApplyIncludeFlags(ProjectRestoreReference dependency, string includeAssets, string excludeAssets, string privateAssets)
+        public static void ApplyIncludeFlags(ProjectRestoreReference dependency, string includeAssets, string excludeAssets, string privateAssets, string excludedAssetsFlow)
         {
+            bool excludedAssetsFlowFlags = GetExcludedAssetsFlowFlags(excludedAssetsFlow);
             dependency.IncludeAssets = GetIncludeFlags(includeAssets, LibraryIncludeFlags.All);
             dependency.ExcludeAssets = GetIncludeFlags(excludeAssets, LibraryIncludeFlags.None);
             dependency.PrivateAssets = GetIncludeFlags(privateAssets, LibraryIncludeFlagUtils.DefaultSuppressParent);
@@ -575,7 +578,7 @@ namespace NuGet.Commands
                 ProjectUniqueName = item.GetProperty("ProjectReferenceUniqueName"),
             };
 
-            ApplyIncludeFlags(reference, item.GetProperty("IncludeAssets"), item.GetProperty("ExcludeAssets"), item.GetProperty("PrivateAssets"));
+            ApplyIncludeFlags(reference, item.GetProperty("IncludeAssets"), item.GetProperty("ExcludeAssets"), item.GetProperty("PrivateAssets"), item.GetProperty("ExcludedAssetsFlow"));
 
             return new Tuple<List<string>, ProjectRestoreReference>(frameworks, reference);
         }
@@ -699,7 +702,7 @@ namespace NuGet.Commands
 
         private static void ApplyIncludeFlags(LibraryDependency dependency, IMSBuildItem item)
         {
-            ApplyIncludeFlags(dependency, item.GetProperty("IncludeAssets"), item.GetProperty("ExcludeAssets"), item.GetProperty("PrivateAssets"));
+            ApplyIncludeFlags(dependency, item.GetProperty("IncludeAssets"), item.GetProperty("ExcludeAssets"), item.GetProperty("PrivateAssets"), item.GetProperty("ExcludedAssetsFlow"));
         }
 
         private static LibraryIncludeFlags GetIncludeFlags(string value, LibraryIncludeFlags defaultValue)
@@ -714,6 +717,20 @@ namespace NuGet.Commands
             {
                 return defaultValue;
             }
+        }
+
+        private static bool GetExcludedAssetsFlowFlags(string value)
+        {
+            if (string.IsNullOrEmpty(value) || string.Equals(bool.FalseString, value, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            else if (string.Equals(bool.TrueString, value, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            throw new Exception("Unexpected ExcludedAssetsFlow value is for string boolean value true/false");
         }
 
         private static void AddFrameworkReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)

@@ -63,6 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 ProjectItemProperties.IncludeAssets,
                 ProjectItemProperties.ExcludeAssets,
                 ProjectItemProperties.PrivateAssets,
+                ProjectItemProperties.ExcludedAssetsFlow,
                 ProjectItemProperties.NoWarn,
                 ProjectItemProperties.GeneratePathProperty,
                 ProjectItemProperties.Aliases,
@@ -176,7 +177,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 reference,
                 GetReferenceMetadataValue(item, ProjectItemProperties.IncludeAssets),
                 GetReferenceMetadataValue(item, ProjectItemProperties.ExcludeAssets),
-                GetReferenceMetadataValue(item, ProjectItemProperties.PrivateAssets));
+                GetReferenceMetadataValue(item, ProjectItemProperties.PrivateAssets),
+                GetReferenceMetadataValue(item, ProjectItemProperties.ExcludedAssetsFlow));
 
             return reference;
         }
@@ -218,7 +220,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 dependency,
                 GetReferenceMetadataValue(reference, ProjectItemProperties.IncludeAssets),
                 GetReferenceMetadataValue(reference, ProjectItemProperties.ExcludeAssets),
-                GetReferenceMetadataValue(reference, ProjectItemProperties.PrivateAssets));
+                GetReferenceMetadataValue(reference, ProjectItemProperties.PrivateAssets),
+                GetReferenceMetadataValue(reference, ProjectItemProperties.ExcludedAssetsFlow));
 
 
             // Add warning suppressions

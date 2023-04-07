@@ -12,6 +12,7 @@ namespace NuGet.ProjectManagement
         public const string IncludeAssets = nameof(IncludeAssets);
         public const string ExcludeAssets = nameof(ExcludeAssets);
         public const string PrivateAssets = nameof(PrivateAssets);
+        public const string ExcludedAssetsFlow = nameof(ExcludedAssetsFlow);
         public const string IsImplicitlyDefined = nameof(IsImplicitlyDefined);
         public const string NoWarn = nameof(NoWarn);
         public const string GeneratePathProperty = nameof(GeneratePathProperty);

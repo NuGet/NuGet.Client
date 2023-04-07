@@ -15,7 +15,9 @@ using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
+#pragma warning disable IDE0005 // Using directive is unnecessary.
 using NuGet.Packaging.Signing;
+#pragma warning restore IDE0005 // Using directive is unnecessary.
 using NuGet.Versioning;
 
 namespace Microsoft.Build.NuGetSdkResolver

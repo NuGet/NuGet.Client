@@ -8,7 +8,6 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging;
 using ILogger = NuGet.Common.ILogger;
-using PackageSpecificWarningProperties = NuGet.Commands.PackCommand.PackageSpecificWarningProperties;
 
 namespace NuGet.Build.Tasks.Pack
 {
@@ -107,6 +106,7 @@ namespace NuGet.Build.Tasks.Pack
             try
             {
 #if DEBUG
+                Debugger.Launch();
                 var debugPackTask = Environment.GetEnvironmentVariable("DEBUG_PACK_TASK");
                 if (!string.IsNullOrEmpty(debugPackTask) && debugPackTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {

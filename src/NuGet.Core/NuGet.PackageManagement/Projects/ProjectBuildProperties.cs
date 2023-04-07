@@ -48,6 +48,7 @@ namespace NuGet.ProjectManagement
         public const string IncludeAssets = nameof(IncludeAssets);
         public const string ExcludeAssets = nameof(ExcludeAssets);
         public const string PrivateAssets = nameof(PrivateAssets);
+        public const string ExcludedAssetsFlow = nameof(ExcludedAssetsFlow);
         public const string ReferenceOutputAssembly = nameof(ReferenceOutputAssembly);
         public const string Clear = nameof(Clear);
         public const string RuntimeIdentifierGraphPath = nameof(RuntimeIdentifierGraphPath);
