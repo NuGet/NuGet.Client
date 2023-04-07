@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -63,6 +64,7 @@ namespace NuGet.Commands
                 isManagementPackProject: false);
         }
 
+        // This is being called in VS. Should min version be something?
         public static NuGetFramework GetProjectFramework(
             string projectFilePath,
             string targetFrameworkMoniker,
@@ -255,14 +257,19 @@ namespace NuGet.Commands
                     currentFrameworkString = "Silverlight,Version=v4.0,Profile=WindowsPhone71";
                     return NuGetFramework.Parse(currentFrameworkString);
                 }
-                if (isCppCli) // Don't use the platform moniker to CPP/CLI.
-                {
-                    platformMoniker = null;
-                }
+
                 NuGetFramework framework = NuGetFramework.ParseComponents(currentFrameworkString, platformMoniker);
 
                 if (isCppCli)
                 {
+                    if (!Version.TryParse(platformMinVersion, out Version cppCliVersion))
+                    {
+                        throw new ArgumentException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            "Invalid platform min version: {0}",
+                            platformMinVersion));
+                    }
+                    framework = new NuGetFramework(framework.Framework, framework.Version, framework.Platform, cppCliVersion);
                     return new DualCompatibilityFramework(framework, FrameworkConstants.CommonFrameworks.Native);
                 }
 
