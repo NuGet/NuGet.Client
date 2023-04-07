@@ -104,6 +104,12 @@
     "Microsoft.Net.Component.4.7.2.SDK",
     "Microsoft.VisualStudio.Component.Wcf.Tooling",
     "Microsoft.VisualStudio.ComponentGroup.AdditionalWebProjectTemplates",
-    "Microsoft.VisualStudio.ComponentGroup.Maui.iOS"
+    "Microsoft.VisualStudio.ComponentGroup.Maui.iOS",
+    "Component.xamarain",
+    "ios",
+    "runtimes.ios"
+
+
+
   ]
 }
