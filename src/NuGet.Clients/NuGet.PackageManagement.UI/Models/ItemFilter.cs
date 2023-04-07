@@ -6,7 +6,7 @@ namespace NuGet.PackageManagement.UI
     public enum ItemFilter
     {
         /// <summary>
-        /// Represents Browse tab in PM UI
+        /// The value All represents the Browse tab in PM UI
         /// </summary>
         All,
         Installed,
