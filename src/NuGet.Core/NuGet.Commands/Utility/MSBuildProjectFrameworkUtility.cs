@@ -60,11 +60,33 @@ namespace NuGet.Commands
                 targetPlatformVersion: null,
                 targetPlatformMinVersion,
                 clrSupport: null,
+                windowsTargetPlatformMinVersion: null,
                 isXnaWindowsPhoneProject: false,
                 isManagementPackProject: false);
         }
 
-        // This is being called in VS. Should min version be something?
+        public static NuGetFramework GetProjectFramework(
+            string projectFilePath,
+            string targetFrameworkMoniker,
+            string targetPlatformMoniker,
+            string targetPlatformMinVersion,
+            string clrSupport,
+            string windowsTargetPlatformMinVersion)
+        {
+            return GetProjectFramework(
+                projectFilePath,
+                targetFrameworkMoniker,
+                targetPlatformMoniker,
+                targetPlatformIdentifier: null,
+                targetPlatformVersion: null,
+                targetPlatformMinVersion,
+                clrSupport,
+                windowsTargetPlatformMinVersion,
+                isXnaWindowsPhoneProject: false,
+                isManagementPackProject: false);
+        }
+
+        [Obsolete("If you need ClrSupport support parameter to be accounted for in the calculation, the method with the windowsTargetPlatformMinVersion is the only correct one.")]
         public static NuGetFramework GetProjectFramework(
             string projectFilePath,
             string targetFrameworkMoniker,
@@ -80,6 +102,7 @@ namespace NuGet.Commands
                 targetPlatformVersion: null,
                 targetPlatformMinVersion,
                 clrSupport,
+                windowsTargetPlatformMinVersion: null,
                 isXnaWindowsPhoneProject: false,
                 isManagementPackProject: false);
         }
@@ -112,6 +135,7 @@ namespace NuGet.Commands
                 targetPlatformVersion,
                 targetPlatformMinVersion,
                 clrSupport: null,
+                windowsTargetPlatformMinVersion: null,
                 isXnaWindowsPhoneProject,
                 isManagementPackProject);
         }
@@ -126,6 +150,7 @@ namespace NuGet.Commands
             string targetPlatformVersion,
             string targetPlatformMinVersion,
             string clrSupport,
+            string windowsTargetPlatformMinVersion,
             bool isXnaWindowsPhoneProject,
             bool isManagementPackProject)
         {
@@ -157,6 +182,7 @@ namespace NuGet.Commands
                 targetPlatformVersion,
                 targetPlatformMinVersion,
                 clrSupport,
+                windowsTargetPlatformMinVersion,
                 isXnaWindowsPhoneProject,
                 isManagementPackProject).DotNetFrameworkName };
         }
@@ -169,6 +195,7 @@ namespace NuGet.Commands
             string targetPlatformVersion,
             string targetPlatformMinVersion,
             string clrSupport,
+            string windowsTargetPlatformMinVersion,
             bool isXnaWindowsPhoneProject,
             bool isManagementPackProject)
         {
@@ -262,14 +289,18 @@ namespace NuGet.Commands
 
                 if (isCppCli)
                 {
-                    if (!Version.TryParse(platformMinVersion, out Version cppCliVersion))
+                    if (!string.IsNullOrEmpty(windowsTargetPlatformMinVersion))
                     {
-                        throw new ArgumentException(string.Format(
-                            CultureInfo.CurrentCulture,
-                            "Invalid platform min version: {0}",
-                            platformMinVersion));
+                        if (!Version.TryParse(windowsTargetPlatformMinVersion, out Version cppCliVersion))
+                        {
+                            throw new ArgumentException(string.Format(
+                                CultureInfo.CurrentCulture,
+                                "Invalid platform min version: {0}",
+                                windowsTargetPlatformMinVersion));
+                        }
+                        framework = new NuGetFramework(framework.Framework, framework.Version, framework.Platform, cppCliVersion);
                     }
-                    framework = new NuGetFramework(framework.Framework, framework.Version, framework.Platform, cppCliVersion);
+
                     return new DualCompatibilityFramework(framework, FrameworkConstants.CommonFrameworks.Native);
                 }
 
