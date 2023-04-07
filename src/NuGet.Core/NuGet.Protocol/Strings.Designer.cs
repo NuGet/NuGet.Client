@@ -970,6 +970,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package source &apos;{0}&apos; has {1} vulnerability data pages. Using the first {2}..
+        /// </summary>
+        internal static string Vulnerability_TooManyPages {
+            get {
+                return ResourceManager.GetString("Vulnerability_TooManyPages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package source &apos;{0}&apos; vulnerability data index &apos;{1}&apos; could not be loaded. This indicates a problem with the JSON file contents returned from the server..
         /// </summary>
         internal static string VulnerabilityPage_CouldNotLoad {
