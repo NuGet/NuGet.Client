@@ -721,8 +721,8 @@ namespace NuGet.Tests.Apex
             {
                 // Arrange
                 var packageName = "IOSTestPackage";
-                var V100 = "1.0.0";
-                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, V100);
+                var v100 = "1.0.0";
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
 
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
                 {
@@ -734,11 +734,13 @@ namespace NuGet.Tests.Apex
                     var nugetTestService = GetNuGetTestService();
                     var nugetConsole = GetConsole(testContext.Project);
 
-                    nugetConsole.InstallPackageFromPMC(packageName, V100);
+                    nugetConsole.InstallPackageFromPMC(packageName, v100);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, V100, XunitLogger);
+                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, v100, XunitLogger);
                     Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
@@ -764,13 +766,18 @@ namespace NuGet.Tests.Apex
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
                     testContext.SolutionService.Build();
-
+                 
                     // Act
                     var nugetTestService = GetNuGetTestService();
                     var nugetConsole = GetConsole(testContext.Project);
 
                     nugetConsole.InstallPackageFromPMC(packageName, v100);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
                     nugetConsole.UpdatePackageFromPMC(packageName, v200);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
@@ -782,33 +789,39 @@ namespace NuGet.Tests.Apex
 
         [NuGetWpfTheory]
         [MemberData(nameof(GetIOSTemplates))]
-        public async Task UninstallPackagForIosProjectInPMC(ProjectTemplate projectTemplate)
+        public async Task UninstallPackagForIOSProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
             {
                 //Arrange
                 var PackageName = "IOSTestPackage";
-                var V100 = "1.0.0";
+                var v100 = "1.0.0";
 
-                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, V100);
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, v100);
 
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
                 {
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
                     testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Act
                     var nugetTestService = GetNuGetTestService();
                     var nugetConsole = GetConsole(testContext.Project);
 
-                    nugetConsole.InstallPackageFromPMC(PackageName, V100);
+                    nugetConsole.InstallPackageFromPMC(PackageName, v100);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
                     nugetConsole.UninstallPackageFromPMC(PackageName);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     //Asset
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, PackageName, V100, XunitLogger);
+                    CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, PackageName, XunitLogger);
                     Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
