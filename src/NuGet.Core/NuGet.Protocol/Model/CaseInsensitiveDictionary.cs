@@ -6,9 +6,9 @@ using System.Collections.Generic;
 
 namespace NuGet.Protocol.Model
 {
-    internal class IgnoreCaseDictionary<TValue> : Dictionary<string, TValue>
+    internal class CaseInsensitiveDictionary<TValue> : Dictionary<string, TValue>
     {
-        public IgnoreCaseDictionary()
+        public CaseInsensitiveDictionary()
             : base(StringComparer.InvariantCultureIgnoreCase)
         {
         }
