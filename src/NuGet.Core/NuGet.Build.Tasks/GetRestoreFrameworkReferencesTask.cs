@@ -62,6 +62,8 @@ namespace NuGet.Build.Tasks
                     properties.Add("TargetFrameworks", TargetFrameworks);
                 }
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "PrivateAssets");
+                // Not sure if necessary
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "ExcludedAssetsFlow");
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
             }

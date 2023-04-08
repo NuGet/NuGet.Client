@@ -84,7 +84,7 @@ namespace NuGet.Commands
             {
                 // By default, max degree of parallelism is -1 which means no upper bound.
                 // Limiting to processor count reduces task context switching which is better
-                MaxDegreeOfParallelism = Environment.ProcessorCount
+                MaxDegreeOfParallelism = 1
             };
 
             using (var settingsLoadingContext = new SettingsLoadingContext())

@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Shared;
 
@@ -28,6 +25,8 @@ namespace NuGet.ProjectModel
 
         public LibraryIncludeFlags PrivateAssets { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
 
+        public bool ExcludedAssetsFlow { get; set; }
+
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();
@@ -37,6 +36,7 @@ namespace NuGet.ProjectModel
             combiner.AddStruct(IncludeAssets);
             combiner.AddStruct(ExcludeAssets);
             combiner.AddStruct(PrivateAssets);
+            combiner.AddStruct(ExcludedAssetsFlow);
 
             return combiner.CombinedHash;
         }
@@ -67,7 +67,8 @@ namespace NuGet.ProjectModel
                 && StringComparer.OrdinalIgnoreCase.Equals(ProjectUniqueName, other.ProjectUniqueName)
                 && IncludeAssets == other.IncludeAssets
                 && ExcludeAssets == other.ExcludeAssets
-                && PrivateAssets == other.PrivateAssets;
+                && PrivateAssets == other.PrivateAssets
+                && ExcludedAssetsFlow == other.ExcludedAssetsFlow;
         }
 
         public ProjectRestoreReference Clone()
@@ -78,6 +79,7 @@ namespace NuGet.ProjectModel
             clonedObject.ExcludeAssets = ExcludeAssets;
             clonedObject.IncludeAssets = IncludeAssets;
             clonedObject.PrivateAssets = PrivateAssets;
+            clonedObject.ExcludedAssetsFlow = ExcludedAssetsFlow;
             return clonedObject;
         }
     }

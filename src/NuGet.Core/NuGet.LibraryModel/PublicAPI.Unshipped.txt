@@ -1,1 +1,3 @@
 #nullable enable
+NuGet.LibraryModel.LibraryDependency.ExcludedAssetsFlow.get -> bool
+NuGet.LibraryModel.LibraryDependency.ExcludedAssetsFlow.set -> void

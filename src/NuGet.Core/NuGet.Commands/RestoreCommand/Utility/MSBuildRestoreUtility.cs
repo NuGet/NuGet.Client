@@ -131,6 +131,7 @@ namespace NuGet.Commands
             // To do
             dependency.IncludeType = includeFlags & ~excludeFlags;
             dependency.SuppressParent = GetIncludeFlags(privateAssets, LibraryIncludeFlagUtils.DefaultSuppressParent);
+            dependency.ExcludedAssetsFlow = excludedAssetsFlowFlags;
         }
 
         /// <summary>

@@ -67,6 +67,7 @@ namespace NuGet.Build.Tasks
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "IncludeAssets");
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "ExcludeAssets");
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "PrivateAssets");
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "ExcludedAssetsFlow");
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "NoWarn");
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "IsImplicitlyDefined");
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "GeneratePathProperty");

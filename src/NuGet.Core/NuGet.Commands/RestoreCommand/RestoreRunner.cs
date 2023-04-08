@@ -48,7 +48,7 @@ namespace NuGet.Commands
             RestoreArgs restoreArgs,
             CancellationToken token)
         {
-            var maxTasks = GetMaxTaskCount(restoreArgs);
+            var maxTasks = 1;
 
             var log = restoreArgs.Log;
 

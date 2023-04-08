@@ -34,6 +34,11 @@ namespace NuGet.LibraryModel
         public bool VersionCentrallyManaged { get; set; }
 
         /// <summary>
+        /// True if the dependency has the version set through CentralPackagVersionManagement file.
+        /// </summary>
+        public bool ExcludedAssetsFlow { get; set; }
+
+        /// <summary>
         /// Information regarding if the dependency is direct or transitive.  
         /// </summary>
         public LibraryDependencyReferenceType ReferenceType { get; set; } = LibraryDependencyReferenceType.Direct;
@@ -57,6 +62,7 @@ namespace NuGet.LibraryModel
             bool autoReferenced,
             bool generatePathProperty,
             bool versionCentrallyManaged,
+            bool excludedAssetsFlow,
             LibraryDependencyReferenceType libraryDependencyReferenceType,
             string aliases,
             VersionRange versionOverride)
@@ -68,6 +74,7 @@ namespace NuGet.LibraryModel
             AutoReferenced = autoReferenced;
             GeneratePathProperty = generatePathProperty;
             VersionCentrallyManaged = versionCentrallyManaged;
+            ExcludedAssetsFlow = excludedAssetsFlow;
             ReferenceType = libraryDependencyReferenceType;
             Aliases = aliases;
             VersionOverride = versionOverride;
@@ -133,7 +140,7 @@ namespace NuGet.LibraryModel
             var clonedLibraryRange = new LibraryRange(LibraryRange.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
             var clonedNoWarn = new List<NuGetLogCode>(NoWarn);
 
-            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases, VersionOverride);
+            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ExcludedAssetsFlow, ReferenceType, Aliases, VersionOverride);
         }
 
         /// <summary>
