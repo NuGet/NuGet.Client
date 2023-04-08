@@ -223,6 +223,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IList<string> GetConfigRoots() => SolutionSettings.GetConfigRoots();
 
+        public Dictionary<string, VirtualSettingSection> GetComputedSections() => SolutionSettings.GetComputedSections();
+
         public void Dispose()
         {
             SolutionManager.SolutionOpening -= OnSolutionOpenedOrClosed;
