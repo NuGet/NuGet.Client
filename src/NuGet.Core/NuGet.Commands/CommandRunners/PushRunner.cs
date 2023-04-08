@@ -68,11 +68,16 @@ namespace NuGet.Commands
             // Precedence for package API key: -ApiKey param, config
             apiKey ??= CommandRunnerUtility.GetApiKey(settings, packageUpdateResource.SourceUri.AbsoluteUri, source);
 
-            // Precedence for symbol package API key: -SymbolApiKey param, config, package API key
+            // Precedence for symbol package API key: -SymbolApiKey param, config, package API key (Only for symbol source from SymbolPackagePublish service)
             if (!string.IsNullOrEmpty(symbolSource))
             {
                 symbolApiKey ??= CommandRunnerUtility.GetApiKey(settings, symbolSource, symbolSource);
-                symbolApiKey ??= apiKey;
+
+                // Only allow falling back to API key when the symbol source was obtained from SymbolPackagePublish service
+                if (symbolPackageUpdateResource != null)
+                {
+                    symbolApiKey ??= apiKey;
+                }
             }
 
             await packageUpdateResource.Push(

@@ -8,6 +8,7 @@ using System.Net;
 using System.Security.Principal;
 using System.Text;
 using FluentAssertions;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
@@ -1991,10 +1992,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Theory]
-        [InlineData("{0}index.json")] // package source url
-        [InlineData("{0}push")] // push package endpoint
-        public void PushCommand_PushToServerV3_ApiKeyFromConfig_WithSymbols_FallbackToApiKeyForSymbolSource(string configKeyFormatString)
+        [Fact]
+        public void PushCommand_PushToServerV3_ApiKeyFromConfig_WithSymbols_FallbackToApiKeyForSymbolSource()
         {
             var testApiKey = Guid.NewGuid().ToString();
 
@@ -2003,8 +2002,7 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 var packagesDirectory = Path.Combine(pathContext.WorkingDirectory, "repo");
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
-                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
-                var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                var symbolFileName = packageFileName.Replace(".nupkg", ".snupkg");
                 File.Copy(packageFileName, symbolFileName);
 
                 using (var serverV3 = new MockServer())
@@ -2014,6 +2012,12 @@ namespace NuGet.CommandLine.Test
 
                     Util.AddFlatContainerResource(indexJson, serverV3);
                     Util.AddPublishResource(indexJson, serverV3);
+                    var resource = new JObject
+                    {
+                        { "@id", $"{serverV3.Uri}symbols" },
+                        { "@type", "SymbolPackagePublish/4.9.0" }
+                    };
+                    (indexJson["resources"] as JArray)!.Add(resource);
 
                     serverV3.Get.Add("/index.json", r =>
                     {
@@ -2028,21 +2032,15 @@ namespace NuGet.CommandLine.Test
                     serverV3.Get.Add("/push", r => "OK");
                     serverV3.Put.Add("/push", r =>
                     {
-                        var h = r.Headers[ApiKeyHeader];
-                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return HttpStatusCode.Unauthorized;
-                        }
-
-                        MockServer.SavePushedPackage(r, outputFileName);
-
-                        return HttpStatusCode.Created;
+                        return r.Headers[ApiKeyHeader] == testApiKey
+                            ? HttpStatusCode.Created
+                            : HttpStatusCode.Unauthorized;
                     });
 
                     serverV3.Get.Add("/symbols", r => "OK");
                     serverV3.Put.Add("/symbols", r =>
                     {
-                        return r.Headers["X-NuGet-ApiKey"] == testApiKey
+                        return r.Headers[ApiKeyHeader] == testApiKey
                             ? HttpStatusCode.Created
                             : HttpStatusCode.Unauthorized;
                     });
@@ -2059,7 +2057,7 @@ namespace NuGet.CommandLine.Test
                     settings.Save();
 
                     // set api key
-                    var configKey = string.Format(configKeyFormatString, serverV3.Uri);
+                    var configKey = $"{serverV3.Uri}index.json";
                     var configValue = Configuration.EncryptionUtility.EncryptString(testApiKey);
                     var apikeysSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.ApiKeys);
                     SimpleTestSettingsContext.AddEntry(apikeysSection, configKey, configValue);
@@ -2069,7 +2067,7 @@ namespace NuGet.CommandLine.Test
                     var result = CommandRunner.Run(
                         NuGetExePath,
                         pathContext.SolutionRoot,
-                        $"push {packageFileName} -Source contoso.org -SymbolSource {pushSymbolsUri} -ConfigFile {settings.ConfigPath}",
+                        $"push {packageFileName} -Source contoso.org -ConfigFile {settings.ConfigPath}",
                         waitForExit: true);
 
                     serverV3.Stop();
@@ -2081,7 +2079,6 @@ namespace NuGet.CommandLine.Test
                     Assert.Contains($"Created {pushUri}", result.Output);
                     Assert.Contains($"PUT {pushSymbolsUri}", result.Output);
                     Assert.Contains($"Created {pushSymbolsUri}", result.Output);
-                    AssertFileEqual(packageFileName, outputFileName);
                 }
             }
         }
