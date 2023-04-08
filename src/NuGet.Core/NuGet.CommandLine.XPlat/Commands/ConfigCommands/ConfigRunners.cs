@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-
+using System.Linq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -108,7 +108,7 @@ namespace NuGet.CommandLine.XPlat
 
             if (showPath)
             {
-                return item.Value + " " + item.GetConfigFilePath();
+                return item.Value + "\tfile: " + item.GetConfigFilePath();
             }
             return item.Value;
         }
@@ -119,20 +119,44 @@ namespace NuGet.CommandLine.XPlat
             {
                 logger.LogMinimal(section.Key + ":");
                 var items = section.Value.Items;
-                foreach (var item in items)
+
+                if (showPath)
                 {
-                    var setting = $" {item.ElementName}";
-                    var attributes = item.GetXElementAttributes();
-                    foreach (var attribute in attributes)
+                    var groupByConfigPathsQuery =
+                        from item in items
+                        group item by item.GetConfigPath() into newItemGroup
+                        orderby newItemGroup.Key
+                        select newItemGroup;
+
+                    foreach (var configPathsGroup in groupByConfigPathsQuery)
                     {
-                        setting += " " + attribute;
+                        logger.LogMinimal($" file: {configPathsGroup.Key}");
+                        foreach (var item in configPathsGroup)
+                        {
+                            var setting = $"\t{item.ElementName}";
+                            var attributes = item.GetXElementAttributes();
+                            foreach (var attribute in attributes)
+                            {
+                                setting += " " + attribute + " ";
+                            }
+                            logger.LogMinimal(setting);
+                        }
                     }
-                    if (showPath)
-                    {
-                        setting += $"    file: {item.GetConfigPath()}";
-                    }
-                    logger.LogMinimal(setting);
                 }
+                else
+                {
+                    foreach (var item in items)
+                    {
+                        var setting = $"\t{item.ElementName}";
+                        var attributes = item.GetXElementAttributes();
+                        foreach (var attribute in attributes)
+                        {
+                            setting += " " + attribute + " ";
+                        }
+                        logger.LogMinimal(setting);
+                    }
+                }
+                logger.LogMinimal("\n");
             }
         }
 
