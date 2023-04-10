@@ -20,7 +20,6 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
 using Microsoft.Build.Logging;
-using Microsoft.Build.Utilities;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -283,6 +282,7 @@ namespace NuGet.Build.Tasks.Console
                         LibraryDependencyTarget.Package),
                     NoWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn")).ToList(),
                     SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
+                    ExcludedAssetsFlow = GetBooleanFlag(packageReferenceItem.GetProperty("ExcludedAssetsFlow")),
                     VersionOverride = string.IsNullOrWhiteSpace(versionOverride) ? null : VersionRange.Parse(versionOverride),
                 });
             }
@@ -355,6 +355,7 @@ namespace NuGet.Build.Tasks.Console
                     ExcludeAssets = GetLibraryIncludeFlags(projectReferenceItem.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None),
                     IncludeAssets = GetLibraryIncludeFlags(projectReferenceItem.GetProperty("IncludeAssets"), LibraryIncludeFlags.All),
                     PrivateAssets = GetLibraryIncludeFlags(projectReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
+                    ExcludedAssetsFlow = GetBooleanFlag(projectReferenceItem.GetProperty("ExcludedAssetsFlow")),
                     ProjectPath = fullPath,
                     ProjectUniqueName = fullPath
                 });
@@ -542,6 +543,21 @@ namespace NuGet.Build.Tasks.Console
             string[] parts = MSBuildStringUtility.Split(value);
 
             return parts.Length > 0 ? LibraryIncludeFlagUtils.GetFlags(parts) : defaultValue;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="boolean" /> for the specified value.
+        /// </summary>
+        /// <param name="value">A string boolean value either true or false</param>
+        /// <returns>true or false for the specified value, it can't parse to boolean value then default to false.</returns>
+        private static bool GetBooleanFlag(string value)
+        {
+            if (string.Equals(bool.TrueString, value, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

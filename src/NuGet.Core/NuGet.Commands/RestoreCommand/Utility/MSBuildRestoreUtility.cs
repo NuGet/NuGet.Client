@@ -126,7 +126,7 @@ namespace NuGet.Commands
         {
             var includeFlags = GetIncludeFlags(includeAssets, LibraryIncludeFlags.All);
             var excludeFlags = GetIncludeFlags(excludeAssets, LibraryIncludeFlags.None);
-            bool excludedAssetsFlowFlags = GetExcludedAssetsFlowFlags(excludedAssetsFlow);
+            bool excludedAssetsFlowFlags = GetBooleanFlag(excludedAssetsFlow);
 
             // To do
             dependency.IncludeType = includeFlags & ~excludeFlags;
@@ -139,7 +139,7 @@ namespace NuGet.Commands
         /// </summary>
         public static void ApplyIncludeFlags(ProjectRestoreReference dependency, string includeAssets, string excludeAssets, string privateAssets, string excludedAssetsFlow)
         {
-            bool excludedAssetsFlowFlags = GetExcludedAssetsFlowFlags(excludedAssetsFlow);
+            bool excludedAssetsFlowFlags = GetBooleanFlag(excludedAssetsFlow);
             dependency.IncludeAssets = GetIncludeFlags(includeAssets, LibraryIncludeFlags.All);
             dependency.ExcludeAssets = GetIncludeFlags(excludeAssets, LibraryIncludeFlags.None);
             dependency.PrivateAssets = GetIncludeFlags(privateAssets, LibraryIncludeFlagUtils.DefaultSuppressParent);
@@ -720,18 +720,19 @@ namespace NuGet.Commands
             }
         }
 
-        private static bool GetExcludedAssetsFlowFlags(string value)
+        /// <summary>
+        /// Gets the <see cref="boolean" /> for the specified value.
+        /// </summary>
+        /// <param name="value">A string boolean value either true or false</param>
+        /// <returns>true or false for the specified value, it can't parse to boolean value then default to false.</returns>
+        private static bool GetBooleanFlag(string value)
         {
-            if (string.IsNullOrEmpty(value) || string.Equals(bool.FalseString, value, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            else if (string.Equals(bool.TrueString, value, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(bool.TrueString, value, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            throw new Exception("Unexpected ExcludedAssetsFlow value is for string boolean value true/false");
+            return false;
         }
 
         private static void AddFrameworkReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)
