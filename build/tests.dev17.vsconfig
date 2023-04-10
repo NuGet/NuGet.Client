@@ -105,11 +105,7 @@
     "Microsoft.VisualStudio.Component.Wcf.Tooling",
     "Microsoft.VisualStudio.ComponentGroup.AdditionalWebProjectTemplates",
     "Microsoft.VisualStudio.ComponentGroup.Maui.iOS",
-    "Component.xamarain",
-    "ios",
+    "Component.xamarin",
     "runtimes.ios"
-
-
-
   ]
 }
