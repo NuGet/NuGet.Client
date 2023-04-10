@@ -579,6 +579,7 @@ namespace NuGet.ProjectModel.Test
             var dependencyFoo = new LibraryDependency(new LibraryRange("foo", VersionRange.All, LibraryDependencyTarget.All),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
+                excludedAssetsFlow: false,                
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: true,
                 generatePathProperty: true,

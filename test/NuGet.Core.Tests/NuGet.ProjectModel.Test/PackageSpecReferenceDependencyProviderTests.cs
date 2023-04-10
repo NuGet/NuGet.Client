@@ -28,6 +28,7 @@ namespace NuGet.ProjectModel.Test
                 libraryRange: new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
                 includeType: LibraryIncludeFlags.All,
                 suppressParent: LibraryIncludeFlags.None,
+                excludedAssetsFlow: false,
                 noWarn: new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
                 generatePathProperty: true,

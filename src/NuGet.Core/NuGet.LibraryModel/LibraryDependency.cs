@@ -58,11 +58,11 @@ namespace NuGet.LibraryModel
             LibraryRange libraryRange,
             LibraryIncludeFlags includeType,
             LibraryIncludeFlags suppressParent,
+            bool excludedAssetsFlow,
             IList<NuGetLogCode> noWarn,
             bool autoReferenced,
             bool generatePathProperty,
             bool versionCentrallyManaged,
-            bool excludedAssetsFlow,
             LibraryDependencyReferenceType libraryDependencyReferenceType,
             string aliases,
             VersionRange versionOverride)
@@ -140,7 +140,7 @@ namespace NuGet.LibraryModel
             var clonedLibraryRange = new LibraryRange(LibraryRange.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
             var clonedNoWarn = new List<NuGetLogCode>(NoWarn);
 
-            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ExcludedAssetsFlow, ReferenceType, Aliases, VersionOverride);
+            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, ExcludedAssetsFlow, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases, VersionOverride);
         }
 
         /// <summary>

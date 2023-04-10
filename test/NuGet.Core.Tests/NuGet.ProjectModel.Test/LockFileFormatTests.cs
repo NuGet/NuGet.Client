@@ -2275,6 +2275,7 @@ namespace NuGet.ProjectModel.Test
                         libraryRange: new LibraryRange("Newtonsoft.Json", VersionRange.Parse("[12.0.3, )"), LibraryDependencyTarget.Package),
                         includeType: LibraryIncludeFlags.Compile | LibraryIncludeFlags.BuildTransitive | LibraryIncludeFlags.Native,
                         suppressParent: LibraryIncludeFlags.All,
+                        excludedAssetsFlow: false,
                         noWarn: new List<NuGetLogCode>(),
                         autoReferenced: true,
                         generatePathProperty: false,

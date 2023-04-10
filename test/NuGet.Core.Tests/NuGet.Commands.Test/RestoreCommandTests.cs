@@ -12,7 +12,6 @@ using FluentAssertions;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Configuration.Test;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -1478,6 +1477,7 @@ namespace NuGet.Commands.Test
                 var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                         LibraryIncludeFlags.All,
                         LibraryIncludeFlags.All,
+                        excludedAssetsFlow: false,
                         new List<NuGetLogCode>(),
                         autoReferenced: false,
                         generatePathProperty: true,
@@ -1542,6 +1542,7 @@ namespace NuGet.Commands.Test
                         LibraryDependencyTarget.All),
                     LibraryIncludeFlags.All,
                     LibraryIncludeFlags.All,
+                    excludedAssetsFlow: false,
                     new List<NuGetLogCode>(),
                     autoReferenced: true,
                     generatePathProperty: true,
@@ -1617,6 +1618,7 @@ namespace NuGet.Commands.Test
                         LibraryDependencyTarget.All),
                     LibraryIncludeFlags.All,
                     LibraryIncludeFlags.All,
+                    excludedAssetsFlow: false,
                     new List<NuGetLogCode>(),
                     autoReferenced: false,
                     generatePathProperty: false,
@@ -1699,6 +1701,7 @@ namespace NuGet.Commands.Test
                         LibraryDependencyTarget.All),
                     LibraryIncludeFlags.All,
                     LibraryIncludeFlags.All,
+                    excludedAssetsFlow: false,
                     new List<NuGetLogCode>(),
                     autoReferenced: false,
                     generatePathProperty: false,
@@ -2539,7 +2542,7 @@ namespace NuGet.Commands.Test
                     .WithCentralPackageTransitivePinningEnabled()
                     .Build()
                     .WithTestRestoreMetadata()
-                    .WithTestProjectReference(project2Spec, privateAssets:privateAssets);
+                    .WithTestProjectReference(project2Spec, privateAssets: privateAssets);
 
                 var restoreContext = new RestoreArgs()
                 {
