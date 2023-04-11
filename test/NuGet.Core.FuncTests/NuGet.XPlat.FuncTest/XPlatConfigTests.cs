@@ -22,11 +22,11 @@ namespace NuGet.XPlat.FuncTest
             using var testInfo = new TestInfo("NuGet.Config");
             {
                 var result = CommandRunner.Run(
-                      DotnetCli,
-                      Directory.GetCurrentDirectory(),
-                      $"{XplatDll} config paths {testInfo.WorkingPath}",
-                      waitForExit: true
-                      );
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config paths {testInfo.WorkingPath}",
+                    waitForExit: true
+                    );
 
                 // Assert
                 DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
@@ -40,11 +40,11 @@ namespace NuGet.XPlat.FuncTest
             using var testInfo = new TestInfo("NuGet.Config");
             {
                 var result = CommandRunner.Run(
-                      DotnetCli,
-                      testInfo.WorkingPath,
-                      $"{XplatDll} config paths",
-                      waitForExit: true
-                      );
+                    DotnetCli,
+                    testInfo.WorkingPath,
+                    $"{XplatDll} config paths",
+                    waitForExit: true
+                    );
 
                 // Assert
                 DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
@@ -76,11 +76,11 @@ namespace NuGet.XPlat.FuncTest
             using var testInfo = new TestInfo("NuGet.Config");
             {
                 var result = CommandRunner.Run(
-                      DotnetCli,
-                      Directory.GetCurrentDirectory(),
-                      $"{XplatDll} config get http_proxy {testInfo.WorkingPath}",
-                      waitForExit: true
-                      );
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config get http_proxy {testInfo.WorkingPath}",
+                    waitForExit: true
+                    );
 
                 // Assert
                 DotnetCliUtil.VerifyResultSuccess(result, @"http://company-squid:3128@contoso.test");
@@ -94,14 +94,15 @@ namespace NuGet.XPlat.FuncTest
             using var testInfo = new TestInfo("NuGet.Config");
             {
                 var result = CommandRunner.Run(
-                      DotnetCli,
-                      Directory.GetCurrentDirectory(),
-                      $"{XplatDll} config get http_proxy {testInfo.WorkingPath} --show-path",
-                      waitForExit: true
-                      );
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config get http_proxy {testInfo.WorkingPath} --show-path",
+                    waitForExit: true
+                    );
 
                 // Assert
                 DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
+                DotnetCliUtil.VerifyResultSuccess(result, @"http://company-squid:3128@contoso.test");
             }
         }
 
@@ -140,6 +141,8 @@ namespace NuGet.XPlat.FuncTest
                 // Assert
                 DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
                 DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path + @"\subfolder", "NuGet.Config"));
+                DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://fontoso.test/v3/index.json\"");
+                DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://bontoso.test/v3/index.json\"");
             }
         }
 
@@ -150,11 +153,11 @@ namespace NuGet.XPlat.FuncTest
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigGetAllOrConfigKeyDescription);
             // Act
             var result = CommandRunner.Run(
-                    DotnetCli,
-                    Directory.GetCurrentDirectory(),
-                    $"{XplatDll} config get --help",
-                    waitForExit: true
-                    );
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config get --help",
+                waitForExit: true
+                );
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -167,11 +170,11 @@ namespace NuGet.XPlat.FuncTest
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigGetAllOrConfigKeyDescription); ;
             // Act
             var result = CommandRunner.Run(
-                    DotnetCli,
-                    Directory.GetCurrentDirectory(),
-                    $"{XplatDll} config get all --help",
-                    waitForExit: true
-                    );
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config get all --help",
+                waitForExit: true
+                );
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -184,11 +187,11 @@ namespace NuGet.XPlat.FuncTest
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigGetAllOrConfigKeyDescription); ;
             // Act
             var result = CommandRunner.Run(
-                    DotnetCli,
-                    Directory.GetCurrentDirectory(),
-                    $"{XplatDll} config get http_proxy --help",
-                    waitForExit: true
-                    );
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config get http_proxy --help",
+                waitForExit: true
+                );
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -341,9 +344,10 @@ namespace NuGet.XPlat.FuncTest
             {
                 WorkingPath = TestDirectory.Create();
                 ConfigFile = configPath;
-                CreateFile(WorkingPath.Path,
-                           Path.GetFileName(ConfigFile),
-                           $@"
+                CreateFile(
+                    WorkingPath.Path,
+                    Path.GetFileName(ConfigFile),
+                    $@"
 <configuration>
     <packageSources>
         <add key=""Foo"" value=""https://contoso.test/v3/index.json"" />
@@ -357,42 +361,28 @@ namespace NuGet.XPlat.FuncTest
 
             public TestInfo (string configPath, string subfolder)
             {
-                    WorkingPath = TestDirectory.Create();
-                    ConfigFile = configPath;
-                    CreateFile(WorkingPath.Path,
-                               Path.GetFileName(ConfigFile),
-                               $@"
+                WorkingPath = TestDirectory.Create();
+                ConfigFile = configPath;
+                CreateFile(
+                    WorkingPath.Path,
+                    Path.GetFileName(ConfigFile),
+                    $@"
 <configuration>
     <packageSources>
         <add key=""Foo"" value=""https://fontoso.test/v3/index.json"" />
     </packageSources>
 </configuration>
 ");
-                    CreateFile(WorkingPath.Path + subfolder,
-                               Path.GetFileName(ConfigFile),
-                               $@"
+                CreateFile(
+                    WorkingPath.Path + subfolder,
+                    Path.GetFileName(ConfigFile),
+                    $@"
 <configuration>
     <packageSources>
         <add key=""Bar"" value=""https://bontoso.test/v3/index.json"" />
     </packageSources>
     <config>
         <add key=""http_proxy"" value=""http://company-squid:3128@bontoso.test"" />
-    </config>
-</configuration>
-");
-            }
-
-            public void CreateConfigFile()
-            {
-                CreateFile(WorkingPath.Path,
-                           Path.GetFileName(ConfigFile),
-           $@"
-<configuration>
-    <packageSources>
-        <add key=""Foo"" value=""https://contoso.test/v3/index.json"" />
-    </packageSources>
-    <config>
-        <add key=""http_proxy"" value=""http://company-squid:3128@contoso.test"" />
     </config>
 </configuration>
 ");

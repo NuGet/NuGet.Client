@@ -121,7 +121,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Logs each section of the configuration settings file, grouped by file path.
+        /// Logs each section of the configuration settings that will be applied, grouped by file path.
         /// </summary>
         public static void LogSectionsWithPaths(Dictionary<string, VirtualSettingSection> sections, ILogger logger)
         {
@@ -145,7 +145,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Logs each section of the configuration settings file.
+        /// Logs each section of the configuration settings that will be applied.
         /// </summary>
         public static void LogSectionsNoPaths(Dictionary<string, VirtualSettingSection> sections, ILogger logger)
         {
@@ -159,7 +159,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Combines into a string, then logs, the attributes from each item in a collection of SettingItems.
+        /// Combines the attributes from each item in a collection of SettingItems into a string, then logs the string.
         /// </summary>
         /// <param name="items"></param>
         /// <param name="logger"></param>
@@ -173,12 +173,13 @@ namespace NuGet.CommandLine.XPlat
                 {
                     setting += " " + attribute + " ";
                 }
+
                 logger.LogMinimal(setting);
             }
         }
 
         /// <summary>
-        /// Throws an exception if any of the arguments for the config runners are null.
+        /// Throws an exception if any of the config runner arguments are null.
         /// </summary>
         /// <exception cref="ArgumentNullException"></exception>
         public static void ValidateArguments<TArgs>(TArgs args, Func<ILogger> logger)

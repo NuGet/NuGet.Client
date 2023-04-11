@@ -43,8 +43,7 @@ namespace NuGet.CommandLine.XPlat
                     var showPath = GetCmd.Option(
                         "--show-path",
                         Strings.ConfigGetShowPathDescription,
-                        CommandOptionType.NoValue
-                        );
+                        CommandOptionType.NoValue);
                     GetCmd.HelpOption("-h|--help");
                     GetCmd.Description = Strings.ConfigGetCommandDescription;
                     GetCmd.OnExecute(() =>
@@ -59,7 +58,6 @@ namespace NuGet.CommandLine.XPlat
                         ConfigGetRunner.Run(args, getLogger);
                         return 0;
                     });
-
                 });
                 ConfigCmd.HelpOption("-h|--help");
                 ConfigCmd.Description = Strings.Config_Description;
