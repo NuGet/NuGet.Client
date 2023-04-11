@@ -46,7 +46,14 @@ namespace NuGet.CommandLine.XPlat
             if (args.AllOrConfigKey.Equals("all", StringComparison.OrdinalIgnoreCase))
             {
                 var sections = settings.GetComputedSections();
-                RunnerHelper.LogSections(sections, logger, args.ShowPath);
+                if (args.ShowPath)
+                {
+                    RunnerHelper.LogSectionsWithPaths(sections, logger);
+                }
+                else
+                {
+                    RunnerHelper.LogSectionsNoPaths(sections, logger);
+                }
             }
             else
             {
@@ -113,50 +120,60 @@ namespace NuGet.CommandLine.XPlat
             return item.Value;
         }
 
-        public static void LogSections(Dictionary<string, VirtualSettingSection> sections, ILogger logger, bool showPath)
+        /// <summary>
+        /// Logs each section of the configuration settings file, grouped by file path.
+        /// </summary>
+        public static void LogSectionsWithPaths(Dictionary<string, VirtualSettingSection> sections, ILogger logger)
         {
             foreach (var section in sections)
             {
                 logger.LogMinimal(section.Key + ":");
                 var items = section.Value.Items;
 
-                if (showPath)
-                {
-                    var groupByConfigPathsQuery =
-                        from item in items
-                        group item by item.GetConfigPath() into newItemGroup
-                        orderby newItemGroup.Key
-                        select newItemGroup;
+                var groupByConfigPathsQuery =
+                    from item in items
+                    group item by item.GetConfigPath() into newItemGroup
+                    select newItemGroup;
 
-                    foreach (var configPathsGroup in groupByConfigPathsQuery)
-                    {
-                        logger.LogMinimal($" file: {configPathsGroup.Key}");
-                        foreach (var item in configPathsGroup)
-                        {
-                            var setting = $"\t{item.ElementName}";
-                            var attributes = item.GetXElementAttributes();
-                            foreach (var attribute in attributes)
-                            {
-                                setting += " " + attribute + " ";
-                            }
-                            logger.LogMinimal(setting);
-                        }
-                    }
-                }
-                else
+                foreach (var configPathsGroup in groupByConfigPathsQuery)
                 {
-                    foreach (var item in items)
-                    {
-                        var setting = $"\t{item.ElementName}";
-                        var attributes = item.GetXElementAttributes();
-                        foreach (var attribute in attributes)
-                        {
-                            setting += " " + attribute + " ";
-                        }
-                        logger.LogMinimal(setting);
-                    }
+                    logger.LogMinimal($" file: {configPathsGroup.Key}");
+                    LogSectionItems(configPathsGroup, logger);
+                    logger.LogMinimal("\n");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Logs each section of the configuration settings file.
+        /// </summary>
+        public static void LogSectionsNoPaths(Dictionary<string, VirtualSettingSection> sections, ILogger logger)
+        {
+            foreach (var section in sections)
+            {
+                logger.LogMinimal(section.Key + ":");
+                var items = section.Value.Items;
+                LogSectionItems(items, logger);
                 logger.LogMinimal("\n");
+            }
+        }
+
+        /// <summary>
+        /// Combines into a string, then logs, the attributes from each item in a collection of SettingItems.
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="logger"></param>
+        public static void LogSectionItems(IEnumerable<SettingItem> items, ILogger logger)
+        {
+            foreach (var item in items)
+            {
+                var setting = $"\t{item.ElementName}";
+                var attributes = item.GetXElementAttributes();
+                foreach (var attribute in attributes)
+                {
+                    setting += " " + attribute + " ";
+                }
+                logger.LogMinimal(setting);
             }
         }
 
