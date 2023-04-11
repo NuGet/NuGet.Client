@@ -88,6 +88,62 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
+        public void ConfigGetCommand_ConfigKeyArgShowPath_Success()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            {
+                var result = CommandRunner.Run(
+                      DotnetCli,
+                      Directory.GetCurrentDirectory(),
+                      $"{XplatDll} config get http_proxy {testInfo.WorkingPath} --show-path",
+                      waitForExit: true
+                      );
+
+                // Assert
+                DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
+            }
+        }
+
+        [Fact]
+        public void ConfigGetCommand_AllArg_Success()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config", "/subfolder");
+            {
+                var result = CommandRunner.Run(
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config get all {testInfo.WorkingPath + "/subfolder"}",
+                    waitForExit: true
+                    );
+
+                // Assert
+                DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://fontoso.test/v3/index.json\"");
+                DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://bontoso.test/v3/index.json\"");
+            }
+        }
+
+        [Fact]
+        public void ConfigGetCommand_AllArgShowPath_Success()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config", "/subfolder");
+            {
+                var result = CommandRunner.Run(
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config get all {testInfo.WorkingPath + "/subfolder"} --show-path",
+                    waitForExit: true
+                    );
+
+                // Assert
+                DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
+                DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path + @"\subfolder", "NuGet.Config"));
+            }
+        }
+
+        [Fact]
         public void ConfigGetCommand_HelpMessage_Success()
         {
             // Arrange
@@ -138,7 +194,7 @@ namespace NuGet.XPlat.FuncTest
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
         }
 
-            [Fact]
+        [Fact]
         public void ConfigCommand_HelpMessage_Success()
         {
             // Arrange
@@ -196,6 +252,26 @@ namespace NuGet.XPlat.FuncTest
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => ConfigPathsRunner.Run(args, null));
+        }
+
+        [Fact]
+        public void ConfigGetCommand_NonExistingDirectory_Fail()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            {
+                var nonExistingDirectory = Path.Combine(testInfo.WorkingPath.Path, @"\NonExistingRepos");
+                var result = CommandRunner.Run(
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config get all {nonExistingDirectory}",
+                    waitForExit: true
+                    );
+                var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
+
+                // Assert
+                DotnetCliUtil.VerifyResultFailure(result, expectedError);
+            }
         }
 
         [Fact]
@@ -268,6 +344,49 @@ namespace NuGet.XPlat.FuncTest
                 CreateFile(WorkingPath.Path,
                            Path.GetFileName(ConfigFile),
                            $@"
+<configuration>
+    <packageSources>
+        <add key=""Foo"" value=""https://contoso.test/v3/index.json"" />
+    </packageSources>
+    <config>
+        <add key=""http_proxy"" value=""http://company-squid:3128@contoso.test"" />
+    </config>
+</configuration>
+");
+            }
+
+            public TestInfo (string configPath, string subfolder)
+            {
+                    WorkingPath = TestDirectory.Create();
+                    ConfigFile = configPath;
+                    CreateFile(WorkingPath.Path,
+                               Path.GetFileName(ConfigFile),
+                               $@"
+<configuration>
+    <packageSources>
+        <add key=""Foo"" value=""https://fontoso.test/v3/index.json"" />
+    </packageSources>
+</configuration>
+");
+                    CreateFile(WorkingPath.Path + subfolder,
+                               Path.GetFileName(ConfigFile),
+                               $@"
+<configuration>
+    <packageSources>
+        <add key=""Bar"" value=""https://bontoso.test/v3/index.json"" />
+    </packageSources>
+    <config>
+        <add key=""http_proxy"" value=""http://company-squid:3128@bontoso.test"" />
+    </config>
+</configuration>
+");
+            }
+
+            public void CreateConfigFile()
+            {
+                CreateFile(WorkingPath.Path,
+                           Path.GetFileName(ConfigFile),
+           $@"
 <configuration>
     <packageSources>
         <add key=""Foo"" value=""https://contoso.test/v3/index.json"" />
