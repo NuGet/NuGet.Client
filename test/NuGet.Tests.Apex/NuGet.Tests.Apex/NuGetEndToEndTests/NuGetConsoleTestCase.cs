@@ -689,10 +689,10 @@ namespace NuGet.Tests.Apex
             EnsureVisualStudioHost();
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {                
+            {
                 var packageName = "VerifyCacheFilePackage";
                 var packageVersion = "1.0.0";
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);                
+                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
                 var nugetConsole = GetConsole(testContext.Project);
 
                 //Act
@@ -711,11 +711,10 @@ namespace NuGet.Tests.Apex
                 CommonUtility.WaitForFileNotExists(CacheFilePath);
             }
         }
-        
-         [NuGetWpfTheory]
+
+        [NuGetWpfTheory]
         [InlineData(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")]
         [InlineData(ProjectTemplate.NetStandardClassLib, "PackageC", "1.0.0", "2.0.0", "PackageD", "1.1.0", "2.2.0")]
-
         public async Task UpdateAllPackagesInPMC(ProjectTemplate projectTemplate, string packageName1, string packageVersion1, string packageVersion2, string packageName2, string packageVersion3, string packageVersion4)
         {
             EnsureVisualStudioHost();
@@ -758,8 +757,9 @@ namespace NuGet.Tests.Apex
                 }
             }
         }
-        
-         [MemberData(nameof(GetIOSTemplates))]
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetIOSTemplates))]
         public async Task InstallPackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
@@ -796,7 +796,7 @@ namespace NuGet.Tests.Apex
         [MemberData(nameof(GetIOSTemplates))]
         public async Task UpdatePackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
         {
-            EnsureVisualStudioHost();
+            EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
             {
                 // Arrange
@@ -872,7 +872,7 @@ namespace NuGet.Tests.Apex
                 }
             }
         }
-      
+
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()
