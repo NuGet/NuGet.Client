@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -710,6 +709,53 @@ namespace NuGet.Tests.Apex
 
                 testContext.Project.Clean();
                 CommonUtility.WaitForFileNotExists(CacheFilePath);
+            }
+        }
+
+        [NuGetWpfTheory]
+        [InlineData(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")]
+        [InlineData(ProjectTemplate.NetStandardClassLib, "PackageC", "1.0.0", "2.0.0", "PackageD", "1.1.0", "2.2.0")]
+
+        public async Task UpdateAllPackagesInPMC(ProjectTemplate projectTemplate, string packageName1, string packageVersion1, string packageVersion2, string packageName2, string packageVersion3, string packageVersion4)
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName1, packageVersion1);
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName1, packageVersion2);
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion3);
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion4);
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                {
+                    var solutionService = VisualStudio.Get<SolutionService>();
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    // Act
+                    nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
+                    nugetConsole.InstallPackageFromPMC(packageName2, packageVersion3);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                    nugetConsole.Execute("update-package");
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                    // Assert
+                    if (projectTemplate.ToString().Equals("ClassLibrary"))
+                    {
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
+                    }
+                    else
+                    {
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
+                    }
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                    Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+                }
             }
         }
 
