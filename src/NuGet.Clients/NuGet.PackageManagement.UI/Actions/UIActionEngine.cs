@@ -867,10 +867,17 @@ namespace NuGet.PackageManagement.UI
 
             //TODO: need to make sure we never repeat...Distinct from above.
 
+            //HACK...do this more elegantly...
+            if (projectActions == null)
+            {
+                var projectActionList = new List<NuGetProjectActionType>();
+                projectActionList.Add(userAction.Action);
+                projectActions = projectActionList;
+            }
+
             var actionsEnum = projectActions.GetEnumerator();
             foreach (var project in projects)
             {
-
                 string[] projectIds = new string[1] { project.ProjectId };
                 actionsEnum.MoveNext();
                 var projectAction = actionsEnum.Current;
