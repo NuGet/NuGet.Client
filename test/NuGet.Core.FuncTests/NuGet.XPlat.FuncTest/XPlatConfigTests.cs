@@ -107,6 +107,24 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
+        public void ConfigGetCommand_ConfigKeyArgNoDirectoryArg_Success()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            {
+                var result = CommandRunner.Run(
+                    DotnetCli,
+                    testInfo.WorkingPath,
+                    $"{XplatDll} config get http_proxy",
+                    waitForExit: true
+                    );
+
+                // Assert
+                DotnetCliUtil.VerifyResultSuccess(result, @"http://company-squid:3128@contoso.test");
+            }
+        }
+
+        [Fact]
         public void ConfigGetCommand_AllArg_Success()
         {
             // Arrange & Act
@@ -141,6 +159,25 @@ namespace NuGet.XPlat.FuncTest
                 // Assert
                 DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
                 DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path + @"\subfolder", "NuGet.Config"));
+                DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://fontoso.test/v3/index.json\"");
+                DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://bontoso.test/v3/index.json\"");
+            }
+        }
+
+        [Fact]
+        public void ConfigGetCommand_AllArgNoDirectoryArg_Success()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config", "/subfolder");
+            {
+                var result = CommandRunner.Run(
+                    DotnetCli,
+                    testInfo.WorkingPath + "/subfolder",
+                    $"{XplatDll} config get all",
+                    waitForExit: true
+                    );
+
+                // Assert
                 DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://fontoso.test/v3/index.json\"");
                 DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://bontoso.test/v3/index.json\"");
             }
@@ -291,6 +328,25 @@ namespace NuGet.XPlat.FuncTest
                     waitForExit: true
                     );
                 var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, invalidKey);
+
+                // Assert
+                DotnetCliUtil.VerifyResultFailure(result, expectedError);
+            }
+        }
+
+        [Fact]
+        public void ConfigGetCommand_NullAllOrConfigKeyArg_Fail()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            {
+                var result = CommandRunner.Run(
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} config get",
+                    waitForExit: true
+                    );
+                var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, "");
 
                 // Assert
                 DotnetCliUtil.VerifyResultFailure(result, expectedError);

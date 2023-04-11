@@ -40,6 +40,11 @@ namespace NuGet.CommandLine.XPlat
         {
             RunnerHelper.ValidateArguments(args, getLogger);
 
+            if (args.AllOrConfigKey == null)
+            {
+                throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, args.AllOrConfigKey));
+            }
+
             var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory);
             ILogger logger = getLogger();
 

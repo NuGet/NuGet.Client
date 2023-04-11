@@ -17,7 +17,7 @@ namespace NuGet.CommandLine.XPlat
                 ConfigCmd.Command("paths", PathsCmd =>
                 {
                     CommandArgument workingdirectory = PathsCmd.Argument(
-                        "working-directory",
+                        "WORKING_DIRECTORY",
                         Strings.ConfigPathsWorkingDirectoryDescription);
                     PathsCmd.HelpOption("-h|--help");
                     PathsCmd.Description = Strings.ConfigPathsCommandDescription;
@@ -35,10 +35,10 @@ namespace NuGet.CommandLine.XPlat
                 ConfigCmd.Command("get", GetCmd =>
                 {
                     CommandArgument allOrConfigKey = GetCmd.Argument(
-                        "all/config-key",
+                        "<ALL|CONFIG_KEY>",
                         Strings.ConfigGetAllOrConfigKeyDescription);
                     CommandArgument workingDirectory = GetCmd.Argument(
-                        "working-directory",
+                        "WORKING_DIRECTORY",
                         Strings.ConfigPathsWorkingDirectoryDescription);
                     var showPath = GetCmd.Option(
                         "--show-path",

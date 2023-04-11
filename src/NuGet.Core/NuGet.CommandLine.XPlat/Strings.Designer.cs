@@ -241,7 +241,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to All: Get all merged NuGet configuration settings from multiple NuGet configuration files that will be applied, when invoking NuGet command from the working directory path. ConfigKey: Get the effective value of the specified configuration settings of the config section..
+        ///   Looks up a localized string similar to ALL: Get all merged NuGet configuration settings from multiple NuGet configuration files that will be applied, when invoking NuGet command from the working directory path.  CONFIG_KEY: Get the effective value of the specified configuration settings of the config section..
         /// </summary>
         internal static string ConfigGetAllOrConfigKeyDescription {
             get {
