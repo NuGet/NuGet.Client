@@ -711,9 +711,55 @@ namespace NuGet.Tests.Apex
                 CommonUtility.WaitForFileNotExists(CacheFilePath);
             }
         }
+        
+         [NuGetWpfTheory]
+        [InlineData(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")]
+        [InlineData(ProjectTemplate.NetStandardClassLib, "PackageC", "1.0.0", "2.0.0", "PackageD", "1.1.0", "2.2.0")]
 
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetIOSTemplates))]
+        public async Task UpdateAllPackagesInPMC(ProjectTemplate projectTemplate, string packageName1, string packageVersion1, string packageVersion2, string packageName2, string packageVersion3, string packageVersion4)
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName1, packageVersion1);
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName1, packageVersion2);
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion3);
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion4);
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                {
+                    var solutionService = VisualStudio.Get<SolutionService>();
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    // Act
+                    nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
+                    nugetConsole.InstallPackageFromPMC(packageName2, packageVersion3);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                    nugetConsole.Execute("update-package");
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                    // Assert
+                    if (projectTemplate.ToString().Equals("ClassLibrary"))
+                    {
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
+                    }
+                    else
+                    {
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
+                    }
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                    Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+                }
+            }
+        }
+        
+         [MemberData(nameof(GetIOSTemplates))]
         public async Task InstallPackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
@@ -740,7 +786,7 @@ namespace NuGet.Tests.Apex
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, v100, XunitLogger);
+                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, v100, XunitLogger);
                     Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
@@ -766,7 +812,7 @@ namespace NuGet.Tests.Apex
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
                     testContext.SolutionService.Build();
-                 
+
                     // Act
                     var nugetTestService = GetNuGetTestService();
                     var nugetConsole = GetConsole(testContext.Project);
@@ -781,7 +827,7 @@ namespace NuGet.Tests.Apex
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, v200, XunitLogger);
+                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, v200, XunitLogger);
                     Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
@@ -826,6 +872,7 @@ namespace NuGet.Tests.Apex
                 }
             }
         }
+      
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()
