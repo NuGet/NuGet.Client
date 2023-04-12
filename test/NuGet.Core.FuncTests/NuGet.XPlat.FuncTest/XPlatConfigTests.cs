@@ -128,12 +128,12 @@ namespace NuGet.XPlat.FuncTest
         public void ConfigGetCommand_AllArg_Success()
         {
             // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config", "\\subfolder");
+            using var testInfo = new TestInfo("NuGet.Config", "subfolder");
             {
                 var result = CommandRunner.Run(
                     DotnetCli,
                     Directory.GetCurrentDirectory(),
-                    $"{XplatDll} config get all {testInfo.WorkingPath + "\\subfolder"}",
+                    $"{XplatDll} config get all {Path.Combine(testInfo.WorkingPath, "subfolder")}",
                     waitForExit: true
                     );
 
@@ -147,18 +147,18 @@ namespace NuGet.XPlat.FuncTest
         public void ConfigGetCommand_AllArgShowPath_Success()
         {
             // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config", "\\subfolder");
+            using var testInfo = new TestInfo("NuGet.Config", "subfolder");
             {
                 var result = CommandRunner.Run(
                     DotnetCli,
                     Directory.GetCurrentDirectory(),
-                    $"{XplatDll} config get all {testInfo.WorkingPath + "\\subfolder"} --show-path",
+                    $"{XplatDll} config get all {Path.Combine(testInfo.WorkingPath, "subfolder")} --show-path",
                     waitForExit: true
                     );
 
                 // Assert
                 DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
-                DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path + @"\subfolder", "NuGet.Config"));
+                DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "subfolder", "NuGet.Config"));
                 DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://fontoso.test/v3/index.json\"");
                 DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://bontoso.test/v3/index.json\"");
             }
@@ -168,11 +168,11 @@ namespace NuGet.XPlat.FuncTest
         public void ConfigGetCommand_AllArgNoDirectoryArg_Success()
         {
             // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config", "\\subfolder");
+            using var testInfo = new TestInfo("NuGet.Config", "subfolder");
             {
                 var result = CommandRunner.Run(
                     DotnetCli,
-                    testInfo.WorkingPath + "\\subfolder",
+                    Path.Combine(testInfo.WorkingPath, "subfolder"),
                     $"{XplatDll} config get all",
                     waitForExit: true
                     );
@@ -429,8 +429,9 @@ namespace NuGet.XPlat.FuncTest
     </packageSources>
 </configuration>
 ");
+                var subfolderPath = Path.Combine(WorkingPath.Path, subfolder);
                 CreateFile(
-                    WorkingPath.Path + subfolder,
+                    subfolderPath,
                     Path.GetFileName(ConfigFile),
                     $@"
 <configuration>
