@@ -73,6 +73,18 @@ namespace NuGet.CommandLine.XPlat
         }
     }
 
+    internal static class ConfigSetRunner
+    {
+        public static void Run(ConfigSetArgs args, Func<ILogger> getLogger)
+        {
+            RunnerHelper.ValidateArguments(args, getLogger);
+
+            var settings = RunnerHelper.GetSettingsFromDirectory(args.ConfigFile);
+
+            SettingsUtility.SetConfigValue(settings, args.ConfigKey, args.ConfigValue);
+        }
+    }
+
     internal static class RunnerHelper
     {
         /// <summary>

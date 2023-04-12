@@ -59,6 +59,34 @@ namespace NuGet.CommandLine.XPlat
                         return 0;
                     });
                 });
+                ConfigCmd.Command("set", SetCmd =>
+                {
+                    CommandArgument configKey = SetCmd.Argument(
+                        "CONFIG_KEY",
+                        "<Config Key description>");
+                    CommandArgument configValue = SetCmd.Argument(
+                        "CONFIG_VALUE",
+                        "<Config value description>");
+                    var configFile = SetCmd.Option(
+                        // should this be --config-file? 
+                        "--configfile",
+                        "<Config file description>",
+                        CommandOptionType.SingleValue);
+                    SetCmd.HelpOption("-h|--help");
+                    SetCmd.Description = "<Set command description>";
+                    SetCmd.OnExecute(() =>
+                    {
+                        var args = new ConfigSetArgs()
+                        {
+                            ConfigKey = configKey.Value,
+                            ConfigValue = configValue.Value,
+                            ConfigFile = configFile.Value()
+                        };
+
+                        ConfigSetRunner.Run(args, getLogger);
+                        return 0;
+                    });
+                });
                 ConfigCmd.HelpOption("-h|--help");
                 ConfigCmd.Description = Strings.Config_Description;
                 ConfigCmd.OnExecute(() =>
