@@ -128,12 +128,12 @@ namespace NuGet.XPlat.FuncTest
         public void ConfigGetCommand_AllArg_Success()
         {
             // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config", "/subfolder");
+            using var testInfo = new TestInfo("NuGet.Config", "\\subfolder");
             {
                 var result = CommandRunner.Run(
                     DotnetCli,
                     Directory.GetCurrentDirectory(),
-                    $"{XplatDll} config get all {testInfo.WorkingPath + "/subfolder"}",
+                    $"{XplatDll} config get all {testInfo.WorkingPath + "\\subfolder"}",
                     waitForExit: true
                     );
 
@@ -147,12 +147,12 @@ namespace NuGet.XPlat.FuncTest
         public void ConfigGetCommand_AllArgShowPath_Success()
         {
             // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config", "/subfolder");
+            using var testInfo = new TestInfo("NuGet.Config", "\\subfolder");
             {
                 var result = CommandRunner.Run(
                     DotnetCli,
                     Directory.GetCurrentDirectory(),
-                    $"{XplatDll} config get all {testInfo.WorkingPath + "/subfolder"} --show-path",
+                    $"{XplatDll} config get all {testInfo.WorkingPath + "\\subfolder"} --show-path",
                     waitForExit: true
                     );
 
@@ -168,11 +168,11 @@ namespace NuGet.XPlat.FuncTest
         public void ConfigGetCommand_AllArgNoDirectoryArg_Success()
         {
             // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config", "/subfolder");
+            using var testInfo = new TestInfo("NuGet.Config", "\\subfolder");
             {
                 var result = CommandRunner.Run(
                     DotnetCli,
-                    testInfo.WorkingPath + "/subfolder",
+                    testInfo.WorkingPath + "\\subfolder",
                     $"{XplatDll} config get all",
                     waitForExit: true
                     );
