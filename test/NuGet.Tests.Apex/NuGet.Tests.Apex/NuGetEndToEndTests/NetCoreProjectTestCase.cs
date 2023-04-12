@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using EnvDTE;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
 using NuGet.Test.Utility;
@@ -281,7 +278,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [NuGetWpfTheory(Skip = "https://github.com/NuGet/Home/issues/12441")]
+        [NuGetWpfTheory]
         [MemberData(nameof(GetNetCoreTemplates))]
         public async Task UpdatePackageToNetCoreProjectFromUI(ProjectTemplate projectTemplate)
         {
@@ -308,6 +305,8 @@ namespace NuGet.Tests.Apex
                     uiwindow.InstallPackageFromUI(packageName, packageVersion1);
                     uiwindow.SwitchTabToUpdate();
                     uiwindow.UpdatePackageFromUI(packageName, packageVersion2);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
@@ -316,7 +315,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [NuGetWpfTheory(Skip = "https://github.com/NuGet/Home/issues/12441")]
+        [NuGetWpfTheory]
         [MemberData(nameof(GetNetCoreTemplates))]
         public async Task UninstallPackageFromNetCoreProjectFromUI(ProjectTemplate projectTemplate)
         {
@@ -341,6 +340,8 @@ namespace NuGet.Tests.Apex
                     uiwindow.InstallPackageFromUI(packageName, packageVersion);
                     uiwindow.SwitchTabToInstalled();
                     uiwindow.UninstallPackageFromUI(packageName);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
