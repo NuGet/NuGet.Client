@@ -16,7 +16,9 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
@@ -81,6 +83,7 @@ namespace NuGet.Commands
         private const string ValidateRestoreGraphsDuration = nameof(ValidateRestoreGraphsDuration);
         private const string CreateRestoreResultDuration = nameof(CreateRestoreResultDuration);
         private const string IsCentralPackageTransitivePinningEnabled = nameof(IsCentralPackageTransitivePinningEnabled);
+        private const string VulnerablePackageCheck = nameof(VulnerablePackageCheck);
 
         // PackageSourceMapping names
         private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
@@ -274,6 +277,10 @@ namespace NuGet.Commands
                         return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.Framework, e.RuntimeIdentifier);
                     });
                 }
+
+                telemetry.StartIntervalMeasure();
+                await CheckPackageVulnerabilitiesAsync(graphs, _logger, token);
+                telemetry.EndIntervalMeasure(VulnerablePackageCheck);
 
                 telemetry.StartIntervalMeasure();
                 // Create assets file
@@ -1300,6 +1307,152 @@ namespace NuGet.Commands
                 project,
                 msbuildProjectPath: null,
                 projectReferences: Enumerable.Empty<string>());
+        }
+
+#nullable enable
+
+        private async Task CheckPackageVulnerabilitiesAsync(IEnumerable<RestoreTargetGraph> graphs, RestoreCollectorLogger logger, CancellationToken cancellationToken)
+        {
+            GetVulnerabilityInfoResult? allVulnerabilityData = await GetAllVulnerabilityDataAsync(logger, cancellationToken);
+            if (allVulnerabilityData == null) return;
+
+            foreach (var graph in graphs)
+            {
+                foreach (LibraryIdentity package in graph.Flattened.Select(i => i.Key).Where(p => p.Type == "package"))
+                {
+                    var knownVulnerabilities = GetKnownVulnerabilities(package.Name, package.Version, allVulnerabilityData.KnownVulnerabilities);
+
+                    if (knownVulnerabilities?.Count() > 0)
+                    {
+                        var sb = StringBuilderPool.Shared.Rent(1);
+                        try
+                        {
+                            sb.Clear();
+                            sb.Append("Package ");
+                            sb.Append(package.Name);
+                            sb.Append("/");
+                            sb.Append(package.Version);
+                            sb.AppendLine(" has known vulnerabilities:");
+
+                            foreach (var vuln in knownVulnerabilities)
+                            {
+                                sb.Append("  ");
+                                sb.AppendLine(vuln.Url.OriginalString);
+                                sb.Append("    Severity: ");
+                                sb.AppendLine(vuln.Severity.ToString());
+                                sb.Append("    Affected versions: ");
+                                sb.AppendLine(vuln.Versions.ToShortString());
+                            }
+
+                            var message = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1000, sb.ToString(),
+                                package.Name,
+                                graph.TargetGraphName);
+                            message.ProjectPath = _request.Project.FilePath;
+                            logger.Log(message);
+                        }
+                        finally
+                        {
+                            StringBuilderPool.Shared.Return(sb);
+                        }
+                    }
+                }
+            }
+
+            List<PackageVulnerabilityInfo>? GetKnownVulnerabilities(
+                string name,
+                NuGetVersion version,
+                IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities)
+            {
+                HashSet<PackageVulnerabilityInfo>? vulnerabilities = null;
+
+                if (knownVulnerabilities == null) return null;
+
+                foreach (var file in knownVulnerabilities)
+                {
+                    if (file.TryGetValue(name, out var packageVulnerabilities))
+                    {
+                        foreach (var vulnInfo in packageVulnerabilities)
+                        {
+                            if (vulnInfo.Versions.Satisfies(version))
+                            {
+                                if (vulnerabilities == null)
+                                {
+                                    vulnerabilities = new();
+                                }
+                                vulnerabilities.Add(vulnInfo);
+                            }
+                        }
+                    }
+                }
+
+                return vulnerabilities != null ? vulnerabilities.ToList() : null;
+            }
+        }
+
+        private async Task<GetVulnerabilityInfoResult?> GetAllVulnerabilityDataAsync(ILogger logger, CancellationToken cancellationToken)
+        {
+            var sources = new List<SourceRepository>(_request.DependencyProviders.RemoteProviders.Count);
+            sources.AddRange(_request.DependencyProviders.RemoteProviders.Select(p => p.SourceRepository).Where(s => s is not null));
+
+            var results = new Task<GetVulnerabilityInfoResult?>[sources.Count];
+            for (int i = 0; i < sources.Count; i++)
+            {
+                SourceRepository source = sources[i];
+                results[i] = GetVulnerabilityInfoAsync(source, logger, cancellationToken);
+            }
+
+            await Task.WhenAll(results);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            List<Exception>? errors = null;
+            List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities = null;
+            foreach (var resultTask in results)
+            {
+                var result = await resultTask;
+                if (result is null) continue;
+
+                if (result.KnownVulnerabilities != null)
+                {
+                    if (knownVulnerabilities == null)
+                    {
+                        knownVulnerabilities = new();
+                    }
+
+                    knownVulnerabilities.AddRange(result.KnownVulnerabilities);
+                }
+
+                if (result.Exceptions != null)
+                {
+                    if (errors == null)
+                    {
+                        errors = new();
+                    }
+
+                    errors.AddRange(result.Exceptions.InnerExceptions);
+                }
+            }
+
+            GetVulnerabilityInfoResult? final =
+                knownVulnerabilities != null || errors != null
+                ? new(knownVulnerabilities, errors != null ? new AggregateException(errors) : null)
+                : null;
+            return final;
+
+            static async Task<GetVulnerabilityInfoResult?> GetVulnerabilityInfoAsync(SourceRepository source, ILogger logger, CancellationToken cancellationToken)
+            {
+                IVulnerabilityInfoResource? vulnerabilityInfoResource = await source.GetResourceAsync<IVulnerabilityInfoResource>(cancellationToken);
+                if (vulnerabilityInfoResource == null)
+                {
+                    return null;
+                }
+
+                using SourceCacheContext cacheContext = new();
+                GetVulnerabilityInfoResult result = await vulnerabilityInfoResource.GetVulnerabilityInfoAsync(cacheContext, logger, cancellationToken);
+                return result;
+            }
         }
     }
 }
