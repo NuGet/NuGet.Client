@@ -785,7 +785,7 @@ namespace NuGet.Tests.Apex
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, v100, XunitLogger);
+                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v100, XunitLogger);
                     Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
@@ -825,7 +825,7 @@ namespace NuGet.Tests.Apex
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, v200, XunitLogger);
+                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v200, XunitLogger);
                     Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
@@ -864,7 +864,7 @@ namespace NuGet.Tests.Apex
 
                     //Asset
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, PackageName, XunitLogger);
+                    CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, PackageName, v100, XunitLogger);
                     Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
