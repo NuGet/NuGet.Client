@@ -15,4 +15,11 @@ namespace NuGet.CommandLine.XPlat
         public string? WorkingDirectory { get; set; }
         public bool ShowPath { get; set; }
     }
+
+    internal partial class ConfigSetArgs
+    {
+        public string? ConfigKey { get; set; }
+        public string? ConfigValue { get; set; }
+        public string? ConfigFile { get; set; }
+    }
 }
