@@ -303,7 +303,10 @@ namespace NuGet.Tests.Apex
                     var nugetTestService = GetNuGetTestService();
                     var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.Project);
                     uiwindow.InstallPackageFromUI(packageName, packageVersion1);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
                     uiwindow.SwitchTabToUpdate();
+
                     uiwindow.UpdatePackageFromUI(packageName, packageVersion2);
                     testContext.SolutionService.Build();
                     testContext.NuGetApexTestService.WaitForAutoRestore();
@@ -338,7 +341,10 @@ namespace NuGet.Tests.Apex
                     var nugetTestService = GetNuGetTestService();
                     var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.Project);
                     uiwindow.InstallPackageFromUI(packageName, packageVersion);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
                     uiwindow.SwitchTabToInstalled();
+
                     uiwindow.UninstallPackageFromUI(packageName);
                     testContext.SolutionService.Build();
                     testContext.NuGetApexTestService.WaitForAutoRestore();
