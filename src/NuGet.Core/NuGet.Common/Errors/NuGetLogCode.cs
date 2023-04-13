@@ -337,6 +337,31 @@ namespace NuGet.Common
         NU1803 = 1803,
 
         /// <summary>
+        /// Unknown package vulnerability issue
+        /// </summary>
+        NU1900 = 1900,
+
+        /// <summary>
+        /// Package with known low severity vulnerability
+        /// </summary>
+        NU1901 = 1901,
+
+        /// <summary>
+        /// Package with known low severity vulnerability
+        /// </summary>
+        NU1902 = 1902,
+
+        /// <summary>
+        /// Package with known low severity vulnerability
+        /// </summary>
+        NU1903 = 1903,
+
+        /// <summary>
+        /// Package with known low severity vulnerability
+        /// </summary>
+        NU1904 = 1904,
+
+        /// <summary>
         /// Undefined signature error
         /// </summary>
         NU3000 = 3000,

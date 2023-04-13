@@ -1324,35 +1324,21 @@ namespace NuGet.Commands
 
                     if (knownVulnerabilities?.Count() > 0)
                     {
-                        var sb = StringBuilderPool.Shared.Rent(1);
-                        try
+                        foreach (var knownVulnerability in knownVulnerabilities)
                         {
-                            sb.Clear();
-                            sb.Append("Package ");
-                            sb.Append(package.Name);
-                            sb.Append("/");
-                            sb.Append(package.Version);
-                            sb.AppendLine(" has known vulnerabilities:");
-
-                            foreach (var vuln in knownVulnerabilities)
-                            {
-                                sb.Append("  ");
-                                sb.AppendLine(vuln.Url.OriginalString);
-                                sb.Append("    Severity: ");
-                                sb.AppendLine(vuln.Severity.ToString());
-                                sb.Append("    Affected versions: ");
-                                sb.AppendLine(vuln.Versions.ToShortString());
-                            }
-
-                            var message = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1000, sb.ToString(),
+                            (string severityLabel, NuGetLogCode logCode) = GetSeverityLabelAndCode(knownVulnerability.Severity);
+                            string message = string.Format(Strings.Warning_PackageWithKnownVulnerability,
+                                package.Name,
+                                package.Version.ToNormalizedString(),
+                                severityLabel,
+                                knownVulnerability.Url);
+                            RestoreLogMessage restoreLogMessage =
+                                RestoreLogMessage.CreateWarning(logCode,
+                                message,
                                 package.Name,
                                 graph.TargetGraphName);
-                            message.ProjectPath = _request.Project.FilePath;
-                            logger.Log(message);
-                        }
-                        finally
-                        {
-                            StringBuilderPool.Shared.Return(sb);
+                            restoreLogMessage.ProjectPath = _request.Project.FilePath;
+                            logger.Log(restoreLogMessage);
                         }
                     }
                 }
@@ -1386,6 +1372,23 @@ namespace NuGet.Commands
                 }
 
                 return vulnerabilities != null ? vulnerabilities.ToList() : null;
+            }
+
+            static (string severityLabel, NuGetLogCode code) GetSeverityLabelAndCode(int severity)
+            {
+                switch (severity)
+                {
+                    case 1:
+                        return (Strings.Vulnerability_Severity_1, NuGetLogCode.NU1901);
+                    case 2:
+                        return (Strings.Vulnerability_Severity_2, NuGetLogCode.NU1902);
+                    case 3:
+                        return (Strings.Vulnerability_Severity_3, NuGetLogCode.NU1903);
+                    case 4:
+                        return (Strings.Vulnerability_Severity_1, NuGetLogCode.NU1901);
+                    default:
+                        return (Strings.Vulnerability_Severity_unknown, NuGetLogCode.NU1900);
+                }
             }
         }
 
