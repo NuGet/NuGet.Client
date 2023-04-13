@@ -8,9 +8,9 @@ steps:
       gci env:* | sort-object name
 
 - task: NuGetToolInstaller@0
-  displayName: "Use NuGet 4.9.6"
+  displayName: "Use NuGet 4.6.2"
   inputs:
-    versionSpec: "4.9.6"
+    versionSpec: "4.6.2"
 
 - task: PowerShell@1
   inputs:
