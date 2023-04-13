@@ -1316,35 +1316,84 @@ namespace NuGet.Commands
             GetVulnerabilityInfoResult? allVulnerabilityData = await GetAllVulnerabilityDataAsync(logger, cancellationToken);
             if (allVulnerabilityData == null) return;
 
-            foreach (var graph in graphs)
-            {
-                foreach (LibraryIdentity package in graph.Flattened.Select(i => i.Key).Where(p => p.Type == "package"))
-                {
-                    var knownVulnerabilities = GetKnownVulnerabilities(package.Name, package.Version, allVulnerabilityData.KnownVulnerabilities);
+            // multi-targeting projects often use the same package across multiple TFMs, so group to reduce output spam.
+            Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>? packagesWithKnownVulnerabilities =
+                allVulnerabilityData.KnownVulnerabilities != null
+                ? FindPackagesWithKnownVulnerabilities(graphs, allVulnerabilityData.KnownVulnerabilities)
+                : null;
 
-                    if (knownVulnerabilities?.Count() > 0)
+            if (packagesWithKnownVulnerabilities != null)
+            {
+                // .NET Framework and .NET Standard don't have Deconstructor methods for KeyValuePair :(
+                foreach (var kvp1 in packagesWithKnownVulnerabilities.OrderBy(p => p.Key.Id))
+                {
+                    PackageIdentity package = kvp1.Key;
+                    Dictionary<PackageVulnerabilityInfo, List<string>> vulnerabilities = kvp1.Value;
+                    foreach (var kvp2 in vulnerabilities.OrderBy(v => v.Key.Url.OriginalString))
                     {
-                        foreach (var knownVulnerability in knownVulnerabilities)
-                        {
-                            (string severityLabel, NuGetLogCode logCode) = GetSeverityLabelAndCode(knownVulnerability.Severity);
-                            string message = string.Format(Strings.Warning_PackageWithKnownVulnerability,
-                                package.Name,
-                                package.Version.ToNormalizedString(),
-                                severityLabel,
-                                knownVulnerability.Url);
-                            RestoreLogMessage restoreLogMessage =
-                                RestoreLogMessage.CreateWarning(logCode,
-                                message,
-                                package.Name,
-                                graph.TargetGraphName);
-                            restoreLogMessage.ProjectPath = _request.Project.FilePath;
-                            logger.Log(restoreLogMessage);
-                        }
+                        PackageVulnerabilityInfo vulnerability = kvp2.Key;
+                        List<string> affectedGraphs = kvp2.Value;
+                        (string severityLabel, NuGetLogCode logCode) = GetSeverityLabelAndCode(vulnerability.Severity);
+                        string message = string.Format(Strings.Warning_PackageWithKnownVulnerability,
+                            package.Id,
+                            package.Version.ToNormalizedString(),
+                            severityLabel,
+                            vulnerability.Url);
+                        RestoreLogMessage restoreLogMessage =
+                            RestoreLogMessage.CreateWarning(logCode,
+                            message,
+                            package.Id,
+                            affectedGraphs.ToArray());
+                        restoreLogMessage.ProjectPath = _request.Project.FilePath;
+                        logger.Log(restoreLogMessage);
                     }
                 }
             }
 
-            List<PackageVulnerabilityInfo>? GetKnownVulnerabilities(
+            static Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>?
+                FindPackagesWithKnownVulnerabilities(
+                    IEnumerable<RestoreTargetGraph> graphs,
+                    IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities)
+            {
+                Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>? result = null;
+
+                foreach (var graph in graphs)
+                {
+                    foreach (LibraryIdentity package in graph.Flattened.Select(i => i.Key).Where(p => p.Type == "package"))
+                    {
+                        var fromFile = GetKnownVulnerabilities(package.Name, package.Version, knownVulnerabilities);
+
+                        if (fromFile?.Count() > 0)
+                        {
+                            PackageIdentity packageIdentity = new(package.Name, package.Version);
+
+                            if (result == null)
+                            {
+                                result = new();
+                            }
+
+                            if (!result.TryGetValue(packageIdentity, out Dictionary<PackageVulnerabilityInfo, List<string>>? knownPackageVulnerabilities))
+                            {
+                                knownPackageVulnerabilities = new();
+                                result.Add(packageIdentity, knownPackageVulnerabilities);
+                            }
+
+                            foreach (PackageVulnerabilityInfo knownVulnerability in fromFile)
+                            {
+                                if (!knownPackageVulnerabilities.TryGetValue(knownVulnerability, out List<string>? affectedGraphs))
+                                {
+                                    affectedGraphs = new();
+                                    knownPackageVulnerabilities.Add(knownVulnerability, affectedGraphs);
+                                }
+                                affectedGraphs.Add(graph.TargetGraphName);
+                            }
+                        }
+                    }
+                }
+                return result;
+            }
+
+            static List<PackageVulnerabilityInfo>? GetKnownVulnerabilities(
                 string name,
                 NuGetVersion version,
                 IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities)
