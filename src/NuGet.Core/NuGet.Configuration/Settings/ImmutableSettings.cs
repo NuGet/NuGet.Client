@@ -57,10 +57,5 @@ namespace NuGet.Configuration
         {
             throw new NotSupportedException();
         }
-
-        public Dictionary<string, VirtualSettingSection> GetComputedSections()
-        {
-            return _settings.GetComputedSections();
-        }
     }
 }

@@ -45,12 +45,16 @@ namespace NuGet.CommandLine.XPlat
                 throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, args.AllOrConfigKey));
             }
 
-            var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory);
+            var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory) as Settings;
             ILogger logger = getLogger();
 
             if (args.AllOrConfigKey.Equals("all", StringComparison.OrdinalIgnoreCase))
             {
-                var sections = settings.GetComputedSections();
+                var sections = settings.ComputedSections;
+                if (sections == null)
+                {
+                    return;
+                }
                 if (args.ShowPath)
                 {
                     RunnerHelper.LogSectionsWithPaths(sections, logger);
@@ -135,7 +139,7 @@ namespace NuGet.CommandLine.XPlat
                 logger.LogMinimal(section.Key + ":");
                 var items = section.Value.Items;
 
-                var groupByConfigPathsQuery =
+                IEnumerable<IGrouping<string, SettingItem>> groupByConfigPathsQuery =
                     from item in items
                     group item by item.GetConfigPath() into newItemGroup
                     select newItemGroup;

@@ -259,7 +259,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Indicate that the NuGet configuration file path will be shown besides the configuration settings..
+        ///   Looks up a localized string similar to Indicate that the NuGet configuration file path will be shown beside the configuration settings..
         /// </summary>
         internal static string ConfigGetShowPathDescription {
             get {

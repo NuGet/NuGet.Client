@@ -58,9 +58,5 @@ namespace NuGet.Configuration
         /// Get a list of all the roots of the settings files used as part of this settings object
         /// </summary>
         IList<string> GetConfigRoots();
-        /// <summary>
-        /// Get a dictionary of settings sections
-        /// </summary>
-        Dictionary<string, VirtualSettingSection> GetComputedSections();
     }
 }
