@@ -1,6 +1,6 @@
 jobs:
 - job: Initialize_Build_SemanticVersion
-  timeoutInMinutes: 2
+  timeoutInMinutes: 5
   pool:
     vmImage: windows-latest
     demands:
