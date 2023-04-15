@@ -1355,6 +1355,16 @@ namespace NuGet.Commands
                 }
             }
 
+            if (allVulnerabilityData.Exceptions != null)
+            {
+                foreach (Exception exception in allVulnerabilityData.Exceptions.InnerExceptions)
+                {
+                    string messageText = "Error occurred while getting package vulnerability data: " + exception.Message;
+                    RestoreLogMessage logMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1900, messageText);
+                    logger.Log(logMessage);
+                }
+            }
+
             int ParseAuditLevel(string? auditLevel, ILogger logger)
             {
                 if (auditLevel == null)
