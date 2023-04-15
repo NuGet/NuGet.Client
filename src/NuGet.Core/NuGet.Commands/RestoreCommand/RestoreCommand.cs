@@ -278,9 +278,12 @@ namespace NuGet.Commands
                     });
                 }
 
-                telemetry.StartIntervalMeasure();
-                await CheckPackageVulnerabilitiesAsync(graphs, _logger, token);
-                telemetry.EndIntervalMeasure(VulnerablePackageCheck);
+                if (_request.Project.RestoreMetadata.RestoreAuditProperties.EnableAudit == true)
+                {
+                    telemetry.StartIntervalMeasure();
+                    await CheckPackageVulnerabilitiesAsync(graphs, _logger, token);
+                    telemetry.EndIntervalMeasure(VulnerablePackageCheck);
+                }
 
                 telemetry.StartIntervalMeasure();
                 // Create assets file
@@ -1316,15 +1319,17 @@ namespace NuGet.Commands
             GetVulnerabilityInfoResult? allVulnerabilityData = await GetAllVulnerabilityDataAsync(logger, cancellationToken);
             if (allVulnerabilityData == null) return;
 
+            int auditLevel = ParseAuditLevel(_request.Project.RestoreMetadata.RestoreAuditProperties.AuditLevel, logger);
+
             // multi-targeting projects often use the same package across multiple TFMs, so group to reduce output spam.
             Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>? packagesWithKnownVulnerabilities =
                 allVulnerabilityData.KnownVulnerabilities != null
-                ? FindPackagesWithKnownVulnerabilities(graphs, allVulnerabilityData.KnownVulnerabilities)
+                ? FindPackagesWithKnownVulnerabilities(graphs, allVulnerabilityData.KnownVulnerabilities, auditLevel)
                 : null;
 
             if (packagesWithKnownVulnerabilities != null)
             {
-                // .NET Framework and .NET Standard don't have Deconstructor methods for KeyValuePair :(
+                // .NET Framework and .NET Standard don't have Deconstructor methods for KeyValuePair
                 foreach (var kvp1 in packagesWithKnownVulnerabilities.OrderBy(p => p.Key.Id))
                 {
                     PackageIdentity package = kvp1.Key;
@@ -1350,10 +1355,42 @@ namespace NuGet.Commands
                 }
             }
 
+            int ParseAuditLevel(string? auditLevel, ILogger logger)
+            {
+                if (auditLevel == null)
+                {
+                    return 1;
+                }
+
+                if (string.Equals("low", auditLevel, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 1;
+                }
+                if (string.Equals("moderate", auditLevel, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 2;
+                }
+                if (string.Equals("high", auditLevel, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 3;
+                }
+                if (string.Equals("critical", auditLevel, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 4;
+                }
+
+                string messageText = string.Format(Strings.Error_InvalidNuGetAuditLevelValue, auditLevel, "low, moderate, high, critical");
+                RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+                message.ProjectPath = _request.Project.FilePath;
+                logger.Log(message);
+                return 1;
+            }
+
             static Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>?
                 FindPackagesWithKnownVulnerabilities(
                     IEnumerable<RestoreTargetGraph> graphs,
-                    IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities)
+                    IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities,
+                    int minSeverity)
             {
                 Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>? result = null;
 
@@ -1367,19 +1404,24 @@ namespace NuGet.Commands
                         {
                             PackageIdentity packageIdentity = new(package.Name, package.Version);
 
-                            if (result == null)
-                            {
-                                result = new();
-                            }
-
-                            if (!result.TryGetValue(packageIdentity, out Dictionary<PackageVulnerabilityInfo, List<string>>? knownPackageVulnerabilities))
-                            {
-                                knownPackageVulnerabilities = new();
-                                result.Add(packageIdentity, knownPackageVulnerabilities);
-                            }
-
                             foreach (PackageVulnerabilityInfo knownVulnerability in fromFile)
                             {
+                                if (knownVulnerability.Severity < minSeverity)
+                                {
+                                    continue;
+                                }
+
+                                if (result == null)
+                                {
+                                    result = new();
+                                }
+
+                                if (!result.TryGetValue(packageIdentity, out Dictionary<PackageVulnerabilityInfo, List<string>>? knownPackageVulnerabilities))
+                                {
+                                    knownPackageVulnerabilities = new();
+                                    result.Add(packageIdentity, knownPackageVulnerabilities);
+                                }
+
                                 if (!knownPackageVulnerabilities.TryGetValue(knownVulnerability, out List<string>? affectedGraphs))
                                 {
                                     affectedGraphs = new();

@@ -265,6 +265,9 @@ namespace NuGet.Commands
 
                     // Packages lock file properties
                     result.RestoreMetadata.RestoreLockProperties = GetRestoreLockProperites(specItem);
+
+                    // NuGet audit properties
+                    result.RestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem);
                 }
 
                 if (restoreType == ProjectStyle.PackagesConfig)
@@ -889,6 +892,17 @@ namespace NuGet.Commands
                 specItem.GetProperty("RestorePackagesWithLockFile"),
                 specItem.GetProperty("NuGetLockFilePath"),
                 IsPropertyTrue(specItem, "RestoreLockedMode"));
+        }
+
+        private static RestoreAuditProperties GetRestoreAuditProperties(IMSBuildItem specItem)
+        {
+            var result = new RestoreAuditProperties()
+            {
+                EnableAudit = StringComparer.InvariantCultureIgnoreCase.Equals(specItem.GetProperty("NuGetAudit"), "enable"),
+                AuditLevel = specItem.GetProperty("NuGetAuditLevel")
+            };
+
+            return result;
         }
 
         /// <summary>

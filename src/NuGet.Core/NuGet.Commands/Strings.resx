@@ -1068,4 +1068,10 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
 {2} - severity, for example low, moder, high, or critical
 {3} - URL for more info on the known vulnerability</comment>
   </data>
+  <data name="Error_InvalidNuGetAuditLevelValue" xml:space="preserve">
+    <value>Invalid NuGetAuditLevel value '{0}'. Expected values: {1}</value>
+    <comment>Don't translate 'NuGetAuditLevel'
+{0} - is the value from the customer's project file
+{1} is the list of valid values "low, moderate, high, critical" (these should not be translated either)</comment>
+  </data>
 </root>

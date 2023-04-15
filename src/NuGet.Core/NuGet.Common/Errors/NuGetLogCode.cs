@@ -122,6 +122,11 @@ namespace NuGet.Common
         NU1013 = 1013,
 
         /// <summary>
+        /// NuGetAuditLevel input errors
+        /// </summary>
+        NU1014 = 1014,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
