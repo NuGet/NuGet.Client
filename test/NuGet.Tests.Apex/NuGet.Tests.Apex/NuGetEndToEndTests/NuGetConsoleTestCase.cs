@@ -689,10 +689,10 @@ namespace NuGet.Tests.Apex
             EnsureVisualStudioHost();
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            {                
+            {
                 var packageName = "VerifyCacheFilePackage";
                 var packageVersion = "1.0.0";
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);                
+                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
                 var nugetConsole = GetConsole(testContext.Project);
 
                 //Act
@@ -715,7 +715,6 @@ namespace NuGet.Tests.Apex
         [NuGetWpfTheory]
         [InlineData(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")]
         [InlineData(ProjectTemplate.NetStandardClassLib, "PackageC", "1.0.0", "2.0.0", "PackageD", "1.1.0", "2.2.0")]
-
         public async Task UpdateAllPackagesInPMC(ProjectTemplate projectTemplate, string packageName1, string packageVersion1, string packageVersion2, string packageName2, string packageVersion3, string packageVersion4)
         {
             EnsureVisualStudioHost();
@@ -759,6 +758,118 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetIOSTemplates))]
+        public async Task InstallPackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageName = "IOSTestPackage";
+                var v100 = "1.0.0";
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, simpleTestPathContext: simpleTestPathContext))
+                {
+                    VisualStudio.AssertNoErrors();
+                    var solutionService = VisualStudio.Get<SolutionService>();
+                    testContext.SolutionService.Build();
+
+                    // Act
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    nugetConsole.InstallPackageFromPMC(packageName, v100);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                    // Assert
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v100, XunitLogger);
+                    Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+                }
+            }
+        }
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetIOSTemplates))]
+        public async Task UpdatePackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageName = "IOSTestPackage";
+                var v100 = "1.0.0";
+                var v200 = "2.0.0";
+
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v200);
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, simpleTestPathContext: simpleTestPathContext))
+                {
+                    VisualStudio.AssertNoErrors();
+                    var solutionService = VisualStudio.Get<SolutionService>();
+                    testContext.SolutionService.Build();
+
+                    // Act
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    nugetConsole.InstallPackageFromPMC(packageName, v100);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                    nugetConsole.UpdatePackageFromPMC(packageName, v200);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                    // Assert
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v200, XunitLogger);
+                    Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+                }
+            }
+        }
+
+        [NuGetWpfTheory]
+        [MemberData(nameof(GetIOSTemplates))]
+        public async Task UninstallPackagForIOSProjectInPMC(ProjectTemplate projectTemplate)
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                //Arrange
+                var PackageName = "IOSTestPackage";
+                var v100 = "1.0.0";
+
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, v100);
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, simpleTestPathContext: simpleTestPathContext))
+                {
+                    VisualStudio.AssertNoErrors();
+                    var solutionService = VisualStudio.Get<SolutionService>();
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                    // Act
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    nugetConsole.InstallPackageFromPMC(PackageName, v100);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                    nugetConsole.UninstallPackageFromPMC(PackageName);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
+                    //Asset
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                    CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, PackageName, v100, XunitLogger);
+                    Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+                }
+            }
+        }
+
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()
@@ -779,6 +890,11 @@ namespace NuGet.Tests.Apex
         public static IEnumerable<object[]> GetPackagesConfigTemplates()
         {
             yield return new object[] { ProjectTemplate.ClassLibrary };
+        }
+
+        public static IEnumerable<object[]> GetIOSTemplates()
+        {
+            yield return new object[] { ProjectTemplate.IOSLibraryApp };
         }
     }
 }
