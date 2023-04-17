@@ -10,15 +10,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Commands.Restore.Utility;
 using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Model;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
@@ -281,18 +280,19 @@ namespace NuGet.Commands
                 if (_request.Project.RestoreMetadata.RestoreAuditProperties.EnableAudit == true)
                 {
                     telemetry.StartIntervalMeasure();
-                    await CheckPackageVulnerabilitiesAsync(graphs, _logger, token);
+                    AuditUtility audit = new AuditUtility(_request.Project.RestoreMetadata.RestoreAuditProperties, _request.Project.FilePath, graphs, _request.DependencyProviders.RemoteProviders, _logger);
+                    await audit.CheckPackageVulnerabilitiesAsync(token);
                     telemetry.EndIntervalMeasure(VulnerablePackageCheck);
                 }
 
                 telemetry.StartIntervalMeasure();
                 // Create assets file
                 LockFile assetsFile = BuildAssetsFile(
-                _request.ExistingLockFile,
-                _request.Project,
-                graphs,
-                localRepositories,
-                contextForProject);
+                    _request.ExistingLockFile,
+                    _request.Project,
+                    graphs,
+                    localRepositories,
+                    contextForProject);
                 telemetry.EndIntervalMeasure(GenerateAssetsFileDuration);
 
                 IList<CompatibilityCheckResult> checkResults = null;
@@ -1310,253 +1310,6 @@ namespace NuGet.Commands
                 project,
                 msbuildProjectPath: null,
                 projectReferences: Enumerable.Empty<string>());
-        }
-
-#nullable enable
-
-        private async Task CheckPackageVulnerabilitiesAsync(IEnumerable<RestoreTargetGraph> graphs, RestoreCollectorLogger logger, CancellationToken cancellationToken)
-        {
-            GetVulnerabilityInfoResult? allVulnerabilityData = await GetAllVulnerabilityDataAsync(logger, cancellationToken);
-            if (allVulnerabilityData == null) return;
-
-            int auditLevel = ParseAuditLevel(_request.Project.RestoreMetadata.RestoreAuditProperties.AuditLevel, logger);
-
-            // multi-targeting projects often use the same package across multiple TFMs, so group to reduce output spam.
-            Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>? packagesWithKnownVulnerabilities =
-                allVulnerabilityData.KnownVulnerabilities != null
-                ? FindPackagesWithKnownVulnerabilities(graphs, allVulnerabilityData.KnownVulnerabilities, auditLevel)
-                : null;
-
-            if (packagesWithKnownVulnerabilities != null)
-            {
-                // .NET Framework and .NET Standard don't have Deconstructor methods for KeyValuePair
-                foreach (var kvp1 in packagesWithKnownVulnerabilities.OrderBy(p => p.Key.Id))
-                {
-                    PackageIdentity package = kvp1.Key;
-                    Dictionary<PackageVulnerabilityInfo, List<string>> vulnerabilities = kvp1.Value;
-                    foreach (var kvp2 in vulnerabilities.OrderBy(v => v.Key.Url.OriginalString))
-                    {
-                        PackageVulnerabilityInfo vulnerability = kvp2.Key;
-                        List<string> affectedGraphs = kvp2.Value;
-                        (string severityLabel, NuGetLogCode logCode) = GetSeverityLabelAndCode(vulnerability.Severity);
-                        string message = string.Format(Strings.Warning_PackageWithKnownVulnerability,
-                            package.Id,
-                            package.Version.ToNormalizedString(),
-                            severityLabel,
-                            vulnerability.Url);
-                        RestoreLogMessage restoreLogMessage =
-                            RestoreLogMessage.CreateWarning(logCode,
-                            message,
-                            package.Id,
-                            affectedGraphs.ToArray());
-                        restoreLogMessage.ProjectPath = _request.Project.FilePath;
-                        logger.Log(restoreLogMessage);
-                    }
-                }
-            }
-
-            if (allVulnerabilityData.Exceptions != null)
-            {
-                foreach (Exception exception in allVulnerabilityData.Exceptions.InnerExceptions)
-                {
-                    string messageText = "Error occurred while getting package vulnerability data: " + exception.Message;
-                    RestoreLogMessage logMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1900, messageText);
-                    logger.Log(logMessage);
-                }
-            }
-
-            int ParseAuditLevel(string? auditLevel, ILogger logger)
-            {
-                if (auditLevel == null)
-                {
-                    return 1;
-                }
-
-                if (string.Equals("low", auditLevel, StringComparison.OrdinalIgnoreCase))
-                {
-                    return 1;
-                }
-                if (string.Equals("moderate", auditLevel, StringComparison.OrdinalIgnoreCase))
-                {
-                    return 2;
-                }
-                if (string.Equals("high", auditLevel, StringComparison.OrdinalIgnoreCase))
-                {
-                    return 3;
-                }
-                if (string.Equals("critical", auditLevel, StringComparison.OrdinalIgnoreCase))
-                {
-                    return 4;
-                }
-
-                string messageText = string.Format(Strings.Error_InvalidNuGetAuditLevelValue, auditLevel, "low, moderate, high, critical");
-                RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
-                message.ProjectPath = _request.Project.FilePath;
-                logger.Log(message);
-                return 1;
-            }
-
-            static Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>?
-                FindPackagesWithKnownVulnerabilities(
-                    IEnumerable<RestoreTargetGraph> graphs,
-                    IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities,
-                    int minSeverity)
-            {
-                Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>? result = null;
-
-                foreach (var graph in graphs)
-                {
-                    foreach (LibraryIdentity package in graph.Flattened.Select(i => i.Key).Where(p => p.Type == "package"))
-                    {
-                        var fromFile = GetKnownVulnerabilities(package.Name, package.Version, knownVulnerabilities);
-
-                        if (fromFile?.Count() > 0)
-                        {
-                            PackageIdentity packageIdentity = new(package.Name, package.Version);
-
-                            foreach (PackageVulnerabilityInfo knownVulnerability in fromFile)
-                            {
-                                if (knownVulnerability.Severity < minSeverity)
-                                {
-                                    continue;
-                                }
-
-                                if (result == null)
-                                {
-                                    result = new();
-                                }
-
-                                if (!result.TryGetValue(packageIdentity, out Dictionary<PackageVulnerabilityInfo, List<string>>? knownPackageVulnerabilities))
-                                {
-                                    knownPackageVulnerabilities = new();
-                                    result.Add(packageIdentity, knownPackageVulnerabilities);
-                                }
-
-                                if (!knownPackageVulnerabilities.TryGetValue(knownVulnerability, out List<string>? affectedGraphs))
-                                {
-                                    affectedGraphs = new();
-                                    knownPackageVulnerabilities.Add(knownVulnerability, affectedGraphs);
-                                }
-                                affectedGraphs.Add(graph.TargetGraphName);
-                            }
-                        }
-                    }
-                }
-                return result;
-            }
-
-            static List<PackageVulnerabilityInfo>? GetKnownVulnerabilities(
-                string name,
-                NuGetVersion version,
-                IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities)
-            {
-                HashSet<PackageVulnerabilityInfo>? vulnerabilities = null;
-
-                if (knownVulnerabilities == null) return null;
-
-                foreach (var file in knownVulnerabilities)
-                {
-                    if (file.TryGetValue(name, out var packageVulnerabilities))
-                    {
-                        foreach (var vulnInfo in packageVulnerabilities)
-                        {
-                            if (vulnInfo.Versions.Satisfies(version))
-                            {
-                                if (vulnerabilities == null)
-                                {
-                                    vulnerabilities = new();
-                                }
-                                vulnerabilities.Add(vulnInfo);
-                            }
-                        }
-                    }
-                }
-
-                return vulnerabilities != null ? vulnerabilities.ToList() : null;
-            }
-
-            static (string severityLabel, NuGetLogCode code) GetSeverityLabelAndCode(int severity)
-            {
-                switch (severity)
-                {
-                    case 1:
-                        return (Strings.Vulnerability_Severity_1, NuGetLogCode.NU1901);
-                    case 2:
-                        return (Strings.Vulnerability_Severity_2, NuGetLogCode.NU1902);
-                    case 3:
-                        return (Strings.Vulnerability_Severity_3, NuGetLogCode.NU1903);
-                    case 4:
-                        return (Strings.Vulnerability_Severity_1, NuGetLogCode.NU1901);
-                    default:
-                        return (Strings.Vulnerability_Severity_unknown, NuGetLogCode.NU1900);
-                }
-            }
-        }
-
-        private async Task<GetVulnerabilityInfoResult?> GetAllVulnerabilityDataAsync(ILogger logger, CancellationToken cancellationToken)
-        {
-            var sources = new List<SourceRepository>(_request.DependencyProviders.RemoteProviders.Count);
-            sources.AddRange(_request.DependencyProviders.RemoteProviders.Select(p => p.SourceRepository).Where(s => s is not null));
-
-            var results = new Task<GetVulnerabilityInfoResult?>[sources.Count];
-            for (int i = 0; i < sources.Count; i++)
-            {
-                SourceRepository source = sources[i];
-                results[i] = GetVulnerabilityInfoAsync(source, logger, cancellationToken);
-            }
-
-            await Task.WhenAll(results);
-            if (cancellationToken.IsCancellationRequested)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-            }
-
-            List<Exception>? errors = null;
-            List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities = null;
-            foreach (var resultTask in results)
-            {
-                var result = await resultTask;
-                if (result is null) continue;
-
-                if (result.KnownVulnerabilities != null)
-                {
-                    if (knownVulnerabilities == null)
-                    {
-                        knownVulnerabilities = new();
-                    }
-
-                    knownVulnerabilities.AddRange(result.KnownVulnerabilities);
-                }
-
-                if (result.Exceptions != null)
-                {
-                    if (errors == null)
-                    {
-                        errors = new();
-                    }
-
-                    errors.AddRange(result.Exceptions.InnerExceptions);
-                }
-            }
-
-            GetVulnerabilityInfoResult? final =
-                knownVulnerabilities != null || errors != null
-                ? new(knownVulnerabilities, errors != null ? new AggregateException(errors) : null)
-                : null;
-            return final;
-
-            static async Task<GetVulnerabilityInfoResult?> GetVulnerabilityInfoAsync(SourceRepository source, ILogger logger, CancellationToken cancellationToken)
-            {
-                IVulnerabilityInfoResource? vulnerabilityInfoResource = await source.GetResourceAsync<IVulnerabilityInfoResource>(cancellationToken);
-                if (vulnerabilityInfoResource == null)
-                {
-                    return null;
-                }
-
-                using SourceCacheContext cacheContext = new();
-                GetVulnerabilityInfoResult result = await vulnerabilityInfoResource.GetVulnerabilityInfoAsync(cacheContext, logger, cancellationToken);
-                return result;
-            }
         }
     }
 }
