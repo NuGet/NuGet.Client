@@ -86,10 +86,16 @@ namespace NuGet.CommandLine.XPlat
         public static void Run(ConfigSetArgs args, Func<ILogger> getLogger)
         {
             RunnerHelper.ValidateArguments(args, getLogger);
-
-            var settings = RunnerHelper.GetSettingsFromDirectory(args.ConfigFile);
-
-            SettingsUtility.SetConfigValue(settings, args.ConfigKey, args.ConfigValue);
+            if (string.IsNullOrEmpty(args.ConfigFile))
+            {
+                var settingsFromDirectory = RunnerHelper.GetSettingsFromDirectory(null);
+                SettingsUtility.SetConfigValue(settingsFromDirectory, args.ConfigKey, args.ConfigValue);
+            }
+            else
+            {
+                var settings = RunnerHelper.GetSettingsFromFile(args.ConfigFile);
+                SettingsUtility.SetConfigValue(settings, args.ConfigKey, args.ConfigValue);
+            }
         }
     }
 
@@ -114,6 +120,15 @@ namespace NuGet.CommandLine.XPlat
             return NuGet.Configuration.Settings.LoadDefaultSettings(
                 directory,
                 configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+        }
+
+        public static ISettings GetSettingsFromFile(string filePath)
+        {
+            var directory = Path.GetDirectoryName(filePath);
+            return NuGet.Configuration.Settings.LoadDefaultSettings(
+                directory,
+                configFileName: filePath,
                 machineWideSettings: new XPlatMachineWideSetting());
         }
 

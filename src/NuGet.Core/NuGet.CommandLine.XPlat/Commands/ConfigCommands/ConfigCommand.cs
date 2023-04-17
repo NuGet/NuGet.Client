@@ -68,7 +68,6 @@ namespace NuGet.CommandLine.XPlat
                         "CONFIG_VALUE",
                         "<Config value description>");
                     var configFile = SetCmd.Option(
-                        // should this be --config-file? 
                         "--configfile",
                         "<Config file description>",
                         CommandOptionType.SingleValue);
