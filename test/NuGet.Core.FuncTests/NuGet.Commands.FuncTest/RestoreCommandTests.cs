@@ -2242,8 +2242,8 @@ namespace NuGet.Commands.FuncTest
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
-                NewMappingID = packageA.Id, // Act
-                NewMappingSource = "InvalidSource"); // Act
+                newMappingID: packageA.Id, // Act
+                newMappingSource: "InvalidSource"); // Act
 
             IReadOnlyList<RestoreSummaryRequest> restoreSummaryRequests = await dgProvider.CreateRequests(restoreContext);
 
@@ -2295,8 +2295,8 @@ namespace NuGet.Commands.FuncTest
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
-                NewMappingID = packageA.Id, // Act
-                NewMappingSource = pathContext.PackageSource); // Act
+                newMappingID: packageA.Id, // Act
+                newMappingSource: pathContext.PackageSource); // Act
 
             IReadOnlyList<RestoreSummaryRequest> restoreSummaryRequests = await dgProvider.CreateRequests(restoreContext);
 
@@ -2347,8 +2347,8 @@ namespace NuGet.Commands.FuncTest
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
-                NewMappingID = packageA.Id, // Act
-                NewMappingSource = pathContext.PackageSource); // Act
+                newMappingID: packageA.Id, // Act
+                newMappingSource: pathContext.PackageSource); // Act
 
             IReadOnlyList<RestoreSummaryRequest> restoreSummaryRequests = await dgProvider.CreateRequests(restoreContext);
 
