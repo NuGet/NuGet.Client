@@ -61,10 +61,5 @@ namespace Test.Utility
         {
             SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
-
-        public Dictionary<string, VirtualSettingSection> GetComputedSections()
-        {
-            throw new NotImplementedException();
-        }
     }
 }
