@@ -12,6 +12,10 @@ namespace NuGet.ProjectModel
 {
     public class ProjectRestoreMetadata : IEquatable<ProjectRestoreMetadata>
     {
+        public ProjectRestoreMetadata()
+        {
+        }
+
         /// <summary>
         /// Restore behavior type.
         /// </summary>
@@ -125,7 +129,7 @@ namespace NuGet.ProjectModel
 
         public bool CentralPackageTransitivePinningEnabled { get; set; }
 
-        public RestoreAuditProperties RestoreAuditProperties { get; set; }
+        public RestoreAuditProperties RestoreAuditProperties { get; set; } = new RestoreAuditProperties();
 
         public override int GetHashCode()
         {
@@ -262,7 +266,7 @@ namespace NuGet.ProjectModel
             clone.CentralPackageVersionsEnabled = CentralPackageVersionsEnabled;
             clone.CentralPackageVersionOverrideDisabled = CentralPackageVersionOverrideDisabled;
             clone.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
-            clone.RestoreAuditProperties = RestoreAuditProperties?.Clone();
+            clone.RestoreAuditProperties = RestoreAuditProperties.Clone();
         }
     }
 }
