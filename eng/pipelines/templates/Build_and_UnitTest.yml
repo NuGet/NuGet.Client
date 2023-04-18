@@ -90,6 +90,7 @@ steps:
   inputs:
     command: "custom"
     arguments: "sources add -Name ApexFeed -Source $(ApexPackageFeedUrl) -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
+  condition: " and(succeeded(), eq(variables['AddApexFeedSource'], 'true'))"
 
 - task: MSBuild@1
   displayName: "Restore for VS2019"
