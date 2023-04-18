@@ -28,6 +28,7 @@ namespace NuGet.Commands
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
         private readonly LockFileBuilderCache _lockFileBuilderCache;
+        private readonly (string NewMappingId, string NewMappingSource)? _newMappingIdAndSource = null;
 
         public DependencyGraphSpecRequestProvider(
             RestoreCommandProvidersCache providerCache,
@@ -38,14 +39,30 @@ namespace NuGet.Commands
             _lockFileBuilderCache = new LockFileBuilderCache();
         }
 
-        public Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(RestoreArgs restoreContext)
+        public DependencyGraphSpecRequestProvider(
+            RestoreCommandProvidersCache providerCache,
+            DependencyGraphSpec dgFile,
+            string newMappingID = null,
+            string newMappingSource = null)
+            : this(providerCache, dgFile)
+        {
+            if (newMappingID != null && _newMappingIdAndSource != null)
+            {
+                _newMappingIdAndSource = (newMappingID, newMappingSource);
+            }
+        }
+
+        public Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(
+            RestoreArgs restoreContext)
         {
             var requests = GetRequestsFromItems(restoreContext, _dgFile);
 
             return Task.FromResult(requests);
         }
 
-        private IReadOnlyList<RestoreSummaryRequest> GetRequestsFromItems(RestoreArgs restoreContext, DependencyGraphSpec dgFile)
+        private IReadOnlyList<RestoreSummaryRequest> GetRequestsFromItems(
+            RestoreArgs restoreContext,
+            DependencyGraphSpec dgFile)
         {
             if (restoreContext == null)
             {
@@ -161,10 +178,11 @@ namespace NuGet.Commands
             var settings = Settings.LoadImmutableSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths, settingsLoadingContext);
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
+
             PackageSourceMapping packageSourceMapping;
-            if (restoreArgs.NewMappingSource != null && restoreArgs.NewMappingID != null)
+            if (_newMappingIdAndSource != null)
             {
-                packageSourceMapping = GetExistingMappingsWithGlobPatternToNewSource(restoreArgs, settings);
+                packageSourceMapping = GetExistingMappingsWithGlobPatternToNewSource(settings);
             }
             else
             {
@@ -226,22 +244,29 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Reads existing Package Source Mappings from settings and adds a new mapping to pattern, <see cref="RestoreArgs.NewMappingID"/>, and
-        /// a glob "*" pattern for the <see cref="RestoreArgs.NewMappingSource"/>.
-        /// The intention is that Preview Restore can run and expect all newly installed packages being source mapped to the new source.
+        /// Reads existing Package Source Mappings from settings and appends a new mapping, <see cref="_newMappingIdAndSource"/>.
+        /// Additionally, a glob "*" pattern is appended for the the new mapping source.
+        /// The intention is that Preview Restore can run and expect all newly installed packages to be source mapped to the new source.
         /// Does not write to settings.
         /// </summary>
-        /// <param name="restoreArgs">Reads <see cref="RestoreArgs.NewMappingSource"/>.</param>
         /// <param name="settings">Reads existing Package Source Mappings, but does not write them.</param>
-        /// <returns></returns>
-        private static PackageSourceMapping GetExistingMappingsWithGlobPatternToNewSource(RestoreArgs restoreArgs, ISettings settings)
+        /// <returns>If a new mapping was provided, returns all persisted mappings appended with the new mapping. Otherwise, null.</returns>
+        private PackageSourceMapping GetExistingMappingsWithGlobPatternToNewSource(ISettings settings)
         {
+            if (_newMappingIdAndSource is null)
+            {
+                return null;
+            }
+
+            string newMappingId = _newMappingIdAndSource.Value.NewMappingId;
+            string newMappingSource = _newMappingIdAndSource.Value.NewMappingSource;
+
             PackageSourceMapping packageSourceMapping;
             PackageSourceMappingProvider mappingProvider = new(settings);
 
             List<PackagePatternItem> newPatternItems = new()
             {
-                new PackagePatternItem(restoreArgs.NewMappingID),
+                new PackagePatternItem(newMappingId),
                 new PackagePatternItem("*")
             };
 
@@ -249,7 +274,7 @@ namespace NuGet.Commands
             List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new();
 
             PackageSourceMappingSourceItem newPackageSourceMappingItemForSource = new(
-                    restoreArgs.NewMappingSource,
+                    newMappingSource,
                     packagePatternItems: newPatternItems);
 
             // No Package Source Mappings existed, so simply create the new mapping.
@@ -263,7 +288,7 @@ namespace NuGet.Commands
 
                 PackageSourceMappingSourceItem existingPackageSourceMappingItemForSource =
                     existingPackageSourceMappingItems
-                    .Where(mappingItem => mappingItem.Key == restoreArgs.NewMappingSource)
+                    .Where(mappingItem => mappingItem.Key == newMappingSource)
                     .FirstOrDefault();
 
                 // Source is being mapped for the first time.

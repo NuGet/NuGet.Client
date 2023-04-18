@@ -154,7 +154,10 @@ namespace NuGet.Commands
         /// <summary>
         /// Create restore requests but do not execute them.
         /// </summary>
-        public static async Task<IReadOnlyList<RestoreSummaryRequest>> GetRequests(RestoreArgs restoreContext)
+        public static async Task<IReadOnlyList<RestoreSummaryRequest>> GetRequests(
+            RestoreArgs restoreContext,
+            string newMappingID = null,
+            string newMappingSource = null)
         {
             // Get requests
             var requests = new List<RestoreSummaryRequest>();

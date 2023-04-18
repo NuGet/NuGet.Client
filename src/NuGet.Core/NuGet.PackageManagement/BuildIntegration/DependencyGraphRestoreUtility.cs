@@ -191,11 +191,10 @@ namespace NuGet.PackageManagement
                     isRestoreOriginalAction: false,
                     restoreForceEvaluate: true,
                     additionalMessasges: null,
-                    progressReporter: null,
-                    newMappingID,
-                    newMappingSource);
+                    progressReporter: null);
 
-                var requests = await RestoreRunner.GetRequests(restoreContext);
+                var requests = await RestoreRunner.GetRequests(restoreContext, newMappingID, newMappingSource);
+                //requests[0].Request.PackageSourceMapping
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
                 return results.Single();
             }
@@ -249,11 +248,9 @@ namespace NuGet.PackageManagement
                     isRestoreOriginalAction: false,
                     restoreForceEvaluate: true,
                     additionalMessasges: null,
-                    progressReporter: null,
-                    newMappingID,
-                    newMappingSource);
+                    progressReporter: null);
 
-                var requests = await RestoreRunner.GetRequests(restoreContext);
+                var requests = await RestoreRunner.GetRequests(restoreContext, newMappingID, newMappingSource);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
                 return results;
             }
@@ -422,9 +419,7 @@ namespace NuGet.PackageManagement
             bool isRestoreOriginalAction,
             bool restoreForceEvaluate,
             IReadOnlyList<IAssetsLogMessage> additionalMessasges,
-            IRestoreProgressReporter progressReporter,
-            string newMappingID = null,
-            string newMappingSource = null)
+            IRestoreProgressReporter progressReporter)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings, enablePackageSourcesChangedEvent: false));
@@ -447,9 +442,7 @@ namespace NuGet.PackageManagement
                 IsRestoreOriginalAction = isRestoreOriginalAction,
                 RestoreForceEvaluate = restoreForceEvaluate,
                 AdditionalMessages = additionalMessasges,
-                ProgressReporter = progressReporter,
-                NewMappingID = newMappingID,
-                NewMappingSource = newMappingSource
+                ProgressReporter = progressReporter
             };
 
             return restoreContext;
