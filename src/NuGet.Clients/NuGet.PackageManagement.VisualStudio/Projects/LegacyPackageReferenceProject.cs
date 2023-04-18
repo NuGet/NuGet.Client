@@ -406,6 +406,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
+            string nugetAuditValue = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAudit);
+            bool auditEnabled = string.Equals("enable", nugetAuditValue, StringComparison.InvariantCultureIgnoreCase);
+            string auditLevel = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditLevel);
+            RestoreAuditProperties auditProperties = new RestoreAuditProperties()
+            {
+                EnableAudit = auditEnabled,
+                AuditLevel = auditLevel
+            };
+
             var msbuildProjectExtensionsPath = await GetMSBuildProjectExtensionsPathAsync();
             return new PackageSpec(tfis)
             {
@@ -448,6 +457,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     CentralPackageVersionsEnabled = isCpvmEnabled,
                     CentralPackageVersionOverrideDisabled = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageVersionOverrideEnabled).EqualsFalse(),
                     CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageTransitivePinningEnabled)),
+                    RestoreAuditProperties = auditProperties,
                 }
             };
         }

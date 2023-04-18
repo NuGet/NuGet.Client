@@ -300,6 +300,21 @@ namespace NuGet.SolutionRestoreManager
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.CentralPackageTransitivePinningEnabled, MSBuildStringUtility.IsTrue);
         }
 
+        internal static RestoreAuditProperties GetRestoreAuditProperties(IEnumerable tfms)
+        {
+            bool enableAudit = GetSingleNonEvaluatedPropertyOrNull(
+                tfms,
+                ProjectBuildProperties.NuGetAudit,
+                value => string.Equals(value, "enable", StringComparison.InvariantCultureIgnoreCase));
+            string auditLevel = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditLevel, s => s);
+
+            return new RestoreAuditProperties()
+            {
+                EnableAudit = enableAudit,
+                AuditLevel = auditLevel
+            };
+        }
+
         private static NuGetFramework GetToolFramework(IEnumerable targetFrameworks)
         {
             return GetSingleNonEvaluatedPropertyOrNull(
