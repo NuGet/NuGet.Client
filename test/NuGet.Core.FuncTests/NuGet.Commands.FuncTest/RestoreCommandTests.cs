@@ -2233,15 +2233,17 @@ namespace NuGet.Commands.FuncTest
             var restoreContext = new RestoreArgs()
             {
                 Sources = new List<string>() { pathContext.PackageSource },
-                NewMappingID = packageA.Id, // Act
-                NewMappingSource = "InvalidSource", // Act
                 GlobalPackagesFolder = pathContext.UserPackagesFolder,
                 Log = logger,
                 CacheContext = new SourceCacheContext()
             };
 
             DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
-            var dgProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgSpec);
+            var dgProvider = new DependencyGraphSpecRequestProvider(
+                new RestoreCommandProvidersCache(),
+                dgSpec,
+                NewMappingID = packageA.Id, // Act
+                NewMappingSource = "InvalidSource"); // Act
 
             IReadOnlyList<RestoreSummaryRequest> restoreSummaryRequests = await dgProvider.CreateRequests(restoreContext);
 
@@ -2284,15 +2286,17 @@ namespace NuGet.Commands.FuncTest
             var restoreContext = new RestoreArgs()
             {
                 Sources = new List<string>() { pathContext.PackageSource },
-                NewMappingID = packageA.Id, // Act
-                NewMappingSource = pathContext.PackageSource, // Act
                 GlobalPackagesFolder = pathContext.UserPackagesFolder,
                 Log = logger,
                 CacheContext = new SourceCacheContext()
             };
 
             DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
-            var dgProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgSpec);
+            var dgProvider = new DependencyGraphSpecRequestProvider(
+                new RestoreCommandProvidersCache(),
+                dgSpec,
+                NewMappingID = packageA.Id, // Act
+                NewMappingSource = pathContext.PackageSource); // Act
 
             IReadOnlyList<RestoreSummaryRequest> restoreSummaryRequests = await dgProvider.CreateRequests(restoreContext);
 
@@ -2334,15 +2338,17 @@ namespace NuGet.Commands.FuncTest
             var restoreContext = new RestoreArgs()
             {
                 Sources = new List<string>() { pathContext.PackageSource },
-                NewMappingID = packageA.Id, // Act
-                NewMappingSource = pathContext.PackageSource, // Act
                 GlobalPackagesFolder = pathContext.UserPackagesFolder,
                 Log = logger,
                 CacheContext = new SourceCacheContext()
             };
 
             DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
-            var dgProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgSpec);
+            var dgProvider = new DependencyGraphSpecRequestProvider(
+                new RestoreCommandProvidersCache(),
+                dgSpec
+                NewMappingID = packageA.Id, // Act
+                NewMappingSource = pathContext.PackageSource); // Act
 
             IReadOnlyList<RestoreSummaryRequest> restoreSummaryRequests = await dgProvider.CreateRequests(restoreContext);
 
