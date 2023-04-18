@@ -280,7 +280,12 @@ namespace NuGet.Commands
                 if (_request.Project.RestoreMetadata.RestoreAuditProperties.EnableAudit == true)
                 {
                     telemetry.StartIntervalMeasure();
-                    AuditUtility audit = new AuditUtility(_request.Project.RestoreMetadata.RestoreAuditProperties, _request.Project.FilePath, graphs, _request.DependencyProviders.RemoteProviders, _logger);
+                    AuditUtility audit = new AuditUtility(
+                        _request.Project.RestoreMetadata.RestoreAuditProperties,
+                        _request.Project.FilePath,
+                        graphs,
+                        _request.DependencyProviders.VulnerabilityInfoProviders,
+                        _logger);
                     await audit.CheckPackageVulnerabilitiesAsync(token);
                     telemetry.EndIntervalMeasure(VulnerablePackageCheck);
                 }

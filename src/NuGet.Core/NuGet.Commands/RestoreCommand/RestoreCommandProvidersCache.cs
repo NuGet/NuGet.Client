@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using NuGet.Common;
@@ -25,6 +24,9 @@ namespace NuGet.Commands
 
         private readonly ConcurrentDictionary<string, NuGetv3LocalRepository> _globalCache
             = new ConcurrentDictionary<string, NuGetv3LocalRepository>(PathUtility.GetStringComparerBasedOnOS());
+
+        private readonly ConcurrentDictionary<SourceRepository, IVulnerabilityInformationProvider> _vulnerabilityInformationProviders
+            = new ConcurrentDictionary<SourceRepository, IVulnerabilityInformationProvider>();
 
         private readonly LocalPackageFileCache _fileCache = new LocalPackageFileCache();
 
@@ -115,7 +117,14 @@ namespace NuGet.Commands
                 remoteProviders.Add(remoteProvider);
             }
 
-            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, _fileCache);
+            var vulnerabilityInfoProviders = new List<IVulnerabilityInformationProvider>(sources.Count);
+            foreach (var source in sources)
+            {
+                IVulnerabilityInformationProvider provider = _vulnerabilityInformationProviders.GetOrAdd(source, s => new VulnerabilityInformationProvider(s, log));
+                vulnerabilityInfoProviders.Add(provider);
+            }
+
+            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, _fileCache, vulnerabilityInfoProviders);
         }
     }
 }

@@ -11,8 +11,6 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Model;
 using NuGet.Versioning;
 
@@ -23,20 +21,20 @@ namespace NuGet.Commands.Restore.Utility
         private readonly ProjectModel.RestoreAuditProperties _restoreAuditProperties;
         private readonly string _projectFullPath;
         private readonly IEnumerable<RestoreTargetGraph> _targetGraphs;
-        private readonly IReadOnlyList<DependencyResolver.IRemoteDependencyProvider> _remoteProviders;
+        private readonly IReadOnlyList<IVulnerabilityInformationProvider> _vulnerabilityInfoProviders;
         private readonly ILogger _logger;
 
         public AuditUtility(
             ProjectModel.RestoreAuditProperties restoreAuditProperties,
             string projectFullPath,
             IEnumerable<RestoreTargetGraph> graphs,
-            IReadOnlyList<DependencyResolver.IRemoteDependencyProvider> remoteProviders,
+            IReadOnlyList<IVulnerabilityInformationProvider> vulnerabilityInformationProviders,
             ILogger logger)
         {
             _restoreAuditProperties = restoreAuditProperties;
             _projectFullPath = projectFullPath;
             _targetGraphs = graphs;
-            _remoteProviders = remoteProviders;
+            _vulnerabilityInfoProviders = vulnerabilityInformationProviders;
             _logger = logger;
         }
 
@@ -204,14 +202,11 @@ namespace NuGet.Commands.Restore.Utility
 
         private async Task<GetVulnerabilityInfoResult?> GetAllVulnerabilityDataAsync(CancellationToken cancellationToken)
         {
-            var sources = new List<SourceRepository>(_remoteProviders.Count);
-            sources.AddRange(_remoteProviders.Select(p => p.SourceRepository).Where(s => s is not null));
-
-            var results = new Task<GetVulnerabilityInfoResult?>[sources.Count];
-            for (int i = 0; i < sources.Count; i++)
+            var results = new Task<GetVulnerabilityInfoResult?>[_vulnerabilityInfoProviders.Count];
+            for (int i = 0; i < _vulnerabilityInfoProviders.Count; i++)
             {
-                SourceRepository source = sources[i];
-                results[i] = GetVulnerabilityInfoAsync(source, _logger, cancellationToken);
+                IVulnerabilityInformationProvider provider = _vulnerabilityInfoProviders[i];
+                results[i] = provider.GetVulnerabilityInformationAsync(cancellationToken);
             }
 
             await Task.WhenAll(results);
@@ -253,19 +248,6 @@ namespace NuGet.Commands.Restore.Utility
                 ? new(knownVulnerabilities, errors != null ? new AggregateException(errors) : null)
                 : null;
             return final;
-
-            static async Task<GetVulnerabilityInfoResult?> GetVulnerabilityInfoAsync(SourceRepository source, ILogger logger, CancellationToken cancellationToken)
-            {
-                IVulnerabilityInfoResource? vulnerabilityInfoResource = await source.GetResourceAsync<IVulnerabilityInfoResource>(cancellationToken);
-                if (vulnerabilityInfoResource == null)
-                {
-                    return null;
-                }
-
-                using SourceCacheContext cacheContext = new();
-                GetVulnerabilityInfoResult result = await vulnerabilityInfoResource.GetVulnerabilityInfoAsync(cacheContext, logger, cancellationToken);
-                return result;
-            }
         }
 
         private int ParseAuditLevel()
