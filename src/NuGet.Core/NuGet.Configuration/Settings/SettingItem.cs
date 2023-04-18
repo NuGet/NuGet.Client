@@ -13,6 +13,8 @@ namespace NuGet.Configuration
     {
         protected virtual bool CanHaveChildren => false;
 
+        public string ConfigPath => Origin?.ConfigFilePath;
+
         internal SettingItem MergedWith { get; set; }
 
         protected SettingItem()
@@ -100,11 +102,6 @@ namespace NuGet.Configuration
 
                 AddOrUpdateAttribute(attribute.Key, attribute.Value);
             }
-        }
-
-        public string GetConfigPath()
-        {
-            return Origin.ConfigFilePath;
         }
 
         public IEnumerable<XAttribute> GetXElementAttributes()

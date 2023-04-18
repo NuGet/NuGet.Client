@@ -46,6 +46,10 @@ namespace NuGet.CommandLine.XPlat
             }
 
             var settings = RunnerHelper.GetSettingsFromDirectory(args.WorkingDirectory) as Settings;
+            if (settings == null)
+            {
+                return;
+            }
             ILogger logger = getLogger();
 
             if (args.AllOrConfigKey.Equals("all", StringComparison.OrdinalIgnoreCase))
@@ -114,8 +118,8 @@ namespace NuGet.CommandLine.XPlat
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var sectionElement = settings.GetSection(ConfigurationConstants.Config);
-            var item = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
+            SettingSection sectionElement = settings.GetSection(ConfigurationConstants.Config);
+            AddItem item = sectionElement?.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
 
             if (item == null)
             {
@@ -124,7 +128,7 @@ namespace NuGet.CommandLine.XPlat
 
             if (showPath)
             {
-                return item.Value + "\tfile: " + item.GetConfigFilePath();
+                return item.Value + "\tfile: " + item.ConfigPath;
             }
             return item.Value;
         }
@@ -141,7 +145,7 @@ namespace NuGet.CommandLine.XPlat
 
                 IEnumerable<IGrouping<string, SettingItem>> groupByConfigPathsQuery =
                     from item in items
-                    group item by item.GetConfigPath() into newItemGroup
+                    group item by item.ConfigPath into newItemGroup
                     select newItemGroup;
 
                 foreach (var configPathsGroup in groupByConfigPathsQuery)

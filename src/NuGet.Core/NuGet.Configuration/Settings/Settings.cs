@@ -41,13 +41,11 @@ namespace NuGet.Configuration
             new[] { "*.config" } :
             new[] { "*.Config", "*.config" };
 
-        private readonly Dictionary<string, VirtualSettingSection> _computedSections;
-
-        public Dictionary<string, VirtualSettingSection> ComputedSections { get { return _computedSections; } }
+        public Dictionary<string, VirtualSettingSection> ComputedSections { get; }
 
         public SettingSection GetSection(string sectionName)
         {
-            if (_computedSections.TryGetValue(sectionName, out var section))
+            if (ComputedSections.TryGetValue(sectionName, out var section))
             {
                 return section.Clone() as SettingSection;
             }
@@ -68,7 +66,7 @@ namespace NuGet.Configuration
             }
 
             // Operation is an update
-            if (_computedSections.TryGetValue(sectionName, out var section) && section.Items.Contains(item))
+            if (ComputedSections.TryGetValue(sectionName, out var section) && section.Items.Contains(item))
             {
                 // An update could not be possible here because the operation might be
                 // in a machine wide config. If so then we want to add the item to
@@ -124,7 +122,7 @@ namespace NuGet.Configuration
             settingsFile.TryGetSection(sectionName, out var settingFileSection);
 
             // If it is an add we have to manually add it to the _computedSections.
-            var computedSectionExists = _computedSections.TryGetValue(sectionName, out var section);
+            var computedSectionExists = ComputedSections.TryGetValue(sectionName, out var section);
             if (computedSectionExists && !section.Items.Contains(item))
             {
                 var existingItem = settingFileSection.Items.First(i => i.Equals(item));
@@ -132,7 +130,7 @@ namespace NuGet.Configuration
             }
             else if (!computedSectionExists)
             {
-                _computedSections.Add(sectionName,
+                ComputedSections.Add(sectionName,
                     new VirtualSettingSection(settingFileSection));
             }
         }
@@ -149,7 +147,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(item));
             }
 
-            if (!_computedSections.TryGetValue(sectionName, out var section))
+            if (!ComputedSections.TryGetValue(sectionName, out var section))
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.SectionDoesNotExist, sectionName));
             }
@@ -163,7 +161,7 @@ namespace NuGet.Configuration
 
             if (section.IsEmpty())
             {
-                _computedSections.Remove(sectionName);
+                ComputedSections.Remove(sectionName);
             }
         }
 
@@ -204,7 +202,7 @@ namespace NuGet.Configuration
                 settingsFiles[i].MergeSectionsInto(computedSections);
             }
 
-            _computedSections = computedSections;
+            ComputedSections = computedSections;
         }
 
         private SettingsFile GetOutputSettingFileForSection(string sectionName)
