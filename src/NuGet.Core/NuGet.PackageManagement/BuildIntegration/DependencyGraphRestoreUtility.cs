@@ -194,11 +194,10 @@ namespace NuGet.PackageManagement
                     restoreForceEvaluate: true,
                     additionalMessasges: null,
                     progressReporter: null,
-                    newMappingID: null,
-                    newMappingSource: null);
+                    newMappingID: newMappingID,
+                    newMappingSource: newMappingSource);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
-                //requests[0].Request.PackageSourceMapping
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
                 return results.Single();
             }
@@ -256,7 +255,7 @@ namespace NuGet.PackageManagement
                     newMappingID,
                     newMappingSource);
 
-                var requests = await RestoreRunner.GetRequests(restoreContext, newMappingID, newMappingSource);
+                var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
                 return results;
             }
