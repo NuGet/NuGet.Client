@@ -2346,7 +2346,7 @@ namespace NuGet.Commands.FuncTest
             DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
-                dgSpec
+                dgSpec,
                 NewMappingID = packageA.Id, // Act
                 NewMappingSource = pathContext.PackageSource); // Act
 
