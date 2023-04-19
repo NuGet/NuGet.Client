@@ -11,10 +11,6 @@ namespace NuGet.ProjectModel
 {
     public class RestoreAuditProperties : IEquatable<RestoreAuditProperties>
     {
-        public RestoreAuditProperties()
-        {
-        }
-
         /// <summary>
         /// Gets or sets a value indicating whether NuGet audit (check packages for known vulnerabilities) is enabled.
         /// </summary>

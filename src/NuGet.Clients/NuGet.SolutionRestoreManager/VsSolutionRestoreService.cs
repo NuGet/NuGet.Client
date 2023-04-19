@@ -388,7 +388,6 @@ namespace NuGet.SolutionRestoreManager
                     ProjectPath = projectPath,
                     OutputPath = outputPath,
                     CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath),
-                    RestoreAuditProperties = new RestoreAuditProperties()
                 }
             };
 
