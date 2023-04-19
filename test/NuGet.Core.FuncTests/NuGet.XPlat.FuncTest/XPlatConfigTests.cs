@@ -247,6 +247,50 @@ namespace NuGet.XPlat.FuncTest
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
         }
 
+        [Fact(Skip = "Placeholder for planned test")]
+        public void ConfigSetCommand_AddNewConfigSetting_Success()
+        {
+        }
+
+        [Fact(Skip = "Placeholder for planned test")]
+        public void ConfigSetCommand_AddNewConfigSettingWithConfigFileArg_Success()
+        {
+        }
+
+        [Fact(Skip = "Placeholder for planned test")]
+        public void ConfigSetCommand_UpdateConfigSetting_Success()
+        {
+        }
+
+        [Fact(Skip = "Placeholder for planned test")]
+        public void ConfigSetCommand_UpdateConfigSettingWithConfigFileArg_Success()
+        {
+        }
+
+        [Fact(Skip = "Placeholder for planned test")]
+        public void ConfigSetCommand_AddConfigSettingWithNonExistingConfigSection_Success()
+        {
+        }
+
+        [Fact(Skip = "Need to update specifically for config set")]
+        public void ConfigSetCommand_HelpMessage_Success()
+        {
+            // Arrange
+            var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigGetAllOrConfigKeyDescription); ;
+
+            // Act
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config set --help",
+                waitForExit: true
+                );
+
+            // Assert
+            DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
+        }
+
+
         [Fact]
         public void ConfigPathsCommand_ListConfigPathsNonExistingDirectory_Fail()
         {
@@ -366,6 +410,14 @@ namespace NuGet.XPlat.FuncTest
             Assert.Throws<ArgumentNullException>(() => ConfigGetRunner.Run(args, null));
         }
 
+        [Fact(Skip = "Placeholder for future negative tests")]
+        public void ConfigSetCommand_Fail()
+        {
+            // Test for config key not found displaying config key could not be set
+            // Test for non-existing config file w/ configfile arg
+            // Test for null args/logger
+        }
+
         internal class TestInfo : IDisposable
         {
             public static void CreateFile(string directory, string fileName, string fileContent)
@@ -443,6 +495,7 @@ namespace NuGet.XPlat.FuncTest
                     Path.GetFileName(ConfigFile),
                     $@"
 <configuration>
+</configuration>
 ");
             }
 
