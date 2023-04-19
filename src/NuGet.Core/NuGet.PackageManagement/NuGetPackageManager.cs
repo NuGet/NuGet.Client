@@ -2556,7 +2556,7 @@ namespace NuGet.PackageManagement
                     var actionsList = nuGetProjectActions.ToList();
 
                     var hasInstalls = actionsList.Any(action =>
-                        action.NuGetProjectActionType == NuGetProjectActionType.Install);
+                        (action.NuGetProjectActionType == NuGetProjectActionType.Install || action.NuGetProjectActionType == NuGetProjectActionType.Update));
 
                     if (hasInstalls)
                     {
@@ -2635,7 +2635,7 @@ namespace NuGet.PackageManagement
 
                         foreach (var nuGetProjectAction in actionsList)
                         {
-                            if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install)
+                            if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install || nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Update)
                             {
                                 executedNuGetProjectActions.Push(nuGetProjectAction);
 
@@ -3019,22 +3019,36 @@ namespace NuGet.PackageManagement
 
                 foreach (var action in nuGetProjectActions)
                 {
-                    if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                    switch (action.NuGetProjectActionType)
                     {
-                        // Remove the package from all frameworks and dependencies section.
-                        PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id);
-                    }
-                    else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
-                    {
-                        if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
-                        {
-                            var packageDependency = new PackageDependency(action.PackageIdentity.Id, action.VersionRange ?? new VersionRange(action.PackageIdentity.Version));
-                            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
-                        }
-                        else
-                        {
-                            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity);
-                        }
+                        case NuGetProjectActionType.Uninstall:
+                            // Remove the package from all frameworks and dependencies section.
+                            PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id);
+                            break;
+                        case NuGetProjectActionType.Install:
+                            if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                            {
+                                var packageDependency = new PackageDependency(action.PackageIdentity.Id, action.VersionRange ?? new VersionRange(action.PackageIdentity.Version));
+                                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+                            }
+                            else
+                            {
+                                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity);
+                            }
+
+                            break;
+                        case NuGetProjectActionType.Update:
+                            if (updatedPackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                            {
+                                var packageDependency = new PackageDependency(action.PackageIdentity.Id, action.VersionRange ?? new VersionRange(action.PackageIdentity.Version));
+                                PackageSpecOperations.UpdateDependency(updatedPackageSpec, packageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+                            }
+                            else
+                            {
+                                PackageSpecOperations.UpdateDependency(updatedPackageSpec, action.PackageIdentity);
+                            }
+
+                            break;
                     }
 
                     updatedNugetPackageSpecLookup[buildIntegratedProject.MSBuildProjectPath] = updatedPackageSpec;
@@ -3148,6 +3162,7 @@ namespace NuGet.PackageManagement
                 // as an uninstall. Otherwise, mark it as an install. This is important because install operations
                 // are a bit more sensitive to errors (thus resulting in rollbacks).
                 var actionType = NuGetProjectActionType.Install;
+                //TODO: properly handled for .Update?
                 if (nuGetProjectActions.All(x => x.NuGetProjectActionType == NuGetProjectActionType.Uninstall))
                 {
                     actionType = NuGetProjectActionType.Uninstall;
@@ -3255,7 +3270,7 @@ namespace NuGet.PackageManagement
 
                 foreach (var action in projectAction.OriginalActions.Reverse())
                 {
-                    if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    if (action.NuGetProjectActionType == NuGetProjectActionType.Install || action.NuGetProjectActionType == NuGetProjectActionType.Update)
                     {
                         installedIds.Add(action.PackageIdentity.Id);
                     }
@@ -3271,7 +3286,7 @@ namespace NuGet.PackageManagement
 
                 foreach (var originalAction in projectAction.OriginalActions.Where(e => !ignoreActions.Contains(e)))
                 {
-                    if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Install || originalAction.NuGetProjectActionType == NuGetProjectActionType.Update)
                     {
                         if (buildIntegratedProject.ProjectStyle == ProjectStyle.PackageReference)
                         {
@@ -3352,6 +3367,14 @@ namespace NuGet.PackageManagement
                         nuGetProjectContext.Log(
                             MessageLevel.Info,
                             Strings.SuccessfullyInstalled,
+                            identityString,
+                            buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                    }
+                    else if (action.NuGetProjectActionType == NuGetProjectActionType.Update)
+                    {
+                        nuGetProjectContext.Log(
+                            MessageLevel.Info,
+                            Strings.SuccessfullyUpdated,
                             identityString,
                             buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                     }
@@ -3480,9 +3503,9 @@ namespace NuGet.PackageManagement
                 var nuGetProjectAction = executedNuGetProjectActions.Pop();
                 try
                 {
-                    if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install || nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Update)
                     {
-                        // Rolling back an install would be to uninstall the package
+                        // Rolling back an install or update would be to uninstall the new package
                         await ExecuteUninstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
                     }
                     else

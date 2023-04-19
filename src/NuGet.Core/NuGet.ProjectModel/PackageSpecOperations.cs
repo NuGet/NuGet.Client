@@ -15,6 +15,16 @@ namespace NuGet.ProjectModel
     {
         public static void AddOrUpdateDependency(PackageSpec spec, PackageDependency dependency)
         {
+            AddOrUpdateDependency(spec, dependency, addAllowed:true);
+        }
+        
+        public static void UpdateDependency(PackageSpec spec, PackageDependency dependency)
+        {
+            AddOrUpdateDependency(spec, dependency, addAllowed:false);
+        }
+
+        private static void AddOrUpdateDependency(PackageSpec spec, PackageDependency dependency, bool addAllowed)
+        {
             var existing = GetExistingDependencies(spec, dependency.Id);
 
             var range = dependency.VersionRange;
@@ -24,7 +34,7 @@ namespace NuGet.ProjectModel
                 existingDependency.LibraryRange.VersionRange = range;
             }
 
-            if (!existing.Any())
+            if (!existing.Any() && addAllowed)
             {
                 AddDependency(spec.Dependencies, dependency.Id, range, spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false);
             }
@@ -33,6 +43,11 @@ namespace NuGet.ProjectModel
         public static void AddOrUpdateDependency(PackageSpec spec, PackageIdentity identity)
         {
             AddOrUpdateDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)));
+        }
+
+        public static void UpdateDependency(PackageSpec spec, PackageIdentity identity)
+        {
+            UpdateDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)));
         }
 
         public static bool HasPackage(PackageSpec spec, string packageId)
@@ -45,6 +60,23 @@ namespace NuGet.ProjectModel
             PackageDependency dependency,
             IEnumerable<NuGetFramework> frameworksToAdd)
         {
+            AddOrUpdateDependency(spec, dependency, frameworksToAdd, addAllowed:true);
+        }
+
+        public static void UpdateDependency(
+            PackageSpec spec,
+            PackageDependency dependency,
+            IEnumerable<NuGetFramework> frameworksToAdd)
+        {
+            AddOrUpdateDependency(spec, dependency, frameworksToAdd, addAllowed:false);
+        }
+
+        private static void AddOrUpdateDependency(
+            PackageSpec spec,
+            PackageDependency dependency,
+            IEnumerable<NuGetFramework> frameworksToAdd,
+            bool addAllowed)
+        {
             var lists = GetDependencyLists(
                 spec,
                 includeGenericDependencies: false,
@@ -52,7 +84,7 @@ namespace NuGet.ProjectModel
 
             foreach (var list in lists)
             {
-                AddOrUpdateDependencyInDependencyList(spec, list, dependency.Id, dependency.VersionRange);
+                AddOrUpdateDependencyInDependencyList(spec, list, dependency.Id, dependency.VersionRange, addAllowed);
             }
 
             foreach (IDictionary<string, CentralPackageVersion> centralPackageVersionList in GetCentralPackageVersionLists(spec, frameworksToAdd))
@@ -67,6 +99,14 @@ namespace NuGet.ProjectModel
             IEnumerable<NuGetFramework> frameworksToAdd)
         {
             AddOrUpdateDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)), frameworksToAdd);
+        }
+
+        public static void UpdateDependency(
+            PackageSpec spec,
+            PackageIdentity identity,
+            IEnumerable<NuGetFramework> frameworksToAdd)
+        {
+            UpdateDependency(spec, new PackageDependency(identity.Id, new VersionRange(identity.Version)), frameworksToAdd);
         }
 
         public static void RemoveDependency(
@@ -150,7 +190,8 @@ namespace NuGet.ProjectModel
             PackageSpec spec,
             IList<LibraryDependency> list,
             string packageId,
-            VersionRange range)
+            VersionRange range,
+            bool addAllowed)
         {
 
             var dependencies = list.Where(e => StringComparer.OrdinalIgnoreCase.Equals(e.Name, packageId)).ToList();
@@ -162,7 +203,7 @@ namespace NuGet.ProjectModel
                     library.LibraryRange.VersionRange = range;
                 }
             }
-            else
+            else if (addAllowed)
             {
                 AddDependency(list, packageId, range, spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false);
             }

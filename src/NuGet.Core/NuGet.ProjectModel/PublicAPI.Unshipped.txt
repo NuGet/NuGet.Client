@@ -12,3 +12,7 @@ static NuGet.ProjectModel.RestoreAuditProperties.operator !=(NuGet.ProjectModel.
 static NuGet.ProjectModel.RestoreAuditProperties.operator ==(NuGet.ProjectModel.RestoreAuditProperties? x, NuGet.ProjectModel.RestoreAuditProperties? y) -> bool
 ~NuGet.ProjectModel.ProjectRestoreMetadata.RestoreAuditProperties.get -> NuGet.ProjectModel.RestoreAuditProperties
 ~NuGet.ProjectModel.ProjectRestoreMetadata.RestoreAuditProperties.set -> void
+~static NuGet.ProjectModel.PackageSpecOperations.UpdateDependency(NuGet.ProjectModel.PackageSpec spec, NuGet.Packaging.Core.PackageDependency dependency) -> void
+~static NuGet.ProjectModel.PackageSpecOperations.UpdateDependency(NuGet.ProjectModel.PackageSpec spec, NuGet.Packaging.Core.PackageDependency dependency, System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworksToAdd) -> void
+~static NuGet.ProjectModel.PackageSpecOperations.UpdateDependency(NuGet.ProjectModel.PackageSpec spec, NuGet.Packaging.Core.PackageIdentity identity) -> void
+~static NuGet.ProjectModel.PackageSpecOperations.UpdateDependency(NuGet.ProjectModel.PackageSpec spec, NuGet.Packaging.Core.PackageIdentity identity, System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworksToAdd) -> void

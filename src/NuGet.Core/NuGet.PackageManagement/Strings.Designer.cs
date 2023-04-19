@@ -790,6 +790,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Successfully updated &apos;{0}&apos; to {1}.
+        /// </summary>
+        internal static string SuccessfullyUpdated {
+            get {
+                return ResourceManager.GetString("SuccessfullyUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not install package &apos;{0}&apos;. You are trying to install this package into a project that targets &apos;{1}&apos;, but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author..
         /// </summary>
         internal static string UnableToFindCompatibleItems {

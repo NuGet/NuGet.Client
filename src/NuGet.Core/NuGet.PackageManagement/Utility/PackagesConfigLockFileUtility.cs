@@ -227,7 +227,7 @@ namespace NuGet.PackageManagement.Utility
             RemoveUninstalledPackages(lockFile,
                 actionsList.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Uninstall));
             AddInstalledPackages(lockFile,
-                actionsList.Where(a => a.NuGetProjectActionType == NuGetProjectActionType.Install),
+                actionsList.Where(a => (a.NuGetProjectActionType == NuGetProjectActionType.Install || a.NuGetProjectActionType == NuGetProjectActionType.Update)),
                 contentHashUtil,
                 token);
             ArrayList.Adapter((IList)lockFile.Targets[0].Dependencies).Sort(_dependencyComparer);
@@ -261,7 +261,7 @@ namespace NuGet.PackageManagement.Utility
         {
             foreach (var toInstall in actionsList)
             {
-                Debug.Assert(toInstall.NuGetProjectActionType == NuGetProjectActionType.Install);
+                Debug.Assert(toInstall.NuGetProjectActionType == NuGetProjectActionType.Install || toInstall.NuGetProjectActionType == NuGetProjectActionType.Update);
 
                 var newDependency = new LockFileDependency
                 {

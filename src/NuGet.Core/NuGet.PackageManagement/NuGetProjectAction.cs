@@ -23,7 +23,12 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Uninstall
         /// </summary>
-        Uninstall
+        Uninstall,
+
+        /// <summary>
+        /// Update
+        /// </summary>
+        Update
     }
 
     /// <summary>
@@ -45,7 +50,7 @@ namespace NuGet.PackageManagement
         public NuGetProjectActionType NuGetProjectActionType { get; private set; }
 
         /// <summary>
-        /// For NuGetProjectActionType.Install, SourceRepository from which the package should be installed
+        /// For NuGetProjectActionType.Install or .Update, SourceRepository from which the package should be installed
         /// For NuGetProjectActionType.Uninstall, this will be null
         /// </summary>
         public SourceRepository SourceRepository { get; private set; }

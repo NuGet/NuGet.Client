@@ -432,4 +432,7 @@
   <data name="Warning_HttpServerUsage" xml:space="preserve">
     <value>You are running the '{0}' operation with an 'http' source, '{1}'. Support for 'http' sources will be removed in a future version.</value>
   </data>
+  <data name="SuccessfullyUpdated" xml:space="preserve">
+    <value>Successfully updated '{0}' to {1}</value>
+  </data>
 </root>

@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement
             {
                 // Ignore uninstalls here
                 // Avoid duplicate downloads
-                if (action.NuGetProjectActionType == NuGetProjectActionType.Install
+                if ((action.NuGetProjectActionType == NuGetProjectActionType.Install || action.NuGetProjectActionType == NuGetProjectActionType.Update)
                     && seen.Add(action.PackageIdentity))
                 {
                     string installPath = null;
