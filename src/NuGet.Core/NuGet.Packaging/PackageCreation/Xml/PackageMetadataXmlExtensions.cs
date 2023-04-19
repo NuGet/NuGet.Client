@@ -214,7 +214,7 @@ namespace NuGet.Packaging.Xml
 
             if (dependency.VersionRange != null && dependency.VersionRange != VersionRange.All)
             {
-                attributes.Add(new XAttribute("version", dependency.VersionRange.ToShortString()));
+                attributes.Add(new XAttribute("version", dependency.VersionRange.ToLegacyShortString()));
             }
 
             if (dependency.Include != null && dependency.Include.Any())

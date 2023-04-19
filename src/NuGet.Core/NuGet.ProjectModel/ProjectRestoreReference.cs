@@ -26,7 +26,7 @@ namespace NuGet.ProjectModel
 
         public LibraryIncludeFlags PrivateAssets { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
 
-        public VersionRange VersionRange { get; set; }
+        public string VersionRange { get; set; }
 
         public override int GetHashCode()
         {
@@ -69,7 +69,7 @@ namespace NuGet.ProjectModel
                 && IncludeAssets == other.IncludeAssets
                 && ExcludeAssets == other.ExcludeAssets
                 && PrivateAssets == other.PrivateAssets
-                && (VersionRange != null ? VersionRange.Equals(other.VersionRange) : false);
+                && StringComparer.Ordinal.Equals(VersionRange, other.VersionRange);
         }
 
         public ProjectRestoreReference Clone()

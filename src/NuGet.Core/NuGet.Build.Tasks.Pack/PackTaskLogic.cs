@@ -878,12 +878,19 @@ namespace NuGet.Build.Tasks.Pack
                         continue;
                     }
 
-                    var versionToUse = projectReference.VersionRange ?? new VersionRange(targetLibrary.Version);
+
+                    var versionToUse = new VersionRange(targetLibrary.Version);
+                    var versionRange = VersionRange.Parse(projectReference.VersionRange.Replace("X", targetLibrary.Version.ToString()));
+                    if (projectReference.VersionRange != null)
+                    {
+                        versionToUse = new VersionRange(targetLibrary.Version, true, versionRange.MaxVersion, versionRange.IsMaxInclusive);
+                    }
 
                     // Use the project reference version obtained at build time if it exists, otherwise fallback to the one in assets file.
                     if (projectRefToVersionMap.TryGetValue(projectReference.ProjectPath, out var projectRefVersion))
                     {
-                        versionToUse = projectReference.VersionRange ?? VersionRange.Parse(projectRefVersion, allowFloating: false);
+                        versionToUse = projectReference.VersionRange != null ? new VersionRange(targetLibrary.Version, true, versionRange.MaxVersion, versionRange.IsMaxInclusive)
+                            : VersionRange.Parse(projectRefVersion, allowFloating: false);
                     }
                     // TODO: Implement <TreatAsPackageReference>false</TreatAsPackageReference>
                     //   https://github.com/NuGet/Home/issues/3891
