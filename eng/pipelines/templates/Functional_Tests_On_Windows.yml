@@ -7,6 +7,11 @@ steps:
       Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
       gci env:* | sort-object name
 
+- task: NuGetToolInstaller@0
+  displayName: "Use NuGet 6.5.0"
+  inputs:
+    versionSpec: "6.5.0"
+
 - task: PowerShell@1
   displayName: "Download Config Files"
   enabled: "false"
@@ -23,6 +28,12 @@ steps:
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
     arguments: "-Force -CI"
+
+- task: NuGetRestore@1
+  inputs:
+    solution: "build\\build.proj" # string. Required. Path to solution, packages.config, or project.json. Default: **/*.sln.
+    selectOrConfig: 'select' # 'select' | 'config'. Required. Feeds to use. Default: select.
+    includeNuGetOrg: true # boolean. Optional. Use when selectOrConfig = select. Use packages from NuGet.org. Default: true.
 
 - task: MSBuild@1
   displayName: "Restore for VS2017"
