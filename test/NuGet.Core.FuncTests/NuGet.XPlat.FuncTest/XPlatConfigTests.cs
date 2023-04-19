@@ -434,18 +434,6 @@ namespace NuGet.XPlat.FuncTest
 ");
             }
 
-            public TestInfo()
-            {
-                WorkingPath = TestDirectory.Create();
-                ConfigFile = "NuGet.Config";
-                CreateFile(
-                    WorkingPath.Path,
-                    Path.GetFileName(ConfigFile),
-                    $@"
-<configuration>
-");
-            }
-
             public TestDirectory WorkingPath { get; }
             public string ConfigFile { get; }
             public void Dispose()
