@@ -43,19 +43,26 @@ steps:
 - task: MicroBuildSwixPlugin@1
   displayName: "Install Swix Plugin"
 
-# NuGet Restore v1
-# Restores NuGet packages in preparation for a Visual Studio Build step.
 - task: NuGetRestore@1
+  displayName: "Restore NuGetConsole.Host.PowerShell.csproj"
   inputs:
-    solution: "build\\build.proj" # string. Required. Path to solution, packages.config, or project.json. Default: **/*.sln.
-    selectOrConfig: 'select' # 'select' | 'config'. Required. Feeds to use. Default: select.
-    #feed: # string. Optional. Use when selectOrConfig = select. Use packages from this VSTS feed. 
-    includeNuGetOrg: true # boolean. Optional. Use when selectOrConfig = select. Use packages from NuGet.org. Default: true.
-    #nugetConfigPath: # string. Optional. Use when selectOrConfig = config. Path to NuGet.config. 
-  # Advanced
-    #noCache: false # boolean. Disable local cache. Default: false.
-    #packagesDirectory: # string. Destination directory. 
-    #verbosity: 'Detailed' # '-' | 'Quiet' | 'Normal' | 'Detailed'. Verbosity. Default: Detailed.
+    solution: "src\\NuGet.Clients\\NuGetConsole.Host.PowerShell\\NuGetConsole.Host.PowerShell.csproj"
+    selectOrConfig: 'select'
+    includeNuGetOrg: true
+
+- task: NuGetRestore@1
+  displayName: "Restore NuGet.VisualStudio.Common.csproj"
+  inputs:
+    solution: "src\\NuGet.Clients\\NuGet.VisualStudio.Common\\NuGet.VisualStudio.Common.csproj"
+    selectOrConfig: 'select'
+    includeNuGetOrg: true
+    
+- task: NuGetRestore@1
+  displayName: "Restore NuGet.VisualStudio.csproj"
+  inputs:
+    solution: "src\\NuGet.Clients\\NuGet.VisualStudio\\NuGet.VisualStudio.csproj"
+    selectOrConfig: 'select'
+    includeNuGetOrg: true
 
 - task: MSBuild@1
   displayName: "Restore for VS2017"
