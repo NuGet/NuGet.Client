@@ -59,7 +59,7 @@ namespace NuGet.Commands.Restore.Utility
         {
             foreach (Exception exception in exceptions.InnerExceptions)
             {
-                string messageText = "Error occurred while getting package vulnerability data: " + exception.Message;
+                string messageText = string.Format(Strings.Error_VulnerabilityDataFetch, exception.Message);
                 RestoreLogMessage logMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1900, messageText);
                 _logger.Log(logMessage);
             }
@@ -140,7 +140,7 @@ namespace NuGet.Commands.Restore.Utility
                 case 3:
                     return (Strings.Vulnerability_Severity_3, NuGetLogCode.NU1903);
                 case 4:
-                    return (Strings.Vulnerability_Severity_1, NuGetLogCode.NU1901);
+                    return (Strings.Vulnerability_Severity_4, NuGetLogCode.NU1904);
                 default:
                     return (Strings.Vulnerability_Severity_unknown, NuGetLogCode.NU1900);
             }

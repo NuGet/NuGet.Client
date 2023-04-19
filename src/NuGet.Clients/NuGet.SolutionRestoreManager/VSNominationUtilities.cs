@@ -305,11 +305,13 @@ namespace NuGet.SolutionRestoreManager
             string enableAudit = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAudit, s => s);
             string auditLevel = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditLevel, s => s);
 
-            return new RestoreAuditProperties()
-            {
-                EnableAudit = enableAudit,
-                AuditLevel = auditLevel
-            };
+            return !string.IsNullOrEmpty(enableAudit) || !string.IsNullOrEmpty(auditLevel)
+                ? new RestoreAuditProperties()
+                {
+                    EnableAudit = enableAudit,
+                    AuditLevel = auditLevel
+                }
+                : null;
         }
 
         private static NuGetFramework GetToolFramework(IEnumerable targetFrameworks)

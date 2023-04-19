@@ -12,10 +12,6 @@ namespace NuGet.ProjectModel
 {
     public class ProjectRestoreMetadata : IEquatable<ProjectRestoreMetadata>
     {
-        public ProjectRestoreMetadata()
-        {
-        }
-
         /// <summary>
         /// Restore behavior type.
         /// </summary>
