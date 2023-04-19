@@ -126,9 +126,7 @@ namespace NuGet.PackageManagement
                         isRestoreOriginalAction,
                         restoreForceEvaluate: false,
                         additionalMessages,
-                        progressReporter: progressReporter,
-                        newMappingID: null,
-                        newMappingSource: null);
+                        progressReporter: progressReporter);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
 
@@ -162,9 +160,7 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
             Guid parentId,
-            CancellationToken token,
-            string newMappingID = null,
-            string newMappingSource = null)
+            CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -193,9 +189,7 @@ namespace NuGet.PackageManagement
                     isRestoreOriginalAction: false,
                     restoreForceEvaluate: true,
                     additionalMessasges: null,
-                    progressReporter: null,
-                    newMappingID: newMappingID,
-                    newMappingSource: newMappingSource);
+                    progressReporter: null);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -217,9 +211,7 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> sources,
             Guid parentId,
             ILogger log,
-            CancellationToken token,
-            string newMappingID,
-            string newMappingSource)
+            CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -251,9 +243,7 @@ namespace NuGet.PackageManagement
                     isRestoreOriginalAction: false,
                     restoreForceEvaluate: true,
                     additionalMessasges: null,
-                    progressReporter: null,
-                    newMappingID,
-                    newMappingSource);
+                    progressReporter: null);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -424,9 +414,7 @@ namespace NuGet.PackageManagement
             bool isRestoreOriginalAction,
             bool restoreForceEvaluate,
             IReadOnlyList<IAssetsLogMessage> additionalMessasges,
-            IRestoreProgressReporter progressReporter,
-            string newMappingID,
-            string newMappingSource)
+            IRestoreProgressReporter progressReporter)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings, enablePackageSourcesChangedEvent: false));
@@ -436,7 +424,7 @@ namespace NuGet.PackageManagement
                 caching.AddSourceRepository(source);
             }
 
-            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile, newMappingID, newMappingSource);
+            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile, context.Settings);
 
             var restoreContext = new RestoreArgs()
             {

@@ -25,7 +25,7 @@ namespace NuGet.Commands
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
         private readonly LockFileBuilderCache _lockFileBuilderCache;
-        private readonly (string NewMappingId, string NewMappingSource)? _newMappingIdAndSource = null;
+        private readonly ISettings _settings;
 
         public DependencyGraphSpecRequestProvider(
             RestoreCommandProvidersCache providerCache,
@@ -39,14 +39,10 @@ namespace NuGet.Commands
         public DependencyGraphSpecRequestProvider(
             RestoreCommandProvidersCache providerCache,
             DependencyGraphSpec dgFile,
-            string newMappingID = null,
-            string newMappingSource = null)
+            ISettings settings)
             : this(providerCache, dgFile)
         {
-            if (newMappingID != null && newMappingSource != null)
-            {
-                _newMappingIdAndSource = (newMappingID, newMappingSource);
-            }
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         public Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(
@@ -170,20 +166,10 @@ namespace NuGet.Commands
             //fallback paths, global packages path and sources need to all be passed in the dg spec
             var fallbackPaths = projectPackageSpec.RestoreMetadata.FallbackFolders;
             var globalPath = GetPackagesPath(restoreArgs, projectPackageSpec);
-            var settings = Settings.LoadImmutableSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths, settingsLoadingContext);
+            var settings = _settings ?? Settings.LoadImmutableSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths, settingsLoadingContext);
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
-
-            PackageSourceMapping packageSourceMapping;
-            if (_newMappingIdAndSource != null)
-            {
-                packageSourceMapping = GetExistingMappingsWithGlobPatternToNewSource(settings);
-            }
-            else
-            {
-                packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
-            }
-
+            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
             var updateLastAccess = SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
@@ -236,78 +222,6 @@ namespace NuGet.Commands
                 sources);
 
             return summaryRequest;
-        }
-
-        /// <summary>
-        /// Reads existing Package Source Mappings from settings and appends a new mapping, <see cref="_newMappingIdAndSource"/>.
-        /// Additionally, a glob "*" pattern is appended for the the new mapping source.
-        /// The intention is that Preview Restore can run and expect all newly installed packages to be source mapped to the new source.
-        /// Does not write to settings.
-        /// </summary>
-        /// <param name="settings">Reads existing Package Source Mappings, but does not write them.</param>
-        /// <returns>If a new mapping was provided, returns all persisted mappings appended with the new mapping. Otherwise, null.</returns>
-        private PackageSourceMapping GetExistingMappingsWithGlobPatternToNewSource(ISettings settings)
-        {
-            if (_newMappingIdAndSource is null)
-            {
-                return null;
-            }
-
-            string newMappingId = _newMappingIdAndSource.Value.NewMappingId;
-            string newMappingSource = _newMappingIdAndSource.Value.NewMappingSource;
-
-            PackageSourceMapping packageSourceMapping;
-            PackageSourceMappingProvider mappingProvider = new(settings);
-
-            List<PackagePatternItem> newPatternItems = new()
-            {
-                new PackagePatternItem(newMappingId),
-                new PackagePatternItem("*")
-            };
-
-            IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems();
-            List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = new();
-
-            PackageSourceMappingSourceItem newPackageSourceMappingItemForSource = new(
-                    newMappingSource,
-                    packagePatternItems: newPatternItems);
-
-            // No Package Source Mappings existed, so simply create the new mapping.
-            if (existingPackageSourceMappingItems.Count == 0)
-            {
-                newAndExistingPackageSourceMappingItems.Add(newPackageSourceMappingItemForSource);
-            }
-            else // Mappings existed for some source.
-            {
-                newAndExistingPackageSourceMappingItems.AddRange(existingPackageSourceMappingItems);
-
-                PackageSourceMappingSourceItem existingPackageSourceMappingItemForSource =
-                    existingPackageSourceMappingItems
-                    .Where(mappingItem => mappingItem.Key == newMappingSource)
-                    .FirstOrDefault();
-
-                // Source is being mapped for the first time.
-                if (existingPackageSourceMappingItemForSource is null)
-                {
-                    newAndExistingPackageSourceMappingItems.Add(newPackageSourceMappingItemForSource);
-                }
-                else // Source already had an existing mapping.
-                {
-                    foreach (PackagePatternItem newPatternItem in newPatternItems)
-                    {
-                        if (!existingPackageSourceMappingItemForSource.Patterns.Contains(newPatternItem))
-                        {
-                            existingPackageSourceMappingItemForSource.Patterns.Add(newPatternItem);
-                        }
-                    }
-                }
-            }
-
-            Dictionary<string, IReadOnlyList<string>> patternsReadOnly = newAndExistingPackageSourceMappingItems
-                .ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)(pair.Patterns.Select(p => p.Pattern).ToList()));
-
-            packageSourceMapping = new PackageSourceMapping(patternsReadOnly);
-            return packageSourceMapping;
         }
 
         private string GetPackagesPath(RestoreArgs restoreArgs, PackageSpec project)

@@ -2884,6 +2884,16 @@ namespace NuGet.PackageManagement
             var result = new List<ResolvedAction>();
 
             var lockFileLookup = new Dictionary<string, LockFile>(PathUtility.GetStringComparerBasedOnOS());
+            PackageSourceMappingProvider packageSourceMappingProvider = null;
+            IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings = null;
+
+            if (newMappingID != null && newMappingSource != null)
+            {
+                packageSourceMappingProvider = new PackageSourceMappingProvider(Settings, shouldSkipSave: true);
+                originalPackageSourceMappings = packageSourceMappingProvider.GetPackageSourceMappingItems();
+                AddNewPackageSourceMappingToSettings(newMappingID, newMappingSource, packageSourceMappingProvider);
+            }
+
             var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);
             var pathContext = NuGetPathContext.Create(Settings);
             var providerCache = new RestoreCommandProvidersCache();
@@ -2976,9 +2986,7 @@ namespace NuGet.PackageManagement
                         cacheModifier,
                         sources,
                         nuGetProjectContext.OperationId,
-                        token,
-                        newMappingID,
-                        newMappingSource);
+                        token);
 
                     originalLockFile = originalRestoreResult.Result.LockFile;
                 }
@@ -3021,9 +3029,7 @@ namespace NuGet.PackageManagement
                 allSources,
                 nuGetProjectContext.OperationId,
                 logger,
-                token,
-                newMappingID,
-                newMappingSource);
+                token);
 
             foreach (var buildIntegratedProject in buildIntegratedProjects)
             {
@@ -3086,9 +3092,7 @@ namespace NuGet.PackageManagement
                         cacheModifier,
                         sources,
                         nuGetProjectContext.OperationId,
-                        token,
-                        newMappingID,
-                        newMappingSource);
+                        token);
                 }
 
                 // If HideWarningsAndErrors is true then restore will not display the warnings and errors.
@@ -3139,6 +3143,12 @@ namespace NuGet.PackageManagement
                 result.Add(new ResolvedAction(buildIntegratedProject, nugetProjectAction));
             }
 
+            // Put back the Package Source Mappings that existed prior to this Preview.
+            if (originalPackageSourceMappings != null && packageSourceMappingProvider != null)
+            {
+                packageSourceMappingProvider.SavePackageSourceMappings(originalPackageSourceMappings);
+            }
+
             stopWatch.Stop();
             var actionTelemetryEvent = new ActionTelemetryStepEvent(
                 nuGetProjectContext.OperationId.ToString(),
@@ -3147,6 +3157,27 @@ namespace NuGet.PackageManagement
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
 
             return result;
+        }
+
+        /// <summary>
+        /// Reads existing Package Source Mappings from settings and appends a new mapping.
+        /// Additionally, a glob "*" pattern is appended for the the new mapping source.
+        /// The intention is that Preview Restore can run and expect all newly installed packages to be source mapped to the new source.
+        /// Does not write to settings.
+        /// </summary>
+        /// <param name="settings">Reads existing Package Source Mappings, but does not write them.</param>
+        /// <returns>If a new mapping was provided, returns all persisted mappings appended with the new mapping. Otherwise, null.</returns>
+        private void AddNewPackageSourceMappingToSettings(string newMappingID, string newMappingSource, PackageSourceMappingProvider mappingProvider)
+        {
+            List<PackagePatternItem> newPatternItems = new()
+            {
+                new PackagePatternItem(newMappingID),
+                new PackagePatternItem("*")
+            };
+
+            var newAndExistingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems().ToList();
+            newAndExistingPackageSourceMappingItems.Add(new PackageSourceMappingSourceItem(newMappingSource, newPatternItems));
+            mappingProvider.SavePackageSourceMappings(newAndExistingPackageSourceMappingItems);
         }
 
         /// <summary>
