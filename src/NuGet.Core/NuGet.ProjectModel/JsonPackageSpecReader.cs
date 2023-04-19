@@ -925,7 +925,7 @@ namespace NuGet.ProjectModel
             List<ProjectRestoreMetadataFrameworkInfo> targetFrameworks = null;
             var validateRuntimeAssets = false;
             WarningProperties warningProperties = null;
-            RestoreAuditProperties auditProperties = new RestoreAuditProperties();
+            RestoreAuditProperties auditProperties = null;
 
             jsonReader.ReadObject(propertyName =>
             {
@@ -1041,19 +1041,26 @@ namespace NuGet.ProjectModel
                         break;
 
                     case "restoreAuditProperties":
+                        string enableAudit = null, auditLevel = null;
                         jsonReader.ReadObject(auditPropertyName =>
                         {
+
                             switch (auditPropertyName)
                             {
                                 case "enableAudit":
-                                    auditProperties.EnableAudit = jsonReader.ReadNextTokenAsString();
+                                    enableAudit = jsonReader.ReadNextTokenAsString();
                                     break;
 
                                 case "auditLevel":
-                                    auditProperties.AuditLevel = jsonReader.ReadNextTokenAsString();
+                                    auditLevel = jsonReader.ReadNextTokenAsString();
                                     break;
                             }
                         });
+                        auditProperties = new RestoreAuditProperties()
+                        {
+                            EnableAudit = enableAudit,
+                            AuditLevel = auditLevel
+                        };
                         break;
 
 

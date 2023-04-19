@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -896,13 +897,19 @@ namespace NuGet.Commands
 
         private static RestoreAuditProperties GetRestoreAuditProperties(IMSBuildItem specItem)
         {
-            var result = new RestoreAuditProperties()
-            {
-                EnableAudit = specItem.GetProperty("NuGetAudit"),
-                AuditLevel = specItem.GetProperty("NuGetAuditLevel")
-            };
+            string enableAudit = specItem.GetProperty("NuGetAudit");
+            string auditLevel = specItem.GetProperty("NuGetAuditLevel");
 
-            return result;
+            if (enableAudit != null || auditLevel != null)
+            {
+                return new RestoreAuditProperties()
+                {
+                    EnableAudit = enableAudit,
+                    AuditLevel = auditLevel
+                };
+            }
+
+            return null;
         }
 
         /// <summary>
