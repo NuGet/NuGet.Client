@@ -169,11 +169,11 @@ Function Install-DotnetCLI {
         Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile $DotNetInstall
     }
 
-    if (-not ([string]::IsNullOrEmpty($env:CLIBRANCHFORTESTING))) {
-        Trace-Log "Using environment variable CLIBRANCHFORTESTING instead of CliVersions.txt.  Value: '$env:CLIBRANCHFORTESTING'"
-        $CliBranchList = $env:CLIBRANCHFORTESTING -Split ";"
+    if (-not ([string]::IsNullOrEmpty($env:DOTNET_SDK_VERSIONS))) {
+        Trace-Log "Using environment variable DOTNET_SDK_VERSIONS instead of DotNetSdkVersions.txt.  Value: '$env:DOTNET_SDK_VERSIONS'"
+        $CliBranchList = $env:DOTNET_SDK_VERSIONS -Split ";"
     } else {
-        $CliBranchList = (Get-Content -Path "$NuGetClientRoot\build\CliVersions.txt")
+        $CliBranchList = (Get-Content -Path "$NuGetClientRoot\build\DotNetSdkVersions.txt")
     }
 
     ForEach ($CliBranch in $CliBranchList) {

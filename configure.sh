@@ -14,10 +14,10 @@ fi
 # Run install.sh for cli
 chmod +x $CLI_DIR/dotnet-install.sh
 
-# If the CLIBRANCHFORTESTING environment variable is set, use its value instead of the ones in CliVersions.txt
-if [ "$CLIBRANCHFORTESTING" != "" ]; then
-    echo "Using environment variable CliBranchForTesting instead of CliVersions.txt.  Value: '$CLIBRANCHFORTESTING'"
-    IFS=';' read -ra array <<< "$CLIBRANCHFORTESTING"
+# If the DOTNET_SDK_VERSIONS environment variable is set, use its value instead of the ones in DotNetSdkVersions.txt
+if [ "$DOTNET_SDK_VERSIONS" != "" ]; then
+    echo "Using environment variable DOTNET_SDK_VERSIONS instead of DotNetSdkVersions.txt.  Value: '$DOTNET_SDK_VERSIONS'"
+    IFS=';' read -ra array <<< "$DOTNET_SDK_VERSIONS"
     for CliArgs in "${array[@]}";
     do
         echo "'cli/dotnet-install.sh -InstallDir $CLI_DIR -NoPath $CliArgs'"
@@ -30,7 +30,7 @@ if [ "$CLIBRANCHFORTESTING" != "" ]; then
     done
 else 
     # Get CLI Branches for testing
-    cat build/CliVersions.txt | while IFS=$'\r' read -r CliArgs || [[ -n $line ]];
+    cat build/DotNetSdkVersions.txt | while IFS=$'\r' read -r CliArgs || [[ -n $line ]];
     do
         if [ "${CliArgs:0:1}" != "#" ] || [ "$CliArgs" == "" ]; then
             echo "'cli/dotnet-install.sh -InstallDir $CLI_DIR -NoPath $CliArgs'"
