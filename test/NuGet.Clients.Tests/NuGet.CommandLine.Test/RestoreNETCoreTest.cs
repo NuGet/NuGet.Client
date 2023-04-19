@@ -10031,12 +10031,6 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     "net7.0-windows");
 
-                // Workaround: Set all the TFM properties ourselves.
-                // We can't rely on the SDK setting them, as only .NET 5 SDK P8 and later applies these correctly.
-                var net70windowsTFM = project.Frameworks.Where(f => f.TargetAlias.Equals("net7.0-windows")).Single();
-                net70windowsTFM.Properties.Add("TargetFrameworkMoniker", ".NETCoreApp, Version=v7.0");
-                net70windowsTFM.Properties.Add("TargetPlatformMoniker", "Windows, Version=7.0");
-
                 project.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(project);
                 solution.Create(pathContext.SolutionRoot);

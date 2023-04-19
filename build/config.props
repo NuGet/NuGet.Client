@@ -90,7 +90,4 @@
   <Target Name="GetVsTargetChannelForTests">
     <Message Text="$(VsTargetChannelForTests)" Importance="High"/>
   </Target>
-  <Target Name="GetCliBranchForTesting">
-      <Message Text="$(CliBranchForTesting)" Importance="High"/>
-  </Target>
 </Project>
