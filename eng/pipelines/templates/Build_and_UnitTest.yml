@@ -8,7 +8,7 @@ steps:
       gci env:* | sort-object name
 
 - task: PowerShell@1
-  displayName: "Install Repository Timestamp Certificate"
+  displayName: "Install Repository Timestamp Certificate" #This is a workaround for the intermittent restore failure(NuGet/Home/issues/11099)
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
