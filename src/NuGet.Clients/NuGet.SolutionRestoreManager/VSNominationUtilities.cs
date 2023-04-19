@@ -302,10 +302,7 @@ namespace NuGet.SolutionRestoreManager
 
         internal static RestoreAuditProperties GetRestoreAuditProperties(IEnumerable tfms)
         {
-            bool enableAudit = GetSingleNonEvaluatedPropertyOrNull(
-                tfms,
-                ProjectBuildProperties.NuGetAudit,
-                value => string.Equals(value, "enable", StringComparison.InvariantCultureIgnoreCase));
+            string enableAudit = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAudit, s => s);
             string auditLevel = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditLevel, s => s);
 
             return new RestoreAuditProperties()

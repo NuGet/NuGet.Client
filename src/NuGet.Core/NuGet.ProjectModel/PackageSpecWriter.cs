@@ -207,11 +207,7 @@ namespace NuGet.ProjectModel
 
             writer.WriteObjectStart("restoreAuditProperties");
 
-            if (auditProperties.EnableAudit.HasValue)
-            {
-                SetValueIfTrue(writer, "enableAudit", auditProperties.EnableAudit.Value);
-            }
-
+            SetValueIfNotNull(writer, "enableAudit", auditProperties.EnableAudit);
             SetValueIfNotNull(writer, "auditLevel", auditProperties.AuditLevel);
 
             writer.WriteObjectEnd();

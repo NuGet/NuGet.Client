@@ -14,7 +14,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Gets or sets a value indicating whether NuGet audit (check packages for known vulnerabilities) is enabled.
         /// </summary>
-        public bool? EnableAudit { get; set; } = false;
+        public string? EnableAudit { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating the NuGet audit level threshold which which vulnerabilities are reported.
@@ -51,7 +51,7 @@ namespace NuGet.ProjectModel
         public override int GetHashCode()
         {
             var hashCodeCombiner = new HashCodeCombiner();
-            hashCodeCombiner.AddStruct(EnableAudit);
+            hashCodeCombiner.AddObject(EnableAudit);
             hashCodeCombiner.AddObject(AuditLevel);
             return hashCodeCombiner.CombinedHash;
         }

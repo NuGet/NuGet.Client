@@ -406,13 +406,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            string nugetAuditValue = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAudit);
-            bool auditEnabled = string.Equals("enable", nugetAuditValue, StringComparison.InvariantCultureIgnoreCase);
-            string auditLevel = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditLevel);
             RestoreAuditProperties auditProperties = new RestoreAuditProperties()
             {
-                EnableAudit = auditEnabled,
-                AuditLevel = auditLevel
+                EnableAudit = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAudit),
+                AuditLevel = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditLevel)
             };
 
             var msbuildProjectExtensionsPath = await GetMSBuildProjectExtensionsPathAsync();

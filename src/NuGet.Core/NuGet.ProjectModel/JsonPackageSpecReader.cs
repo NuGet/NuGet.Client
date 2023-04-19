@@ -1046,7 +1046,7 @@ namespace NuGet.ProjectModel
                             switch (auditPropertyName)
                             {
                                 case "enableAudit":
-                                    auditProperties.EnableAudit = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                                    auditProperties.EnableAudit = jsonReader.ReadNextTokenAsString();
                                     break;
 
                                 case "auditLevel":

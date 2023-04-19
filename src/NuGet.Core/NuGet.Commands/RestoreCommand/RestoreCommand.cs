@@ -277,7 +277,7 @@ namespace NuGet.Commands
                     });
                 }
 
-                if (_request.Project.RestoreMetadata.RestoreAuditProperties.EnableAudit == true)
+                if (string.Equals(_request.Project.RestoreMetadata.RestoreAuditProperties.EnableAudit, "enable", StringComparison.InvariantCultureIgnoreCase))
                 {
                     telemetry.StartIntervalMeasure();
                     AuditUtility audit = new AuditUtility(

@@ -898,7 +898,7 @@ namespace NuGet.Commands
         {
             var result = new RestoreAuditProperties()
             {
-                EnableAudit = StringComparer.InvariantCultureIgnoreCase.Equals(specItem.GetProperty("NuGetAudit"), "enable"),
+                EnableAudit = specItem.GetProperty("NuGetAudit"),
                 AuditLevel = specItem.GetProperty("NuGetAuditLevel")
             };
 
