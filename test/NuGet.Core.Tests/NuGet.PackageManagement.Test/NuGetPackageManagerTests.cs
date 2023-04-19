@@ -7181,8 +7181,6 @@ namespace NuGet.Test
 
             // Assert
 
-            // `Request` Assertions
-
             Assert.Single(resolvedActions);
             ResolvedAction resolvedAction = resolvedActions.Single();
             Assert.IsType(typeof(BuildIntegratedProjectAction), resolvedAction.Action);

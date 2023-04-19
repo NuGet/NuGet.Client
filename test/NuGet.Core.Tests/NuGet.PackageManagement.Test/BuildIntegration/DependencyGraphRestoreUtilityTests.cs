@@ -198,7 +198,6 @@ namespace NuGet.PackageManagement.Test
                     Times.Once);
         }
 
-
         [Fact]
         public async Task RestoreAsync_WithProgressReporter_WhenProjectNoOps_ProgressIsNotReported()
         {

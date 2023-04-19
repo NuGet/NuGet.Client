@@ -4,16 +4,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
 
 namespace NuGet.Commands
@@ -60,9 +57,7 @@ namespace NuGet.Commands
             return Task.FromResult(requests);
         }
 
-        private IReadOnlyList<RestoreSummaryRequest> GetRequestsFromItems(
-            RestoreArgs restoreContext,
-            DependencyGraphSpec dgFile)
+        private IReadOnlyList<RestoreSummaryRequest> GetRequestsFromItems(RestoreArgs restoreContext, DependencyGraphSpec dgFile)
         {
             if (restoreContext == null)
             {

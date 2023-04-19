@@ -449,7 +449,7 @@ namespace NuGet.PackageManagement
                 IsRestoreOriginalAction = isRestoreOriginalAction,
                 RestoreForceEvaluate = restoreForceEvaluate,
                 AdditionalMessages = additionalMessasges,
-                ProgressReporter = progressReporter
+                ProgressReporter = progressReporter,
             };
 
             return restoreContext;

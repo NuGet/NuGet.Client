@@ -1,2 +1,1 @@
 #nullable enable
-~NuGet.Configuration.PackageSourceMappingProvider.AddOrUpdatePackageSourceMappingSourceItem(NuGet.Configuration.PackageSourceMappingSourceItem packageSourceMappingSourceItem) -> void
