@@ -46,7 +46,7 @@ namespace NuGet.Commands
             string newMappingSource = null)
             : this(providerCache, dgFile)
         {
-            if (newMappingID != null && _newMappingIdAndSource != null)
+            if (newMappingID != null && newMappingSource != null)
             {
                 _newMappingIdAndSource = (newMappingID, newMappingSource);
             }
