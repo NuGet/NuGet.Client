@@ -72,6 +72,7 @@ namespace NuGet.Commands.Restore.Utility
 
             if (packagesWithKnownVulnerabilities != null)
             {
+                // no-op checks DGSpec hash, which means the order of everything must be deterministic.
                 // .NET Framework and .NET Standard don't have Deconstructor methods for KeyValuePair
                 foreach (var kvp1 in packagesWithKnownVulnerabilities.OrderBy(p => p.Key.Id))
                 {
@@ -91,7 +92,7 @@ namespace NuGet.Commands.Restore.Utility
                             RestoreLogMessage.CreateWarning(logCode,
                             message,
                             package.Id,
-                            affectedGraphs.ToArray());
+                            affectedGraphs.OrderBy(s => s).ToArray());
                         restoreLogMessage.ProjectPath = _projectFullPath;
                         _logger.Log(restoreLogMessage);
                     }
