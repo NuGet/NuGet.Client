@@ -430,7 +430,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IReadOnlyList<string> packageSourceNames,
             CancellationToken cancellationToken)
         {
-            return await GetInstallActionsAsync(projectIds, packageIdentity, versionConstraints, includePrerelease, dependencyBehavior, packageSourceNames, versionRange: null, cancellationToken);
+            return await GetInstallActionsAsync(projectIds, packageIdentity, versionConstraints, includePrerelease, dependencyBehavior, packageSourceNames, versionRange: null, newMappingID: null, newMappingSource: null, cancellationToken);
         }
 
         public async ValueTask<IReadOnlyList<ProjectAction>> GetInstallActionsAsync(
@@ -441,9 +441,9 @@ namespace NuGet.PackageManagement.VisualStudio
             DependencyBehavior dependencyBehavior,
             IReadOnlyList<string> packageSourceNames,
             VersionRange? versionRange,
-            CancellationToken cancellationToken,
-            string? newMappingID = null,
-            string? newMappingSource = null)
+            string? newMappingID,
+            string? newMappingSource,
+            CancellationToken cancellationToken)
         {
             Assumes.NotNullOrEmpty(projectIds);
             Assumes.NotNull(packageIdentity);
@@ -483,9 +483,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     projectContext,
                     sourceRepositories,
                     versionRange,
-                    cancellationToken,
                     newMappingID,
-                    newMappingSource);
+                    newMappingSource,
+                    cancellationToken);
 
                 var projectActions = new List<ProjectAction>();
 

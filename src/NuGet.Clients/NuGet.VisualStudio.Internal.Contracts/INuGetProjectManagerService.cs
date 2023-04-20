@@ -72,9 +72,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
             DependencyBehavior dependencyBehavior,
             IReadOnlyList<string> packageSourceNames,
             VersionRange? versionRange,
-            CancellationToken cancellationToken,
-            string? newMappingID = null,
-            string? newMappingSource = null);
+            string? newMappingID,
+            string? newMappingSource,
+            CancellationToken cancellationToken);
 
         ValueTask<IReadOnlyList<ProjectAction>> GetUninstallActionsAsync(
             IReadOnlyCollection<string> projectIds,
