@@ -882,9 +882,9 @@ namespace NuGet.PackageManagement.UI
                     uiService.DependencyBehavior,
                     packageSourceNames,
                     userAction.VersionRange,
-                    token,
                     newMappingID,
-                    newMappingSource);
+                    newMappingSource,
+                    token);
 
                 results.AddRange(actions);
             }
