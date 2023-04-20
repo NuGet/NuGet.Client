@@ -211,7 +211,6 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(isSolutionLevel, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)]);
             Assert.Equal(activeTab, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)]);
             Assert.Equal(expectedPkgWasTransitive, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
-            Assert.Equal(true, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
             // Package Source Mapping is considered enabled if mappings already existed when the action began.
             Assert.Equal(false, lastTelemetryEvent[VSActionsTelemetryEvent.PackageSourceMappingIsMappingEnabled]);
         }
