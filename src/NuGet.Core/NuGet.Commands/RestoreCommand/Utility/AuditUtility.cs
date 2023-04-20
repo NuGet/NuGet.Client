@@ -43,7 +43,6 @@ namespace NuGet.Commands.Restore.Utility
             GetVulnerabilityInfoResult? allVulnerabilityData = await GetAllVulnerabilityDataAsync(cancellationToken);
             if (allVulnerabilityData == null) return;
 
-
             if (allVulnerabilityData.Exceptions != null)
             {
                 ReplayErrors(allVulnerabilityData.Exceptions);
@@ -70,32 +69,31 @@ namespace NuGet.Commands.Restore.Utility
             Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>? packagesWithKnownVulnerabilities =
                 FindPackagesWithKnownVulnerabilities(knownVulnerabilities);
 
-            if (packagesWithKnownVulnerabilities != null)
+            if (packagesWithKnownVulnerabilities == null) return;
+
+            // no-op checks DGSpec hash, which means the order of everything must be deterministic.
+            // .NET Framework and .NET Standard don't have Deconstructor methods for KeyValuePair
+            foreach (var kvp1 in packagesWithKnownVulnerabilities.OrderBy(p => p.Key.Id))
             {
-                // no-op checks DGSpec hash, which means the order of everything must be deterministic.
-                // .NET Framework and .NET Standard don't have Deconstructor methods for KeyValuePair
-                foreach (var kvp1 in packagesWithKnownVulnerabilities.OrderBy(p => p.Key.Id))
+                PackageIdentity package = kvp1.Key;
+                Dictionary<PackageVulnerabilityInfo, List<string>> vulnerabilities = kvp1.Value;
+                foreach (var kvp2 in vulnerabilities.OrderBy(v => v.Key.Url.OriginalString))
                 {
-                    PackageIdentity package = kvp1.Key;
-                    Dictionary<PackageVulnerabilityInfo, List<string>> vulnerabilities = kvp1.Value;
-                    foreach (var kvp2 in vulnerabilities.OrderBy(v => v.Key.Url.OriginalString))
-                    {
-                        PackageVulnerabilityInfo vulnerability = kvp2.Key;
-                        List<string> affectedGraphs = kvp2.Value;
-                        (string severityLabel, NuGetLogCode logCode) = GetSeverityLabelAndCode(vulnerability.Severity);
-                        string message = string.Format(Strings.Warning_PackageWithKnownVulnerability,
-                            package.Id,
-                            package.Version.ToNormalizedString(),
-                            severityLabel,
-                            vulnerability.Url);
-                        RestoreLogMessage restoreLogMessage =
-                            RestoreLogMessage.CreateWarning(logCode,
-                            message,
-                            package.Id,
-                            affectedGraphs.OrderBy(s => s).ToArray());
-                        restoreLogMessage.ProjectPath = _projectFullPath;
-                        _logger.Log(restoreLogMessage);
-                    }
+                    PackageVulnerabilityInfo vulnerability = kvp2.Key;
+                    List<string> affectedGraphs = kvp2.Value;
+                    (string severityLabel, NuGetLogCode logCode) = GetSeverityLabelAndCode(vulnerability.Severity);
+                    string message = string.Format(Strings.Warning_PackageWithKnownVulnerability,
+                        package.Id,
+                        package.Version.ToNormalizedString(),
+                        severityLabel,
+                        vulnerability.Url);
+                    RestoreLogMessage restoreLogMessage =
+                        RestoreLogMessage.CreateWarning(logCode,
+                        message,
+                        package.Id,
+                        affectedGraphs.OrderBy(s => s).ToArray());
+                    restoreLogMessage.ProjectPath = _projectFullPath;
+                    _logger.Log(restoreLogMessage);
                 }
             }
         }
@@ -157,9 +155,9 @@ namespace NuGet.Commands.Restore.Utility
 
             foreach (var graph in _targetGraphs)
             {
-                foreach (LibraryIdentity package in graph.Flattened.Select(i => i.Key).Where(p => p.Type == "package"))
+                foreach (LibraryIdentity package in graph.Flattened.Select(i => i.Key).Where(p => p.Type == LibraryType.Package))
                 {
-                    var fromFile = GetKnownVulnerabilities(package.Name, package.Version, knownVulnerabilities);
+                    List<PackageVulnerabilityInfo>? fromFile = GetKnownVulnerabilities(package.Name, package.Version, knownVulnerabilities);
 
                     if (fromFile?.Count() > 0)
                     {
@@ -189,7 +187,7 @@ namespace NuGet.Commands.Restore.Utility
                                 knownPackageVulnerabilities.Add(knownVulnerability, affectedGraphs);
                             }
 
-                            // Multiple package sources might list the same known vulnerability, so de-duple those too.
+                            // Multiple package sources might list the same known vulnerability, so de-dupe those too.
                             if (!affectedGraphs.Contains(graph.TargetGraphName))
                             {
                                 affectedGraphs.Add(graph.TargetGraphName);
@@ -220,7 +218,7 @@ namespace NuGet.Commands.Restore.Utility
             List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities = null;
             foreach (var resultTask in results)
             {
-                var result = await resultTask;
+                GetVulnerabilityInfoResult? result = await resultTask;
                 if (result is null) continue;
 
                 if (result.KnownVulnerabilities != null)
@@ -253,7 +251,7 @@ namespace NuGet.Commands.Restore.Utility
 
         private int ParseAuditLevel()
         {
-            string? auditLevel = _restoreAuditProperties.AuditLevel;
+            string? auditLevel = _restoreAuditProperties.AuditLevel?.Trim();
 
             if (auditLevel == null)
             {

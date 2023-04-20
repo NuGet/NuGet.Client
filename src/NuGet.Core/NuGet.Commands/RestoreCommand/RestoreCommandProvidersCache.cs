@@ -117,14 +117,14 @@ namespace NuGet.Commands
                 remoteProviders.Add(remoteProvider);
             }
 
-            var vulnerabilityInfoProviders = new List<IVulnerabilityInformationProvider>(sources.Count);
-            foreach (var source in sources)
+            var vulnerabilityInformationProviders = new List<IVulnerabilityInformationProvider>(sources.Count);
+            foreach (SourceRepository source in sources)
             {
                 IVulnerabilityInformationProvider provider = _vulnerabilityInformationProviders.GetOrAdd(source, s => new VulnerabilityInformationProvider(s, log));
-                vulnerabilityInfoProviders.Add(provider);
+                vulnerabilityInformationProviders.Add(provider);
             }
 
-            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, _fileCache, vulnerabilityInfoProviders);
+            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, _fileCache, vulnerabilityInformationProviders);
         }
     }
 }

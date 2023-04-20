@@ -147,8 +147,8 @@ namespace NuGet.Commands
                 remoteProviders.Add(provider);
             }
 
-            var vulnerabilityInfoProviders = new List<IVulnerabilityInformationProvider>(sources.Count());
-            foreach (var source in sources)
+            var vulnerabilityInfoProviders = new List<IVulnerabilityInformationProvider>(remoteProviders.Count);
+            foreach (SourceRepository source in sources)
             {
                 var provider = new VulnerabilityInformationProvider(source, log);
                 vulnerabilityInfoProviders.Add(provider);

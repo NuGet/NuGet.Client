@@ -1063,7 +1063,6 @@ namespace NuGet.ProjectModel
                         };
                         break;
 
-
                     case "skipContentFileWrite":
                         skipContentFileWrite = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
                         break;

@@ -158,10 +158,7 @@ namespace NuGet.ProjectModel
             WriteMetadataTargetFrameworks(writer, msbuildMetadata);
             SetWarningProperties(writer, msbuildMetadata);
 
-            // write NuGet lock file msbuild properties
             WriteNuGetLockFileProperties(writer, msbuildMetadata);
-
-            // write NuGetAudit properties
             WriteNuGetAuditProperties(writer, msbuildMetadata.RestoreAuditProperties);
 
             if (msbuildMetadata is PackagesConfigProjectRestoreMetadata pcMsbuildMetadata)
@@ -203,7 +200,7 @@ namespace NuGet.ProjectModel
 
         private static void WriteNuGetAuditProperties(IObjectWriter writer, RestoreAuditProperties auditProperties)
         {
-            if (auditProperties == null) { return; }
+            if (auditProperties == null) return;
 
             writer.WriteObjectStart("restoreAuditProperties");
 

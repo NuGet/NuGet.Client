@@ -17,14 +17,14 @@ namespace NuGet.ProjectModel
         public string? EnableAudit { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the NuGet audit level threshold which which vulnerabilities are reported.
+        /// Gets or sets a value indicating the NuGet audit level threshold with which vulnerabilities are reported.
         /// </summary>
         /// <value>low, moderate, high, critical</value>
         public string? AuditLevel { get; set; }
 
         public bool Equals(RestoreAuditProperties? other)
         {
-            if (other is null) { return false; }
+            if (other is null) return false;
 
             return EnableAudit == other.EnableAudit &&
                 AuditLevel == other.AuditLevel;
@@ -37,8 +37,8 @@ namespace NuGet.ProjectModel
 
         public static bool operator ==(RestoreAuditProperties? x, RestoreAuditProperties? y)
         {
-            if (ReferenceEquals(x, y)) { return true; }
-            if (x is null || y is null) { return false; }
+            if (ReferenceEquals(x, y)) return true;
+            if (x is null || y is null) return false;
 
             return x.Equals(y);
         }
@@ -63,7 +63,6 @@ namespace NuGet.ProjectModel
                 EnableAudit = EnableAudit,
                 AuditLevel = AuditLevel
             };
-            Debug.Assert(clone == this && clone.GetHashCode() == GetHashCode());
             return clone;
         }
     }

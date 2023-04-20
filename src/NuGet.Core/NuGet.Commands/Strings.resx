@@ -1065,7 +1065,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Package '{0}' {1} has a known {2} severity vulnerability, {3}.</value>
     <comment>{0} - package id
 {1} - package version
-{2} - severity, for example low, moder, high, or critical
+{2} - severity, for example low, moderate, high, or critical
 {3} - URL for more info on the known vulnerability</comment>
   </data>
   <data name="Error_InvalidNuGetAuditLevelValue" xml:space="preserve">
