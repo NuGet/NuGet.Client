@@ -1588,6 +1588,27 @@ namespace NuGet.PackageManagement
             return await PreviewProjectsInstallPackageAsync(nuGetProjects, packageIdentity, resolutionContext, nuGetProjectContext, activeSources, versionRange: null, token);
         }
 
+        public async Task<IEnumerable<ResolvedAction>> PreviewProjectsInstallPackageAsync(
+            IReadOnlyCollection<NuGetProject> nuGetProjects,
+            PackageIdentity packageIdentity,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            IReadOnlyCollection<SourceRepository> activeSources,
+            VersionRange versionRange,
+            CancellationToken token)
+        {
+            return await PreviewProjectsInstallPackageAsync(
+                nuGetProjects,
+                packageIdentity,
+                resolutionContext,
+                nuGetProjectContext,
+                activeSources,
+                versionRange,
+                newMappingID: null,
+                newMappingSource: null,
+                token);
+        }
+
         // Preview and return ResolvedActions for many NuGetProjects.
         public async Task<IEnumerable<ResolvedAction>> PreviewProjectsInstallPackageAsync(
             IReadOnlyCollection<NuGetProject> nuGetProjects,
@@ -1596,9 +1617,9 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext,
             IReadOnlyCollection<SourceRepository> activeSources,
             VersionRange versionRange,
-            CancellationToken token,
-            string newMappingID = null,
-            string newMappingSource = null)
+            string newMappingID,
+            string newMappingSource,
+            CancellationToken token)
         {
             if (nuGetProjects == null)
             {
@@ -1659,15 +1680,15 @@ namespace NuGet.PackageManagement
             {
                 // Run build integrated project preview for all projects at the same time
                 var resolvedActions = await PreviewBuildIntegratedProjectsActionsAsync(
-                buildIntegratedProjectsToUpdate,
-                nugetProjectActionsLookup: null, // no nugetProjectActionsLookup so it'll be derived from packageIdentity and activeSources
-                packageIdentity,
-                activeSources,
-                nuGetProjectContext,
-                versionRange,
-                token,
-                newMappingID,
-                newMappingSource);
+                    buildIntegratedProjectsToUpdate,
+                    nugetProjectActionsLookup: null, // no nugetProjectActionsLookup so it'll be derived from packageIdentity and activeSources
+                    packageIdentity,
+                    activeSources,
+                    nuGetProjectContext,
+                    versionRange,
+                    newMappingID,
+                    newMappingSource,
+                    token);
                 results.AddRange(resolvedActions);
             }
 
@@ -2226,6 +2247,8 @@ namespace NuGet.PackageManagement
                 primarySources: null, // since we have nuGetProjectActions no need primarySources
                 nuGetProjectContext,
                 versionRange: null,
+                newMappingID: null,
+                newMappingSource: null,
                 token);
 
             return resolvedActions.Select(r => r.Action as BuildIntegratedProjectAction);
@@ -2832,8 +2855,9 @@ namespace NuGet.PackageManagement
                 primarySources: null, // since we have nuGetProjectActions no need primarySources
                 nuGetProjectContext,
                 versionRange: null,
-                token
-                );
+                newMappingID: null,
+                newMappingSource: null,
+                token);
 
             return resolvedAction.FirstOrDefault(r => r.Project == buildIntegratedProject)?.Action as BuildIntegratedProjectAction;
         }
@@ -2848,9 +2872,9 @@ namespace NuGet.PackageManagement
             IReadOnlyCollection<SourceRepository> primarySources,
             INuGetProjectContext nuGetProjectContext,
             VersionRange versionRange,
-            CancellationToken token,
-            string newMappingID = null,
-            string newMappingSource = null)
+            string newMappingID,
+            string newMappingSource,
+            CancellationToken token)
         {
             if (nugetProjectActionsLookup == null)
             {

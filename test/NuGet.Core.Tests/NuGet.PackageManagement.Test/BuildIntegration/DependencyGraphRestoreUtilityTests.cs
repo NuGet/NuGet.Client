@@ -429,9 +429,7 @@ namespace NuGet.PackageManagement.Test
                 projectContext,
                 sourceRepositories,
                 versionRange: null,
-                CancellationToken.None,
-                newMappingID: null,
-                newMappingSource: null);
+                CancellationToken.None);
 
             // Assert (Preview the Restore)
             actions.Should().HaveCount(1);
@@ -500,9 +498,9 @@ namespace NuGet.PackageManagement.Test
                 projectContext,
                 sourceRepositories,
                 versionRange: null,
-                CancellationToken.None,
                 newMappingID: packageA.Id,
-                newMappingSource: pathContext.PackageSource);
+                newMappingSource: pathContext.PackageSource,
+                CancellationToken.None);
 
             // Assert (Preview the Restore)
             actions.Should().HaveCount(1);

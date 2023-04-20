@@ -7108,6 +7108,8 @@ namespace NuGet.Test
                         primarySources,
                         nugetProjectContext,
                         versionRange: null,
+                        newMappingID: null,
+                        newMappingSource: null,
                         CancellationToken.None);
                 });
 
@@ -7177,9 +7179,9 @@ namespace NuGet.Test
                 primarySources,
                 nugetProjectContext,
                 versionRange: null,
-                CancellationToken.None,
                 newMappingID,
-                newMappingSource);
+                newMappingSource,
+                CancellationToken.None);
 
             // Assert
 
