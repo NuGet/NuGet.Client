@@ -7122,7 +7122,7 @@ namespace NuGet.Test
         [InlineData(false, true)]
         [InlineData(true, false)]
         [InlineData(true, true)]
-        public async Task TestPacMan_PreviewInstallPackage_NewSourceMapping_TBD(bool validNewMappingSource, bool validNewMappingID)
+        public async Task TestPacMan_PreviewInstallPackage_NewSourceMapping_AffectsRestoreSummaryRequest(bool isValidNewMappingSource, bool isValidNewMappingID)
         {
             // Arrange
             var package = _packageWithDependents[0];
@@ -7138,12 +7138,14 @@ namespace NuGet.Test
 
             // Create Package Manager
             using var solutionManager = new TestSolutionManager();
+            using var settingsDir = TestDirectory.Create();
+            var settings = new Settings(settingsDir);
 
             var nuGetPackageManager = new NuGetPackageManager(
-                sourceRepositoryProvider,
-                NullSettings.Instance,
-                solutionManager,
-                new TestDeleteOnRestartManager());
+            sourceRepositoryProvider,
+            settings,
+            solutionManager,
+            new TestDeleteOnRestartManager());
 
             var buildIntegratedProjectA = solutionManager.AddBuildIntegratedProject("projectA") as BuildIntegratedNuGetProject;
 
@@ -7156,8 +7158,8 @@ namespace NuGet.Test
             };
 
             SourceRepository primarySource = primarySources.First();
-            string newMappingSource = validNewMappingSource ? primarySource.PackageSource.Name : "invalidSource";
-            string newMappingID = validNewMappingID ? "jQuery" : "invalidPackage";
+            string newMappingSource = isValidNewMappingSource ? primarySource.PackageSource.Name : "invalidSource";
+            string newMappingID = isValidNewMappingID ? target.Id : "invalidPackage";
 
             var nugetAction = NuGetProjectAction.CreateInstallProjectAction(target, primarySource, buildIntegratedProjectA);
             NuGetProjectAction[] actions = new NuGetProjectAction[] { nugetAction };
