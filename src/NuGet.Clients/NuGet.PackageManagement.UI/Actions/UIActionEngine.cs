@@ -365,11 +365,6 @@ namespace NuGet.PackageManagement.UI
             var sourceMappingProvider = new PackageSourceMappingProvider(uiService.Settings);
             IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingSourceItems = sourceMappingProvider.GetPackageSourceMappingItems();
             IsPackageSourceMappingEnabled = existingPackageSourceMappingSourceItems.Count > 0;
-            string[] existingMappingPackageIds = existingPackageSourceMappingSourceItems
-                .SelectMany(mapping => mapping.Patterns)
-                .Select(pattern => pattern.Pattern)
-                .Distinct()
-                .ToArray();
 
             packageEnumerationTime.Stop();
 
@@ -486,7 +481,7 @@ namespace NuGet.PackageManagement.UI
                             // Expand all patterns/globs so we can later check if this package ID was already mapped.
                             var addedPackageIds = addedPackages.Select(action => action.Item1);
                             var addedPackageIdsWithoutExistingMappings = new List<string>();
-                            foreach (var addedPackageId in addedPackageIds)
+                            foreach (string? addedPackageId in addedPackageIds)
                             {
                                 var configuredSource = packageSourceMapping.GetConfiguredPackageSources(addedPackageId);
                                 if (configuredSource == null || configuredSource.Count == 0)
