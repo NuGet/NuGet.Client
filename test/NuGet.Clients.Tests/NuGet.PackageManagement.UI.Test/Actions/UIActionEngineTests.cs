@@ -142,7 +142,7 @@ namespace NuGet.PackageManagement.UI.Test
 
         [Theory]
         [MemberData(nameof(GetInstallActionTestData))]
-        public async Task CreateInstallAction_OnInstallingProject_WithNewSourceMappingSucceeds(ContractsItemFilter activeTab, bool isSolutionLevel, string packageIdToInstall, bool? expectedPkgWasTransitive)
+        public async Task CreateInstallAction_OnInstallingProject_WithNewSourceMapping_DoesNotLogTelemetry(ContractsItemFilter activeTab, bool isSolutionLevel, string packageIdToInstall, bool? expectedPkgWasTransitive)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -198,7 +198,7 @@ namespace NuGet.PackageManagement.UI.Test
             uiService.Setup(ui => ui.Settings).Returns(settings.Object);
             uiService.Setup(ui => ui.Projects).Returns(new[] { new ProjectContextInfo("a", ProjectModel.ProjectStyle.PackageReference, NuGetProjectKind.PackageReference) });
 
-            var action = UserAction.CreateInstallAction(packageIdToInstall, NuGetVersion.Parse("1.0.0"), isSolutionLevel, activeTab);
+            var action = UserAction.CreateInstallAction(packageIdToInstall, NuGetVersion.Parse("1.0.0"), isSolutionLevel, activeTab, sourceMappingSourceName: "source");
 
             // Act
             await uiEngine.PerformInstallOrUninstallAsync(uiService.Object, action, CancellationToken.None);
@@ -211,6 +211,9 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(isSolutionLevel, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)]);
             Assert.Equal(activeTab, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)]);
             Assert.Equal(expectedPkgWasTransitive, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
+            Assert.Equal(true, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
+            // Package Source Mapping is considered enabled if mappings already existed when the action began.
+            Assert.Equal(false, lastTelemetryEvent[VSActionsTelemetryEvent.PackageSourceMappingIsMappingEnabled]);
         }
 
         [Fact]
