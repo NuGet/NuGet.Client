@@ -125,8 +125,8 @@ namespace NuGet.Commands
             {
                 telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
 
-                bool isPackageSourceMappingAlreadyEnabled = _request.PackageSourceMapping?.IsEnabled ?? false;
-                telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingAlreadyEnabled;
+                bool isPackageSourceMappingEnabled = _request.PackageSourceMapping?.IsEnabled ?? false;
+                telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
                 telemetry.TelemetryEvent[SourcesCount] = _request.DependencyProviders.RemoteProviders.Count;
                 int httpSourcesCount = _request.DependencyProviders.RemoteProviders.Where(e => e.IsHttp).Count();
                 telemetry.TelemetryEvent[HttpSourcesCount] = httpSourcesCount;
