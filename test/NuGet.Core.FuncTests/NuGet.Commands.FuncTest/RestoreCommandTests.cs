@@ -35,6 +35,8 @@ namespace NuGet.Commands.FuncTest
     [Collection(TestCollection.Name)]
     public class RestoreCommandTests
     {
+        private const string PrimarySourceName = "source";
+
         [Theory]
         [InlineData(NuGetConstants.V2FeedUrl, new Type[0])]
         [InlineData(NuGetConstants.V3FeedUrl, new[] { typeof(RemoteV3FindPackageByIdResourceProvider) })]
@@ -2238,12 +2240,14 @@ namespace NuGet.Commands.FuncTest
                 CacheContext = new SourceCacheContext()
             };
 
+            pathContext.Settings.AddPackageSourceMapping("InvalidSource", packageA.Id);
+            ISettings settings = Settings.LoadSettingsGivenConfigPaths(new string[] { pathContext.Settings.ConfigPath });
+
             DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
-                newMappingID: packageA.Id, // Act
-                newMappingSource: "InvalidSource"); // Act
+                settings); // Act
 
             IReadOnlyList<RestoreSummaryRequest> restoreSummaryRequests = await dgProvider.CreateRequests(restoreContext);
 
@@ -2291,12 +2295,14 @@ namespace NuGet.Commands.FuncTest
                 CacheContext = new SourceCacheContext()
             };
 
+            pathContext.Settings.AddPackageSourceMapping(PrimarySourceName, packageA.Id);
+            ISettings settings = Settings.LoadSettingsGivenConfigPaths(new string[] { pathContext.Settings.ConfigPath });
+
             DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
-                newMappingID: packageA.Id, // Act
-                newMappingSource: pathContext.PackageSource); // Act
+                settings); // Act
 
             IReadOnlyList<RestoreSummaryRequest> restoreSummaryRequests = await dgProvider.CreateRequests(restoreContext);
 
@@ -2330,6 +2336,8 @@ namespace NuGet.Commands.FuncTest
                                                                  rootPath: pathContext.SolutionRoot,
                                                                  framework: "net5.0",
                                                                  dependencyName: packageA.Id);
+            project1Spec.RestoreMetadata.Sources.Add(new PackageSource(source: pathContext.PackageSource, name: PrimarySourceName));
+            project2Spec.RestoreMetadata.Sources.Add(new PackageSource(source: pathContext.PackageSource, name: PrimarySourceName));
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
                 PackageSaveMode.Defaultv3,
@@ -2340,15 +2348,17 @@ namespace NuGet.Commands.FuncTest
                 Sources = new List<string>() { pathContext.PackageSource },
                 GlobalPackagesFolder = pathContext.UserPackagesFolder,
                 Log = logger,
-                CacheContext = new SourceCacheContext()
+                CacheContext = new SourceCacheContext(),
             };
+
+            pathContext.Settings.AddPackageSourceMapping(PrimarySourceName, packageA.Id);
+            ISettings settings = Settings.LoadSettingsGivenConfigPaths(new string[] { pathContext.Settings.ConfigPath });
 
             DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
-                newMappingID: packageA.Id, // Act
-                newMappingSource: pathContext.PackageSource); // Act
+                settings);
 
             IReadOnlyList<RestoreSummaryRequest> restoreSummaryRequests = await dgProvider.CreateRequests(restoreContext);
 
@@ -2361,7 +2371,7 @@ namespace NuGet.Commands.FuncTest
                 // Assert
                 string loggerMessages = logger.ShowMessages();
                 result.Success.Should().BeTrue(because: loggerMessages);
-                loggerMessages.Should().Contain($"Package source mapping matches found for package ID '{packageA.Id}' are: '{pathContext.PackageSource}'.");
+                loggerMessages.Should().Contain($"Package source mapping matches found for package ID '{packageA.Id}' are: '{PrimarySourceName}'.");
             }
         }
 
