@@ -9,7 +9,7 @@ namespace NuGet.CommandLine.XPlat
         public string? WorkingDirectory { get; set; }
     }
 
-    internal partial class ConfigGetArgs
+    internal class ConfigGetArgs
     {
         public string? AllOrConfigKey { get; set; }
         public string? WorkingDirectory { get; set; }

@@ -106,8 +106,8 @@ namespace NuGet.Configuration
 
         public IEnumerable<XAttribute> GetXElementAttributes()
         {
-            var xElement = Node as XElement;
-            return xElement.Attributes();
+            var xElement = (XElement)Node;
+            return xElement?.Attributes();
         }
     }
 }

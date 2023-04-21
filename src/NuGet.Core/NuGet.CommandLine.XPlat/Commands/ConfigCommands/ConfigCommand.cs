@@ -9,6 +9,7 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class ConfigCommand
     {
+        public const string WORKING_DIRECTORY = "WORKING_DIRECTORY";
         internal static void Register(CommandLineApplication app,
                                       Func<ILogger> getLogger)
         {
@@ -17,7 +18,7 @@ namespace NuGet.CommandLine.XPlat
                 ConfigCmd.Command("paths", PathsCmd =>
                 {
                     CommandArgument workingdirectory = PathsCmd.Argument(
-                        "WORKING_DIRECTORY",
+                        WORKING_DIRECTORY,
                         Strings.ConfigPathsWorkingDirectoryDescription);
                     PathsCmd.HelpOption("-h|--help");
                     PathsCmd.Description = Strings.ConfigPathsCommandDescription;
@@ -38,7 +39,7 @@ namespace NuGet.CommandLine.XPlat
                         "<ALL|CONFIG_KEY>",
                         Strings.ConfigGetAllOrConfigKeyDescription);
                     CommandArgument workingDirectory = GetCmd.Argument(
-                        "WORKING_DIRECTORY",
+                        WORKING_DIRECTORY,
                         Strings.ConfigPathsWorkingDirectoryDescription);
                     var showPath = GetCmd.Option(
                         "--show-path",
