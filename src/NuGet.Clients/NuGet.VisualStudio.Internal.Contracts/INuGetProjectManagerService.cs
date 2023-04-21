@@ -92,6 +92,15 @@ namespace NuGet.VisualStudio.Internal.Contracts
             IReadOnlyList<string> packageSourceNames,
             CancellationToken cancellationToken);
 
+        ValueTask<IReadOnlyList<ProjectAction>> GetPreferUpdateToInstallActionsAsync(
+            IReadOnlyCollection<string> projectIds,
+            IReadOnlyCollection<PackageIdentity> packageIdentities,
+            VersionConstraints versionConstraints,
+            bool includePrelease,
+            DependencyBehavior dependencyBehavior,
+            IReadOnlyList<string> packageSourceNames,
+            CancellationToken cancellationToken);
+        
         /// <summary>
         /// Get package folders section from assets file from a collection of projects
         /// </summary>

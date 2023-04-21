@@ -523,7 +523,7 @@ namespace NuGet.PackageManagement.UI
                     continue;
                 }
 
-                if (action.Action == NuGetProjectActionType.Install || action.Action == NuGetProjectActionType.Update)
+                if (action.Action == NuGetProjectActionType.Install || action.Action == NuGetProjectActionType.Update || action.Action == NuGetProjectActionType.PreferUpdateToInstall)
                 {
                     // for install, the installed version can't be the same as the version to be installed.
                     // AutoReferenced packages should be ignored

@@ -70,6 +70,10 @@ namespace NuGet.PackageManagement.UI
             {
                 operationType = NuGetOperationType.Update;
             }
+            else if (userAction.Action == NuGetProjectActionType.PreferUpdateToInstall)
+            {
+                operationType = NuGetOperationType.PreferUpdateToInstall;
+            }
 
             await PerformActionAsync(
                 uiService,
@@ -895,6 +899,21 @@ namespace NuGet.PackageManagement.UI
                 var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
 
                 IReadOnlyList<ProjectAction> actions = await projectManagerService.GetUpdateActionsAsync(
+                    projectIds,
+                    new ReadOnlyCollection<PackageIdentity>(new[] { packageIdentity }),
+                    VersionConstraints.None,
+                    includePrelease,
+                    uiService.DependencyBehavior,
+                    packageSourceNames,
+                    token);
+
+                results.AddRange(actions);
+            }
+            else if (userAction.Action == NuGetProjectActionType.PreferUpdateToInstall)
+            {
+                var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
+
+                IReadOnlyList<ProjectAction> actions = await projectManagerService.GetPreferUpdateToInstallActionsAsync(
                     projectIds,
                     new ReadOnlyCollection<PackageIdentity>(new[] { packageIdentity }),
                     VersionConstraints.None,

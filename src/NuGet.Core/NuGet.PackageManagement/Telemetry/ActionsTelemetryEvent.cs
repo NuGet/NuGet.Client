@@ -48,5 +48,10 @@ namespace NuGet.PackageManagement
         /// Uninstall package action.
         /// </summary>
         Uninstall = 2,
+
+        /// <summary>
+        /// PreferUpdateToInstall package action.
+        /// </summary>
+        PreferUpdateToInstall = 3,
     }
 }

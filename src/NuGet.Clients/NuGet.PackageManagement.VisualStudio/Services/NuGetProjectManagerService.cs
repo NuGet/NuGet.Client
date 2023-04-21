@@ -627,6 +627,80 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
+        public async ValueTask<IReadOnlyList<ProjectAction>> GetPreferUpdateToInstallActionsAsync(
+             IReadOnlyCollection<string> projectIds,
+             IReadOnlyCollection<PackageIdentity> packageIdentities,
+             VersionConstraints versionConstraints,
+             bool includePrelease,
+             DependencyBehavior dependencyBehavior,
+             IReadOnlyList<string> packageSourceNames,
+             CancellationToken cancellationToken)
+        {
+            Assumes.NotNullOrEmpty(projectIds);
+            Assumes.NotNullOrEmpty(packageIdentities);
+            Assumes.NotNullOrEmpty(packageSourceNames);
+            Assumes.NotNull(_state.SourceCacheContext);
+            Assumes.NotNull(_state.ResolvedActions);
+            Assumes.Null(_state.PackageIdentity);
+
+            return await CatchAndRethrowExceptionAsync(async () =>
+            {
+                var primarySources = new List<SourceRepository>();
+                var secondarySources = new List<SourceRepository>();
+
+                IEnumerable<SourceRepository> sourceRepositories = _sharedState.SourceRepositoryProvider.GetRepositories();
+                var packageSourceNamesSet = new HashSet<string>(packageSourceNames, StringComparer.OrdinalIgnoreCase);
+
+                foreach (SourceRepository sourceRepository in sourceRepositories)
+                {
+                    if (packageSourceNamesSet.Contains(sourceRepository.PackageSource.Name))
+                    {
+                        primarySources.Add(sourceRepository);
+                    }
+
+                    if (sourceRepository.PackageSource.IsEnabled)
+                    {
+                        secondarySources.Add(sourceRepository);
+                    }
+                }
+
+                INuGetProjectContext projectContext = await ServiceLocator.GetComponentModelServiceAsync<INuGetProjectContext>();
+                IReadOnlyList<NuGetProject> projects = await GetProjectsAsync(projectIds, cancellationToken);
+
+                var resolutionContext = new ResolutionContext(
+                    dependencyBehavior,
+                    includePrelease,
+                    includeUnlisted: true,
+                    versionConstraints,
+                    new GatherCache(),
+                    _state.SourceCacheContext);
+
+                NuGetPackageManager packageManager = await _sharedState.GetPackageManagerAsync(cancellationToken);
+                IEnumerable<NuGetProjectAction> actions = await packageManager.PreviewPreferUpdateToInstallPackagesAsync(
+                    packageIdentities.ToList(),
+                    projects,
+                    resolutionContext,
+                    projectContext,
+                    primarySources,
+                    secondarySources,
+                    cancellationToken);
+
+                var projectActions = new List<ProjectAction>();
+
+                foreach (NuGetProjectAction action in actions)
+                {
+                    var resolvedAction = new ResolvedAction(action.Project, action);
+                    ProjectAction projectAction = CreateProjectAction(resolvedAction);
+
+                    _state.ResolvedActions[projectAction.Id] = resolvedAction;
+
+                    projectActions.Add(projectAction);
+                }
+
+                return projectActions;
+            });
+        }
+
         /// <inheritdoc />
         public async ValueTask<IReadOnlyCollection<string>> GetPackageFoldersAsync(
             IReadOnlyCollection<string> projectIds,

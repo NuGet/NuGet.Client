@@ -563,6 +563,7 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext: nuGetProjectContext,
                 primarySources: primarySources,
                 secondarySources: secondarySources,
+                preferUpdateToInstall:false,
                 token: token);
         }
 
@@ -583,6 +584,7 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext: nuGetProjectContext,
                 primarySources: primarySources,
                 secondarySources: secondarySources,
+                preferUpdateToInstall: false,
                 token: token);
         }
 
@@ -603,6 +605,7 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext: nuGetProjectContext,
                 primarySources: primarySources,
                 secondarySources: secondarySources,
+                preferUpdateToInstall: false,
                 token: token);
         }
 
@@ -623,6 +626,28 @@ namespace NuGet.PackageManagement
                 nuGetProjectContext: nuGetProjectContext,
                 primarySources: primarySources,
                 secondarySources: secondarySources,
+                preferUpdateToInstall: false,
+                token: token);
+        }
+        
+        public Task<IEnumerable<NuGetProjectAction>> PreviewPreferUpdateToInstallPackagesAsync(
+            List<PackageIdentity> packageIdentities,
+            IEnumerable<NuGetProject> nuGetProjects,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources,
+            CancellationToken token)
+        {
+            return PreviewUpdatePackagesAsync(
+                packageId: null,
+                packageIdentities: packageIdentities,
+                nuGetProjects: nuGetProjects,
+                resolutionContext: resolutionContext,
+                nuGetProjectContext: nuGetProjectContext,
+                primarySources: primarySources,
+                secondarySources: secondarySources,
+                preferUpdateToInstall: true,
                 token: token);
         }
 
@@ -634,6 +659,7 @@ namespace NuGet.PackageManagement
                 INuGetProjectContext nuGetProjectContext,
                 IEnumerable<SourceRepository> primarySources,
                 IEnumerable<SourceRepository> secondarySources,
+                bool preferUpdateToInstall,
                 CancellationToken token)
         {
             if (packageIdentities == null)
@@ -708,9 +734,26 @@ namespace NuGet.PackageManagement
                     }
                     else
                     {
-                        // skip running update preview for this project, since it doesn't have any package installed
-                        // which is being updated.
-                        continue;
+                        if (preferUpdateToInstall)
+                        {
+                            packagesToUpdateInProject = packageIdentities;
+
+                            var includePrerelease = resolutionContext.IncludePrerelease;
+
+                            updatedResolutionContext = new ResolutionContext(
+                                dependencyBehavior: resolutionContext.DependencyBehavior,
+                                includePrelease: includePrerelease,
+                                includeUnlisted: resolutionContext.IncludeUnlisted,
+                                versionConstraints: resolutionContext.VersionConstraints,
+                                gatherCache: resolutionContext.GatherCache,
+                                sourceCacheContext: resolutionContext.SourceCacheContext);
+                        }
+                        else
+                        {
+                            // skip running update preview for this project, since it doesn't have any package installed
+                            // which is being updated and because preferUpdateToInstall isn't true.
+                            continue;
+                        }
                     }
                 }
 
@@ -730,6 +773,7 @@ namespace NuGet.PackageManagement
                             updatedResolutionContext,
                             nuGetProjectContext,
                             primarySources,
+                            preferUpdateToInstall: preferUpdateToInstall,
                             token)));
             }
 
@@ -818,6 +862,7 @@ namespace NuGet.PackageManagement
             ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
             IEnumerable<SourceRepository> primarySources,
+            bool preferUpdateToInstall,
             CancellationToken token)
         {
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
@@ -943,6 +988,11 @@ namespace NuGet.PackageManagement
 
                     //  if the package is not currently installed, or the installed one is auto referenced ignore it
                     if (installed != null && !autoReferenced)
+                    {
+                        lowLevelActions.Add(NuGetProjectAction.CreateUpdateProjectAction(packageIdentity,
+                            primarySources.FirstOrDefault(), nuGetProject));
+                    }
+                    else if (installed == null)
                     {
                         lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity,
                             primarySources.FirstOrDefault(), nuGetProject));

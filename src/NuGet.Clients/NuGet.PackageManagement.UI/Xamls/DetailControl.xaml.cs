@@ -157,13 +157,13 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null && model.SelectedVersion != null)
             {
-                var userAction = UserAction.CreateInstallAction(
-                    model.Id,
-                    model.SelectedVersion.Version,
-                    Control.Model.IsSolution,
-                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter));
+                var userAction = UserAction.CreatePreferUpdateToInstallAction(
+                        model.Id,
+                        model.SelectedVersion.Version,
+                        Control.Model.IsSolution,
+                        UIUtility.ToContractsItemFilter(Control._topPanel.Filter));
 
-                ExecuteUserAction(userAction, NuGetActionType.Install);
+                ExecuteUserAction(userAction, NuGetActionType.PreferUpdateToInstall);
             }
         }
 

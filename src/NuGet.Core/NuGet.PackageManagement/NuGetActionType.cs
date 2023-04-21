@@ -31,6 +31,11 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// UpdateAll
         /// </summary>
-        UpdateAll
+        UpdateAll,
+
+        /// <summary>
+        /// PreferUpdateToInstall
+        /// </summary>
+        PreferUpdateToInstall
     }
 }

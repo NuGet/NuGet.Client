@@ -28,7 +28,12 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Update
         /// </summary>
-        Update
+        Update,
+
+        /// <summary>
+        /// PreferUpdateToInstall - Install if project doesn't have package. Update if project does have it.
+        /// </summary>
+        PreferUpdateToInstall
     }
 
     /// <summary>
@@ -87,6 +92,11 @@ namespace NuGet.PackageManagement
         public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository, NuGetProject project, VersionRange versionRange)
         {
             return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, project, sourceRepository, versionRange);
+        }
+
+        public static NuGetProjectAction CreateUpdateProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository, NuGetProject project)
+        {
+            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Update, project, sourceRepository);
         }
 
         public static NuGetProjectAction CreateUninstallProjectAction(PackageIdentity packageIdentity, NuGetProject project)

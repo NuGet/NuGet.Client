@@ -81,6 +81,16 @@ namespace NuGet.PackageManagement.UI
             return new UserAction(NuGetProjectActionType.Update, packageId, packageVersion, isSolutionLevel, activeTab);
         }
 
+        public static UserAction CreatePreferUpdateToInstallAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab)
+        {
+            if (packageVersion == null)
+            {
+                throw new ArgumentNullException(nameof(packageVersion));
+            }
+
+            return new UserAction(NuGetProjectActionType.PreferUpdateToInstall, packageId, packageVersion, isSolutionLevel, activeTab);
+        }
+
         public static UserAction CreateUpdateAction(string packageId, NuGetVersion packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, VersionRange versionRange)
         {
             if (packageVersion == null && versionRange == null)
