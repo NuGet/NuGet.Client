@@ -86,16 +86,16 @@ namespace NuGet.CommandLine.XPlat
         public static void Run(ConfigSetArgs args, Func<ILogger> getLogger)
         {
             RunnerHelper.ValidateArguments(args, getLogger);
+            ISettings settings = null;
             if (string.IsNullOrEmpty(args.ConfigFile))
             {
-                var settingsFromDirectory = RunnerHelper.GetSettingsFromDirectory(null);
-                SettingsUtility.SetConfigValue(settingsFromDirectory, args.ConfigKey, args.ConfigValue);
+                settings = RunnerHelper.GetSettingsFromDirectory(null);
             }
             else
             {
-                var settings = RunnerHelper.GetSettingsFromFile(args.ConfigFile);
-                SettingsUtility.SetConfigValue(settings, args.ConfigKey, args.ConfigValue);
+                settings = RunnerHelper.GetSettingsFromFile(args.ConfigFile);
             }
+            SettingsUtility.SetConfigValue(settings, args.ConfigKey, args.ConfigValue);
         }
     }
 

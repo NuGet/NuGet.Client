@@ -63,16 +63,16 @@ namespace NuGet.CommandLine.XPlat
                 {
                     CommandArgument configKey = SetCmd.Argument(
                         "CONFIG_KEY",
-                        "<Config Key description>");
+                        Strings.ConfigSetConfigKeyDescription);
                     CommandArgument configValue = SetCmd.Argument(
                         "CONFIG_VALUE",
-                        "<Config value description>");
+                        Strings.ConfigSetConfigValueDescription);
                     var configFile = SetCmd.Option(
                         "--configfile",
-                        "<Config file description>",
+                        Strings.ConfigSetConfigFileDescription,
                         CommandOptionType.SingleValue);
                     SetCmd.HelpOption("-h|--help");
-                    SetCmd.Description = "<Set command description>";
+                    SetCmd.Description = Strings.ConfigSetCommandDescription;
                     SetCmd.OnExecute(() =>
                     {
                         var args = new ConfigSetArgs()
