@@ -1,2 +1,5 @@
 #nullable enable
 NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.IsCentralPackageManagementEnabledAsync(string! projectId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
+NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo.VersionOverride.get -> NuGet.Versioning.VersionRange?
+NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.VersionOverride.get -> NuGet.Versioning.VersionRange?
+NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.VersionOverride.get -> NuGet.Versioning.VersionRange?
