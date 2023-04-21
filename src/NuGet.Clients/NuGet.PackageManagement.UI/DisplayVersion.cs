@@ -49,6 +49,20 @@ namespace NuGet.PackageManagement.UI
             bool autoReferenced = false,
             bool isDeprecated = false,
             string versionFormat = "N")
+            : this(range, version, additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, isDeprecated, isVulnerable: false, versionFormat)
+        {
+        }
+
+        public DisplayVersion(
+            VersionRange range,
+            NuGetVersion version,
+            string additionalInfo,
+            bool isValidVersion = true,
+            bool isCurrentInstalled = false,
+            bool autoReferenced = false,
+            bool isDeprecated = false,
+            bool isVulnerable = false,
+            string versionFormat = "N")
         {
             if (versionFormat == null)
             {
@@ -65,6 +79,7 @@ namespace NuGet.PackageManagement.UI
             IsCurrentInstalled = isCurrentInstalled;
             AutoReferenced = autoReferenced;
             IsDeprecated = isDeprecated;
+            IsVulnerable = isVulnerable;
 
             // Display a single version if the range is locked
             if (range.OriginalString == null && range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
@@ -83,12 +98,27 @@ namespace NuGet.PackageManagement.UI
                     AdditionalInfo + " " + Range.OriginalString;
             }
 
-            if (IsDeprecated)
+            if (IsDeprecated && IsVulnerable)
+            {
+                _toString += string.Format(
+                    CultureInfo.CurrentCulture,
+                    "    ({0}, {1})",
+                    Resources.Label_Vulnerable,
+                    Resources.Label_Deprecated);
+            }
+            else if (IsDeprecated)
             {
                 _toString += string.Format(
                     CultureInfo.CurrentCulture,
                     "    ({0})",
                     Resources.Label_Deprecated);
+            }
+            else if (IsVulnerable)
+            {
+                _toString += string.Format(
+                    CultureInfo.CurrentCulture,
+                    "    ({0})",
+                    Resources.Label_Vulnerable);
             }
         }
 
@@ -104,6 +134,8 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsDeprecated { get; set; }
 
+        public bool IsVulnerable { get; set; }
+
         public override string ToString()
         {
             return _toString;
@@ -115,7 +147,8 @@ namespace NuGet.PackageManagement.UI
             return other != null
                 && other.Version == Version
                 && string.Equals(other.AdditionalInfo, AdditionalInfo, StringComparison.Ordinal)
-                && IsDeprecated == other.IsDeprecated;
+                && IsDeprecated == other.IsDeprecated
+                && IsVulnerable == other.IsVulnerable;
         }
 
         public override int GetHashCode()
