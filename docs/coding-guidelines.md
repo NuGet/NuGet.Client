@@ -48,7 +48,7 @@ The general rule we follow is "use Visual Studio defaults".
 
 1. If a file happens to differ in style from these guidelines (e.g. private members are named `m_member` rather than `_member`), the existing style in that file takes precedence. Changes/refactorings are possible, but depending on the complexity, change frequency of the file, might need to be considered on their own merits in a separate pull request.
 
-1. Don't use `var` when it's not obvious what the variable type is.
+1. Explicitly state the data type, and avoid using `var`, in variable declarations where the type is not obvious.
 For example the following are correct:
 
     ```cs
@@ -66,7 +66,7 @@ For example the following are correct:
     var flavor = fruit.GetFlavor();
     ```
 
-    The following are optional and can either use explicit type or var
+    Using an explicit type or `var` in the following examples are both permissible:
 
     ```cs
     string fruit = "Apple";
