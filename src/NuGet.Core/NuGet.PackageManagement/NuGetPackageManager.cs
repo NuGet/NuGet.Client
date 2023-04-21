@@ -3187,7 +3187,6 @@ namespace NuGet.PackageManagement
         /// Reads existing Package Source Mappings from settings and appends a new mapping.
         /// Additionally, a glob "*" pattern is appended for the the new mapping source.
         /// The intention is that Preview Restore can run and expect all newly installed packages to be source mapped to the new source.
-        /// Does not write to settings.
         /// </summary>
         /// <param name="settings">Reads existing Package Source Mappings, but does not write them.</param>
         /// <returns>If a new mapping was provided, returns all persisted mappings appended with the new mapping. Otherwise, null.</returns>
