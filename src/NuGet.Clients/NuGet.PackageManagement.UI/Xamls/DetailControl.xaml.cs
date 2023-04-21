@@ -48,11 +48,13 @@ namespace NuGet.PackageManagement.UI
                 _solutionView.UninstallButtonClicked += SolutionUninstallButtonClicked;
 
                 _projectView.InstallButtonClicked -= ProjectInstallButtonClicked;
+                _projectView.UpdateButtonClicked -= ProjectUpdateButtonClicked;
                 _projectView.UninstallButtonClicked -= ProjectUninstallButtonClicked;
             }
             else
             {
                 _projectView.InstallButtonClicked += ProjectInstallButtonClicked;
+                _projectView.UpdateButtonClicked += ProjectUpdateButtonClicked;
                 _projectView.UninstallButtonClicked += ProjectUninstallButtonClicked;
 
                 _solutionView.InstallButtonClicked -= SolutionInstallButtonClicked;
@@ -118,6 +120,23 @@ namespace NuGet.PackageManagement.UI
                     model.SelectedVersion.Range);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
+            }
+        }
+
+        private void ProjectUpdateButtonClicked(object sender, EventArgs e)
+        {
+            var model = (PackageDetailControlModel)DataContext;
+
+            if (model != null && model.SelectedVersion != null)
+            {
+                var userAction = UserAction.CreateUpdateAction(
+                    model.Id,
+                    model.SelectedVersion.Version,
+                    Control.Model.IsSolution,
+                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
+                    model.SelectedVersion.Range);
+
+                ExecuteUserAction(userAction, NuGetActionType.Update);
             }
         }
 

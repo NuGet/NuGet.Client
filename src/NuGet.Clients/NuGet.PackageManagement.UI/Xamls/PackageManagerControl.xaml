@@ -29,6 +29,9 @@
       Command="{x:Static nuget:Commands.UninstallPackageCommand}"
       Executed="ExecuteUninstallPackageCommand" />
     <CommandBinding
+      Command="{x:Static nuget:Commands.UpdatePackageCommand}"
+      Executed="ExecuteUpdatePackageCommand" />
+    <CommandBinding
       Command="{x:Static nuget:Commands.InstallPackageCommand}"
       Executed="ExecuteInstallPackageCommand" />
     <CommandBinding

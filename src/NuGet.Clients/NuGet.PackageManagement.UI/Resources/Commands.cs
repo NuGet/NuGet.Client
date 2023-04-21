@@ -19,6 +19,11 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public static ICommand InstallPackageCommand { get; } = new RoutedCommand();
 
+        /// <summary>
+        /// The parameter of this command is <see cref="PackageItemViewModel"/>
+        /// </summary>
+        public static ICommand UpdatePackageCommand { get; } = new RoutedCommand();
+
         // no parameters
         public static ICommand RestartSearchCommand { get; } = new RoutedCommand();
 

@@ -66,6 +66,10 @@ namespace NuGet.PackageManagement.UI
             {
                 operationType = NuGetOperationType.Uninstall;
             }
+            else if (userAction.Action == NuGetProjectActionType.Update)
+            {
+                operationType = NuGetOperationType.Update;
+            }
 
             await PerformActionAsync(
                 uiService,

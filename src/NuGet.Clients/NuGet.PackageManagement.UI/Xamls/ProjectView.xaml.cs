@@ -18,6 +18,7 @@ namespace NuGet.PackageManagement.UI
     public partial class ProjectView : UserControl
     {
         public event EventHandler<EventArgs> InstallButtonClicked;
+        public event EventHandler<EventArgs> UpdateButtonClicked;
         public event EventHandler<EventArgs> UninstallButtonClicked;
 
         public ProjectView()
@@ -269,6 +270,14 @@ namespace NuGet.PackageManagement.UI
             if (InstallButtonClicked != null)
             {
                 InstallButtonClicked(this, EventArgs.Empty);
+            }
+        }
+
+        private void UpdateButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (UpdateButtonClicked != null)
+            {
+                UpdateButtonClicked(this, EventArgs.Empty);
             }
         }
 

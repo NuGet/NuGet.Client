@@ -759,7 +759,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private bool IsDirectInstall(IReadOnlyList<ProjectAction> projectActions)
         {
             return _state.PackageIdentity != null
-                && projectActions.Any(projectAction => (projectAction.ProjectActionType == NuGetProjectActionType.Install || projectAction.ProjectActionType == NuGetProjectActionType.Update));
+                && projectActions.Any(projectAction => projectAction.ProjectActionType == NuGetProjectActionType.Install || projectAction.ProjectActionType == NuGetProjectActionType.Update);
         }
 
         private async ValueTask CatchAndRethrowExceptionAsync(Func<Task> taskFunc)

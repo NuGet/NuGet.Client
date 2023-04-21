@@ -158,7 +158,7 @@
       MinHeight="24"
       HorizontalAlignment="Left"
       AutomationProperties.AutomationId="Project_Button_Update"
-      Click="InstallButton_Clicked"
+      Click="UpdateButton_Clicked"
       ToolTipService.ShowOnDisabled="True" 
       ToolTipService.IsEnabled="{Binding ShowVersionOverrideTooltip, Mode=OneWay}" 
       ToolTip="{x:Static local:Resources.UpdateButton_VersionOverride_Tooltip}"

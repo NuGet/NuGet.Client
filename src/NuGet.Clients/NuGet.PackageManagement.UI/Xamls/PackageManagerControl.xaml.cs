@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -1618,6 +1619,20 @@ namespace NuGet.PackageManagement.UI
             }
             var versionToInstall = package.LatestVersion ?? package.Version;
             InstallPackage(package.Id, versionToInstall, new[] { package });
+        }
+
+        private void ExecuteUpdatePackageCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            var package = e.Parameter as PackageItemViewModel;
+            if (package == null || Model.IsSolution)
+            {
+                return;
+            }
+            var versionToInstall = package.LatestVersion ?? package.Version;
+
+            var packagesToUpdate = new List<PackageIdentity>() { new PackageIdentity(package.Id, versionToInstall) };
+            var packageInfos = new ReadOnlyCollection<PackageItemViewModel>( new[] { package } );;
+            UpdatePackage(packagesToUpdate, packageInfos);
         }
 
         private void PackageList_UpdateButtonClicked(PackageItemViewModel[] selectedPackages)

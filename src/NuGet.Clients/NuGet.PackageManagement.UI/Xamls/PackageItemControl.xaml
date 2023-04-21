@@ -452,7 +452,7 @@
                       Grid.Row="1"
                       Grid.Column="2"
                       Margin="0,5,0,0"
-                      Command="{x:Static nuget:Commands.InstallPackageCommand}"
+                      Command="{x:Static nuget:Commands.UpdatePackageCommand}"
                       CommandParameter="{Binding}"
                       FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
           <Button.Style>
