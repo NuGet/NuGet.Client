@@ -151,8 +151,8 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             Requires.NotNull(version, nameof(version));
 
             if (LibraryByName.TryGetValue(packageId, out assetsFileLibrary) &&
-                assetsFileLibrary.Type == AssetsFileLibraryType.Package &&
-                assetsFileLibrary.Version == version)
+                assetsFileLibrary.Type is AssetsFileLibraryType.Package or AssetsFileLibraryType.Unknown &&
+                (assetsFileLibrary.Version == version || assetsFileLibrary.Version is null))
             {
                 return true;
             }
@@ -166,7 +166,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             Requires.NotNull(projectId, nameof(projectId));
 
             if (LibraryByName.TryGetValue(projectId, out assetsFileLibrary) &&
-                assetsFileLibrary.Type == AssetsFileLibraryType.Project)
+                assetsFileLibrary.Type is AssetsFileLibraryType.Project or AssetsFileLibraryType.Unknown)
             {
                 return true;
             }
