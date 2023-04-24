@@ -465,7 +465,7 @@ namespace NuGet.PackageManagement.UI
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        List<string> addedPackageIds = addedPackages.Select(pair => pair.Item1).Distinct().ToList();
+                        List<string>? addedPackageIds = addedPackages != null ? addedPackages.Select(pair => pair.Item1).Distinct().ToList() : null;
                         PackageSourceMappingUtility.ConfigureNewPackageSourceMapping(userAction, addedPackageIds, sourceMappingProvider, existingPackageSourceMappingSourceItems);
 
                         await projectManagerService.ExecuteActionsAsync(
