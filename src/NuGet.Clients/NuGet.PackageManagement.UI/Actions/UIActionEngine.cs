@@ -77,9 +77,9 @@ namespace NuGet.PackageManagement.UI
                     userAction,
                     uiService.RemoveDependencies,
                     uiService.ForceRemove,
-                    cancellationToken,
                     newMappingID: userAction.PackageId,
-                    newMappingSource: userAction.SourceMappingSourceName),
+                    newMappingSource: userAction.SourceMappingSourceName,
+                    cancellationToken),
                 cancellationToken);
         }
 
@@ -465,7 +465,8 @@ namespace NuGet.PackageManagement.UI
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        PackageSourceMappingUtility.ConfigureNewPackageSourceMapping(userAction, addedPackages, sourceMappingProvider, existingPackageSourceMappingSourceItems);
+                        List<string> addedPackageIds = addedPackages.Select(pair => pair.Item1).Distinct().ToList();
+                        PackageSourceMappingUtility.ConfigureNewPackageSourceMapping(userAction, addedPackageIds, sourceMappingProvider, existingPackageSourceMappingSourceItems);
 
                         await projectManagerService.ExecuteActionsAsync(
                             actions,
@@ -849,9 +850,9 @@ namespace NuGet.PackageManagement.UI
             UserAction userAction,
             bool removeDependencies,
             bool forceRemove,
-            CancellationToken token,
-            string? newMappingID = null,
-            string? newMappingSource = null)
+            string? newMappingID,
+            string? newMappingSource,
+            CancellationToken token)
         {
             var results = new List<ProjectAction>();
 

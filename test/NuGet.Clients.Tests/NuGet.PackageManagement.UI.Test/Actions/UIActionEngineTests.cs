@@ -142,7 +142,7 @@ namespace NuGet.PackageManagement.UI.Test
 
         [Theory]
         [MemberData(nameof(GetInstallActionTestData))]
-        public async Task CreateInstallAction_OnInstallingProject_WithNewSourceMapping_DoesNotLogTelemetry(ContractsItemFilter activeTab, bool isSolutionLevel, string packageIdToInstall, bool? expectedPkgWasTransitive)
+        public async Task CreateInstallAction_OnInstallingProject_WithNewSourceMapping_DoesNotLogTelemetry(ContractsItemFilter activeTab, bool isSolutionLevel, string packageIdToInstall, bool? expectedPackageWasTransitive)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -210,7 +210,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(NuGetOperationType.Install, lastTelemetryEvent[nameof(ActionsTelemetryEvent.OperationType)]);
             Assert.Equal(isSolutionLevel, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)]);
             Assert.Equal(activeTab, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)]);
-            Assert.Equal(expectedPkgWasTransitive, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
+            Assert.Equal(expectedPackageWasTransitive, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
             // Package Source Mapping is considered enabled if mappings already existed when the action began.
             Assert.Equal(false, lastTelemetryEvent[VSActionsTelemetryEvent.PackageSourceMappingIsMappingEnabled]);
         }
@@ -320,7 +320,7 @@ namespace NuGet.PackageManagement.UI.Test
 
         [Theory]
         [MemberData(nameof(GetInstallActionTestData))]
-        public async Task CreateInstallAction_OnInstallingProject_EmitsPkgWasTransitiveTelemetryAndTabAndIsSolutionPropertiesAsync(ContractsItemFilter activeTab, bool isSolutionLevel, string packageIdToInstall, bool? expectedPkgWasTransitive)
+        public async Task CreateInstallAction_OnInstallingProject_EmitsPkgWasTransitiveTelemetryAndTabAndIsSolutionPropertiesAsync(ContractsItemFilter activeTab, bool isSolutionLevel, string packageIdToInstall, bool? expectedPackageWasTransitive)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -388,7 +388,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(NuGetOperationType.Install, lastTelemetryEvent[nameof(ActionsTelemetryEvent.OperationType)]);
             Assert.Equal(isSolutionLevel, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)]);
             Assert.Equal(activeTab, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)]);
-            Assert.Equal(expectedPkgWasTransitive, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
+            Assert.Equal(expectedPackageWasTransitive, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity

@@ -30,7 +30,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Avoid saving to disk and only modify the <see cref="ISettings"/> in memory.
         /// </summary>
-        public bool ShouldSkipSave { get; private set; }
+        public bool ShouldSkipSave { get; }
 
         public IReadOnlyList<PackageSourceMappingSourceItem> GetPackageSourceMappingItems()
         {

@@ -2218,15 +2218,18 @@ namespace NuGet.Commands.FuncTest
             var packageA = new SimpleTestPackageContext("a", "1.0.0");
             var logger = new TestLogger();
 
-            PackageSpec project1Spec = ProjectTestHelpers.GetPackageSpec(projectName: "Project1",
-                                                                 rootPath: pathContext.SolutionRoot,
-                                                                 framework: "net5.0",
-                                                                 dependencyName: packageA.Id);
+            PackageSpec project1Spec = ProjectTestHelpers.GetPackageSpec(
+                projectName: "Project1",
+                rootPath: pathContext.SolutionRoot,
+                framework: "net5.0",
+                dependencyName: packageA.Id);
 
-            PackageSpec project2Spec = ProjectTestHelpers.GetPackageSpec(projectName: "Project2",
-                                                                 rootPath: pathContext.SolutionRoot,
-                                                                 framework: "net5.0",
-                                                                 dependencyName: packageA.Id);
+            PackageSpec project2Spec = ProjectTestHelpers.GetPackageSpec(
+                projectName: "Project2",
+                rootPath: pathContext.SolutionRoot,
+                framework: "net5.0",
+                dependencyName: packageA.Id);
+
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
                 PackageSaveMode.Defaultv3,

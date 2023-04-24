@@ -3184,11 +3184,10 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Reads existing Package Source Mappings from settings and appends a new mapping.
-        /// Additionally, a glob "*" pattern is appended for the the new mapping source.
+        /// Reads existing Package Source Mappings from settings and appends a new mapping for the <paramref name="newMappingID"/> and a glob "*" pattern
+        /// for the <paramref name="newMappingSource"/>.
         /// The intention is that Preview Restore can run and expect all newly installed packages to be source mapped to the new source.
         /// </summary>
-        /// <param name="settings">Reads existing Package Source Mappings, but does not write them.</param>
         /// <returns>If a new mapping was provided, returns all persisted mappings appended with the new mapping. Otherwise, null.</returns>
         private void AddNewPackageSourceMappingToSettings(string newMappingID, string newMappingSource, PackageSourceMappingProvider mappingProvider)
         {
@@ -3198,7 +3197,7 @@ namespace NuGet.PackageManagement
                 new PackagePatternItem("*")
             };
 
-            var newAndExistingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems().ToList();
+            List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems().ToList();
             newAndExistingPackageSourceMappingItems.Add(new PackageSourceMappingSourceItem(newMappingSource, newPatternItems));
             mappingProvider.SavePackageSourceMappings(newAndExistingPackageSourceMappingItems);
         }
