@@ -76,3 +76,10 @@ extends:
     ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
     NuGetLocalizationType: ${{parameters.NuGetLocalizationType}}
     RunApexTests: ${{parameters.RunApexTests}}
+    RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
+    RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
+    RunEndToEndTests: ${{parameters.RunEndToEndTests}}
+    RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
+    RunSourceBuild: ${{parameters.RunSourceBuild}}
+    RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
+    RunTestsOnMac: ${{parameters.RunTestsOnMac}}

@@ -80,5 +80,6 @@ extends:
     RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
     RunEndToEndTests: ${{parameters.RunEndToEndTests}}
     RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
+    RunSourceBuild: ${{parameters.RunSourceBuild}}
     RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
     RunTestsOnMac: ${{parameters.RunTestsOnMac}}
