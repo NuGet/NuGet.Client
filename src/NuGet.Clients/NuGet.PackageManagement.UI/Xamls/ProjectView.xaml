@@ -35,8 +35,8 @@
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="auto" />
-      <RowDefinition Height="10" />
       <RowDefinition Height="auto" />
+      <RowDefinition Height="auto"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="auto" />
@@ -46,7 +46,7 @@
       <ColumnDefinition Width="auto" />
     </Grid.ColumnDefinitions>
 
-    <!-- row 0 -->
+    <!-- Row 1 -->
     <TextBlock
       Name="_InstalledVersion"
       Grid.Row="0"
@@ -86,7 +86,7 @@
 
     <!-- Row 2 -->
     <TextBlock
-      Grid.Row="2"
+      Grid.Row="1"
       Grid.Column="0"
       FontWeight="Bold"
       VerticalAlignment="Center"
@@ -95,7 +95,7 @@
     <Label Name="SubscriptionsLabel" Content="{x:Static local:Resources.Label_Version}" Visibility="Collapsed"/>
     <ComboBox
       x:Name="_versions"
-      Grid.Row="2"
+      Grid.Row="1"
       Grid.Column="2"
       MinHeight="22"
       AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
@@ -137,7 +137,7 @@
          one is displayed depends on whether InstalledVersion is null.
     -->
     <Button
-      Grid.Row="2"
+      Grid.Row="1"
       Grid.Column="4"
       MinWidth="100"
       MinHeight="24"
@@ -149,7 +149,7 @@
       Content="{x:Static local:Resources.Button_Install}" />
 
     <Button
-      Grid.Row="2"
+      Grid.Row="1"
       Grid.Column="4"
       MinWidth="100"
       MinHeight="24"
@@ -159,5 +159,14 @@
       Visibility="{Binding IsInstalledVersionTopLevel, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
       IsEnabled="{Binding IsInstallorUpdateButtonEnabled, Mode=OneWay}"
       Content="{x:Static local:Resources.Button_Update}" />
+
+    <!-- Row 3 -->
+    <local:PackageSourceMappingActionControl
+      Grid.Row="2"
+      Grid.ColumnSpan="5"
+      HorizontalContentAlignment="Left"
+      VerticalContentAlignment="Top"
+      x:Name="_packageSourceMappingActionControl"
+      DataContext="{Binding}" />
   </Grid>
 </UserControl>

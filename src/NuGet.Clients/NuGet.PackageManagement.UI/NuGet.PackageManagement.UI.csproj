@@ -181,6 +181,9 @@
     <Compile Include="Xamls\PackageManagementFormatWindow.xaml.cs">
       <DependentUpon>PackageManagementFormatWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\PackageSourceMappingActionControl.xaml.cs">
+      <DependentUpon>PackageSourceMappingActionControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Xamls\PRMigratorBar.xaml.cs">
       <DependentUpon>PRMigratorBar.xaml</DependentUpon>
     </Compile>
@@ -355,6 +358,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\PackageManagementFormatWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\PackageSourceMappingActionControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

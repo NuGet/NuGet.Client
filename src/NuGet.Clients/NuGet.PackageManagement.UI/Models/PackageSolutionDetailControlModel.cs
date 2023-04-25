@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,13 +30,15 @@ namespace NuGet.PackageManagement.UI
         // Indicates whether the SelectCheckBoxState is being updated in code. True means the state is being updated by code, while false means the state is changed by user clicking the checkbox.
         private bool _updatingSelectCheckBoxState;
         private bool? _selectCheckBoxState;
+        private bool? _selectMappingCheckBoxState;
         private bool _isInBatchUpdate;
         private List<PackageInstallationInfo> _projects; // List of projects in the solution
 
         private PackageSolutionDetailControlModel(
             IServiceBroker serviceBroker,
-            IEnumerable<IProjectContextInfo> projects)
-            : base(serviceBroker, projects)
+            IEnumerable<IProjectContextInfo> projects,
+            INuGetUI uiController)
+            : base(serviceBroker, projects, uiController)
         {
             IsRequestedVisible = projects.Any(p => p.ProjectStyle == ProjectStyle.PackageReference);
         }
@@ -55,7 +56,7 @@ namespace NuGet.PackageManagement.UI
             // when the SelectedVersion is changed, we need to update CanInstall and CanUninstall.
             PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(SelectedVersion))
+                if (e.PropertyName == nameof(SelectedVersion) || e.PropertyName == nameof(SelectMappingCheckBoxState))
                 {
                     UpdateCanInstallAndCanUninstall();
                 }
@@ -68,9 +69,10 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker,
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
+            INuGetUI uiController,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
             await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }
@@ -79,9 +81,10 @@ namespace NuGet.PackageManagement.UI
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
             IServiceBroker serviceBroker,
+            INuGetUI uiController,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
             await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }
@@ -434,6 +437,15 @@ namespace NuGet.PackageManagement.UI
         {
             CanUninstall = Projects.Any(project => project.IsSelected && project.InstalledVersion != null && !project.AutoReferenced);
 
+            bool isPackageMapped = true;
+            //if (IsPackageSourceMappingEnabled && _selectMappingCheckBoxState == false && IsExistingMappingsNull == true)
+            //{
+            //    isPackageMapped = false;
+            //}
+            //if (IsAllSourcesSelected && IsPackageSourceMappingEnabled)
+            //{
+            //    isPackageMapped = false;
+            //}
             CanInstall = SelectedVersion != null && Projects.Any(
                 project => project.IsSelected &&
                     VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0);

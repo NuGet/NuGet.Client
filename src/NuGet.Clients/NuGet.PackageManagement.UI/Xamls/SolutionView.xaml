@@ -431,6 +431,14 @@
         Click="InstallButton_Clicked"
         IsEnabled="{Binding CanInstall}"
         Content="{x:Static local:Resources.Button_Install}" />
+
+      <local:PackageSourceMappingActionControl
+        Grid.Row="4"
+        Grid.ColumnSpan="5"
+        HorizontalContentAlignment="Left"
+        VerticalContentAlignment="Top"
+        x:Name="_packageSourceMappingActionControl"
+        DataContext="{Binding}" />
     </Grid>
   </Grid>
 </UserControl>

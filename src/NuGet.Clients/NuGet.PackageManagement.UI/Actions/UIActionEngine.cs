@@ -39,6 +39,11 @@ namespace NuGet.PackageManagement.UI
         private readonly INuGetLockService _lockService;
 
         /// <summary>
+        /// Property is referenced by the Preview Window.
+        /// </summary>
+        public bool IsPackageSourceMappingEnabled { get; private set; }
+
+        /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
         /// </summary>
         public UIActionEngine(
@@ -359,6 +364,7 @@ namespace NuGet.PackageManagement.UI
 
             var sourceMappingProvider = new PackageSourceMappingProvider(uiService.Settings);
             IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingSourceItems = sourceMappingProvider.GetPackageSourceMappingItems();
+            IsPackageSourceMappingEnabled = existingPackageSourceMappingSourceItems.Count > 0;
 
             packageEnumerationTime.Stop();
 
@@ -528,8 +534,6 @@ namespace NuGet.PackageManagement.UI
                         uiService.Projects,
                         cancellationToken)).ToArray();
 
-                    var isPackageSourceMappingEnabled = existingPackageSourceMappingSourceItems.Count > 0;
-
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         projectIds,
@@ -540,7 +544,7 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         DateTimeOffset.Now,
                         duration.TotalSeconds,
-                        isPackageSourceMappingEnabled);
+                        IsPackageSourceMappingEnabled);
 
                     var nuGetUI = uiService as NuGetUI;
                     AddUiActionEngineTelemetryProperties(
