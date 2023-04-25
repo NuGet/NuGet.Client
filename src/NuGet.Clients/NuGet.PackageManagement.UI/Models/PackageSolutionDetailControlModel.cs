@@ -30,7 +30,6 @@ namespace NuGet.PackageManagement.UI
         // Indicates whether the SelectCheckBoxState is being updated in code. True means the state is being updated by code, while false means the state is changed by user clicking the checkbox.
         private bool _updatingSelectCheckBoxState;
         private bool? _selectCheckBoxState;
-        private bool? _selectMappingCheckBoxState;
         private bool _isInBatchUpdate;
         private List<PackageInstallationInfo> _projects; // List of projects in the solution
 
@@ -437,7 +436,7 @@ namespace NuGet.PackageManagement.UI
         {
             CanUninstall = Projects.Any(project => project.IsSelected && project.InstalledVersion != null && !project.AutoReferenced);
 
-            bool isPackageMapped = true;
+            //bool isPackageMapped = true;
             //if (IsPackageSourceMappingEnabled && _selectMappingCheckBoxState == false && IsExistingMappingsNull == true)
             //{
             //    isPackageMapped = false;

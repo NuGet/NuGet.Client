@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Windows;
 using System.Windows.Controls;
 using NuGet.PackageManagement.VisualStudio;
 
@@ -31,11 +30,6 @@ namespace NuGet.PackageManagement.UI
             {
                 _detailControlModel = value;
             }
-        }
-
-        private void NewMapping_Checked(object sender, RoutedEventArgs e)
-        {
-            //DetailControlModel?.UpdateIsInstallorUpdateButtonEnabled();
         }
 
         private void SettingsButtonClicked(object sender, EventArgs e)

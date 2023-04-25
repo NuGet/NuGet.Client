@@ -109,28 +109,28 @@
       SelectionChanged="Versions_SelectionChanged"
       SelectedItem="{Binding Path=SelectedVersion, Mode=TwoWay}">
       <ComboBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-                <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}" />
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding Path=IsValidVersion}" Value="false">
-                        <Setter Property="Foreground" Value="{x:Static SystemColors.GrayTextBrush}" />
-                    </DataTrigger>
-                    <DataTrigger
+        <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+          <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}" />
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding Path=IsValidVersion}" Value="false">
+              <Setter Property="Foreground" Value="{x:Static SystemColors.GrayTextBrush}" />
+            </DataTrigger>
+            <DataTrigger
                         Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
                         Value="True" >
-                        <Setter
+              <Setter
                             Property="IsEnabled"
                             Value="{Binding IsValidVersion}" />
-                        <Setter
+              <Setter
                             Property="ToolTipService.ShowOnDisabled"
                             Value="True" />
-                        <Setter
+              <Setter
                             Property="ToolTip"
                             Value="{Binding Converter={StaticResource TooltipConverter}}" />
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
-        </ComboBox.ItemContainerStyle>
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </ComboBox.ItemContainerStyle>
     </ComboBox>
 
     <!-- install button and update button. They are in fact the same button. Which

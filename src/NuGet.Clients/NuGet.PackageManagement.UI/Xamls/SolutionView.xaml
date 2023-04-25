@@ -12,6 +12,7 @@
       <ResourceDictionary.MergedDictionaries>
         <local:SharedResources />
       </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
       <local:InstalledVersionsCountConverter
         x:Key="InstalledVersionsCountConverter" />
       <local:TooltipConverter
@@ -333,6 +334,10 @@
         <RowDefinition Height="auto" />
         <RowDefinition Height="10" />
         <RowDefinition Height="auto" />
+        <RowDefinition Height="10"/>
+        <RowDefinition Height="auto"/>
+        <RowDefinition Height="auto"/>
+        <RowDefinition Height="auto"/>
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="auto" />

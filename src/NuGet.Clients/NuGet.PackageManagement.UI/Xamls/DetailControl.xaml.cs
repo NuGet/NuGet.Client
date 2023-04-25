@@ -141,28 +141,21 @@ namespace NuGet.PackageManagement.UI
         private void SolutionInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageSolutionDetailControlModel)DataContext;
-<<<<<<< HEAD
 
-=======
             string selectedSource = null;
 
             if (model.SelectMappingCheckBoxState == true && model.IsAllSourcesSelected == false)
             {
                 selectedSource = Control.SelectedSource.SourceName;
             }
->>>>>>> da5ed3083 (Squash through 0648a671b52e9e0906a0ef44c0cf5dd5e9a49124)
             if (model != null && model.SelectedVersion != null)
             {
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
                     model.SelectedVersion.Version,
                     Control.Model.IsSolution,
-<<<<<<< HEAD
-                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter));
-=======
                     UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
                     sourceMappingSourceName: selectedSource);
->>>>>>> da5ed3083 (Squash through 0648a671b52e9e0906a0ef44c0cf5dd5e9a49124)
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }

@@ -29,6 +29,19 @@ namespace NuGet.PackageManagement.UI
         private static readonly string StarAllFloating = VersionRangeFormatter.Instance.Format("p", VersionRange.Parse("*-*"), VersionRangeFormatter.Instance);
 
         private CancellationTokenSource _selectedVersionCancellationTokenSource = new CancellationTokenSource();
+        private bool? _selectMappingCheckBoxState;
+        public bool? SelectMappingCheckBoxState
+        {
+            get
+            {
+                return _selectMappingCheckBoxState;
+            }
+            set
+            {
+                _selectMappingCheckBoxState = value;
+                OnPropertyChanged(nameof(SelectMappingCheckBoxState));
+            }
+        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected IEnumerable<IProjectContextInfo> _nugetProjects;
@@ -105,6 +118,9 @@ namespace NuGet.PackageManagement.UI
         public int RecommendedCount { get; private set; }
         public bool RecommendPackages { get; private set; }
         public (string modelVersion, string vsixVersion)? RecommenderVersion { get; private set; }
+        public bool IsPackageSourceMappingEnabled { get; set; }
+        public bool IsAllSourcesSelected { get; set; }
+        public bool IsExistingMappingsNull { get; set; }
 
         protected IServiceBroker ServiceBroker { get; }
 

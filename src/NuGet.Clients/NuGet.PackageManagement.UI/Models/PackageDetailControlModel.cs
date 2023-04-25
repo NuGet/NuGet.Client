@@ -31,7 +31,6 @@ namespace NuGet.PackageManagement.UI
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;
-            UpdateIsInstallOrUpdateButtonEnabled();
         }
 
         public async override Task SetCurrentPackageAsync(
@@ -354,33 +353,6 @@ namespace NuGet.PackageManagement.UI
         public override IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action)
         {
             return _nugetProjects;
-        }
-
-        public bool? SelectMappingCheckBoxState
-        {
-            get
-            {
-                return _selectMappingCheckBoxState;
-            }
-            set
-            {
-                _selectMappingCheckBoxState = value;
-                OnPropertyChanged(nameof(SelectMappingCheckBoxState));
-            }
-        }
-
-        public void UpdateIsInstallOrUpdateButtonEnabled()
-        {
-            bool isPackageMapped = true;
-            if (IsPackageSourceMappingEnabled == true && _selectMappingCheckBoxState == false && IsExistingMappingsNull == true)
-            {
-                isPackageMapped = false;
-            }
-            if (IsAllSourcesSelected == true && IsPackageSourceMappingEnabled)
-            {
-                isPackageMapped = false;
-            }
-            IsInstallorUpdateButtonEnabled = SelectedVersion != null && !IsSelectedVersionInstalled && !InstalledVersionIsAutoReferenced && isPackageMapped;
         }
     }
 }

@@ -279,16 +279,6 @@ namespace NuGet.PackageManagement.UI
             PackageDetailControlModel.PreviousSelectedVersion = e.AddedItems.Count > 0 && e.AddedItems[0] != null ? e.AddedItems[0].ToString() : string.Empty;
 
             return;
-
-        }
-        private void SettingsButtonClicked(object sender, EventArgs e)
-        {
-            Control.Model.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSources);
-        }
-
-        private void NewMapping_Checked(object sender, RoutedEventArgs e)
-        {
-            PackageDetailControlModel.UpdateIsInstallOrUpdateButtonEnabled();
         }
     }
 }
