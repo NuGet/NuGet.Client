@@ -86,6 +86,7 @@ namespace NuGet.CommandLine.XPlat
         public static void Run(ConfigSetArgs args, Func<ILogger> getLogger)
         {
             RunnerHelper.ValidateArguments(args, getLogger);
+            RunnerHelper.ValidateConfigKey(args.ConfigKey);
             ISettings settings = null;
             if (string.IsNullOrEmpty(args.ConfigFile))
             {
@@ -232,6 +233,27 @@ namespace NuGet.CommandLine.XPlat
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
+            }
+        }
+
+        /// <summary>
+        /// Throws an exception if the value passed in is not a valid config key.
+        /// </summary>
+        /// <exception cref="CommandException"></exception>
+        public static void ValidateConfigKey(string configKey)
+        {
+            if (!configKey.Equals(ConfigurationConstants.DependencyVersion, StringComparison.OrdinalIgnoreCase)
+                && !configKey.Equals(ConfigurationConstants.GlobalPackagesFolder, StringComparison.OrdinalIgnoreCase)
+                && !configKey.Equals(ConfigurationConstants.RepositoryPath, StringComparison.OrdinalIgnoreCase)
+                && !configKey.Equals(ConfigurationConstants.DefaultPushSource, StringComparison.OrdinalIgnoreCase)
+                && !configKey.Equals(ConfigurationConstants.HostKey, StringComparison.OrdinalIgnoreCase)
+                && !configKey.Equals(ConfigurationConstants.UserKey, StringComparison.OrdinalIgnoreCase)
+                && !configKey.Equals(ConfigurationConstants.PasswordKey, StringComparison.OrdinalIgnoreCase)
+                && !configKey.Equals(ConfigurationConstants.NoProxy, StringComparison.OrdinalIgnoreCase)
+                && !configKey.Equals(ConfigurationConstants.MaxHttpRequestsPerSource, StringComparison.OrdinalIgnoreCase)
+                && !configKey.Equals(ConfigurationConstants.SignatureValidationMode, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, configKey));
             }
         }
     }

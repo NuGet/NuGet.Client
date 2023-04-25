@@ -5,8 +5,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Windows.Input;
-using Newtonsoft.Json.Linq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
@@ -251,35 +249,6 @@ namespace NuGet.XPlat.FuncTest
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
         }
 
-        [Theory]
-        [InlineData("defaultPushSource", "https://TestRepo/ES/api/v2/package")]
-        // NOTE: Need to find alternative way to test other keys
-        public void ConfigSetCommand_ConfigSetting_Success(string key, string value)
-        {
-            // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config");
-
-            var result = CommandRunner.Run(
-                DotnetCli,
-                Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set {key} {value}",
-                waitForExit: true
-                );
-
-            var settings = Configuration.Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory()
-                );
-
-            var configSection = settings.GetSection("config");
-            var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
-            var configItems = values.Where(i => i.Key == key);
-
-            // Assert
-            Assert.Equal(0, result.ExitCode);
-            Assert.Equal(1, configItems.Count());
-            Assert.Equal(value, configItems.First().Value);
-        }
-
         [Fact]
         public void ConfigSetCommand_AddNewConfigSettingWithConfigFileArg_Success()
         {
@@ -314,26 +283,107 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(filePath, configFilePath);
         }
 
-        [Fact(Skip = "Placeholder for planned test")]
-        public void ConfigSetCommand_UpdateConfigSetting_Success()
+        [Theory]
+        [InlineData("defaultPushSource", "https://TestRepo/ES/api/v2/package")]
+        public void ConfigSetCommand_AddOrUpdateConfigSetting_Success(string key, string value)
         {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config set {key} {value}",
+                waitForExit: true
+                );
+
+            var settings = Configuration.Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory()
+                );
+
+            var configSection = settings.GetSection("config");
+            var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
+            var configItems = values.Where(i => i.Key == key);
+
+            // Assert
+            Assert.Equal(0, result.ExitCode);
+            Assert.Equal(1, configItems.Count());
+            Assert.Equal(value, configItems.First().Value);
         }
 
-        [Fact(Skip = "Placeholder for planned test")]
+        [Fact]
         public void ConfigSetCommand_UpdateConfigSettingWithConfigFileArg_Success()
         {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            var key = "http_proxy";
+            var value = "http://company-octopus:8765@contoso.test";
+            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
+
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config set {key} {value} --configfile {filePath}",
+                waitForExit: true
+                );
+
+            var settings = Configuration.Settings.LoadDefaultSettings(
+                testInfo.WorkingPath,
+                configFileName: filePath,
+                machineWideSettings: new XPlatMachineWideSetting()
+                );
+
+            var configSection = settings.GetSection("config");
+            var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
+            var configItems = values.Where(i => i.Key == key);
+            var configFilePath = configItems.FirstOrDefault().ConfigPath;
+
+            // Assert
+            Assert.Equal(0, result.ExitCode);
+            Assert.Equal(1, configItems.Count());
+            Assert.Equal(value, configItems.First().Value);
+            Assert.Equal(filePath, configFilePath);
         }
 
-        [Fact(Skip = "Placeholder for planned test")]
+        [Fact]
         public void ConfigSetCommand_AddConfigSettingWithNonExistingConfigSection_Success()
         {
+            // Arrange & Act
+            using var testInfo = new TestInfo();
+            var key = "defaultPushSource";
+            var value = "https://TestRepo3/ES/api/v3/package";
+            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
+
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config set {key} {value} --configfile {filePath}",
+                waitForExit: true
+                );
+
+            var settings = Configuration.Settings.LoadDefaultSettings(
+                testInfo.WorkingPath,
+                configFileName: filePath,
+                machineWideSettings: new XPlatMachineWideSetting()
+                );
+
+            var configSection = settings.GetSection("config");
+            var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
+            var configItems = values.Where(i => i.Key == key);
+            var configFilePath = configItems.FirstOrDefault().ConfigPath;
+
+            // Assert
+            Assert.Equal(0, result.ExitCode);
+            Assert.Equal(1, configItems.Count());
+            Assert.Equal(value, configItems.First().Value);
+            Assert.Equal(filePath, configFilePath);
         }
 
-        [Fact(Skip = "Need to update specifically for config set")]
+        [Fact]
         public void ConfigSetCommand_HelpMessage_Success()
         {
             // Arrange
-            var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigGetAllOrConfigKeyDescription); ;
+            var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigSetConfigKeyDescription);
 
             // Act
             var result = CommandRunner.Run(
@@ -467,12 +517,47 @@ namespace NuGet.XPlat.FuncTest
             Assert.Throws<ArgumentNullException>(() => ConfigGetRunner.Run(args, null));
         }
 
-        [Fact(Skip = "Placeholder for future negative tests")]
-        public void ConfigSetCommand_Fail()
+        [Fact]
+        public void ConfigSetCommand_InvalidConfigKey_Fail()
         {
-            // Test for config key not found displaying config key could not be set
-            // Test for non-existing config file w/ configfile arg
-            // Test for null args/logger
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            var key = "InvalidConfigKey123";
+            var value = "https://TestRepo2/ES/api/v2/package";
+            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
+
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config set {key} {value} --configfile {filePath}",
+                waitForExit: true
+                );
+            var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, key);
+
+            // Assert
+            DotnetCliUtil.VerifyResultFailure(result, expectedError);
+        }
+
+        [Fact]
+        public void ConfigSetCommand_NullArgs_Fail()
+        {
+            // Arrange
+            var log = new TestCommandOutputLogger();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ConfigSetRunner.Run(null, () => log));
+        }
+
+        [Fact]
+        public void ConfigSetCommand_NullGetLogger_Fail()
+        {
+            // Arrange
+            var args = new ConfigSetArgs()
+            {
+            };
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ConfigSetRunner.Run(args, null));
         }
 
         internal class TestInfo : IDisposable
