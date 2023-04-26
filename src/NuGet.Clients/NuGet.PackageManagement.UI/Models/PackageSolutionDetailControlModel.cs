@@ -36,8 +36,9 @@ namespace NuGet.PackageManagement.UI
 
         private PackageSolutionDetailControlModel(
             IServiceBroker serviceBroker,
-            IEnumerable<IProjectContextInfo> projects)
-            : base(serviceBroker, projects)
+            IEnumerable<IProjectContextInfo> projects,
+            INuGetUI uiController)
+            : base(serviceBroker, projects, uiController)
         {
             IsRequestedVisible = projects.Any(p => p.ProjectStyle == ProjectStyle.PackageReference);
         }
@@ -68,9 +69,10 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker,
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
+            INuGetUI uiController,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
             await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }
@@ -79,9 +81,10 @@ namespace NuGet.PackageManagement.UI
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
             IServiceBroker serviceBroker,
+            INuGetUI uiController,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
             await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }

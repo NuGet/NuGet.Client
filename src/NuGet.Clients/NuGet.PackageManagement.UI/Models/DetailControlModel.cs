@@ -48,12 +48,17 @@ namespace NuGet.PackageManagement.UI
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict = new Dictionary<NuGetVersion, DetailedPackageMetadata>();
 
+        private INuGetUI _uiController;
+
         protected DetailControlModel(
             IServiceBroker serviceBroker,
-            IEnumerable<IProjectContextInfo> projects)
+            IEnumerable<IProjectContextInfo> projects,
+            INuGetUI uiController)
         {
             _nugetProjects = projects;
             ServiceBroker = serviceBroker;
+            _uiController = uiController;
+
             _options = new OptionsViewModel();
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
@@ -64,6 +69,8 @@ namespace NuGet.PackageManagement.UI
 
             _versions = new ItemsChangeObservableCollection<DisplayVersion>();
         }
+
+        internal INuGetUI UIController => _uiController;
 
         /// <summary>
         /// The method is called when the associated DocumentWindow is closed.
