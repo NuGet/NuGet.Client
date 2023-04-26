@@ -975,4 +975,13 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="VSOptions_Label_PackagePattern" xml:space="preserve">
     <value>Package pattern:</value>
   </data>
+  <data name="Hyperlink_PackageSourceMappingSettings" xml:space="preserve">
+    <value>Package Source Mapping Settings</value>
+  </data>
+  <data name="CheckBox_AddMappingToSource" xml:space="preserve">
+    <value>Add a mapping to the selected source</value>
+  </data>
+  <data name="Text_PackageAlreadyHasMappings" xml:space="preserve">
+    <value>Package already has mappings</value>
+  </data>
 </root>

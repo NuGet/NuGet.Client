@@ -484,6 +484,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add a mapping to the selected source.
+        /// </summary>
+        public static string CheckBox_AddMappingToSource {
+            get {
+                return ResourceManager.GetString("CheckBox_AddMappingToSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Check.
         /// </summary>
         public static string CheckBox_DefaultAction_Check {
@@ -813,6 +822,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Hyperlink_License {
             get {
                 return ResourceManager.GetString("Hyperlink_License", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package Source Mapping Settings.
+        /// </summary>
+        public static string Hyperlink_PackageSourceMappingSettings {
+            get {
+                return ResourceManager.GetString("Hyperlink_PackageSourceMappingSettings", resourceCulture);
             }
         }
         
@@ -1913,6 +1931,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_NuGetUpgradeNoIssuesFound {
             get {
                 return ResourceManager.GetString("Text_NuGetUpgradeNoIssuesFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package already has mappings.
+        /// </summary>
+        public static string Text_PackageAlreadyHasMappings {
+            get {
+                return ResourceManager.GetString("Text_PackageAlreadyHasMappings", resourceCulture);
             }
         }
         
