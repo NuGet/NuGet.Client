@@ -54,18 +54,18 @@ namespace NuGet.CommandLine.XPlat
 
             if (args.AllOrConfigKey.Equals("all", StringComparison.OrdinalIgnoreCase))
             {
-                var sections = settings.ComputedSections;
+                IEnumerable<string> sections = settings.GetAllSettingSections();
                 if (sections == null)
                 {
                     return;
                 }
                 if (args.ShowPath)
                 {
-                    RunnerHelper.LogSectionsWithPaths(sections, logger);
+                    RunnerHelper.LogSectionsWithPaths(sections, settings, logger);
                 }
                 else
                 {
-                    RunnerHelper.LogSectionsNoPaths(sections, logger);
+                    RunnerHelper.LogSectionsNoPaths(sections, settings, logger);
                 }
             }
             else
@@ -136,12 +136,12 @@ namespace NuGet.CommandLine.XPlat
         /// <summary>
         /// Logs each section of the configuration settings that will be applied, grouped by file path.
         /// </summary>
-        public static void LogSectionsWithPaths(Dictionary<string, VirtualSettingSection> sections, ILogger logger)
+        public static void LogSectionsWithPaths(IEnumerable<string> sections, Settings settings, ILogger logger)
         {
             foreach (var section in sections)
             {
-                logger.LogMinimal(section.Key + ":");
-                var items = section.Value.Items;
+                logger.LogMinimal(section + ":");
+                var items = settings.GetSection(section).Items;
 
                 IEnumerable<IGrouping<string, SettingItem>> groupByConfigPathsQuery =
                     from item in items
@@ -152,7 +152,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     logger.LogMinimal($" file: {configPathsGroup.Key}");
                     LogSectionItems(configPathsGroup, logger);
-                    logger.LogMinimal("\n");
+                    logger.LogMinimal(Environment.NewLine);
                 }
             }
         }
@@ -160,14 +160,14 @@ namespace NuGet.CommandLine.XPlat
         /// <summary>
         /// Logs each section of the configuration settings that will be applied.
         /// </summary>
-        public static void LogSectionsNoPaths(Dictionary<string, VirtualSettingSection> sections, ILogger logger)
+        public static void LogSectionsNoPaths(IEnumerable<string> sections, Settings settings, ILogger logger)
         {
             foreach (var section in sections)
             {
-                logger.LogMinimal(section.Key + ":");
-                var items = section.Value.Items;
+                logger.LogMinimal(section + ":");
+                var items = settings.GetSection(section).Items;
                 LogSectionItems(items, logger);
-                logger.LogMinimal("\n");
+                logger.LogMinimal(Environment.NewLine);
             }
         }
 
@@ -178,13 +178,16 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="logger"></param>
         public static void LogSectionItems(IEnumerable<SettingItem> items, ILogger logger)
         {
-            foreach (var item in items)
+            foreach (SettingItem item in items)
             {
                 var setting = $"\t{item.ElementName}";
-                var attributes = item.GetXElementAttributes();
-                foreach (var attribute in attributes)
+                var attributes = item.GetAttributes();
+                if (attributes != null)
                 {
-                    setting += " " + attribute + " ";
+                    foreach (var attribute in attributes)
+                    {
+                        setting += $" {attribute.Key}=\"{attribute.Value}\"";
+                    }
                 }
 
                 logger.LogMinimal(setting);

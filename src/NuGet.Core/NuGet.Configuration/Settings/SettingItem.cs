@@ -104,10 +104,9 @@ namespace NuGet.Configuration
             }
         }
 
-        public IEnumerable<XAttribute> GetXElementAttributes()
+        public IReadOnlyDictionary<string, string> GetAttributes()
         {
-            var xElement = (XElement)Node;
-            return xElement?.Attributes();
+            return Attributes;
         }
     }
 }
