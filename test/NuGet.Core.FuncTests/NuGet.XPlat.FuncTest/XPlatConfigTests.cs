@@ -249,13 +249,14 @@ namespace NuGet.XPlat.FuncTest
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
         }
 
-        [Fact]
-        public void ConfigSetCommand_AddNewConfigSettingWithConfigFileArg_Success()
+        [Theory]
+        [InlineData("defaultPushSource", "https://TestRepo/ES/api/v2/package")]
+        [InlineData("signatureValidationMode", "accept")]
+        [InlineData("maxHttpRequestsPerSource", "64")]
+        public void ConfigSetCommand_AddNewConfigSettingWithConfigFileArg_Success(string key, string value)
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
-            var key = "defaultPushSource";
-            var value = "https://TestRepo2/ES/api/v2/package";
             var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
 
             var result = CommandRunner.Run(
@@ -285,6 +286,8 @@ namespace NuGet.XPlat.FuncTest
 
         [Theory]
         [InlineData("defaultPushSource", "https://TestRepo/ES/api/v2/package")]
+        [InlineData("signatureValidationMode", "accept")]
+        [InlineData("maxHttpRequestsPerSource", "64")]
         public void ConfigSetCommand_AddOrUpdateConfigSetting_Success(string key, string value)
         {
             // Arrange & Act
