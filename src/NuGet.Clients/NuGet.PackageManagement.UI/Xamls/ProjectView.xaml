@@ -168,6 +168,6 @@
       VerticalContentAlignment="Top"
       x:Name="_packageSourceMappingActionControl"
       DataContext="{Binding PackageSourceMappingViewModel}"
-      Visibility="{Binding IsApplicable}"/>
+      Visibility="{Binding IsApplicable, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
   </Grid>
 </UserControl>
