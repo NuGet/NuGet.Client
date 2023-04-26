@@ -25,8 +25,9 @@ namespace NuGet.PackageManagement.UI
         public PackageDetailControlModel(
             IServiceBroker serviceBroker,
             INuGetSolutionManagerService solutionManager,
-            IEnumerable<IProjectContextInfo> projects)
-            : base(serviceBroker, projects)
+            IEnumerable<IProjectContextInfo> projects,
+            INuGetUI uiController)
+            : base(serviceBroker, projects, uiController)
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;
