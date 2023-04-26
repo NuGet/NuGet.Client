@@ -27,8 +27,9 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker,
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
-            INuGetUI uiController)
-            : base(serviceBroker, projects, uiController, PackageSourceMappingActionViewModel.Create(projects, uiController))
+            INuGetUI uiController,
+            PackageManagerControl packageManagerControl)
+            : base(serviceBroker, projects, uiController, PackageSourceMappingActionViewModel.Create(projects, uiController, packageManagerControl))
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;

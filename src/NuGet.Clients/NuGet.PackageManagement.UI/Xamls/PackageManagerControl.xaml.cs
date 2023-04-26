@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.UI
 
             _windowSearchHostFactory = await ServiceLocator.GetGlobalServiceAsync<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
             _serviceBroker = model.Context.ServiceBroker;
-            SelectedSource.IsAggregateSource.SourceName;
+
             if (Model.IsSolution)
             {
                 _detailModel = await PackageSolutionDetailControlModel.CreateAsync(
@@ -102,6 +102,7 @@ namespace NuGet.PackageManagement.UI
                     Model.Context.SolutionManagerService,
                     Model.Context.Projects,
                     Model.UIController,
+                    this,
                     CancellationToken.None);
             }
             else
@@ -110,7 +111,8 @@ namespace NuGet.PackageManagement.UI
                     Model.Context.ServiceBroker,
                     Model.Context.SolutionManagerService,
                     Model.Context.Projects,
-                    Model.UIController);
+                    Model.UIController,
+                    this);
             }
 
             if (_windowSearchHostFactory != null)

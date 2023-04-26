@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.UI
 
         private void SettingsButtonClicked(object sender, EventArgs e)
         {
-            ViewModel.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
+            ViewModel?.UIController?.LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
         }
     }
 }

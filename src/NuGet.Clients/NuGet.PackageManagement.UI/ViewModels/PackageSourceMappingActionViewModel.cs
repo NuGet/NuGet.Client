@@ -14,20 +14,22 @@ namespace NuGet.PackageManagement.UI.ViewModels
     {
         private bool _isCreateNewMappingChecked;
         private bool _isPackageMapped;
-        private string _sourceName;
+        private PackageManagerControl _packageManagerControl;
+
         internal INuGetUI UIController { get; }
 
-        private PackageSourceMappingActionViewModel()
+        private PackageSourceMappingActionViewModel(PackageManagerControl packageManagerControl)
         {
             IsApplicable = false;
+            _packageManagerControl = packageManagerControl;
         }
 
-        private PackageSourceMappingActionViewModel(bool isEnabled, string sourceName, INuGetUI uiController)
+        private PackageSourceMappingActionViewModel(bool isEnabled, INuGetUI uiController, PackageManagerControl packageManagerControl)
         {
             IsApplicable = true;
             IsEnabledForProject = isEnabled;
-            SourceName = sourceName;
             UIController = uiController;
+            _packageManagerControl = packageManagerControl;
         }
 
         /// <summary>
@@ -60,20 +62,15 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         public string SourceName
         {
-            get { return _sourceName; }
-            set
-            {
-                SetAndRaisePropertyChanged(ref _sourceName, value);
-                RaisePropertyChanged(nameof(CanSelectedSourceBeMapped));
-            }
+            get { return _packageManagerControl.SelectedSource?.SourceName; }
         }
 
-        public static PackageSourceMappingActionViewModel CreateNotApplicableViewModel()
+        public static PackageSourceMappingActionViewModel CreateNotApplicableViewModel(PackageManagerControl packageManagerControl)
         {
-            return new PackageSourceMappingActionViewModel();
+            return new PackageSourceMappingActionViewModel(packageManagerControl);
         }
 
-        public static PackageSourceMappingActionViewModel Create(IEnumerable<IProjectContextInfo> projects, INuGetUI uiController)
+        public static PackageSourceMappingActionViewModel Create(IEnumerable<IProjectContextInfo> projects, INuGetUI uiController, PackageManagerControl packageManagerControl)
         {
             // Only PackageReference is currently supported.
             if (projects != null
@@ -87,12 +84,11 @@ namespace NuGet.PackageManagement.UI.ViewModels
                     isEnabled = PackageSourceMapping.GetPackageSourceMapping(uiController.Settings).IsEnabled;
                 }
 
-                string selectedSourceName = uiController.ActivePackageSourceMoniker.SourceName;
-                return new PackageSourceMappingActionViewModel(isEnabled, selectedSourceName, uiController);
+                return new PackageSourceMappingActionViewModel(isEnabled, uiController, packageManagerControl);
             }
             else
             {
-                return CreateNotApplicableViewModel();
+                return CreateNotApplicableViewModel(packageManagerControl);
             }
         }
     }

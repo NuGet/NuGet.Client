@@ -37,8 +37,9 @@ namespace NuGet.PackageManagement.UI
         private PackageSolutionDetailControlModel(
             IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects,
-            INuGetUI uiController)
-            : base(serviceBroker, projects, uiController, PackageSourceMappingActionViewModel.CreateNotApplicableViewModel())
+            INuGetUI uiController,
+            PackageManagerControl packageManagerControl)
+            : base(serviceBroker, projects, uiController, PackageSourceMappingActionViewModel.CreateNotApplicableViewModel(packageManagerControl))
         {
             IsRequestedVisible = projects.Any(p => p.ProjectStyle == ProjectStyle.PackageReference);
         }
@@ -70,9 +71,10 @@ namespace NuGet.PackageManagement.UI
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
             INuGetUI uiController,
+            PackageManagerControl packageManagerControl,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController, packageManagerControl);
             await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }
@@ -82,9 +84,10 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<IProjectContextInfo> projects,
             IServiceBroker serviceBroker,
             INuGetUI uiController,
+            PackageManagerControl packageManagerControl,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController, packageManagerControl);
             await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }

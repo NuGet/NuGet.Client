@@ -54,7 +54,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 Mock.Of<IServiceBroker>(),
                 solutionManager: solMgr.Object,
                 projects: new List<IProjectContextInfo>(),
-                uiController: null);
+                uiController: null,
+                packageManagerControl: null);
 
             _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
@@ -83,7 +84,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
                 projects: new[] { project.Object },
-                uiController: null);
+                uiController: null,
+                packageManagerControl: null);
 
             Assert.False(model.Options.ShowClassicOptions);
         }
@@ -100,7 +102,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
                 projects: new[] { project.Object },
-                uiController: null);
+                uiController: null,
+                packageManagerControl: null);
 
             Assert.True(model.Options.ShowClassicOptions);
         }
@@ -112,7 +115,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
                 Enumerable.Empty<IProjectContextInfo>(),
-                uiController: null);
+                uiController: null,
+                packageManagerControl: null);
 
             Assert.Null(model.SelectedVersion);
             Assert.Null(model.InstalledVersion);
@@ -126,7 +130,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
                 Enumerable.Empty<IProjectContextInfo>(),
-                uiController: null);
+                uiController: null,
+                packageManagerControl: null);
 
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
@@ -158,7 +163,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 Mock.Of<IServiceBroker>(),
                 Mock.Of<INuGetSolutionManagerService>(),
                 Enumerable.Empty<IProjectContextInfo>(),
-                uiController: null);
+                uiController: null,
+                packageManagerControl: null);
 
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
@@ -206,7 +212,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     projects: new List<IProjectContextInfo>(),
                     serviceBroker: serviceBroker.Object,
                     uiController: null,
-                    CancellationToken.None);
+                    packageManagerControl: null
+                    CancellationToken.None,);
             });
 
             _testInstance.SetCurrentPackageAsync(
