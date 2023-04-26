@@ -161,6 +161,8 @@
     <Compile Include="Utility\ProjectUtility.cs" />
     <Compile Include="Utility\VsUtility.cs" />
     <Compile Include="UserInterfaceService\ProgressDialogData.cs" />
+    <Compile Include="ViewModels\PackageSourceMappingActionViewModel.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Xamls\DeprecatedFrameworkWindow.xaml.cs">
       <DependentUpon>DeprecatedFrameworkWindow.xaml</DependentUpon>
     </Compile>

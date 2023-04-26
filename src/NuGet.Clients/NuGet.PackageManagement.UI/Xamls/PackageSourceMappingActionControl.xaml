@@ -19,13 +19,13 @@
       <RowDefinition />
       <RowDefinition />
     </Grid.RowDefinitions>
-    <CheckBox Grid.Row="0" Grid.ColumnSpan="2" Name="newMapping" IsChecked="{Binding SelectMappingCheckBoxState}">Add a mapping to the selected source</CheckBox>
+    <CheckBox Grid.Row="0" Grid.ColumnSpan="2" Name="newMapping" IsChecked="{Binding IsCreateNewMappingChecked}">Add a mapping to the selected source</CheckBox>
 
     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,9,0,0">
       <TextBlock Name="existingMappings" Margin="0,0,9,0">Package already has mappings</TextBlock>
       <TextBlock>
         <Hyperlink Click="SettingsButtonClicked" Style="{StaticResource HyperlinkStyleNoUri}">
-          <Run Text="Package Source Mapping Settings" />
+          <Run Text="" />
         </Hyperlink>
       </TextBlock>
     </StackPanel>

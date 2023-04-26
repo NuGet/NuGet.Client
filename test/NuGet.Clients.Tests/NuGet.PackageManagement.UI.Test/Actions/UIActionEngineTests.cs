@@ -198,7 +198,10 @@ namespace NuGet.PackageManagement.UI.Test
             uiService.Setup(ui => ui.Settings).Returns(settings.Object);
             uiService.Setup(ui => ui.Projects).Returns(new[] { new ProjectContextInfo("a", ProjectModel.ProjectStyle.PackageReference, NuGetProjectKind.PackageReference) });
 
-            var action = UserAction.CreateInstallAction(packageIdToInstall, NuGetVersion.Parse("1.0.0"), isSolutionLevel, activeTab, sourceMappingSourceName: "source");
+            var nuGetVersion = NuGetVersion.Parse("1.0.0");
+            var versionRange = VersionRange.Parse("1.0.0");
+
+            var action = UserAction.CreateInstallAction(packageIdToInstall, nuGetVersion, isSolutionLevel, activeTab, versionRange, sourceMappingSourceName: "source");
 
             // Act
             await uiEngine.PerformInstallOrUninstallAsync(uiService.Object, action, CancellationToken.None);

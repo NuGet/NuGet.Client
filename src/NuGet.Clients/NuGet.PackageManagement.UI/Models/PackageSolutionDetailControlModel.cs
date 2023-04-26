@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects,
             INuGetUI uiController)
-            : base(serviceBroker, projects, uiController)
+            : base(serviceBroker, projects, uiController, PackageSourceMappingActionViewModel.CreateNotApplicableViewModel())
         {
             IsRequestedVisible = projects.Any(p => p.ProjectStyle == ProjectStyle.PackageReference);
         }

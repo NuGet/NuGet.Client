@@ -107,6 +107,15 @@ namespace NuGet.PackageManagement.UI
         private void ProjectInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageDetailControlModel)DataContext;
+            var packageSourceMappingViewModel = model.PackageSourceMappingViewModel;
+
+            string sourceMappingSourceName = null;
+            if (packageSourceMappingViewModel.IsApplicable
+                && packageSourceMappingViewModel.IsCreateNewMappingChecked
+                && packageSourceMappingViewModel.CanSelectedSourceBeMapped)
+            {
+                sourceMappingSourceName = packageSourceMappingViewModel.SourceName;
+            }
 
             if (model != null && model.SelectedVersion != null)
             {
@@ -115,7 +124,8 @@ namespace NuGet.PackageManagement.UI
                     model.SelectedVersion.Version,
                     Control.Model.IsSolution,
                     UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
-                    model.SelectedVersion.Range);
+                    model.SelectedVersion.Range,
+                    sourceMappingSourceName);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }

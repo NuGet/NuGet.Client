@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI.Test
     {
         public override bool IsSolution => throw new NotImplementedException();
 
-        public TestDetailControlModel(IServiceBroker serviceBroker, IEnumerable<IProjectContextInfo> projects) : base(serviceBroker, projects, uiController: null)
+        public TestDetailControlModel(IServiceBroker serviceBroker, IEnumerable<IProjectContextInfo> projects) : base(serviceBroker, projects, uiController: null, packageSourceMappingActionViewModel: null)
         {
         }
 

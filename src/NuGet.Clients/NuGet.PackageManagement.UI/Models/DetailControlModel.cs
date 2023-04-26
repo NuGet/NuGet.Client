@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -53,13 +54,15 @@ namespace NuGet.PackageManagement.UI
         protected DetailControlModel(
             IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects,
-            INuGetUI uiController)
+            INuGetUI uiController,
+            PackageSourceMappingActionViewModel packageSourceMappingActionViewModel)
         {
             _nugetProjects = projects;
             ServiceBroker = serviceBroker;
             _uiController = uiController;
 
             _options = new OptionsViewModel();
+            PackageSourceMappingViewModel = packageSourceMappingActionViewModel;
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
             _options.ShowClassicOptions = projects.Any(project => project.ProjectKind == NuGetProjectKind.PackagesConfig);
@@ -820,6 +823,8 @@ namespace NuGet.PackageManagement.UI
                 OnPropertyChanged(nameof(Options));
             }
         }
+
+        public PackageSourceMappingActionViewModel PackageSourceMappingViewModel { get; }
 
         public IEnumerable<IProjectContextInfo> NuGetProjects => _nugetProjects;
 

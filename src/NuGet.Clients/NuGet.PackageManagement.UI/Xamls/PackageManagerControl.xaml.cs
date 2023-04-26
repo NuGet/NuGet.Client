@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.UI
 
             _windowSearchHostFactory = await ServiceLocator.GetGlobalServiceAsync<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
             _serviceBroker = model.Context.ServiceBroker;
-
+            SelectedSource.IsAggregateSource.SourceName;
             if (Model.IsSolution)
             {
                 _detailModel = await PackageSolutionDetailControlModel.CreateAsync(

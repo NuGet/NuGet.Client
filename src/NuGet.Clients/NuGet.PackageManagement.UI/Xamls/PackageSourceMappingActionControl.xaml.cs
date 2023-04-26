@@ -3,6 +3,7 @@
 
 using System;
 using System.Windows.Controls;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
@@ -12,29 +13,29 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageSourceMappingActionControl : UserControl
     {
-        private DetailControlModel _detailControlModel;
+        private PackageSourceMappingActionViewModel _packageSourceMappingActionViewModel;
 
         public PackageSourceMappingActionControl()
         {
             InitializeComponent();
         }
 
-        internal DetailControlModel DetailControlModel
+        internal PackageSourceMappingActionViewModel ViewModel
         {
             get
             {
-                if (_detailControlModel == null) _detailControlModel = (DetailControlModel)DataContext;
-                return _detailControlModel;
+                if (_packageSourceMappingActionViewModel == null) _packageSourceMappingActionViewModel = (PackageSourceMappingActionViewModel)DataContext;
+                return _packageSourceMappingActionViewModel;
             }
             set
             {
-                _detailControlModel = value;
+                _packageSourceMappingActionViewModel = value;
             }
         }
 
         private void SettingsButtonClicked(object sender, EventArgs e)
         {
-            DetailControlModel.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
+            ViewModel.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
         }
     }
 }

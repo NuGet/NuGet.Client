@@ -167,6 +167,7 @@
       HorizontalContentAlignment="Left"
       VerticalContentAlignment="Top"
       x:Name="_packageSourceMappingActionControl"
-      DataContext="{Binding}" />
+      DataContext="{Binding PackageSourceMappingViewModel}"
+      Visibility="{Binding IsApplicable}"/>
   </Grid>
 </UserControl>
