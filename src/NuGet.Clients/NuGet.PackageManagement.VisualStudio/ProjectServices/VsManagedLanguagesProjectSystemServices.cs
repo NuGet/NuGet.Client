@@ -105,7 +105,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return Array.Empty<LibraryDependency>();
             }
 
-            bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
+            bool isCpvmEnabled = IsCentralPackageManagementVersionsEnabled();
 
             var references = installedPackages
                 .Cast<string>()
@@ -334,9 +334,10 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsProject4.PackageReferences.Remove(packageName);
         }
 
-        private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
+        private bool IsCentralPackageManagementVersionsEnabled()
         {
-            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
+            ThreadHelper.ThrowIfNotOnUIThread();
+            return MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.ManagePackageVersionsCentrally));
         }
 
         private class ProjectReference

@@ -97,8 +97,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var testMSBuildProjectExtensionsPath = Path.Combine(fullPath, "obj");
             Directory.CreateDirectory(testMSBuildProjectExtensionsPath);
             projectAdapter
-                .Setup(x => x.GetMSBuildProjectExtensionsPathAsync())
-                .Returns(Task.FromResult(testMSBuildProjectExtensionsPath));
+                .Setup(x => x.GetMSBuildProjectExtensionsPath())
+                .Returns(testMSBuildProjectExtensionsPath);
 
             return projectAdapter.Object;
         }

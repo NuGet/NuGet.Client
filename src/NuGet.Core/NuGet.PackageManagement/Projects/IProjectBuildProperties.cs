@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 
 namespace NuGet.ProjectManagement
@@ -26,6 +27,7 @@ namespace NuGet.ProjectManagement
         /// <param name="propertyName">A property name</param>
         /// <returns>Property value or <code>null</code> if not found.</returns>
         /// <remarks>Often times when retrieving properties we are already on the UI thread. In those cases, prefer calling the synchronous version instead to avoid the extra state machine allocations.</remarks>
+        [Obsolete]
         Task<string> GetPropertyValueAsync(string propertyName);
     }
 }

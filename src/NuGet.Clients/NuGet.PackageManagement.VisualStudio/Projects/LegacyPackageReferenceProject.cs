@@ -237,7 +237,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var msbuildProjectExtensionsPath = await _vsProjectAdapter.GetMSBuildProjectExtensionsPathAsync();
+            var msbuildProjectExtensionsPath = _vsProjectAdapter.GetMSBuildProjectExtensionsPath();
 
             if (string.IsNullOrEmpty(msbuildProjectExtensionsPath))
             {

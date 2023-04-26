@@ -14,7 +14,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
-using NuGet.RuntimeModel;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -32,9 +31,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region Properties
 
-        public async Task<string> GetMSBuildProjectExtensionsPathAsync()
+        public string GetMSBuildProjectExtensionsPath()
         {
-            var msbuildProjectExtensionsPath = await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.MSBuildProjectExtensionsPath);
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var msbuildProjectExtensionsPath = BuildProperties.GetPropertyValue(ProjectBuildProperties.MSBuildProjectExtensionsPath);
 
             if (string.IsNullOrEmpty(msbuildProjectExtensionsPath))
             {

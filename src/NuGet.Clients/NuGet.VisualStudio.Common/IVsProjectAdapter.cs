@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
-using NuGet.RuntimeModel;
 
 namespace NuGet.VisualStudio
 {
@@ -19,7 +18,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// MSBuildProjectExtensionsPath project property (e.g. c:\projFoo\obj)
         /// </summary>
-        Task<string> GetMSBuildProjectExtensionsPathAsync();
+        string GetMSBuildProjectExtensionsPath();
 
         IProjectBuildProperties BuildProperties { get; }
 

@@ -76,9 +76,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .Returns(_restoreLockedMode.ToString());
         }
 
-        public Task<string> GetMSBuildProjectExtensionsPathAsync()
+        public string GetMSBuildProjectExtensionsPath()
         {
-            return Task.FromResult(Path.Combine(ProjectDirectory, "obj"));
+            return Path.Combine(ProjectDirectory, "obj");
         }
 
         public IProjectBuildProperties BuildProperties { get; } = Mock.Of<IProjectBuildProperties>();
