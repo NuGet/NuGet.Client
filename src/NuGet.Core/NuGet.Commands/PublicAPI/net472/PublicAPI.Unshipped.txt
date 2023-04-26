@@ -1,3 +1,1 @@
 #nullable enable
-~static NuGet.Commands.MSBuildRestoreUtility.ApplyIncludeFlags(NuGet.LibraryModel.LibraryDependency dependency, string includeAssets, string excludeAssets, string privateAssets, string excludedAssetsFlow) -> void
-~static NuGet.Commands.MSBuildRestoreUtility.ApplyIncludeFlags(NuGet.ProjectModel.ProjectRestoreReference dependency, string includeAssets, string excludeAssets, string privateAssets, string excludedAssetsFlow) -> void

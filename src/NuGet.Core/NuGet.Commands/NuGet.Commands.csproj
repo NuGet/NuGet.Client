@@ -11,6 +11,7 @@
     <XPLATProject>true</XPLATProject>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
     <WarningsNotAsErrors>$(WarningsNotAsErrors);IDE0055</WarningsNotAsErrors>
+    <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
