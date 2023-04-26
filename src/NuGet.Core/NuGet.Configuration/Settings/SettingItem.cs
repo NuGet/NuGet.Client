@@ -103,11 +103,5 @@ namespace NuGet.Configuration
                 AddOrUpdateAttribute(attribute.Key, attribute.Value);
             }
         }
-
-        public IEnumerable<XAttribute> GetXElementAttributes()
-        {
-            var xElement = Node as XElement;
-            return xElement.Attributes();
-        }
     }
 }
