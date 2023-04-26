@@ -5,6 +5,16 @@ namespace NuGet.VisualStudio
 {
     public interface IVsProjectBuildProperties
     {
-        string GetPropertyValue(string name);
+        /// <summary>Get the value of a property.</summary>
+        /// <param name="name">The property name to check.</param>
+        /// <returns>The value of the property, if defined by the project. Otherwise, null</returns>
+        string GetPropertyValue(string propertyName);
+
+        /// <summary>Get the value of a property, and use DTE if IBuildPropertyStorage doesn't return a value</summary>
+        /// <param name="name">The property name to check.</param>
+        /// <returns>The value of the property, if defined by the project. Otherwise, null</returns>
+        /// <remarks>This method should not be used for anything new, as an exception is thrown and caught internally
+        /// when no value is defined, which harms performance.</remarks>
+        string GetPropertyValueWithDteFallback(string propertyName);
     }
 }

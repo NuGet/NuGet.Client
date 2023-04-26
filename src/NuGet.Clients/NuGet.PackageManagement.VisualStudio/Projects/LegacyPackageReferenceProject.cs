@@ -259,7 +259,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static string GetPropertySafe(IVsProjectBuildProperties projectBuildProperties, string propertyName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var value = projectBuildProperties.GetPropertyValue(propertyName);
+            var value = projectBuildProperties.GetPropertyValueWithDteFallback(propertyName);
 
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -390,7 +390,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectName = ProjectName ?? ProjectUniqueName;
 
-            string specifiedPackageId = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.PackageId);
+            string specifiedPackageId = _vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.PackageId);
 
             if (!string.IsNullOrWhiteSpace(specifiedPackageId))
             {
@@ -398,7 +398,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                string specifiedAssemblyName = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.AssemblyName);
+                string specifiedAssemblyName = _vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.AssemblyName);
 
                 if (!string.IsNullOrWhiteSpace(specifiedAssemblyName))
                 {

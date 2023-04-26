@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override async Task<string> GetMSBuildProjectExtensionsPathAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            var msbuildProjectExtensionsPath = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.MSBuildProjectExtensionsPath);
+            var msbuildProjectExtensionsPath = _vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.MSBuildProjectExtensionsPath);
 
             if (string.IsNullOrEmpty(msbuildProjectExtensionsPath))
             {
@@ -74,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     var platformMinVersionString = _vsProjectAdapter
                         .BuildProperties
-                        .GetPropertyValue(ProjectBuildProperties.TargetPlatformMinVersion);
+                        .GetPropertyValueWithDteFallback(ProjectBuildProperties.TargetPlatformMinVersion);
 
                     var platformMinVersion = !string.IsNullOrEmpty(platformMinVersionString)
                         ? new Version(platformMinVersionString)
@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     var targetFrameworkMonikerString = _vsProjectAdapter
                         .BuildProperties
-                        .GetPropertyValue(ProjectBuildProperties.TargetFrameworkMoniker);
+                        .GetPropertyValueWithDteFallback(ProjectBuildProperties.TargetFrameworkMoniker);
 
                     var targetFrameworkMoniker = !string.IsNullOrWhiteSpace(targetFrameworkMonikerString)
                         ? NuGetFramework.Parse(targetFrameworkMonikerString)

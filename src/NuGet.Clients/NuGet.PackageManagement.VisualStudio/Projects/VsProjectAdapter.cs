@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public string GetMSBuildProjectExtensionsPath()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var msbuildProjectExtensionsPath = BuildProperties.GetPropertyValue(ProjectBuildProperties.MSBuildProjectExtensionsPath);
+            var msbuildProjectExtensionsPath = BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.MSBuildProjectExtensionsPath);
 
             if (string.IsNullOrEmpty(msbuildProjectExtensionsPath))
             {
@@ -88,11 +88,11 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                var packageVersion = BuildProperties.GetPropertyValue(ProjectBuildProperties.PackageVersion);
+                var packageVersion = BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.PackageVersion);
 
                 if (string.IsNullOrEmpty(packageVersion))
                 {
-                    packageVersion = BuildProperties.GetPropertyValue(ProjectBuildProperties.Version);
+                    packageVersion = BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.Version);
 
                     if (string.IsNullOrEmpty(packageVersion))
                     {
@@ -230,13 +230,13 @@ namespace NuGet.PackageManagement.VisualStudio
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var projectPath = FullName;
-            var platformIdentifier = BuildProperties.GetPropertyValue(
+            var platformIdentifier = BuildProperties.GetPropertyValueWithDteFallback(
                 ProjectBuildProperties.TargetPlatformIdentifier);
-            var platformVersion = BuildProperties.GetPropertyValue(
+            var platformVersion = BuildProperties.GetPropertyValueWithDteFallback(
                 ProjectBuildProperties.TargetPlatformVersion);
-            var platformMinVersion = BuildProperties.GetPropertyValue(
+            var platformMinVersion = BuildProperties.GetPropertyValueWithDteFallback(
                 ProjectBuildProperties.TargetPlatformMinVersion);
-            var targetFrameworkMoniker = BuildProperties.GetPropertyValue(
+            var targetFrameworkMoniker = BuildProperties.GetPropertyValueWithDteFallback(
                 ProjectBuildProperties.TargetFrameworkMoniker);
 
             // Projects supporting TargetFramework and TargetFrameworks are detected before

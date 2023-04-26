@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio;
@@ -53,6 +54,35 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public string GetPropertyValue(string propertyName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            Assumes.NotNullOrEmpty(propertyName);
+
+            if (_propertyStorage == null)
+            {
+                // This project system does not implement IVsBuildPropertyStorage, meaning
+                // this call will never return a value, even when the project file specifies
+                // a value for the property.
+                Debug.Fail("The project system does not implement IVsBuildPropertyStorage");
+                return null;
+            }
+
+            var result = _propertyStorage.GetPropertyValue(
+                pszPropName: propertyName,
+                pszConfigName: null,
+                storage: (uint)_PersistStorageType.PST_PROJECT_FILE,
+                pbstrPropValue: out string output);
+
+            if (result == VSConstants.S_OK && !string.IsNullOrWhiteSpace(output))
+            {
+                _buildPropertiesTelemetry.OnPropertyStorageUsed(_projectTypeGuids);
+                return output;
+            }
+
+            return null;
+        }
+
+        public string GetPropertyValueWithDteFallback(string propertyName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Assumes.NotNullOrEmpty(propertyName);

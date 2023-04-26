@@ -338,7 +338,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private bool IsCentralPackageManagementVersionsEnabled()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            return MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.ManagePackageVersionsCentrally));
+            return MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.ManagePackageVersionsCentrally));
         }
 
         private class ProjectReference
