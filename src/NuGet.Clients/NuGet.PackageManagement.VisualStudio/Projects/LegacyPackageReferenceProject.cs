@@ -256,7 +256,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return msbuildProjectExtensionsPath;
         }
 
-        private static string GetPropertySafe(IProjectBuildProperties projectBuildProperties, string propertyName)
+        private static string GetPropertySafe(IVsProjectBuildProperties projectBuildProperties, string propertyName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             var value = projectBuildProperties.GetPropertyValue(propertyName);

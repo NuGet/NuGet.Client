@@ -42,7 +42,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region INuGetProjectServices
 
-        public IProjectBuildProperties BuildProperties => _vsProjectAdapter.BuildProperties;
+        [Obsolete]
+        public IProjectBuildProperties BuildProperties => throw new NotImplementedException();
 
         public IProjectSystemCapabilities Capabilities => this;
 

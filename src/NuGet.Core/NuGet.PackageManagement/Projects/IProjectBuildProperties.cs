@@ -10,6 +10,7 @@ namespace NuGet.ProjectManagement
     /// Represents an API providing read-only access to 
     /// project's build properties.
     /// </summary>
+    [Obsolete("This was only used by NuGet's VS extension, so has been moved there")]
     public interface IProjectBuildProperties
     {
         /// <summary>
@@ -27,7 +28,6 @@ namespace NuGet.ProjectManagement
         /// <param name="propertyName">A property name</param>
         /// <returns>Property value or <code>null</code> if not found.</returns>
         /// <remarks>Often times when retrieving properties we are already on the UI thread. In those cases, prefer calling the synchronous version instead to avoid the extra state machine allocations.</remarks>
-        [Obsolete]
         Task<string> GetPropertyValueAsync(string propertyName);
     }
 }

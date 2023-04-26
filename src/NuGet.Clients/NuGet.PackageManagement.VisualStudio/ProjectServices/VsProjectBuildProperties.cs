@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.VisualStudio.Telemetry;
-using NuGet.ProjectManagement;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -17,28 +16,24 @@ namespace NuGet.PackageManagement.VisualStudio
     /// Contains the information specific to a Visual Basic or C# project or NetCore project.
     /// </summary>
     internal class VsProjectBuildProperties
-        : IProjectBuildProperties
+        : IVsProjectBuildProperties
     {
         private readonly Lazy<Project> _dteProject;
         private Project _project;
         private readonly IVsBuildPropertyStorage _propertyStorage;
-        private readonly IVsProjectThreadingService _threadingService;
         private readonly IVsProjectBuildPropertiesTelemetry _buildPropertiesTelemetry;
         private readonly string[] _projectTypeGuids;
 
         public VsProjectBuildProperties(
             Project project,
             IVsBuildPropertyStorage propertyStorage,
-            IVsProjectThreadingService threadingService,
             IVsProjectBuildPropertiesTelemetry buildPropertiesTelemetry,
             string[] projectTypeGuids)
         {
             Assumes.Present(project);
-            Assumes.Present(threadingService);
 
             _project = project;
             _propertyStorage = propertyStorage;
-            _threadingService = threadingService;
             _buildPropertiesTelemetry = buildPropertiesTelemetry;
             _projectTypeGuids = projectTypeGuids;
         }
@@ -46,16 +41,13 @@ namespace NuGet.PackageManagement.VisualStudio
         public VsProjectBuildProperties(
             Lazy<Project> project,
             IVsBuildPropertyStorage propertyStorage,
-            IVsProjectThreadingService threadingService,
             IVsProjectBuildPropertiesTelemetry buildPropertiesTelemetry,
             string[] projectTypeGuids)
         {
             Assumes.Present(project);
-            Assumes.Present(threadingService);
 
             _dteProject = project;
             _propertyStorage = propertyStorage;
-            _threadingService = threadingService;
             _buildPropertiesTelemetry = buildPropertiesTelemetry;
             _projectTypeGuids = projectTypeGuids;
         }
@@ -95,12 +87,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return null;
-        }
-
-        public async Task<string> GetPropertyValueAsync(string propertyName)
-        {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-            return GetPropertyValue(propertyName);
         }
     }
 }

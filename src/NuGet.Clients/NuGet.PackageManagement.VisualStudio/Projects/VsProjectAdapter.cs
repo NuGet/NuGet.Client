@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return Path.Combine(ProjectDirectory, msbuildProjectExtensionsPath);
         }
 
-        public IProjectBuildProperties BuildProperties { get; private set; }
+        public IVsProjectBuildProperties BuildProperties { get; }
 
         public string CustomUniqueName => ProjectNames.CustomUniqueName;
 
@@ -116,7 +116,7 @@ namespace NuGet.PackageManagement.VisualStudio
             string fullProjectPath,
             string projectDirectory,
             Func<IVsHierarchy, EnvDTE.Project> loadDteProject,
-            IProjectBuildProperties buildProperties,
+            IVsProjectBuildProperties buildProperties,
             IVsProjectThreadingService threadingService)
         {
             Assumes.Present(vsHierarchyItem);
@@ -135,7 +135,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectNames projectNames,
             string fullProjectPath,
             Func<IVsHierarchy, EnvDTE.Project> loadDteProject,
-            IProjectBuildProperties buildProperties,
+            IVsProjectBuildProperties buildProperties,
             IVsProjectThreadingService threadingService)
             : this(
                   vsHierarchyItem,

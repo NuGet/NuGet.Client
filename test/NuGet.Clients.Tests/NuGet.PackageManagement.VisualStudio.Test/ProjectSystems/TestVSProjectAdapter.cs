@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return Path.Combine(ProjectDirectory, "obj");
         }
 
-        public IProjectBuildProperties BuildProperties { get; } = Mock.Of<IProjectBuildProperties>();
+        public IVsProjectBuildProperties BuildProperties { get; } = Mock.Of<IVsProjectBuildProperties>();
 
         public string CustomUniqueName => ProjectNames.CustomUniqueName;
 

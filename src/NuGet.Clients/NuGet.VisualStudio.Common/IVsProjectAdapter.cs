@@ -6,7 +6,6 @@ using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
-using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
 {
@@ -20,7 +19,7 @@ namespace NuGet.VisualStudio
         /// </summary>
         string GetMSBuildProjectExtensionsPath();
 
-        IProjectBuildProperties BuildProperties { get; }
+        IVsProjectBuildProperties BuildProperties { get; }
 
         string CustomUniqueName { get; }
 

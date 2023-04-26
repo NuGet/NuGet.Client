@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -44,7 +43,7 @@ namespace NuGet.PackageManagement.VisualStudio
         protected override async Task<string> GetMSBuildProjectExtensionsPathAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            var msbuildProjectExtensionsPath = ProjectServices.BuildProperties.GetPropertyValue(ProjectBuildProperties.MSBuildProjectExtensionsPath);
+            var msbuildProjectExtensionsPath = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.MSBuildProjectExtensionsPath);
 
             if (string.IsNullOrEmpty(msbuildProjectExtensionsPath))
             {

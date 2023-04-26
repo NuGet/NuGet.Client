@@ -288,7 +288,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                var projectBuildProperties = new Mock<IProjectBuildProperties>();
+                var projectBuildProperties = new Mock<IVsProjectBuildProperties>();
                 var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
 
                 projectBuildProperties
@@ -352,7 +352,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                var projectBuildProperties = new Mock<IProjectBuildProperties>();
+                var projectBuildProperties = new Mock<IVsProjectBuildProperties>();
                 var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
 
                 projectBuildProperties
@@ -412,7 +412,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                var projectBuildProperties = new Mock<IProjectBuildProperties>();
+                var projectBuildProperties = new Mock<IVsProjectBuildProperties>();
                 var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
 
                 projectBuildProperties
@@ -758,7 +758,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                var projectBuildProperties = new Mock<IProjectBuildProperties>();
+                var projectBuildProperties = new Mock<IVsProjectBuildProperties>();
                 var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
 
                 projectBuildProperties
@@ -1452,7 +1452,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             using (var testDirectory = TestDirectory.Create())
             {
-                var projectBuildProperties = new Mock<IProjectBuildProperties>();
+                var projectBuildProperties = new Mock<IVsProjectBuildProperties>();
                 var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
 
                 projectBuildProperties
@@ -1524,7 +1524,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             using var testDirectory = TestDirectory.Create();
 
-            var projectBuildProperties = new Mock<IProjectBuildProperties>();
+            var projectBuildProperties = new Mock<IVsProjectBuildProperties>();
             var projectAdapter = CreateProjectAdapter(testDirectory, projectBuildProperties);
 
             projectBuildProperties
