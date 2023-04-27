@@ -48,6 +48,7 @@ namespace NuGet.Test.Utility
         public Dictionary<NuGetFramework, string[]> FrameworkReferences { get; set; } = new Dictionary<NuGetFramework, string[]>();
         public string Include { get; set; } = string.Empty;
         public string Exclude { get; set; } = string.Empty;
+        public string ExcludedAssetsFlow { get; set; } = string.Empty;
         // Used by the parent project
         public string PrivateAssets { get; set; } = string.Empty;
         public string Aliases { get; set; } = string.Empty;

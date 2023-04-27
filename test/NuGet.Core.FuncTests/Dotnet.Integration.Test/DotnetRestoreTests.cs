@@ -2721,6 +2721,132 @@ EndGlobal";
             allTargets.Should().Contain(condition);
         }
 
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(null, "none")]
+        [InlineData(false, "none")]
+        [InlineData(true, "none")]
+        [InlineData(null, "runtime")]
+        [InlineData(false, "runtime")]
+        [InlineData(true, "runtime")]
+        public async Task DotnetRestore_TransitiveProjectToProject_PrivateAssetswithExcludedAssetsFlow_DefaultAssetFlow(bool? excludedAssetsFlow, string includeAssets)
+        {
+            // Arrange
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
+            {
+                var projFramework = FrameworkConstants.CommonFrameworks.Net462;
+
+                // Project
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    projFramework);
+
+
+                // Package
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    Include = includeAssets,
+                    PrivateAssets = "compile",
+                };
+
+                if (excludedAssetsFlow != null)
+                {
+                    packageX.ExcludedAssetsFlow = excludedAssetsFlow.ToString();
+                }
+
+                packageX.Files.Clear();
+                packageX.AddFile("build/x.props", "<Project>This is a bad props file!!!!<");
+                packageX.AddFile("build/x.targets", "<Project>This is a bad target file!!!!<");
+                packageX.AddFile("lib/net45/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                // Create root project
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "projectRoot",
+                    pathContext.SolutionRoot,
+                    projFramework);
+
+                projectB.AddProjectToAllFrameworks(projectA);
+                projectA.Save();
+                projectB.Save();
+                var solutionPath = Path.Combine(pathContext.SolutionRoot, "solution.sln");
+                _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"new sln -n solution");
+
+                _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"sln {solutionPath} add {projectA.ProjectPath}");
+                _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"sln {solutionPath} add {projectB.ProjectPath}");
+
+                // Act
+                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore {solutionPath}");
+
+                // Assert
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), result.AllOutput);
+
+                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, NullLogger.Instance);
+                Assert.Equal(1, lockFile.Libraries.Count);
+                Assert.Equal("x", lockFile.Libraries[0].Name);
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(1, lockFile.Targets.Count);
+                Assert.Equal(1, lockFile.Targets.First().Libraries.Count);
+                Assert.Equal("x", lockFile.Targets.First().Libraries[0].Name);
+                Assert.Equal("x", lockFile.Targets.First().Libraries[0].Name);
+                Assert.Equal(1, lockFile.Targets.First().Libraries[0].CompileTimeAssemblies.Count);
+                // Compile asset not included.
+                Assert.True(lockFile.Targets.First().Libraries[0].CompileTimeAssemblies[0].Path.Contains("_._"));
+
+                if (includeAssets == "runtime")
+                {
+                    Assert.True(lockFile.Targets.First().Libraries[0].RuntimeAssemblies[0].Path.Contains("x.dll"));
+                }
+                else
+                {
+                    Assert.True(lockFile.Targets.First().Libraries[0].RuntimeAssemblies[0].Path.Contains("_._"));
+                }
+
+                var msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
+                var msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectA.PropsOutput);
+
+                Assert.Equal(0, msbuildTargetsItems.Count);
+                Assert.Equal(0, msbuildPropsItems.Count);
+
+                // Assert 2
+                Assert.True(File.Exists(projectB.AssetsFileOutputPath), result.AllOutput);
+
+                lockFile = LockFileUtilities.GetLockFile(projectB.AssetsFileOutputPath, NullLogger.Instance);
+                Assert.Equal(2, lockFile.Libraries.Count);
+                Assert.True(lockFile.Libraries[0].Path.Contains("x"));
+                Assert.True(lockFile.Libraries[1].Path.Contains("a.csproj"));
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
+                Assert.Equal(2, lockFile.Targets.First().Libraries.Count);
+                Assert.Equal("x", lockFile.Targets.First().Libraries[0].Name);
+                Assert.Equal(1, lockFile.Targets.First().Libraries[0].CompileTimeAssemblies.Count);
+                // Compile asset didn't flow
+                Assert.True(lockFile.Targets.First().Libraries[0].CompileTimeAssemblies[0].Path.Contains("_._"));
+                msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectB.TargetsOutput);
+                msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectB.PropsOutput);
+
+                if (excludedAssetsFlow == true)
+                {
+                    Assert.Equal(1, msbuildTargetsItems.Count);
+                    Assert.True(msbuildTargetsItems[0].ToString().Contains("x.targets"));
+                    Assert.Equal(1, msbuildPropsItems.Count);
+                    Assert.True(msbuildPropsItems[0].ToString().Contains("x.props"));
+                }
+                else
+                {
+                    Assert.Equal(0, msbuildTargetsItems.Count);
+                    Assert.Equal(0, msbuildPropsItems.Count);
+                }
+            }
+        }
+
         private void AssertRelatedProperty(IList<LockFileItem> items, string path, string related)
         {
             var item = items.Single(i => i.Path.Equals(path));
