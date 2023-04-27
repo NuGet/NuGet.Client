@@ -38,6 +38,38 @@ parameters:
   values:
   - Full
   - Pseudo
+- name: RunApexTests
+  displayName: Run Apex tests
+  type: boolean
+  default: true
+- name: RunBuildForPublishing
+  displayName: Build bits for publishing
+  type: boolean
+  default: true
+- name: RunCrossFrameworkTestsOnWindows
+  displayName: Run cross framweork tests on Windows
+  type: boolean
+  default: true
+- name: RunEndToEndTests
+  displayName: Run end-to-end tests
+  type: boolean
+  default: true
+- name: RunFunctionalTestsOnWindows
+  displayName: Run functional tests on Windows
+  type: boolean
+  default: true
+- name: RunSourceBuild
+  displayName: Run source build
+  type: boolean
+  default: true
+- name: RunTestsOnLinux
+  displayName: Run tests on Linux
+  type: boolean
+  default: true
+- name: RunTestsOnMac
+  displayName: Run tests on Mac
+  type: boolean
+  default: true
 
 resources:
   pipelines:
@@ -54,6 +86,14 @@ variables:
   DOTNET_NOLOGO: 1
   Codeql.Enabled: ${{ parameters.isOfficialBuild }}
   Codeql.TSAEnabled: ${{ parameters.isOfficialBuild }}
+  RunApexTests: ${{ parameters.RunApexTests }}
+  RunBuildForPublishing: ${{ parameters.RunBuildForPublishing }}
+  RunCrossFrameworkTestsOnWindows: ${{ parameters.RunCrossFrameworkTestsOnWindows }}
+  RunEndToEndTests: ${{ parameters.RunEndToEndTests }}
+  RunFunctionalTestsOnWindows: ${{ parameters.RunFunctionalTestsOnWindows }}
+  RunSourceBuild: ${{ parameters.RunSourceBuild }}
+  RunTestsOnLinux: ${{ parameters.RunTestsOnLinux }}
+  RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
 
 stages:
 - stage: Initialize
@@ -118,6 +158,7 @@ stages:
   dependsOn: Initialize
   jobs:
   - job: Build_and_UnitTest_RTM
+    condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
     timeoutInMinutes: 170
     variables:
       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
@@ -134,6 +175,7 @@ stages:
         BuildRTM: true
         NuGetLocalizationType: Full
   - job: Validate_Publishing_Artifacts
+    condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
     displayName: 'Validate Publishing build artifacts'
     dependsOn: Build_and_UnitTest_RTM
     timeoutInMinutes: 15
@@ -144,11 +186,11 @@ stages:
       parameters:
         isOfficialBuild: ${{ parameters.isOfficialBuild }}
 
-
 - stage: Source_Build
   dependsOn: Initialize
   jobs:
   - job: Build_Source_Build
+    condition: "and(succeeded(), ne(variables['RunSourceBuild'], 'false'))"
     timeoutInMinutes: 120
     variables:
       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
@@ -170,7 +212,7 @@ stages:
       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
        # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
-    condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
+    condition: "and(succeeded(), ne(variables['RunFunctionalTestsOnWindows'], 'false'))"
     pool:
       name: VSEngSS-MicroBuild2022-1ES
     strategy:
@@ -190,18 +232,18 @@ stages:
       # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
       DOTNET_NUGET_SIGNATURE_VERIFICATION: true
-    condition: "and(succeeded(), eq(variables['RunTestsOnLinux'], 'true'))"
+    condition: "and(succeeded(), ne(variables['RunTestsOnLinux'], 'false'))"
     pool:
       vmImage: ubuntu-latest
     steps:
-    - template: Tests_On_Linux.yml
+      - template: Tests_On_Linux.yml
 
   - job: CrossFramework_Tests_On_Windows
+    condition: "and(succeeded(), ne(variables['RunCrossFrameworkTestsOnWindows'], 'false'))"
     timeoutInMinutes: 30
     variables:
       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-    condition: "and(succeeded(),eq(variables['RunCrossFrameworkTestsOnWindows'], 'true')) "
     pool:
       vmImage: windows-latest
     steps:
@@ -211,9 +253,9 @@ stages:
   dependsOn:
   - Initialize
   - Build_Insertable
-  condition: "and(succeeded(), eq(variables['RunTestsOnMac'], 'true'))"
   jobs:
   - job: Tests_On_Mac
+    condition: "and(succeeded(), ne(variables['RunTestsOnMac'], 'false'))"
     timeoutInMinutes: 90
     variables:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
@@ -229,7 +271,7 @@ stages:
   parameters:
     stageName: VS_EndToEnd_Part1
     stageDisplayName: Part 1
-    condition: "and(succeeded(), eq(variables['RunEndToEndTests'], 'true'))"
+    condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
     dependsOn:
     - Initialize
     - Build_Insertable
@@ -250,7 +292,7 @@ stages:
   parameters:
     stageName: VS_EndToEnd_Part2
     stageDisplayName: Part 2
-    condition: "and(succeeded(), eq(variables['RunEndToEndTests'], 'true'))"
+    condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
     dependsOn:
     - Initialize
     - Build_Insertable
@@ -269,7 +311,7 @@ stages:
 # Dartlab's template defines this in its own stage
 - template: Apex_Tests_On_Windows.yml
   parameters:
-    condition: "and(succeeded(), eq(variables['RunApexTests'], 'true'))"
+    condition: "and(succeeded(), ne(variables['RunApexTests'], 'false'))"
     dependsOn:
       - Initialize
       - Build_Insertable
