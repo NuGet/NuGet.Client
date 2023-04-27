@@ -896,7 +896,8 @@ namespace NuGet.Build.Tasks.Pack
                             versionToUse,
                             LibraryDependencyTarget.All),
                         IncludeType = projectReference.IncludeAssets & ~projectReference.ExcludeAssets,
-                        SuppressParent = projectReference.PrivateAssets
+                        SuppressParent = projectReference.PrivateAssets,
+                        ExcludedAssetsFlow = projectReference.ExcludedAssetsFlow
                     };
 
                     PackCommandRunner.AddLibraryDependency(projectDependency, dependencies);

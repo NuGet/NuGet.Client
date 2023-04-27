@@ -98,6 +98,8 @@ namespace NuGet.Test.Utility
         /// </summary>
         public string ExcludeAssets { get; set; } = string.Empty;
 
+        public string ExcludedAssetsFlow { get; set; } = string.Empty;
+
         /// <summary>
         /// Include attributes for the parent project referencing this one.
         /// </summary>
@@ -564,6 +566,11 @@ namespace NuGet.Test.Utility
                             props.Add("ExcludeAssets", package.Exclude);
                         }
 
+                        if (!string.IsNullOrEmpty(package.ExcludedAssetsFlow))
+                        {
+                            props.Add("ExcludedAssetsFlow", package.ExcludedAssetsFlow);
+                        }
+
                         if (!string.IsNullOrEmpty(package.PrivateAssets))
                         {
                             props.Add("PrivateAssets", package.PrivateAssets);
@@ -714,6 +721,11 @@ namespace NuGet.Test.Utility
                     if (!string.IsNullOrEmpty(project.PrivateAssets))
                     {
                         props.Add("PrivateAssets", project.PrivateAssets);
+                    }
+
+                    if (!string.IsNullOrEmpty(project.ExcludedAssetsFlow))
+                    {
+                        props.Add("ExcludedAssetsFlow", project.ExcludedAssetsFlow);
                     }
 
                     ProjectFileUtils.AddItem(

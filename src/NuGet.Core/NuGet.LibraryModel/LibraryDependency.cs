@@ -70,11 +70,11 @@ namespace NuGet.LibraryModel
             LibraryRange = libraryRange;
             IncludeType = includeType;
             SuppressParent = suppressParent;
+            ExcludedAssetsFlow = excludedAssetsFlow;
             NoWarn = noWarn;
             AutoReferenced = autoReferenced;
             GeneratePathProperty = generatePathProperty;
             VersionCentrallyManaged = versionCentrallyManaged;
-            ExcludedAssetsFlow = excludedAssetsFlow;
             ReferenceType = libraryDependencyReferenceType;
             Aliases = aliases;
             VersionOverride = versionOverride;
@@ -96,6 +96,7 @@ namespace NuGet.LibraryModel
             hashCode.AddObject(LibraryRange);
             hashCode.AddStruct(IncludeType);
             hashCode.AddStruct(SuppressParent);
+            hashCode.AddStruct(ExcludedAssetsFlow);
             hashCode.AddObject(AutoReferenced);
             hashCode.AddSequence(NoWarn);
             hashCode.AddObject(GeneratePathProperty);
@@ -127,6 +128,7 @@ namespace NuGet.LibraryModel
                    EqualityUtility.EqualsWithNullCheck(LibraryRange, other.LibraryRange) &&
                    IncludeType == other.IncludeType &&
                    SuppressParent == other.SuppressParent &&
+                   ExcludedAssetsFlow == other.ExcludedAssetsFlow &&
                    NoWarn.SequenceEqualWithNullCheck(other.NoWarn) &&
                    GeneratePathProperty == other.GeneratePathProperty &&
                    VersionCentrallyManaged == other.VersionCentrallyManaged &&

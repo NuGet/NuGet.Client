@@ -557,6 +557,7 @@ namespace NuGet.Commands
                             VersionCentrallyManaged = true,
                             IncludeType = dependenciesIncludeFlags[centralPackageVersion.Name],
                             SuppressParent = suppressParent,
+                            //ExcludedAssetsFlow = excl
                         };
                     }
                 }

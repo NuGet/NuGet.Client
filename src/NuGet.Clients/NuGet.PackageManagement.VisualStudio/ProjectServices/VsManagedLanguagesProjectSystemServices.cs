@@ -292,6 +292,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var includeFlags = packageReference.IncludeType;
             var privateAssetsFlag = packageReference.SuppressParent;
+            var excludedAssetsFlow = packageReference.ExcludedAssetsFlow;
             var metadataElements = new List<string>();
             var metadataValues = new List<string>();
             if (includeFlags != LibraryIncludeFlags.All)
@@ -304,6 +305,13 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 metadataElements.Add(ProjectItemProperties.PrivateAssets);
                 metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(privateAssetsFlag).Replace(',', ';'));
+            }
+
+
+            if (excludedAssetsFlow)
+            {
+                metadataElements.Add(ProjectItemProperties.ExcludedAssetsFlow);
+                metadataValues.Add(true.ToString());
             }
 
             AddOrUpdatePackageReference(

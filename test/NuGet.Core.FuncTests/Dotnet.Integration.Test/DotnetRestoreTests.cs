@@ -2844,6 +2844,15 @@ EndGlobal";
                     Assert.Equal(0, msbuildTargetsItems.Count);
                     Assert.Equal(0, msbuildPropsItems.Count);
                 }
+
+                if (includeAssets == "runtime" || excludedAssetsFlow == true)
+                {
+                    Assert.True(lockFile.Targets.First().Libraries[0].RuntimeAssemblies[0].Path.Contains("x.dll"));
+                }
+                else
+                {
+                    Assert.True(lockFile.Targets.First().Libraries[0].RuntimeAssemblies[0].Path.Contains("_._"));
+                }
             }
         }
 

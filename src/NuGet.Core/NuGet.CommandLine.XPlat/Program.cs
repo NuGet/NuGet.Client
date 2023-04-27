@@ -48,11 +48,11 @@ namespace NuGet.CommandLine.XPlat
             }*/
 
             var debugNuGetXPlat = Environment.GetEnvironmentVariable("DEBUG_NUGET_XPLAT");
+            Debugger.Launch();
 
             if (args.Contains(DebugOption) || string.Equals(bool.TrueString, debugNuGetXPlat, StringComparison.OrdinalIgnoreCase))
             {
                 args = args.Where(arg => !StringComparer.OrdinalIgnoreCase.Equals(arg, DebugOption)).ToArray();
-                Debugger.Launch();
             }
 #endif
 

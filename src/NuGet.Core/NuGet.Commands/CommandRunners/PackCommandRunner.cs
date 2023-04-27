@@ -1256,7 +1256,8 @@ namespace NuGet.Commands
                     {
                         LibraryRange = new LibraryRange(matchingDependency.Name, newVersionRange, LibraryDependencyTarget.All),
                         IncludeType = dependency.IncludeType & matchingDependency.IncludeType,
-                        SuppressParent = dependency.SuppressParent & matchingDependency.SuppressParent
+                        SuppressParent = dependency.SuppressParent & matchingDependency.SuppressParent,
+                        ExcludedAssetsFlow = dependency.ExcludedAssetsFlow & matchingDependency.ExcludedAssetsFlow
                     });
                 }
                 else

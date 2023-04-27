@@ -32,6 +32,7 @@ namespace NuGet.CommandLine.XPlat
         private const string REMOVE_OPERATION = "Remove";
         private const string IncludeAssets = "IncludeAssets";
         private const string PrivateAssets = "PrivateAssets";
+        private const string ExcludedAssetsFlow = "ExcludedAssetsFlow";
         private const string CollectPackageReferences = "CollectPackageReferences";
         /// <summary>
         /// The name of the MSBuild property that represents the path to the central package management file, usually Directory.Packages.props.
@@ -413,6 +414,12 @@ namespace NuGet.CommandLine.XPlat
                 var suppressParent = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libraryDependency.SuppressParent));
                 item.AddMetadata(PrivateAssets, suppressParent, expressAsAttribute: false);
             }
+
+            if (libraryDependency.ExcludedAssetsFlow)
+            {
+                var excludedAssetsFlow = MSBuildStringUtility.Convert(true.ToString());
+                item.AddMetadata(ExcludedAssetsFlow, excludedAssetsFlow, expressAsAttribute: false);
+            }
         }
 
         /// <summary>
@@ -608,6 +615,12 @@ namespace NuGet.CommandLine.XPlat
                 var suppressParent = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libraryDependency.SuppressParent));
                 packageReferenceItem.SetMetadataValue(PrivateAssets, suppressParent);
             }
+
+            if (libraryDependency.ExcludedAssetsFlow)
+            {
+                var excludedAssetsFlow = MSBuildStringUtility.Convert(true.ToString());
+                packageReferenceItem.SetMetadataValue(ExcludedAssetsFlow, excludedAssetsFlow);
+            }
         }
 
         /// <summary>
@@ -627,6 +640,12 @@ namespace NuGet.CommandLine.XPlat
             {
                 var suppressParent = MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(libraryDependency.SuppressParent));
                 packageReferenceItem.SetMetadataValue(PrivateAssets, suppressParent);
+            }
+
+            if (libraryDependency.ExcludedAssetsFlow)
+            {
+                var excludedAssetsFlow = MSBuildStringUtility.Convert(true.ToString());
+                packageReferenceItem.SetMetadataValue(ExcludedAssetsFlow, excludedAssetsFlow);
             }
         }
 
