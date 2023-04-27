@@ -70,6 +70,10 @@ parameters:
   displayName: Run tests on Mac
   type: boolean
   default: true
+- name: RunMonoTestsOnMac
+  displayName: Run Mono tests on Mac
+  type: boolean
+  default: false
 
 resources:
   pipelines:
@@ -94,6 +98,7 @@ variables:
   RunSourceBuild: ${{ parameters.RunSourceBuild }}
   RunTestsOnLinux: ${{ parameters.RunTestsOnLinux }}
   RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
+  RunMonoTestsOnMac: ${{ parameters.RunMonoTestsOnMac }}
 
 stages:
 - stage: Initialize
@@ -202,10 +207,12 @@ stages:
     steps:
     - template: Source_Build.yml
 
-- stage: CLI_Func_Tests
+- stage: Tests
+  displayName: "Run Unit and Functional Tests"
   dependsOn: Initialize
   jobs:
   - job: Functional_Tests_On_Windows
+    displayName: "Windows FunctionalTests"
     timeoutInMinutes: 120
     variables:
       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
@@ -225,6 +232,7 @@ stages:
     - template: Functional_Tests_On_Windows.yml
 
   - job: Tests_On_Linux
+    displayName: "Linux"
     timeoutInMinutes: 45
     variables:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
@@ -235,10 +243,42 @@ stages:
     condition: "and(succeeded(), ne(variables['RunTestsOnLinux'], 'false'))"
     pool:
       vmImage: ubuntu-latest
+    strategy:
+      matrix:
+        UnitTests:
+          TestRunDisplayName: "Unit Tests"
+          TestRunCommandLineArguments: "--unit-tests"
+        FunctionalTests:
+          TestRunDisplayName: "Functional Tests"
+          TestRunCommandLineArguments: "--functional-tests"
     steps:
-      - template: Tests_On_Linux.yml
+    - template: Tests_On_Linux.yml
+
+  - job: Tests_On_Mac
+    displayName: "Mac"
+    timeoutInMinutes: 45
+    variables:
+      FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+      MSBUILDDISABLENODEREUSE: 1
+      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
+      MSBuildEnableWorkloadResolver: false
+      BUILD_NET8: 'false'
+    condition: "and(succeeded(), ne(variables['RunTestsOnMac'], 'false'))"
+    pool:
+      vmImage: macos-latest
+    strategy:
+      matrix:
+        UnitTests:
+          TestRunDisplayName: "Unit Tests"
+          TestRunCommandLineArguments: "--unit-tests"
+        FunctionalTests:
+          TestRunDisplayName: "Functional Tests"
+          TestRunCommandLineArguments: "--functional-tests"
+    steps:
+    - template: Tests_On_Mac.yml
 
   - job: CrossFramework_Tests_On_Windows
+    displayName: "Windows CrossFrameworkTests"
     condition: "and(succeeded(), ne(variables['RunCrossFrameworkTestsOnWindows'], 'false'))"
     timeoutInMinutes: 30
     variables:
@@ -250,18 +290,20 @@ stages:
     - template: CrossFramework_Tests_On_Windows.yml
 
 - stage: MacTests
+  displayName: "Mac Mono Tests"
   dependsOn:
   - Initialize
   - Build_Insertable
   jobs:
-  - job: Tests_On_Mac
-    condition: "and(succeeded(), ne(variables['RunTestsOnMac'], 'false'))"
+  - job: MonoTests_On_Mac
+    condition: "and(succeeded(), ne(variables['RunMonoTestsOnMac'], 'false'))"
     timeoutInMinutes: 90
     variables:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
-      BUILD_NET8: 'false'
+      TestRunDisplayName: "Mono Tests"
+      TestRunCommandLineArguments: "--mono-tests"
     pool:
       vmImage: macos-latest
     steps:
