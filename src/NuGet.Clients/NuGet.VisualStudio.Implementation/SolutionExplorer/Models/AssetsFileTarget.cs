@@ -145,14 +145,12 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             return true;
         }
 
-        public bool TryGetPackage(string packageId, string version, [NotNullWhen(returnValue: true)] out AssetsFileTargetLibrary? assetsFileLibrary)
+        public bool TryGetPackage(string packageId, [NotNullWhen(returnValue: true)] out AssetsFileTargetLibrary? assetsFileLibrary)
         {
             Requires.NotNull(packageId, nameof(packageId));
-            Requires.NotNull(version, nameof(version));
 
             if (LibraryByName.TryGetValue(packageId, out assetsFileLibrary) &&
-                assetsFileLibrary.Type is AssetsFileLibraryType.Package or AssetsFileLibraryType.Unknown &&
-                (assetsFileLibrary.Version == version || assetsFileLibrary.Version is null))
+                assetsFileLibrary.Type is AssetsFileLibraryType.Package or AssetsFileLibraryType.Unknown)
             {
                 return true;
             }
