@@ -46,6 +46,24 @@ namespace NuGet.CommandLine.XPlat
             SettingsUtility.SetConfigValue(settings, args.ConfigKey, args.ConfigValue, encrypt);
         }
     }
+    internal static class ConfigUnsetRunner
+    {
+        public static void Run(ConfigUnsetArgs args, Func<ILogger> getLogger)
+        {
+            RunnerHelper.ValidateArguments(args, getLogger);
+            RunnerHelper.ValidateConfigKey(args.ConfigKey);
+            ISettings settings = null;
+            if (string.IsNullOrEmpty(args.ConfigFile))
+            {
+                settings = RunnerHelper.GetSettingsFromDirectory(null);
+            }
+            else
+            {
+                settings = RunnerHelper.GetSettingsFromFile(args.ConfigFile);
+            }
+            SettingsUtility.DeleteConfigValue(settings, args.ConfigKey);
+        }
+    }
 
     internal static class RunnerHelper
     {
