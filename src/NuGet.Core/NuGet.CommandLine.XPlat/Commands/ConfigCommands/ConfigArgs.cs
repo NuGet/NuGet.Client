@@ -15,4 +15,10 @@ namespace NuGet.CommandLine.XPlat
         public string? ConfigValue { get; set; }
         public string? ConfigFile { get; set; }
     }
+
+    internal class ConfigUnsetArgs
+    {
+        public string? ConfigKey { get; set; }
+        public string? ConfigFile { get; set; }
+    }
 }

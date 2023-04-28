@@ -295,6 +295,33 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Removes the key-value pair from a specified NuGet configuration setting..
+        /// </summary>
+        internal static string ConfigUnsetCommandDescription {
+            get {
+                return ResourceManager.GetString("ConfigUnsetCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The NuGet configuration file from which settings will be removed..
+        /// </summary>
+        internal static string ConfigUnsetConfigFileDescription {
+            get {
+                return ResourceManager.GetString("ConfigUnsetConfigFileDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The key of the settings that are to be removed..
+        /// </summary>
+        internal static string ConfigUnsetConfigKeyDescription {
+            get {
+                return ResourceManager.GetString("ConfigUnsetConfigKeyDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} (y/N).
         /// </summary>
         internal static string ConsoleConfirmMessage {
