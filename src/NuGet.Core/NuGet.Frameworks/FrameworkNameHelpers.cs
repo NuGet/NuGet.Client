@@ -54,7 +54,7 @@ namespace NuGet.Frameworks
                 if (versionString!.IndexOf('.') > -1)
                 {
                     // parse the version as a normal dot delimited version
-                    _ = Version.TryParse(versionString, out version);
+                    version = Version.Parse(versionString);
                 }
                 else
                 {
@@ -67,7 +67,7 @@ namespace NuGet.Frameworks
                     // take only the first 4 digits and add dots
                     // 451 -> 4.5.1
                     // 81233 -> 8123
-                    _ = Version.TryParse(string.Join(".", versionString.ToCharArray().Take(4)), out version);
+                    version = Version.Parse(string.Join(".", versionString.ToCharArray().Take(4)));
                 }
             }
 
