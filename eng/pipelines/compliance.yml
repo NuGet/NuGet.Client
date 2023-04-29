@@ -9,6 +9,9 @@ resources:
         branches:
           - dev
 
+variables:
+  CI: 'true'
+
 jobs:
   - job: Static_Analysis
     displayName: "Static Analysis"

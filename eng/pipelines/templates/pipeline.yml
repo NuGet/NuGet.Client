@@ -84,6 +84,7 @@ resources:
 
 variables:
   DOTNET_NOLOGO: 1
+  CI: 'true'
   Codeql.Enabled: ${{ parameters.isOfficialBuild }}
   Codeql.TSAEnabled: ${{ parameters.isOfficialBuild }}
   RunApexTests: ${{ parameters.RunApexTests }}
