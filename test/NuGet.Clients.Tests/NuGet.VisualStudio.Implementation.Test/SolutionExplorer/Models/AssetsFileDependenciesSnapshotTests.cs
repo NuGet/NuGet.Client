@@ -68,6 +68,106 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
         }
 
         [Fact]
+        public void ParseLibraries_LogForUnknownLibrary_AddsUnknownLibraryType()
+        {
+            var lockFileContent = """
+                {
+                  "version": 3,
+                  "targets": {
+                    "net5.0": {
+                    }
+                  },
+                  "libraries": {
+                  },
+                  "projectFileDependencyGroups": {
+                    "": [
+                      "System.Runtime [4.0.10-beta-*, )"
+                    ],
+                    "net5.0": []
+                  },
+                  "logs": [
+                    {
+                      "code": "NU1000",
+                      "level": "Error",
+                      "message": "test log message",
+                      "libraryId": "UnknownLibraryId"
+                    }
+                  ]
+                }
+                """;
+
+            var lockFilePath = """C:\repo\obj\project.assets.json""";
+
+            var lockFile = new LockFileFormat().Parse(lockFileContent, lockFilePath);
+
+            var logMessages = ImmutableArray.Create(new AssetsFileLogMessage(lockFilePath, lockFile.LogMessages.Single()));
+
+            var dependencies = AssetsFileDependenciesSnapshot.ParseLibraries(lockFile, lockFile.Targets.First(), logMessages);
+
+            var dependency = Assert.Single(dependencies);
+            Assert.Equal("UnknownLibraryId", dependency.Key);
+            Assert.Equal("UnknownLibraryId", dependency.Value.Name);
+            Assert.Null(dependency.Value.Version);
+            Assert.Empty(dependency.Value.BuildFiles);
+            Assert.Empty(dependency.Value.BuildMultiTargetingFiles);
+            Assert.Empty(dependency.Value.CompileTimeAssemblies);
+            Assert.Empty(dependency.Value.Dependencies);
+            Assert.Empty(dependency.Value.DocumentationFiles);
+            Assert.Empty(dependency.Value.FrameworkAssemblies);
+            Assert.Equal(AssetsFileLibraryType.Unknown, dependency.Value.Type);
+        }
+
+        [Fact]
+        public void ParseLibraries_LogForUnknownLibrary_WithAbsolutePath_AddsUnknownLibraryType()
+        {
+            var lockFileContent = """
+                {
+                  "version": 3,
+                  "targets": {
+                    "net5.0": {
+                    }
+                  },
+                  "libraries": {
+                  },
+                  "projectFileDependencyGroups": {
+                    "": [
+                      "System.Runtime [4.0.10-beta-*, )"
+                    ],
+                    "net5.0": []
+                  },
+                  "logs": [
+                    {
+                      "code": "NU1000",
+                      "level": "Error",
+                      "message": "test log message",
+                      "libraryId": "C:\\repo\\OtherProject\\OtherProject.csproj"
+                    }
+                  ]
+                }
+                """;
+
+            var lockFilePath = """C:\repo\obj\project.assets.json""";
+
+            var lockFile = new LockFileFormat().Parse(lockFileContent, lockFilePath);
+
+            var logMessages = ImmutableArray.Create(new AssetsFileLogMessage(lockFilePath, lockFile.LogMessages.Single()));
+
+            var dependencies = AssetsFileDependenciesSnapshot.ParseLibraries(lockFile, lockFile.Targets.First(), logMessages);
+
+            var dependency = Assert.Single(dependencies);
+            Assert.Equal("""..\OtherProject\OtherProject.csproj""", dependency.Key);
+            Assert.Equal("""..\OtherProject\OtherProject.csproj""", dependency.Value.Name);
+            Assert.Null(dependency.Value.Version);
+            Assert.Empty(dependency.Value.BuildFiles);
+            Assert.Empty(dependency.Value.BuildMultiTargetingFiles);
+            Assert.Empty(dependency.Value.CompileTimeAssemblies);
+            Assert.Empty(dependency.Value.Dependencies);
+            Assert.Empty(dependency.Value.DocumentationFiles);
+            Assert.Empty(dependency.Value.FrameworkAssemblies);
+            Assert.Equal(AssetsFileLibraryType.Unknown, dependency.Value.Type);
+        }
+
+        [Fact]
         public void ParseLibraries_LockFileTargetLibrariesWithDifferentCase_Throws()
         {
             var lockFileTarget = new LockFileTarget
