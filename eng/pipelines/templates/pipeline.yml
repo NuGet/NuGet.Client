@@ -262,6 +262,7 @@ stages:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
+      BUILD_NET8: 'false'
     pool:
       vmImage: macos-latest
     steps:
