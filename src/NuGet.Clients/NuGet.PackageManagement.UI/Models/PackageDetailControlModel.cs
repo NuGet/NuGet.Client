@@ -320,6 +320,7 @@ namespace NuGet.PackageManagement.UI
         {
             base.OnSelectedVersionChanged();
             OnPropertyChanged(nameof(IsInstallorUpdateButtonEnabled));
+            OnPropertyChanged(nameof(ShowVersionOverrideTooltip));
             OnPropertyChanged(nameof(IsSelectedVersionInstalled));
             OnPropertyChanged(nameof(IsInstalledVersionTopLevel));
         }
@@ -341,6 +342,14 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return SelectedVersion != null && !IsSelectedVersionInstalled && !InstalledVersionIsAutoReferenced && VersionOverride == null;
+            }
+        }
+
+        public bool ShowVersionOverrideTooltip
+        {
+            get
+            {
+                return !IsInstallorUpdateButtonEnabled && VersionOverride != null;
             }
         }
 
