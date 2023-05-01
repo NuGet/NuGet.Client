@@ -63,7 +63,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     CommandArgument configKey = UnsetCmd.Argument(
                         "CONFIG_KEY",
-                        Strings.ConfigUnsetConfigFileDescription);
+                        Strings.ConfigUnsetConfigKeyDescription);
                     var configFile = UnsetCmd.Option(
                         "--configfile",
                         Strings.ConfigUnsetConfigFileDescription,
