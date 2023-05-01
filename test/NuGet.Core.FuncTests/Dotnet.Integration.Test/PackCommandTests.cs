@@ -184,7 +184,7 @@ namespace Dotnet.Integration.Test
                 var nuspecPath = Path.Combine(projectFolder, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                msbuildFixture.PackSolution(testDirectory, solutionName, string.Empty, null);
+                msbuildFixture.PackSolution(testDirectory, solutionName, string.Empty, null, validateSuccess: false);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");

@@ -1634,7 +1634,7 @@ namespace NuGet.ProjectModel
                                     flags: privateAssets,
                                     defaultFlags: LibraryIncludeFlagUtils.DefaultSuppressParent),
 
-                                VersionRange = projectVersionRange.ToString(),
+                                VersionRange = projectVersionRange?.ToString(),
                             });
                         });
                     }
