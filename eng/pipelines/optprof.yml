@@ -40,9 +40,6 @@ parameters:
   - delete
   - stop
 
-variables:
-  CI: 'true'
-
 stages:
 - template: \templates\stages\visual-studio\single-runsettings.yml@DartLabOptProfTemplates
   parameters:
