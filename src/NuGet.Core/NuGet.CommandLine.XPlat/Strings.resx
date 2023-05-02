@@ -853,4 +853,8 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="ConfigUnsetConfigKeyDescription" xml:space="preserve">
     <value>The key of the settings that are to be removed.</value>
   </data>
+  <data name="Error_ConfigUnsetNonExistingKey" xml:space="preserve">
+    <value>The config key "{0}" could not be unset.</value>
+    <comment>0 - The config key</comment>
+  </data>
 </root>
