@@ -28,6 +28,7 @@ namespace NuGet.Common
         {
             RelativePath = relativePath;
             IsSolutionFolder = isSolutionFolder;
+            AbsolutePath = absolutePath;
         }
     }
 }
