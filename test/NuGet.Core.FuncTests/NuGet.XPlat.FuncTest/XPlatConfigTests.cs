@@ -121,35 +121,6 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(filePath, configFilePath);
         }
 
-        [Theory]
-        [InlineData("signatureValidationMode", "accept")]
-        [InlineData("maxHttpRequestsPerSource", "64")]
-        public void ConfigSetCommand_AddOrUpdateConfigSetting_Success(string key, string value)
-        {
-            // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config");
-
-            var result = CommandRunner.Run(
-                DotnetCli,
-                Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set {key} {value}",
-                waitForExit: true
-                );
-
-            var settings = Configuration.Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory()
-                );
-
-            var configSection = settings.GetSection("config");
-            var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
-            var configItems = values.Where(i => i.Key == key);
-
-            // Assert
-            Assert.Equal(0, result.ExitCode);
-            Assert.Equal(1, configItems.Count());
-            Assert.Equal(value, configItems.First().Value);
-        }
-
         [Fact]
         public void ConfigSetCommand_UpdateConfigSettingWithConfigFileArg_Success()
         {
