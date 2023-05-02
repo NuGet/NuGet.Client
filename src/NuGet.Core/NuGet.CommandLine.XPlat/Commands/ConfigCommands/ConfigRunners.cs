@@ -61,7 +61,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 settings = RunnerHelper.GetSettingsFromFile(args.ConfigFile);
             }
-            SettingsUtility.DeleteConfigValue(settings, args.ConfigKey);
+            var deleted = SettingsUtility.DeleteConfigValue(settings, args.ConfigKey);
+            if (!deleted)
+            {
+                throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigUnsetNonExistingKey, args.ConfigKey));
+            }
         }
     }
 

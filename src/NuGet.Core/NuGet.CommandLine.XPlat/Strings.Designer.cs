@@ -547,6 +547,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The config key &quot;{0}&quot; could not be unset..
+        /// </summary>
+        internal static string Error_ConfigUnsetNonExistingKey {
+            get {
+                return ResourceManager.GetString("Error_ConfigUnsetNonExistingKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid culture identifier in {0} environment variable. Value read is &apos;{1}&apos;.
         /// </summary>
         internal static string Error_InvalidCultureInfo {

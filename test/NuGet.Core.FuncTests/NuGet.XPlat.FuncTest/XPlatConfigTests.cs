@@ -330,7 +330,7 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
-            var key = "InvalidConfigKey123";;
+            var key = "InvalidConfigKey123";
 
             var result = CommandRunner.Run(
                 DotnetCli,
@@ -344,7 +344,25 @@ namespace NuGet.XPlat.FuncTest
             DotnetCliUtil.VerifyResultFailure(result, expectedError);
         }
 
-        // Test for trying to delete non-existing setting
+        [Fact]
+        public void ConfigUnsetCommand_NonExistingConfigKey_Fail()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo();
+            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
+            var key = "http_proxy";
+
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config unset {key} --configfile {filePath}",
+                waitForExit: true
+                );
+            var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigUnsetNonExistingKey, key);
+
+            // Assert
+            DotnetCliUtil.VerifyResultFailure(result, expectedError);
+        }
 
         [Fact]
         public void ConfigUnsetCommand_NullArgs_Fail()
