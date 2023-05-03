@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.XPlat
     {
         public static void Run(ConfigPathsArgs args, Func<ILogger> getLogger)
         {
-            RunnerHelper.ValidateArguments(args, getLogger);
+            RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
 
             if (string.IsNullOrEmpty(args.WorkingDirectory))
             {
@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.XPlat
     {
         public static void Run(ConfigSetArgs args, Func<ILogger> getLogger)
         {
-            RunnerHelper.ValidateArguments(args, getLogger);
+            RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
             RunnerHelper.ValidateConfigKey(args.ConfigKey);
             ISettings settings = string.IsNullOrEmpty(args.ConfigFile)
                 ? RunnerHelper.GetSettingsFromDirectory(null)
@@ -90,17 +90,10 @@ namespace NuGet.CommandLine.XPlat
         /// Throws an exception if any of the config runner arguments are null.
         /// </summary>
         /// <exception cref="ArgumentNullException"></exception>
-        public static void ValidateArguments<TArgs>(TArgs args, Func<ILogger> logger)
+        public static void EnsureArgumentsNotNull<TArgs>(TArgs args, Func<ILogger> logger)
         {
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
+            _ = args ?? throw new ArgumentNullException(nameof(args));
+            _ = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
