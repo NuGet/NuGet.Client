@@ -15,11 +15,19 @@ using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Server;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.Protocol.FuncTest
 {
     public class AuthenticationHandlerTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public AuthenticationHandlerTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [Fact]
         public async Task OnlyOneRequestWithoutAuthorizationHeader()
         {
@@ -27,7 +35,7 @@ namespace NuGet.Protocol.FuncTest
             var portReserver = new PortReserver();
             await portReserver.ExecuteAsync(async (port, cancellationToken) =>
             {
-                var server = new RequestCollectingServer();
+                var server = new RequestCollectingServer(_output);
                 server.Start(port);
                 try
                 {
@@ -48,10 +56,10 @@ namespace NuGet.Protocol.FuncTest
                         HttpSourceCacheContext httpSourceCacheContext = HttpSourceCacheContext.Create(sourceCacheContext, isFirstAttempt: true);
 
                         // Act
-                        var request = new HttpSourceCachedRequest(server.BaseUrl + "1", "1", httpSourceCacheContext);
+                        var request = new HttpSourceCachedRequest(server.BaseUrl + "v3/index.json", "1", httpSourceCacheContext);
                         _ = await source.GetAsync(request, ProcessResponse, logger.Object, cancellationToken);
 
-                        request = new HttpSourceCachedRequest(server.BaseUrl + "2", "2", httpSourceCacheContext);
+                        request = new HttpSourceCachedRequest(server.BaseUrl + "v3/flatcontainer/packageid/1.2.3/index.json", "2", httpSourceCacheContext);
                         _ = await source.GetAsync(request, ProcessResponse, logger.Object, cancellationToken);
                     }
                 }
@@ -63,7 +71,7 @@ namespace NuGet.Protocol.FuncTest
                 // Assert
                 Assert.Equal(
                     1,
-                    server.Requests.Count(RequestWithoutAuthorizationheader));
+                    server.Requests.Count(RequestWithoutAuthorizationHeader));
                 Assert.Equal(
                     2,
                     server.Requests.Select(r => r.RawUrl).Distinct().Count());
@@ -73,7 +81,7 @@ namespace NuGet.Protocol.FuncTest
             },
             CancellationToken.None);
 
-            static bool RequestWithoutAuthorizationheader(HttpListenerRequest request)
+            static bool RequestWithoutAuthorizationHeader(HttpListenerRequest request)
             {
                 string? value = request.Headers["Authorization"];
                 return string.IsNullOrEmpty(value);
@@ -91,6 +99,12 @@ namespace NuGet.Protocol.FuncTest
             private HttpListener? _httpListener;
             private List<HttpListenerRequest> _requests = new();
             private Thread? _serverThread;
+            private ITestOutputHelper _output;
+
+            public RequestCollectingServer(ITestOutputHelper output)
+            {
+                _output = output;
+            }
 
             public string BaseUrl
             {
@@ -168,6 +182,8 @@ namespace NuGet.Protocol.FuncTest
                         context.Response.StatusCode = string.IsNullOrEmpty(authorization)
                             ? 401
                             : 200;
+
+                        _output.WriteLine($"Got request for {context.Request.Url}. Auth: {authorization}");
 
                         context.Response.Close();
                     }
