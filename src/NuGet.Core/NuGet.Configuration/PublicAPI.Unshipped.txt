@@ -1,1 +1,7 @@
 #nullable enable
+NuGet.Configuration.PackageSourceMappingProvider.ShouldSkipSave.get -> bool
+~NuGet.Configuration.PackageSourceMapping.SearchForPattern(string packageId) -> string
+~NuGet.Configuration.PackageSourceMappingProvider.PackageSourceMappingProvider(NuGet.Configuration.ISettings settings, bool shouldSkipSave) -> void
+~NuGet.Configuration.SettingItem.ConfigPath.get -> string
+~NuGet.Configuration.SettingItem.GetAttributes() -> System.Collections.Generic.IReadOnlyDictionary<string, string>
+~NuGet.Configuration.Settings.GetAllSettingSections() -> System.Collections.Generic.IEnumerable<string>

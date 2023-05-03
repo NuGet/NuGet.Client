@@ -232,6 +232,42 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Key &apos;{0}&apos; not found..
+        /// </summary>
+        internal static string ConfigCommandKeyNotFound {
+            get {
+                return ResourceManager.GetString("ConfigCommandKeyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALL: Get all merged NuGet configuration settings from multiple NuGet configuration files that will be applied, when invoking NuGet command from the working directory path.  CONFIG_KEY: Get the effective value of the specified configuration settings of the config section..
+        /// </summary>
+        internal static string ConfigGetAllOrConfigKeyDescription {
+            get {
+                return ResourceManager.GetString("ConfigGetAllOrConfigKeyDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gets the NuGet configuration settings that will be applied..
+        /// </summary>
+        internal static string ConfigGetCommandDescription {
+            get {
+                return ResourceManager.GetString("ConfigGetCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicate that the NuGet configuration file path will be shown beside the configuration settings..
+        /// </summary>
+        internal static string ConfigGetShowPathDescription {
+            get {
+                return ResourceManager.GetString("ConfigGetShowPathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Lists the paths to all NuGet configuration files that will be applied when invoking NuGet command in a specific directory.
         /// </summary>
         internal static string ConfigPathsCommandDescription {
@@ -421,7 +457,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-<<<<<<< HEAD
         ///   Looks up a localized string similar to Failed to obtain a search resource..
         /// </summary>
         internal static string Error_CannotObtainSearchSource {
@@ -431,8 +466,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-=======
->>>>>>> 303c8c7f8 (Dotnet NuGet Config CLI Config Paths Command (#5088))
         ///   Looks up a localized string similar to The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs.
         /// </summary>
         internal static string Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed {
