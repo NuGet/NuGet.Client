@@ -207,7 +207,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set {key} --configfile {filePath}",
+                $"{XplatDll} config unset {key} --configfile {filePath}",
                 waitForExit: true);
 
             var settings = Configuration.Settings.LoadDefaultSettings(
