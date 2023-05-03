@@ -42,11 +42,7 @@ namespace NuGet.CommandLine.XPlat
                 ? RunnerHelper.GetSettingsFromDirectory(null)
                 : RunnerHelper.GetSettingsFromFile(args.ConfigFile);
 
-            var encrypt = false;
-            if (args.ConfigKey.Equals(ConfigurationConstants.PasswordKey, StringComparison.OrdinalIgnoreCase))
-            {
-                encrypt = true;
-            }
+            bool encrypt = args.ConfigKey.Equals(ConfigurationConstants.PasswordKey, StringComparison.OrdinalIgnoreCase);
             SettingsUtility.SetConfigValue(settings, args.ConfigKey, args.ConfigValue, encrypt);
         }
     }
