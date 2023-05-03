@@ -9,7 +9,7 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class ConfigCommand
     {
-        public const string WORKING_DIRECTORY = "WORKING_DIRECTORY";
+        private const string WORKING_DIRECTORY = "WORKING_DIRECTORY";
         internal static void Register(CommandLineApplication app,
                                       Func<ILogger> getLogger)
         {

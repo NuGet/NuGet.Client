@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.XPlat
     {
         public static void Run(ConfigPathsArgs args, Func<ILogger> getLogger)
         {
-            RunnerHelper.ValidateArguments(args, getLogger);
+            RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
 
             if (string.IsNullOrEmpty(args.WorkingDirectory))
             {
@@ -38,7 +38,7 @@ namespace NuGet.CommandLine.XPlat
     {
         public static void Run(ConfigGetArgs args, Func<ILogger> getLogger)
         {
-            RunnerHelper.ValidateArguments(args, getLogger);
+            RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
 
             if (args.AllOrConfigKey == null)
             {
@@ -59,14 +59,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     return;
                 }
-                if (args.ShowPath)
-                {
-                    RunnerHelper.LogSectionsWithPaths(sections, settings, logger);
-                }
-                else
-                {
-                    RunnerHelper.LogSectionsNoPaths(sections, settings, logger);
-                }
+                RunnerHelper.LogSections(sections, settings, logger, args.ShowPath);
             }
             else
             {
@@ -94,6 +87,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 directory = Directory.GetCurrentDirectory();
             }
+
             if (!Directory.Exists(directory))
             {
                 throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, directory));
@@ -134,40 +128,35 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Logs each section of the configuration settings that will be applied, grouped by file path.
+        /// Logs each section of the configuration settings that will be applied.
+        /// If showPath is true, these settings will be grouped by file path.
         /// </summary>
-        public static void LogSectionsWithPaths(IEnumerable<string> sections, Settings settings, ILogger logger)
+        public static void LogSections(IEnumerable<string> sections, Settings settings, ILogger logger, bool showPath)
         {
-            foreach (var section in sections)
+            foreach (string section in sections)
             {
                 logger.LogMinimal(section + ":");
-                var items = settings.GetSection(section).Items;
+                IReadOnlyCollection<SettingItem> items = settings.GetSection(section)?.Items;
 
-                IEnumerable<IGrouping<string, SettingItem>> groupByConfigPathsQuery =
+                if (showPath)
+                {
+                    IEnumerable<IGrouping<string, SettingItem>> groupByConfigPathsQuery =
                     from item in items
                     group item by item.ConfigPath into newItemGroup
                     select newItemGroup;
 
-                foreach (var configPathsGroup in groupByConfigPathsQuery)
+                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQuery)
+                    {
+                        logger.LogMinimal($" file: {configPathsGroup.Key}");
+                        LogSectionItems(configPathsGroup, logger);
+                        logger.LogMinimal(Environment.NewLine);
+                    }
+                }
+                else
                 {
-                    logger.LogMinimal($" file: {configPathsGroup.Key}");
-                    LogSectionItems(configPathsGroup, logger);
+                    LogSectionItems(items, logger);
                     logger.LogMinimal(Environment.NewLine);
                 }
-            }
-        }
-
-        /// <summary>
-        /// Logs each section of the configuration settings that will be applied.
-        /// </summary>
-        public static void LogSectionsNoPaths(IEnumerable<string> sections, Settings settings, ILogger logger)
-        {
-            foreach (var section in sections)
-            {
-                logger.LogMinimal(section + ":");
-                var items = settings.GetSection(section).Items;
-                LogSectionItems(items, logger);
-                logger.LogMinimal(Environment.NewLine);
             }
         }
 
@@ -180,11 +169,11 @@ namespace NuGet.CommandLine.XPlat
         {
             foreach (SettingItem item in items)
             {
-                var setting = $"\t{item.ElementName}";
-                var attributes = item.GetAttributes();
+                string setting = $"\t{item.ElementName}";
+                IReadOnlyDictionary<string, string> attributes = item.GetAttributes();
                 if (attributes != null)
                 {
-                    foreach (var attribute in attributes)
+                    foreach (KeyValuePair<string, string> attribute in attributes)
                     {
                         setting += $" {attribute.Key}=\"{attribute.Value}\"";
                     }
@@ -198,17 +187,10 @@ namespace NuGet.CommandLine.XPlat
         /// Throws an exception if any of the config runner arguments are null.
         /// </summary>
         /// <exception cref="ArgumentNullException"></exception>
-        public static void ValidateArguments<TArgs>(TArgs args, Func<ILogger> logger)
+        public static void EnsureArgumentsNotNull<TArgs>(TArgs args, Func<ILogger> logger)
         {
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
+            _ = args ?? throw new ArgumentNullException(nameof(args));
+            _ = logger ?? throw new ArgumentNullException(nameof(logger));
         }
     }
 }
