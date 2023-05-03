@@ -122,7 +122,7 @@ namespace NuGet.Frameworks
             if (target.IsPCL)
             {
                 // do not include optional frameworks here since we might be unable to tell what is optional on the other framework
-                if (!_mappings.TryGetPortableFrameworks(target.Profile, false, out targetFrameworks))
+                if (!_mappings.TryGetPortableFrameworks(target.Profile, includeOptional: false, out targetFrameworks))
                 {
                     targetFrameworks = Array.Empty<NuGetFramework>();
                 }
@@ -135,7 +135,7 @@ namespace NuGet.Frameworks
             if (candidate.IsPCL)
             {
                 // include optional frameworks here, the larger the list the more compatible it is
-                if (!_mappings.TryGetPortableFrameworks(candidate.Profile, true, out candidateFrameworks))
+                if (!_mappings.TryGetPortableFrameworks(candidate.Profile, includeOptional: true, out candidateFrameworks))
                 {
                     candidateFrameworks = Array.Empty<NuGetFramework>();
                 }

@@ -136,9 +136,11 @@ namespace NuGet.Frameworks
             return result;
         }
 
+        private static readonly char[] CommaSeparator = new char[] { ',' };
+
         private static string[] GetParts(string targetPlatformMoniker)
         {
-            return targetPlatformMoniker.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
+            return targetPlatformMoniker.Split(CommaSeparator, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
         }
 
         /// <summary>
@@ -149,7 +151,7 @@ namespace NuGet.Frameworks
             if (frameworkName == null) throw new ArgumentNullException(nameof(frameworkName));
             if (mappings == null) throw new ArgumentNullException(nameof(mappings));
 
-            string[] parts = frameworkName.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
+            string[] parts = frameworkName.Split(CommaSeparator, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
 
             // if the first part is a special framework, ignore the rest
             if (!TryParseSpecialFramework(parts[0], out NuGetFramework? result))

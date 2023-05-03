@@ -42,13 +42,8 @@ namespace NuGet.Frameworks
         /// Creates a new NuGetFramework instance, with an optional profile (only available for netframework)
         /// </summary>
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string? frameworkProfile)
-            : this(frameworkIdentifier, frameworkVersion, profile: ProcessProfile(frameworkProfile), platform: string.Empty, platformVersion: FrameworkConstants.EmptyVersion)
+            : this(frameworkIdentifier, frameworkVersion, profile: frameworkProfile ?? string.Empty, platform: string.Empty, platformVersion: FrameworkConstants.EmptyVersion)
         {
-        }
-
-        private static string ProcessProfile(string? profile)
-        {
-            return profile ?? string.Empty;
         }
 
         /// <summary>
@@ -239,13 +234,13 @@ namespace NuGet.Frameworks
                     sb.Append("-");
 
                     if (framework.HasProfile
-                        && mappings.TryGetPortableFrameworks(framework.Profile, false, out IEnumerable<NuGetFramework>? frameworks)
+                        && mappings.TryGetPortableFrameworks(framework.Profile, includeOptional: false, out IEnumerable<NuGetFramework>? frameworks)
                         && frameworks.Any())
                     {
                         var required = new HashSet<NuGetFramework>(frameworks, Comparer);
 
                         // Normalize by removing all optional frameworks
-                        mappings.TryGetPortableFrameworks(framework.Profile, false, out frameworks);
+                        mappings.TryGetPortableFrameworks(framework.Profile, includeOptional: false, out frameworks);
 
                         // sort the PCL frameworks by alphabetical order
                         var sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase);
