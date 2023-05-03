@@ -5,8 +5,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -86,11 +88,11 @@ namespace NuGet.Protocol.FuncTest
                 string? value = request.Headers["Authorization"];
                 return string.IsNullOrEmpty(value);
             }
-        }
 
-        private static Task<string> ProcessResponse(HttpSourceResult result)
-        {
-            return Task.FromResult(string.Empty);
+            static Task<string> ProcessResponse(HttpSourceResult result)
+            {
+                return Task.FromResult(string.Empty);
+            }
         }
 
         private class RequestCollectingServer
@@ -141,8 +143,51 @@ namespace NuGet.Protocol.FuncTest
                 _httpListener = listener;
                 _baseUrl = baseUrl;
 
-                _serverThread = new Thread(ProcessRequests);
-                _serverThread.Start();
+                listener.BeginGetContext(EndGetContext, listener);
+            }
+
+            public void EndGetContext(IAsyncResult result)
+            {
+                HttpListener httpListener = (HttpListener)result.AsyncState!;
+                if (httpListener.IsListening)
+                {
+                    HttpListenerContext? context = null;
+                    try
+                    {
+                        context = httpListener.EndGetContext(result);
+
+                        _requests.Add(context.Request);
+
+                        string? authorization = context.Request.Headers["Authorization"];
+
+                        if (authorization == null)
+                        {
+                            context.Response.StatusCode = 401;
+                            context.Response.AddHeader("WWW-Authenticate", "Basic");
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = 200;
+                        }
+
+                        _output.WriteLine($"Got request for {context.Request.Url}. Auth: {authorization}");
+                    }
+                    catch (Exception ex)
+                    {
+                        if (context != null)
+                        {
+                            context.Response.StatusCode = 500;
+                            using (var textStream = new StreamWriter(context.Response.OutputStream, Encoding.UTF8))
+                            {
+                                textStream.Write(ex.ToString());
+                            }
+                        }
+                    }
+
+                    context?.Response.Close();
+
+                    httpListener.BeginGetContext(EndGetContext, httpListener);
+                }
             }
 
             public void Stop()
@@ -156,48 +201,11 @@ namespace NuGet.Protocol.FuncTest
                 _httpListener = null;
                 _baseUrl = null;
 
+                listener.Stop();
                 listener.Close();
 
                 _serverThread?.Join();
                 _serverThread = null;
-            }
-
-            private void ProcessRequests()
-            {
-                if (_httpListener == null)
-                {
-                    throw new InvalidOperationException("_httpListener must be created");
-                }
-
-                try
-                {
-                    while (true)
-                    {
-                        HttpListenerContext context = _httpListener.GetContext();
-
-                        _requests.Add(context.Request);
-
-                        string? authorization = context.Request.Headers["Authorization"];
-
-                        if (authorization == null)
-                        {
-                            context.Response.StatusCode = 401;
-                            context.Response.Headers.Add("WWW-Authenticate", "Basic");
-                        }
-                        else
-                        {
-                            context.Response.StatusCode = 200;
-                        }
-
-                        _output.WriteLine($"Got request for {context.Request.Url}. Auth: {authorization}");
-
-                        context.Response.Close();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    string msg = ex.Message;
-                }
             }
         }
     }
