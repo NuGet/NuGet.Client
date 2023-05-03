@@ -179,9 +179,15 @@ namespace NuGet.Protocol.FuncTest
 
                         string? authorization = context.Request.Headers["Authorization"];
 
-                        context.Response.StatusCode = string.IsNullOrEmpty(authorization)
-                            ? 401
-                            : 200;
+                        if (authorization == null)
+                        {
+                            context.Response.StatusCode = 401;
+                            context.Response.Headers.Add("WWW-Authenticate", "Basic");
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = 200;
+                        }
 
                         _output.WriteLine($"Got request for {context.Request.Url}. Auth: {authorization}");
 
