@@ -50,19 +50,13 @@ namespace NuGet.CommandLine.XPlat
     {
         public static void Run(ConfigUnsetArgs args, Func<ILogger> getLogger)
         {
-            RunnerHelper.ValidateArguments(args, getLogger);
+            RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
             RunnerHelper.ValidateConfigKey(args.ConfigKey);
-            ISettings settings = null;
-            if (string.IsNullOrEmpty(args.ConfigFile))
-            {
-                settings = RunnerHelper.GetSettingsFromDirectory(null);
-            }
-            else
-            {
-                settings = RunnerHelper.GetSettingsFromFile(args.ConfigFile);
-            }
-            var deleted = SettingsUtility.DeleteConfigValue(settings, args.ConfigKey);
-            if (!deleted)
+            ISettings settings = string.IsNullOrEmpty(args.ConfigFile)
+                ? RunnerHelper.GetSettingsFromDirectory(null)
+                : RunnerHelper.GetSettingsFromFile(args.ConfigFile);
+
+            if (!SettingsUtility.DeleteConfigValue(settings, args.ConfigKey))
             {
                 throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigUnsetNonExistingKey, args.ConfigKey));
             }

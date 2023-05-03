@@ -208,14 +208,12 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config set {key} --configfile {filePath}",
-                waitForExit: true
-                );
+                waitForExit: true);
 
             var settings = Configuration.Settings.LoadDefaultSettings(
                 testInfo.WorkingPath,
                 configFileName: filePath,
-                machineWideSettings: new XPlatMachineWideSetting()
-                );
+                machineWideSettings: new XPlatMachineWideSetting());
 
             var configSection = settings.GetSection("config");
 
@@ -235,8 +233,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config unset --help",
-                waitForExit: true
-                );
+                waitForExit: true);
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -295,8 +292,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true
-                );
+                waitForExit: true);
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, key);
 
             // Assert
@@ -336,8 +332,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config unset {key}",
-                waitForExit: true
-                );
+                waitForExit: true);
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, key);
 
             // Assert
@@ -356,8 +351,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config unset {key} --configfile {filePath}",
-                waitForExit: true
-                );
+                waitForExit: true);
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigUnsetNonExistingKey, key);
 
             // Assert
