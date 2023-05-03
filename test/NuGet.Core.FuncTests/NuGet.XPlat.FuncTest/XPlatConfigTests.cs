@@ -27,8 +27,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config paths {testInfo.WorkingPath}",
-                waitForExit: true
-                );
+                waitForExit: true);
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
@@ -44,8 +43,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 testInfo.WorkingPath,
                 $"{XplatDll} config paths",
-                waitForExit: true
-                );
+                waitForExit: true);
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
@@ -62,8 +60,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config paths --help",
-                waitForExit: true
-                );
+                waitForExit: true);
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -80,8 +77,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config --help",
-                waitForExit: true
-                );
+                waitForExit: true);
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -100,14 +96,12 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true
-                );
+                waitForExit: true);
 
             var settings = Configuration.Settings.LoadDefaultSettings(
                 testInfo.WorkingPath,
                 configFileName: filePath,
-                machineWideSettings: new XPlatMachineWideSetting()
-                );
+                machineWideSettings: new XPlatMachineWideSetting());
 
             var configSection = settings.GetSection("config");
             var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
@@ -134,14 +128,12 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true
-                );
+                waitForExit: true);
 
             var settings = Configuration.Settings.LoadDefaultSettings(
                 testInfo.WorkingPath,
                 configFileName: filePath,
-                machineWideSettings: new XPlatMachineWideSetting()
-                );
+                machineWideSettings: new XPlatMachineWideSetting());
 
             var configSection = settings.GetSection("config");
             var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
@@ -168,14 +160,12 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true
-                );
+                waitForExit: true);
 
             var settings = Configuration.Settings.LoadDefaultSettings(
                 testInfo.WorkingPath,
                 configFileName: filePath,
-                machineWideSettings: new XPlatMachineWideSetting()
-                );
+                machineWideSettings: new XPlatMachineWideSetting());
 
             var configSection = settings.GetSection("config");
             var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
@@ -200,8 +190,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config set --help",
-                waitForExit: true
-                );
+                waitForExit: true);
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -219,8 +208,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config paths {nonExistingDirectory}",
-                waitForExit: true
-                );
+                waitForExit: true);
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
 
             // Assert

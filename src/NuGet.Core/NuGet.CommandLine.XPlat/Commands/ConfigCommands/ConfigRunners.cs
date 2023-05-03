@@ -38,15 +38,10 @@ namespace NuGet.CommandLine.XPlat
         {
             RunnerHelper.ValidateArguments(args, getLogger);
             RunnerHelper.ValidateConfigKey(args.ConfigKey);
-            ISettings settings = null;
-            if (string.IsNullOrEmpty(args.ConfigFile))
-            {
-                settings = RunnerHelper.GetSettingsFromDirectory(null);
-            }
-            else
-            {
-                settings = RunnerHelper.GetSettingsFromFile(args.ConfigFile);
-            }
+            ISettings settings = string.IsNullOrEmpty(args.ConfigFile)
+                ? RunnerHelper.GetSettingsFromDirectory(null)
+                : RunnerHelper.GetSettingsFromFile(args.ConfigFile);
+
             var encrypt = false;
             if (args.ConfigKey.Equals(ConfigurationConstants.PasswordKey, StringComparison.OrdinalIgnoreCase))
             {
@@ -69,6 +64,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 directory = Directory.GetCurrentDirectory();
             }
+
             if (!Directory.Exists(directory))
             {
                 throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, directory));
