@@ -25,7 +25,6 @@ steps:
     testResultsFiles: "*.trx"
     testRunTitle: "NuGet.Client $(TestRunDisplayName) On Linux"
     searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
-    mergeTestResults: "true"
   condition: "succeededOrFailed()"
 
 - task: PublishBuildArtifacts@1
