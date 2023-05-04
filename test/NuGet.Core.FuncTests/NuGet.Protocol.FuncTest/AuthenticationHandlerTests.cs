@@ -100,7 +100,6 @@ namespace NuGet.Protocol.FuncTest
             private string? _baseUrl;
             private HttpListener? _httpListener;
             private List<HttpListenerRequest> _requests = new();
-            private Thread? _serverThread;
             private ITestOutputHelper _output;
 
             public RequestCollectingServer(ITestOutputHelper output)
@@ -210,9 +209,6 @@ namespace NuGet.Protocol.FuncTest
 
                 listener.Stop();
                 listener.Close();
-
-                _serverThread?.Join();
-                _serverThread = null;
             }
         }
     }
