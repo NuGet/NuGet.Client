@@ -73,7 +73,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
     }
-  
+
     internal static class ConfigSetRunner
     {
         public static void Run(ConfigSetArgs args, Func<ILogger> getLogger)
