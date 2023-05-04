@@ -186,7 +186,14 @@ namespace NuGet.Protocol.FuncTest
 
                     context?.Response.Close();
 
-                    httpListener.BeginGetContext(EndGetContext, httpListener);
+                    try
+                    {
+                        httpListener.BeginGetContext(EndGetContext, httpListener);
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // .NET 5 throws here, whereas .NET Framework triggers the callback where we can check IsListening == false
+                    }
                 }
             }
 
