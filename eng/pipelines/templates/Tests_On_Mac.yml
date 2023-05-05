@@ -14,19 +14,21 @@ steps:
   condition: "and(succeeded(), eq(variables['TestRunDisplayName'], 'Mono Tests'))"
 
 - task: ShellScript@2
-  displayName: "Run Tests (continue on error)"
+  displayName: "Run $(TestRunDisplayName) (continue on error)"
   continueOnError: "true"
   inputs:
     scriptPath: "scripts/funcTests/runFuncTests.sh"
+    args: $(TestRunCommandLineArguments)
     disableAutoCwd: "true"
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: ShellScript@2
-  displayName: "Run Tests (stop on error)"
+  displayName: "Run $(TestRunDisplayName) (stop on error)"
   continueOnError: "false"
   inputs:
     scriptPath: "scripts/funcTests/runFuncTests.sh"
+    args: $(TestRunCommandLineArguments)
     disableAutoCwd: "true"
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
@@ -47,6 +49,6 @@ steps:
     targetType: "inline"
     script: |
       . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Mac"
+      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(TestRunDisplayName) On Mac"
     failOnStderr: "true"
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
