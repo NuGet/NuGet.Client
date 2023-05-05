@@ -27,8 +27,14 @@ namespace Dotnet.Integration.Test
             var projectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
     <Target Name=""ValidateNuGetAuditValue"">
         <Message Importance=""high"" Text=""NuGetAudit: '$(NuGetAudit)'"" />
-        <Error Text=""NuGetAudit property should be set to true by default"" Condition=""'$(NuGetAuditExpected)' == 'true' AND '$(NuGetAudit)' != 'true'"" />
-        <Error Text=""NuGetAudit property should not be set to true by default"" Condition=""'$(NuGetAuditExpected)' != 'true' AND '$(NuGetAudit)' == 'true'"" />
+        <Error Text=""ExpectEnabled was not set"" Condition="" '$(ExpectEnabled)' != 'true' AND '$(ExpectEnabled)' != 'false' "" />
+        <Message Importance=""high"" Text=""SdkVersion: $(NETCoreSdkVersion) "" />
+    </Target>
+    <Target Name=""ValidateEnabled"" Condition="" '$(ExpectEnabled)' == 'true' "" AfterTargets=""ValidateNuGetAuditValue"">
+        <Error Text=""NuGetAudit property should be set to true by default"" Condition="" '$(NuGetAudit)' != 'true' "" />
+    </Target>
+    <Target Name=""ValidateNotSet"" Condition="" '$(ExpectEnabled)' != 'true' "" AfterTargets=""ValidateNuGetAuditValue"">
+        <Error Text=""NuGetAudit property should not be set"" Condition="" '$(NuGetAudit)' != '' "" />
     </Target>
 </Project>";
             File.WriteAllText(projectFilePath, projectFileContents);
@@ -44,7 +50,7 @@ namespace Dotnet.Integration.Test
 #endif
 
             // Act
-            var result = _msbuildFixture.RunDotnet(testDirectory.Path, $"msbuild -t:ValidateNuGetAuditValue -p:NuGetAuditExpected={expected}");
+            var result = _msbuildFixture.RunDotnet(testDirectory.Path, $"msbuild -t:ValidateNuGetAuditValue -p:ExpectEnabled={expected}");
 
             // Assert
             result.Success.Should().BeTrue(result.AllOutput);

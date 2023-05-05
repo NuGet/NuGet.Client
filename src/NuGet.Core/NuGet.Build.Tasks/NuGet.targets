@@ -62,7 +62,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Flag if the Central package file is enabled -->
     <_CentralPackageVersionsEnabled Condition="'$(ManagePackageVersionsCentrally)' == 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
     <!-- NuGetAudit is enabled by default when using the .NET 8 SDK or above -->
-    <NuGetAudit Condition=" '$(NuGetAudit)' != '' AND $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '8.0'))">true</NuGetAudit>
+    <NuGetAudit Condition=" '$(NuGetAudit)' == '' AND $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '8.0'))">true</NuGetAudit>
   </PropertyGroup>
 
   <PropertyGroup>
