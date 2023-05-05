@@ -66,6 +66,10 @@ parameters:
   displayName: Run tests on Mac
   type: boolean
   default: false
+- name: RunMonoTestsOnMac
+  displayName: Run Mono tests on Mac
+  type: boolean
+  default: true
 
 extends:
   template: templates/pipeline.yml
@@ -83,3 +87,4 @@ extends:
     RunSourceBuild: ${{parameters.RunSourceBuild}}
     RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
     RunTestsOnMac: ${{parameters.RunTestsOnMac}}
+    RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
