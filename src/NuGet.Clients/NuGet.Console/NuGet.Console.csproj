@@ -1,59 +1,30 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
-    <OutputType>Library</OutputType>
     <RootNamespace>NuGetConsole</RootNamespace>
     <AssemblyName>NuGet.Console</AssemblyName>
-    <ProjectGuid>{50E33DA2-AF14-486D-81B8-BD8409744A38}</ProjectGuid>
-    <CreateVsixContainer>False</CreateVsixContainer>
-    <DeployExtension>False</DeployExtension>
     <Description>Package Manager PowerShell Console implementation.</Description>
-    <TargetFrameworkProfile />
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
-    <AlwaysCompileMarkupFilesInSeparateDomain>false</AlwaysCompileMarkupFilesInSeparateDomain>
     <UseWpf>true</UseWpf>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj">
-      <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>
-      <Name>NuGet.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Configuration\NuGet.Configuration.csproj">
-      <Project>{e3ef26e1-80a7-4573-b3a4-1d4b0042616e}</Project>
-      <Name>NuGet.Configuration</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj">
-      <Project>{394aeb96-493c-4839-a5ac-8d93cd2fad40}</Project>
-      <Name>NuGet.PackageManagement</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj">
-      <Project>{bd6bbc90-60be-4e7d-8458-91e9cda66abe}</Project>
-      <Name>NuGet.Packaging</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj">
-      <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
-      <Name>NuGet.Versioning</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
-      <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
-      <Name>NuGet.PackageManagement.UI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
-      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
-      <Name>NuGet.PackageManagement.VisualStudio</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
-      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
-      <Name>NuGet.VisualStudio.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj">
-      <Project>{deebf1a1-1c21-4e9e-8ce3-1eb21381ff1e}</Project>
-      <Name>NuGet.VisualStudio.Internal.Contracts</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Common\NuGet.Common.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Configuration\NuGet.Configuration.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Versioning\NuGet.Versioning.csproj" />
+    <ProjectReference Include="..\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
+    <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
+    <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
+    <ProjectReference Include="..\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" />
   </ItemGroup>
+
 </Project>
