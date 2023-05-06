@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Shipping>true</Shipping>
     <ProjectGuid>{3B96F91B-3B58-40ED-B06E-5CD133A79A63}</ProjectGuid>
@@ -16,8 +14,8 @@
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
     <DeployExtension>false</DeployExtension>
-    <Description>NuGet Visual Studio extension package project.</Description>
-    <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
+    <Description>Visual Studio Extensibility Package (vsix)</Description>
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <AssemblyName>NuGet.VisualStudio.Client</AssemblyName>
     <TargetVsixContainerName>NuGet.Tools.vsix</TargetVsixContainerName>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
@@ -28,19 +26,13 @@
     <NgenApplicationDefault>[INSTALLDIR]\Common7\IDE\vsn.exe</NgenApplicationDefault>
     <NgenPriorityDefault>3</NgenPriorityDefault>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' And '$(BuildingInsideVisualStudio)' == 'True'">
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'True'">
     <StartAction>Program</StartAction>
     <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
     <StartArguments>/rootsuffix Exp /log</StartArguments>
     <CreateVsixContainer>True</CreateVsixContainer>
     <DeployExtension>True</DeployExtension>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.targets">
       <Link>NuGet.targets</Link>
@@ -324,6 +316,8 @@
 
     <PackageReference Include="Newtonsoft.Json" ExcludeAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Web.Xdt" ExcludeAssets="all" GeneratePathProperty="true" />
+
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="extension.vsixlangpack">
@@ -335,23 +329,23 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="$(VSSDKBuildToolsVersion)" PrivateAssets="All" GeneratePathProperty="true" />
+    <VsixIncludeFile Include=".vsixinclude" />
+    <VsixIgnoreFile Include=".vsixignore" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(PkgMicrosoft_VSSDK_BuildTools)\tools\VSSDK\Microsoft.VsSDK.targets" Condition="'$(PkgMicrosoft_VSSDK_BuildTools)' != ''" />
+
+  <!-- 
+    not needed?
+  -->
   <Target Name="FindSourceVsixManifest">
     <ItemGroup>
       <SourceVsixManifest Include="source.extension.vsixmanifest" />
     </ItemGroup>
   </Target>
-  <ItemGroup>
-    <VsixIncludeFile Include=".vsixinclude" />
-  </ItemGroup>
-  <ItemGroup>
-    <VsixIgnoreFile Include=".vsixignore" />
-  </ItemGroup>
-  <Target Name="AfterBuild" DependsOnTargets="PublishVS" />
-  <Target Name="PublishVS" Condition="'$(CreateVsixContainer)' != 'false'">
+
+  <!--
+    Copies NuGet's VSIX and symbols to the appropriate artifact locations
+  -->
+  <Target Name="PublishVS" Condition="'$(CreateVsixContainer)' != 'false'" AfterTargets="AfterBuild">
     <ItemGroup>
       <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />
     </ItemGroup>
@@ -366,6 +360,10 @@
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
     <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(VsixPublishDestination)symbols" OverwriteReadOnlyFiles="true" Condition="'$(IsCIBuild)' !='true'" />
   </Target>
+
+  <!--
+    Read the .vsixinclude file and generate an IncludeVsixFilesList item per line
+  -->
   <Target Name="ReadVsixIncludeListFromFile">
     <ReadLinesFromFile File="@(VsixIncludeFile)">
       <Output TaskParameter="Lines" ItemName="IncludeVsixFilesList" />
@@ -374,6 +372,10 @@
       <IncludeVsixFilesList Remove="@(IncludeVsixFilesList)" Condition="'%(Identity)' != '' AND $([System.String]::new('%(Identity)').StartsWith('#'))" />
     </ItemGroup>
   </Target>
+
+  <!-- 
+    Read the .vsixignore file and generate an IgnoreVsixFilesList item per line
+  -->
   <Target Name="ReadVsixIgnoreListFromFile">
     <ReadLinesFromFile File="@(VsixIgnoreFile)">
       <Output TaskParameter="Lines" ItemName="IgnoreVsixFilesList" />
@@ -382,6 +384,11 @@
       <IgnoreVsixFilesList Remove="@(IgnoreVsixFilesList)" Condition="'%(Identity)' != '' AND $([System.String]::new('%(Identity)').StartsWith('#'))" />
     </ItemGroup>
   </Target>
+
+  <!-- 
+    The VSSDK creates a VsixSourceItems item for each file to be copied into the VSIX. In this target, we remove all
+    the files listed in our .vsixignore file, and error if any file listed in .vsixinclude is missing from the vsix.
+  -->
   <Target Name="RemoveUnsolicitedVsixAssemblies" AfterTargets="GetVsixSourceItems" Condition="'$(IncludeCopyLocalReferencesInVSIXContainer)'=='true'" DependsOnTargets="ReadVsixIncludeListFromFile;ReadVsixIgnoreListFromFile">
     <Message Text="Filtering VSIX package files..." Importance="high" />
     <ItemGroup>
@@ -407,7 +414,12 @@
     <Warning Text="Missing @(MissingIgnoredAssemblies-&gt;Count()) ignored file(s) '@(MissingIgnoredAssemblies)'" Condition=" '@(MissingIgnoredAssemblies)' != '' " File="@(VsixIgnoreFile)" />
     <Message Text="Included @(VSIXSourceItem-&gt;Count()) file(s). Filtered @(SuppressPackaging-&gt;Count()) file(s)." Importance="high" />
   </Target>
-  <!--The IsCIBuild property is passed on the VSTS CI-->
+
+  <!--
+    Our CI build runs the localization process, which generates additional assemblies that need to be included in the
+    VSIX, which are not available when localization was not run (for example, local builds).
+    The IsCIBuild property is passed on CI
+  -->
   <Target Name="GetLocalizedDlls" AfterTargets="GetVsixSourceItems" Condition="'$(IsCIBuild)' =='true'">
     <MSBuild Projects="@(SolutionProjectsWithoutVSIX)" Targets="GetLocalizedFilesForVsix" Properties="IsVsixBuild=true;BuildProjectReferences=false;">
       <Output TaskParameter="TargetOutputs" ItemName="LocalizedFilesForVsix" />
@@ -422,11 +434,19 @@
       <VSIXSourceItem Include="@(_VsixLocFiles)" />
     </ItemGroup>
   </Target>
+
+  <!--
+    Adds NuGet.Build.Tasks.Console.exe.config to the Vsix
+  -->
   <Target Name="AddAppConfigToVsix" BeforeTargets="GetVsixSourceItems" DependsOnTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <Content Include="@(_ReferenceRelatedPaths)" IncludeInVSIX="true" Link="%(Filename)%(Extension)" Condition="'%(_ReferenceRelatedPaths.Name)' == 'NuGet.Build.Tasks.Console' And '%(_ReferenceRelatedPaths.Extension)' == '.config'" />
     </ItemGroup>
   </Target>
+
+  <!--
+    Defines two third party dlls that ship in the vsix, and are used by two other targets
+  -->
   <Target Name="GetThirdPartyAssemblies" Returns="@(ThirdPartyAssembly)">
     <ItemGroup>
       <ThirdPartyAssembly Include="$(PkgLucene_Net)\lib\NET40\Lucene.Net.dll"
@@ -438,6 +458,10 @@
                           TargetPath="$(IntermediateOutputPath)Newtonsoft.Json.dll" />
     </ItemGroup>
   </Target>
+
+  <!--
+    Copy 3rd party libraries to bin directory on build
+  -->
   <Target Name="StageThirdPartyAssemblies"
           BeforeTargets="BeforeBuild"
           DependsOnTargets="GetThirdPartyAssemblies">
@@ -448,11 +472,28 @@
       <None Include="%(ThirdPartyAssembly.TargetPath)" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
   </Target>
+
+  <!--
+    Add 3rd party libraries to VSIX
+  -->
   <Target Name="IncludeThirdPartyAssembliesInVsix"
           BeforeTargets="GetVsixSourceItems"
           DependsOnTargets="GetThirdPartyAssemblies">
     <ItemGroup>
       <Content Include="%(ThirdPartyAssembly.TargetPath)" IncludeInVSIX="true" Link="%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    The VSSDK BuildTools detects assemblies from NuGet packages via an MSBuild item metadata that only exists in
+    non-SDK style projects. Add in the NuGetSourceType=Package metadata to be compatible.
+  -->
+  <Target Name="VSSDKNuGetPackagesCompat" BeforeTargets="GetVsixSourceItems">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths
+        Include="@(ReferenceCopyLocalPaths)"
+        Condition=" '%(ReferenceCopyLocalPaths.NuGetPackageId)' != '' "
+        NuGetSourceType="Package" />
     </ItemGroup>
   </Target>
 </Project>
