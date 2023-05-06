@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -448,6 +447,48 @@ namespace NuGet.Tests.Apex
 
             // Assert
             CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "log4net", XunitLogger);
+        }
+
+        [StaFact]
+        public void VerifyInitScriptsExecution()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            SolutionService solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+            ProjectTestExtension project1 = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V48, "TestProject1");
+            var projectPath = project1.FullPath;
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+            var uiwindow1 = nugetTestService.GetUIWindowfromProject(project1);
+            uiwindow1.InstallPackageFromUI("EntityFramework", "6.4.4");
+
+            // Assert
+            Assert.True(VisualStudio.GetInitScriptsInOutputWindows().Count != 0, "The Init script in TestProject1 was not executed when the EntityFramework package was installed.");
+            Assert.True(VisualStudio.GetErrorsInOutputWindows().Count == 0, "The TestProject1 output window has some errors when installing the EntityFramework package.");
+
+            // Act
+            solutionService.CreateEmptySolution();
+            ProjectTestExtension project2 = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V48, "TestProject2");
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var uiwindow2 = nugetTestService.GetUIWindowfromProject(project2);
+            uiwindow2.InstallPackageFromUI("jquery", "3.6.4");
+
+            // Assert
+            Assert.True(VisualStudio.GetInstallScriptsInOutputWindows().Count != 0, "The Install script in TestProject2 was not executed when the jquery package was installed.");
+            Assert.True(VisualStudio.GetErrorsInOutputWindows().Count == 0, "The TestProject2 output window has some errors when installing the jquery package.");
+
+            // Act
+            solutionService.OpenProject(projectPath);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var uiwindow3 = nugetTestService.GetUIWindowfromProject(solutionService.Projects[0]);
+            uiwindow3.InstallPackageFromUI("Entityframework.sqlservercompact", "6.4.4");
+
+            // Assert
+            Assert.True(VisualStudio.GetInstallScriptsInOutputWindows().Count != 0, "The Install script in TestProject1 was not executed when the Entityframework.sqlservercompact package was installed.");
+            Assert.True(VisualStudio.GetErrorsInOutputWindows().Count == 0, "The TestProject1 output window has some errors when installing the Entityframework.sqlservercompact package.");
         }
     }
 }
