@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ReferenceOutputPath>$(ArtifactsDirectory)NuGet.VisualStudio.Client\bin\$(Configuration)\</ReferenceOutputPath>
+    <ReferenceOutputPath>$(ArtifactsDirectory)NuGet.VisualStudio.Client\bin\$(Configuration)\net472\</ReferenceOutputPath>
     <XmlTransformPath>$(ArtifactsDirectory)microsoft.web.xdt\lib\net40\</XmlTransformPath>
   </PropertyGroup>
 
