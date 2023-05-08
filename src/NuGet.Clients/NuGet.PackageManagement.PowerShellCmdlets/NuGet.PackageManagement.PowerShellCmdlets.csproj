@@ -5,6 +5,7 @@
     <IncludeInVSIX>true</IncludeInVSIX>
     <Description>Package Manager Console PowerShell host implementation and NuGet's PowerShell cmdlets for the Visual Studio client.</Description>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
+    <GetLocalizedFilesForVsixDependsOn>GetLocalizedPowerShellCmdletHelpFile</GetLocalizedFilesForVsixDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,12 +42,6 @@
     </None>
   </ItemGroup>
 
-  <PropertyGroup>
-    <SignTargetsForRealSigning>$(SignTargetsForRealSigning);GetScriptsForSigning</SignTargetsForRealSigning>
-    <LocTargets>$(LocTargets);GetPowerShellCmdletsHelpFile</LocTargets>
-    <GetLocalizedFilesForVsixDependsOn>GetLocalizedPowerShellCmdletHelpFile</GetLocalizedFilesForVsixDependsOn>
-  </PropertyGroup>
-
   <Target Name="PowerShellCmdletsAfterBuild" AfterTargets="AfterBuild">
     <ItemGroup>
       <PowerShellScripts Include="$(MSBuildProjectDirectory)\Scripts\*.ps*" Exclude="$(MSBuildProjectDirectory)\Scripts\NuGet.psd1" />
@@ -55,7 +50,7 @@
     <Exec Command="powershell.exe -ExecutionPolicy Bypass &quot;$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'NuGet.sln'))\build\UpdateNuGetModuleManifest.ps1&quot; -NuGetPackageManagementPowerShellCmdletsFilePath &quot;$(OutDir)NuGet.PackageManagement.PowerShellCmdlets.dll&quot; -ManifestModuleSourceFilePath &quot;$(MSBuildProjectDirectory)\Scripts\NuGet.psd1&quot; -ManifestModuleDestinationFilePath &quot;$(ArtifactsDirectory)Scripts\NuGet.psd1&quot;" />
   </Target>
 
-  <Target Name="GetScriptsForSigning" Returns="@(ScriptsToSign)">
+  <Target Name="GetScriptsForSigning" Returns="@(ScriptsToSign)" BeforeTargets="GetBuildOutputWithSigningMetadata">
     <ItemGroup>
       <ScriptsToSign Include="$(ArtifactsDirectory)Scripts\*.ps*">
         <Authenticode>Microsoft400</Authenticode>
@@ -63,7 +58,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GetPowerShellCmdletsHelpFile" Returns="@(PowerShellCmdletsHelpFiles)">
+  <Target Name="GetPowerShellCmdletsHelpFile" Returns="@(PowerShellCmdletsHelpFiles)" BeforeTargets="GetBuildOutputWithLocMetadata">
     <ItemGroup>
       <_PowerShellCmdletsHelpFiles Include="$(OutputPath)Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
       <PowerShellCmdletsHelpFiles Include="@(_PowerShellCmdletsHelpFiles)">
