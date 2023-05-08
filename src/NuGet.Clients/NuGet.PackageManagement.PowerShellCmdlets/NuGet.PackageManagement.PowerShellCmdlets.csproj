@@ -6,6 +6,7 @@
     <Description>Package Manager Console PowerShell host implementation and NuGet's PowerShell cmdlets for the Visual Studio client.</Description>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <GetLocalizedFilesForVsixDependsOn>GetLocalizedPowerShellCmdletHelpFile</GetLocalizedFilesForVsixDependsOn>
+    <AdditionalSignTargetsForRealSigning>GetScriptsForSigning</AdditionalSignTargetsForRealSigning>
   </PropertyGroup>
 
   <ItemGroup>
