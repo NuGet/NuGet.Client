@@ -72,6 +72,7 @@ namespace NuGet.CommandLine.XPlat
                 logger.LogMinimal(configValue);
             }
         }
+    }
 
     internal static class ConfigSetRunner
     {
@@ -237,7 +238,7 @@ namespace NuGet.CommandLine.XPlat
             _ = args ?? throw new ArgumentNullException(nameof(args));
             _ = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-      
+
         /// <summary>
         /// Throws an exception if the value passed in is not a valid config key.
         /// </summary>
