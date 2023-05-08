@@ -9,6 +9,13 @@ namespace NuGet.CommandLine.XPlat
         public string? WorkingDirectory { get; set; }
     }
 
+    internal class ConfigGetArgs
+    {
+        public string? AllOrConfigKey { get; set; }
+        public string? WorkingDirectory { get; set; }
+        public bool ShowPath { get; set; }
+    }
+
     internal class ConfigSetArgs
     {
         public string? ConfigKey { get; set; }

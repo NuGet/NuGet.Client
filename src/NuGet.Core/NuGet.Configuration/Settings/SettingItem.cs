@@ -103,5 +103,10 @@ namespace NuGet.Configuration
                 AddOrUpdateAttribute(attribute.Key, attribute.Value);
             }
         }
+
+        public IReadOnlyDictionary<string, string> GetAttributes()
+        {
+            return Attributes;
+        }
     }
 }
