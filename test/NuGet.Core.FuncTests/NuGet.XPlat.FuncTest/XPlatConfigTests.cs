@@ -366,7 +366,7 @@ namespace NuGet.XPlat.FuncTest
                 $"{XplatDll} config get",
                 waitForExit: true);
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, "");
-  
+
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedError);
         }
