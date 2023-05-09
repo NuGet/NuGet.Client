@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
@@ -62,7 +61,7 @@ namespace NuGet.XPlat.FuncTest
                 $"{XplatDll} config paths --help",
                 waitForExit: true);
             
-          // Assert
+            // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
         }
 
@@ -213,119 +212,6 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config get http_proxy --help",
-                waitForExit: true);
-
-            // Assert
-            DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
-        }
-
-        [Theory]
-        [InlineData("signatureValidationMode", "accept")]
-        [InlineData("maxHttpRequestsPerSource", "64")]
-        public void ConfigSetCommand_AddNewConfigSettingWithConfigFileArg_Success(string key, string value)
-        {
-            // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config");
-            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
-
-            var result = CommandRunner.Run(
-                DotnetCli,
-                Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true);
-
-            var settings = Configuration.Settings.LoadDefaultSettings(
-                testInfo.WorkingPath,
-                configFileName: filePath,
-                machineWideSettings: new XPlatMachineWideSetting());
-
-            var configSection = settings.GetSection("config");
-            var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
-            var configItems = values.Where(i => i.Key == key);
-            var configFilePath = configItems.FirstOrDefault().ConfigPath;
-
-            // Assert
-            Assert.Equal(0, result.ExitCode);
-            Assert.Equal(1, configItems.Count());
-            Assert.Equal(value, configItems.First().Value);
-            Assert.Equal(filePath, configFilePath);
-        }
-
-        [Fact]
-        public void ConfigSetCommand_UpdateConfigSettingWithConfigFileArg_Success()
-        {
-            // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config");
-            var key = "http_proxy";
-            var value = "http://company-octopus:8765@contoso.test";
-            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
-
-            var result = CommandRunner.Run(
-                DotnetCli,
-                Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true);
-
-            var settings = Configuration.Settings.LoadDefaultSettings(
-                testInfo.WorkingPath,
-                configFileName: filePath,
-                machineWideSettings: new XPlatMachineWideSetting());
-
-            var configSection = settings.GetSection("config");
-            var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
-            var configItems = values.Where(i => i.Key == key);
-            var configFilePath = configItems.FirstOrDefault().ConfigPath;
-
-            // Assert
-            Assert.Equal(0, result.ExitCode);
-            Assert.Equal(1, configItems.Count());
-            Assert.Equal(value, configItems.First().Value);
-            Assert.Equal(filePath, configFilePath);
-        }
-
-        [Fact]
-        public void ConfigSetCommand_AddConfigSettingWithNonExistingConfigSection_Success()
-        {
-            // Arrange & Act
-            using var testInfo = new TestInfo();
-            var key = "signatureValidationMode";
-            var value = "accept";
-            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
-
-            var result = CommandRunner.Run(
-                DotnetCli,
-                Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true);
-
-            var settings = Configuration.Settings.LoadDefaultSettings(
-                testInfo.WorkingPath,
-                configFileName: filePath,
-                machineWideSettings: new XPlatMachineWideSetting());
-
-            var configSection = settings.GetSection("config");
-            var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
-            var configItems = values.Where(i => i.Key == key);
-            var configFilePath = configItems.FirstOrDefault().ConfigPath;
-
-            // Assert
-            Assert.Equal(0, result.ExitCode);
-            Assert.Equal(1, configItems.Count());
-            Assert.Equal(value, configItems.First().Value);
-            Assert.Equal(filePath, configFilePath);
-        }
-
-        [Fact]
-        public void ConfigSetCommand_HelpMessage_Success()
-        {
-            // Arrange
-            var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigSetConfigKeyDescription);
-
-            // Act
-            var result = CommandRunner.Run(
-                DotnetCli,
-                Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set --help",
                 waitForExit: true);
 
             // Assert
@@ -505,48 +391,6 @@ namespace NuGet.XPlat.FuncTest
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => ConfigGetRunner.Run(args, null));
-        }
-
-        [Fact]
-        public void ConfigSetCommand_InvalidConfigKey_Fail()
-        {
-            // Arrange & Act
-            using var testInfo = new TestInfo("NuGet.Config");
-            var key = "InvalidConfigKey123";
-            var value = "https://TestRepo2/ES/api/v2/package";
-            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
-
-            var result = CommandRunner.Run(
-                DotnetCli,
-                Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true);
-            var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, key);
-
-            // Assert
-            DotnetCliUtil.VerifyResultFailure(result, expectedError);
-        }
-
-        [Fact]
-        public void ConfigSetCommand_NullArgs_Fail()
-        {
-            // Arrange
-            var log = new TestCommandOutputLogger();
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigSetRunner.Run(null, () => log));
-        }
-
-        [Fact]
-        public void ConfigSetCommand_NullGetLogger_Fail()
-        {
-            // Arrange
-            var args = new ConfigSetArgs()
-            {
-            };
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigSetRunner.Run(args, null));
         }
 
         [Fact]

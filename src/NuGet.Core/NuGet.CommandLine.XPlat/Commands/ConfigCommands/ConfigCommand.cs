@@ -60,33 +60,6 @@ namespace NuGet.CommandLine.XPlat
                         return 0;
                     });
                 });
-                ConfigCmd.Command("set", SetCmd =>
-                {
-                    CommandArgument configKey = SetCmd.Argument(
-                        "CONFIG_KEY",
-                        Strings.ConfigSetConfigKeyDescription);
-                    CommandArgument configValue = SetCmd.Argument(
-                        "CONFIG_VALUE",
-                        Strings.ConfigSetConfigValueDescription);
-                    var configFile = SetCmd.Option(
-                        "--configfile",
-                        Strings.ConfigSetConfigFileDescription,
-                        CommandOptionType.SingleValue);
-                    SetCmd.HelpOption("-h|--help");
-                    SetCmd.Description = Strings.ConfigSetCommandDescription;
-                    SetCmd.OnExecute(() =>
-                    {
-                        var args = new ConfigSetArgs()
-                        {
-                            ConfigKey = configKey.Value,
-                            ConfigValue = configValue.Value,
-                            ConfigFile = configFile.Value()
-                        };
-
-                        ConfigSetRunner.Run(args, getLogger);
-                        return 0;
-                    });
-                });
                 ConfigCmd.Command("unset", UnsetCmd =>
                 {
                     CommandArgument configKey = UnsetCmd.Argument(
@@ -105,7 +78,6 @@ namespace NuGet.CommandLine.XPlat
                             ConfigKey = configKey.Value,
                             ConfigFile = configFile.Value()
                         };
-
                         ConfigUnsetRunner.Run(args, getLogger);
                         return 0;
                     });

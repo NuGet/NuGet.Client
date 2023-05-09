@@ -286,42 +286,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Set the value of a specified NuGet configuration setting..
-        /// </summary>
-        internal static string ConfigSetCommandDescription {
-            get {
-                return ResourceManager.GetString("ConfigSetCommandDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The NuGet configuration file (nuget.config) whose value will be set..
-        /// </summary>
-        internal static string ConfigSetConfigFileDescription {
-            get {
-                return ResourceManager.GetString("ConfigSetConfigFileDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The key of the settings that are to be set..
-        /// </summary>
-        internal static string ConfigSetConfigKeyDescription {
-            get {
-                return ResourceManager.GetString("ConfigSetConfigKeyDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The value of the settings that are to be set..
-        /// </summary>
-        internal static string ConfigSetConfigValueDescription {
-            get {
-                return ResourceManager.GetString("ConfigSetConfigValueDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Removes the key-value pair from a specified NuGet configuration setting..
         /// </summary>
         internal static string ConfigUnsetCommandDescription {
