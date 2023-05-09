@@ -65,8 +65,16 @@
       <Link>Modules\NuGet\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="$(PkgMicrosoft_Web_Xdt)\lib\net40\Microsoft.Web.XmlTransform.dll">
+    <Content Include="$(SolutionPackagesFolder)newtonsoft.json\13.0.1\lib\net45\Newtonsoft.Json.dll">
+      <Link>Newtonsoft.Json.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="$(SolutionPackagesFolder)microsoft.web.xdt\3.0.0\lib\net40\Microsoft.Web.XmlTransform.dll">
       <Link>Microsoft.Web.XmlTransform.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="$(SolutionPackagesFolder)lucene.net\3.0.3\lib\NET40\Lucene.Net.dll">
+      <Link>Lucene.Net.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="$(ArtifactsDirectory)\Scripts\Add-WrapperMembers.ps1">
@@ -318,12 +326,9 @@
   </ItemGroup>
   <ItemGroup>
     <!-- This is important because otherwise the VSSDK will include the unsigned version coming from the global packages folder instead of the in-place signed one from the bootstrapped packages folder -->
-    <PackageReference Include="Lucene.Net" ExcludeAssets="all" GeneratePathProperty="true" />
-    <!-- dependency of Lucene.net. Can delete when Lucene.net has an update with a newer dependency on sharpziplib -->
+    <PackageReference Include="Lucene.Net" ExcludeAssets="all" />
     <PackageReference Include="SharpZipLib" ExcludeAssets="all" />
-
-    <PackageReference Include="Newtonsoft.Json" ExcludeAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Web.Xdt" ExcludeAssets="all" GeneratePathProperty="true" />
+    <!-- dependency of Lucene.net. Can delete when Lucene.net has an update with a newer dependency on sharpziplib -->
   </ItemGroup>
   <ItemGroup>
     <Content Include="extension.vsixlangpack">
@@ -351,7 +356,7 @@
     <VsixIgnoreFile Include=".vsixignore" />
   </ItemGroup>
   <Target Name="AfterBuild" DependsOnTargets="PublishVS" />
-  <Target Name="PublishVS" Condition="'$(CreateVsixContainer)' != 'false'">
+  <Target Name="PublishVS">
     <ItemGroup>
       <PackageManifest Include="$(OutputPath)Microsoft.VisualStudio.NuGet.Core.json" />
     </ItemGroup>
@@ -414,7 +419,7 @@
     </MSBuild>
     <ItemGroup>
       <VSIXSourceItem Include="@(LocalizedFilesForVsix)" />
-      <_LocalizedFiles Include="$(ArtifactsDirectory)microsoft.web.xdt\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
+      <_LocalizedFiles Include="$(ArtifactsDirectory)microsoft.web.xdt\3.0.0\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)vsixlangpack\**\extension.vsixlangpack" />
       <_VsixLocFiles Include="@(_LocalizedFiles)">
         <TargetPath>%(_LocalizedFiles.RecursiveDir)%(_LocalizedFiles.Filename)%(_LocalizedFiles.Extension)</TargetPath>
@@ -425,34 +430,6 @@
   <Target Name="AddAppConfigToVsix" BeforeTargets="GetVsixSourceItems" DependsOnTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <Content Include="@(_ReferenceRelatedPaths)" IncludeInVSIX="true" Link="%(Filename)%(Extension)" Condition="'%(_ReferenceRelatedPaths.Name)' == 'NuGet.Build.Tasks.Console' And '%(_ReferenceRelatedPaths.Extension)' == '.config'" />
-    </ItemGroup>
-  </Target>
-  <Target Name="GetThirdPartyAssemblies" Returns="@(ThirdPartyAssembly)">
-    <ItemGroup>
-      <ThirdPartyAssembly Include="$(PkgLucene_Net)\lib\NET40\Lucene.Net.dll"
-                          DestinationDir="$(IntermediateOutputPath)"
-                          TargetPath="$(IntermediateOutputPath)Lucene.Net.dll" />
-      
-      <ThirdPartyAssembly Include="$(PkgNewtonsoft_Json)\lib\net45\Newtonsoft.Json.dll"
-                          DestinationDir="$(IntermediateOutputPath)"
-                          TargetPath="$(IntermediateOutputPath)Newtonsoft.Json.dll" />
-    </ItemGroup>
-  </Target>
-  <Target Name="StageThirdPartyAssemblies"
-          BeforeTargets="BeforeBuild"
-          DependsOnTargets="GetThirdPartyAssemblies">
-    <Copy SourceFiles="@(ThirdPartyAssembly)"
-          DestinationFiles="%(ThirdPartyAssembly.TargetPath)"
-          Condition="!Exists('%(ThirdPartyAssembly.TargetPath)')" />
-    <ItemGroup>
-      <None Include="%(ThirdPartyAssembly.TargetPath)" CopyToOutputDirectory="PreserveNewest" />
-    </ItemGroup>
-  </Target>
-  <Target Name="IncludeThirdPartyAssembliesInVsix"
-          BeforeTargets="GetVsixSourceItems"
-          DependsOnTargets="GetThirdPartyAssemblies">
-    <ItemGroup>
-      <Content Include="%(ThirdPartyAssembly.TargetPath)" IncludeInVSIX="true" Link="%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 </Project>
