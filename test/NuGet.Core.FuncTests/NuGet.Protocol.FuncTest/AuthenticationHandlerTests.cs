@@ -11,6 +11,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -31,7 +32,7 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Fact]
-        public async Task OnlyOneRequestWithoutAuthorizationHeader()
+        public async Task GetAsync_GetPackageAfterServiceIndex_SecondUrlIsPreAuthenticated()
         {
             // Arrange
             var portReserver = new PortReserver();
@@ -39,6 +40,11 @@ namespace NuGet.Protocol.FuncTest
             {
                 var server = new RequestCollectingServer(_output);
                 server.Start(port);
+
+                // Ensure that HttpClientHandler's PreAuthenticate is working as expected, and as needed, by a second
+                // request getting a URL that is in a sub-directory of the service index
+                string serviceIndexUrl = server.BaseUrl + "v3/index.json";
+                string packageUrl = server.BaseUrl + "v3/flatcontainer/packageid/index.json";
                 try
                 {
                     var packageSource = new PackageSource(server.BaseUrl + "v3/index.json", "test");
@@ -58,10 +64,10 @@ namespace NuGet.Protocol.FuncTest
                         HttpSourceCacheContext httpSourceCacheContext = HttpSourceCacheContext.Create(sourceCacheContext, isFirstAttempt: true);
 
                         // Act
-                        var request = new HttpSourceCachedRequest(server.BaseUrl + "v3/index.json", "1", httpSourceCacheContext);
+                        var request = new HttpSourceCachedRequest(serviceIndexUrl, "1", httpSourceCacheContext);
                         _ = await source.GetAsync(request, ProcessResponse, logger.Object, cancellationToken);
 
-                        request = new HttpSourceCachedRequest(server.BaseUrl + "v3/flatcontainer/packageid/1.2.3/index.json", "2", httpSourceCacheContext);
+                        request = new HttpSourceCachedRequest(packageUrl, "2", httpSourceCacheContext);
                         _ = await source.GetAsync(request, ProcessResponse, logger.Object, cancellationToken);
                     }
                 }
@@ -71,12 +77,9 @@ namespace NuGet.Protocol.FuncTest
                 }
 
                 // Assert
-                Assert.Equal(
-                    1,
-                    server.Requests.Count(RequestWithoutAuthorizationHeader));
-                Assert.Equal(
-                    2,
-                    server.Requests.Select(r => r.RawUrl).Distinct().Count());
+                server.Requests.Count(RequestWithoutAuthorizationHeader).Should().Be(1);
+                server.Requests.Any(r => r.Url!.OriginalString == serviceIndexUrl).Should().BeTrue();
+                server.Requests.Any(r => r.Url!.OriginalString == packageUrl).Should().BeTrue();
 
                 // ExecuteAsync returns Task<T>, so need to return something to give it a <T>.
                 return (object?)null;
