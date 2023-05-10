@@ -145,10 +145,10 @@ namespace NuGet.Protocol.FuncTest
                 _httpListener = listener;
                 _baseUrl = baseUrl;
 
-                listener.BeginGetContext(EndGetContext, listener);
+                listener.BeginGetContext(HandleHttpRequest, listener);
             }
 
-            public void EndGetContext(IAsyncResult result)
+            public void HandleHttpRequest(IAsyncResult result)
             {
                 HttpListener httpListener = (HttpListener)result.AsyncState!;
                 if (httpListener.IsListening)
@@ -190,7 +190,7 @@ namespace NuGet.Protocol.FuncTest
 
                     try
                     {
-                        httpListener.BeginGetContext(EndGetContext, httpListener);
+                        httpListener.BeginGetContext(HandleHttpRequest, httpListener);
                     }
                     catch (ObjectDisposedException)
                     {
