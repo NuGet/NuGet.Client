@@ -161,6 +161,8 @@
     <Compile Include="Utility\ProjectUtility.cs" />
     <Compile Include="Utility\VsUtility.cs" />
     <Compile Include="UserInterfaceService\ProgressDialogData.cs" />
+    <Compile Include="ViewModels\PackageSourceMappingActionViewModel.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Xamls\DeprecatedFrameworkWindow.xaml.cs">
       <DependentUpon>DeprecatedFrameworkWindow.xaml</DependentUpon>
     </Compile>
@@ -180,6 +182,9 @@
     </Compile>
     <Compile Include="Xamls\PackageManagementFormatWindow.xaml.cs">
       <DependentUpon>PackageManagementFormatWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\PackageSourceMappingActionControl.xaml.cs">
+      <DependentUpon>PackageSourceMappingActionControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Xamls\PRMigratorBar.xaml.cs">
       <DependentUpon>PRMigratorBar.xaml</DependentUpon>
@@ -355,6 +360,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\PackageManagementFormatWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\PackageSourceMappingActionControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
