@@ -82,7 +82,7 @@ namespace NuGet.CommandLine.XPlat
             RunnerHelper.ValidateConfigKey(args.ConfigKey);
             ISettings settings = string.IsNullOrEmpty(args.ConfigFile)
                 ? RunnerHelper.GetSettingsFromDirectory(null)
-                : RunnerHelper.GetSettingsFromFile(args.ConfigFile);
+                : Settings.LoadSpecificSettings(Path.GetDirectoryName(args.ConfigFile), args.ConfigFile);
 
             bool encrypt = args.ConfigKey.Equals(ConfigurationConstants.PasswordKey, StringComparison.OrdinalIgnoreCase);
             SettingsUtility.SetConfigValue(settings, args.ConfigKey, args.ConfigValue, encrypt);
@@ -115,19 +115,6 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Creates a settings object utilizing a NuGet configuration file path.
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public static ISettings GetSettingsFromFile(string filePath)
-        {
-            var directory = Path.GetDirectoryName(filePath);
-            return NuGet.Configuration.Settings.LoadDefaultSettings(
-                directory,
-                configFileName: filePath,
-                machineWideSettings: new XPlatMachineWideSetting());
-        }
-
         /// Returns a string holding the value of the key in the config section
         /// of the settings. If showPath is true, this will also return the path
         /// to the configuration file where the key is located.
@@ -227,16 +214,17 @@ namespace NuGet.CommandLine.XPlat
         /// <exception cref="CommandException"></exception>
         public static void ValidateConfigKey(string configKey)
         {
-            if (!configKey.Equals(ConfigurationConstants.DependencyVersion, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.GlobalPackagesFolder, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.RepositoryPath, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.DefaultPushSource, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.HostKey, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.UserKey, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.PasswordKey, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.NoProxy, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.MaxHttpRequestsPerSource, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.SignatureValidationMode, StringComparison.OrdinalIgnoreCase))
+            bool isValidKey = false;
+            foreach (string key in ConfigurationConstants.GetConfigKeys())
+            {
+                if (key.Equals(configKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    isValidKey = true;
+                    break;
+                }
+            }
+
+            if (!isValidKey)
             {
                 throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, configKey));
             }
