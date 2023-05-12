@@ -538,7 +538,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid config key..
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid config key in config section..
         /// </summary>
         internal static string Error_ConfigSetInvalidKey {
             get {
