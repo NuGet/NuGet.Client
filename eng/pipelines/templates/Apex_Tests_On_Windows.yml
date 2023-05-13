@@ -51,7 +51,7 @@ stages:
       testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
       testAgentElevated: true
       preTestMachineConfigurationStepList:
-      - template: \steps\powershell\execute-script.yml
+      - template: \steps\powershell\execute-script.yml@DartLabTemplates
         parameters:
           displayName: Get Baseline Build ID using CloudBuild Session ID
           continueOnError: true
