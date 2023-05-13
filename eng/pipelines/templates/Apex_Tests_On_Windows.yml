@@ -37,7 +37,7 @@ stages:
           value: ${{parameters.bootstrapperUrl}}
         - ${{parameters.variables}}
       runSettingsURI: ${{parameters.runSettingsURI}}
-      visualStudioBootstrapperURI: $(bootstrapperUrl)
+      baseVisualStudioBootstrapperURI: $(bootstrapperUrl)
       testLabPoolName: VS-Platform
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
       visualStudioSigning: Test
