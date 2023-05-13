@@ -321,7 +321,7 @@ steps:
     arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.655 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: MicroBuildBuildVSBootstrapper@2
+- task: MicroBuildBuildVSBootstrapper@3
   displayName: 'Build a Visual Studio bootstrapper for tests'
   inputs:
     channelName: "$(VsTargetChannelForTests)"
@@ -352,6 +352,23 @@ steps:
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]Unable to set bootstrapperUrl: $_"
         exit 1
+      }
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  
+- task: PowerShell@1
+  displayName: "Set CloudBuild Session ID variable for tests"
+  name: "setcloudbuildsessionid"
+  continueOnError: true
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      try {
+        $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+        $qBuildSessionId = $json[0].QBuildSessionId;
+        Write-Host "CloudBuild Session ID: `$qBuildSessionId`"
+        Write-Host "##vso[task.setvariable variable=QBuildSessionId ;isOutput=true]$qBuildSessionId"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
       }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
