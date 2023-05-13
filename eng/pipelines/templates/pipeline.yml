@@ -362,6 +362,8 @@ stages:
     variables:
       - name: VsBootstrapperUrl
         value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['vsbootstrapper.bootstrapperUrl']]
+      - name: QBuildSessionId
+        value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['setcloudbuildsessionid.QBuildSessionId']]
       - name: GitHubStatusName
         value: Apex Tests On Windows
     isOfficialBuild: ${{parameters.isOfficialBuild}}
@@ -369,4 +371,5 @@ stages:
     dartLabEnvironment: ${{parameters.DartLabEnvironment}}
     testExecutionJobTimeoutInMinutes: 150
     bootstrapperUrl: $(VsBootstrapperUrl)
+    QBuildSessionId: $(QBuildSessionId)
     testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
