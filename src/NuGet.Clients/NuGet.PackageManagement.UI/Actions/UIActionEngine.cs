@@ -10,8 +10,10 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Navigation;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.TeamFoundation.WorkItemTracking.Common;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -801,7 +803,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             IEnumerable<SourceRepository> sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-            List<IPackageSearchMetadata> licenseMetadata = await GetPackageMetadataAsync(sources, licenseCheck, token);
+            List<IPackageSearchMetadata> licenseMetadata = await GetPackageMetadataAsync(sources, licenseCheck, uiService.UIContext.PackageSourceMapping, token);
 
             TelemetryServiceUtility.StopTimer();
 
@@ -1016,6 +1018,7 @@ namespace NuGet.PackageManagement.UI
         private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(
             IEnumerable<SourceRepository> sources,
             IEnumerable<PackageIdentity> packages,
+            PackageSourceMapping packageSourceMapping,
             CancellationToken token)
         {
             var results = new List<IPackageSearchMetadata>();
@@ -1028,6 +1031,7 @@ namespace NuGet.PackageManagement.UI
             localSources.AddRange(_packageManager.GlobalPackageFolderRepositories);
 
             var allPackages = packages.ToArray();
+            bool isPackageSourceMappingEnabled = packageSourceMapping.IsEnabled;
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
@@ -1048,7 +1052,19 @@ namespace NuGet.PackageManagement.UI
 #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
                     IPackageSearchMetadata[] remoteResults = (await TaskCombinators.ThrottledAsync(
                         remainingPackages,
-                        (p, t) => GetPackageMetadataAsync(sources, sourceCacheContext, p, t),
+                        async (p, t) =>
+                        {
+                            IEnumerable<SourceRepository> sourcesForPackageIdentity;
+                            if (isPackageSourceMappingEnabled)
+                            {
+                                sourcesForPackageIdentity = GetSourcesMappedToPackage(p.Id, sources, packageSourceMapping) ?? Enumerable.Empty<SourceRepository>();
+                            }
+                            else
+                            {
+                                sourcesForPackageIdentity = sources;
+                            }
+                            return await GetPackageMetadataAsync(sourcesForPackageIdentity, sourceCacheContext, p, t);
+                        },
                         token)).Where(metadata => metadata != null).ToArray();
 #pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
 
@@ -1063,6 +1079,16 @@ namespace NuGet.PackageManagement.UI
             }
 
             return results;
+        }
+
+        private IEnumerable<SourceRepository>? GetSourcesMappedToPackage(string id, IEnumerable<SourceRepository> sources, PackageSourceMapping packageSourceMapping)
+        {
+            IReadOnlyList<string> sourceNamesMapped = packageSourceMapping.GetConfiguredPackageSources(id);
+            if (sourceNamesMapped is null)
+            {
+                return null;
+            }
+            return sources.Where(sourceRepository => sourceNamesMapped.Contains(sourceRepository.PackageSource.Name));
         }
 
         private static async Task<IPackageSearchMetadata?> GetPackageMetadataAsync(
