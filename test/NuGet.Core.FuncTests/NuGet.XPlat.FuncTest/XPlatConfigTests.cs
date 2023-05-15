@@ -234,20 +234,19 @@ namespace NuGet.XPlat.FuncTest
                 $"{XplatDll} config set {key} {value} --configfile {filePath}",
                 waitForExit: true);
 
-            var settings = Configuration.Settings.LoadDefaultSettings(
+            ISettings settings = Configuration.Settings.LoadDefaultSettings(
                 testInfo.WorkingPath,
-                configFileName: filePath,
+                configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
 
             var configSection = settings.GetSection("config");
-            var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
+            var values = configSection.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
             var configItems = values.Where(i => i.Key == key);
-            var configFilePath = configItems.FirstOrDefault().ConfigPath;
+            var configFilePath = configItems.Single().ConfigPath;
 
             // Assert
             Assert.Equal(0, result.ExitCode);
-            Assert.Equal(1, configItems.Count());
-            Assert.Equal(value, configItems.First().Value);
+            Assert.Equal(value, configItems.Single().Value);
             Assert.Equal(filePath, configFilePath);
         }
 
@@ -268,18 +267,17 @@ namespace NuGet.XPlat.FuncTest
 
             var settings = Configuration.Settings.LoadDefaultSettings(
                 testInfo.WorkingPath,
-                configFileName: filePath,
+                configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
 
             var configSection = settings.GetSection("config");
-            var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
+            var values = configSection.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
             var configItems = values.Where(i => i.Key == key);
-            var configFilePath = configItems.FirstOrDefault().ConfigPath;
+            var configFilePath = configItems.Single().ConfigPath;
 
             // Assert
             Assert.Equal(0, result.ExitCode);
-            Assert.Equal(1, configItems.Count());
-            Assert.Equal(value, configItems.First().Value);
+            Assert.Equal(value, configItems.Single().Value);
             Assert.Equal(filePath, configFilePath);
         }
 
@@ -300,13 +298,13 @@ namespace NuGet.XPlat.FuncTest
 
             var settings = Configuration.Settings.LoadDefaultSettings(
                 testInfo.WorkingPath,
-                configFileName: filePath,
+                configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
 
             var configSection = settings.GetSection("config");
-            var values = configSection?.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
+            var values = configSection.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
             var configItems = values.Where(i => i.Key == key);
-            var configFilePath = configItems.FirstOrDefault().ConfigPath;
+            var configFilePath = configItems.Single().ConfigPath;
 
             // Assert
             Assert.Equal(0, result.ExitCode);
