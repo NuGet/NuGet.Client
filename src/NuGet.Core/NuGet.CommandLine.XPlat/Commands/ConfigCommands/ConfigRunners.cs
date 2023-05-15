@@ -230,16 +230,17 @@ namespace NuGet.CommandLine.XPlat
         /// <exception cref="CommandException"></exception>
         public static void ValidateConfigKey(string configKey)
         {
-            if (!configKey.Equals(ConfigurationConstants.DependencyVersion, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.GlobalPackagesFolder, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.RepositoryPath, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.DefaultPushSource, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.HostKey, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.UserKey, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.PasswordKey, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.NoProxy, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.MaxHttpRequestsPerSource, StringComparison.OrdinalIgnoreCase)
-                && !configKey.Equals(ConfigurationConstants.SignatureValidationMode, StringComparison.OrdinalIgnoreCase))
+            bool isValidKey = false;
+            foreach (string key in ConfigurationConstants.GetConfigKeys())
+            {
+                if (key.Equals(configKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    isValidKey = true;
+                    break;
+                }
+            }
+
+            if (!isValidKey)
             {
                 throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, configKey));
             }
