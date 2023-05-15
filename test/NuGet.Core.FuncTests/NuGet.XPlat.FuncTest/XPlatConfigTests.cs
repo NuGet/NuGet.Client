@@ -60,7 +60,7 @@ namespace NuGet.XPlat.FuncTest
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config paths --help",
                 waitForExit: true);
-            
+
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
         }
@@ -432,19 +432,17 @@ namespace NuGet.XPlat.FuncTest
             var log = new TestCommandOutputLogger();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigUnsetRunner.Run(null, () => log));
+            Assert.Throws<ArgumentNullException>(() => ConfigUnsetRunner.Run(args: null, () => log));
         }
 
         [Fact]
         public void ConfigUnsetCommand_NullGetLogger_Fail()
         {
             // Arrange
-            var args = new ConfigUnsetArgs()
-            {
-            };
+            var args = new ConfigUnsetArgs();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigUnsetRunner.Run(args, null));
+            Assert.Throws<ArgumentNullException>(() => ConfigUnsetRunner.Run(args, getLogger: null));
         }
 
         internal class TestInfo : IDisposable
