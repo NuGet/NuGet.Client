@@ -222,7 +222,7 @@ namespace NuGet.XPlat.FuncTest
         [Theory]
         [InlineData("signatureValidationMode", "accept")]
         [InlineData("maxHttpRequestsPerSource", "64")]
-        public void ConfigSetCommand_AddNewConfigSettingWithConfigFileArg_Success(string key, string value)
+        public void ConfigSetCommand_WithConfigFileArg_AddsSetting(string key, string value)
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -251,7 +251,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigSetCommand_UpdateConfigSettingWithConfigFileArg_Success()
+        public void ConfigSetCommand_WithConfigFileArg_UpdatesSetting()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -282,7 +282,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigSetCommand_AddConfigSettingWithNonExistingConfigSection_Success()
+        public void ConfigSetCommand_WithNonExistingConfigSection_AddsConfigSetting()
         {
             // Arrange & Act
             using var testInfo = new TestInfo();
@@ -314,7 +314,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigSetCommand_HelpMessage_Success()
+        public void ConfigSetCommand_UsingHelpOption_DisplaysHelpMessage()
         {
             // Arrange
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigSetConfigKeyDescription);
@@ -325,7 +325,7 @@ namespace NuGet.XPlat.FuncTest
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config set --help",
                 waitForExit: true);
-          
+
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
         }
@@ -461,7 +461,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigSetCommand_InvalidConfigKey_Fail()
+        public void ConfigSetCommand_WithInvalidConfigKey_ThrowsCommandException()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -481,25 +481,23 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigSetCommand_NullArgs_Fail()
+        public void ConfigSetCommand_WithNullArgs_ThrowsArgumentNullException()
         {
             // Arrange
             var log = new TestCommandOutputLogger();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigSetRunner.Run(null, () => log));
+            Assert.Throws<ArgumentNullException>(() => ConfigSetRunner.Run(args: null, () => log));
         }
 
         [Fact]
-        public void ConfigSetCommand_NullGetLogger_Fail()
+        public void ConfigSetCommand_WithNullGetLogger_ThrowsArgumentNullException()
         {
             // Arrange
-            var args = new ConfigSetArgs()
-            {
-            };
+            var args = new ConfigSetArgs();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigSetRunner.Run(args, null));
+            Assert.Throws<ArgumentNullException>(() => ConfigSetRunner.Run(args, getLogger: null));
         }
 
         internal class TestInfo : IDisposable
