@@ -13,29 +13,15 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageSourceMappingActionControl : UserControl
     {
-        private PackageSourceMappingActionViewModel _packageSourceMappingActionViewModel;
-
         public PackageSourceMappingActionControl()
         {
             InitializeComponent();
         }
 
-        internal PackageSourceMappingActionViewModel ViewModel
-        {
-            get
-            {
-                if (_packageSourceMappingActionViewModel == null) _packageSourceMappingActionViewModel = (PackageSourceMappingActionViewModel)DataContext;
-                return _packageSourceMappingActionViewModel;
-            }
-            set
-            {
-                _packageSourceMappingActionViewModel = value;
-            }
-        }
-
         private void SettingsButtonClicked(object sender, EventArgs e)
         {
-            ViewModel.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
+            var viewModel = (PackageSourceMappingActionViewModel)DataContext;
+            viewModel.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
         }
     }
 }
