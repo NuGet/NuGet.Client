@@ -423,7 +423,7 @@
   <Target Name="VSSDKNuGetPackagesCompat" BeforeTargets="GetVsixSourceItems">
     <ItemGroup>
       <ReferenceCopyLocalPaths
-        Include="@(ReferenceCopyLocalPaths)"
+        Update="@(ReferenceCopyLocalPaths)"
         Condition=" '%(ReferenceCopyLocalPaths.NuGetPackageId)' != '' "
         NuGetSourceType="Package" />
     </ItemGroup>
