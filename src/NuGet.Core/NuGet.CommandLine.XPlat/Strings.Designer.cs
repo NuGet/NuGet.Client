@@ -313,6 +313,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The key &quot;{0}&quot; could not be found in config section, so it could not be unset..
+        /// </summary>
+        internal static string ConfigUnsetNonExistingKey {
+            get {
+                return ResourceManager.GetString("ConfigUnsetNonExistingKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} (y/N).
         /// </summary>
         internal static string ConsoleConfirmMessage {
@@ -529,20 +538,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid config key..
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid config key in config section..
         /// </summary>
         internal static string Error_ConfigSetInvalidKey {
             get {
                 return ResourceManager.GetString("Error_ConfigSetInvalidKey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The config key &quot;{0}&quot; could not be unset..
-        /// </summary>
-        internal static string Error_ConfigUnsetNonExistingKey {
-            get {
-                return ResourceManager.GetString("Error_ConfigUnsetNonExistingKey", resourceCulture);
             }
         }
         

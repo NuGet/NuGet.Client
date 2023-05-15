@@ -829,7 +829,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Key '{0}' not found.</value>
   </data>
   <data name="Error_ConfigSetInvalidKey" xml:space="preserve">
-    <value>'{0}' is not a valid config key.</value>
+    <value>'{0}' is not a valid config key in config section.</value>
     <comment>0 - The config key</comment>
   </data>
   <data name="ConfigUnsetCommandDescription" xml:space="preserve">
@@ -841,8 +841,8 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="ConfigUnsetConfigKeyDescription" xml:space="preserve">
     <value>The key of the settings that are to be removed.</value>
   </data>
-  <data name="Error_ConfigUnsetNonExistingKey" xml:space="preserve">
-    <value>The config key "{0}" could not be unset.</value>
+  <data name="ConfigUnsetNonExistingKey" xml:space="preserve">
+    <value>The key "{0}" could not be found in config section, so it could not be unset.</value>
     <comment>0 - The config key</comment>
   </data>
   <data name="ConfigGetAllOrConfigKeyDescription" xml:space="preserve">
