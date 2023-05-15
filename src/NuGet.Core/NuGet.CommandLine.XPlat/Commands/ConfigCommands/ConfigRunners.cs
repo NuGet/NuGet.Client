@@ -82,11 +82,11 @@ namespace NuGet.CommandLine.XPlat
             RunnerHelper.ValidateConfigKey(args.ConfigKey);
             ISettings settings = string.IsNullOrEmpty(args.ConfigFile)
                 ? RunnerHelper.GetSettingsFromDirectory(null)
-                : RunnerHelper.GetSettingsFromFile(args.ConfigFile);
+                : Settings.LoadSpecificSettings(Path.GetDirectoryName(args.ConfigFile), args.ConfigFile);
 
             if (!SettingsUtility.DeleteConfigValue(settings, args.ConfigKey))
             {
-                throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigUnsetNonExistingKey, args.ConfigKey));
+                getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.ConfigUnsetNonExistingKey, args.ConfigKey));
             }
         }
     }
@@ -113,20 +113,6 @@ namespace NuGet.CommandLine.XPlat
             return NuGet.Configuration.Settings.LoadDefaultSettings(
                 directory,
                 configFileName: null,
-                machineWideSettings: new XPlatMachineWideSetting());
-        }
-
-        /// <summary>
-        /// Creates a settings object utilizing a NuGet configuration file path.
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public static ISettings GetSettingsFromFile(string filePath)
-        {
-            var directory = Path.GetDirectoryName(filePath);
-            return NuGet.Configuration.Settings.LoadDefaultSettings(
-                directory,
-                configFileName: filePath,
                 machineWideSettings: new XPlatMachineWideSetting());
         }
 

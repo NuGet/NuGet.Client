@@ -231,17 +231,31 @@ namespace NuGet.XPlat.FuncTest
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config unset {key} --configfile {filePath}",
                 waitForExit: true);
-
-            var settings = Configuration.Settings.LoadDefaultSettings(
-                testInfo.WorkingPath,
-                configFileName: filePath,
-                machineWideSettings: new XPlatMachineWideSetting());
-
+            var settings = Settings.LoadSpecificSettings(testInfo.WorkingPath, filePath);
             var configSection = settings.GetSection("config");
 
             // Assert
             Assert.Equal(0, result.ExitCode);
             Assert.Null(configSection);
+        }
+
+        [Fact]
+        public void ConfigUnsetCommand_NonExistingConfigKey_SuccessfullyDisplaysMessage()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo();
+            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
+            var key = "http_proxy";
+
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config unset {key} --configfile {filePath}",
+                waitForExit: true);
+            var expectedMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigUnsetNonExistingKey, key);
+
+            // Assert
+            DotnetCliUtil.VerifyResultSuccess(result, expectedMessage);
         }
 
         [Fact]
@@ -407,25 +421,6 @@ namespace NuGet.XPlat.FuncTest
                 waitForExit: true);
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, key);
 
-            // Assert
-            DotnetCliUtil.VerifyResultFailure(result, expectedError);
-        }
-
-        [Fact]
-        public void ConfigUnsetCommand_NonExistingConfigKey_Fail()
-        {
-            // Arrange & Act
-            using var testInfo = new TestInfo();
-            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
-            var key = "http_proxy";
-
-            var result = CommandRunner.Run(
-                DotnetCli,
-                Directory.GetCurrentDirectory(),
-                $"{XplatDll} config unset {key} --configfile {filePath}",
-                waitForExit: true);
-            var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigUnsetNonExistingKey, key);
-  
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedError);
         }
