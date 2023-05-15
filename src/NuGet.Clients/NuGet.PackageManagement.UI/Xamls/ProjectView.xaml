@@ -119,17 +119,17 @@
               <Setter Property="Foreground" Value="{x:Static SystemColors.GrayTextBrush}" />
             </DataTrigger>
             <DataTrigger
-                        Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
-                        Value="True" >
+              Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
+              Value="True">
               <Setter
-                            Property="IsEnabled"
-                            Value="{Binding IsValidVersion}" />
+                Property="IsEnabled"
+                Value="{Binding IsValidVersion}" />
               <Setter
-                            Property="ToolTipService.ShowOnDisabled"
-                            Value="True" />
+                Property="ToolTipService.ShowOnDisabled"
+                Value="True" />
               <Setter
-                            Property="ToolTip"
-                            Value="{Binding Converter={StaticResource TooltipConverter}}" />
+                Property="ToolTip"
+                Value="{Binding Converter={StaticResource TooltipConverter}}" />
             </DataTrigger>
           </Style.Triggers>
         </Style>
