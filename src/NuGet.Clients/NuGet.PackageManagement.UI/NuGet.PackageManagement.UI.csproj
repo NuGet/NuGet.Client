@@ -45,6 +45,36 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Options\GeneralOptionControl.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GeneralOptionControl.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Options\PackageSourcesOptionsControl.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PackageSourcesOptionsControl.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Options\GeneralOptionControl.resx">
+      <DependentUpon>GeneralOptionControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Options\PackageSourcesOptionsControl.resx">
+      <DependentUpon>PackageSourcesOptionsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\UpgradeReport.xslt">
       <SubType>Designer</SubType>
     </EmbeddedResource>
