@@ -39,6 +39,7 @@ stages:
       runSettingsURI: ${{parameters.runSettingsURI}}
       visualStudioBootstrapperURI: $(bootstrapperUrl)
       baseVisualStudioBootstrapperURI: $(bootstrapperUrl)
+      candidateBaselineBuilds: $(BaselineBuildCommitIds)
       testLabPoolName: VS-Platform
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
       visualStudioSigning: Test
@@ -86,8 +87,7 @@ stages:
             $(DartLab.Path)\Scripts\VisualStudio\Build\Get-BaselineBuildCommitIDs.ps1 -BuildJson $baselineBuildsFile -OutVariableName "BaselineBuildCommitIds"
             } catch {
               Write-Host "##vso[task.LogIssue type=error;]Unable to get Baseline build commit ids: $_"
-            }
-      candidateBaselineBuilds: $(BaselineBuildCommitIds)
+            }      
       preDeployAndRunTestsStepList:
         - task: PowerShell@1
           displayName: "Print Environment Variables"
