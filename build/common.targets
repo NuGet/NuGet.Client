@@ -199,7 +199,7 @@
   <Target Name="GetSigningInputsDefault" DependsOnTargets="GetTargetFrameworkSet" Returns="@(DllsToSign)" Condition=" '$(Shipping)' == 'true' ">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
-      Targets="$(SignTargetsForRealSigning)"
+      Targets="$(SignTargetsForRealSigning);$(AdditionalSignTargetsForRealSigning)"
       Properties="TargetFramework=%(ProjectTargetFrameworkEntries.Identity);
                   BuildProjectReferences=false;">
 
