@@ -56,20 +56,17 @@ namespace NuGet.PackageManagement.UI.ViewModels
         {
             get
             {
-                if (IsPackageSourceMappingEnabled)
+                if (!IsPackageSourceMappingEnabled)
                 {
-                    if (IsPackageMapped)
-                    {
-                        return Resources.Text_PackageMappingsFound;
-                    }
-                    else
-                    {
-                        return Resources.Text_PackageMappingsNotFound;
-                    }
+                    return Resources.Text_PackageMappingsDisabled;
+                }
+                if (IsPackageMapped)
+                {
+                    return Resources.Text_PackageMappingsFound;
                 }
                 else
                 {
-                    return Resources.Text_PackageMappingsDisabled;
+                    return Resources.Text_PackageMappingsNotFound;
                 }
             }
         }
