@@ -342,6 +342,7 @@ namespace NuGet.XPlat.FuncTest
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config --help",
                 waitForExit: true);
+
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
         }
@@ -399,6 +400,7 @@ namespace NuGet.XPlat.FuncTest
                 $"{XplatDll} config get all {nonExistingDirectory}",
                 waitForExit: true);
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
+
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedError);
         }
@@ -437,7 +439,7 @@ namespace NuGet.XPlat.FuncTest
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedError);
         }
-        
+
         [Fact]
         public void ConfigGetCommand_NullArgs_Fail()
         {
@@ -476,6 +478,7 @@ namespace NuGet.XPlat.FuncTest
                 waitForExit: true
                 );
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, key);
+
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedError);
         }
