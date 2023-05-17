@@ -16,7 +16,6 @@ namespace NuGet.CommandLine.XPlat
         public bool ShowPath { get; set; }
     }
 
-
     internal class ConfigSetArgs
     {
         public string? ConfigKey { get; set; }

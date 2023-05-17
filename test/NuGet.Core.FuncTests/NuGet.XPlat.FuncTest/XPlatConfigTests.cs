@@ -532,8 +532,7 @@ namespace NuGet.XPlat.FuncTest
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true
-                );
+                waitForExit: true);
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, key);
 
             // Assert
