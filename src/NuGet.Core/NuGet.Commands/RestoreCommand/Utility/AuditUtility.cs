@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -152,11 +153,19 @@ namespace NuGet.Commands.Restore.Utility
             Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>? result = null;
 
             int minSeverity = ParseAuditLevel();
-
-            foreach (var graph in _targetGraphs)
-            {
-                foreach (LibraryIdentity package in graph.Flattened.Select(i => i.Key).Where(p => p.Type == LibraryType.Package))
+            Func<RestoreTargetGraph, IEnumerable<ResolvedDependencyKey>> getPackagesToCheck =
+                ParseAuditMode() switch
                 {
+                    NuGetAuditMode.Direct => GetDirectDependencies,
+                    NuGetAuditMode.Transitive => GetAllDependencies,
+                    _ => GetDirectDependencies
+                };
+
+            foreach (RestoreTargetGraph graph in _targetGraphs)
+            {
+                foreach (ResolvedDependencyKey resolvedDependency in getPackagesToCheck(graph))
+                {
+                    LibraryIdentity package = resolvedDependency.Child;
                     List<PackageVulnerabilityInfo>? fromFile = GetKnownVulnerabilities(package.Name, package.Version, knownVulnerabilities);
 
                     if (fromFile?.Count() > 0)
@@ -280,6 +289,46 @@ namespace NuGet.Commands.Restore.Utility
             message.ProjectPath = _projectFullPath;
             _logger.Log(message);
             return 1;
+        }
+
+        private enum NuGetAuditMode { Unknown, Direct, Transitive }
+
+        private NuGetAuditMode ParseAuditMode()
+        {
+            string? auditMode = _restoreAuditProperties.AuditMode?.Trim();
+
+            if (auditMode == null)
+            {
+                return NuGetAuditMode.Unknown;
+            }
+            else if (string.Equals("direct", auditMode, StringComparison.OrdinalIgnoreCase))
+            {
+                return NuGetAuditMode.Direct;
+            }
+            else if (string.Equals("transitive", auditMode, StringComparison.OrdinalIgnoreCase))
+            {
+                return NuGetAuditMode.Transitive;
+            }
+
+            string messageText = string.Format(Strings.Error_InvalidNuGetAuditModeValue, auditMode, "direct, transitive");
+            RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+            message.ProjectPath = _projectFullPath;
+            _logger.Log(message);
+            return NuGetAuditMode.Unknown;
+        }
+
+        IEnumerable<ResolvedDependencyKey> GetDirectDependencies(RestoreTargetGraph graph)
+        {
+            Debug.Assert(graph.Graphs.Count() == 1);
+            LibraryIdentity thisProject = graph.Graphs.First().Item.Key;
+            Debug.Assert(thisProject.Type == LibraryType.Project);
+
+            return graph.ResolvedDependencies.Where(dep => dep.Parent == thisProject && dep.Child.Type == LibraryType.Package);
+        }
+
+        IEnumerable<ResolvedDependencyKey> GetAllDependencies(RestoreTargetGraph graph)
+        {
+            return graph.ResolvedDependencies.Where(dep => dep.Child.Type == LibraryType.Package);
         }
     }
 }
