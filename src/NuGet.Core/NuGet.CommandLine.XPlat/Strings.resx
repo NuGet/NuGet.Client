@@ -844,7 +844,6 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>'{0}' is not a valid config key in config section.</value>
     <comment>0 - The config key</comment>
   </data>
-=======
   <data name="ConfigUnsetCommandDescription" xml:space="preserve">
     <value>Removes the key-value pair from a specified NuGet configuration setting.</value>
   </data>
