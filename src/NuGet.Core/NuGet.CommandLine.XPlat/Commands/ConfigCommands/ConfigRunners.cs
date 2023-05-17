@@ -74,6 +74,23 @@ namespace NuGet.CommandLine.XPlat
         }
     }
 
+    internal static class ConfigUnsetRunner
+    {
+        public static void Run(ConfigUnsetArgs args, Func<ILogger> getLogger)
+        {
+            RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
+            RunnerHelper.ValidateConfigKey(args.ConfigKey);
+            ISettings settings = string.IsNullOrEmpty(args.ConfigFile)
+                ? RunnerHelper.GetSettingsFromDirectory(null)
+                : Settings.LoadSpecificSettings(Path.GetDirectoryName(args.ConfigFile), args.ConfigFile);
+
+            if (!SettingsUtility.DeleteConfigValue(settings, args.ConfigKey))
+            {
+                getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.ConfigUnsetNonExistingKey, args.ConfigKey));
+            }
+        }
+    }
+
     internal static class RunnerHelper
     {
         /// <summary>
@@ -191,6 +208,28 @@ namespace NuGet.CommandLine.XPlat
         {
             _ = args ?? throw new ArgumentNullException(nameof(args));
             _ = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        /// <summary>
+        /// Throws an exception if the value passed in is not a valid config key.
+        /// </summary>
+        /// <exception cref="CommandException"></exception>
+        public static void ValidateConfigKey(string configKey)
+        {
+            bool isValidKey = false;
+            foreach (string key in ConfigurationConstants.GetConfigKeys())
+            {
+                if (key.Equals(configKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    isValidKey = true;
+                    break;
+                }
+            }
+
+            if (!isValidKey)
+            {
+                throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, configKey));
+            }
         }
     }
 }

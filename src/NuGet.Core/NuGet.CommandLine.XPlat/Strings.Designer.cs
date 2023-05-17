@@ -286,6 +286,42 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Removes the key-value pair from a specified NuGet configuration setting..
+        /// </summary>
+        internal static string ConfigUnsetCommandDescription {
+            get {
+                return ResourceManager.GetString("ConfigUnsetCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The NuGet configuration file from which settings will be removed..
+        /// </summary>
+        internal static string ConfigUnsetConfigFileDescription {
+            get {
+                return ResourceManager.GetString("ConfigUnsetConfigFileDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The key of the settings that are to be removed..
+        /// </summary>
+        internal static string ConfigUnsetConfigKeyDescription {
+            get {
+                return ResourceManager.GetString("ConfigUnsetConfigKeyDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The key &quot;{0}&quot; could not be found in config section, so it could not be unset..
+        /// </summary>
+        internal static string ConfigUnsetNonExistingKey {
+            get {
+                return ResourceManager.GetString("ConfigUnsetNonExistingKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} (y/N).
         /// </summary>
         internal static string ConsoleConfirmMessage {
@@ -507,6 +543,24 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_CentralPackageVersions_VersionsNotAllowed {
             get {
                 return ResourceManager.GetString("Error_CentralPackageVersions_VersionsNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is not a valid integer..
+        /// </summary>
+        internal static string Error_invalid_number {
+            get {
+                return ResourceManager.GetString("Error_invalid_number", resourceCulture);
+                }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid config key in config section..
+        /// </summary>
+        internal static string Error_ConfigSetInvalidKey {
+            get {
+                return ResourceManager.GetString("Error_ConfigSetInvalidKey", resourceCulture);
             }
         }
         
