@@ -283,8 +283,8 @@ namespace NuGet.CommandLine.XPlat {
             get {
                 return ResourceManager.GetString("ConfigPathsWorkingDirectoryDescription", resourceCulture);
             }
-        }
-        
+        }   
+
         /// <summary>
         ///   Looks up a localized string similar to Set the value of a specified NuGet configuration setting..
         /// </summary>
@@ -293,7 +293,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ConfigSetCommandDescription", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The NuGet configuration file (nuget.config) whose value will be set..
         /// </summary>
@@ -302,7 +302,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ConfigSetConfigFileDescription", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The key of the settings that are to be set..
         /// </summary>
@@ -311,7 +311,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ConfigSetConfigKeyDescription", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The value of the settings that are to be set..
         /// </summary>
@@ -320,7 +320,43 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ConfigSetConfigValueDescription", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Removes the key-value pair from a specified NuGet configuration setting..
+        /// </summary>
+        internal static string ConfigUnsetCommandDescription {
+            get {
+                return ResourceManager.GetString("ConfigUnsetCommandDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The NuGet configuration file from which settings will be removed..
+        /// </summary>
+        internal static string ConfigUnsetConfigFileDescription {
+            get {
+                return ResourceManager.GetString("ConfigUnsetConfigFileDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The key of the settings that are to be removed..
+        /// </summary>
+        internal static string ConfigUnsetConfigKeyDescription {
+            get {
+                return ResourceManager.GetString("ConfigUnsetConfigKeyDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The key &quot;{0}&quot; could not be found in config section, so it could not be unset..
+        /// </summary>
+        internal static string ConfigUnsetNonExistingKey {
+            get {
+                return ResourceManager.GetString("ConfigUnsetNonExistingKey", resourceCulture);
+            }
+        }
+       
         /// <summary>
         ///   Looks up a localized string similar to {0} (y/N).
         /// </summary>

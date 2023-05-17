@@ -89,6 +89,23 @@ namespace NuGet.CommandLine.XPlat
         }
     }
 
+    internal static class ConfigUnsetRunner
+    {
+        public static void Run(ConfigUnsetArgs args, Func<ILogger> getLogger)
+        {
+            RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
+            RunnerHelper.ValidateConfigKey(args.ConfigKey);
+            ISettings settings = string.IsNullOrEmpty(args.ConfigFile)
+                ? RunnerHelper.GetSettingsFromDirectory(null)
+                : Settings.LoadSpecificSettings(Path.GetDirectoryName(args.ConfigFile), args.ConfigFile);
+
+            if (!SettingsUtility.DeleteConfigValue(settings, args.ConfigKey))
+            {
+                getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.ConfigUnsetNonExistingKey, args.ConfigKey));
+            }
+        }
+    }
+
     internal static class RunnerHelper
     {
         /// <summary>

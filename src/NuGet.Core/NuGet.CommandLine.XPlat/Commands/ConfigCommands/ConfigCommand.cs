@@ -85,6 +85,28 @@ namespace NuGet.CommandLine.XPlat
                         return 0;
                     });
                 });
+                ConfigCmd.Command("unset", UnsetCmd =>
+                {
+                    CommandArgument configKey = UnsetCmd.Argument(
+                        "CONFIG_KEY",
+                        Strings.ConfigUnsetConfigKeyDescription);
+                    var configFile = UnsetCmd.Option(
+                        "--configfile",
+                        Strings.ConfigUnsetConfigFileDescription,
+                        CommandOptionType.SingleValue);
+                    UnsetCmd.HelpOption("-h|--help");
+                    UnsetCmd.Description = Strings.ConfigUnsetCommandDescription;
+                    UnsetCmd.OnExecute(() =>
+                    {
+                        var args = new ConfigUnsetArgs()
+                        {
+                            ConfigKey = configKey.Value,
+                            ConfigFile = configFile.Value()
+                        };
+                        ConfigUnsetRunner.Run(args, getLogger);
+                        return 0;
+                    });
+                });
                 ConfigCmd.HelpOption("-h|--help");
                 ConfigCmd.Description = Strings.Config_Description;
                 ConfigCmd.OnExecute(() =>

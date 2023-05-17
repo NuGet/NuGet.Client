@@ -16,10 +16,17 @@ namespace NuGet.CommandLine.XPlat
         public bool ShowPath { get; set; }
     }
 
+
     internal class ConfigSetArgs
     {
         public string? ConfigKey { get; set; }
         public string? ConfigValue { get; set; }
+        public string? ConfigFile { get; set; }
+    }
+
+    internal class ConfigUnsetArgs
+    {
+        public string? ConfigKey { get; set; }
         public string? ConfigFile { get; set; }
     }
 }

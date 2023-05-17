@@ -134,6 +134,7 @@ namespace NuGet.Configuration
         public static readonly string ValueAttribute = "value";
 
         public static readonly string PatternAttribute = "pattern";
+
         public static IReadOnlyList<string> GetConfigKeys()
         {
             return new List<string>

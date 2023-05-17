@@ -844,6 +844,20 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>'{0}' is not a valid config key in config section.</value>
     <comment>0 - The config key</comment>
   </data>
+=======
+  <data name="ConfigUnsetCommandDescription" xml:space="preserve">
+    <value>Removes the key-value pair from a specified NuGet configuration setting.</value>
+  </data>
+  <data name="ConfigUnsetConfigFileDescription" xml:space="preserve">
+    <value>The NuGet configuration file from which settings will be removed.</value>
+  </data>
+  <data name="ConfigUnsetConfigKeyDescription" xml:space="preserve">
+    <value>The key of the settings that are to be removed.</value>
+  </data>
+  <data name="ConfigUnsetNonExistingKey" xml:space="preserve">
+    <value>The key "{0}" could not be found in config section, so it could not be unset.</value>
+    <comment>0 - The config key</comment>
+  </data>
   <data name="ConfigGetAllOrConfigKeyDescription" xml:space="preserve">
     <value>ALL: Get all merged NuGet configuration settings from multiple NuGet configuration files that will be applied, when invoking NuGet command from the working directory path.  CONFIG_KEY: Get the effective value of the specified configuration settings of the config section.</value>
   </data>

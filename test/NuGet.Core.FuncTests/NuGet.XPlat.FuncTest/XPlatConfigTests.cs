@@ -331,6 +331,63 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
+        public void ConfigUnsetCommand_DeleteConfigSettingWithConfigFileArg_Success()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
+            var key = "http_proxy";
+
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config unset {key} --configfile {filePath}",
+                waitForExit: true);
+            var settings = Settings.LoadSpecificSettings(testInfo.WorkingPath, filePath);
+            var configSection = settings.GetSection("config");
+
+            // Assert
+            Assert.Equal(0, result.ExitCode);
+            Assert.Null(configSection);
+        }
+
+        [Fact]
+        public void ConfigUnsetCommand_NonExistingConfigKey_SuccessfullyDisplaysMessage()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo();
+            var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
+            var key = "http_proxy";
+
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config unset {key} --configfile {filePath}",
+                waitForExit: true);
+            var expectedMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigUnsetNonExistingKey, key);
+
+            // Assert
+            DotnetCliUtil.VerifyResultSuccess(result, expectedMessage);
+        }
+
+        [Fact]
+        public void ConfigUnsetCommand_HelpMessage_Success()
+        {
+            // Arrange
+            var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigUnsetConfigKeyDescription);
+
+            // Act
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config unset --help",
+                waitForExit: true);
+
+            // Assert
+            DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
+        }
+
+        [Fact]
         public void ConfigCommand_HelpMessage_Success()
         {
             // Arrange
@@ -501,6 +558,44 @@ namespace NuGet.XPlat.FuncTest
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => ConfigSetRunner.Run(args, getLogger: null));
+        }
+
+        [Fact]
+        public void ConfigUnsetCommand_InvalidConfigKey_Fail()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config");
+            var key = "InvalidConfigKey123";
+
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Directory.GetCurrentDirectory(),
+                $"{XplatDll} config unset {key}",
+                waitForExit: true);
+            var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, key);
+
+            // Assert
+            DotnetCliUtil.VerifyResultFailure(result, expectedError);
+        }
+
+        [Fact]
+        public void ConfigUnsetCommand_NullArgs_Fail()
+        {
+            // Arrange
+            var log = new TestCommandOutputLogger();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ConfigUnsetRunner.Run(args: null, () => log));
+        }
+
+        [Fact]
+        public void ConfigUnsetCommand_NullGetLogger_Fail()
+        {
+            // Arrange
+            var args = new ConfigUnsetArgs();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => ConfigUnsetRunner.Run(args, getLogger: null));
         }
 
         internal class TestInfo : IDisposable
