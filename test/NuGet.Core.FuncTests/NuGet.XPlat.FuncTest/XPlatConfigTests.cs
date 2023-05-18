@@ -259,25 +259,32 @@ namespace NuGet.XPlat.FuncTest
             var value = "http://company-octopus:8765@contoso.test";
             var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
 
+            var initialSettings = Configuration.Settings.LoadDefaultSettings(
+                testInfo.WorkingPath,
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            var initialConfigSection = initialSettings.GetSection(ConfigurationConstants.Config);
+            var initialConfigItem = initialConfigSection.GetFirstItemWithAttribute<AddItem>(ConfigurationConstants.KeyAttribute, key);
+
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
                 $"{XplatDll} config set {key} {value} --configfile {filePath}",
                 waitForExit: true);
 
-            var settings = Configuration.Settings.LoadDefaultSettings(
+            var updatedSettings = Configuration.Settings.LoadDefaultSettings(
                 testInfo.WorkingPath,
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
-
-            var configSection = settings.GetSection("config");
-            var values = configSection.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
-            var configItems = values.Where(i => i.Key == key);
-            var configFilePath = configItems.Single().ConfigPath;
+            var updatedConfigSection = updatedSettings.GetSection("config");
+            var values = updatedConfigSection.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
+            var updatedConfigItem = values.Where(i => i.Key == key);
+            var configFilePath = updatedConfigItem.Single().ConfigPath;
 
             // Assert
             Assert.Equal(0, result.ExitCode);
-            Assert.Equal(value, configItems.Single().Value);
+            Assert.NotEqual(initialConfigItem.Value, updatedConfigItem.Single().Value);
+            Assert.Equal(value, updatedConfigItem.Single().Value);
             Assert.Equal(filePath, configFilePath);
         }
 
@@ -289,6 +296,8 @@ namespace NuGet.XPlat.FuncTest
             var key = "signatureValidationMode";
             var value = "accept";
             var filePath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
+            var initialSettings = Configuration.Settings.LoadSpecificSettings(testInfo.WorkingPath, filePath);
+            var initialConfigSection = initialSettings.GetSection("config");
 
             var result = CommandRunner.Run(
                 DotnetCli,
@@ -296,18 +305,16 @@ namespace NuGet.XPlat.FuncTest
                 $"{XplatDll} config set {key} {value} --configfile {filePath}",
                 waitForExit: true);
 
-            var settings = Configuration.Settings.LoadDefaultSettings(
-                testInfo.WorkingPath,
-                configFileName: null,
-                machineWideSettings: new XPlatMachineWideSetting());
-
-            var configSection = settings.GetSection("config");
-            var values = configSection.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
+            var updatedSettings = Configuration.Settings.LoadSpecificSettings(testInfo.WorkingPath, filePath);
+            var updatedConfigSection = updatedSettings.GetSection("config");
+            var values = updatedConfigSection.Items.Select(c => c as AddItem).Where(c => c != null).ToList();
             var configItems = values.Where(i => i.Key == key);
             var configFilePath = configItems.Single().ConfigPath;
 
             // Assert
             Assert.Equal(0, result.ExitCode);
+            Assert.Null(initialConfigSection);
+            Assert.NotNull(updatedConfigSection);
             Assert.Equal(1, configItems.Count());
             Assert.Equal(value, configItems.First().Value);
             Assert.Equal(filePath, configFilePath);
