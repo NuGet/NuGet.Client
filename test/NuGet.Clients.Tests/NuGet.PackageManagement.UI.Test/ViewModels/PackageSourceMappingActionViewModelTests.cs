@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Moq;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI.ViewModels;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.ViewModels
@@ -25,7 +27,9 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         [Fact]
         public void PackageSourceMappingActionViewModel_WithNullMappingObject_PropertiesSetToDefaults()
         {
+            var mockSettings = new Mock<ISettings>();
             var mockUiController = new Mock<INuGetUI>();
+            mockUiController.Setup(_ => _.Settings).Returns(mockSettings.Object);
             var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);
 
             Assert.Equal(mockUiController.Object, target.UIController);
