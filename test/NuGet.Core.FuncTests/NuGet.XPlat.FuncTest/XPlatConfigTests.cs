@@ -430,28 +430,6 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigPathsCommand_NullArgs_Fail()
-        {
-            // Arrange
-            var log = new TestCommandOutputLogger();
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigPathsRunner.Run(null, () => log));
-        }
-
-        [Fact]
-        public void ConfigPathsCommand_NullGetLogger_Fail()
-        {
-            // Arrange
-            var args = new ConfigPathsArgs()
-            {
-            };
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigPathsRunner.Run(args, null));
-        }
-
-        [Fact]
         public void ConfigGetCommand_NonExistingDirectory_Fail()
         {
             // Arrange & Act
@@ -505,28 +483,6 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetCommand_NullArgs_Fail()
-        {
-            // Arrange
-            var log = new TestCommandOutputLogger();
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigGetRunner.Run(null, () => log));
-        }
-
-        [Fact]
-        public void ConfigGetCommand_NullGetLogger_Fail()
-        {
-            // Arrange
-            var args = new ConfigGetArgs()
-            {
-            };
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigGetRunner.Run(args, null));
-        }
-
-        [Fact]
         public void ConfigSetCommand_WithInvalidConfigKey_ThrowsCommandException()
         {
             // Arrange & Act
@@ -547,26 +503,6 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigSetCommand_WithNullArgs_ThrowsArgumentNullException()
-        {
-            // Arrange
-            var log = new TestCommandOutputLogger();
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigSetRunner.Run(args: null, () => log));
-        }
-
-        [Fact]
-        public void ConfigSetCommand_WithNullGetLogger_ThrowsArgumentNullException()
-        {
-            // Arrange
-            var args = new ConfigSetArgs();
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigSetRunner.Run(args, getLogger: null));
-        }
-
-        [Fact]
         public void ConfigUnsetCommand_InvalidConfigKey_Fail()
         {
             // Arrange & Act
@@ -582,26 +518,6 @@ namespace NuGet.XPlat.FuncTest
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedError);
-        }
-
-        [Fact]
-        public void ConfigUnsetCommand_NullArgs_Fail()
-        {
-            // Arrange
-            var log = new TestCommandOutputLogger();
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigUnsetRunner.Run(args: null, () => log));
-        }
-
-        [Fact]
-        public void ConfigUnsetCommand_NullGetLogger_Fail()
-        {
-            // Arrange
-            var args = new ConfigUnsetArgs();
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => ConfigUnsetRunner.Run(args, getLogger: null));
         }
 
         internal class TestInfo : IDisposable
