@@ -179,13 +179,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
-
-            Settings.SettingsChanged += Settings_SettingsChanged;
-        }
-
-        private void Settings_SettingsChanged(object sender, EventArgs e)
-        {
-            _detailModel.PackageSourceMappingViewModel.SettingsChanged();
         }
 
         public PackageRestoreBar RestoreBar { get; private set; }
@@ -1496,8 +1489,6 @@ namespace NuGet.PackageManagement.UI
             Model.Context.ProjectActionsExecuted -= OnProjectActionsExecuted;
 
             Model.Context.SourceService.PackageSourcesChanged -= PackageSourcesChanged;
-
-            Settings.SettingsChanged -= Settings_SettingsChanged;
 
             Model.Dispose();
 

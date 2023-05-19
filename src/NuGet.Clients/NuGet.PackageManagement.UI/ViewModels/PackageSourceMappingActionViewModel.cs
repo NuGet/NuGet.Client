@@ -5,16 +5,29 @@
 
 using System;
 using System.Linq;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
-    public sealed class PackageSourceMappingActionViewModel : ViewModelBase
+    public sealed class PackageSourceMappingActionViewModel : ViewModelBase, IDisposable
     {
+        private ISettings _settings;
+
         internal INuGetUI UIController { get; }
 
         private PackageSourceMappingActionViewModel(INuGetUI uiController)
         {
             UIController = uiController ?? throw new ArgumentNullException(nameof(uiController));
+            _settings = uiController.Settings;
+
+            _settings.SettingsChanged += OnSettingsChanged;
+        }
+
+        private void OnSettingsChanged(object sender, EventArgs e)
+        {
+            RaisePropertyChanged(nameof(IsPackageSourceMappingEnabled));
+            RaisePropertyChanged(nameof(IsPackageMapped));
+            RaisePropertyChanged(nameof(MappingStatus));
         }
 
         public bool IsPackageSourceMappingEnabled => UIController.UIContext?.PackageSourceMapping?.IsEnabled == true;
@@ -71,16 +84,14 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        public void SettingsChanged()
-        {
-            RaisePropertyChanged(nameof(IsPackageSourceMappingEnabled));
-            RaisePropertyChanged(nameof(IsPackageMapped));
-            RaisePropertyChanged(nameof(MappingStatus));
-        }
-
         public static PackageSourceMappingActionViewModel Create(INuGetUI uiController)
         {
             return new PackageSourceMappingActionViewModel(uiController);
+        }
+
+        public void Dispose()
+        {
+            _settings.SettingsChanged -= OnSettingsChanged;
         }
     }
 }
