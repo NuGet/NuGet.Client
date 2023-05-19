@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Moq;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI.ViewModels;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.ViewModels
