@@ -80,9 +80,7 @@ namespace NuGet.CommandLine.XPlat
         {
             RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
             RunnerHelper.ValidateConfigKey(args.ConfigKey);
-            ISettings settings = string.IsNullOrEmpty(args.ConfigFile)
-                ? RunnerHelper.GetSettingsFromDirectory(null)
-                : Settings.LoadSpecificSettings(Path.GetDirectoryName(args.ConfigFile), args.ConfigFile);
+            ISettings settings = XPlatUtility.ProcessConfigFile(args.ConfigFile);
 
             bool encrypt = args.ConfigKey.Equals(ConfigurationConstants.PasswordKey, StringComparison.OrdinalIgnoreCase);
             SettingsUtility.SetConfigValue(settings, args.ConfigKey, args.ConfigValue, encrypt);
@@ -95,9 +93,7 @@ namespace NuGet.CommandLine.XPlat
         {
             RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
             RunnerHelper.ValidateConfigKey(args.ConfigKey);
-            ISettings settings = string.IsNullOrEmpty(args.ConfigFile)
-                ? RunnerHelper.GetSettingsFromDirectory(null)
-                : Settings.LoadSpecificSettings(Path.GetDirectoryName(args.ConfigFile), args.ConfigFile);
+            ISettings settings = XPlatUtility.ProcessConfigFile(args.ConfigFile);
 
             if (!SettingsUtility.DeleteConfigValue(settings, args.ConfigKey))
             {
