@@ -155,23 +155,30 @@
   </ItemGroup>
 
   <!-- DotNetBuildFromSource can only use packages that are open source -->
-  <Target Name="CheckSourceBuildPackageReferences" AfterTargets="Restore" Condition=" '$(DotNetBuildFromSource)' == 'true' ">
+  <Target Name="CheckSourceBuildPackageReferences" AfterTargets="CollectPackageReferences" Condition=" '$(DotNetBuildFromSource)' == 'true' ">
     <ItemGroup>
+      <_allowBuildFromSourcePackage Remove="@(_allowBuildFromSourcePackage)" />
+      <_sourceBuildUnexpectedPackage Remove="@(_sourceBuildUnexpectedPackage)" />
+
+      <_allowBuildFromSourcePackage Include="@(PackageReference)" Condition=" '%(PackageReference.IsImplicitlyDefined)' == 'true' " />
+
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Framework" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Tasks.Core" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Utilities.Core" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build" />
+      <_allowBuildFromSourcePackage Include="Microsoft.CSharp" />
       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.CommandLineUtils.Sources" />
       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.FileProviders.Abstractions" />
       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.FileSystemGlobbing" />
       <_allowBuildFromSourcePackage Include="Microsoft.SourceLink.AzureRepos.Git" />
       <_allowBuildFromSourcePackage Include="Microsoft.SourceLink.GitHub" />
-      <_allowBuildFromSourcePackage Include="NETStandard.Library" />
+      <_allowBuildFromSourcePackage Include="Microsoft.Web.Xdt" />
       <_allowBuildFromSourcePackage Include="Newtonsoft.Json" />
-      <_allowBuildFromSourcePackage Include="System.Cryptography.ProtectedData" />
+      <_allowBuildFromSourcePackage Include="System.ComponentModel.Composition" />
       <_allowBuildFromSourcePackage Include="System.Diagnostics.Debug" />
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.Cng" />
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.Pkcs" />
+      <_allowBuildFromSourcePackage Include="System.Security.Cryptography.ProtectedData" />
 
       <_sourceBuildUnexpectedPackage Include="@(PackageReference)" Exclude="@(_allowBuildFromSourcePackage)" />
     </ItemGroup>
