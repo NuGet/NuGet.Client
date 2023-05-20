@@ -182,7 +182,7 @@
 
       <_sourceBuildUnexpectedPackage Include="@(PackageReference)" Exclude="@(_allowBuildFromSourcePackage)" />
     </ItemGroup>
-    <Error Text="Found @(_sourceBuildUnexpectedPackage-&gt;Count()) not on DotNetBuildFromSource allow list: '@(_sourceBuildUnexpectedPackage)'" Condition=" '@(_sourceBuildUnexpectedPackage)' != '' " />
+    <Error Text="Found @(_sourceBuildUnexpectedPackage-&gt;Count()) PackageReferences not on DotNetBuildFromSource allow list: '@(_sourceBuildUnexpectedPackage)'" Condition=" '@(_sourceBuildUnexpectedPackage)' != '' " />
   </Target>
 
 </Project>
