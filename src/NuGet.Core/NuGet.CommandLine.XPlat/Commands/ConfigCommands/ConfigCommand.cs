@@ -69,7 +69,7 @@ namespace NuGet.CommandLine.XPlat
                         Strings.ConfigSetConfigValueDescription);
                     var configFile = SetCmd.Option(
                         "--configfile",
-                        Strings.ConfigSetConfigFileDescription,
+                        Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
                     SetCmd.HelpOption("-h|--help");
                     SetCmd.Description = Strings.ConfigSetCommandDescription;
@@ -92,7 +92,7 @@ namespace NuGet.CommandLine.XPlat
                         Strings.ConfigUnsetConfigKeyDescription);
                     var configFile = UnsetCmd.Option(
                         "--configfile",
-                        Strings.ConfigUnsetConfigFileDescription,
+                        Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
                     UnsetCmd.HelpOption("-h|--help");
                     UnsetCmd.Description = Strings.ConfigUnsetCommandDescription;

@@ -831,9 +831,6 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="ConfigSetCommandDescription" xml:space="preserve">
     <value>Set the value of a specified NuGet configuration setting.</value>
   </data>
-  <data name="ConfigSetConfigFileDescription" xml:space="preserve">
-    <value>The NuGet configuration file (nuget.config) whose value will be set.</value>
-  </data>
   <data name="ConfigSetConfigKeyDescription" xml:space="preserve">
     <value>The key of the settings that are to be set.</value>
   </data>
@@ -846,9 +843,6 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   </data>
   <data name="ConfigUnsetCommandDescription" xml:space="preserve">
     <value>Removes the key-value pair from a specified NuGet configuration setting.</value>
-  </data>
-  <data name="ConfigUnsetConfigFileDescription" xml:space="preserve">
-    <value>The NuGet configuration file from which settings will be removed.</value>
   </data>
   <data name="ConfigUnsetConfigKeyDescription" xml:space="preserve">
     <value>The key of the settings that are to be removed.</value>
