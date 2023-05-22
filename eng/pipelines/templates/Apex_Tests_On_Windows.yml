@@ -59,7 +59,6 @@ stages:
             continueOnError: true
             filePath: $(DartLab.Path)\Scripts\AzureDevOps\Build\Get-BuildIdFromCloudBuildSessionID.ps1
             arguments: -ClientSecret '$(CloudBuild-ClientSecret)' -ClientID '$(CloudBuild-ClientID)' -SessionID '${{parameters.QBuildSessionId}}' -OutVariableName 'BaselineBuildID'
-        
         - task: PowerShell@1
           displayName: "Get Baseline build commit ids"
           name: "getbaselinebuildcommitids"
@@ -88,7 +87,6 @@ stages:
               } catch {
                 Write-Host "##vso[task.LogIssue type=error;]Unable to get Baseline build commit ids: $_"
               }
-
         - task: PowerShell@2
           name: SetVisualStudioBaseBuildID
           displayName: Set 'VisualStudio.BaseBuild.ID'
@@ -96,7 +94,6 @@ stages:
           inputs:
             filePath: $(DartLab.Path)\Scripts\VisualStudio\Build\Get-BaselineBuildID.ps1
             arguments: -OAuthAccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force) -InstanceURL '$(System.CollectionUri)' -RepositoryName '$(Build.Repository.Name)' -ProjectName '$(System.TeamProject)' -CommitIDs $(BaselineBuildCommitIds) -BuildDefinitionIDs 10289 -OutVariableName 'VisualStudio.BaseBuild.ID'
-        
         - task: PowerShell@2
           name: SetVisualStudioBaseBuildProductsDropName
           displayName: Set 'VisualStudio.BaseBuild.ProductsDropName'
@@ -104,7 +101,6 @@ stages:
           inputs:
             filePath: $(DartLab.Path)\Scripts\VisualStudio\Build\Get-VisualStudioDropName.ps1
             arguments: -AccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force) -DropNamePrefix 'Products' -AccountURL '$(System.CollectionUri)' -ProjectName '$(System.TeamProject)' -BuildID $(VisualStudio.BaseBuild.ID) -OutVariableName 'VisualStudio.BaseBuild.ProductsDropName'
-        
         - task: PowerShell@2
           name: SetBaseProductsDropNameToTarget
           displayName: Set 'VisualStudio.BaseBuild.ProductsDropName' to drop from target build
