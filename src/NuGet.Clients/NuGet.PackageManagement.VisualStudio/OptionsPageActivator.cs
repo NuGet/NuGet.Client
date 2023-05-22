@@ -88,10 +88,13 @@ namespace NuGet.PackageManagement.VisualStudio
             object targetGuid = optionsPageGuid;
             var toolsGroupGuid = VSConstants.GUID_VSStandardCommandSet97;
             IVsUIShell vsUIShell = await _vsUIShell.GetValueAsync();
+            var additionalParameters = "newtonsoft".GetHashCode().ToString();
+            var uIntAdditionalParameters = uint.Parse(additionalParameters, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+            //Microsoft.VisualStudio.Services.Promotions.PromotionAction
             vsUIShell.PostExecCommand(
                 ref toolsGroupGuid,
                 (uint)VSConstants.cmdidToolsOptions,
-                (uint)0,
+                uIntAdditionalParameters,
                 ref targetGuid);
         }
     }
