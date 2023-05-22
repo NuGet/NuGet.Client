@@ -37,8 +37,8 @@ stages:
           value: ${{parameters.bootstrapperUrl}}
         - ${{parameters.variables}}
       runSettingsURI: ${{parameters.runSettingsURI}}
-      visualStudioBootstrapperURI: $(bootstrapperUrl)
-      baseVisualStudioBootstrapperURI: $(bootstrapperUrl)
+      visualStudioBootstrapperURI: $(bootstrapperUrl)      
+      baseVisualStudioBootstrapperURI: https://vsdrop.corp.microsoft.com/file/v1/$(VisualStudio.BaseBuild.ProductsDropName);${{parameters.visualStudioBootstrapperDropPath}}
       candidateBaselineBuilds: $(BaselineBuildCommitIds)
       testLabPoolName: VS-Platform
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
