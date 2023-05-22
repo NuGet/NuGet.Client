@@ -35,7 +35,8 @@ stages:
       variables:
         - name: bootstrapperUrl
           value: ${{parameters.bootstrapperUrl}}
-        - ${{parameters.variables}}
+        - ${{if gt(length(parameters.variables), 0)}}:
+          - ${{parameters.variables}}
       runSettingsURI: ${{parameters.runSettingsURI}}
       visualStudioBootstrapperURI: $(bootstrapperUrl)      
       baseVisualStudioBootstrapperURI: https://vsdrop.corp.microsoft.com/file/v1/$(VisualStudio.BaseBuild.ProductsDropName);bootstrappers/Enterprise/vs_enterprise.exe
