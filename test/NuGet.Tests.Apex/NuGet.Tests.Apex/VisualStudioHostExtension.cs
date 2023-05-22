@@ -53,16 +53,6 @@ namespace NuGet.Tests.Apex
             return host.GetOutputWindowsLines().Where(e => e.IndexOf("failed", StringComparison.OrdinalIgnoreCase) > -1).ToList();
         }
 
-        public static List<string> GetInitScriptsInOutputWindows(this VisualStudioHost host)
-        {
-            return host.GetOutputWindowsLines().Where(e => e.IndexOf("init.ps1", StringComparison.OrdinalIgnoreCase) > -1).ToList();
-        }
-
-        public static List<string> GetInstallScriptsInOutputWindows(this VisualStudioHost host)
-        {
-            return host.GetOutputWindowsLines().Where(e => e.IndexOf("install.ps1", StringComparison.OrdinalIgnoreCase) > -1).ToList();
-        }
-
         public static List<string> GetOutputWindowsLines(this VisualStudioHost host)
         {
             if (host == null)
