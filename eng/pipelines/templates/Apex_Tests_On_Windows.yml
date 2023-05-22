@@ -38,7 +38,7 @@ stages:
         - ${{parameters.variables}}
       runSettingsURI: ${{parameters.runSettingsURI}}
       visualStudioBootstrapperURI: $(bootstrapperUrl)      
-      baseVisualStudioBootstrapperURI: https://vsdrop.corp.microsoft.com/file/v1/$(VisualStudio.BaseBuild.ProductsDropName);${{parameters.visualStudioBootstrapperDropPath}}
+      baseVisualStudioBootstrapperURI: https://vsdrop.corp.microsoft.com/file/v1/$(VisualStudio.BaseBuild.ProductsDropName);bootstrappers/Enterprise/vs_enterprise.exe
       candidateBaselineBuilds: $(BaselineBuildCommitIds)
       testLabPoolName: VS-Platform
       dartLabEnvironment: ${{parameters.DartLabEnvironment}}
@@ -87,7 +87,31 @@ stages:
               $(DartLab.Path)\Scripts\VisualStudio\Build\Get-BaselineBuildCommitIDs.ps1 -BuildJson $baselineBuildsFile -OutVariableName "BaselineBuildCommitIds"
               } catch {
                 Write-Host "##vso[task.LogIssue type=error;]Unable to get Baseline build commit ids: $_"
-              }      
+              }
+
+        - task: PowerShell@2
+          name: SetVisualStudioBaseBuildID
+          displayName: Set 'VisualStudio.BaseBuild.ID'
+          continueOnError: true
+          inputs:
+            filePath: $(DartLab.Path)\Scripts\VisualStudio\Build\Get-BaselineBuildID.ps1
+            arguments: -OAuthAccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force) -InstanceURL '$(System.CollectionUri)' -RepositoryName '$(Build.Repository.Name)' -ProjectName '$(System.TeamProject)' -CommitIDs $(BaselineBuildCommitIds) -BuildDefinitionIDs 10289 -OutVariableName 'VisualStudio.BaseBuild.ID'
+        
+        - task: PowerShell@2
+          name: SetVisualStudioBaseBuildProductsDropName
+          displayName: Set 'VisualStudio.BaseBuild.ProductsDropName'
+          condition: ne(variables['VisualStudio.BaseBuild.ID'], '')
+          inputs:
+            filePath: $(DartLab.Path)\Scripts\VisualStudio\Build\Get-VisualStudioDropName.ps1
+            arguments: -AccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force) -DropNamePrefix 'Products' -AccountURL '$(System.CollectionUri)' -ProjectName '$(System.TeamProject)' -BuildID $(VisualStudio.BaseBuild.ID) -OutVariableName 'VisualStudio.BaseBuild.ProductsDropName'
+        
+        - task: PowerShell@2
+          name: SetBaseProductsDropNameToTarget
+          displayName: Set 'VisualStudio.BaseBuild.ProductsDropName' to drop from target build
+          condition: eq(variables['VisualStudio.BaseBuild.ID'], '')
+          inputs:
+            filePath: $(DartLab.Path)\Scripts\VisualStudio\Build\Get-VisualStudioDropName.ps1
+            arguments: -DropNamePrefix 'Products' -VstsDropUrlsJson '$(Pipeline.Workspace)\${{parameters.cloudBuildResourceName}}\BuildArtifacts\VstsDropUrls.json' -OutVariableName 'VisualStudio.BaseBuild.ProductsDropName'              
       preDeployAndRunTestsStepList:
         - task: PowerShell@1
           displayName: "Print Environment Variables"
