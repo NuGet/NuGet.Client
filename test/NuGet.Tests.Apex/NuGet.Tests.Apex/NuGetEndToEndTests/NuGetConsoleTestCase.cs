@@ -943,6 +943,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.Execute($"install-package entityframework.sqlservercompact -source {source} -Verbose");
 
                 // Assert
+                // nugetConsole.IsMessageFoundInPMC is case sensitive.
                 Assert.True(nugetConsole.IsMessageFoundInPMC("Install.ps1"), "The Install.ps1 script in TestProject was not executed when the Entityframework.sqlservercompact package was installed.");
             }
         }
