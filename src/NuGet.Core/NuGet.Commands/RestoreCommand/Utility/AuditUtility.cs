@@ -157,7 +157,7 @@ namespace NuGet.Commands.Restore.Utility
                 ParseAuditMode() switch
                 {
                     NuGetAuditMode.Direct => GetDirectDependencies,
-                    NuGetAuditMode.Transitive => GetAllDependencies,
+                    NuGetAuditMode.All => GetAllDependencies,
                     _ => GetDirectDependencies
                 };
 
@@ -291,7 +291,7 @@ namespace NuGet.Commands.Restore.Utility
             return 1;
         }
 
-        private enum NuGetAuditMode { Unknown, Direct, Transitive }
+        private enum NuGetAuditMode { Unknown, Direct, All }
 
         private NuGetAuditMode ParseAuditMode()
         {
@@ -305,12 +305,12 @@ namespace NuGet.Commands.Restore.Utility
             {
                 return NuGetAuditMode.Direct;
             }
-            else if (string.Equals("transitive", auditMode, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals("all", auditMode, StringComparison.OrdinalIgnoreCase))
             {
-                return NuGetAuditMode.Transitive;
+                return NuGetAuditMode.All;
             }
 
-            string messageText = string.Format(Strings.Error_InvalidNuGetAuditModeValue, auditMode, "direct, transitive");
+            string messageText = string.Format(Strings.Error_InvalidNuGetAuditModeValue, auditMode, "direct, all");
             RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
             message.ProjectPath = _projectFullPath;
             _logger.Log(message);
