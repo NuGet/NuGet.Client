@@ -18,7 +18,7 @@ namespace NuGet.XPlat.FuncTest
         private static readonly string DotnetCli = TestFileSystemUtility.GetDotnetCli();
 
         [Fact]
-        public void ConfigPathsCommand_ListConfigPathsWithArgs_Success()
+        public void ConfigPathsCommand_WithDirectoryArg_ListsConfigPaths()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -34,7 +34,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigPathsCommand_NoDirectoryArg_Success()
+        public void ConfigPathsCommand_WithoutDirectoryArg_ListsConfigPaths()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -50,7 +50,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigPathsCommand_HelpMessage_Success()
+        public void ConfigPathsCommand_UsingHelpOption_DisplaysHelpMessage()
         {
             // Arrange
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigPathsWorkingDirectoryDescription);
@@ -67,7 +67,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetCommand_ConfigKeyArg_Success()
+        public void ConfigGetCommand_WithConfigKeyAndDirectoryArgs_GetsConfigKeyValue()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -83,7 +83,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetCommand_ConfigKeyArgShowPath_Success()
+        public void ConfigGetCommand_WithConfigKeyAndDirectoryArgsAndShowPathOption_GetsConfigKeyValueAndShowsPath()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -100,7 +100,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetCommand_ConfigKeyArgNoDirectoryArg_Success()
+        public void ConfigGetCommand_WithConfigKeyArg_GetsConfigKeyValue()
         {
             // Arrange & Act
             var testInfo = new TestInfo("NuGet.Config");
@@ -116,7 +116,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetCommand_AllArg_Success()
+        public void ConfigGetCommand_WithAllAndDirectoryArgs_ShowsAllSettings()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config", "subfolder");
@@ -133,7 +133,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetCommand_AllArgShowPath_Success()
+        public void ConfigGetCommand_WithAllAndDirectoryArgsAndShowPathOption_ShowsAllSettingsAndPaths()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config", "subfolder");
@@ -152,7 +152,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetCommand_AllArgNoDirectoryArg_Success()
+        public void ConfigGetCommand_WithAllArg_ShowsAllSettings()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config", "subfolder");
@@ -169,7 +169,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetCommand_HelpMessage_Success()
+        public void ConfigGetCommand_UsingHelpOption_DisplaysHelpMessage()
         {
             // Arrange
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigGetAllOrConfigKeyDescription);
@@ -186,7 +186,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetAllCommand_HelpMessage_Success()
+        public void ConfigGetCommand_UsingAllArgAndHelpOption_DisplaysHelpMessage()
         {
             // Arrange
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigGetAllOrConfigKeyDescription); ;
@@ -203,7 +203,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetConfigKeyCommand_HelpMessage_Success()
+        public void ConfigGetCommand_UsingConfigKeyArgAndHelpOption_DisplaysHelpMessage()
         {
             // Arrange
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigGetAllOrConfigKeyDescription); ;
@@ -338,7 +338,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigUnsetCommand_DeleteConfigSettingWithConfigFileArg_Success()
+        public void ConfigUnsetCommand_WithConfigFileOption_DeletesConfigSettingInSpecifiedFile()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -359,7 +359,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigUnsetCommand_NonExistingConfigKey_SuccessfullyDisplaysMessage()
+        public void ConfigUnsetCommand_WithNonExistingConfigKey_DisplaysKeyNotFoundMessage()
         {
             // Arrange & Act
             using var testInfo = new TestInfo();
@@ -378,7 +378,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigUnsetCommand_HelpMessage_Success()
+        public void ConfigUnsetCommand_UsingHelpOption_DisplaysHelpMessage()
         {
             // Arrange
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigUnsetConfigKeyDescription);
@@ -395,7 +395,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigCommand_HelpMessage_Success()
+        public void ConfigCommand_UsingHelpOption_DisplaysHelpMessage()
         {
             // Arrange
             var helpMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigPathsCommandDescription);
@@ -412,7 +412,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigPathsCommand_ListConfigPathsNonExistingDirectory_Fail()
+        public void ConfigPathsCommand_WithNonExistingDirectoryArg_ThrowsCommandException()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -430,7 +430,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetCommand_NonExistingDirectory_Fail()
+        public void ConfigGetCommand_WithNonExistingDirectoryArg_ThrowsCommandException()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -448,7 +448,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetCommand_InvalidConfigKeyArg_Fail()
+        public void ConfigGetCommand_WithInvalidConfigKeyArg_ThrowsCommandException()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -466,7 +466,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigGetCommand_NullAllOrConfigKeyArg_Fail()
+        public void ConfigGetCommand_WithNullAllOrConfigKeyArg_ThrowsCommandException()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
@@ -503,7 +503,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConfigUnsetCommand_InvalidConfigKey_Fail()
+        public void ConfigUnsetCommand_WithInvalidConfigKeyArg_ThrowsCommandException()
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
