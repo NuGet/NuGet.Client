@@ -74,15 +74,26 @@ namespace NuGet.CommandLine.XPlat
         }
     }
 
+    internal static class ConfigSetRunner
+    {
+        public static void Run(ConfigSetArgs args, Func<ILogger> getLogger)
+        {
+            RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
+            RunnerHelper.ValidateConfigKey(args.ConfigKey);
+            ISettings settings = XPlatUtility.ProcessConfigFile(args.ConfigFile);
+
+            bool encrypt = args.ConfigKey.Equals(ConfigurationConstants.PasswordKey, StringComparison.OrdinalIgnoreCase);
+            SettingsUtility.SetConfigValue(settings, args.ConfigKey, args.ConfigValue, encrypt);
+        }
+    }
+
     internal static class ConfigUnsetRunner
     {
         public static void Run(ConfigUnsetArgs args, Func<ILogger> getLogger)
         {
             RunnerHelper.EnsureArgumentsNotNull(args, getLogger);
             RunnerHelper.ValidateConfigKey(args.ConfigKey);
-            ISettings settings = string.IsNullOrEmpty(args.ConfigFile)
-                ? RunnerHelper.GetSettingsFromDirectory(null)
-                : Settings.LoadSpecificSettings(Path.GetDirectoryName(args.ConfigFile), args.ConfigFile);
+            ISettings settings = XPlatUtility.ProcessConfigFile(args.ConfigFile);
 
             if (!SettingsUtility.DeleteConfigValue(settings, args.ConfigKey))
             {

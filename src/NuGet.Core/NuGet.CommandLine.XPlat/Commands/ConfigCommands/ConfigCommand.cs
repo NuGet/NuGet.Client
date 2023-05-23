@@ -55,8 +55,33 @@ namespace NuGet.CommandLine.XPlat
                             WorkingDirectory = workingDirectory.Value,
                             ShowPath = showPath.HasValue()
                         };
-
                         ConfigGetRunner.Run(args, getLogger);
+                        return 0;
+                    });
+                });
+                ConfigCmd.Command("set", SetCmd =>
+                {
+                    CommandArgument configKey = SetCmd.Argument(
+                        "CONFIG_KEY",
+                        Strings.ConfigSetConfigKeyDescription);
+                    CommandArgument configValue = SetCmd.Argument(
+                        "CONFIG_VALUE",
+                        Strings.ConfigSetConfigValueDescription);
+                    var configFile = SetCmd.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
+                    SetCmd.HelpOption("-h|--help");
+                    SetCmd.Description = Strings.ConfigSetCommandDescription;
+                    SetCmd.OnExecute(() =>
+                    {
+                        var args = new ConfigSetArgs()
+                        {
+                            ConfigKey = configKey.Value,
+                            ConfigValue = configValue.Value,
+                            ConfigFile = configFile.Value()
+                        };
+                        ConfigSetRunner.Run(args, getLogger);
                         return 0;
                     });
                 });
@@ -67,7 +92,7 @@ namespace NuGet.CommandLine.XPlat
                         Strings.ConfigUnsetConfigKeyDescription);
                     var configFile = UnsetCmd.Option(
                         "--configfile",
-                        Strings.ConfigUnsetConfigFileDescription,
+                        Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
                     UnsetCmd.HelpOption("-h|--help");
                     UnsetCmd.Description = Strings.ConfigUnsetCommandDescription;
