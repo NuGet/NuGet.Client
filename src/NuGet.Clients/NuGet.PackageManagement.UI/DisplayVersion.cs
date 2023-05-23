@@ -36,20 +36,7 @@ namespace NuGet.PackageManagement.UI
             bool autoReferenced = false,
             bool isDeprecated = false,
             string versionFormat = "N")
-            : this(range, version: null, additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, isDeprecated, versionFormat)
-        {
-        }
-
-        public DisplayVersion(
-            VersionRange range,
-            NuGetVersion version,
-            string additionalInfo,
-            bool isValidVersion = true,
-            bool isCurrentInstalled = false,
-            bool autoReferenced = false,
-            bool isDeprecated = false,
-            string versionFormat = "N")
-            : this(range, version, additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, isDeprecated, isVulnerable: false, versionFormat)
+            : this(range, version: null, additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, isDeprecated, isVulnerable: false, versionFormat)
         {
         }
 
