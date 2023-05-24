@@ -366,7 +366,7 @@ steps:
         $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
         $qBuildSessionId = $json[0].QBuildSessionId;
         Write-Host "CloudBuild Session ID: $qBuildSessionId"
-        Write-Host "##vso[task.setvariable variable=QBuildSessionId ;isOutput=true]$qBuildSessionId"
+        Write-Host "##vso[task.setvariable variable=QBuildSessionId;isOutput=true]$qBuildSessionId"
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
       }
