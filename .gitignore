@@ -20,6 +20,8 @@ packages/
 .nuget/nuget.exe
 */.nuget/
 
+!test/EndToEnd/packages/
+
 # ignore nuget.exe for e2e tests
 test/EndToEnd/nuget.exe
 

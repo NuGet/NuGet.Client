@@ -5,22 +5,17 @@ Creates a package containing NuGet client EndToEnd test data.
 .PARAMETER configuration
 The build configuration.  The default value is 'debug'.
 
-.PARAMETER toolsetVersion
-The toolset version.  The default value is 15.
-
 .PARAMETER outputDirectoryPath
 The output directory where the test data package will be created.  The default value is the current directory.
 
 .EXAMPLE
-.\CreateTestDataPackage.ps1 -configuration 'debug' -toolsetVersion 15 -outputDirectoryPath 'C:\git\NuGet.Client\artifacts\nupkgs'
+.\CreateTestDataPackage.ps1 -configuration 'debug' -outputDirectoryPath 'C:\git\NuGet.Client\artifacts\nupkgs'
 #>
 
 [CmdletBinding()]
 param (
     [ValidateSet('debug', 'release')]
     [string] $configuration = 'debug',
-    [ValidateSet(15, 16, 17)]
-    [int] $toolsetVersion = 15,
     [string] $outputDirectoryPath = $PWD
 )
 
@@ -58,7 +53,7 @@ Function Get-File([string[]] $pathParts)
 
 Function Get-GenerateTestPackagesFile()
 {
-    Return Get-File($repositoryRootDirectoryPath, 'artifacts', 'GenerateTestPackages', "$toolsetVersion.0", 'bin', $configuration, 'net472', 'GenerateTestPackages.exe')
+    Return Get-File($repositoryRootDirectoryPath, 'artifacts', 'GenerateTestPackages', 'bin', $configuration, 'net472', 'GenerateTestPackages.exe')
 }
 
 Function Get-NuGetFile()

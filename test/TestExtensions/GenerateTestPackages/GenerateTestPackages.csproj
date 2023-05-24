@@ -2,22 +2,13 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>ToolTestKey.snk</AssemblyOriginatorKeyFile>
-    <DelaySign>false</DelaySign>
     <Description>A utility for generating test packages for end-to-end and Apex tests.</Description>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NuGet.Core" />
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj" />
   </ItemGroup>
 
   <ItemGroup>
