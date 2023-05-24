@@ -28,7 +28,7 @@
     <Message Text="Finished restoring Arcade" Importance="High" />
 
     <MSbuild Projects="$(ArcadeDir)/SourceBuild/AfterSourceBuild.proj"
-             Properties="_NETCORE_ENGINEERING_TELEMETRY=AfterSourceBuild;ArcadeBuildFromSource=true;CurrentRepoSourceBuildArtifactsPackagesDir=$(ProjectRoot)artifacts/nupkgs/"
+             Properties="_NETCORE_ENGINEERING_TELEMETRY=AfterSourceBuild;ArcadeBuildFromSource=true;CurrentRepoSourceBuildArtifactsPackagesDir=$(ProjectRoot)artifacts/nupkgs/;FailOnPrebuiltBaselineError=true"
             />
 
   </Target>
