@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <version>2.0</version>
+    <authors>NuGet E2E tests</authors>
+    <id>GIPTest</id>
+    <description>Get Installed Packages Test Package</description>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache-2.0</license>
+  </metadata>
+  <files>
+    <file src="Content\Scripts\v2.0.js" target="Content\Scripts\v2.0.js" />
+  </files>
+</package>

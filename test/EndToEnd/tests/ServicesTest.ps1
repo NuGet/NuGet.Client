@@ -153,9 +153,9 @@ function Test-GetInstalledPackagesMultipleProjectsDifferentVersion {
 
     # Arrange
     $p = New-WebApplication
-    $p | Install-Package jquery -Version 1.5 -Source $context.RepositoryPath
+    $p | Install-Package GIPTest -Version 1.0 -Source $context.RepositoryPath
     $p = New-WebApplication
-    $p | Install-Package jquery -Version 1.6 -Source $context.RepositoryPath
+    $p | Install-Package GIPTest -Version 2.0 -Source $context.RepositoryPath
 
     $cm = Get-VsComponentModel
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
@@ -166,10 +166,10 @@ function Test-GetInstalledPackagesMultipleProjectsDifferentVersion {
     # Assert
     Assert-NotNull $packages
     Assert-AreEqual 2 $packages.Count
-    Assert-AreEqual jQuery $packages[0].Id
-    Assert-AreEqual 1.5 $packages[0].VersionString
-    Assert-AreEqual jQuery $packages[1].Id
-    Assert-AreEqual 1.6 $packages[1].VersionString
+    Assert-AreEqual GIPTest $packages[0].Id
+    Assert-AreEqual 1.0 $packages[0].VersionString
+    Assert-AreEqual GIPTest $packages[1].Id
+    Assert-AreEqual 2.0 $packages[1].VersionString
 }
 <#
 function Test-GetInstalledPackagesMVCTemplate
