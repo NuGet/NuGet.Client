@@ -87,7 +87,7 @@
     <Content Include="extension.vsixlangpack">
       <IncludeInVSIX>false</IncludeInVSIX>
     </Content>
-    <Content Include="NOTICES.txt">
+    <Content Include="$(BuildCommonDirectory)NOTICES.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
