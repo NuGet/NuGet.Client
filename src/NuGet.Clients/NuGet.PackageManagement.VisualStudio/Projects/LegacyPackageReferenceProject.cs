@@ -408,7 +408,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             string enableAudit = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAudit);
             string auditLevel = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditLevel);
-            string auditMode = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditLevel);
+            string auditMode = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditMode);
             RestoreAuditProperties auditProperties = !string.IsNullOrEmpty(enableAudit) || !string.IsNullOrEmpty(auditLevel)
                 ? new RestoreAuditProperties()
                 {

@@ -319,10 +319,15 @@ namespace NuGet.Commands.Restore.Utility
 
         IEnumerable<ResolvedDependencyKey> GetDirectDependencies(RestoreTargetGraph graph)
         {
-            Debug.Assert(graph.Graphs.Count() == 1);
-            LibraryIdentity thisProject = graph.Graphs.First().Item.Key;
-            Debug.Assert(thisProject.Type == LibraryType.Project);
+            Debug.Assert(graph.Graphs.Count() <= 1);
+            LibraryIdentity? thisProject = graph.Graphs.FirstOrDefault()?.Item.Key;
 
+            if (thisProject == null)
+            {
+                return Enumerable.Empty<ResolvedDependencyKey>();
+            }
+
+            Debug.Assert(thisProject.Type == LibraryType.Project);
             return graph.ResolvedDependencies.Where(dep => dep.Parent == thisProject && dep.Child.Type == LibraryType.Package);
         }
 

@@ -24,7 +24,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Gets or sets a value indicating which audit mode to use.
         /// </summary>
-        /// <value>direct, transitive</value>
+        /// <value>direct, all</value>
         public string? AuditMode { get; set; }
 
         public bool Equals(RestoreAuditProperties? other)
