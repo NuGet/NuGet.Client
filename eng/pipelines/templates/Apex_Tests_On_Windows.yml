@@ -71,16 +71,12 @@ stages:
               Write-Host "Getting Baseline build commit ids for build: '$(BaselineBuildID)'"
               
               $artifactName = 'BuildArtifacts'
-              $baselineBuildsFile: $(Agent.TempDirectory)\BaselineBuilds.json
+              $baselineBuildsFile = $(Agent.TempDirectory)\BaselineBuilds.json
 
-              $artifact = Get-BuildArtifact -InstanceURL 'https://dev.azure.com/devdiv' -ProjectName 'DevDiv' - 
-              BuildID $(BaselineBuildID)  -ArtifactName $artifactName -OAuthAccessToken (ConvertTo-SecureString 
-              '$(System.AccessToken)' -AsPlainText -Force)
+              $artifact = Get-BuildArtifact -InstanceURL 'https://dev.azure.com/devdiv' -ProjectName 'DevDiv' -BuildID $(BaselineBuildID)  -ArtifactName $artifactName -OAuthAccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force)
               $containerName = $artifact.Resource.Data -Split '/' | Select-Object -Last 1
               $fileName = Join-Path $containerName 'BaselineBuilds.json'
-              $jsonString = Read-BuildArtifactFile -InstanceURL 'https://dev.azure.com/devdiv' -ProjectName 'DevDiv' 
-              -BuildID $bootstrapperBuildID  -ArtifactName $artifactName -FileName $fileName -OAuthAccessToken 
-              (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force)
+              $jsonString = Read-BuildArtifactFile -InstanceURL 'https://dev.azure.com/devdiv' -ProjectName 'DevDiv' -BuildID $(BaselineBuildID) -ArtifactName $artifactName -FileName $fileName -OAuthAccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force)
 
               $jsonString | Out-File -FilePath $baselineBuildsFile
 
