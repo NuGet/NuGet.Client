@@ -295,7 +295,7 @@ namespace NuGet.Commands
                         {
                             throw new ArgumentException(string.Format(
                                 CultureInfo.CurrentCulture,
-                                "Invalid platform min version: {0}",
+                                Strings.Error_InvalidWindowsTargetPlatformMinVersion,
                                 windowsTargetPlatformMinVersion));
                         }
                         framework = new NuGetFramework(framework.Framework, framework.Version, framework.Platform, cppCliVersion);
