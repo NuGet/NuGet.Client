@@ -8,7 +8,7 @@
       As a result, prebuilt detection and resolution is handled differently.
 
       Repo owners or contributors:
-      If you get an error in source-build leg pointing at new prebuilt package being detected, 
+      If you get an error in source-build leg pointing at new prebuilt package being detected,
       resolve the prebuilt issue before merging your PR.
       If that is not possible, do the following:
         - contact source-build team
@@ -19,7 +19,6 @@
     <!--
       Packages not owned by .NET - exclusion of specifc package version.
     -->
-    <UsagePattern IdentityGlob="Microsoft.VisualStudioEng.MicroBuild.Core/1.0.0" />
     <UsagePattern IdentityGlob="Newtonsoft.Json/13.0.1" />
     <UsagePattern IdentityGlob="System.Windows.Extensions/6.0.0" />
 
