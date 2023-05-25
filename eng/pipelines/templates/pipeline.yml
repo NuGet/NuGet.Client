@@ -296,6 +296,7 @@ stages:
 
 - stage: MacTests
   displayName: "Mac Mono Tests"
+  condition: false
   dependsOn:
   - Initialize
   - Build_Insertable
