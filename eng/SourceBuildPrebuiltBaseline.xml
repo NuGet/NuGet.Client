@@ -17,7 +17,7 @@
     -->
 
     <!--
-      Packages not owned by .NET - exclusion of specifc package version.
+      Packages not owned by .NET - exclusion of specific package version.
     -->
     <UsagePattern IdentityGlob="Newtonsoft.Json/13.0.1" />
     <UsagePattern IdentityGlob="System.Windows.Extensions/6.0.0" />
