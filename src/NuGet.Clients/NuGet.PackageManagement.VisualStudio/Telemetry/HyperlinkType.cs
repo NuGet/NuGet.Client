@@ -16,5 +16,6 @@ namespace NuGet.PackageManagement.Telemetry
         DeprecationAlternativePackageItem,
         VulnerabilityAdvisory,
         OptionsBlocked,
+        PackageSourceMappingConfigure
     }
 }
