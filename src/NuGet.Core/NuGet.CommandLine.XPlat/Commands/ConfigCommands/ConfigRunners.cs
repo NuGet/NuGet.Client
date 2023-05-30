@@ -173,7 +173,7 @@ namespace NuGet.CommandLine.XPlat
                     group item by item.ConfigPath into newItemGroup
                     select newItemGroup;
 
-                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQuery)
+                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQuery.Reverse())
                     {
                         logger.LogMinimal($" file: {configPathsGroup.Key}");
                         LogSectionItems(configPathsGroup, logger);
@@ -195,7 +195,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="logger"></param>
         public static void LogSectionItems(IEnumerable<SettingItem> items, ILogger logger)
         {
-            foreach (SettingItem item in items)
+            foreach (SettingItem item in items.Reverse())
             {
                 string setting = $"\t{item.ElementName}";
                 IReadOnlyDictionary<string, string> attributes = item.GetAttributes();
