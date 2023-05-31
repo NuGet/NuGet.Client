@@ -171,9 +171,11 @@ namespace NuGet.CommandLine.XPlat
                     IEnumerable<IGrouping<string, SettingItem>> groupByConfigPathsQuery =
                     from item in items
                     group item by item.ConfigPath into newItemGroup
+                    from itemGroup in newItemGroup
+                    orderby newItemGroup.Key descending
                     select newItemGroup;
 
-                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQuery.Reverse())
+                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQuery)
                     {
                         logger.LogMinimal($" file: {configPathsGroup.Key}");
                         LogSectionItems(configPathsGroup, logger);
