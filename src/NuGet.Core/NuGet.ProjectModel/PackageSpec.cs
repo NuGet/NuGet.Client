@@ -113,7 +113,7 @@ namespace NuGet.ProjectModel
 
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; }
 
-        public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
+        public RuntimeGraph RuntimeGraph { get; set; } = RuntimeGraph.Empty;
 
         /// <summary>
         /// Project Settings is used to pass settings like HideWarningsAndErrors down to lower levels.
