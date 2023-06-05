@@ -106,7 +106,7 @@ namespace NuGet.Versioning
 
         private static bool TryGetNormalizedVersion(string str, [NotNullWhen(true)] out Version? version)
         {
-            if (GetNextSection(str, 0, out int endIndex, out int major))
+            if (!string.IsNullOrEmpty(str) && GetNextSection(str, 0, out int endIndex, out int major))
             {
                 int build = 0;
                 int revision = 0;
