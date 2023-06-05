@@ -118,5 +118,23 @@ namespace NuGet.LibraryModel
 
             return result;
         }
+
+        private static readonly Dictionary<LibraryIncludeFlags, string> LibraryIncludeFlagsCache = new();
+
+        /// <summary>
+        /// Efficiently converts <see cref="LibraryIncludeFlags"/> to it's <see cref="string"/> representation.
+        /// </summary>
+        /// <param name="includeFlags">The <see cref="LibraryIncludeFlags"/> instance to get the <see cref="string"/> representation for.</param>
+        /// <returns>The <see cref="string"/> representation of <paramref name="includeFlags"/>.</returns>
+        public static string AsString(this LibraryIncludeFlags includeFlags)
+        {
+            if (!LibraryIncludeFlagsCache.TryGetValue(includeFlags, out string enumAsString))
+            {
+                enumAsString = includeFlags.ToString();
+                LibraryIncludeFlagsCache[includeFlags] = enumAsString;
+            }
+
+            return enumAsString;
+        }
     }
 }

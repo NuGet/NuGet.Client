@@ -135,6 +135,24 @@ namespace NuGet.LibraryModel
             return string.Join(",", flagStrings);
         }
 
+        private static readonly Dictionary<LibraryDependencyTarget, string> LibraryDependencyTargetCache = new();
+
+        /// <summary>
+        /// Efficiently converts <see cref="LibraryDependencyTarget"/> to it's <see cref="string"/> representation.
+        /// </summary>
+        /// <param name="includeFlags">The <see cref="LibraryDependencyTarget"/> instance to get the <see cref="string"/> representation for.</param>
+        /// <returns>The <see cref="string"/> representation of <paramref name="includeFlags"/>.</returns>
+        public static string AsString(this LibraryDependencyTarget includeFlags)
+        {
+            if (!LibraryDependencyTargetCache.TryGetValue(includeFlags, out string enumAsString))
+            {
+                enumAsString = includeFlags.ToString();
+                LibraryDependencyTargetCache[includeFlags] = enumAsString;
+            }
+
+            return enumAsString;
+        }
+
         [DebuggerDisplay("{String.Substring(Start, Length)}")]
         private struct StringSegment
         {
