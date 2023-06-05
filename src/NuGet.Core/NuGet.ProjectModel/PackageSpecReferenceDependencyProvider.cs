@@ -25,35 +25,24 @@ namespace NuGet.ProjectModel
         private readonly Dictionary<string, ExternalProjectReference> _externalProjectsByUniqueName
             = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ILogger _logger;
-
         private readonly bool _useLegacyAssetTargetFallbackBehavior;
 
         public PackageSpecReferenceDependencyProvider(
             IEnumerable<ExternalProjectReference> externalProjects,
             ILogger logger) :
             this(externalProjects,
-                logger,
                 environmentVariableReader: EnvironmentVariableWrapper.Instance)
         {
         }
 
         internal PackageSpecReferenceDependencyProvider(
             IEnumerable<ExternalProjectReference> externalProjects,
-            ILogger logger,
             IEnvironmentVariableReader environmentVariableReader)
         {
             if (externalProjects == null)
             {
                 throw new ArgumentNullException(nameof(externalProjects));
             }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _logger = logger;
 
             foreach (var project in externalProjects)
             {
