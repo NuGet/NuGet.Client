@@ -95,8 +95,7 @@ namespace NuGet.ProjectModel
                 return null;
             }
 
-            // create a dictionary of dependencies to make sure that no duplicates exist
-            var dependencies = new List<LibraryDependency>();
+            List<LibraryDependency> dependencies;
 
             var projectStyle = packageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
@@ -104,12 +103,12 @@ namespace NuGet.ProjectModel
             if (projectStyle == ProjectStyle.PackageReference)
             {
                 // NETCore
-                dependencies.AddRange(GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework));
+                dependencies = GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework);
             }
             else
             {
                 // UWP
-                dependencies.AddRange(GetDependenciesFromExternalReference(externalReference, packageSpec, targetFramework));
+                dependencies = GetDependenciesFromExternalReference(externalReference, packageSpec, targetFramework);
             }
 
             // Remove duplicate dependencies. A reference can exist both in csproj and project.json
