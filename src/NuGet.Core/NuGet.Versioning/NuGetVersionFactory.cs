@@ -155,6 +155,13 @@ namespace NuGet.Versioning
             // start and end are inclusive bounds for the section of string to parse
             static bool TryParseInt(string s, int start, int end, out int value)
             {
+                // invalid section specified
+                if (start >= end)
+                {
+                    value = 0;
+                    return false;
+                }
+
                 long returnValue = 0;
                 int multiplier = 1;
 
