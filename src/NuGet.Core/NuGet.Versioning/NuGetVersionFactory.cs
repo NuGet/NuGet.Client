@@ -155,8 +155,11 @@ namespace NuGet.Versioning
             // start and end are inclusive bounds for the section of string to parse
             static bool TryParseInt(string s, int start, int end, out int value)
             {
-                value = 0;
+                long returnValue = 0;
                 int multiplier = 1;
+
+                // Parse the values in reverse and assign a tens place to them.
+                // When parsing "123456", this method adds 6 + 50 + 400 + 3000 + 20000 + 100000
                 for (int i = end; i >= start; i--)
                 {
                     // negative numbers are invalid for version strings so we only need to check for digits
@@ -167,9 +170,22 @@ namespace NuGet.Versioning
                         return false;
                     }
 
-                    value += (current - '0') * multiplier;
+                    // subtract off ASCII value of '0' from our current character to get the digit's value
+                    // e.g. '3' - '0' == 51 - 58 == 3
+                    returnValue += (current - '0') * multiplier;
                     multiplier *= 10;
+
+                    // Check for overflow. We can't get outside the bounds of long before exceeding int.MaxValue
+                    // Intentionally avoid usage of 'checked' statement to avoid exception
+                    if (returnValue > int.MaxValue)
+                    {
+                        value = 0;
+                        return false;
+                    }
                 }
+
+                // Previous checks guarantee returnValue <= int.MaxValue
+                value = (int)returnValue;
 
                 return true;
             }
