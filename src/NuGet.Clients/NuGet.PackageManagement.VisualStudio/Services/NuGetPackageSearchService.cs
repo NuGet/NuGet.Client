@@ -212,12 +212,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // Transitive packages will have only one version the first time they are loaded, when the package is selected we update the cache with all the versions
             if (backgroundDataCache != null)
             {
-                if (isTransitive &&
-                    (backgroundDataCache.AllVersionsContextInfo.Result == null || backgroundDataCache.AllVersionsContextInfo.Result.Count <= 1))
+                if (isTransitive && (backgroundDataCache.AllVersionsContextInfo.Result == null || backgroundDataCache.AllVersionsContextInfo.Result.Count <= 1)
+                    || backgroundDataCache.AllVersionsContextInfo.Result.First().PackageSearchMetadata == null) // If the item was cached with search API, PackageSearchMetadata could be null. If so, update it with registration api information
                 {
-                    IPackageMetadataProvider transitivePackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects?.ToList().AsReadOnly(), cancellationToken);
-                    IPackageSearchMetadata transitivePackageMetadata = await transitivePackageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-                    backgroundDataCache.UpdateSearchMetadata(transitivePackageMetadata);
+                    IPackageMetadataProvider newPackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects?.ToList().AsReadOnly(), cancellationToken);
+                    IPackageSearchMetadata newPackageMetadata = await newPackageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+                    backgroundDataCache.UpdateSearchMetadata(newPackageMetadata);
                 }
                 return await backgroundDataCache.AllVersionsContextInfo;
             }
