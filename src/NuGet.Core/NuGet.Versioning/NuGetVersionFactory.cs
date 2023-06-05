@@ -143,28 +143,35 @@ namespace NuGet.Versioning
                 }
 
                 end = s.IndexOf('.', start);
-                string versionSection;
 
                 if (end == -1)
                 {
                     end = s.Length;
-                    versionSection = s.Substring(start);
                 }
-                else
+
+                return TryParseInt(s, start, end - 1, out versionNumber);
+            }
+
+            // start and end are inclusive bounds for the section of string to parse
+            static bool TryParseInt(string s, int start, int end, out int value)
+            {
+                value = 0;
+                int multiplier = 1;
+                for (int i = end; i >= start; i--)
                 {
-                    versionSection = s.Substring(start, end - start);
+                    // negative numbers are invalid for version strings so we only need to check for digits
+                    char current = s[i];
+                    if (current < '0' || current > '9')
+                    {
+                        value = 0;
+                        return false;
+                    }
+
+                    value += (current - '0') * multiplier;
+                    multiplier *= 10;
                 }
 
-                bool parseResult = int.TryParse(versionSection, out versionNumber);
-                if (versionNumber < 0)
-                {
-                    // negative numbers are invalid for version strings
-                    versionNumber = 0;
-
-                    return false;
-                }
-
-                return parseResult;
+                return true;
             }
         }
 
