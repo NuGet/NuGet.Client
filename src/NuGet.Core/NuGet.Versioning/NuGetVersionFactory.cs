@@ -49,13 +49,7 @@ namespace NuGet.Versioning
                 {
                     string versionPart = versionString!;
 
-                    if (IndexOf(versionPart, '.') < 0)
-                    {
-                        // System.Version requires at least a 2 part version to parse.
-                        versionPart += ".0";
-                    }
-
-                    if (Version.TryParse(versionPart, out systemVersion))
+                    if (TryGetNormalizedVersion(versionPart, out systemVersion))
                     {
                         // labels
                         if (releaseLabels != null)
@@ -76,8 +70,6 @@ namespace NuGet.Versioning
                             return false;
                         }
 
-                        var ver = NormalizeVersionValue(systemVersion);
-
                         var originalVersion = value;
 
                         if (IndexOf(originalVersion, ' ') > -1)
@@ -90,7 +82,7 @@ namespace NuGet.Versioning
 #endif
                         }
 
-                        version = new NuGetVersion(version: ver,
+                        version = new NuGetVersion(version: systemVersion,
                             releaseLabels: releaseLabels,
                             metadata: buildMetadata ?? string.Empty,
                             originalVersion: originalVersion);
@@ -109,6 +101,70 @@ namespace NuGet.Versioning
 #else
                 return str.IndexOf(c);
 #endif
+            }
+        }
+
+        private static bool TryGetNormalizedVersion(string str, [NotNullWhen(true)] out Version? version)
+        {
+            if (GetNextSection(str, 0, out int endIndex, out int major))
+            {
+                int build = 0;
+                int revision = 0;
+
+                // check for all the possible parts of the version string. If endIndex is less than the end of
+                // the string, the input string was invalid (e.g. "1.2.3.4.5").
+                bool validString = GetNextSection(str, endIndex + 1, out endIndex, out int minor) &&
+                    GetNextSection(str, endIndex + 1, out endIndex, out build) &&
+                    GetNextSection(str, endIndex + 1, out endIndex, out revision) &&
+                    endIndex == str.Length;
+
+                if (validString)
+                {
+                    version = new Version(major, Math.Max(0, minor), Math.Max(0, build), Math.Max(0, revision));
+                    return true;
+                }
+            }
+
+            version = null;
+
+            return false;
+
+            // returns false if an invalid section was found while processing the string
+            static bool GetNextSection(string s, int start, out int end, out int versionNumber)
+            {
+                // check to see if we've processed the whole string
+                if (start >= s.Length)
+                {
+                    // we've reached the end. The section is empty but not invalid.
+                    end = s.Length;
+                    versionNumber = -1;
+
+                    return true;
+                }
+
+                end = s.IndexOf('.', start);
+                string versionSection;
+
+                if (end == -1)
+                {
+                    end = s.Length;
+                    versionSection = s.Substring(start);
+                }
+                else
+                {
+                    versionSection = s.Substring(start, end - start);
+                }
+
+                bool parseResult = int.TryParse(versionSection, out versionNumber);
+                if (versionNumber < 0)
+                {
+                    // negative numbers are invalid for version strings
+                    versionNumber = 0;
+
+                    return false;
+                }
+
+                return parseResult;
             }
         }
 
