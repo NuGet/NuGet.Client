@@ -379,22 +379,6 @@ namespace NuGet.ProjectModel
             return dependencies;
         }
 
-        /// <summary>
-        /// Filter dependencies down to only possible project references and return the names.
-        /// </summary>
-        private IEnumerable<string> GetProjectNames(IEnumerable<LibraryDependency> dependencies)
-        {
-            foreach (var dependency in dependencies)
-            {
-                if (IsProject(dependency))
-                {
-                    yield return dependency.Name;
-                }
-            }
-
-            yield break;
-        }
-
         private bool IsProject(LibraryDependency dependency)
         {
             var type = dependency.LibraryRange.TypeConstraint;
