@@ -75,6 +75,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     await ShowOptionsPageAsync(_packageSourceMappingGUID);
                 }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
             }
+            // else if with that loads the config page
+            // we're missing the GUID atm
             else
             {
                 throw new ArgumentOutOfRangeException(nameof(page));
