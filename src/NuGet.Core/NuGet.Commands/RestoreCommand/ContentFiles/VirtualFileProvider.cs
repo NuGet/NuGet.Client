@@ -16,59 +16,55 @@ namespace NuGet.Commands
     internal class VirtualFileProvider : IFileProvider
     {
         public const string RootDir = "ROOT";
-        private readonly List<string[]> _files;
+        private readonly string _originalFile;
+        private string[] _splitFile;
         private const string ForwardSlash = "/";
         private const char ForwardSlashChar = '/';
 
-        public VirtualFileProvider(List<string> files)
+        public VirtualFileProvider(string file)
         {
-            _files = files.Select(file => file.Split(ForwardSlashChar)).ToList();
+            _originalFile = file;
+            _splitFile = null;
         }
 
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
-            var contents = new List<IFileInfo>();
             var subPathParts = subpath.Split(ForwardSlashChar);
 
             // Remove the root identifier from the relative path
-            if (string.Equals(subPathParts.FirstOrDefault(), RootDir, StringComparison.Ordinal))
+            var subPathPartsOffset = subPathParts.Length > 0 && string.Equals(subPathParts[0], RootDir, StringComparison.Ordinal) ? 1 : 0;
+            _splitFile ??= _originalFile.Split(ForwardSlashChar);
+
+            int i = 0;
+            // Walk the path as long as both the file and subpath contain the same directories
+            while (i < _splitFile.Length - 1
+                && i + subPathPartsOffset < subPathParts.Length
+                && string.Equals(_splitFile[i], subPathParts[i + subPathPartsOffset], StringComparison.OrdinalIgnoreCase))
             {
-                subPathParts = subPathParts.Skip(1).ToArray();
+                i++;
             }
 
-            foreach (var file in _files)
+            IFileInfo fileInfo = null;
+            // Check if the entire subpath was matched
+            if (i + subPathPartsOffset == subPathParts.Length)
             {
-                var i = 0;
-
-                // Walk the path as long as both the file and subpath contain the same directories
-                while (i < file.Length - 1
-                    && i < subPathParts.Length
-                    && string.Equals(file[i], subPathParts[i], StringComparison.OrdinalIgnoreCase))
+                // All items are files. The last string in the array will be the file name.
+                if (i == _splitFile.Length - 1)
                 {
-                    i++;
+                    // File
+                    var virtualFile = new VirtualFileInfo(_originalFile);
+                    fileInfo = virtualFile;
                 }
-
-                // Check if the entire subpath was matched
-                if (i == subPathParts.Length)
+                else
                 {
-                    // All items are files. The last string in the array will be the file name.
-                    if (i == file.Length - 1)
-                    {
-                        // File
-                        var virtualFile = new VirtualFileInfo(string.Join(ForwardSlash, file));
-                        contents.Add(virtualFile);
-                    }
-                    else
-                    {
-                        // Dir
-                        var dirPath = string.Join(ForwardSlash, file.Take(i + 1));
-                        var virtualDir = new VirtualFileInfo(dirPath, isDirectory: true);
-                        contents.Add(virtualDir);
-                    }
+                    // Dir
+                    var dirPath = string.Join(ForwardSlash, _splitFile.Take(i + 1));
+                    var virtualDir = new VirtualFileInfo(dirPath, isDirectory: true);
+                    fileInfo = virtualDir;
                 }
             }
 
-            return new EnumerableDirectoryContents(contents);
+            return new EnumerableDirectoryContents(fileInfo);
         }
 
         public IFileInfo GetFileInfo(string subpath)
@@ -83,18 +79,69 @@ namespace NuGet.Commands
 
         private class EnumerableDirectoryContents : IDirectoryContents
         {
-            private readonly IEnumerable<IFileInfo> _entries;
+            private readonly IFileInfo _entry;
 
-            public EnumerableDirectoryContents(IEnumerable<IFileInfo> entries)
+            public EnumerableDirectoryContents(IFileInfo entry)
             {
-                _entries = entries ?? throw new ArgumentNullException(nameof(entries));
+                _entry = entry;
             }
 
             public bool Exists => true;
 
-            public IEnumerator<IFileInfo> GetEnumerator() => _entries.GetEnumerator();
+            public IEnumerator<IFileInfo> GetEnumerator() => new SingleFileInfoEnumerator(_entry);
 
-            IEnumerator IEnumerable.GetEnumerator() => _entries.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => new SingleFileInfoEnumerator(_entry);
+        }
+
+        private struct SingleFileInfoEnumerator : IEnumerator<IFileInfo>
+        {
+            private IFileInfo _entry;
+            private IFileInfo _current;
+            private bool _done = false;
+
+            public SingleFileInfoEnumerator(IFileInfo entry)
+            {
+                _current = null;
+                _entry = entry;
+                if (_entry is null)
+                {
+                    _done = true;
+                }
+            }
+
+            public IFileInfo Current => _current;
+
+            object IEnumerator.Current => _current;
+
+            public void Dispose()
+            {
+                _done = true;
+                _current = null;
+                _entry = null;
+            }
+
+            public bool MoveNext()
+            {
+                if (_done)
+                {
+                    _current = null;
+
+                    return false;
+                }
+                else
+                {
+                    _current = _entry;
+                    _done = true;
+
+                    return true;
+                }
+            }
+
+            public void Reset()
+            {
+                _done = _entry is not null;
+                _current = null;
+            }
         }
     }
 }
