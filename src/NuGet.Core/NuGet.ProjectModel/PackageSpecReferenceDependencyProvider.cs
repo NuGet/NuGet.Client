@@ -79,14 +79,12 @@ namespace NuGet.ProjectModel
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
-            Library library = null;
             var name = libraryRange.Name;
 
-            ExternalProjectReference externalReference = null;
             PackageSpec packageSpec = null;
 
             // This must exist in the external references
-            if (_externalProjectsByUniqueName.TryGetValue(name, out externalReference))
+            if (_externalProjectsByUniqueName.TryGetValue(name, out ExternalProjectReference externalReference))
             {
                 packageSpec = externalReference.PackageSpec;
             }
@@ -127,7 +125,7 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            library = new Library
+            Library library = new Library
             {
                 LibraryRange = libraryRange,
                 Identity = new LibraryIdentity
