@@ -1088,4 +1088,8 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
 {0} - is the value from the customer's project file
 {1} is the list of valid values "direct, all"</comment>
   </data>
+  <data name="Warning_NoVulnerabilityData" xml:space="preserve">
+    <value>NuGetAudit is enabled, but no package sources contain known vulnerability data.</value>
+    <comment>Do not translate NuGetAudit</comment>
+  </data>
 </root>
