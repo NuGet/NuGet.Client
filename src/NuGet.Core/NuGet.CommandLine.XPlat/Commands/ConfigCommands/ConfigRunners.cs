@@ -171,20 +171,18 @@ namespace NuGet.CommandLine.XPlat
                     IEnumerable<IGrouping<string, SettingItem>> groupByConfigPathsQuery =
                     from item in items
                     group item by item.ConfigPath into newItemGroup
-                    from itemGroup in newItemGroup
-                    orderby newItemGroup.Key descending
                     select newItemGroup;
 
-                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQuery)
+                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQuery.Reverse())
                     {
                         logger.LogMinimal($" file: {configPathsGroup.Key}");
-                        LogSectionItems(configPathsGroup, logger);
+                        LogSectionItems(configPathsGroup, logger, showPath);
                         logger.LogMinimal(Environment.NewLine);
                     }
                 }
                 else
                 {
-                    LogSectionItems(items, logger);
+                    LogSectionItems(items, logger, showPath);
                     logger.LogMinimal(Environment.NewLine);
                 }
             }
@@ -195,9 +193,14 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="items"></param>
         /// <param name="logger"></param>
-        public static void LogSectionItems(IEnumerable<SettingItem> items, ILogger logger)
+        public static void LogSectionItems(IEnumerable<SettingItem> items, ILogger logger, bool showPath)
         {
-            foreach (SettingItem item in items.Reverse())
+            if (!showPath)
+            {
+                items = items.Reverse();
+            }
+
+            foreach (SettingItem item in items)
             {
                 string setting = $"\t{item.ElementName}";
                 IReadOnlyDictionary<string, string> attributes = item.GetAttributes();
