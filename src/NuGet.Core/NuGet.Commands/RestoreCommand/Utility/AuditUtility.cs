@@ -153,26 +153,20 @@ namespace NuGet.Commands.Restore.Utility
             Dictionary<PackageIdentity, Dictionary<PackageVulnerabilityInfo, List<string>>>? result = null;
 
             int minSeverity = ParseAuditLevel();
-            Func<RestoreTargetGraph, IEnumerable<ResolvedDependencyKey>> getPackagesToCheck =
-                ParseAuditMode() switch
-                {
-                    NuGetAuditMode.Direct => GetDirectDependencies,
-                    NuGetAuditMode.All => GetAllDependencies,
-                    _ => GetDirectDependencies
-                };
+            NuGetAuditMode auditMode = ParseAuditMode();
 
             foreach (RestoreTargetGraph graph in _targetGraphs)
             {
-                foreach (ResolvedDependencyKey resolvedDependency in getPackagesToCheck(graph))
+                foreach (ResolvedDependencyKey resolvedDependency in GetDependenciesToAudit(graph, auditMode))
                 {
                     LibraryIdentity package = resolvedDependency.Child;
-                    List<PackageVulnerabilityInfo>? fromFile = GetKnownVulnerabilities(package.Name, package.Version, knownVulnerabilities);
+                    List<PackageVulnerabilityInfo>? knownVulerabilitiesForPackage = GetKnownVulnerabilities(package.Name, package.Version, knownVulnerabilities);
 
-                    if (fromFile?.Count() > 0)
+                    if (knownVulerabilitiesForPackage?.Count() > 0)
                     {
                         PackageIdentity packageIdentity = new(package.Name, package.Version);
 
-                        foreach (PackageVulnerabilityInfo knownVulnerability in fromFile)
+                        foreach (PackageVulnerabilityInfo knownVulnerability in knownVulerabilitiesForPackage)
                         {
                             if (knownVulnerability.Severity < minSeverity)
                             {
@@ -317,8 +311,13 @@ namespace NuGet.Commands.Restore.Utility
             return NuGetAuditMode.Unknown;
         }
 
-        IEnumerable<ResolvedDependencyKey> GetDirectDependencies(RestoreTargetGraph graph)
+        IEnumerable<ResolvedDependencyKey> GetDependenciesToAudit(RestoreTargetGraph graph, NuGetAuditMode auditMode)
         {
+            if (auditMode == NuGetAuditMode.All)
+            {
+                return graph.ResolvedDependencies.Where(dep => dep.Child.Type == LibraryType.Package);
+            }
+
             Debug.Assert(graph.Graphs.Count() <= 1);
             LibraryIdentity? thisProject = graph.Graphs.FirstOrDefault()?.Item.Key;
 
@@ -329,11 +328,6 @@ namespace NuGet.Commands.Restore.Utility
 
             Debug.Assert(thisProject.Type == LibraryType.Project);
             return graph.ResolvedDependencies.Where(dep => dep.Parent == thisProject && dep.Child.Type == LibraryType.Package);
-        }
-
-        IEnumerable<ResolvedDependencyKey> GetAllDependencies(RestoreTargetGraph graph)
-        {
-            return graph.ResolvedDependencies.Where(dep => dep.Child.Type == LibraryType.Package);
         }
     }
 }
