@@ -29,7 +29,7 @@ parameters:
   type: string
 
 stages:
-- template: stages\visual-studio\visual-studio/build-to-build-upgrade\agent.yml@DartLabTemplates
+- template: stages\visual-studio\build-to-build-upgrade\agent.yml@DartLabTemplates
   parameters:
     name: ${{parameters.stageName}}
     displayName: 'E2E Tests ${{parameters.stageDisplayName}}'
