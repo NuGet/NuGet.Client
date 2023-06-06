@@ -104,95 +104,166 @@ namespace NuGet.Versioning
             }
         }
 
-        private static bool TryGetNormalizedVersion(string str, [NotNullWhen(true)] out Version? version)
+        public static bool TryGetNormalizedVersion(string str, [NotNullWhen(true)] out Version? version)
         {
-            if (!string.IsNullOrEmpty(str) && GetNextSection(str, 0, out int endIndex, out int major))
+            if (string.IsNullOrWhiteSpace(str))
             {
-                int build = 0;
-                int revision = 0;
-
-                // check for all the possible parts of the version string. If endIndex is less than the end of
-                // the string, the input string was invalid (e.g. "1.2.3.4.5").
-                bool validString = GetNextSection(str, endIndex + 1, out endIndex, out int minor) &&
-                    GetNextSection(str, endIndex + 1, out endIndex, out build) &&
-                    GetNextSection(str, endIndex + 1, out endIndex, out revision) &&
-                    endIndex == str.Length;
-
-                if (validString)
-                {
-                    version = new Version(major, Math.Max(0, minor), Math.Max(0, build), Math.Max(0, revision));
-                    return true;
-                }
+                version = null;
+                return false;
             }
 
-            version = null;
+            int minor = 0;
+            int build = 0;
+            int revision = 0;
 
-            return false;
+            // Check for all the possible parts of the version string. If lastParsedPosition is less than the end of
+            // the string, the input string was invalid (e.g. "1.2.3.4.5").
+            bool success = ParseSection(str, 0, out int lastParsedPosition, out int major) &&
+                ParseSection(str, lastParsedPosition, out lastParsedPosition, out minor) &&
+                ParseSection(str, lastParsedPosition, out lastParsedPosition, out build) &&
+                ParseSection(str, lastParsedPosition, out lastParsedPosition, out revision) &&
+                lastParsedPosition == str.Length;
 
-            // returns false if an invalid section was found while processing the string
-            static bool GetNextSection(string s, int start, out int end, out int versionNumber)
+            if (success)
             {
-                // check to see if we've processed the whole string
-                if (start >= s.Length)
-                {
-                    // we've reached the end. The section is empty but not invalid.
-                    end = s.Length;
-                    versionNumber = -1;
+                version = new Version(major, minor, build, revision);
+                return true;
+            }
+            else
+            {
+                version = null;
+                return false;
+            }
 
+            // Returns false if an invalid section was found while processing the string.
+            static bool ParseSection(string str, int start, out int end, out int versionNumber)
+            {
+                // Section is empty.
+                if (start == str.Length)
+                {
+                    end = start;
+                    versionNumber = 0;
                     return true;
                 }
 
-                end = s.IndexOf('.', start);
-
-                if (end == -1)
+                // Trim off leading whitespace
+                for (end = start; end < str.Length; ++end)
                 {
-                    end = s.Length;
+                    char currentChar = str[end];
+                    if (!char.IsWhiteSpace(currentChar))
+                    {
+                        if (IsDigit(currentChar))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            // Found a non-whitespace non-digit character. Invalid string.
+                            versionNumber = 0;
+                            return false;
+                        }
+                    }
                 }
 
-                return TryParseInt(s, start, end, out versionNumber);
-            }
-
-            // start is inclusive bound and end is exclusive for the section of string to parse
-            static bool TryParseInt(string s, int start, int end, out int value)
-            {
-                // invalid section specified
-                if (start >= end)
+                bool done = false;
+                bool digitFound = false;
+                long intermediateVersionNumber = 0;
+                // Handle number portion.
+                for (; end < str.Length; ++end)
                 {
-                    value = 0;
+                    // Negative numbers are invalid for version strings so we only need to check for digits.
+                    char currentChar = str[end];
+                    if (IsDigit(currentChar))
+                    {
+                        // Parse the values digit by digit and multiplies by 10 to make space for the next digit.
+                        // When parsing "123456", this method becomes 1 -> 10 + 2 -> 120 + 3 -> 1230 + 4 -> 12340 + 5 -> 123450 + 6 -> 123456
+                        // We subtract off ASCII value of '0' from our current character to get the digit's value
+                        // e.g. '3' - '0' == 51 - 48 == 3
+                        digitFound = true;
+                        intermediateVersionNumber = intermediateVersionNumber * 10 + currentChar - '0';
+
+                        // Check for overflow. We can't get outside the bounds of intermediateVersionNumber, a long, before exceeding int.MaxValue
+                        // since we're
+                        // Intentionally avoid usage of 'checked' statement to avoid exception
+                        if (intermediateVersionNumber > int.MaxValue)
+                        {
+                            versionNumber = 0;
+                            return false;
+                        }
+                    }
+                    else if (currentChar == '.')
+                    {
+                        ++end;
+                        // version string ended with '.'
+                        if (end == str.Length)
+                        {
+                            versionNumber = 0;
+                            return false;
+                        }
+
+                        done = true;
+                        break;
+                    }
+                    else if (char.IsWhiteSpace(currentChar))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        versionNumber = 0;
+                        return false;
+                    }
+                }
+
+                // We failed to find a number in the section, so the string is invalid.
+                if (!digitFound)
+                {
+                    versionNumber = 0;
                     return false;
                 }
 
-                long returnValue = 0;
-
-                // Parse the values digit by digit and multiplies by 10 to make space for the next digit.
-                // When parsing "123456", this method becomes 1 -> 10 + 2 -> 120 + 3 -> 1230 + 4 -> 12340 + 5 -> 123450 + 6 -> 123456
-                for (int i = start; i < end; i++)
+                if (end == str.Length)
                 {
-                    // negative numbers are invalid for version strings so we only need to check for digits
-                    char current = s[i];
-                    if (current < '0' || current > '9')
-                    {
-                        value = 0;
-                        return false;
-                    }
+                    done = true;
+                }
 
-                    // subtract off ASCII value of '0' from our current character to get the digit's value
-                    // e.g. '3' - '0' == 51 - 58 == 3
-                    returnValue = returnValue * 10 + (current - '0');
-
-                    // Check for overflow. We can't get outside the bounds of long before exceeding int.MaxValue
-                    // Intentionally avoid usage of 'checked' statement to avoid exception
-                    if (returnValue > int.MaxValue)
+                if (!done)
+                {
+                    // trailing whitespace
+                    for (; end < str.Length; ++end)
                     {
-                        value = 0;
-                        return false;
+                        char currentChar = str[end];
+                        if (!char.IsWhiteSpace(currentChar))
+                        {
+                            if (currentChar == '.')
+                            {
+                                ++end;
+                                // version string ended with '.'
+                                if (end == str.Length)
+                                {
+                                    versionNumber = 0;
+                                    return false;
+                                }
+
+                                break;
+                            }
+                            else
+                            {
+                                versionNumber = 0;
+                                return false;
+                            }
+                        }
                     }
                 }
 
                 // Previous checks guarantee returnValue <= int.MaxValue
-                value = (int)returnValue;
-
+                versionNumber = (int)intermediateVersionNumber;
                 return true;
+            }
+
+            static bool IsDigit(char c)
+            {
+                return c >= '0' && c <= '9';
             }
         }
 
