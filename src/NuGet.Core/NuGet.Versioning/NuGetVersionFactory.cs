@@ -164,8 +164,8 @@ namespace NuGet.Versioning
 
                 long returnValue = 0;
 
-                // Parse the values in reverse and assign a tens place to them.
-                // When parsing "123456", this method adds 6 + 50 + 400 + 3000 + 20000 + 100000
+                // Parse the values digit by digit and multiplies by 10 to make space for the next digit.
+                // When parsing "123456", this method becomes 1 -> 10 + 2 -> 120 + 3 -> 1230 + 4 -> 12340 + 5 -> 123450 + 6 -> 123456
                 for (int i = start; i < end; i++)
                 {
                     // negative numbers are invalid for version strings so we only need to check for digits
