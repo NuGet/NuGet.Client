@@ -49,7 +49,7 @@ stages:
     - name: Part
       value: ${{parameters.part}}
     - ${{if gt(length(parameters.variables), 0)}}:
-        - ${{parameters.variables}}
+      - ${{parameters.variables}}
     baseVisualStudioBootstrapperURI: https://vsdrop.corp.microsoft.com/file/v1/$(VisualStudio.BaseBuild.ProductsDropName);bootstrappers/Enterprise/vs_enterprise.exe
     candidateBaselineBuilds: $(BaselineBuildCommitIds)
     visualStudioBootstrapperURI: $(bootstrapperUrl)
