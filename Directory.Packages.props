@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
 
     <CryptographyPackagesVersion Condition="'$(CryptographyPackagesVersion)' == ''">5.0.0</CryptographyPackagesVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.0.0</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
