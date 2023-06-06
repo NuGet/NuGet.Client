@@ -378,5 +378,6 @@ stages:
     dartLabEnvironment: ${{parameters.DartLabEnvironment}}
     testExecutionJobTimeoutInMinutes: 150
     bootstrapperUrl: $(VsBootstrapperUrl)
+    baseBootstrapperUrl: $(VsBaseBootstrapperUrl)
     QBuildSessionId: $(QBuildSessionId)
     testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
