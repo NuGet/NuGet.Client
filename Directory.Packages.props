@@ -184,6 +184,7 @@
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.Cng" />
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.Pkcs" />
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.ProtectedData" />
+      <_allowBuildFromSourcePackage Include="System.Security.Cryptography.Xml" />
 
       <_sourceBuildUnexpectedPackage Include="@(PackageReference)" Exclude="@(_allowBuildFromSourcePackage)" />
     </ItemGroup>
