@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
 
     <CryptographyPackagesVersion Condition="'$(CryptographyPackagesVersion)' == ''">5.0.0</CryptographyPackagesVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.0.0</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
@@ -91,6 +92,7 @@
     <PackageVersion Include="System.Security.Cryptography.Cng" Version="$(CryptographyPackagesVersion)" />
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="$(CryptographyPackagesVersion)" />
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="4.4.0" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="6.0.1" />
     <PackageVersion Include="System.Text.Encoding.Extensions" Version="$(SystemPackagesVersion)" />
     <PackageVersion Include="System.Threading" Version="$(SystemPackagesVersion)" />
     <PackageVersion Include="System.Threading.Tasks" Version="$(SystemPackagesVersion)" />
