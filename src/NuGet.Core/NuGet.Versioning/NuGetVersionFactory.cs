@@ -149,10 +149,10 @@ namespace NuGet.Versioning
                     end = s.Length;
                 }
 
-                return TryParseInt(s, start, end - 1, out versionNumber);
+                return TryParseInt(s, start, end, out versionNumber);
             }
 
-            // start and end are inclusive bounds for the section of string to parse
+            // start is inclusive bound and end is exclusive for the section of string to parse
             static bool TryParseInt(string s, int start, int end, out int value)
             {
                 // invalid section specified
@@ -163,11 +163,10 @@ namespace NuGet.Versioning
                 }
 
                 long returnValue = 0;
-                int multiplier = 1;
 
                 // Parse the values in reverse and assign a tens place to them.
                 // When parsing "123456", this method adds 6 + 50 + 400 + 3000 + 20000 + 100000
-                for (int i = end; i >= start; i--)
+                for (int i = start; i < end; i++)
                 {
                     // negative numbers are invalid for version strings so we only need to check for digits
                     char current = s[i];
@@ -179,8 +178,7 @@ namespace NuGet.Versioning
 
                     // subtract off ASCII value of '0' from our current character to get the digit's value
                     // e.g. '3' - '0' == 51 - 58 == 3
-                    returnValue += (current - '0') * multiplier;
-                    multiplier *= 10;
+                    returnValue = returnValue * 10 + (current - '0');
 
                     // Check for overflow. We can't get outside the bounds of long before exceeding int.MaxValue
                     // Intentionally avoid usage of 'checked' statement to avoid exception
