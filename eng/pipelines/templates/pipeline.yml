@@ -350,8 +350,8 @@ stages:
       value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['setcloudbuildsessionid.QBuildSessionId']]
     - name: GitHubStatusName
       value: End_To_End_Tests_On_Windows Part2
-    part: "A-TopDownloadedPackages.ps1,BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
     QBuildSessionId: $(QBuildSessionId)
+    part: "A-TopDownloadedPackages.ps1,BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
     testMachineCleanUpStrategy: ${{parameters.E2EPart2AgentCleanup}}
 
 # Dartlab's template defines this in its own stage
