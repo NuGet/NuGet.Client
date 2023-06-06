@@ -7,6 +7,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         General,
         PackageSources,
-        PackageSourceMapping
+        PackageSourceMapping,
+        ConfigPaths
     }
 }

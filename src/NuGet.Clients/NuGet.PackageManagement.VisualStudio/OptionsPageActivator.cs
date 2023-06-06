@@ -25,6 +25,8 @@ namespace NuGet.PackageManagement.VisualStudio
         // GUID of the Package Source Mapping page, defined in PackageSourceMappingOptionsPage.cs
         private const string _packageSourceMappingGUID = "F175964E-89F5-4521-8FE2-C10C07BB968C";
 
+        private const string _configPathsGUID = "C17B308A-00BB-446E-9212-2D14E1005985";
+
         private Action _closeCallback;
         private readonly AsyncLazy<IVsUIShell> _vsUIShell;
 
@@ -75,8 +77,13 @@ namespace NuGet.PackageManagement.VisualStudio
                     await ShowOptionsPageAsync(_packageSourceMappingGUID);
                 }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
             }
-            // else if with that loads the config page
-            // we're missing the GUID atm
+            else if (page == OptionsPage.PackageSourceMapping)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ShowOptionsPageAsync(_configPathsGUID);
+                }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
+            }
             else
             {
                 throw new ArgumentOutOfRangeException(nameof(page));
