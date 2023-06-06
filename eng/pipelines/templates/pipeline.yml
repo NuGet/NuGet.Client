@@ -124,7 +124,6 @@ stages:
     - template: Initialize_Build.yml
 
 - stage: StaticSourceAnalysis
-  condition: false
   displayName: Static Source Analysis
   dependsOn: []
   jobs:
@@ -163,7 +162,6 @@ stages:
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
   dependsOn: Initialize
-  condition: false
   jobs:
   - job: Build_and_UnitTest_RTM
     condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
@@ -196,7 +194,6 @@ stages:
 
 - stage: Source_Build
   dependsOn: Initialize
-  condition: false
   jobs:
   - job: Build_Source_Build
     condition: "and(succeeded(), ne(variables['RunSourceBuild'], 'false'))"
@@ -213,7 +210,6 @@ stages:
 
 - stage: Tests
   displayName: "Run Unit and Functional Tests"
-  condition: false
   dependsOn: Initialize
   jobs:
   - job: Functional_Tests_On_Windows
@@ -320,7 +316,7 @@ stages:
   parameters:
     stageName: VS_EndToEnd_Part1
     stageDisplayName: Part 1
-    condition: false
+    condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
     dependsOn:
     - Initialize
     - Build_Insertable
@@ -341,7 +337,7 @@ stages:
   parameters:
     stageName: VS_EndToEnd_Part2
     stageDisplayName: Part 2
-    condition: false
+    condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
     dependsOn:
     - Initialize
     - Build_Insertable
