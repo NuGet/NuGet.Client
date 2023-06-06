@@ -371,6 +371,23 @@ steps:
         Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
       }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  
+- task: PowerShell@1
+  displayName: "Set Base Bootstrapper URI variable for tests"
+  name: "setbasebootstrapperuri"
+  continueOnError: true
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      try {
+        $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+        $buildDrop = $json[0].BuildDrop;
+        $baseBootstraperURI = "$buildDrop;bootstrappers/Enterprise/vs_enterprise.exe"
+        Write-Host "Base Bootstrapper URI: $baseBootstraperURI"
+        Write-Host "##vso[task.setvariable variable=BaseBootstraperURI;isOutput=true]$baseBootstraperURI"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]Unable to set Base Bootstrapper URI: $_"
+      }
 
 - task: MSBuild@1
   displayName: 'Generate .runsettings files'
