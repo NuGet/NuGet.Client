@@ -18,6 +18,7 @@
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" PrivateAssets="All" />
+    <PackageReference Include="System.Security.Cryptography.Xml" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="All" />
   </ItemGroup>
 
