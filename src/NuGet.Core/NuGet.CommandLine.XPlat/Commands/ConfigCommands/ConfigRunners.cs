@@ -166,23 +166,28 @@ namespace NuGet.CommandLine.XPlat
                 logger.LogMinimal(section + ":");
                 IReadOnlyCollection<SettingItem> items = settings.GetSection(section)?.Items;
 
-                if (showPath)
-                {
-                    IEnumerable<IGrouping<string, SettingItem>> groupByConfigPathsQuery =
+                IEnumerable<IGrouping<string, SettingItem>> groupByConfigPathsQuery =
                     from item in items
                     group item by item.ConfigPath into newItemGroup
                     select newItemGroup;
 
-                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQuery.Reverse())
+                var groupByConfigPathsQueryReverse = groupByConfigPathsQuery.Reverse();
+
+                if (showPath)
+                {
+                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQueryReverse)
                     {
                         logger.LogMinimal($" file: {configPathsGroup.Key}");
-                        LogSectionItems(configPathsGroup, logger, showPath);
+                        LogSectionItems(configPathsGroup, logger);
                         logger.LogMinimal(Environment.NewLine);
                     }
                 }
                 else
                 {
-                    LogSectionItems(items, logger, showPath);
+                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQueryReverse)
+                    {
+                        LogSectionItems(configPathsGroup, logger);
+                    }
                     logger.LogMinimal(Environment.NewLine);
                 }
             }
@@ -193,13 +198,8 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="items"></param>
         /// <param name="logger"></param>
-        public static void LogSectionItems(IEnumerable<SettingItem> items, ILogger logger, bool showPath)
+        public static void LogSectionItems(IEnumerable<SettingItem> items, ILogger logger)
         {
-            if (!showPath)
-            {
-                items = items.Reverse();
-            }
-
             foreach (SettingItem item in items)
             {
                 string setting = $"\t{item.ElementName}";
