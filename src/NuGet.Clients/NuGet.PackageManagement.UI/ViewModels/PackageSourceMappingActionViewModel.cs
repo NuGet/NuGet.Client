@@ -5,19 +5,16 @@
 
 using System;
 using System.Linq;
-using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
     public sealed class PackageSourceMappingActionViewModel : ViewModelBase
     {
         internal INuGetUI UIController { get; }
-        internal ContractsItemFilter ActiveTab { get; }
 
-        private PackageSourceMappingActionViewModel(INuGetUI uiController, ContractsItemFilter contractsItemFilter)
+        private PackageSourceMappingActionViewModel(INuGetUI uiController)
         {
             UIController = uiController ?? throw new ArgumentNullException(nameof(uiController));
-            ActiveTab = contractsItemFilter;
         }
 
         public bool IsPackageSourceMappingEnabled => UIController.UIContext?.PackageSourceMapping?.IsEnabled == true;
@@ -81,10 +78,9 @@ namespace NuGet.PackageManagement.UI.ViewModels
             RaisePropertyChanged(nameof(MappingStatus));
         }
 
-        public static PackageSourceMappingActionViewModel Create(INuGetUI uiController, ItemFilter itemFilter)
+        public static PackageSourceMappingActionViewModel Create(INuGetUI uiController)
         {
-            var contractsItemFilter = UIUtility.ToContractsItemFilter(itemFilter);
-            return new PackageSourceMappingActionViewModel(uiController, contractsItemFilter);
+            return new PackageSourceMappingActionViewModel(uiController);
         }
     }
 }

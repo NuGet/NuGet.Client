@@ -3,7 +3,6 @@
 
 using System;
 using System.Windows.Controls;
-using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 
@@ -23,8 +22,6 @@ namespace NuGet.PackageManagement.UI
         {
             var viewModel = (PackageSourceMappingActionViewModel)DataContext;
             viewModel.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
-            //var evt = new HyperlinkClickedTelemetryEvent(HyperlinkType.PackageSourceMappingConfigure, viewModel.ActiveTab, viewModel.UIController.UIContext.issolu, alternatePackageId);
-            //TelemetryActivity.EmitTelemetryEvent(evt);
         }
     }
 }

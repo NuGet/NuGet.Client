@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.UI
             ServiceBroker = serviceBroker;
 
             _options = new OptionsViewModel();
-            PackageSourceMappingViewModel = PackageSourceMappingActionViewModel.Create(uiController, _filter);
+            PackageSourceMappingViewModel = PackageSourceMappingActionViewModel.Create(uiController);
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
             _options.ShowClassicOptions = projects.Any(project => project.ProjectKind == NuGetProjectKind.PackagesConfig);

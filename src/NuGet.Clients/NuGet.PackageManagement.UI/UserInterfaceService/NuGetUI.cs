@@ -14,6 +14,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -244,6 +245,12 @@ namespace NuGet.PackageManagement.UI
             if (UIContext?.OptionsPageActivator != null)
             {
                 InvokeOnUIThread(() => { UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
+
+                if (optionsPageToOpen == OptionsPage.PackageSourceMapping)
+                {
+                    var evt = new HyperlinkClickedTelemetryEvent(HyperlinkType.PackageSourceMappingConfigure, UIUtility.ToContractsItemFilter(PackageManagerControl.ActiveFilter), PackageManagerControl.Model.IsSolution);
+                    TelemetryActivity.EmitTelemetryEvent(evt);
+                }
             }
             else
             {
