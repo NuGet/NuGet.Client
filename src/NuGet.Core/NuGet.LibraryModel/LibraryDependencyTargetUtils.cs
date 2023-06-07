@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -135,7 +136,7 @@ namespace NuGet.LibraryModel
             return string.Join(",", flagStrings);
         }
 
-        private static readonly Dictionary<LibraryDependencyTarget, string> LibraryDependencyTargetCache = new();
+        private static readonly ConcurrentDictionary<LibraryDependencyTarget, string> LibraryDependencyTargetCache = new();
 
         /// <summary>
         /// Efficiently converts <see cref="LibraryDependencyTarget"/> to it's <see cref="string"/> representation.
@@ -147,7 +148,7 @@ namespace NuGet.LibraryModel
             if (!LibraryDependencyTargetCache.TryGetValue(includeFlags, out string enumAsString))
             {
                 enumAsString = includeFlags.ToString();
-                LibraryDependencyTargetCache[includeFlags] = enumAsString;
+                LibraryDependencyTargetCache.TryAdd(includeFlags, enumAsString);
             }
 
             return enumAsString;
