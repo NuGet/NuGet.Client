@@ -387,6 +387,7 @@ steps:
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]Unable to set Base Build Drop: $_"
       }
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
   displayName: 'Generate .runsettings files'
