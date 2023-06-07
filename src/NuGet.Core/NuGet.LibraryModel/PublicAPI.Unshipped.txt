@@ -2,3 +2,4 @@
 NuGet.LibraryModel.LibraryType.LibraryType() -> void
 ~static NuGet.LibraryModel.LibraryDependencyTargetUtils.AsString(this NuGet.LibraryModel.LibraryDependencyTarget includeFlags) -> string
 ~static NuGet.LibraryModel.LibraryIncludeFlagUtils.AsString(this NuGet.LibraryModel.LibraryIncludeFlags includeFlags) -> string
+NuGet.LibraryModel.LibraryDependency.NoWarnCount.get -> int

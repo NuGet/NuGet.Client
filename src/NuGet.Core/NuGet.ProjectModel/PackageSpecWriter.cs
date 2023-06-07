@@ -464,7 +464,7 @@ namespace NuGet.ProjectModel
 
                     SetValueIfTrue(writer, "autoReferenced", dependency.AutoReferenced);
 
-                    if (dependency.NoWarn.Count > 0)
+                    if (dependency.NoWarnCount > 0)
                     {
                         SetArrayValue(writer, "noWarn", dependency
                             .NoWarn

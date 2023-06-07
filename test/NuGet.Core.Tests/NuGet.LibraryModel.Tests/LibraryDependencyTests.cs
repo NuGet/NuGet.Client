@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Common;
 using NuGet.Versioning;
 using Xunit;
 
@@ -101,6 +102,82 @@ namespace NuGet.LibraryModel.Tests
                 },
                 SuppressParent = LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.ContentFiles,
                 Aliases = "stuff",
+            };
+        }
+
+        [Fact]
+        public void NoWarnCount()
+        {
+            var libraryDependency = new LibraryDependency();
+            Assert.Equal(0, libraryDependency.NoWarnCount);
+            Assert.Equal(0, libraryDependency.NoWarn.Count);
+
+            libraryDependency.NoWarn = new List<NuGetLogCode> { NuGetLogCode.NU1001, NuGetLogCode.NU1006 };
+            Assert.Equal(2, libraryDependency.NoWarnCount);
+            Assert.Equal(2, libraryDependency.NoWarn.Count);
+
+            libraryDependency.NoWarn = new List<NuGetLogCode> { };
+            Assert.Equal(0, libraryDependency.NoWarnCount);
+            Assert.Equal(0, libraryDependency.NoWarn.Count);
+
+            libraryDependency.NoWarn = null;
+            Assert.Equal(0, libraryDependency.NoWarnCount);
+            Assert.Equal(0, libraryDependency.NoWarn.Count);
+        }
+
+        [Theory]
+        //[CombinatorialData]
+        [PairwiseData]
+        public void PackedProperties(
+            bool GeneratePathProperty,
+            bool AutoReferenced,
+            bool VersionCentrallyManaged,
+            [CombinatorialMemberData(nameof(GetLibraryIncludeFlags))] LibraryIncludeFlags includeType,
+            [CombinatorialMemberData(nameof(GetLibraryIncludeFlags))] LibraryIncludeFlags suppressParent,
+            [CombinatorialMemberData(nameof(GetLibraryDependencyReferenceType))] LibraryDependencyReferenceType referenceType)
+        {
+            var libraryDependency = new LibraryDependency
+            {
+                GeneratePathProperty = GeneratePathProperty,
+                AutoReferenced = AutoReferenced,
+                VersionCentrallyManaged = VersionCentrallyManaged,
+                IncludeType = includeType,
+                SuppressParent = suppressParent,
+                ReferenceType = referenceType
+            };
+
+            Assert.Equal(GeneratePathProperty, libraryDependency.GeneratePathProperty);
+            Assert.Equal(AutoReferenced, libraryDependency.AutoReferenced);
+            Assert.Equal(VersionCentrallyManaged, libraryDependency.VersionCentrallyManaged);
+            Assert.Equal(includeType, libraryDependency.IncludeType);
+            Assert.Equal(suppressParent, libraryDependency.SuppressParent);
+            Assert.Equal(referenceType, libraryDependency.ReferenceType);
+        }
+
+        public static IEnumerable<LibraryIncludeFlags> GetLibraryIncludeFlags()
+        {
+            // Only include a few values to keep test case count down
+            return new[]
+            {
+                LibraryIncludeFlags.None,
+                //LibraryIncludeFlags.Runtime,
+                LibraryIncludeFlags.Compile,
+                //LibraryIncludeFlags.Build,
+                //LibraryIncludeFlags.Native,
+                LibraryIncludeFlags.ContentFiles,
+                //LibraryIncludeFlags.Analyzers,
+                //LibraryIncludeFlags.BuildTransitive,
+                LibraryIncludeFlags.All
+            };
+        }
+
+        public static IEnumerable<LibraryDependencyReferenceType> GetLibraryDependencyReferenceType()
+        {
+            return new[]
+            {
+                LibraryDependencyReferenceType.None,
+                LibraryDependencyReferenceType.Transitive,
+                LibraryDependencyReferenceType.Direct
             };
         }
     }

@@ -2857,6 +2857,7 @@ namespace NuGet.Commands.Test
                 var packageDependency = project1Spec.TargetFrameworks[0].Dependencies[0];
 
                 // Assert
+                packageDependency.NoWarnCount.Should().Be(0);
                 packageDependency.NoWarn.Should().BeEmpty();
             }
         }

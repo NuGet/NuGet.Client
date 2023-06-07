@@ -38,7 +38,10 @@ namespace NuGet.Commands
             {
                 foreach (var framework in packageSpec.TargetFrameworks)
                 {
-                    warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework.FrameworkName);
+                    if (dependency.NoWarnCount != 0)
+                    {
+                        warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework.FrameworkName);
+                    }
                 }
             }
 
@@ -46,7 +49,10 @@ namespace NuGet.Commands
             {
                 foreach (var dependency in framework.Dependencies)
                 {
-                    warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework.FrameworkName);
+                    if (dependency.NoWarnCount != 0)
+                    {
+                        warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework.FrameworkName);
+                    }
                 }
             }
 
@@ -67,14 +73,20 @@ namespace NuGet.Commands
 
             foreach (var dependency in packageSpec.Dependencies)
             {
-                warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework);
+                if (dependency.NoWarnCount != 0)
+                {
+                    warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework);
+                }
             }
 
             var targetFrameworkInformation = packageSpec.GetTargetFramework(framework);
 
             foreach (var dependency in targetFrameworkInformation.Dependencies)
             {
-                warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework);
+                if (dependency.NoWarnCount != 0)
+                {
+                    warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework);
+                }
             }
 
             return warningProperties;

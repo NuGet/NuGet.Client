@@ -13,11 +13,13 @@ namespace NuGet.LibraryModel
     /// </summary>
     public static class LibraryIncludeFlagUtils
     {
+        internal const LibraryIncludeFlags DefaultSuppressParentConst =
+            (LibraryIncludeFlags.Build | LibraryIncludeFlags.ContentFiles | LibraryIncludeFlags.Analyzers);
+
         /// <summary>
         /// By default build, contentFiles, and analyzers do not flow transitively between projects.
         /// </summary>
-        public static readonly LibraryIncludeFlags DefaultSuppressParent =
-            (LibraryIncludeFlags.Build | LibraryIncludeFlags.ContentFiles | LibraryIncludeFlags.Analyzers);
+        public static readonly LibraryIncludeFlags DefaultSuppressParent = DefaultSuppressParentConst;
 
         public static readonly LibraryIncludeFlags NoContent = LibraryIncludeFlags.All & ~LibraryIncludeFlags.ContentFiles;
 

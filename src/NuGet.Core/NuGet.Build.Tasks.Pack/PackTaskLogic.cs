@@ -968,7 +968,7 @@ namespace NuGet.Build.Tasks.Pack
                         }
                     }
 
-                    if (packageDependency.NoWarn.Count > 0)
+                    if (packageDependency.NoWarnCount > 0)
                     {
                         HashSet<(NuGetLogCode, NuGetFramework)> nowarnProperties = null;
 

@@ -5,6 +5,9 @@ namespace NuGet.LibraryModel
 {
     public enum LibraryDependencyReferenceType
     {
+        // This enum is carefully packed in LibraryDependency.
+        // Any changes here should be verified there too.
+
         None,
         Transitive,
         Direct

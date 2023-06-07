@@ -8,6 +8,9 @@ namespace NuGet.LibraryModel
     [Flags]
     public enum LibraryIncludeFlags : ushort
     {
+        // This enum is carefully packed in LibraryDependency.
+        // Any changes here should be verified there too.
+
         None = 0,
         Runtime = 1 << 0,
         Compile = 1 << 1,
