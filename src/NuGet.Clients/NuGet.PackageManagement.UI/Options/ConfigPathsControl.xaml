@@ -23,6 +23,6 @@
       <RowDefinition Height="auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Row="0" Text="Config Files"/>
-    <ListView Grid.Row="1" />
+    <ListView Grid.Row="1" ItemsSource="{Binding ConfigPaths}"/>
   </Grid>
 </UserControl>
