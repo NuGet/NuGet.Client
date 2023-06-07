@@ -104,7 +104,7 @@ namespace NuGet.Versioning
             }
         }
 
-        public static bool TryGetNormalizedVersion(string str, [NotNullWhen(true)] out Version? version)
+        private static bool TryGetNormalizedVersion(string str, [NotNullWhen(true)] out Version? version)
         {
             if (string.IsNullOrWhiteSpace(str))
             {
@@ -183,7 +183,6 @@ namespace NuGet.Versioning
                         intermediateVersionNumber = intermediateVersionNumber * 10 + currentChar - '0';
 
                         // Check for overflow. We can't get outside the bounds of intermediateVersionNumber, a long, before exceeding int.MaxValue
-                        // since we're
                         // Intentionally avoid usage of 'checked' statement to avoid exception
                         if (intermediateVersionNumber > int.MaxValue)
                         {
