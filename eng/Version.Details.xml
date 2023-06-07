@@ -9,6 +9,9 @@
   <!--
     Following dependencies are required for PVP flow.
     PVP flow infra will automatically bump the version to the latest live one.
+
+    Versions specified here were initially mirrored from repo dependencies, but there is no
+    Arcade flow and versions do not necessarily match what is currently consumed by repo build.
   -->
   <ProductDependencies>
     <Dependency Name="Microsoft.Build" Version="17.3.1">
