@@ -1660,7 +1660,7 @@ namespace NuGet.PackageManagement.UI
                         Search(searchQuery);
 
                         var hyperlinkType = tupleParam.Item2;
-                        var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType, currentTab, Model.IsSolution, alternatePackageId);
+                        var evt = new HyperlinkNavigatedTelemetryEvent(hyperlinkType, currentTab, Model.IsSolution, alternatePackageId);
                         TelemetryActivity.EmitTelemetryEvent(evt);
                     }
                 }

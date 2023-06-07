@@ -248,7 +248,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (optionsPageToOpen == OptionsPage.PackageSourceMapping)
                 {
-                    var evt = new HyperlinkClickedTelemetryEvent(HyperlinkType.PackageSourceMappingConfigure, UIUtility.ToContractsItemFilter(PackageManagerControl.ActiveFilter), PackageManagerControl.Model.IsSolution);
+                    var evt = new NavigatedTelemetryEvent(NavigationType.Button, UIUtility.ToContractsItemFilter(PackageManagerControl.ActiveFilter), PackageManagerControl.Model.IsSolution);
                     TelemetryActivity.EmitTelemetryEvent(evt);
                 }
             }
