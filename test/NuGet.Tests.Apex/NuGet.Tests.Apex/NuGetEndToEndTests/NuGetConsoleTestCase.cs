@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
+using NuGet.Configuration;
 using NuGet.StaFact;
 using NuGet.Test.Utility;
 using Xunit;
@@ -920,9 +921,8 @@ namespace NuGet.Tests.Apex
             {
                 // Arrange
                 SolutionService solutionService = VisualStudio.Get<SolutionService>();
-                var nugetConsole = GetConsole(testContext.Project);
-                var projectPath = testContext.Project.FullPath;
-                var source = "https://api.nuget.org/v3/index.json";
+                var nugetConsole = GetConsole(testContext.Project);                           
+                var source = NuGetConstants.V3FeedUrl;
 
                 // Act
                 nugetConsole.Execute($"install-package EntityFramework -source {source} -Verbose");
@@ -931,15 +931,14 @@ namespace NuGet.Tests.Apex
                 Assert.True(nugetConsole.IsMessageFoundInPMC("init.ps1"), "The init.ps1 script in TestProject was not executed when the EntityFramework package was installed");
 
                 // Act
-                solutionService.CreateEmptySolution();
-                ProjectTestExtension project2 = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V48, "TestProject2");
+                nugetConsole.Clear();
                 nugetConsole.Execute($"install-package jquery -source {source} -Verbose");
 
                 // Assert
-                Assert.True(nugetConsole.IsMessageFoundInPMC("install.ps1"), "The install.ps1 script in TestProject2 was not executed when the jquery package was installed.");
+                Assert.True(nugetConsole.IsMessageFoundInPMC("install.ps1"), "The install.ps1 script in TestProject was not executed when the jquery package was installed.");
 
                 // Act
-                solutionService.OpenProject(projectPath);
+                nugetConsole.Clear();                
                 nugetConsole.Execute($"install-package entityframework.sqlservercompact -source {source} -Verbose");
 
                 // Assert
