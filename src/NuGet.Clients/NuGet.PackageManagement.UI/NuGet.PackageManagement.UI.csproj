@@ -15,10 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Page Remove="Options\ConfigPathsControl.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="System.Runtime.Caching" />
   </ItemGroup>
 
@@ -80,9 +76,6 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="Options\ConfigPathsControl.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\UpgradeReport.xslt">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -118,6 +111,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>PackageIconMonikers.tt</DependentUpon>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Options\ConfigPathsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" Condition=" '$(MSBuildRuntimeType)' == 'Full' " />
