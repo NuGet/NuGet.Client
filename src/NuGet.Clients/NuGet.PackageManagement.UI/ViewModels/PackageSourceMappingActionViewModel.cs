@@ -38,17 +38,19 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
+        internal bool _isPackageMapped;
         public bool IsPackageMapped
         {
             get
             {
                 if (string.IsNullOrWhiteSpace(PackageId))
                 {
-                    return false;
+                    _isPackageMapped = false;
                 }
 
                 var packageSourceMapping = UIController.UIContext.PackageSourceMapping;
-                return packageSourceMapping?.GetConfiguredPackageSources(PackageId)?.Any() == true;
+                _isPackageMapped = packageSourceMapping?.GetConfiguredPackageSources(PackageId)?.Any() == true;
+                return _isPackageMapped;
             }
         }
 

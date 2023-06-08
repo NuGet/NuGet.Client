@@ -248,7 +248,20 @@ namespace NuGet.PackageManagement.UI
 
                 if (optionsPageToOpen == OptionsPage.PackageSourceMapping)
                 {
-                    var evt = new NavigatedTelemetryEvent(NavigationType.Button, UIUtility.ToContractsItemFilter(PackageManagerControl.ActiveFilter), PackageManagerControl.Model.IsSolution);
+                    var packageSourceMappingViewModel = PackageManagerControl._detailModel.PackageSourceMappingViewModel;
+                    bool isPackageSourceMappingEnabled = packageSourceMappingViewModel.IsPackageSourceMappingEnabled;
+                    bool isPackageMapped = packageSourceMappingViewModel._isPackageMapped; // Read from cache to avoid recalculating.
+                    PackageSourceMappingStatus packageSourceMappingStatus = PackageSourceMappingStatus.Unspecified;
+                    if (!isPackageSourceMappingEnabled)
+                    {
+                        packageSourceMappingStatus = PackageSourceMappingStatus.Disabled;
+                    }
+                    else
+                    {
+                        packageSourceMappingStatus = isPackageMapped ? PackageSourceMappingStatus.Mapped : PackageSourceMappingStatus.NotMapped;
+                    }
+
+                    var evt = new NavigatedTelemetryEvent(NavigationType.Button, UIUtility.ToContractsItemFilter(PackageManagerControl.ActiveFilter), PackageManagerControl.Model.IsSolution, packageSourceMappingStatus);
                     TelemetryActivity.EmitTelemetryEvent(evt);
                 }
             }

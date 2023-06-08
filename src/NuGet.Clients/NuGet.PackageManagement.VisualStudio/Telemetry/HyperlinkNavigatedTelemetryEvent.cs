@@ -11,7 +11,7 @@ namespace NuGet.PackageManagement.Telemetry
         internal const string HyperLinkTypePropertyName = "HyperlinkType";
 
         public HyperlinkNavigatedTelemetryEvent(HyperlinkType hyperlinkType, ContractsItemFilter currentTab, bool isSolutionView)
-            : base(NavigationType.Hyperlink, currentTab, isSolutionView)
+            : base(NavigationType.Hyperlink, currentTab, isSolutionView, PackageSourceMappingStatus.Unspecified)
         {
             base[HyperLinkTypePropertyName] = hyperlinkType;
         }
