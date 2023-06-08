@@ -14,7 +14,7 @@ using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.Test.Telemetry
 {
-    public class HyperlinkClickedTelemetryEventTests
+    public class HyperlinkNavigatedTelemetryEventTests
     {
         public static IEnumerable<object[]> GetData()
         {
@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.Test.Telemetry
 
         [Theory]
         [MemberData(nameof(GetData))]
-        public void HyperlinkClicked_RoundTrip_Succeeds(HyperlinkType hyperlinkTab, ContractsItemFilter currentTab, bool isSolutionView, string searchQuery)
+        public void HyperlinkNavigatedTelemetryEvent_RoundTrip_Succeeds(HyperlinkType hyperlinkTab, ContractsItemFilter currentTab, bool isSolutionView, string searchQuery)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -45,21 +45,21 @@ namespace NuGet.PackageManagement.Test.Telemetry
 
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
-            var evt = new HyperlinkClickedTelemetryEvent(hyperlinkTab, currentTab, isSolutionView, searchQuery);
+            var evt = new HyperlinkNavigatedTelemetryEvent(hyperlinkTab, currentTab, isSolutionView, searchQuery);
 
             // Act
             service.EmitTelemetryEvent(evt);
 
             // Assert
             Assert.NotNull(lastTelemetryEvent);
-            Assert.Equal(hyperlinkTab, lastTelemetryEvent[HyperlinkClickedTelemetryEvent.HyperLinkTypePropertyName]);
-            Assert.Equal(currentTab, lastTelemetryEvent[HyperlinkClickedTelemetryEvent.CurrentTabPropertyName]);
-            Assert.Equal(isSolutionView, lastTelemetryEvent[HyperlinkClickedTelemetryEvent.IsSolutionViewPropertyName]);
-            Assert.Equal(searchQuery, lastTelemetryEvent.GetPiiData().Where(x => x.Key == HyperlinkClickedTelemetryEvent.AlternativePackageIdPropertyName).Select(x => x.Value).First());
+            Assert.Equal(hyperlinkTab, lastTelemetryEvent[HyperlinkNavigatedTelemetryEvent.HyperLinkTypePropertyName]);
+            Assert.Equal(currentTab, lastTelemetryEvent[NavigatedTelemetryEvent.CurrentTabPropertyName]);
+            Assert.Equal(isSolutionView, lastTelemetryEvent[NavigatedTelemetryEvent.IsSolutionViewPropertyName]);
+            Assert.Equal(searchQuery, lastTelemetryEvent.GetPiiData().Where(x => x.Key == HyperlinkNavigatedTelemetryEvent.AlternativePackageIdPropertyName).Select(x => x.Value).First());
         }
 
         [Fact]
-        public void HyperlinkClicked_CorrelatesSearchSelectionAndAction_Succeeds()
+        public void HyperlinkNavigatedTelemetryEvent_CorrelatesSearchSelectionAndAction_Succeeds()
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.Test.Telemetry
             var testPackageId = "testPackage.id";
             var testPackageVersion = new NuGetVersion(1, 0, 0);
 
-            var evtHyperlink = new HyperlinkClickedTelemetryEvent(
+            var evtHyperlink = new HyperlinkNavigatedTelemetryEvent(
                 HyperlinkType.DeprecationAlternativeDetails,
                 ContractsItemFilter.All,
                 isSolutionView: false,
@@ -122,7 +122,7 @@ namespace NuGet.PackageManagement.Test.Telemetry
             var actionEmitted = lastTelemetryEvent;
 
             // Assert
-            var packageIdHyperlink = hyperlinkEmitted.GetPiiData().First(x => x.Key == HyperlinkClickedTelemetryEvent.AlternativePackageIdPropertyName).Value;
+            var packageIdHyperlink = hyperlinkEmitted.GetPiiData().First(x => x.Key == HyperlinkNavigatedTelemetryEvent.AlternativePackageIdPropertyName).Value;
             var packageIdSearch = searchEmitted.GetPiiData().First(x => x.Key == "PackageId").Value;
             var packageIdsAction = (IEnumerable<TelemetryEvent>)actionEmitted.ComplexData["AddedPackages"];
             var packageIds = packageIdsAction.Select(x => x.GetPiiData().First(x => x.Key == "id").Value);
