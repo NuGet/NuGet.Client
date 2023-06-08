@@ -15,6 +15,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -59,7 +60,7 @@ namespace NuGet.PackageManagement.UI
             ICommonOperations commonOperations,
             NuGetUIProjectContext projectContext,
             INuGetUILogger logger,
-            NuGetUIContext uiContext)
+            INuGetUIContext uiContext)
             : this(commonOperations, projectContext, logger)
         {
             UIContext = uiContext;

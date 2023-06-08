@@ -2,19 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using Microsoft.ServiceHub.Framework;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using StreamJsonRpc;
 using Xunit;
@@ -148,10 +145,17 @@ namespace NuGet.PackageManagement.UI.Test
         {
             return CreateNuGetUI(Mock.Of<INuGetUILogger>(), Mock.Of<INuGetUILogger>());
         }
-
         private NuGetUI CreateNuGetUI(INuGetUILogger defaultLogger, INuGetUILogger projectLogger)
         {
-            var uiContext = CreateNuGetUIContext();
+            IReadOnlyDictionary<string, IReadOnlyList<string>> patterns = ImmutableDictionary.Create<string, IReadOnlyList<string>>();
+            var mockPackageSourceMapping = new Mock<PackageSourceMapping>(patterns);
+
+            return CreateNuGetUI(defaultLogger, projectLogger, mockPackageSourceMapping);
+        }
+
+        private NuGetUI CreateNuGetUI(INuGetUILogger defaultLogger, INuGetUILogger projectLogger, Mock<PackageSourceMapping> mockPackageSourceMapping)
+        {
+            var uiContext = CreateNuGetUIContext(mockPackageSourceMapping);
 
             return new NuGetUI(
                 Mock.Of<ICommonOperations>(),
@@ -163,29 +167,13 @@ namespace NuGet.PackageManagement.UI.Test
                 uiContext);
         }
 
-        private NuGetUIContext CreateNuGetUIContext()
+        private INuGetUIContext CreateNuGetUIContext(Mock<PackageSourceMapping> mockPackageSourceMapping)
         {
-            var sourceRepositoryProvider = Mock.Of<ISourceRepositoryProvider>();
-            var packageManager = new NuGetPackageManager(
-                sourceRepositoryProvider,
-                Mock.Of<ISettings>(),
-                _testDirectory.Path);
+            var mockNuGetUIContext = new Mock<INuGetUIContext>();
 
-            return new NuGetUIContext(
-                Mock.Of<IServiceBroker>(),
-                Mock.Of<IReconnectingNuGetSearchService>(),
-                Mock.Of<IVsSolutionManager>(),
-                new NuGetSolutionManagerServiceWrapper(),
-                packageManager,
-                new UIActionEngine(
-                    sourceRepositoryProvider,
-                    packageManager,
-                    Mock.Of<INuGetLockService>()),
-                Mock.Of<IPackageRestoreManager>(),
-                Mock.Of<IOptionsPageActivator>(),
-                Mock.Of<IUserSettingsManager>(),
-                new NuGetSourcesServiceWrapper(),
-                Mock.Of<ISettings>());
+            mockNuGetUIContext.Setup(_ => _.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
+
+            return mockNuGetUIContext.Object;
         }
     }
 }
