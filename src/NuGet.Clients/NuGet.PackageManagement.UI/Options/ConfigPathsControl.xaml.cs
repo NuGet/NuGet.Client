@@ -20,6 +20,7 @@ namespace NuGet.PackageManagement.UI.Options
 
         public ConfigPathsControl()
         {
+            ConfigPaths = new ObservableCollection<string>();
             DataContext = this;
             InitializeComponent();
         }
@@ -31,6 +32,8 @@ namespace NuGet.PackageManagement.UI.Options
             // each view model should represent a config file
             IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModelMapping.GetService<Configuration.ISettings>();
+            var configPaths = settings.GetConfigFilePaths().ToList();
+            ConfigPaths.AddRange(configPaths);
 
             // ObservableCollection<string> a = settings.GetConfigFilePaths().ToList();
             //ConfigPaths = settings.GetConfigFilePaths().OfType<ObservableCollection<string>();
