@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             Assert.Equal(true, target.IsPackageSourceMappingEnabled);
             Assert.Equal(false, target.IsPackageMapped);
             Assert.Equal(Resources.Text_PackageMappingsNotFound, target.MappingStatus);
-            Assert.Equal(KnownMonikers.StatusOffline, target.MappingStatusIcon);
+            Assert.Equal(KnownMonikers.StatusError, target.MappingStatusIcon);
             Assert.Null(target.PackageId);
         }
 

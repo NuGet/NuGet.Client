@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 }
                 else
                 {
-                    return KnownMonikers.StatusOffline;
+                    return KnownMonikers.StatusError;
                 }
             }
         }
