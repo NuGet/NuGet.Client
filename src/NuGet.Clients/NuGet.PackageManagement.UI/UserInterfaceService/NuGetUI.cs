@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement.UI
         public const string LogEntrySource = "NuGet Package Manager";
 
         private readonly NuGetUIProjectContext _projectContext;
+        private PackageManagerControl _packageManagerControl;
 
         private NuGetUI(
             ICommonOperations commonOperations,
@@ -60,10 +61,12 @@ namespace NuGet.PackageManagement.UI
             ICommonOperations commonOperations,
             NuGetUIProjectContext projectContext,
             INuGetUILogger logger,
-            INuGetUIContext uiContext)
+            INuGetUIContext uiContext,
+            IPackageManagerControlViewModel packageManagerControlViewModel)
             : this(commonOperations, projectContext, logger)
         {
             UIContext = uiContext;
+            PackageManagerControlViewModel = packageManagerControlViewModel;
         }
 
         public static async Task<NuGetUI> CreateAsync(
@@ -241,30 +244,36 @@ namespace NuGet.PackageManagement.UI
             UIUtility.LaunchExternalLink(url);
         }
 
+        public void LaunchNuGetOptionsDialog(PackageSourceMappingActionViewModel packageSourceMappingActionViewModel)
+        {
+            LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
+
+            if (packageSourceMappingActionViewModel == null)
+            {
+                return;
+            }
+
+            bool isPackageSourceMappingEnabled = packageSourceMappingActionViewModel.IsPackageSourceMappingEnabled;
+            bool isPackageMapped = packageSourceMappingActionViewModel._isPackageMapped; // Read from cache to avoid recalculating.
+            PackageSourceMappingStatus packageSourceMappingStatus;
+            if (!isPackageSourceMappingEnabled)
+            {
+                packageSourceMappingStatus = PackageSourceMappingStatus.Disabled;
+            }
+            else
+            {
+                packageSourceMappingStatus = isPackageMapped ? PackageSourceMappingStatus.Mapped : PackageSourceMappingStatus.NotMapped;
+            }
+
+            var evt = new NavigatedTelemetryEvent(NavigationType.Button, UIUtility.ToContractsItemFilter(ActiveFilter), IsSolution, packageSourceMappingStatus);
+            TelemetryActivity.EmitTelemetryEvent(evt);
+        }
+
         public void LaunchNuGetOptionsDialog(OptionsPage optionsPageToOpen)
         {
             if (UIContext?.OptionsPageActivator != null)
             {
                 InvokeOnUIThread(() => { UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
-
-                if (optionsPageToOpen == OptionsPage.PackageSourceMapping)
-                {
-                    var packageSourceMappingViewModel = PackageManagerControl._detailModel.PackageSourceMappingViewModel;
-                    bool isPackageSourceMappingEnabled = packageSourceMappingViewModel.IsPackageSourceMappingEnabled;
-                    bool isPackageMapped = packageSourceMappingViewModel._isPackageMapped; // Read from cache to avoid recalculating.
-                    PackageSourceMappingStatus packageSourceMappingStatus = PackageSourceMappingStatus.Unspecified;
-                    if (!isPackageSourceMappingEnabled)
-                    {
-                        packageSourceMappingStatus = PackageSourceMappingStatus.Disabled;
-                    }
-                    else
-                    {
-                        packageSourceMappingStatus = isPackageMapped ? PackageSourceMappingStatus.Mapped : PackageSourceMappingStatus.NotMapped;
-                    }
-
-                    var evt = new NavigatedTelemetryEvent(NavigationType.Button, UIUtility.ToContractsItemFilter(PackageManagerControl.ActiveFilter), PackageManagerControl.Model.IsSolution, packageSourceMappingStatus);
-                    TelemetryActivity.EmitTelemetryEvent(evt);
-                }
             }
             else
             {
@@ -371,7 +380,21 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal PackageManagerControl PackageManagerControl { get; set; }
+        public IPackageManagerControlViewModel PackageManagerControlViewModel { get; private set; }
+
+        public ItemFilter ActiveFilter => PackageManagerControlViewModel.ActiveFilter;
+        public bool IsSolution => PackageManagerControlViewModel.IsSolution;
+        public PackageSourceMappingActionViewModel PackageSourceMappingViewModel => PackageManagerControl._detailModel.PackageSourceMappingViewModel;
+
+        internal PackageManagerControl PackageManagerControl
+        {
+            get => _packageManagerControl;
+            set
+            {
+                _packageManagerControl = value;
+                PackageManagerControlViewModel = value;
+            }
+        }
 
         private void InvokeOnUIThread(Action action)
         {

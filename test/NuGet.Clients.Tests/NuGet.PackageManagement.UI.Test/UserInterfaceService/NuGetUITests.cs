@@ -4,17 +4,22 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Test.Utility;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using StreamJsonRpc;
 using Xunit;
+using ContractsItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI.Test
 {
@@ -22,6 +27,7 @@ namespace NuGet.PackageManagement.UI.Test
     public class NuGetUITests : IDisposable
     {
         private readonly TestDirectory _testDirectory;
+        private TelemetryEvent _lastTelemetryEvent;
 
         public NuGetUITests(GlobalServiceProvider sp)
         {
@@ -141,6 +147,111 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
+        [Fact]
+        public void LaunchNuGetOptionsDialog_PackageSourceMappingNull_TelemetryNotEmitted()
+        {
+            // Arrange
+            SetupTelemetryListener();
+            NuGetUI nuGetUI = CreateNuGetUI();
+
+            // Act
+            nuGetUI.LaunchNuGetOptionsDialog(packageSourceMappingActionViewModel: null);
+
+            // Assert
+            Assert.Null(_lastTelemetryEvent);
+        }
+
+        [Fact]
+        public void LaunchNuGetOptionsDialog_PackageSourceMappingDisabled_TelemetryPropertiesMatchState()
+        {
+            // Arrange
+            SetupTelemetryListener();
+
+            ItemFilter currentTab = ItemFilter.All;
+            ContractsItemFilter contractsItemFilter = UIUtility.ToContractsItemFilter(currentTab);
+            bool isSolution = true;
+            IReadOnlyDictionary<string, IReadOnlyList<string>> patterns = ImmutableDictionary.Create<string, IReadOnlyList<string>>();
+            Mock<PackageSourceMapping> mockPackageSourceMapping = new(patterns);
+            NuGetUI nuGetUI = CreateNuGetUI(Mock.Of<INuGetUILogger>(), Mock.Of<INuGetUILogger>(), currentTab, isSolution, mockPackageSourceMapping);
+
+            var packageSourceMappingActionViewModel = PackageSourceMappingActionViewModel.Create(nuGetUI);
+
+            // Act
+            nuGetUI.LaunchNuGetOptionsDialog(packageSourceMappingActionViewModel);
+
+            // Assert
+            Assert.Equal(false, nuGetUI.UIContext.PackageSourceMapping.IsEnabled);
+            Assert.NotNull(_lastTelemetryEvent);
+            Assert.Equal(NavigationType.Button, _lastTelemetryEvent[NavigatedTelemetryEvent.NavigationTypePropertyName]);
+            Assert.Equal(contractsItemFilter, _lastTelemetryEvent[NavigatedTelemetryEvent.CurrentTabPropertyName]);
+            Assert.Equal(isSolution, _lastTelemetryEvent[NavigatedTelemetryEvent.IsSolutionViewPropertyName]);
+            Assert.Equal(PackageSourceMappingStatus.Disabled, _lastTelemetryEvent[NavigatedTelemetryEvent.PackageSourceMappingStatusPropertyName]);
+        }
+
+        [Fact]
+        public void LaunchNuGetOptionsDialog_PackageSourceMappingNotMapped_TelemetryPropertiesMatchState()
+        {
+            // Arrange
+            SetupTelemetryListener();
+            // Enable Package Source Mapping by creating at least 1 source and pattern.
+            var dictionary = new Dictionary<string, IReadOnlyList<string>>
+            {
+                { "sourceA", new List<string>() { "a" } }
+            };
+            var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
+            var mockPackageSourceMapping = new Mock<PackageSourceMapping>(patterns);
+            ItemFilter currentTab = ItemFilter.UpdatesAvailable;
+            ContractsItemFilter contractsItemFilter = UIUtility.ToContractsItemFilter(currentTab);
+            bool isSolution = false;
+            NuGetUI nuGetUI = CreateNuGetUI(Mock.Of<INuGetUILogger>(), Mock.Of<INuGetUILogger>(), currentTab, isSolution, mockPackageSourceMapping);
+
+            var packageSourceMappingActionViewModel = PackageSourceMappingActionViewModel.Create(nuGetUI);
+
+            // Act
+            nuGetUI.LaunchNuGetOptionsDialog(packageSourceMappingActionViewModel);
+
+            // Assert
+            Assert.Equal(true, nuGetUI.UIContext.PackageSourceMapping.IsEnabled);
+            Assert.NotNull(_lastTelemetryEvent);
+            Assert.Equal(NavigationType.Button, _lastTelemetryEvent[NavigatedTelemetryEvent.NavigationTypePropertyName]);
+            Assert.Equal(contractsItemFilter, _lastTelemetryEvent[NavigatedTelemetryEvent.CurrentTabPropertyName]);
+            Assert.Equal(isSolution, _lastTelemetryEvent[NavigatedTelemetryEvent.IsSolutionViewPropertyName]);
+            Assert.Equal(PackageSourceMappingStatus.NotMapped, _lastTelemetryEvent[NavigatedTelemetryEvent.PackageSourceMappingStatusPropertyName]);
+        }
+
+        [Fact]
+        public void LaunchNuGetOptionsDialog_PackageSourceMappingIsMapped_TelemetryPropertiesMatchState()
+        {
+            // Arrange
+            SetupTelemetryListener();
+            string packageId = "a";
+            var dictionary = new Dictionary<string, IReadOnlyList<string>>
+            {
+                { "sourceA", new List<string>() { packageId } }
+            };
+            var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
+            var mockPackageSourceMapping = new Mock<PackageSourceMapping>(patterns);
+            ItemFilter currentTab = ItemFilter.Installed;
+            ContractsItemFilter contractsItemFilter = UIUtility.ToContractsItemFilter(currentTab);
+            bool isSolution = true;
+            NuGetUI nuGetUI = CreateNuGetUI(Mock.Of<INuGetUILogger>(), Mock.Of<INuGetUILogger>(), currentTab, isSolution, mockPackageSourceMapping);
+
+            var packageSourceMappingActionViewModel = PackageSourceMappingActionViewModel.Create(nuGetUI);
+            packageSourceMappingActionViewModel.PackageId = packageId;
+            var _ = packageSourceMappingActionViewModel.IsPackageMapped; // Emulate the View binding to this property by invoking the getter which initializes the Property's backing field.
+
+            // Act
+            nuGetUI.LaunchNuGetOptionsDialog(packageSourceMappingActionViewModel);
+
+            // Assert
+            Assert.Equal(true, nuGetUI.UIContext.PackageSourceMapping.IsEnabled);
+            Assert.NotNull(_lastTelemetryEvent);
+            Assert.Equal(NavigationType.Button, _lastTelemetryEvent[NavigatedTelemetryEvent.NavigationTypePropertyName]);
+            Assert.Equal(contractsItemFilter, _lastTelemetryEvent[NavigatedTelemetryEvent.CurrentTabPropertyName]);
+            Assert.Equal(isSolution, _lastTelemetryEvent[NavigatedTelemetryEvent.IsSolutionViewPropertyName]);
+            Assert.Equal(PackageSourceMappingStatus.Mapped, _lastTelemetryEvent[NavigatedTelemetryEvent.PackageSourceMappingStatusPropertyName]);
+        }
+
         private NuGetUI CreateNuGetUI()
         {
             return CreateNuGetUI(Mock.Of<INuGetUILogger>(), Mock.Of<INuGetUILogger>());
@@ -150,21 +261,28 @@ namespace NuGet.PackageManagement.UI.Test
             IReadOnlyDictionary<string, IReadOnlyList<string>> patterns = ImmutableDictionary.Create<string, IReadOnlyList<string>>();
             var mockPackageSourceMapping = new Mock<PackageSourceMapping>(patterns);
 
-            return CreateNuGetUI(defaultLogger, projectLogger, mockPackageSourceMapping);
+            return CreateNuGetUI(defaultLogger, projectLogger, activeFilter: ItemFilter.All, isSolution: false, mockPackageSourceMapping);
         }
 
-        private NuGetUI CreateNuGetUI(INuGetUILogger defaultLogger, INuGetUILogger projectLogger, Mock<PackageSourceMapping> mockPackageSourceMapping)
+        private NuGetUI CreateNuGetUI(INuGetUILogger defaultLogger, INuGetUILogger projectLogger, ItemFilter activeFilter, bool isSolution, Mock<PackageSourceMapping> mockPackageSourceMapping)
         {
             var uiContext = CreateNuGetUIContext(mockPackageSourceMapping);
 
-            return new NuGetUI(
+            var mockIPackageManagerControlViewModel = new Mock<IPackageManagerControlViewModel>();
+            mockIPackageManagerControlViewModel.SetupGet(_ => _.ActiveFilter).Returns(activeFilter);
+            mockIPackageManagerControlViewModel.SetupGet(_ => _.IsSolution).Returns(isSolution);
+
+            var nugetUI = new NuGetUI(
                 Mock.Of<ICommonOperations>(),
                 new NuGetUIProjectContext(
                     Mock.Of<ICommonOperations>(),
                     projectLogger,
                     Mock.Of<ISourceControlManagerProvider>()),
                 defaultLogger,
-                uiContext);
+                uiContext,
+                mockIPackageManagerControlViewModel.Object);
+
+            return nugetUI;
         }
 
         private INuGetUIContext CreateNuGetUIContext(Mock<PackageSourceMapping> mockPackageSourceMapping)
@@ -172,8 +290,19 @@ namespace NuGet.PackageManagement.UI.Test
             var mockNuGetUIContext = new Mock<INuGetUIContext>();
 
             mockNuGetUIContext.Setup(_ => _.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
+            mockNuGetUIContext.Setup(_ => _.OptionsPageActivator).Returns(Mock.Of<IOptionsPageActivator>());
 
             return mockNuGetUIContext.Object;
+        }
+        private Mock<ITelemetrySession> SetupTelemetryListener()
+        {
+            var telemetrySession = new Mock<ITelemetrySession>();
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => _lastTelemetryEvent = x);
+            var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
+            TelemetryActivity.NuGetTelemetryService = telemetryService;
+            return telemetrySession;
         }
     }
 }
