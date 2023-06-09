@@ -11,7 +11,9 @@ using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using Resx = NuGet.PackageManagement.UI.Resources;
@@ -61,12 +63,15 @@ namespace NuGet.PackageManagement.UI.Options
             _addMappingDialog = new AddMappingDialog(this);
             IntPtr parent = WindowHelper.GetDialogOwnerHandle();
             WindowHelper.ShowModal(_addMappingDialog, parent);
+            var evt = new NavigatedTelemetryEvent(NavigationType.Button, NavigationOrigin.Options_PackageSourceMapping_Add);
+            TelemetryActivity.EmitTelemetryEvent(evt);
         }
-
         private void ExecuteRemoveMapping(object parameter)
         {
             SourceMappingsCollection.Remove((SourceMappingViewModel)_mappingList.SelectedItem);
             (RemoveAllMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
+            var evt = new NavigatedTelemetryEvent(NavigationType.Button, NavigationOrigin.Options_PackageSourceMapping_Remove);
+            TelemetryActivity.EmitTelemetryEvent(evt);
         }
 
         private bool CanExecuteRemoveMapping(object parameter)
@@ -78,6 +83,8 @@ namespace NuGet.PackageManagement.UI.Options
         {
             SourceMappingsCollection.Clear();
             (RemoveMappingCommand as DelegateCommand).RaiseCanExecuteChanged();
+            var evt = new NavigatedTelemetryEvent(NavigationType.Button, NavigationOrigin.Options_PackageSourceMapping_RemoveAll);
+            TelemetryActivity.EmitTelemetryEvent(evt);
         }
 
         private bool CanExecuteClearMappings(object parameter)

@@ -13,6 +13,7 @@ namespace NuGet.PackageManagement.Telemetry
         internal const string CurrentTabPropertyName = "CurrentTab";
         internal const string IsSolutionViewPropertyName = "IsSolutionView";
         internal const string PackageSourceMappingStatusPropertyName = "PackageSourceMappingStatus";
+        internal const string OriginPropertyName = "Origin";
 
         public NavigatedTelemetryEvent(NavigationType navigationType, ContractsItemFilter currentTab, bool isSolutionView, PackageSourceMappingStatus packageSourceMappingStatus)
             : base(NavigatedEventName)
@@ -24,6 +25,13 @@ namespace NuGet.PackageManagement.Telemetry
             {
                 base[PackageSourceMappingStatusPropertyName] = packageSourceMappingStatus;
             }
+        }
+
+        public NavigatedTelemetryEvent(NavigationType navigationType, NavigationOrigin navigationOrigin)
+            : base(NavigatedEventName)
+        {
+            base[NavigationTypePropertyName] = navigationType;
+            base[OriginPropertyName] = navigationOrigin;
         }
     }
 }
