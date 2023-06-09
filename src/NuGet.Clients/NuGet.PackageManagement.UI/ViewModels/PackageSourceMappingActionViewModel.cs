@@ -47,9 +47,11 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 {
                     _isPackageMapped = false;
                 }
-
-                var packageSourceMapping = UIController.UIContext.PackageSourceMapping;
-                _isPackageMapped = packageSourceMapping?.GetConfiguredPackageSources(PackageId)?.Any() == true;
+                else
+                {
+                    var packageSourceMapping = UIController.UIContext.PackageSourceMapping;
+                    _isPackageMapped = packageSourceMapping?.GetConfiguredPackageSources(PackageId)?.Any() == true;
+                }
                 return _isPackageMapped;
             }
         }
