@@ -62,6 +62,7 @@ stages:
             continueOnError: true
             filePath: $(DartLab.Path)\Scripts\AzureDevOps\Build\Get-BuildIdFromCloudBuildSessionID.ps1
             arguments: -ClientSecret (ConvertTo-SecureString '$(CloudBuild-ClientSecret)' -AsPlainText -Force) -ClientID '$(CloudBuild-ClientID)' -SessionID '${{ parameters.QBuildSessionId }}' -OutVariableName 'BaselineBuildID'
+        
         - task: PowerShell@1
           displayName: "Get Baseline build commit ids"
           name: "getbaselinebuildcommitids"
