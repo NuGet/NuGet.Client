@@ -22,7 +22,12 @@
       <RowDefinition Height="*" />
       <RowDefinition Height="auto" />
     </Grid.RowDefinitions>
+    <Grid.Resources>
+      <DataTemplate x:Uid="ConfigPathItemTemplate" x:Key="ConfigPathItemTemplate">
+        <TextBlock Text="{Binding ConfigPath}"/>
+      </DataTemplate>
+    </Grid.Resources>
     <TextBlock Grid.Row="0" Text="Config Files"/>
-    <ListView Grid.Row="1" ItemsSource="{Binding ConfigPaths}"/>
+    <ListView Grid.Row="1" ItemsSource="{Binding ConfigPaths}" ItemTemplate="{StaticResource ConfigPathItemTemplate}"/>
   </Grid>
 </UserControl>

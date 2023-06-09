@@ -1,4 +1,4 @@
-using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -16,11 +16,11 @@ namespace NuGet.PackageManagement.UI.Options
     public partial class ConfigPathsControl : UserControl
     {
         //private AddMappingDialog _addMappingDialog;
-        public ObservableCollection<string> ConfigPaths { get; private set; }
+        public ObservableCollection<ConfigPathsViewModel> ConfigPaths { get; private set; }
 
         public ConfigPathsControl()
         {
-            ConfigPaths = new ObservableCollection<string>();
+            ConfigPaths = new ObservableCollection<ConfigPathsViewModel>();
             DataContext = this;
             InitializeComponent();
         }
@@ -32,13 +32,25 @@ namespace NuGet.PackageManagement.UI.Options
             // each view model should represent a config file
             IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModelMapping.GetService<Configuration.ISettings>();
-            var configPaths = settings.GetConfigFilePaths().ToList();
-            ConfigPaths.AddRange(configPaths);
+            List<string> configPaths = settings.GetConfigFilePaths().ToList();
+            ConfigPaths.AddRange(CreateViewModels(configPaths));
 
             // ObservableCollection<string> a = settings.GetConfigFilePaths().ToList();
             //ConfigPaths = settings.GetConfigFilePaths().OfType<ObservableCollection<string>();
         }
 
         public ICommand ShowAddDialogCommand { get; set; }
+
+        private ObservableCollection<ConfigPathsViewModel> CreateViewModels(List<string> configPaths)
+        {
+            var configPathsCollection = new ObservableCollection<ConfigPathsViewModel>();
+            foreach (var configPath in configPaths)
+            {
+                var viewModel = new ConfigPathsViewModel(configPath);
+                configPathsCollection.Add(viewModel);
+            }
+
+            return configPathsCollection;
+        }
     }
 }
