@@ -20,7 +20,10 @@ namespace NuGet.PackageManagement.Telemetry
             base[NavigationTypePropertyName] = navigationType;
             base[CurrentTabPropertyName] = currentTab;
             base[IsSolutionViewPropertyName] = isSolutionView;
-            base[PackageSourceMappingStatusPropertyName] = packageSourceMappingStatus;
+            if (packageSourceMappingStatus != PackageSourceMappingStatus.Unspecified)
+            {
+                base[PackageSourceMappingStatusPropertyName] = packageSourceMappingStatus;
+            }
         }
     }
 }
