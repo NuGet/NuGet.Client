@@ -2493,7 +2493,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; {1} has a known {2} severity vulnerability, {3}..
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; {1} has a known {2} severity vulnerability, {3}.
         /// </summary>
         internal static string Warning_PackageWithKnownVulnerability {
             get {
