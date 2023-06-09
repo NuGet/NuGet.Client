@@ -321,6 +321,7 @@ stages:
     - Build_Insertable
     testExecutionJobTimeoutInMinutes: 100
     bootstrapperUrl: $(VsBootstrapperUrl)
+    baseBuildDrop: $(VsBaseBuildDrop)
     runSettingsURI:  https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     variables:
@@ -347,6 +348,7 @@ stages:
     - Build_Insertable
     testExecutionJobTimeoutInMinutes: 100
     bootstrapperUrl: $(VsBootstrapperUrl)
+    baseBuildDrop: $(VsBaseBuildDrop)
     runSettingsURI:  https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     variables:
