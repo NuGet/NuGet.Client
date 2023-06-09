@@ -105,9 +105,5 @@ namespace NuGet.PackageManagement.UI
         DependencyBehavior DependencyBehavior { get; }
 
         Configuration.ISettings Settings { get; }
-
-        ItemFilter ActiveFilter { get; }
-        bool IsSolution { get; }
-        PackageSourceMappingActionViewModel PackageSourceMappingViewModel { get; }
     }
 }

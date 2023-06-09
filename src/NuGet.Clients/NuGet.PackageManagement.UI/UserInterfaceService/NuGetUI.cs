@@ -265,7 +265,7 @@ namespace NuGet.PackageManagement.UI
                 packageSourceMappingStatus = isPackageMapped ? PackageSourceMappingStatus.Mapped : PackageSourceMappingStatus.NotMapped;
             }
 
-            var evt = new NavigatedTelemetryEvent(NavigationType.Button, UIUtility.ToContractsItemFilter(ActiveFilter), IsSolution, packageSourceMappingStatus);
+            var evt = new NavigatedTelemetryEvent(NavigationType.Button, UIUtility.ToContractsItemFilter(PackageManagerControlViewModel.ActiveFilter), PackageManagerControlViewModel.IsSolution, packageSourceMappingStatus);
             TelemetryActivity.EmitTelemetryEvent(evt);
         }
 
@@ -381,10 +381,6 @@ namespace NuGet.PackageManagement.UI
         }
 
         public IPackageManagerControlViewModel PackageManagerControlViewModel { get; private set; }
-
-        public ItemFilter ActiveFilter => PackageManagerControlViewModel.ActiveFilter;
-        public bool IsSolution => PackageManagerControlViewModel.IsSolution;
-        public PackageSourceMappingActionViewModel PackageSourceMappingViewModel => PackageManagerControl._detailModel.PackageSourceMappingViewModel;
 
         internal PackageManagerControl PackageManagerControl
         {

@@ -258,15 +258,20 @@ namespace NuGet.PackageManagement.UI.Test
         }
         private NuGetUI CreateNuGetUI(INuGetUILogger defaultLogger, INuGetUILogger projectLogger)
         {
-            IReadOnlyDictionary<string, IReadOnlyList<string>> patterns = ImmutableDictionary.Create<string, IReadOnlyList<string>>();
-            var mockPackageSourceMapping = new Mock<PackageSourceMapping>(patterns);
-
-            return CreateNuGetUI(defaultLogger, projectLogger, activeFilter: ItemFilter.All, isSolution: false, mockPackageSourceMapping);
+            return CreateNuGetUI(defaultLogger, projectLogger, activeFilter: ItemFilter.All, isSolution: false, mockPackageSourceMapping: null);
         }
 
         private NuGetUI CreateNuGetUI(INuGetUILogger defaultLogger, INuGetUILogger projectLogger, ItemFilter activeFilter, bool isSolution, Mock<PackageSourceMapping> mockPackageSourceMapping)
         {
-            var uiContext = CreateNuGetUIContext(mockPackageSourceMapping);
+            var mockNuGetUIContext = new Mock<INuGetUIContext>();
+
+            // Without this Setup, a MessageBox will be shown which could block tests indefinitely.
+            mockNuGetUIContext.Setup(_ => _.OptionsPageActivator).Returns(Mock.Of<IOptionsPageActivator>());
+
+            if (mockPackageSourceMapping != null)
+            {
+                mockNuGetUIContext.Setup(_ => _.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
+            }
 
             var mockIPackageManagerControlViewModel = new Mock<IPackageManagerControlViewModel>();
             mockIPackageManagerControlViewModel.SetupGet(_ => _.ActiveFilter).Returns(activeFilter);
@@ -279,21 +284,12 @@ namespace NuGet.PackageManagement.UI.Test
                     projectLogger,
                     Mock.Of<ISourceControlManagerProvider>()),
                 defaultLogger,
-                uiContext,
+                mockNuGetUIContext.Object,
                 mockIPackageManagerControlViewModel.Object);
 
             return nugetUI;
         }
 
-        private INuGetUIContext CreateNuGetUIContext(Mock<PackageSourceMapping> mockPackageSourceMapping)
-        {
-            var mockNuGetUIContext = new Mock<INuGetUIContext>();
-
-            mockNuGetUIContext.Setup(_ => _.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
-            mockNuGetUIContext.Setup(_ => _.OptionsPageActivator).Returns(Mock.Of<IOptionsPageActivator>());
-
-            return mockNuGetUIContext.Object;
-        }
         private Mock<ITelemetrySession> SetupTelemetryListener()
         {
             var telemetrySession = new Mock<ITelemetrySession>();
