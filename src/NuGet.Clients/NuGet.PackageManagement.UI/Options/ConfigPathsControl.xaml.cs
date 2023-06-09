@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -5,6 +6,7 @@ using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Services.Common;
 using NuGet.VisualStudio;
 
@@ -21,8 +23,15 @@ namespace NuGet.PackageManagement.UI.Options
         public ConfigPathsControl()
         {
             ConfigPaths = new ObservableCollection<ConfigPathsViewModel>();
+            OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, (object parameter) => true, NuGetUIThreadHelper.JoinableTaskFactory);
             DataContext = this;
             InitializeComponent();
+        }
+
+        private void ExecuteOpenConfigurationFile(object obj)
+        {
+            // open the file
+            var selectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
         }
 
         internal void InitializeOnActivated(CancellationToken cancellationToken)
@@ -39,7 +48,7 @@ namespace NuGet.PackageManagement.UI.Options
             //ConfigPaths = settings.GetConfigFilePaths().OfType<ObservableCollection<string>();
         }
 
-        public ICommand ShowAddDialogCommand { get; set; }
+        public ICommand OpenConfigurationFile { get; set; }
 
         private ObservableCollection<ConfigPathsViewModel> CreateViewModels(List<string> configPaths)
         {

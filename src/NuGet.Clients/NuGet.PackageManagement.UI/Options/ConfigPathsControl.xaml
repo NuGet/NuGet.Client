@@ -28,6 +28,16 @@
       </DataTemplate>
     </Grid.Resources>
     <TextBlock Grid.Row="0" Text="Config Files"/>
-    <ListView Grid.Row="1" ItemsSource="{Binding ConfigPaths}" ItemTemplate="{StaticResource ConfigPathItemTemplate}"/>
+    <ListView Name="_configurationPaths" Grid.Row="1" ItemsSource="{Binding ConfigPaths}" ItemTemplate="{StaticResource ConfigPathItemTemplate}"/>
+    <Grid Grid.Row="2">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"></ColumnDefinition>
+        <ColumnDefinition Width="auto"></ColumnDefinition>
+      </Grid.ColumnDefinitions>
+      <Button
+        Content="Open"
+        Grid.Column="1"
+        Command="{Binding OpenConfigurationFile}"/>
+    </Grid>
   </Grid>
 </UserControl>
