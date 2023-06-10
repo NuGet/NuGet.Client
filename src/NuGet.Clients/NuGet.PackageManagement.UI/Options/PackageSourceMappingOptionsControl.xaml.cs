@@ -63,8 +63,6 @@ namespace NuGet.PackageManagement.UI.Options
             _addMappingDialog = new AddMappingDialog(this);
             IntPtr parent = WindowHelper.GetDialogOwnerHandle();
             WindowHelper.ShowModal(_addMappingDialog, parent);
-            var evt = new NavigatedTelemetryEvent(NavigationType.Button, NavigationOrigin.Options_PackageSourceMapping_Add);
-            TelemetryActivity.EmitTelemetryEvent(evt);
         }
         private void ExecuteRemoveMapping(object parameter)
         {
