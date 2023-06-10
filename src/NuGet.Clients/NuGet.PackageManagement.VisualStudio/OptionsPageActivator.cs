@@ -25,6 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
         // GUID of the Package Source Mapping page, defined in PackageSourceMappingOptionsPage.cs
         private const string _packageSourceMappingGUID = "F175964E-89F5-4521-8FE2-C10C07BB968C";
 
+        // GUID of the Config Files page, defined in ConfigPathsOptionsPage.cs
         private const string _configPathsGUID = "C17B308A-00BB-446E-9212-2D14E1005985";
 
         private Action _closeCallback;
@@ -77,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     await ShowOptionsPageAsync(_packageSourceMappingGUID);
                 }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
             }
-            else if (page == OptionsPage.PackageSourceMapping)
+            else if (page == OptionsPage.ConfigPaths)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {

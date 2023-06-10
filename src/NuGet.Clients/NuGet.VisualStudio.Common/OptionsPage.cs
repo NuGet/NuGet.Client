@@ -6,8 +6,8 @@ namespace NuGet.PackageManagement.VisualStudio
     public enum OptionsPage
     {
         General,
+        ConfigPaths,
         PackageSources,
-        PackageSourceMapping,
-        ConfigPaths
+        PackageSourceMapping
     }
 }
