@@ -265,7 +265,10 @@ namespace NuGet.PackageManagement.UI
                 packageSourceMappingStatus = isPackageMapped ? PackageSourceMappingStatus.Mapped : PackageSourceMappingStatus.NotMapped;
             }
 
-            var evt = new NavigatedTelemetryEvent(NavigationType.Button, UIUtility.ToContractsItemFilter(PackageManagerControlViewModel.ActiveFilter), PackageManagerControlViewModel.IsSolution, packageSourceMappingStatus);
+            var evt = NavigatedTelemetryEvent.CreateWithPMUIConfigurePackageSourceMapping(
+                UIUtility.ToContractsItemFilter(PackageManagerControlViewModel.ActiveFilter),
+                PackageManagerControlViewModel.IsSolution,
+                packageSourceMappingStatus);
             TelemetryActivity.EmitTelemetryEvent(evt);
         }
 

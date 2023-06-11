@@ -97,7 +97,9 @@ namespace NuGet.PackageManagement.UI.Options
             (_parent.RemoveAllMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
 
             bool isGlobbing = packageId.Contains("*");
-            var evt = new NavigatedTelemetryEvent(NavigationType.Button, NavigationOrigin.Options_PackageSourceMapping_Add, sourcesCount: packageSources.Count, isGlobbing);
+            var evt = NavigatedTelemetryEvent.CreateWithAddPackageSourceMapping(
+                sourcesCount: packageSources.Count,
+                isGlobbing);
             TelemetryActivity.EmitTelemetryEvent(evt);
 
             Close();
