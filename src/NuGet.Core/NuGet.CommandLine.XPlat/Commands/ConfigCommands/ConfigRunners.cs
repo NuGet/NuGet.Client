@@ -166,14 +166,16 @@ namespace NuGet.CommandLine.XPlat
                 logger.LogMinimal(section + ":");
                 IReadOnlyCollection<SettingItem> items = settings.GetSection(section)?.Items;
 
-                if (showPath)
-                {
-                    IEnumerable<IGrouping<string, SettingItem>> groupByConfigPathsQuery =
+                IEnumerable<IGrouping<string, SettingItem>> groupByConfigPathsQuery =
                     from item in items
                     group item by item.ConfigPath into newItemGroup
                     select newItemGroup;
 
-                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQuery)
+                var groupByConfigPathsQueryReverse = groupByConfigPathsQuery.Reverse();
+
+                if (showPath)
+                {
+                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQueryReverse)
                     {
                         logger.LogMinimal($" file: {configPathsGroup.Key}");
                         LogSectionItems(configPathsGroup, logger);
@@ -182,7 +184,10 @@ namespace NuGet.CommandLine.XPlat
                 }
                 else
                 {
-                    LogSectionItems(items, logger);
+                    foreach (IGrouping<string, SettingItem> configPathsGroup in groupByConfigPathsQueryReverse)
+                    {
+                        LogSectionItems(configPathsGroup, logger);
+                    }
                     logger.LogMinimal(Environment.NewLine);
                 }
             }
