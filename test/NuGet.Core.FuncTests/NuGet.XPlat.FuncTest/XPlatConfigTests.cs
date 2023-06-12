@@ -169,6 +169,47 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
+        public void ConfigGetCommand_WithAllArg_ShowsSettingsInPriorityOrder()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config", "subfolder");
+
+            var result = CommandRunner.Run(
+                DotnetCli,
+                Path.Combine(testInfo.WorkingPath, "subfolder"),
+                $"{XplatDll} config get all",
+                waitForExit: true);
+            var firstString = "add key=\"Bar\" value=\"https://bontoso.test/v3/index.json\"";
+            var secondString = "add key=\"Foo\" value=\"https://fontoso.test/v3/index.json\"";
+            var firstStringIndex = result.Output.IndexOf(firstString);
+            var secondStringIndex = result.Output.IndexOf(secondString);
+
+            // Assert
+            Assert.True(firstStringIndex < secondStringIndex);
+        }
+
+        [Fact]
+        public void ConfigGetCommand_WithAllArgAndShowPathOption_ShowsPathsInPriorityOrder()
+        {
+            // Arrange & Act
+            using var testInfo = new TestInfo("NuGet.Config", "subfolder");
+            var workingDirectory = Path.Combine(testInfo.WorkingPath, "subfolder");
+
+            var result = CommandRunner.Run(
+                DotnetCli,
+                workingDirectory,
+                $"{XplatDll} config get all --show-path",
+                waitForExit: true);
+            var firstPath = Path.Combine(workingDirectory, "NuGet.Config");
+            var secondPath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
+            var firstPathIndex = result.Output.IndexOf(firstPath);
+            var secondPathIndex = result.Output.IndexOf(secondPath);
+
+            // Assert
+            Assert.True(firstPathIndex < secondPathIndex);
+        }
+
+        [Fact]
         public void ConfigGetCommand_UsingHelpOption_DisplaysHelpMessage()
         {
             // Arrange
