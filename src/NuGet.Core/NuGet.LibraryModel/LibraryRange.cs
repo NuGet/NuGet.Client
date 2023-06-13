@@ -77,15 +77,13 @@ namespace NuGet.LibraryModel
 
             if (VersionRange.HasLowerBound)
             {
-                sb.Append(" ");
-
                 if (VersionRange.IsMinInclusive)
                 {
-                    sb.Append(">= ");
+                    sb.Append(" >= ");
                 }
                 else
                 {
-                    sb.Append("> ");
+                    sb.Append(" > ");
                 }
 
                 if (VersionRange.IsFloating)
@@ -100,9 +98,7 @@ namespace NuGet.LibraryModel
 
             if (VersionRange.HasUpperBound)
             {
-                sb.Append(" ");
-
-                sb.Append(VersionRange.IsMaxInclusive ? "<= " : "< ");
+                sb.Append(VersionRange.IsMaxInclusive ? " <= " : " < ");
                 sb.Append(VersionRange.MaxVersion.ToNormalizedString());
             }
 
