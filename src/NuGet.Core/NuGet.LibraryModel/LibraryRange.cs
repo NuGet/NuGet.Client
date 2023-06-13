@@ -67,41 +67,43 @@ namespace NuGet.LibraryModel
 
         public string ToLockFileDependencyGroupString()
         {
+            if (VersionRange is null)
+            {
+                return null;
+            }
+
             var sb = new StringBuilder();
             sb.Append(Name);
 
-            if (VersionRange != null)
+            if (VersionRange.HasLowerBound)
             {
-                if (VersionRange.HasLowerBound)
+                sb.Append(" ");
+
+                if (VersionRange.IsMinInclusive)
                 {
-                    sb.Append(" ");
-
-                    if (VersionRange.IsMinInclusive)
-                    {
-                        sb.Append(">= ");
-                    }
-                    else
-                    {
-                        sb.Append("> ");
-                    }
-
-                    if (VersionRange.IsFloating)
-                    {
-                        sb.Append(VersionRange.Float.ToString());
-                    }
-                    else
-                    {
-                        sb.Append(VersionRange.MinVersion.ToNormalizedString());
-                    }
+                    sb.Append(">= ");
+                }
+                else
+                {
+                    sb.Append("> ");
                 }
 
-                if (VersionRange.HasUpperBound)
+                if (VersionRange.IsFloating)
                 {
-                    sb.Append(" ");
-
-                    sb.Append(VersionRange.IsMaxInclusive ? "<= " : "< ");
-                    sb.Append(VersionRange.MaxVersion.ToNormalizedString());
+                    sb.Append(VersionRange.Float.ToString());
                 }
+                else
+                {
+                    sb.Append(VersionRange.MinVersion.ToNormalizedString());
+                }
+            }
+
+            if (VersionRange.HasUpperBound)
+            {
+                sb.Append(" ");
+
+                sb.Append(VersionRange.IsMaxInclusive ? "<= " : "< ");
+                sb.Append(VersionRange.MaxVersion.ToNormalizedString());
             }
 
             return sb.ToString();
