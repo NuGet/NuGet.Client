@@ -72,7 +72,8 @@ namespace NuGet.LibraryModel
                 return null;
             }
 
-            var sb = new StringBuilder();
+            StringBuilder sb = StringBuilderPool.Shared.Rent(256);
+
             sb.Append(Name);
 
             if (VersionRange.HasLowerBound)
@@ -102,7 +103,11 @@ namespace NuGet.LibraryModel
                 sb.Append(VersionRange.MaxVersion.ToNormalizedString());
             }
 
-            return sb.ToString();
+            var result = sb.ToString();
+
+            StringBuilderPool.Shared.Return(sb);
+
+            return result;
         }
 
         /// <summary>

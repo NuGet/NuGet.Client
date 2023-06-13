@@ -160,7 +160,7 @@ namespace NuGet.Versioning
         /// </summary>
         private string GetNormalizedString(VersionRange range)
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = StringBuilderPool.Shared.Rent(256);
 
             sb.Append(range.HasLowerBound && range.IsMinInclusive ? '[' : '(');
 
@@ -185,7 +185,11 @@ namespace NuGet.Versioning
 
             sb.Append(range.HasUpperBound && range.IsMaxInclusive ? ']' : ')');
 
-            return sb.ToString();
+            string result = sb.ToString();
+
+            StringBuilderPool.Shared.Return(sb);
+
+            return result;
         }
 
         /// <summary>
