@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 using NuGet.Shared;
 
 namespace NuGet.Versioning
@@ -421,6 +422,51 @@ namespace NuGet.Versioning
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Create a floating version string in the format: 1.0.0-alpha-*
+        /// </summary>
+        public void ToString(StringBuilder sb)
+        {
+            switch (_floatBehavior)
+            {
+                case NuGetVersionFloatBehavior.None:
+                    sb.Append(MinVersion.ToNormalizedString());
+                    break;
+                case NuGetVersionFloatBehavior.Prerelease:
+                    sb.AppendFormat(VersionFormatter.Instance, "{0:V}-{1}*", MinVersion, _releasePrefix);
+                    break;
+                case NuGetVersionFloatBehavior.Revision:
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}.{1}.{2}.*", MinVersion.Major, MinVersion.Minor, MinVersion.Patch);
+                    break;
+                case NuGetVersionFloatBehavior.Patch:
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}.{1}.*", MinVersion.Major, MinVersion.Minor);
+                    break;
+                case NuGetVersionFloatBehavior.Minor:
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}.*", MinVersion.Major);
+                    break;
+                case NuGetVersionFloatBehavior.Major:
+                    sb.Append('*');
+                    break;
+                case NuGetVersionFloatBehavior.PrereleaseRevision:
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}.{1}.{2}.*-{3}*", MinVersion.Major, MinVersion.Minor, MinVersion.Patch, _releasePrefix);
+                    break;
+                case NuGetVersionFloatBehavior.PrereleasePatch:
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}.{1}.*-{2}*", MinVersion.Major, MinVersion.Minor, _releasePrefix);
+                    break;
+                case NuGetVersionFloatBehavior.PrereleaseMinor:
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "{0}.*-{1}*", MinVersion.Major, _releasePrefix);
+                    break;
+                case NuGetVersionFloatBehavior.PrereleaseMajor:
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "*-{1}*", MinVersion.Major, _releasePrefix);
+                    break;
+                case NuGetVersionFloatBehavior.AbsoluteLatest:
+                    sb.Append("*-*");
+                    break;
+                default:
+                    break;
+            }
         }
 
         /// <summary>

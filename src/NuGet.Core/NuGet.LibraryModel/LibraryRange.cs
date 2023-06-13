@@ -88,7 +88,7 @@ namespace NuGet.LibraryModel
 
                 if (VersionRange.IsFloating)
                 {
-                    sb.Append(VersionRange.Float.ToString());
+                    VersionRange.Float.ToString(sb);
                 }
                 else
                 {

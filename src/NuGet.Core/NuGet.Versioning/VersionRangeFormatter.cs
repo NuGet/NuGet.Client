@@ -168,7 +168,7 @@ namespace NuGet.Versioning
             {
                 if (range.IsFloating)
                 {
-                    sb.Append(range.Float.ToString());
+                    range.Float.ToString(sb);
                 }
                 else
                 {
