@@ -75,6 +75,12 @@ namespace NuGet.Configuration
             currentNode.PackageSources.Add(packageSourceKey);
         }
 
+        /// <summary>
+        /// Finds the pattern in <see cref="PackageSourceMapping.Patterns"/> which satisfies the <paramref name="term"/>.
+        /// Patterns are all lowercase and include glob (`*`) characters.
+        /// </summary>
+        /// <param name="term">Term to search for in <see cref="PackageSourceMapping.Patterns"/>.</param>
+        /// <returns>Found <see cref="PackageSourceMapping.Patterns"/> which satisfies the <paramref name="term"/>, or `null`.</returns>
         public string SearchForPattern(string term)
         {
             return SearchPatternByTerm(term);
