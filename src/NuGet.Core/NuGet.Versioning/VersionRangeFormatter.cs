@@ -49,29 +49,22 @@ namespace NuGet.Versioning
             else
             {
                 var sb = StringBuilderPool.Shared.Rent(format.Length);
-                try
+
+                for (var i = 0; i < format.Length; i++)
                 {
-                    for (var i = 0; i < format.Length; i++)
+                    var s = Format(format[i], range);
+
+                    if (s == null)
                     {
-                        var s = Format(format[i], range);
-
-                        if (s == null)
-                        {
-                            sb.Append(format[i]);
-                        }
-                        else
-                        {
-                            sb.Append(s);
-                        }
+                        sb.Append(format[i]);
                     }
+                    else
+                    {
+                        sb.Append(s);
+                    }
+                }
 
-                    string formatted = sb.ToString();
-                    return formatted;
-                }
-                finally
-                {
-                    StringBuilderPool.Shared.Return(sb);
-                }
+                return StringBuilderPool.Shared.ToStringAndReturn(sb);
             }
         }
 
@@ -185,11 +178,7 @@ namespace NuGet.Versioning
 
             sb.Append(range.HasUpperBound && range.IsMaxInclusive ? ']' : ')');
 
-            string result = sb.ToString();
-
-            StringBuilderPool.Shared.Return(sb);
-
-            return result;
+            return StringBuilderPool.Shared.ToStringAndReturn(sb);
         }
 
         /// <summary>

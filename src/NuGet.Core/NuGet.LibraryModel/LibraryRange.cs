@@ -103,11 +103,7 @@ namespace NuGet.LibraryModel
                 sb.Append(VersionRange.MaxVersion.ToNormalizedString());
             }
 
-            var result = sb.ToString();
-
-            StringBuilderPool.Shared.Return(sb);
-
-            return result;
+            return StringBuilderPool.Shared.ToStringAndReturn(sb);
         }
 
         /// <summary>
