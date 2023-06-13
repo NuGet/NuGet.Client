@@ -222,6 +222,47 @@ namespace NuGet.Configuration.Test
             Assert.Equal(expectedLine, exception.Message);
         }
 
+        /// <summary>
+        /// SearchPatternByTerm
+        /// </summary>
+        /// <param name="packagePatterns"></param>
+        /// <returns></returns>
+        [Theory]
+        [InlineData("public,Nuget", "Nuget", "nuget")]
+        [InlineData("public,nuget", "Nuget", "nuget")]
+        [InlineData("public,Nuget", "nuget", "nuget")]
+        [InlineData("public,nuget", "nuget", "nuget")]
+        [InlineData("public,nuget", " nuget", "nuget")]
+        [InlineData("public,nuget", "nuget ", "nuget")]
+        [InlineData("public,nuget", " nuget ", "nuget")]
+        [InlineData("public, nuget", "nuget", "nuget")]
+        [InlineData("public,nuget ", "nuget", "nuget")]
+        [InlineData("public, nuget ", "nuget", "nuget")]
+        [InlineData("public, nuget ", " nuget ", "nuget")]
+        [InlineData(" public , nuget ", " nuget ", "nuget")]
+        [InlineData("   public    ,    nuget    ", "   nuget   ", "nuget")]
+        [InlineData("*", "Microsoft.Build", "*")]
+        [InlineData("public,Contoso.Opensource.*,*", "Microsoft.Build", "*")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.", "contoso.opensource.*")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.MVC", "contoso.opensource.*")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.MVC.ASP", "contoso.opensource.*")]
+        [InlineData("public,Contoso.Opensource.* ", "Contoso.Opensource.MVC.ASP", "contoso.opensource.*")]
+        [InlineData(" public,Contoso.Opensource.*", "Contoso.Opensource.MVC.ASP", "contoso.opensource.*")]
+        [InlineData(" public,Contoso.Opensource.* ", " Contoso.Opensource.MVC.ASP ", "contoso.opensource.*")]
+        public void SearchPatternByTerm_ExistingTerm_PatternFound(string packagePatterns, string term, string expectedPatternMatch)
+        {
+            // Arrange
+            var configuration = PackageSourceMappingUtility.GetpackageSourceMapping(packagePatterns);
+            SearchTree searchTree = new SearchTree(configuration);
+
+            // Act
+            string foundPattern = searchTree.SearchForPattern(term);
+
+            // Assert
+            configuration.IsEnabled.Should().BeTrue();
+            Assert.Equal(expectedPatternMatch, foundPattern);
+        }
+
         private SearchTree GetSearchTree(string packagePatterns)
         {
             return new SearchTree(PackageSourceMappingUtility.GetpackageSourceMapping(packagePatterns));
