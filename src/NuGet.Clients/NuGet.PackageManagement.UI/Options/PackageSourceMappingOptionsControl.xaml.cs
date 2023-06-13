@@ -62,7 +62,7 @@ namespace NuGet.PackageManagement.UI.Options
                 SelectPackageId(nuGetUIOptionsContext.SelectedPackageId, settings);
                 nuGetUIOptionsContext.SelectedPackageId = null;
             }
-            else if (_mappingList.Items.Count > 0)
+            else
             {
                 ScrollToHome();
             }
@@ -74,7 +74,10 @@ namespace NuGet.PackageManagement.UI.Options
 
         private void ScrollToHome()
         {
-            _mappingList.ScrollIntoView(_mappingList.Items[0]);
+            if (_mappingList.Items.Count > 0)
+            {
+                _mappingList.ScrollIntoView(_mappingList.Items[0]);
+            }
         }
 
         private void SelectPackageId(string selectedPackageId, ISettings settings)
