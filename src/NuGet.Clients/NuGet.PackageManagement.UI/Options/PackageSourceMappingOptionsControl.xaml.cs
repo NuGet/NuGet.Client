@@ -62,10 +62,19 @@ namespace NuGet.PackageManagement.UI.Options
                 SelectPackageId(nuGetUIOptionsContext.SelectedPackageId, settings);
                 nuGetUIOptionsContext.SelectedPackageId = null;
             }
+            else if (_mappingList.Items.Count > 0)
+            {
+                ScrollToHome();
+            }
 
             // Make sure all buttons show on open if there are already source mappings.
             RemoveAllMappingsCommand.RaiseCanExecuteChanged();
             RemoveMappingCommand.RaiseCanExecuteChanged();
+        }
+
+        private void ScrollToHome()
+        {
+            _mappingList.ScrollIntoView(_mappingList.Items[0]);
         }
 
         private void SelectPackageId(string selectedPackageId, ISettings settings)
@@ -85,6 +94,10 @@ namespace NuGet.PackageManagement.UI.Options
             if (foundSourceMappingViewModel != null)
             {
                 _mappingList.ScrollIntoView(foundSourceMappingViewModel);
+            }
+            else
+            {
+                ScrollToHome();
             }
         }
 
