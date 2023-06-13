@@ -47,7 +47,7 @@ namespace NuGet.ProjectModel
         {
             TargetFrameworks = frameworks;
             Dependencies = dependencies ?? new List<LibraryDependency>();
-            RuntimeGraph = runtimeGraph ?? new RuntimeGraph();
+            RuntimeGraph = runtimeGraph ?? RuntimeGraph.Empty;
             RestoreSettings = restoreSettings ?? new ProjectRestoreSettings();
 #pragma warning disable CS0612 // Type or member is obsolete
             Authors = authors ?? Array.Empty<string>();
