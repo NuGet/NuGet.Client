@@ -38,9 +38,7 @@ namespace NuGet.Configuration
             return SearchTree.Value?.GetConfiguredPackageSources(packageId);
         }
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
         public string SearchForPattern(string packageId)
-#pragma warning restore RS0016 // Add public types and members to the declared API
         {
             return SearchTree.Value?.SearchForPattern(packageId);
         }
