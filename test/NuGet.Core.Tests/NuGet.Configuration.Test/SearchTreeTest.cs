@@ -249,6 +249,8 @@ namespace NuGet.Configuration.Test
         [InlineData("public,Contoso.Opensource.* ", "Contoso.Opensource.MVC.ASP", "contoso.opensource.*")]
         [InlineData(" public,Contoso.Opensource.*", "Contoso.Opensource.MVC.ASP", "contoso.opensource.*")]
         [InlineData(" public,Contoso.Opensource.* ", " Contoso.Opensource.MVC.ASP ", "contoso.opensource.*")]
+        [InlineData("public,Contoso.Opensource.MVC.ASP ", "Contoso.Opensource.Abstractions", null)]
+        [InlineData("public,Contoso.Opensource.MVC.*", "Contoso.Opensource.Abstractions", null)]
         public void SearchPatternByTerm_ExistingTerm_PatternFound(string packagePatterns, string term, string expectedPatternMatch)
         {
             // Arrange

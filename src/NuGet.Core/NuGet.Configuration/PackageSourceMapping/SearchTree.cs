@@ -160,17 +160,20 @@ namespace NuGet.Configuration
 
                 if (!currentNode.Children.ContainsKey(c))
                 {
+                    if (!currentNode.IsGlobbing)
+                    {
+                        return null;
+                    }
                     break;
                 }
 
                 currentNode = currentNode.Children[c];
 
                 sb.Append(c);
-
-                if (currentNode.IsGlobbing)
-                {
-                    sb.Append('*');
-                }
+            }
+            if (currentNode.IsGlobbing)
+            {
+                sb.Append('*');
             }
 
             return sb.ToString();
