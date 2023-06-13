@@ -3,3 +3,4 @@ NuGet.VisualStudio.Internal.Contracts.INuGetProjectManagerService.GetInstallActi
 NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo.VersionOverride.get -> NuGet.Versioning.VersionRange?
 NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.VersionOverride.get -> NuGet.Versioning.VersionRange?
 NuGet.VisualStudio.Internal.Contracts.TransitivePackageReferenceContextInfo.VersionOverride.get -> NuGet.Versioning.VersionRange?
+static readonly NuGet.VisualStudio.Internal.Contracts.NuGetServices.NuGetUIOptionsContextService -> Microsoft.ServiceHub.Framework.ServiceRpcDescriptor!

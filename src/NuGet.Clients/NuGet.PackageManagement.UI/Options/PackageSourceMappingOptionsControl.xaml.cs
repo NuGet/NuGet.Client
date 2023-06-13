@@ -48,6 +48,8 @@ namespace NuGet.PackageManagement.UI.Options
             // Show package source mappings on open.
             IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModelMapping.GetService<ISettings>();
+            var uiContext = componentModelMapping.GetService<INuGetUIOptionsContext>();
+
             var packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
             _originalPackageSourceMappings = packageSourceMappingProvider.GetPackageSourceMappingItems();
 

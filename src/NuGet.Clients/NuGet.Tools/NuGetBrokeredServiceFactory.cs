@@ -58,6 +58,7 @@ namespace NuGetVSExtension
             brokeredServiceContainer.Proffer(NuGetServices.ProjectUpgraderService, factory.CreateProjectUpgraderServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.PackageFileService, factory.CreatePackageFileServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.SearchService, factory.CreatePackageSearchServiceAsync);
+            brokeredServiceContainer.Proffer(NuGetServices.NuGetUIOptionsContextService, factory.CreateNuGetUIOptionsContextServiceAsync);
 
             return factory;
         }
@@ -197,6 +198,21 @@ namespace NuGetVSExtension
                 serviceBroker,
                 authorizationServiceClient,
                 telemetryProvider);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+            return service;
+        }
+
+        private async ValueTask<object> CreateNuGetUIOptionsContextServiceAsync(
+            ServiceMoniker moniker,
+            ServiceActivationOptions options,
+            IServiceBroker serviceBroker,
+            CancellationToken cancellationToken)
+        {
+            await _lazyInitializer.InitializeAsync(cancellationToken);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var service = new NuGetUIOptionsContext();
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
             return service;
