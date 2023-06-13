@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Controls;
@@ -9,6 +7,7 @@ using System.Windows.Input;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Services.Common;
+using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI.Options
@@ -31,7 +30,10 @@ namespace NuGet.PackageManagement.UI.Options
         private void ExecuteOpenConfigurationFile(object obj)
         {
             var selectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
-            System.Diagnostics.Process.Start(selectedPath.ConfigPath);
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
+            var projectContext = componentModel.GetService<INuGetProjectContext>();
+            _ = projectContext.ExecutionContext.OpenFile(selectedPath.ConfigPath);
+
         }
 
         internal void InitializeOnActivated(CancellationToken cancellationToken)
