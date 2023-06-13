@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
 using NuGet.Common;
@@ -281,7 +282,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     if (optionsPageToOpen == OptionsPage.PackageSourceMapping)
                     {
-                        UpdateSelectedPackageInNuGetUIOptionsContextService();
+                        SetSelectedPackageInNuGetUIOptionsContextService();
                     }
 
                     UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null);
@@ -293,13 +294,13 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void UpdateSelectedPackageInNuGetUIOptionsContextService()
+        private void SetSelectedPackageInNuGetUIOptionsContextService()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 #pragma warning disable ISB001 // Dispose of proxies
-                var nuGetUIOptionsContext = await UIContext.ServiceBroker.GetProxyAsync<INuGetUIOptionsContext>(NuGetServices.NuGetUIOptionsContextService);
+                IComponentModel componentModelMapping = await ServiceLocator.GetComponentModelAsync();
+                var nuGetUIOptionsContext = componentModelMapping.GetService<INuGetUIOptionsContext>();
                 nuGetUIOptionsContext.SelectedPackageId = SelectedPackageId;
 #pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
             }).PostOnFailure(nameof(NuGetUI), nameof(LaunchNuGetOptionsDialog));
