@@ -533,7 +533,7 @@ namespace NuGet.Tests.Apex
             
             // Assert
             VisualStudio.AssertNoErrors();
-            uiwindow.AssertSearchedPackageItem(tabName, TestPackageName, TestPackageVersionV1);
+            uiwindow.AssertSearchedPackageItem(tabName, TestPackageName, TestPackageVersionV2);
         }
     }
 }
