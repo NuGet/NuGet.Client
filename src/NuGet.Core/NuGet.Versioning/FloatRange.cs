@@ -381,47 +381,11 @@ namespace NuGet.Versioning
         /// </summary>
         public override string ToString()
         {
-            var result = string.Empty;
-            switch (_floatBehavior)
-            {
-                case NuGetVersionFloatBehavior.None:
-                    result = MinVersion.ToNormalizedString();
-                    break;
-                case NuGetVersionFloatBehavior.Prerelease:
-                    result = string.Format(VersionFormatter.Instance, "{0:V}-{1}*", MinVersion, _releasePrefix);
-                    break;
-                case NuGetVersionFloatBehavior.Revision:
-                    result = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}.*", MinVersion.Major, MinVersion.Minor, MinVersion.Patch);
-                    break;
-                case NuGetVersionFloatBehavior.Patch:
-                    result = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.*", MinVersion.Major, MinVersion.Minor);
-                    break;
-                case NuGetVersionFloatBehavior.Minor:
-                    result = string.Format(CultureInfo.InvariantCulture, "{0}.*", MinVersion.Major);
-                    break;
-                case NuGetVersionFloatBehavior.Major:
-                    result = "*";
-                    break;
-                case NuGetVersionFloatBehavior.PrereleaseRevision:
-                    result = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}.*-{3}*", MinVersion.Major, MinVersion.Minor, MinVersion.Patch, _releasePrefix);
-                    break;
-                case NuGetVersionFloatBehavior.PrereleasePatch:
-                    result = string.Format(CultureInfo.InvariantCulture, "{0}.{1}.*-{2}*", MinVersion.Major, MinVersion.Minor, _releasePrefix);
-                    break;
-                case NuGetVersionFloatBehavior.PrereleaseMinor:
-                    result = string.Format(CultureInfo.InvariantCulture, "{0}.*-{1}*", MinVersion.Major, _releasePrefix);
-                    break;
-                case NuGetVersionFloatBehavior.PrereleaseMajor:
-                    result = string.Format(CultureInfo.InvariantCulture, "*-{1}*", MinVersion.Major, _releasePrefix);
-                    break;
-                case NuGetVersionFloatBehavior.AbsoluteLatest:
-                    result = "*-*";
-                    break;
-                default:
-                    break;
-            }
+            StringBuilder sb = StringBuilderPool.Shared.Rent(256);
 
-            return result;
+            ToString(sb);
+
+            return StringBuilderPool.Shared.ToStringAndReturn(sb);
         }
 
         /// <summary>
