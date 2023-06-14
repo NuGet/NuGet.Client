@@ -599,7 +599,7 @@ namespace NuGet.PackageManagement.UI
                     // Clear detailed view
                     PackageMetadata = null;
 
-                    if (_selectedVersion != null)
+                    if (_selectedVersion != null && _searchResultPackage != null)
                     {
                         var loadCts = new CancellationTokenSource();
                         var oldCts = Interlocked.Exchange(ref _selectedVersionCancellationTokenSource, loadCts);
