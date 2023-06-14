@@ -10,7 +10,7 @@ using NuGet.Shared;
 
 namespace NuGet.RuntimeModel
 {
-    public class RuntimeGraph : IEquatable<RuntimeGraph>
+    public sealed class RuntimeGraph : IEquatable<RuntimeGraph>
     {
         private readonly ConcurrentDictionary<RuntimeCompatKey, bool> _areCompatible
             = new ConcurrentDictionary<RuntimeCompatKey, bool>();
@@ -56,8 +56,15 @@ namespace NuGet.RuntimeModel
             Supports = new ReadOnlyDictionary<string, CompatibilityProfile>(supports);
         }
 
+        internal bool IsEmpty => Runtimes.Count == 0 && Supports.Count == 0;
+
         public RuntimeGraph Clone()
         {
+            if (IsEmpty)
+            {
+                return this;
+            }
+
             return new RuntimeGraph(Runtimes.Values.Select(r => r.Clone()), Supports.Values.Select(s => s.Clone()));
         }
 
@@ -67,6 +74,16 @@ namespace NuGet.RuntimeModel
         /// <param name="other">The other graph to merge in to this graph</param>
         public static RuntimeGraph Merge(RuntimeGraph left, RuntimeGraph right)
         {
+            if (left.IsEmpty)
+            {
+                return right;
+            }
+
+            if (right.IsEmpty)
+            {
+                return left;
+            }
+
             var runtimes = new Dictionary<string, RuntimeDescription>();
             foreach (var runtime in left.Runtimes.Values)
             {
