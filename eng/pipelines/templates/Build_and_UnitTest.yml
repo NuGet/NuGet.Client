@@ -314,7 +314,7 @@ steps:
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MicroBuildBuildVSBootstrapper@3
-  displayName: 'Build a Visual Studio bootstrapper for tests'
+  displayName: 'Build a Visual Studio bootstrapper'
   inputs:
     channelName: "$(VsTargetChannel)"
     vsMajorVersion: "$(VsTargetMajorVersion)"
