@@ -138,7 +138,7 @@ namespace NuGet.Commands
                         // check individually.
                         var matchResults = matcher.Execute(globbingDirectory);
 
-                        if (matchResults.Files.Any())
+                        if (matchResults.HasMatches)
                         {
                             entryMappings[file].Add(filesEntry);
                         }
