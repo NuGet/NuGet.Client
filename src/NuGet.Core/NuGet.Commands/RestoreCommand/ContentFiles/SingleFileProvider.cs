@@ -81,7 +81,7 @@ internal sealed class SingleFileProvider : IFileProvider
         return NullChangeToken.Singleton;
     }
 
-    private class SingleDirectoryContents : IDirectoryContents
+    private sealed class SingleDirectoryContents : IDirectoryContents
     {
         private readonly IFileInfo _fileInfo;
 
@@ -94,18 +94,16 @@ internal sealed class SingleFileProvider : IFileProvider
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    private class EnumerableDirectoryContents : IDirectoryContents
+    private sealed class EnumerableDirectoryContents : IDirectoryContents
     {
-        public static readonly EnumerableDirectoryContents Empty = new(Enumerable.Empty<IFileInfo>());
+        public static readonly EnumerableDirectoryContents Empty = new();
 
-        private readonly IEnumerable<IFileInfo> _entries;
-
-        private EnumerableDirectoryContents(IEnumerable<IFileInfo> entries) => _entries = entries;
+        private EnumerableDirectoryContents() { }
 
         public bool Exists => true;
 
-        public IEnumerator<IFileInfo> GetEnumerator() => _entries.GetEnumerator();
+        public IEnumerator<IFileInfo> GetEnumerator() => Enumerable.Empty<IFileInfo>().GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => _entries.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => Enumerable.Empty<IFileInfo>().GetEnumerator();
     }
 }
