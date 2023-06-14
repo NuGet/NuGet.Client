@@ -18,10 +18,11 @@ namespace NuGet.PackageManagement.UI.Options
     public partial class ConfigPathsControl : UserControl
     {
         public ObservableCollection<ConfigPathsViewModel> ConfigPaths { get; private set; }
+        private ConfigPathsWindowViewModel _configPathsWindow = new ConfigPathsWindowViewModel();
 
         public ConfigPathsControl()
         {
-            ConfigPaths = new ObservableCollection<ConfigPathsViewModel>();
+            ConfigPaths = _configPathsWindow.ConfigPaths;
             OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, (object parameter) => true, NuGetUIThreadHelper.JoinableTaskFactory);
             DataContext = this;
             InitializeComponent();
@@ -33,30 +34,14 @@ namespace NuGet.PackageManagement.UI.Options
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var projectContext = componentModel.GetService<INuGetProjectContext>();
             _ = projectContext.ExecutionContext.OpenFile(selectedPath.ConfigPath);
-
         }
 
         internal void InitializeOnActivated(CancellationToken cancellationToken)
         {
-            IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
-            var settings = componentModelMapping.GetService<Configuration.ISettings>();
-            IReadOnlyList<string> configPaths = settings.GetConfigFilePaths().ToList();
             ConfigPaths.Clear();
-            ConfigPaths.AddRange(CreateViewModels(configPaths));
+            ConfigPaths = _configPathsWindow.GetConfigPaths(ConfigPaths);
         }
 
         public ICommand OpenConfigurationFile { get; set; }
-
-        private ObservableCollection<ConfigPathsViewModel> CreateViewModels(IReadOnlyList<string> configPaths)
-        {
-            var configPathsCollection = new ObservableCollection<ConfigPathsViewModel>();
-            foreach (var configPath in configPaths)
-            {
-                var viewModel = new ConfigPathsViewModel(configPath);
-                configPathsCollection.Add(viewModel);
-            }
-
-            return configPathsCollection;
-        }
     }
 }
