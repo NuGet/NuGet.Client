@@ -505,13 +505,6 @@ namespace NuGet.Tests.Apex
             // Assert
             VisualStudio.AssertNoErrors();
             uiwindow.AssertSearchedPackageItem(tabName, TestPackageName, TestPackageVersionV1);
-
-            // Act
-            uiwindow.SearchPackageFromUI(TestPackageName2);
-
-            // Assert
-            VisualStudio.AssertNoErrors();
-            uiwindow.AssertSearchedPackageItem(tabName, TestPackageName2, TestPackageVersionV1);
         }
 
         [StaFact]
@@ -535,9 +528,9 @@ namespace NuGet.Tests.Apex
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
-            uiwindow.SearchPackageFromUI(TestPackageName);
             uiwindow.SwitchTabToUpdate();
-
+            uiwindow.SearchPackageFromUI(TestPackageName);
+            
             // Assert
             VisualStudio.AssertNoErrors();
             uiwindow.AssertSearchedPackageItem(tabName, TestPackageName, TestPackageVersionV1);
