@@ -823,6 +823,8 @@ namespace NuGet.PackageManagement.UI
 
         public PackageSourceMappingActionViewModel PackageSourceMappingViewModel { get; }
 
+        public bool CanInstallWithPackageSourceMapping => !PackageSourceMappingViewModel.IsPackageSourceMappingEnabled || PackageSourceMappingViewModel.IsPackageMapped;
+
         public IEnumerable<IProjectContextInfo> NuGetProjects => _nugetProjects;
 
         public string PackagePath => _searchResultPackage?.PackagePath;

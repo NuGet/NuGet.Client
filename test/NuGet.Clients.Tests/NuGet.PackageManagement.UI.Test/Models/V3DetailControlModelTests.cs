@@ -128,7 +128,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 mockServiceBroker.Object,
                 solutionManager: solMgr.Object,
                 Array.Empty<IProjectContextInfo>(),
-                uiController: Mock.Of<INuGetUI>());
+                uiController: CreateNuGetUIMock());
             _testInstance.SetCurrentPackageAsync(
                 _testViewModel,
                 ItemFilter.All,
@@ -537,7 +537,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object },
-                uiController: Mock.Of<INuGetUI>());
+                uiController: CreateNuGetUIMock());
 
             // Arrange
             List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
@@ -594,6 +594,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
             Assert.Equal(model.SelectedVersion, displayVersion);
             Assert.Equal(model.Versions, assertVersions);
+            Assert.True(model.CanInstallWithPackageSourceMapping);
             Assert.Equal(model.IsInstallorUpdateButtonEnabled, false);
         }
 
@@ -645,7 +646,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object },
-                uiController: Mock.Of<INuGetUI>());
+                uiController: CreateNuGetUIMock());
 
             // Arrange
             List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
@@ -714,6 +715,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
             Assert.Equal(model.Versions, assertVersions);
+            Assert.True(model.CanInstallWithPackageSourceMapping);
             Assert.Equal(model.IsInstallorUpdateButtonEnabled, true);
         }
 
@@ -765,7 +767,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object },
-                uiController: Mock.Of<INuGetUI>());
+                uiController: CreateNuGetUIMock());
 
             // Arrange
             List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
@@ -837,6 +839,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
             Assert.Equal(model.Versions.FirstOrDefault(), displayVersion);
             Assert.Equal(model.Versions, assertVersions);
+            Assert.True(model.CanInstallWithPackageSourceMapping);
             Assert.Equal(model.IsInstallorUpdateButtonEnabled, shouldButtonBeEnabled);
         }
 
@@ -973,7 +976,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object },
-                uiController: Mock.Of<INuGetUI>());
+                uiController: CreateNuGetUIMock());
 
             // Arrange
             List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
@@ -1025,6 +1028,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.SelectedVersion.Version, NuGetVersion.Parse(installedVersion));
             Assert.Equal(model.SelectedVersion.AdditionalInfo, null); // Always show the installed version
             Assert.Equal(model.Versions, assertVersions);
+            Assert.True(model.CanInstallWithPackageSourceMapping);
             Assert.Equal(model.IsInstallorUpdateButtonEnabled, false);
         }
 
@@ -1075,7 +1079,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object },
-                uiController: Mock.Of<INuGetUI>());
+                uiController: CreateNuGetUIMock());
 
             // Arrange
             List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
@@ -1131,7 +1135,17 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
             Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
             Assert.Equal(model.Versions, assertVersions);
+            Assert.True(model.CanInstallWithPackageSourceMapping);
             Assert.Equal(model.IsInstallorUpdateButtonEnabled, !isLatest);
+        }
+
+        private static INuGetUI CreateNuGetUIMock()
+        {
+            var mockNuGetUIContext = new Mock<INuGetUIContext>();
+            var mockNuGetUI = new Mock<INuGetUI>();
+            mockNuGetUI.Setup(_ => _.UIContext).Returns(mockNuGetUIContext.Object);
+
+            return mockNuGetUI.Object;
         }
 
         [Theory]
@@ -1177,7 +1191,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 mockServiceBroker.Object,
                 solutionManager: new Mock<INuGetSolutionManagerService>().Object,
                 projects: new[] { project.Object },
-                uiController: Mock.Of<INuGetUI>());
+                uiController: CreateNuGetUIMock());
 
             // Arrange
             List<VersionInfoContextInfo> testVersions = includePrerelease ? ExpectedVersionsList_IncludePrerelease() : ExpectedVersionsList();
@@ -1233,6 +1247,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             Assert.Equal(model.SelectedVersion.AdditionalInfo, expectedAditionalInfo);
             Assert.Equal(model.SelectedVersion.Version.ToString(), includePrerelease ? "3.0.1-beta" : "3.0.0");
             Assert.Equal(model.Versions, assertVersions);
+            Assert.True(model.CanInstallWithPackageSourceMapping);
             Assert.Equal(model.IsInstallorUpdateButtonEnabled, !isLatest);
         }
 

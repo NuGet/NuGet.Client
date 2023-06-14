@@ -344,7 +344,11 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return SelectedVersion != null && !IsSelectedVersionInstalled && !InstalledVersionIsAutoReferenced && VersionOverride == null;
+                return SelectedVersion != null
+                    && !IsSelectedVersionInstalled
+                    && !InstalledVersionIsAutoReferenced
+                    && VersionOverride == null
+                    && CanInstallWithPackageSourceMapping;
             }
         }
 
