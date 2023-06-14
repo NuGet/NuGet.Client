@@ -129,9 +129,8 @@ namespace NuGet.Commands
                         var relativePath = file.Substring(rootFolderPathLength, file.Length - rootFolderPathLength);
 
                         // Check if the nuspec group include/exclude patterns apply to the file
-                        var virtualDirectory = new VirtualFileProvider(new List<string>() { relativePath });
                         var globbingDirectory = new FileProviderGlobbingDirectory(
-                            virtualDirectory,
+                            fileProvider: new SingleFileProvider(relativePath),
                             fileInfo: rootDirectory,
                             parent: null);
 
