@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
-using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -604,6 +603,11 @@ namespace NuGet.PackageManagement.UI
             {
                 _isInBatchUpdate = false;
             }
+        }
+
+        public override void SetInstalledOrUpdateButtonIsEnabled()
+        {
+            UpdateCanInstallAndCanUninstall();
         }
     }
 }

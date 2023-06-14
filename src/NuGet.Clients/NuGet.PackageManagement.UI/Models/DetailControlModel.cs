@@ -121,6 +121,8 @@ namespace NuGet.PackageManagement.UI
             RecommenderVersion = recommenderVersion;
         }
 
+        public abstract void SetInstalledOrUpdateButtonIsEnabled();
+
         /// <summary>
         /// Sets the package to be displayed in the detail control.
         /// </summary>
