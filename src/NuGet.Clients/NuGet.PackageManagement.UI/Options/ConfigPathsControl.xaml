@@ -14,6 +14,9 @@
       <ResourceDictionary.MergedDictionaries>
         <options:SharedResources />
       </ResourceDictionary.MergedDictionaries>
+      <Style TargetType="ListViewItem">
+        <EventSetter Event="MouseDoubleClick" Handler="ListViewItem_MouseDoubleClick"/>
+      </Style>
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>

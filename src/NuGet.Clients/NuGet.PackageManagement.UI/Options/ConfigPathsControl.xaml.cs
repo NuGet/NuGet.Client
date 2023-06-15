@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Xml;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Services.Common;
@@ -34,6 +36,11 @@ namespace NuGet.PackageManagement.UI.Options
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var projectContext = componentModel.GetService<INuGetProjectContext>();
             _ = projectContext.ExecutionContext.OpenFile(selectedPath.ConfigPath);
+        }
+
+        private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            ExecuteOpenConfigurationFile(sender);
         }
 
         internal void InitializeOnActivated(CancellationToken cancellationToken)
