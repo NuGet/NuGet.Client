@@ -1407,6 +1407,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 });
 
             projectManagerService.Setup(x => x.GetProjectsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(projects);
+            projectManagerService.Setup(x => x.GetMetadataAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(Mock.Of<IProjectMetadataContextInfo>());
 #pragma warning disable ISB001 // Dispose of proxies
             _mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetProjectManagerService>(It.Is<ServiceJsonRpcDescriptor>(d => d.Moniker == NuGetServices.ProjectManagerService.Moniker), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(projectManagerService.Object);
@@ -1601,8 +1602,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             _testInstance.SelectedVersion = new DisplayVersion(NuGetVersion.Parse("1.1.1"), additionalInfo: null);
 
-            bool afterCanInstall = false;
-            bool afterCanUninstall = false;
+            bool afterSetInstalledOrUpdateButtonIsEnabled_CanInstall_RaisedPropertyChanged = false;
+            bool afterSetInstalledOrUpdateButtonIsEnabled_CanUninstall_RaisedPropertyChanged = false;
             var mockPropertyChangedEventHandler = new Mock<IPropertyChangedEventHandler>();
             mockPropertyChangedEventHandler.Setup(x => x.PropertyChanged(
                 It.IsAny<object>(),
@@ -1615,11 +1616,11 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 {
                     if (p.PropertyName == nameof(PackageSolutionDetailControlModel.CanInstall))
                     {
-                        afterCanInstall = detail.CanInstall;
+                        afterSetInstalledOrUpdateButtonIsEnabled_CanInstall_RaisedPropertyChanged = true;
                     }
                     if (p.PropertyName == nameof(PackageSolutionDetailControlModel.CanUninstall))
                     {
-                        afterCanUninstall = detail.CanUninstall;
+                        afterSetInstalledOrUpdateButtonIsEnabled_CanUninstall_RaisedPropertyChanged = true;
                     }
                 }
             });
@@ -1628,6 +1629,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var beforeEnablingPackageSourceMapping_CanInstallWithPackageSourceMapping = _testInstance.CanInstallWithPackageSourceMapping;
             var beforeEnablingPackageSourceMapping_CanInstall = _testInstance.CanInstall;
+            var beforeEnablingPackageSourceMapping_CanUninstall = _testInstance.CanUninstall;
 
             // Act
 
@@ -1648,30 +1650,32 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             // Assert
             Assert.True(beforeEnablingPackageSourceMapping_CanInstallWithPackageSourceMapping, "Package Source Mapping is disabled.");
-            Assert.True(beforeEnablingPackageSourceMapping_CanInstall, "Package Source Mapping is disabled.");
-            //Assert.False(beforeSelectingPackageWithPackageSourceMapping_CanUninstall,
-            //  "Property " + nameof(PackageSolutionDetailControlModel.CanUninstall) + " should be unchanged.");
+            Assert.False(beforeEnablingPackageSourceMapping_CanInstall,
+                nameof(PackageSolutionDetailControlModel.CanInstall) + " won't become true due to state of Mocked objects.");
+            Assert.False(beforeEnablingPackageSourceMapping_CanUninstall,
+                nameof(PackageSolutionDetailControlModel.CanUninstall) + " won't become true due to state of Mocked objects.");
 
             Assert.False(beforeSelectingPackageWithPackageSourceMapping_CanInstallWithPackageSourceMapping,
                 "Package Source Mapping is enabled but the Selected Package ID has no mapping.");
             Assert.False(beforeSelectingPackageWithPackageSourceMapping_CanInstall,
-                "Package Source Mapping is enabled but the Selected Package ID has no mapping.");
-            //Assert.False(beforeSelectingPackageWithPackageSourceMapping_CanUninstall, "Property " + nameof(PackageSolutionDetailControlModel.CanUninstall) + " should be unchanged.");
+                nameof(PackageSolutionDetailControlModel.CanInstall) + " won't become true due to state of Mocked objects.");
+            Assert.False(beforeSelectingPackageWithPackageSourceMapping_CanUninstall,
+                nameof(PackageSolutionDetailControlModel.CanUninstall) + " won't become true due to state of Mocked objects.");
 
             Assert.True(afterSelectingPackageWithPackageSourceMapping_CanInstallWithPackageSourceMapping,
                 "Selected Package ID has a package source mapping.");
-            Assert.True(afterSelectingPackageWithPackageSourceMapping_CanInstall,
-                "Selected Package ID has a package source mapping, but the " + nameof(PackageDetailControlModel.IsInstallorUpdateButtonEnabled) + " hasn't been updated, yet.");
-            //Assert.True(afterSelectingPackageWithPackageSourceMapping_CanUninstall,
-            //    "Selected Package ID has a package source mapping, but the " + nameof(PackageDetailControlModel.IsInstallorUpdateButtonEnabled) + " hasn't been updated, yet.");
+            Assert.False(afterSelectingPackageWithPackageSourceMapping_CanInstall,
+                nameof(PackageSolutionDetailControlModel.CanInstall) + " won't become true due to state of Mocked objects.");
+            Assert.False(afterSelectingPackageWithPackageSourceMapping_CanUninstall,
+                nameof(PackageSolutionDetailControlModel.CanUninstall) + " won't become true due to state of Mocked objects.");
 
             Assert.True(afterSetInstalledOrUpdateButtonIsEnabled_CanInstallWithPackageSourceMapping, "Package Source Mapping is enabled and the Package ID is mapped.");
 
-
-            Assert.True(afterCanInstall, "Dependent on " + nameof(PackageSolutionDetailControlModel.CanInstall) + " should now be true.");
-            Assert.False(afterCanUninstall, "Property " + nameof(PackageSolutionDetailControlModel.CanUninstall) + " should be unchanged.");
-            Assert.True(afterCanInstall,
+            Assert.True(afterSetInstalledOrUpdateButtonIsEnabled_CanInstall_RaisedPropertyChanged,
                 nameof(PackageSolutionDetailControlModel.CanInstall) + " should have raised a PropertyChanged when calling "
+                + nameof(DetailControlModel.SetInstalledOrUpdateButtonIsEnabled) + " and the value should become true.");
+            Assert.True(afterSetInstalledOrUpdateButtonIsEnabled_CanUninstall_RaisedPropertyChanged,
+                nameof(PackageSolutionDetailControlModel.CanUninstall) + " should have raised a PropertyChanged when calling "
                 + nameof(DetailControlModel.SetInstalledOrUpdateButtonIsEnabled) + " and the value should become true.");
         }
     }
