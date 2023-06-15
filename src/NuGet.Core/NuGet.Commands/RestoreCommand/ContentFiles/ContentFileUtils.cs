@@ -99,7 +99,7 @@ namespace NuGet.Commands
             }
 
             // Virtual root for file globbing
-            var rootDirectory = new VirtualFileInfo(VirtualFileProvider.RootDir, isDirectory: true);
+            var rootDirectory = new VirtualFileInfo(SingleFileProvider.RootDir, isDirectory: true);
 
             // Apply all nuspec property mappings to the files returned by content model
             foreach (var filesEntry in nuspecContentFiles)

@@ -15,7 +15,7 @@ namespace NuGet.Commands;
 /// </summary>
 internal sealed class SingleFileProvider : IFileProvider
 {
-    public const string RootPrefix = "ROOT";
+    public const string RootDir = "ROOT";
 
     private readonly string _path;
 
@@ -34,9 +34,9 @@ internal sealed class SingleFileProvider : IFileProvider
         ReadOnlySpan<char> span = subpath.AsSpan();
 
         // Remove the root identifier from the relative path
-        if (span.StartsWith(RootPrefix.AsSpan(), StringComparison.Ordinal))
+        if (span.StartsWith(RootDir.AsSpan(), StringComparison.Ordinal))
         {
-            span = span.Slice(RootPrefix.Length);
+            span = span.Slice(RootDir.Length);
         }
 
         span = span.TrimStart('/');
