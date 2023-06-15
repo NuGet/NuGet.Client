@@ -186,9 +186,6 @@
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}" />
   </Style>
 
-  <Style x:Key="{x:Type TreeView}" TargetType="{x:Type TreeView}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ThemedDialogTreeViewStyleKey}}"/>
-  <Style x:Key="{x:Type TreeViewItem}" TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ThemedDialogTreeViewItemStyleKey}}"/>
-
   <Style x:Key="{x:Type CheckBox}" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
     <Setter Property="FocusVisualStyle" Value="{DynamicResource ControlsFocusVisualStyle}"/>
     <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}"/>
