@@ -27,14 +27,8 @@ namespace Dotnet.Integration.Test
             var projectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
     <Target Name=""ValidateNuGetAuditValue"">
         <Message Importance=""high"" Text=""NuGetAudit: '$(NuGetAudit)'"" />
-        <Error Text=""ExpectEnabled was not set"" Condition="" '$(ExpectEnabled)' != 'true' AND '$(ExpectEnabled)' != 'false' "" />
+        <Error Text=""NuGetAudit ('$(NuGetAudit)') does not have expected value ('$(ExpectedValue)')"" Condition="" '$(ExpectedValue)' != '$(NuGetAudit)' "" />
         <Message Importance=""high"" Text=""SdkVersion: $(NETCoreSdkVersion) "" />
-    </Target>
-    <Target Name=""ValidateEnabled"" Condition="" '$(ExpectEnabled)' == 'true' "" AfterTargets=""ValidateNuGetAuditValue"">
-        <Error Text=""NuGetAudit property should be set to true by default"" Condition="" '$(NuGetAudit)' != 'true' "" />
-    </Target>
-    <Target Name=""ValidateNotSet"" Condition="" '$(ExpectEnabled)' != 'true' "" AfterTargets=""ValidateNuGetAuditValue"">
-        <Error Text=""NuGetAudit property should not be set"" Condition="" '$(NuGetAudit)' != '' "" />
     </Target>
 </Project>";
             File.WriteAllText(projectFilePath, projectFileContents);
@@ -44,13 +38,13 @@ namespace Dotnet.Integration.Test
             // Therefore, we can depend on this file's compile time TFM to tell us if we're testing the .NET 7 or 8 SDK.
             string expected =
 #if NET8_0_OR_GREATER
-                "true";
+                "default";
 #else
-                "false";
+                "";
 #endif
 
             // Act
-            var result = _msbuildFixture.RunDotnet(testDirectory.Path, $"msbuild -t:ValidateNuGetAuditValue -p:ExpectEnabled={expected}");
+            var result = _msbuildFixture.RunDotnet(testDirectory.Path, $"msbuild -t:ValidateNuGetAuditValue -p:ExpectedValue={expected}");
 
             // Assert
             result.Success.Should().BeTrue(result.AllOutput);
