@@ -1329,6 +1329,7 @@ NuGet.RuntimeModel.RuntimeDescription
 ~NuGet.RuntimeModel.RuntimeDescription.RuntimeDescription(string runtimeIdentifier, System.Collections.Generic.IEnumerable<string> inheritedRuntimes, System.Collections.Generic.IEnumerable<NuGet.RuntimeModel.RuntimeDependencySet> runtimeDependencySets) -> void
 ~NuGet.RuntimeModel.RuntimeDescription.RuntimeIdentifier.get -> string
 NuGet.RuntimeModel.RuntimeGraph
+NuGet.RuntimeModel.RuntimeGraph.RuntimeGraph() -> void
 NuGet.RuntimeModel.RuntimeGraph.AreCompatible(string! criteria, string! provided) -> bool
 NuGet.RuntimeModel.RuntimeGraph.Clone() -> NuGet.RuntimeModel.RuntimeGraph!
 NuGet.RuntimeModel.RuntimeGraph.Equals(NuGet.RuntimeModel.RuntimeGraph? other) -> bool

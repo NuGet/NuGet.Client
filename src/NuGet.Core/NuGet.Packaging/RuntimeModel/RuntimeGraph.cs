@@ -14,6 +14,9 @@ namespace NuGet.RuntimeModel
 {
     public sealed class RuntimeGraph : IEquatable<RuntimeGraph>
     {
+        private static readonly ReadOnlyDictionary<string, RuntimeDescription> EmptyRuntimes = new(new Dictionary<string, RuntimeDescription>());
+        private static readonly ReadOnlyDictionary<string, CompatibilityProfile> EmptySupports = new(new Dictionary<string, CompatibilityProfile>());
+
         // These fields are null when IsEmpty is true
         private readonly ConcurrentDictionary<RuntimeCompatKey, bool>? _areCompatible;
         private readonly ConcurrentDictionary<string, HashSet<string>>? _expandCache;
@@ -31,10 +34,10 @@ namespace NuGet.RuntimeModel
         public IReadOnlyDictionary<string, RuntimeDescription> Runtimes { get; }
         public IReadOnlyDictionary<string, CompatibilityProfile> Supports { get; }
 
-        private RuntimeGraph()
+        public RuntimeGraph()
         {
-            Runtimes = new ReadOnlyDictionary<string, RuntimeDescription>(new Dictionary<string, RuntimeDescription>());
-            Supports = new ReadOnlyDictionary<string, CompatibilityProfile>(new Dictionary<string, CompatibilityProfile>());
+            Runtimes = EmptyRuntimes;
+            Supports = EmptySupports;
         }
 
         public RuntimeGraph(IEnumerable<RuntimeDescription> runtimes)
