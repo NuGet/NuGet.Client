@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.UI.TestContract
             UIInvoke(() => _packageManagerControl.Search(searchText));
         }
 
-        public bool SearchPackageVerification(string tabName, string packageId, string packageVersion = null)
+        public bool VerifyFirstPackageOnTab(string tabName, string packageId, string packageVersion = null)
         {
             var result = _packageManagerControl.PackageList.PackageItems.FirstOrDefault();
             if (tabName == "Browse")

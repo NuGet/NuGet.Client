@@ -34,7 +34,7 @@ namespace NuGet.Tests.Apex
 
         public void AssertSearchedPackageItem(string tabName, string packageId, string packageVersion = null)
         {
-            var searchPackageResult = _uiproject.SearchPackageVerification(tabName, packageId, packageVersion);
+            var searchPackageResult = _uiproject.VerifyFirstPackageOnTab(tabName, packageId, packageVersion);
             searchPackageResult.Should().BeTrue($"searching for the package {packageId} in the {tabName} tab failed");
         }
 
