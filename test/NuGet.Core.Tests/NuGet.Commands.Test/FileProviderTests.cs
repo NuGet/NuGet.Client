@@ -15,6 +15,10 @@ public sealed class FileProviderTests
     [InlineData("a/b/file.txt", "ROOT/a/b", "a/b/file.txt", false)]
     [InlineData("a/b/file.txt", "a", "a/b", true)]
     [InlineData("a/b/file.txt", "a/b", "a/b/file.txt", false)]
+    [InlineData("a/b/file.txt", "ROOT/A", "a/b", true)]
+    [InlineData("a/b/file.txt", "ROOT/A/B", "a/b/file.txt", false)]
+    [InlineData("a/b/file.txt", "A", "a/b", true)]
+    [InlineData("a/b/file.txt", "A/B", "a/b/file.txt", false)]
     public void SingleSourceFile(string source, string search, string expected, bool isDirectory)
     {
         var contents = new VirtualFileProvider(new List<string> { source }).GetDirectoryContents(search);
