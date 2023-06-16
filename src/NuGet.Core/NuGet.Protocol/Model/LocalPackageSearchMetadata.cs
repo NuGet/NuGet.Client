@@ -90,7 +90,7 @@ namespace NuGet.Protocol
         }
 
         /// <inheritdoc cref="IPackageSearchMetadata.GetVersionsAsync" />
-        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult(Enumerable.Empty<VersionInfo>());
+        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => TaskResult.EmptyEnumerable<VersionInfo>();
 
         /// <summary>
         /// Convert a string to a URI safely. This will return null if there are errors.

@@ -132,7 +132,7 @@ namespace NuGet.Protocol
         public NuGetVersion Version { get; private set; }
 
         /// <inheritdoc cref="IPackageSearchMetadata.GetVersionsAsync" />
-        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult(Enumerable.Empty<VersionInfo>());
+        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => TaskResult.EmptyEnumerable<VersionInfo>();
 
         private static Uri GetUriSafe(string url)
         {

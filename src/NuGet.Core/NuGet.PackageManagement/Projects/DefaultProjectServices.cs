@@ -59,7 +59,7 @@ namespace NuGet.ProjectManagement
             Common.ILogger _,
             CancellationToken __)
         {
-            return Task.FromResult(Enumerable.Empty<ProjectRestoreReference>());
+            return TaskResult.EmptyEnumerable<ProjectRestoreReference>();
         }
 
         public string GetPropertyValue(string propertyName)
