@@ -88,7 +88,7 @@ namespace NuGet.Commands
             {
                 var codeLanguage = group.Properties[ManagedCodeConventions.PropertyNames.CodeLanguage] as string;
 
-                foreach (var item in group.Items)
+                foreach (var item in group.Items.NoAllocEnumerate())
                 {
                     if (!entryMappings.ContainsKey(item.Path))
                     {
