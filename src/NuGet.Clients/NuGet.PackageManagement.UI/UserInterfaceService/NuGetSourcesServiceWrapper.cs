@@ -86,6 +86,21 @@ namespace NuGet.PackageManagement.UI
             return Service.GetActivePackageSourceNameAsync(cancellationToken);
         }
 
+        public ValueTask<ICollection<PackageSourceContextInfo>> GetUncommittedPackageSourcesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask StageUncommittedPackageSourcesAsync(IReadOnlyList<PackageSourceContextInfo> sources)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask StageUncommittedPackageSourcesAsync(IReadOnlyList<PackageSourceContextInfo> sources, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
         private sealed class NullNuGetSourcesService : INuGetSourcesService
         {
             public event EventHandler<IReadOnlyList<PackageSourceContextInfo>>? PackageSourcesChanged { add { } remove { } }
@@ -103,6 +118,21 @@ namespace NuGet.PackageManagement.UI
 #pragma warning restore CS0618 // Type or member is obsolete
 
             public ValueTask<string?> GetActivePackageSourceNameAsync(CancellationToken cancellationToken) => new ValueTask<string?>();
+
+            public ValueTask<ICollection<PackageSourceContextInfo>> GetUncommittedPackageSourcesAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public ValueTask StageUncommittedPackageSourcesAsync(IReadOnlyList<PackageSourceContextInfo> sources)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ValueTask StageUncommittedPackageSourcesAsync(IReadOnlyList<PackageSourceContextInfo> sources, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

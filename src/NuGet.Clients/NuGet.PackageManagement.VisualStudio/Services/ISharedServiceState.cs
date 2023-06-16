@@ -17,6 +17,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         AsyncLazy<IVsSolutionManager> SolutionManager { get; }
         ISourceRepositoryProvider SourceRepositoryProvider { get; }
+        ICollection<PackageSourceContextInfo> UncommittedPackageSourceContextInfo { get; }
         AsyncLazy<IReadOnlyCollection<SourceRepository>> SourceRepositories { get; }
 
         ValueTask<NuGetPackageManager> GetPackageManagerAsync(CancellationToken cancellationToken);

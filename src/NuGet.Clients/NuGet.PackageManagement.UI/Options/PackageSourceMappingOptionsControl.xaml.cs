@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Internal.VisualStudio.PlatformUI;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
@@ -15,6 +17,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
 using Resx = NuGet.PackageManagement.UI.Resources;
 
@@ -22,6 +25,7 @@ namespace NuGet.PackageManagement.UI.Options
 {
     public partial class PackageSourceMappingOptionsControl : UserControl
     {
+        private bool _initialized;
         private IReadOnlyList<PackageSourceMappingSourceItem> _originalPackageSourceMappings;
         private AddMappingDialog _addMappingDialog;
 
@@ -43,11 +47,20 @@ namespace NuGet.PackageManagement.UI.Options
         public ICommand RemoveMappingCommand { get; set; }
         public ICommand RemoveAllMappingsCommand { get; set; }
 
-        internal void InitializeOnActivated(CancellationToken cancellationToken)
+        internal async Task InitializeOnActivatedAsync(CancellationToken cancellationToken)
         {
+            if (_initialized)
+            {
+                return;
+            }
+
+            _initialized = true;
+
             // Show package source mappings on open.
             IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModelMapping.GetService<ISettings>();
+            ICollection<PackageSourceContextInfo> uncommittedPackageSources = await GetUncommittedPackageSourcesAsync(cancellationToken);
+
             var packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
             _originalPackageSourceMappings = packageSourceMappingProvider.GetPackageSourceMappingItems();
 
@@ -58,6 +71,30 @@ namespace NuGet.PackageManagement.UI.Options
             (RemoveAllMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
             (RemoveMappingCommand as DelegateCommand).RaiseCanExecuteChanged();
         }
+
+        private static async Task<ICollection<PackageSourceContextInfo>> GetUncommittedPackageSourcesAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
+                IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
+
+#pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+                var nuGetSourcesService = await serviceBroker.GetProxyAsync<INuGetSourcesService>(
+                    NuGetServices.SourceProviderService,
+                    cancellationToken: cancellationToken);
+#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+
+                return await nuGetSourcesService.GetUncommittedPackageSourcesAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageHelper.ShowErrorMessage("Something went wrong with your package sources.", "Sorry");
+                ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
+            }
+            return null;
+        }
+
         private void ExecuteShowAddDialog(object parameter)
         {
             _addMappingDialog = new AddMappingDialog(this);

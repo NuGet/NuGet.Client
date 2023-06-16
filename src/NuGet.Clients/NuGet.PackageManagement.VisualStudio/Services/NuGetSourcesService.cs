@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
+using Microsoft.VisualStudio.Services.Common;
 using NuGet.Configuration;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -69,8 +70,34 @@ namespace NuGet.PackageManagement.VisualStudio
             return new ValueTask();
         }
 
+        public ValueTask<ICollection<PackageSourceContextInfo>> GetUncommittedPackageSourcesAsync()
+        {
+            return new ValueTask<ICollection<PackageSourceContextInfo>>(_sharedServiceState.UncommittedPackageSourceContextInfo);
+        }
+
+        public ValueTask StageUncommittedPackageSourcesAsync(IReadOnlyList<PackageSourceContextInfo> sources, CancellationToken cancellationToken)
+        {
+            Assumes.NotNull(sources);
+
+            _sharedServiceState.UncommittedPackageSourceContextInfo.AddRange(sources);
+
+            return new ValueTask();
+        }
+
+        public ValueTask ResetUncommittedPackageSourcesAsync()
+        {
+            _sharedServiceState.UncommittedPackageSourceContextInfo.Clear();
+
+            return new ValueTask();
+        }
+
         public ValueTask SavePackageSourceContextInfosAsync(IReadOnlyList<PackageSourceContextInfo> sources, CancellationToken cancellationToken)
         {
+            if (sources == null)
+            {
+                return new ValueTask();
+            }
+
             IEnumerable<PackageSource> packageSources = GetPackageSourcesToUpdate(sources);
             _sharedServiceState.SourceRepositoryProvider.PackageSourceProvider.SavePackageSources(packageSources);
 

@@ -262,26 +262,13 @@ namespace NuGet.PackageManagement.UI.Options
         /// </summary>
         internal async Task<bool> ApplyChangedSettingsAsync(CancellationToken cancellationToken)
         {
-            // if user presses Enter after filling in Name/Source but doesn't click Update
-            // the options will be closed without adding the source, try adding before closing
-            // Only apply if nothing was updated or the update was successfull
-            var result = TryUpdateSource();
-            if (result != TryUpdateSourceResults.NotUpdated &&
-                result != TryUpdateSourceResults.Unchanged &&
-                result != TryUpdateSourceResults.Successful)
-            {
-                return false;
-            }
-
-            // get package sources as ordered list
-            List<PackageSourceContextInfo> packageSources = PackageSourcesListBox.Items.Cast<PackageSourceContextInfo>().ToList();
-            packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<PackageSourceContextInfo>().ToList());
-
             try
             {
-                if (SourcesChanged(_originalPackageSources, packageSources))
+                List<PackageSourceContextInfo> packageSourcesWithChanges = ReadPackageSourcesFromControlsIfChanged(cancellationToken);
+
+                if (packageSourcesWithChanges != null)
                 {
-                    await _nugetSourcesService.SavePackageSourceContextInfosAsync(packageSources, cancellationToken);
+                    await _nugetSourcesService.SavePackageSourceContextInfosAsync(packageSourcesWithChanges, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -312,6 +299,44 @@ namespace NuGet.PackageManagement.UI.Options
 
             // find the enabled package source
             return true;
+        }
+
+        /// <summary>
+        /// Validate sources from Controls in preparation to persist the package sources.
+        /// </summary>
+        /// <param name="saveToDisk"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Whether successfully validated package sources control state. If <paramref name="saveToDisk"/> is true, then a successful save is also indicated.</returns>
+        internal List<PackageSourceContextInfo> ReadPackageSourcesFromControlsIfChanged(CancellationToken cancellationToken)
+        {
+            // if user presses Enter after filling in Name/Source but doesn't click Update
+            // the options will be closed without adding the source, try adding before closing
+            // Only apply if nothing was updated or the update was successful.
+            var result = TryUpdateSource();
+            if (result != TryUpdateSourceResults.NotUpdated &&
+                result != TryUpdateSourceResults.Unchanged &&
+                result != TryUpdateSourceResults.Successful)
+            {
+                return null;
+            }
+
+            // get package sources as ordered list
+            List<PackageSourceContextInfo> packageSources = PackageSourcesListBox.Items.Cast<PackageSourceContextInfo>().ToList();
+            packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<PackageSourceContextInfo>().ToList());
+
+            if (SourcesChanged(_originalPackageSources, packageSources))
+            {
+                return packageSources;
+            }
+
+            return null;
+        }
+
+        internal async Task StoreStagedChangesInService(List<PackageSourceContextInfo> packageSources, CancellationToken cancellationToken)
+        {
+            Assumes.NotNull(_nugetSourcesService);
+
+            await _nugetSourcesService.StageUncommittedPackageSourcesAsync(packageSources, cancellationToken);
         }
 
         // Returns true if there are no changes between existingSources and packageSources.

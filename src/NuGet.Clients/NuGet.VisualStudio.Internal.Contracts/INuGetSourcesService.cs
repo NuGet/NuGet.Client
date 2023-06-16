@@ -24,5 +24,13 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         [Obsolete("Remove in next version")]
         ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, PackageSourceUpdateOptions packageSourceUpdateOptions, CancellationToken cancellationToken);
+
+        // TODO
+
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+        ValueTask<ICollection<PackageSourceContextInfo>> GetUncommittedPackageSourcesAsync();
+        ValueTask StageUncommittedPackageSourcesAsync(IReadOnlyList<PackageSourceContextInfo> sources, CancellationToken cancellationToken);
+#pragma warning restore RS0016 // Add public types and members to the declared API
     }
 }

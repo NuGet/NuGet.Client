@@ -59,6 +59,24 @@ namespace NuGet.PackageManagement.UI.Options
             }
         }
 
+        protected override void OnDeactivate(CancelEventArgs e)
+        {
+            DoCancelableOperationWithProgressUI(() =>
+            {
+                // Normally we shouldn't wrap JTF around BrokeredCalls but this is in a cancelable operation already
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    var packageSourcesWithChanges = PackageSourcesControl.ReadPackageSourcesFromControlsIfChanged(CancellationToken);
+                    if (packageSourcesWithChanges != null)
+                    {
+                        await PackageSourcesControl.StoreStagedChangesInService(packageSourcesWithChanges, CancellationToken);
+                    }
+                });
+            }, Resources.PackageSourceOptions_OnApply);
+
+            base.OnDeactivate(e);
+        }
+
         protected override void OnClosed(EventArgs e)
         {
             PackageSourcesControl.ClearSettings();

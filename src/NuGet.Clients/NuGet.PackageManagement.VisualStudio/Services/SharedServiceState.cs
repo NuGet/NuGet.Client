@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,11 +35,15 @@ namespace NuGet.PackageManagement.VisualStudio
             SourceRepositories = new AsyncLazy<IReadOnlyCollection<SourceRepository>>(
                  GetSourceRepositoriesAsync,
                  NuGetUIThreadHelper.JoinableTaskFactory);
+
+            UncommittedPackageSourceContextInfo = new Collection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
         }
 
         public AsyncLazy<IReadOnlyCollection<SourceRepository>> SourceRepositories { get; private set; }
         public AsyncLazy<IVsSolutionManager> SolutionManager { get; }
         public ISourceRepositoryProvider SourceRepositoryProvider { get; }
+
+        public ICollection<PackageSourceContextInfo> UncommittedPackageSourceContextInfo { get; private set; }
 
         public static async ValueTask<SharedServiceState> CreateAsync(CancellationToken cancellationToken)
         {

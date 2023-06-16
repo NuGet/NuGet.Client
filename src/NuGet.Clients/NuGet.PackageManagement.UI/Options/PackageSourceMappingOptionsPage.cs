@@ -5,8 +5,10 @@ using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.VisualStudio.Shell;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI.Options
 {
@@ -59,14 +61,15 @@ namespace NuGet.PackageManagement.UI.Options
             base.OnActivate(e);
             DoCancelableOperationWithProgressUI(() =>
             {
-                OnActivateAsync(e, CancellationToken);
+                // Normally we shouldn't wrap JTF around BrokeredCalls but this is in a cancelable operation already
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await OnActivateAsync(e, CancellationToken));
 
-            }, Resources.PackageSourceMappingOptions_OnActivated);
+            }, Resources.PackageSourceOptions_OnActivated);
         }
 
-        private void OnActivateAsync(CancelEventArgs e, CancellationToken cancellationToken)
+        private async Task OnActivateAsync(CancelEventArgs e, CancellationToken cancellationToken)
         {
-            _packageSourceMappingOptionsControl.Value.InitializeOnActivated(cancellationToken);
+            await _packageSourceMappingOptionsControl.Value.InitializeOnActivatedAsync(cancellationToken);
         }
 
         private PackageSourceMappingOptionsControl PackageSourceMappingControl => _packageSourceMappingOptionsControl.Value;
