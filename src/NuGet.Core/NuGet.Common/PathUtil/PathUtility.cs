@@ -178,7 +178,11 @@ namespace NuGet.Common
         /// </summary>
         public static string GetRelativePath(string path1, string path2)
         {
+#if NETFRAMEWORK
+            return Microsoft.IO.Path.GetRelativePath(relativeTo: path1, path2);
+#else
             return GetRelativePath(path1, path2, Path.DirectorySeparatorChar);
+#endif
         }
 
         /// <summary>

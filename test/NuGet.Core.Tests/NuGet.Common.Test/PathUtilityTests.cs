@@ -9,7 +9,7 @@ namespace NuGet.Common.Test
     public class PathUtilityTests
     {
         [PlatformFact(Platform.Windows)]
-        public void PathUtility_RelativePathDifferenctRootCase()
+        public void PathUtility_RelativePathDifferentRootCase()
         {
             // Arrange & Act
             var path1 = @"C:\foo\";

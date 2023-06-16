@@ -54,6 +54,7 @@
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
     <PackageVersion Include="Microsoft.Internal.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
+    <PackageVersion Include="Microsoft.IO.Redist" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Net.Compilers.netcore" Version="3.0.0-dev-61717-03" />
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="3.9.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
