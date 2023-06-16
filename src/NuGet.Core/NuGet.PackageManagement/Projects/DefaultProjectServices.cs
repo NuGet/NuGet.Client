@@ -108,7 +108,7 @@ namespace NuGet.ProjectManagement
             CancellationToken _)
         {
             // No-op
-            return Task.FromResult(false);
+            return TaskResult.False;
         }
     }
 }

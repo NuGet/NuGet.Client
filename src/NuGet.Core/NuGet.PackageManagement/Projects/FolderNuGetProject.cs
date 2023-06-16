@@ -241,7 +241,7 @@ namespace NuGet.ProjectManagement
             CancellationToken token)
         {
             // Do nothing. Return true
-            return Task.FromResult(true);
+            return TaskResult.True;
         }
 
         /// <summary>

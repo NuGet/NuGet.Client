@@ -265,7 +265,7 @@ namespace NuGet.Common
 
         public Task<bool> ReferenceExistsAsync(string name)
         {
-            return Task.FromResult(GetReference(name) != null);
+            return TaskResult.Boolean(GetReference(name) != null);
         }
 
         public void RemoveFile(string path)

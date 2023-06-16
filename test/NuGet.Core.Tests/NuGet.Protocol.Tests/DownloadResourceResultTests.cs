@@ -265,7 +265,7 @@ namespace NuGet.Protocol.Tests
 
             public override Task<bool> IsSignedAsync(CancellationToken token)
             {
-                return Task.FromResult(false);
+                return TaskResult.False;
             }
 
             public override Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)

@@ -172,6 +172,7 @@ namespace Test.Utility
 
         public Task<bool> DoesNuGetSupportsAnyProjectAsync()
         {
+            // NOTE cannot use TaskResult.True here because of IVT diamond. This is only test code.
             return Task.FromResult(true);
         }
 

@@ -35,6 +35,8 @@ namespace Test.Utility
         public override Task LogAsync(ILogMessage message)
         {
             Log(message);
+
+            // NOTE cannot use TaskResult.True here because of IVT diamond. This is only test code.
             return Task.FromResult(true);
         }
     }

@@ -23,6 +23,14 @@ internal static class TaskResult
     public static Task<bool> False { get; } = Task.FromResult(false);
 
     /// <summary>
+    /// Returns a <see cref="Task{TResult}"/> that's completed successfully with the result of <paramref name="b"/>.
+    /// </summary>
+    public static Task<bool> Boolean(bool b)
+    {
+        return b ? True : False;
+    }
+
+    /// <summary>
     /// Returns a <see cref="Task{TResult}"/> of type <typeparamref name="T" /> that's completed successfully with the result of <see langword="null"/>.
     /// </summary>
     public static Task<T?> Null<T>() where T : class => NullTaskResult<T>.Instance;
