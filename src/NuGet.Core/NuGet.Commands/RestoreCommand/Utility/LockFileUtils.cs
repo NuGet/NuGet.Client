@@ -194,7 +194,7 @@ namespace NuGet.Commands
             string runtimeIdentifier,
             ContentItemCollection contentItems,
             NuspecReader nuspec,
-            IReadOnlyList<SelectionCriteria> orderedCriteria)
+            List<SelectionCriteria> orderedCriteria)
         {
             // Add framework references for desktop projects.
             AddFrameworkReferences(lockFileLib, framework, nuspec);
@@ -267,7 +267,7 @@ namespace NuGet.Commands
             string libraryName,
             ManagedCodeConventions managedCodeConventions,
             LockFileTargetLibrary lockFileLib,
-            IReadOnlyList<SelectionCriteria> orderedCriteria,
+            List<SelectionCriteria> orderedCriteria,
             ContentItemCollection contentItems)
         {
             // Build Transitive
@@ -305,7 +305,7 @@ namespace NuGet.Commands
             ManagedCodeConventions managedCodeConventions,
             LockFileTargetLibrary lockFileLib,
             ContentItemCollection contentItems,
-            IReadOnlyList<SelectionCriteria> orderedCriteria)
+            List<SelectionCriteria> orderedCriteria)
         {
             var toolsGroup = GetLockFileItems(
                 orderedCriteria,
@@ -675,7 +675,7 @@ namespace NuGet.Commands
         /// </summary>
         /// <remarks>Enumerate this once after calling.</remarks>
         private static IEnumerable<LockFileItem> GetLockFileItems(
-            IReadOnlyList<SelectionCriteria> criteria,
+            List<SelectionCriteria> criteria,
             ContentItemCollection items,
             Action<LockFileItem> additionalAction,
             params PatternSet[] patterns)
@@ -718,7 +718,7 @@ namespace NuGet.Commands
         /// </summary>
         /// <remarks>Enumerate this once after calling.</remarks>
         private static IEnumerable<LockFileItem> GetLockFileItems(
-            IReadOnlyList<SelectionCriteria> criteria,
+            List<SelectionCriteria> criteria,
             ContentItemCollection items,
             params PatternSet[] patterns)
         {
