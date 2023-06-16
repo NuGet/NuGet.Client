@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using NuGet.Shared;
 
@@ -11,6 +10,8 @@ namespace NuGet.RuntimeModel
 {
     public class RuntimeDependencySet : IEquatable<RuntimeDependencySet>
     {
+        private static readonly IReadOnlyDictionary<string, RuntimePackageDependency> EmptyDependencies = new Dictionary<string, RuntimePackageDependency>();
+
         /// <summary>
         /// Package Id
         /// </summary>
@@ -22,14 +23,19 @@ namespace NuGet.RuntimeModel
         public IReadOnlyDictionary<string, RuntimePackageDependency> Dependencies { get; }
 
         public RuntimeDependencySet(string id)
-            : this(id, Enumerable.Empty<RuntimePackageDependency>())
+            : this(id, (IReadOnlyDictionary<string, RuntimePackageDependency>)null)
         {
         }
 
         public RuntimeDependencySet(string id, IEnumerable<RuntimePackageDependency> dependencies)
+            : this(id, dependencies?.ToDictionary(d => d.Id, StringComparer.OrdinalIgnoreCase))
+        {
+        }
+
+        private RuntimeDependencySet(string id, IReadOnlyDictionary<string, RuntimePackageDependency> dependencies)
         {
             Id = id;
-            Dependencies = new ReadOnlyDictionary<string, RuntimePackageDependency>(dependencies.ToDictionary(d => d.Id, StringComparer.OrdinalIgnoreCase));
+            Dependencies = dependencies is null or { Count: 0 } ? EmptyDependencies : dependencies;
         }
 
         public bool Equals(RuntimeDependencySet other)
@@ -63,7 +69,27 @@ namespace NuGet.RuntimeModel
 
         public RuntimeDependencySet Clone()
         {
-            return new RuntimeDependencySet(Id, Dependencies.Values.Select(d => d.Clone()));
+            return new RuntimeDependencySet(
+                Id,
+                CloneDependencies());
+
+            IReadOnlyDictionary<string, RuntimePackageDependency> CloneDependencies()
+            {
+                if (Dependencies.Count == 0)
+                {
+                    return EmptyDependencies;
+                }
+
+                Dictionary<string, RuntimePackageDependency> clone = new(capacity: Dependencies.Count, StringComparer.OrdinalIgnoreCase);
+
+                // No allocations for this enumeration
+                foreach (var pair in (Dictionary<string, RuntimePackageDependency>)Dependencies)
+                {
+                    clone[pair.Key] = pair.Value.Clone();
+                }
+
+                return clone;
+            }
         }
 
         public override string ToString()
