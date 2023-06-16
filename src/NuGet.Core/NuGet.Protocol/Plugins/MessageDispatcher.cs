@@ -189,7 +189,7 @@ namespace NuGet.Protocol.Plugins
 
             if (connection == null)
             {
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
             return DispatchCancelAsync(connection, request, cancellationToken);
@@ -219,7 +219,7 @@ namespace NuGet.Protocol.Plugins
 
             if (connection == null)
             {
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
             return DispatchFaultAsync(connection, request, fault, cancellationToken);
@@ -255,7 +255,7 @@ namespace NuGet.Protocol.Plugins
 
             if (connection == null)
             {
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
             return DispatchProgressAsync(connection, request, progress, cancellationToken);
@@ -334,7 +334,7 @@ namespace NuGet.Protocol.Plugins
 
             if (connection == null)
             {
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
             return DispatchAsync(connection, MessageType.Response, request, responsePayload, cancellationToken);

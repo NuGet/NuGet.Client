@@ -85,7 +85,7 @@ namespace NuGet.ProjectManagement
         public Task SaveProjectAsync(CancellationToken _)
         {
             // do nothing
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task ExecutePackageScriptAsync(
@@ -97,7 +97,7 @@ namespace NuGet.ProjectManagement
             CancellationToken _)
         {
             // No-op
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task<bool> ExecutePackageInitScriptAsync(

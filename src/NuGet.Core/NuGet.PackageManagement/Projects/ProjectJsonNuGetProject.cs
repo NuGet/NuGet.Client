@@ -130,7 +130,7 @@ namespace NuGet.ProjectManagement.Projects
         protected virtual Task UpdateInternalTargetFrameworkAsync()
         {
             // Extending class will implement the functionality
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
