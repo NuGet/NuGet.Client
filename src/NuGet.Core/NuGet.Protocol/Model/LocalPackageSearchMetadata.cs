@@ -117,7 +117,7 @@ namespace NuGet.Protocol
         public LicenseMetadata LicenseMetadata => _nuspec.GetLicenseMetadata();
 
         /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
-        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult<PackageDeprecationMetadata>(null);
+        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => TaskResult.Null<PackageDeprecationMetadata>();
 
         /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities => null;

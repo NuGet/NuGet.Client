@@ -1122,7 +1122,7 @@ namespace NuGet.Protocol.Plugins
 
         public override Task<PrimarySignature> GetPrimarySignatureAsync(CancellationToken token)
         {
-            return Task.FromResult<PrimarySignature>(null);
+            return TaskResult.Null<PrimarySignature>();
         }
 
         public override Task<bool> IsSignedAsync(CancellationToken token)

@@ -288,7 +288,7 @@ namespace NuGet.Protocol.Plugins
 
             if (connection == null)
             {
-                return Task.FromResult<TInbound>(null);
+                return TaskResult.Null<TInbound>();
             }
 
             return DispatchWithNewContextAsync<TOutbound, TInbound>(

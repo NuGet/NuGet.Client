@@ -69,7 +69,7 @@ namespace NuGet.ProjectManagement
 
         public Task<string> GetPropertyValueAsync(string propertyName)
         {
-            return Task.FromResult<string>(null);
+            return TaskResult.Null<string>();
         }
 
         public T GetGlobalService<T>() where T : class
