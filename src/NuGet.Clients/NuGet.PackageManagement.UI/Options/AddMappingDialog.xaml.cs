@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Automation;
@@ -51,6 +52,7 @@ namespace NuGet.PackageManagement.UI.Options
         {
             IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
             IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
+            List<PackageSourceContextInfo> packageSourcesToRender = null;
 
             using (INuGetSourcesService _nugetSourcesService = await serviceBroker.GetProxyAsync<INuGetSourcesService>(
                     NuGetServices.SourceProviderService,
@@ -58,10 +60,19 @@ namespace NuGet.PackageManagement.UI.Options
             {
                 //show package sources on open
                 _originalPackageSources = await _nugetSourcesService.GetPackageSourcesAsync(cancellationToken);
+                ICollection<PackageSourceContextInfo> uncommittedPackageSources = await _nugetSourcesService.GetUncommittedPackageSourcesAsync();
+                if (uncommittedPackageSources != null)
+                {
+                    packageSourcesToRender = uncommittedPackageSources.Union(_originalPackageSources).ToList();
+                }
+                else
+                {
+                    packageSourcesToRender = _originalPackageSources.ToList();
+                }
             }
 
             SourcesCollection.Clear();
-            foreach (PackageSourceContextInfo source in _originalPackageSources)
+            foreach (PackageSourceContextInfo source in packageSourcesToRender)
             {
                 var viewModel = new PackageSourceViewModel(source);
                 SourcesCollection.Add(viewModel);

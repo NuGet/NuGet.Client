@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.UI.Options
         public ICommand RemoveMappingCommand { get; set; }
         public ICommand RemoveAllMappingsCommand { get; set; }
 
-        internal async Task InitializeOnActivatedAsync(CancellationToken cancellationToken)
+        internal void InitializeOnActivated(CancellationToken cancellationToken)
         {
             if (_initialized)
             {
@@ -59,7 +59,6 @@ namespace NuGet.PackageManagement.UI.Options
             // Show package source mappings on open.
             IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModelMapping.GetService<ISettings>();
-            ICollection<PackageSourceContextInfo> uncommittedPackageSources = await GetUncommittedPackageSourcesAsync(cancellationToken);
 
             var packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
             _originalPackageSourceMappings = packageSourceMappingProvider.GetPackageSourceMappingItems();
@@ -70,29 +69,6 @@ namespace NuGet.PackageManagement.UI.Options
             // Make sure all buttons show on open if there are already source mappings.
             (RemoveAllMappingsCommand as DelegateCommand).RaiseCanExecuteChanged();
             (RemoveMappingCommand as DelegateCommand).RaiseCanExecuteChanged();
-        }
-
-        private static async Task<ICollection<PackageSourceContextInfo>> GetUncommittedPackageSourcesAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
-                IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
-
-#pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
-                var nuGetSourcesService = await serviceBroker.GetProxyAsync<INuGetSourcesService>(
-                    NuGetServices.SourceProviderService,
-                    cancellationToken: cancellationToken);
-#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
-
-                return await nuGetSourcesService.GetUncommittedPackageSourcesAsync();
-            }
-            catch (Exception ex)
-            {
-                MessageHelper.ShowErrorMessage("Something went wrong with your package sources.", "Sorry");
-                ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
-            }
-            return null;
         }
 
         private void ExecuteShowAddDialog(object parameter)
