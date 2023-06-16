@@ -35,34 +35,38 @@ namespace NuGet.RuntimeModel
         public IReadOnlyDictionary<string, CompatibilityProfile> Supports { get; }
 
         public RuntimeGraph()
+            : this(EmptyRuntimes, EmptySupports)
         {
-            Runtimes = EmptyRuntimes;
-            Supports = EmptySupports;
         }
 
         public RuntimeGraph(IEnumerable<RuntimeDescription> runtimes)
-            : this(runtimes, Enumerable.Empty<CompatibilityProfile>())
+            : this(runtimes.ToDictionary(r => r.RuntimeIdentifier), EmptySupports)
         {
         }
 
         public RuntimeGraph(IEnumerable<CompatibilityProfile> supports)
-            : this(Enumerable.Empty<RuntimeDescription>(), supports)
+            : this(EmptyRuntimes, supports.ToDictionary(r => r.Name))
         {
         }
 
         public RuntimeGraph(IEnumerable<RuntimeDescription> runtimes, IEnumerable<CompatibilityProfile> supports)
-            : this(runtimes.ToDictionary(r => r.RuntimeIdentifier), supports.ToDictionary(r => r.Name))
+            : this(
+                  runtimes.ToDictionary(r => r.RuntimeIdentifier),
+                  supports.ToDictionary(r => r.Name))
         {
         }
 
-        private RuntimeGraph(Dictionary<string, RuntimeDescription> runtimes, Dictionary<string, CompatibilityProfile> supports)
+        private RuntimeGraph(IReadOnlyDictionary<string, RuntimeDescription> runtimes, IReadOnlyDictionary<string, CompatibilityProfile> supports)
         {
-            Runtimes = new ReadOnlyDictionary<string, RuntimeDescription>(runtimes);
-            Supports = new ReadOnlyDictionary<string, CompatibilityProfile>(supports);
+            Runtimes = runtimes;
+            Supports = supports;
 
-            _areCompatible = new();
-            _expandCache = new(StringComparer.Ordinal);
-            _dependencyCache = new();
+            if (Runtimes.Count != 0 || Supports.Count != 0)
+            {
+                _areCompatible = new();
+                _expandCache = new(StringComparer.Ordinal);
+                _dependencyCache = new();
+            }
         }
 
         internal bool IsEmpty => Runtimes.Count == 0 && Supports.Count == 0;
