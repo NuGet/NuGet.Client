@@ -110,7 +110,7 @@ namespace NuGet.RuntimeModel
         }
 
         /// <summary>
-        /// Merges the content of the other runtime graph in to this runtime graph
+        /// Merges the content of two runtime graphs and returns the combined graph.
         /// </summary>
         /// <param name="other">The other graph to merge in to this graph</param>
         public static RuntimeGraph Merge(RuntimeGraph left, RuntimeGraph right)
@@ -125,38 +125,47 @@ namespace NuGet.RuntimeModel
                 return left;
             }
 
-            var runtimes = new Dictionary<string, RuntimeDescription>();
-            foreach (var runtime in left.Runtimes.Values)
+            var runtimes = new Dictionary<string, RuntimeDescription>(capacity: left.Runtimes.Count + right.Runtimes.Count);
+
+            // TODO append .NoAllocEnumerate() here once https://github.com/NuGet/NuGet.Client/pull/5246 is available
+            foreach (var pair in left.Runtimes)
             {
-                runtimes[runtime.RuntimeIdentifier] = runtime.Clone();
+                runtimes[pair.Key] = pair.Value.Clone();
             }
 
             // Merge the right-side runtimes
-            foreach (var runtime in right.Runtimes.Values)
+            // TODO append .NoAllocEnumerate() here once https://github.com/NuGet/NuGet.Client/pull/5246 is available
+            foreach (var pair in right.Runtimes)
             {
                 // Check if we already have the runtime defined
-                if (runtimes.TryGetValue(runtime.RuntimeIdentifier, out RuntimeDescription? leftRuntime))
+                if (runtimes.TryGetValue(pair.Key, out RuntimeDescription? leftRuntime))
                 {
                     // Merge runtimes
-                    runtimes[runtime.RuntimeIdentifier] = RuntimeDescription.Merge(leftRuntime, runtime);
+                    runtimes[pair.Key] = RuntimeDescription.Merge(leftRuntime, pair.Value);
                 }
                 else
                 {
-                    runtimes[runtime.RuntimeIdentifier] = runtime;
+                    runtimes[pair.Key] = pair.Value;
                 }
             }
 
+            var supports = new Dictionary<string, CompatibilityProfile>(capacity: right.Supports.Count + left.Supports.Count);
+
             // Copy over the right ones
-            var supports = new Dictionary<string, CompatibilityProfile>();
+            // TODO append .NoAllocEnumerate() here once https://github.com/NuGet/NuGet.Client/pull/5246 is available
             foreach (var compatProfile in right.Supports)
             {
                 supports[compatProfile.Key] = compatProfile.Value;
             }
 
             // Overwrite with non-empty profiles from left
-            foreach (var compatProfile in left.Supports.Where(p => p.Value.RestoreContexts.Count > 0))
+            // TODO append .NoAllocEnumerate() here once https://github.com/NuGet/NuGet.Client/pull/5246 is available
+            foreach (var compatProfile in left.Supports)
             {
-                supports[compatProfile.Key] = compatProfile.Value;
+                if (compatProfile.Value.RestoreContexts.Count > 0)
+                {
+                    supports[compatProfile.Key] = compatProfile.Value;
+                }
             }
 
             return new RuntimeGraph(runtimes, supports);
