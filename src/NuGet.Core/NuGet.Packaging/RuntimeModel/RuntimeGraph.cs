@@ -78,7 +78,28 @@ namespace NuGet.RuntimeModel
                 return this;
             }
 
-            return new RuntimeGraph(Runtimes.Values.Select(r => r.Clone()), Supports.Values.Select(s => s.Clone()));
+            return new RuntimeGraph(
+                runtimes: Clone(Runtimes, r => r.Clone()),
+                supports: Clone(Supports, s => s.Clone()));
+
+            static IReadOnlyDictionary<string, T> Clone<T>(IReadOnlyDictionary<string, T> source, Func<T, T> cloneFunc)
+            {
+                if (source.Count == 0)
+                {
+                    // No need to allocate anything
+                    return source;
+                }
+
+                Dictionary<string, T> clone = new(source.Count);
+
+                // TODO append .NoAllocEnumerate() here once https://github.com/NuGet/NuGet.Client/pull/5246 is available
+                foreach (var pair in source)
+                {
+                    clone[pair.Key] = cloneFunc(pair.Value);
+                }
+
+                return clone;
+            }
         }
 
         /// <summary>
