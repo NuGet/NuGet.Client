@@ -31,7 +31,14 @@ namespace NuGet.RuntimeModel
         /// </summary>
         public static readonly RuntimeGraph Empty = new();
 
+        /// <summary>
+        /// Gets a map of <see cref="RuntimeDescription"/> keyed by <see cref="RuntimeDescription.RuntimeIdentifier"/>.
+        /// </summary>
         public IReadOnlyDictionary<string, RuntimeDescription> Runtimes { get; }
+
+        /// <summary>
+        /// Gets a map of <see cref="CompatibilityProfile"/> keyed by <see cref="CompatibilityProfile.Name"/>.
+        /// </summary>
         public IReadOnlyDictionary<string, CompatibilityProfile> Supports { get; }
 
         public RuntimeGraph()
