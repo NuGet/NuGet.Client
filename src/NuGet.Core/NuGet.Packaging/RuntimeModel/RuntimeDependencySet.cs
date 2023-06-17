@@ -9,7 +9,10 @@ using NuGet.Shared;
 
 namespace NuGet.RuntimeModel
 {
-    public class RuntimeDependencySet : IEquatable<RuntimeDependencySet>
+    /// <remarks>
+    /// Immutable.
+    /// </remarks>
+    public sealed class RuntimeDependencySet : IEquatable<RuntimeDependencySet>
     {
         /// <summary>
         /// Package Id
@@ -61,9 +64,10 @@ namespace NuGet.RuntimeModel
             return combiner.CombinedHash;
         }
 
+        [Obsolete("This type is immutable, so there is no need or point to clone it.")]
         public RuntimeDependencySet Clone()
         {
-            return new RuntimeDependencySet(Id, Dependencies.Values.Select(d => d.Clone()));
+            return this;
         }
 
         public override string ToString()
