@@ -170,7 +170,7 @@ namespace NuGet.SolutionRestoreManager
                 JoinableTaskFactory);
             _solutionLoadedEvent = new AsyncManualResetEvent();
             _isCompleteEvent = new AsyncManualResetEvent();
-            NuGetVSExtension.InfoBarService.Initialize(asyncServiceProvider);
+            InfoBarService.Initialize(asyncServiceProvider);
 
             Reset();
         }

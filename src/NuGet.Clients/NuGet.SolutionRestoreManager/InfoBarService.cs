@@ -28,7 +28,7 @@ using System.Globalization;
 using EnvDTE;
 using Microsoft.Internal.VisualStudio.PlatformUI;
 
-namespace NuGetVSExtension
+namespace NuGet.SolutionRestoreManager
 {
     public class InfoBarService : BaseInfoBar, IDisposable
     {
@@ -217,7 +217,7 @@ namespace NuGetVSExtension
             // when VSSolutionManager is already initialized, then use the existing APIs to check pre-conditions.
             if (!await SolutionManager.Value.IsSolutionAvailableAsync())
             {
-                throw new InvalidOperationException(Resources.SolutionIsNotSaved);
+                throw new InvalidOperationException("Please save your solution before managing NuGet packages..");
             }
 
             IServiceBroker serviceBroker = await ServiceBrokerProvider.Value.GetAsync();
@@ -231,7 +231,7 @@ namespace NuGetVSExtension
 
                 if (projectContexts.Count == 0)
                 {
-                    MessageHelper.ShowWarningMessage(Resources.NoSupportedProjectsInSolution, Resources.ErrorDialogBoxTitle);
+                    MessageHelper.ShowWarningMessage("No projects supported by NuGet in the solution..", "Operation failed.");
                     return null;
                 }
             }
@@ -244,7 +244,7 @@ namespace NuGetVSExtension
             var model = new PackageManagerModel(
                 uiController,
                 isSolution: true,
-                editorFactoryGuid: GuidList.guidNuGetEditorType)
+                editorFactoryGuid: Guid.Parse("95501c48-a850-47c1-a785-2aaa96637f81"))
             {
                 SolutionName = solutionName
             };
@@ -254,7 +254,7 @@ namespace NuGetVSExtension
 #pragma warning disable CA2000 // Dispose objects before losing scope
             var windowPane = new PackageManagerWindowPane(control);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-            var guidEditorType = GuidList.guidNuGetEditorType;
+            var guidEditorType = Guid.Parse("95501c48-a850-47c1-a785-2aaa96637f81");
             var guidCommandUI = Guid.Empty;
             var caption = "NuGet - Solution"; // TODO
             var documentName = await SolutionManager.Value.GetSolutionFilePathAsync();

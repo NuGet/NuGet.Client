@@ -500,7 +500,7 @@ namespace NuGet.SolutionRestoreManager
                                     if (isRestoreSucceeded)
                                     {
                                         var errors = restoreSummaries.SelectMany(summary => summary.Errors.Where(e => e.Code.Equals(NuGetLogCode.NU1901) || e.Code.Equals(NuGetLogCode.NU1902) || e.Code.Equals(NuGetLogCode.NU1903) || e.Code.Equals(NuGetLogCode.NU1904)));
-                                        await NuGetVSExtension.InfoBarService.Instance.RefreshAsync(errors.Any(), token);
+                                        await InfoBarService.Instance.RefreshAsync(errors.Any(), token);
 
                                         if (_noOpProjectsCount < restoreSummaries.Count)
                                         {
