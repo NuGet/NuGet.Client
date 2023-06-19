@@ -221,9 +221,9 @@ namespace NuGet.Commands
             }
 
             // At the end of the graph traversal add the remaining package no warn lists into the result
-            foreach (var packageId in packageNoWarn.Keys)
+            foreach ((var packageId, var codes) in packageNoWarn)
             {
-                resultWarningProperties.AddRangeOfCodes(packageNoWarn[packageId], packageId, parentTargetFramework);
+                resultWarningProperties.AddRangeOfCodes(codes, packageId, parentTargetFramework);
             }
 
             return resultWarningProperties;
