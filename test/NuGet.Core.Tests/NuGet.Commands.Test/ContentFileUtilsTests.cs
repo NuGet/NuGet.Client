@@ -24,7 +24,7 @@ public sealed class ContentFileUtilsTests
     {
         using var _ = new SuppressAsserts();
 
-        string actual = ContentFileUtils.GetContentFileFolderRelativeToFramework(input);
+        string actual = ContentFileUtils.GetContentFileFolderRelativeToFramework(input.AsSpan());
 
         Assert.Equal(expected, actual);
     }
