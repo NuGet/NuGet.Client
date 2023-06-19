@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using FluentAssertions;
+using Microsoft.Web.XmlTransform;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging.Core;
@@ -432,40 +433,31 @@ namespace Dotnet.Integration.Test
 
         public void Dispose()
         {
-            KillDotnetExe(TestDotnetCli);
+            KillDotnetExe(TestDotnetCli, _cliDirectory.Path, _templateDirectory.WorkingDirectory);
             _cliDirectory.Dispose();
             _templateDirectory.Dispose();
         }
 
-        private static void KillDotnetExe(string pathToDotnetExe)
+        private static void KillDotnetExe(string pathToDotnetExe, params string[] workingDirectories)
         {
-            var processes = Process.GetProcessesByName("dotnet")
-                .Where(t => string.Compare(t.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), ignoreCase: true) == 0);
-            var testDirProcesses = Process.GetProcesses()
-                .Where(t => t.MainModule.FileName.StartsWith(TestFileSystemUtility.NuGetTestFolder, StringComparison.OrdinalIgnoreCase));
-            try
+            foreach (Process process in Process.GetProcessesByName("dotnet").Where(i => i.MainModule.FileName.Equals(pathToDotnetExe, StringComparison.OrdinalIgnoreCase)))
             {
-                if (processes != null)
-                {
-                    foreach (var process in processes)
-                    {
-                        if (string.Compare(process.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), true) == 0)
-                        {
-                            process.Kill();
-                        }
-                    }
-                }
+                process.Kill();
+            }
 
-                if (testDirProcesses != null)
+            foreach (Process process in Process.GetProcesses())
+            {
+                try
                 {
-                    foreach (var process in testDirProcesses)
+                    if (workingDirectories.Any(i => process.MainModule.FileName.StartsWith(i, StringComparison.OrdinalIgnoreCase)))
                     {
                         process.Kill();
                     }
                 }
-
+                catch
+                {
+                }
             }
-            catch { }
         }
 
         /// <summary>
