@@ -111,8 +111,7 @@ namespace NuGet.CommandLine.Test
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         workingDirectory,
-                        args,
-                        waitForExit: true);
+                        args);
 
                     timer.Stop();
                     server.Stop();
@@ -226,8 +225,7 @@ namespace NuGet.CommandLine.Test
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         workingDirectory,
-                        args,
-                        waitForExit: true);
+                        args);
 
                     timer.Stop();
 
@@ -368,8 +366,7 @@ namespace NuGet.CommandLine.Test
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         workingDirectory,
-                        args,
-                        waitForExit: true);
+                        args);
 
                     timer.Stop();
 
@@ -553,8 +550,7 @@ namespace NuGet.CommandLine.Test
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         workingDirectory,
-                        args,
-                        waitForExit: true);
+                        args);
 
                     timer.Stop();
 

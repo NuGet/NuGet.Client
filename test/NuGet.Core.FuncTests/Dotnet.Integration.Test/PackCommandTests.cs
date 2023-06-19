@@ -22,9 +22,9 @@ namespace Dotnet.Integration.Test
     [Collection(DotnetIntegrationCollection.Name)]
     public class PackCommandTests
     {
-        private MsbuildIntegrationTestFixture msbuildFixture;
+        private DotnetIntegrationTestFixture msbuildFixture;
 
-        public PackCommandTests(MsbuildIntegrationTestFixture fixture)
+        public PackCommandTests(DotnetIntegrationTestFixture fixture)
         {
             msbuildFixture = fixture;
         }
@@ -58,8 +58,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -90,7 +90,7 @@ namespace Dotnet.Integration.Test
 
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib");
-                msbuildFixture.PackProject(workingDirectory, projectName, string.Empty, null);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, nuspecOutputPath: null);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
@@ -108,15 +108,15 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
 
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.BuildProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.BuildProjectExpectSuccess(workingDirectory, projectName);
 
                 // With default output path
                 var nupkgPath = Path.Combine(workingDirectory, @"bin\Debug", $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, "--no-build", null);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, "--no-build", null);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
@@ -128,7 +128,7 @@ namespace Dotnet.Integration.Test
                 nuspecPath = Path.Combine(publishDir, $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"--no-build -o {publishDir}", publishDir);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--no-build -o {publishDir}", publishDir);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -160,10 +160,10 @@ namespace Dotnet.Integration.Test
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib");
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib");
 
-                msbuildFixture.RunDotnet(testDirectory.Path, $"new sln -n {solutionName}");
-                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
-                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
-                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"new sln -n {solutionName}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
 
                 var projectFile = Path.Combine(testDirectory.Path, projectFileRelativ);
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -178,13 +178,13 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreSolution(testDirectory, solutionName, string.Empty);
+                msbuildFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName);
 
                 var nupkgPath = Path.Combine(projectFolder, @"bin\Debug", $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(projectFolder, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                msbuildFixture.PackSolution(testDirectory, solutionName, string.Empty, null);
+                msbuildFixture.PackSolutionExpectSuccess(testDirectory, solutionName, nuspecOutputPath: null);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
@@ -216,10 +216,10 @@ namespace Dotnet.Integration.Test
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib");
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib");
 
-                msbuildFixture.RunDotnet(testDirectory.Path, $"new sln -n {solutionName}");
-                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
-                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
-                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"new sln -n {solutionName}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
 
                 var projectFile = Path.Combine(testDirectory.Path, projectFileRelativ);
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -234,8 +234,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreSolution(testDirectory, solutionName, string.Empty);
-                msbuildFixture.BuildSolution(testDirectory, solutionName, string.Empty);
+                msbuildFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName);
+                msbuildFixture.BuildSolutionExpectSuccess(testDirectory, solutionName);
 
                 // With default output path within project folder
 
@@ -244,7 +244,7 @@ namespace Dotnet.Integration.Test
                 var nuspecPath = Path.Combine(projectFolder, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                msbuildFixture.PackSolution(testDirectory, solutionName, "--no-build", null);
+                msbuildFixture.PackSolutionExpectSuccess(testDirectory, solutionName, "--no-build", null);
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
@@ -261,8 +261,8 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -325,8 +325,8 @@ namespace Dotnet.Integration.Test
                 }
 
                 // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 // Assert
                 result.AllOutput.Should().NotContain("NU5128");
@@ -342,8 +342,8 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var symbolPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
@@ -390,8 +390,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var symbolPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
@@ -443,9 +443,9 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
                 var args = includeSymbols ? $"-o {workingDirectory} --include-symbols" : $"-o {workingDirectory}";
-                msbuildFixture.PackProject(workingDirectory, projectName, args);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, args);
 
                 var nupkgExtension = includeSymbols ? ".symbols.nupkg" : ".nupkg";
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0{nupkgExtension}");
@@ -511,10 +511,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -595,10 +595,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -664,10 +664,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -777,10 +777,10 @@ namespace Dotnet.Integration.Test
                 File.WriteAllText(Path.Combine(topPath, $"{topName}.csproj"), topProjectContent);
 
                 // create the base package
-                msbuildFixture.PackProject(basePackagePath, basePackageName, "");
+                msbuildFixture.PackProjectExpectSuccess(basePackagePath, basePackageName, "");
 
                 // create the top package
-                msbuildFixture.PackProject(topPath, topName, $"-o {topPath}");
+                msbuildFixture.PackProjectExpectSuccess(topPath, topName, $"-o {topPath}");
 
                 var basePkgPath = Path.Combine(pkgsPath, "BasePackage.1.0.0.nupkg");
                 Assert.True(File.Exists(basePkgPath));
@@ -861,10 +861,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -927,10 +927,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -1033,10 +1033,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(refXml, refStream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -1115,10 +1115,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(refXml, refStream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -1205,10 +1205,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(refXml, refStream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3-alpha.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3-alpha.nuspec");
@@ -1260,11 +1260,11 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "sample text");
 
-                msbuildFixture.PackProject(workingDirectory, projectName,
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:NuspecFile=input.nuspec");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"PackedFromNuspec.1.2.1.nupkg");
@@ -1309,9 +1309,9 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
-                msbuildFixture.PackProject(workingDirectory, projectName,
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:NuspecFile=");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"ClassLibrary1.1.0.0.nupkg");
@@ -1346,7 +1346,7 @@ namespace Dotnet.Integration.Test
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
-                msbuildFixture.BuildProject(workingDirectory, projectName, "/restore");
+                msbuildFixture.BuildProjectExpectSuccess(workingDirectory, projectName, "/restore");
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "sample text");
 
@@ -1357,7 +1357,7 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.PackProject(workingDirectory, projectName,
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} --no-build");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"PackedFromNuspec.1.2.1.nupkg");
@@ -1392,8 +1392,8 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory} /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory} /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.nupkg");
                 var nupkgSha512Path = Path.Combine(workingDirectory, $"{projectName}.nupkg.sha512");
@@ -1449,10 +1449,10 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
 
-                msbuildFixture.PackProject(
+                msbuildFixture.PackProjectExpectSuccess(
                     workingDirectory,
                     projectName,
                     $"-o {workingDirectory} /p:NuspecFile=input.nuspec /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true");
@@ -1520,11 +1520,11 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "sample text");
 
-                msbuildFixture.PackProject(workingDirectory, projectName,
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:NuspecFile=input.nuspec " + nuspecProperties);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{expectedId}.{expectedVersion}.nupkg");
@@ -1574,11 +1574,11 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(basePathDirectory, "abc.txt"), "sample text");
 
-                msbuildFixture.PackProject(workingDirectory, projectName,
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:NuspecFile=input.nuspec /p:NuspecBasePath={basePathDirectory.Path}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"PackedFromNuspec.1.2.1.nupkg");
@@ -1708,10 +1708,10 @@ namespace Dotnet.Integration.Test
 
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -1760,14 +1760,14 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 var args = "" +
                            (versionPrefix != null ? $" /p:VersionPrefix={versionPrefix} " : string.Empty) +
                            (versionSuffix != null ? $" /p:VersionSuffix={versionSuffix} " : string.Empty) +
                            (packageVersion != null ? $" /p:PackageVersion={packageVersion} " : string.Empty);
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory} {args}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory} {args}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.{expectedVersion}.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.{expectedVersion}.nuspec");
@@ -1886,10 +1886,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -1978,10 +1978,10 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -2046,8 +2046,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.BuildProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", "Debug", $"{projectName}.1.0.0.nuspec");
@@ -2109,8 +2109,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.BuildProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", "Debug", $"{projectName}.1.0.0.nuspec");
@@ -2177,8 +2177,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.BuildProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", "Debug", $"{projectName}.1.0.0.nuspec");
@@ -2227,7 +2227,7 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 using (var stream = new FileStream(Path.Combine(workingDirectory, $"{projectName}.csproj"), FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2247,7 +2247,7 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.PackProject(workingDirectory, projectName,
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:IncludeBuildOutput=false");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -2293,8 +2293,8 @@ namespace Dotnet.Integration.Test
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName,
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:BuildOutputTargetFolder={buildOutputTargetFolder}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -2338,8 +2338,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.BuildProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} ");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} ");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -2347,7 +2347,7 @@ namespace Dotnet.Integration.Test
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
 
                 // Run the clean target
-                msbuildFixture.BuildProject(workingDirectory, projectName,
+                msbuildFixture.BuildProjectExpectSuccess(workingDirectory, projectName,
                     $"/t:Clean /p:PackageOutputPath={workingDirectory}\\");
 
                 Assert.True(!File.Exists(nupkgPath), "The output .nupkg was not deleted by the Clean target");
@@ -2377,8 +2377,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.BuildProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} ");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} ");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -2390,7 +2390,7 @@ namespace Dotnet.Integration.Test
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
 
                 // Run the clean target
-                msbuildFixture.BuildProject(workingDirectory, projectName,
+                msbuildFixture.BuildProjectExpectSuccess(workingDirectory, projectName,
                     $"/t:Clean /p:PackageOutputPath={workingDirectory}\\");
 
                 Assert.True(!File.Exists(nupkgPath), "The output .nupkg was not deleted by the Clean target");
@@ -2499,10 +2499,10 @@ namespace Dotnet.Integration.Test
                 }
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -2542,8 +2542,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -2622,8 +2622,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName,
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName,
                     $"--include-source /p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -2688,8 +2688,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -2755,7 +2755,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -2804,7 +2804,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -2853,7 +2853,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -2901,7 +2901,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -2948,7 +2948,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -3003,8 +3003,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:IncludeSymbols=true /p:SymbolPackageFormat=symbols.nupkg");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:IncludeSymbols=true /p:SymbolPackageFormat=symbols.nupkg");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3098,12 +3098,12 @@ namespace ClassLibrary
 
                 File.WriteAllText(Path.Combine(workingDirectory, "folderA", "folderA.txt"), "hello world from subfolder A directory");
                 File.WriteAllText(Path.Combine(workingDirectory, "folderA", "folderB", "folderB.txt"), "hello world from subfolder B directory");
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -3171,11 +3171,11 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -3245,11 +3245,11 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -3291,10 +3291,10 @@ namespace ClassLibrary
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib -f netstandard2.0");
                 msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, rederence2Folder), referencedProject2, "classlib -f netstandard2.0");
 
-                msbuildFixture.RunDotnet(testDirectory.Path, $"new sln -n {solutionName}");
-                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
-                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
-                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"new sln -n {solutionName}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
+                msbuildFixture.RunDotnetExpectSuccess(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
 
                 var projectFile = Path.Combine(testDirectory.Path, projectFileRelativ);
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -3323,9 +3323,9 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreSolution(testDirectory, solutionName, args: string.Empty);
+                msbuildFixture.RestoreSolutionExpectSuccess(testDirectory, solutionName);
                 // Act
-                msbuildFixture.PackSolution(testDirectory, solutionName, args: string.Empty);
+                msbuildFixture.PackSolutionExpectSuccess(testDirectory, solutionName);
 
                 var nupkgPath = Path.Combine(projectFolder, "bin", "Debug", $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(projectFolder, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3408,8 +3408,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
                 var indexOfHelloWorld = result.AllOutput.IndexOf("Hello World");
                 var indexOfPackSuccessful = result.AllOutput.IndexOf("Successfully created package");
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -3450,12 +3450,12 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} -bl:firstPack.binlog");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} -bl:firstPack.binlog");
 
                 var nupkgLastWriteTime = File.GetLastWriteTimeUtc(nupkgPath);
                 var nuspecLastWriteTime = File.GetLastWriteTimeUtc(nuspecPath);
@@ -3463,7 +3463,7 @@ namespace ClassLibrary
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
 
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} -bl:secondPack.binlog");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} -bl:secondPack.binlog");
 
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
@@ -3495,12 +3495,12 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                var result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
@@ -3541,18 +3541,19 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0-rtm.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0-rtm.nuspec");
 
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", validateSuccess: false);
+                var result = expectToError
+                    ? msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}")
+                    : msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}");
 
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 if (expectToError)
                 {
                     result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
-                    result.ExitCode.Should().NotBe(0);
                     result.AllOutput.Should().NotContain("success");
                     Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
                 }
@@ -3584,26 +3585,22 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0-rtm.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0-rtm.nuspec");
 
                 // Call once.
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", validateSuccess: false);
+                var result = msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
                 result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
-                result.ExitCode.Should().NotBe(0);
-                result.AllOutput.Should().NotContain("success");
 
                 // Call twice.
-                result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", validateSuccess: false);
+                result = msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
                 result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
-                result.ExitCode.Should().NotBe(0);
-                result.AllOutput.Should().NotContain("success");
             }
         }
 
@@ -3629,8 +3626,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3684,8 +3681,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3745,8 +3742,8 @@ namespace ClassLibrary
                 File.WriteAllText(Path.Combine(workingDirectory, "Directory.build.targets"), mockXml);
 
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3806,8 +3803,8 @@ namespace ClassLibrary
 
                 File.WriteAllText(Path.Combine(workingDirectory, "Directory.build.targets"), mockXml);
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3865,8 +3862,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3921,10 +3918,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -3992,10 +3989,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4045,10 +4042,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4086,10 +4083,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4131,8 +4128,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4182,15 +4179,14 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
 
-                Assert.True(result.Success);
                 Assert.True(result.AllOutput.Contains("NU5124"));
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
@@ -4236,15 +4232,14 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 Assert.False(File.Exists(nupkgPath));
                 Assert.False(File.Exists(nuspecPath));
 
-                Assert.False(result.Success);
                 Assert.True(result.AllOutput.Contains("NU5032"));
             }
         }
@@ -4271,15 +4266,14 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 Assert.False(File.Exists(nupkgPath));
                 Assert.False(File.Exists(nuspecPath));
 
-                Assert.False(result.Success);
                 Assert.True(result.AllOutput.Contains("NU5034"));
             }
         }
@@ -4306,15 +4300,14 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 Assert.False(File.Exists(nupkgPath));
                 Assert.False(File.Exists(nuspecPath));
 
-                Assert.False(result.Success);
                 Assert.True(result.AllOutput.Contains("NU5034"));
                 Assert.True(result.AllOutput.Contains($"'{LicenseMetadata.CurrentVersion.ToString()}'"));
             }
@@ -4361,15 +4354,13 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
-
-                Assert.True(result.Success);
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
@@ -4416,14 +4407,13 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 Assert.False(File.Exists(nupkgPath));
                 Assert.True(File.Exists(nuspecPath)); // See https://github.com/NuGet/Home/issues/7348. This needs to be fixed.
-                Assert.False(result.Success);
                 Assert.True(result.Output.Contains("NU5030"));
             }
         }
@@ -4467,10 +4457,9 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}");
 
-                Assert.False(result.Success);
                 Assert.Contains(NuGetLogCode.NU5030.ToString(), result.Output);
                 Assert.Contains($"'{realLicenseFileName}'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'LICENSE.txt'?"
             }
@@ -4501,14 +4490,13 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 Assert.False(File.Exists(nupkgPath));
                 Assert.True(File.Exists(nuspecPath)); // See https://github.com/NuGet/Home/issues/7348. This needs to be fixed.
-                Assert.False(result.Success);
                 Assert.True(result.Output.Contains("NU5031"));
             }
         }
@@ -4535,15 +4523,14 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 Assert.False(File.Exists(nupkgPath));
                 Assert.False(File.Exists(nuspecPath));
 
-                Assert.False(result.Success);
                 Assert.True(result.AllOutput.Contains("NU5033"));
             }
         }
@@ -4568,8 +4555,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -4628,9 +4615,9 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
-                msbuildFixture.PackProject(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}");
 
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -4640,8 +4627,6 @@ namespace ClassLibrary
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 Assert.True(File.Exists(symbolPath), "The output .snupkg is not in the expected place");
-
-                Assert.True(result.Success);
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
@@ -4714,9 +4699,9 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
-                msbuildFixture.PackProject(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=symbols.nupkg -o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=symbols.nupkg -o {workingDirectory}");
 
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
@@ -4726,8 +4711,6 @@ namespace ClassLibrary
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 Assert.True(File.Exists(symbolPath), "The output .snupkg is not in the expected place");
-
-                Assert.True(result.Success);
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
@@ -4785,15 +4768,14 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                var result = msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 Assert.False(File.Exists(nupkgPath));
                 Assert.False(File.Exists(nuspecPath));
 
-                Assert.False(result.Success);
                 Assert.True(result.AllOutput.Contains("NU5035"));
             }
         }
@@ -4818,8 +4800,8 @@ namespace ClassLibrary
                 }
 
                 // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -4896,11 +4878,11 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 // Assert
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -4965,11 +4947,8 @@ namespace ClassLibrary
                     ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
-                // Act
-                var result = msbuildFixture.RunDotnet(workingDirectory, $"publish {projectFile}");
-
                 // Assert
-                Assert.True(result.Success);
+                msbuildFixture.RunDotnetExpectSuccess(workingDirectory, $"publish {projectFile}");
             }
         }
 
@@ -4990,7 +4969,7 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
                 // Act
                 byte[][] packageBytes = new byte[2][];
 
@@ -5001,7 +4980,7 @@ namespace ClassLibrary
                     var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
                     // Act
-                    msbuildFixture.PackProject(workingDirectory, projectName, $"-o {packageOutputPath}");
+                    msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {packageOutputPath}");
 
                     Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                     Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
@@ -5054,7 +5033,7 @@ namespace ClassLibrary
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
+                var result = msbuildFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName);
 
                 // Validate embedded icon in package
                 ValidatePackIcon(projectBuilder);
@@ -5083,9 +5062,8 @@ namespace ClassLibrary
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+                var result = msbuildFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName);
 
-                Assert.NotEqual(0, result.ExitCode);
                 Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
             }
         }
@@ -5107,9 +5085,8 @@ namespace ClassLibrary
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+                var result = msbuildFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName);
 
-                Assert.NotEqual(0, result.ExitCode);
                 Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
                 Assert.Contains("'icon.jpg'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'icon.jpg'?"
             }
@@ -5132,9 +5109,8 @@ namespace ClassLibrary
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+                var result = msbuildFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName);
 
-                Assert.NotEqual(0, result.ExitCode);
                 Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
                 Assert.Contains("'folder/icon.jpg'", result.Output, StringComparison.Ordinal); // Check for "Did you mean 'folder/icon.jpg'?"
             }
@@ -5159,7 +5135,7 @@ namespace ClassLibrary
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(
+                var result = msbuildFixture.PackProjectExpectSuccess(
                     projectBuilder.ProjectFolder,
                     projectBuilder.ProjectName,
                     $"--include-symbols /p:SymbolPackageFormat={symbolPackageFormat}");
@@ -5190,7 +5166,7 @@ namespace ClassLibrary
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
+                var result = msbuildFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName);
 
                 Assert.Contains(NuGetLogCode.NU5048.ToString(), result.Output);
                 Assert.Contains("iconUrl", result.Output);
@@ -5217,12 +5193,12 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                var result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 Assert.True(File.Exists(nupkgPath), $"The output .nupkg is not in the expected place. {result.AllOutput}");
                 Assert.True(File.Exists(nuspecPath), $"The intermediate nuspec file is not in the expected place. {result.AllOutput}");
@@ -5287,8 +5263,8 @@ namespace ClassLibrary
                     </Project>";
                 File.WriteAllText(directoryPackagesPropsName, directoryPackagesPropsContent);
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}", "obj", false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", "obj");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -5366,7 +5342,7 @@ namespace ClassLibrary
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
+                var result = msbuildFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName);
 
                 // Validate embedded readme in package
                 ValidatePackReadme(projectBuilder);
@@ -5398,9 +5374,8 @@ namespace ClassLibrary
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+                var result = msbuildFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName);
 
-                Assert.NotEqual(0, result.ExitCode);
                 Assert.Contains(NuGetLogCode.NU5039.ToString(), result.Output);
             }
         }
@@ -5419,9 +5394,8 @@ namespace ClassLibrary
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+                var result = msbuildFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName);
 
-                Assert.NotEqual(0, result.ExitCode);
                 Assert.Contains(NuGetLogCode.NU5019.ToString(), result.Output);
             }
         }
@@ -5443,9 +5417,8 @@ namespace ClassLibrary
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+                var result = msbuildFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName);
 
-                Assert.NotEqual(0, result.ExitCode);
                 Assert.Contains(NuGetLogCode.NU5038.ToString(), result.Output);
             }
         }
@@ -5467,9 +5440,8 @@ namespace ClassLibrary
             using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+                var result = msbuildFixture.PackProjectExpectFailure(projectBuilder.ProjectFolder, projectBuilder.ProjectName);
 
-                Assert.NotEqual(0, result.ExitCode);
                 Assert.Contains(NuGetLogCode.NU5040.ToString(), result.Output);
             }
         }
@@ -5504,7 +5476,7 @@ namespace ClassLibrary
             using (TestDirectory srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
+                msbuildFixture.PackProjectExpectSuccess(projectBuilder.ProjectFolder, projectBuilder.ProjectName);
 
                 // Assert
                 // Validate embedded readme in package
@@ -5560,8 +5532,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -5596,10 +5568,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Test without a license
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -5618,7 +5590,7 @@ namespace ClassLibrary
                 using (var stream = File.Create(projectFile))
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
 
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
                 document = XDocument.Load(nuspecPath);
 
                 Assert.Null(document.Root.Element(ns + "metadata").Element(ns + "requireLicenseAcceptance"));
@@ -5647,10 +5619,10 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
 
                 // Test without a license
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -5669,7 +5641,7 @@ namespace ClassLibrary
                 using (var stream = File.Create(projectFile))
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
 
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
                 document = XDocument.Load(nuspecPath);
 
                 Assert.Null(document.Root.Element(ns + "metadata").Element(ns + "requireLicenseAcceptance"));
@@ -5698,8 +5670,8 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
@@ -5736,7 +5708,7 @@ namespace ClassLibrary
 
                 // Act
                 msbuildFixture.CreateDotnetNewProject(workDirectory, projectName, template);
-                msbuildFixture.PackProject(solutionDirectory, projectName, string.Empty, null);
+                msbuildFixture.PackProjectExpectSuccess(solutionDirectory, projectName, string.Empty, null);
 
                 // Assert
                 // Make sure restore action was success.
@@ -5777,8 +5749,8 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                CommandRunnerResult result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -5818,8 +5790,8 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: true);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                CommandRunnerResult result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -5890,8 +5862,8 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                CommandRunnerResult result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -5935,8 +5907,8 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: true);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                CommandRunnerResult result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -6015,11 +5987,10 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: false);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                CommandRunnerResult result = msbuildFixture.PackProjectExpectFailure(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 // Assert
-                result.Success.Should().BeFalse();
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
                 Assert.False(File.Exists(nupkgPath), "The output .nupkg is shouldn't created.");
@@ -6075,8 +6046,8 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: true);
+                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                CommandRunnerResult result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -6155,7 +6126,7 @@ namespace ClassLibrary
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: true);
+                CommandRunnerResult result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 // Assert
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
@@ -6206,7 +6177,7 @@ namespace ClassLibrary
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
 
-            CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+            CommandRunnerResult result = msbuildFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
             Assert.True(File.Exists(Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg")), "The output .nupkg is not in the expected place");
             Assert.True(File.Exists(Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec")), "The intermediate nuspec file is not in the expected place");
             var expectedWarning = string.Format("warning " + NuGetLogCode.NU5125 + ": " + NuGet.Packaging.Rules.AnalysisResources.LicenseUrlDeprecationWarning);

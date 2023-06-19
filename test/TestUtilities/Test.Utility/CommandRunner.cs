@@ -7,141 +7,125 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace NuGet.Test.Utility
 {
     public class CommandRunner
     {
+        private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1, 1);
+
         // Item1 of the returned tuple is the exit code. Item2 is the standard output, and Item3
         // is the error output.
         public static CommandRunnerResult Run(
-            string process,
+            string filename,
             string workingDirectory,
             string arguments,
-            bool waitForExit,
             int timeOutInMilliseconds = 60000,
             Action<StreamWriter> inputAction = null,
             IDictionary<string, string> environmentVariables = null)
         {
-            var psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
-            {
-                WorkingDirectory = Path.GetFullPath(workingDirectory),
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = inputAction != null
-            };
+            Semaphore.Wait();
 
-#if !IS_CORECLR
-            psi.EnvironmentVariables["NuGetTestModeEnabled"] = "True";
-#else
-            psi.Environment["NuGetTestModeEnabled"] = "True";
-#endif
-
-            if (environmentVariables != null)
-            {
-                foreach (var pair in environmentVariables)
-                {
-#if !IS_CORECLR
-                    psi.EnvironmentVariables[pair.Key] = pair.Value;
-#else
-                    psi.Environment[pair.Key] = pair.Value;
-#endif
-                }
-            }
-
-            int exitCode = 1;
-
-            var output = new StringBuilder();
-            var errors = new StringBuilder();
-
-            Process p = null;
-
-            using (p = new Process())
-            {
-                p.OutputDataReceived += OutputHandler;
-                p.ErrorDataReceived += ErrorHandler;
-
-                p.StartInfo = psi;
-                p.Start();
-
-                inputAction?.Invoke(p.StandardInput);
-
-                p.BeginOutputReadLine();
-                p.BeginErrorReadLine();
-
-                if (waitForExit)
-                {
-#if DEBUG
-                    p.WaitForExit();
-                    var processExited = true;
-#else
-                    var processExited = p.WaitForExit(timeOutInMilliseconds);
-#endif
-                    if (processExited)
-                    {
-                        p.WaitForExit();
-                        exitCode = p.ExitCode;
-                    }
-                    else
-                    {
-                        Kill(p);
-                        WaitForExit(p);
-
-                        var processName = Path.GetFileName(process);
-
-                        throw new TimeoutException($"{processName} timed out: {psi.Arguments}{Environment.NewLine}Output:{output}{Environment.NewLine}Error:{errors}");
-                    }
-                }
-            }
-
-            void OutputHandler(object sendingProcess, DataReceivedEventArgs e)
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                    output.AppendLine(e.Data);
-            }
-
-            void ErrorHandler(object sendingProcess, DataReceivedEventArgs e)
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                    errors.AppendLine(e.Data);
-            }
-
-            return new CommandRunnerResult(p, exitCode, output.ToString(), errors.ToString());
-        }
-
-        private static void Kill(Process process)
-        {
             try
             {
-                process.Kill();
-            }
-            catch (InvalidOperationException)
-            {
-            }
-            catch (Win32Exception)
-            {
-            }
-        }
+                var output = new StringBuilder();
+                var error = new StringBuilder();
 
-        private static void WaitForExit(Process process)
-        {
-            try
-            {
-                if (!process.HasExited)
+                using var process = new Process
+                {
+                    EnableRaisingEvents = true,
+                    StartInfo = new ProcessStartInfo(Path.GetFullPath(filename), arguments)
+                    {
+                        WorkingDirectory = Path.GetFullPath(workingDirectory),
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardError = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardInput = inputAction != null
+                    }
+                };
+
+                process.StartInfo.Environment["NuGetTestModeEnabled"] = bool.TrueString;
+
+                if (environmentVariables != null)
+                {
+                    foreach (var pair in environmentVariables)
+                    {
+                        process.StartInfo.EnvironmentVariables[pair.Key] = pair.Value;
+                    }
+                }
+
+                process.OutputDataReceived += (_, args) =>
+                {
+                    if (args.Data != null)
+                    {
+                        output.AppendLine(args.Data);
+                    }
+                };
+
+                process.ErrorDataReceived += (_, args) =>
+                {
+                    if (args.Data != null)
+                    {
+                        error.AppendLine(args.Data);
+                    }
+                };
+
+                process.Start();
+
+                inputAction?.Invoke(process.StandardInput);
+
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                bool processExited = process.WaitForExit(timeOutInMilliseconds);
+
+                if (processExited)
                 {
                     process.WaitForExit();
+
+                    return new CommandRunnerResult(process, process.ExitCode, output.ToString(), error.ToString());
                 }
+
+                Kill(process);
+
+                throw new TimeoutException($"{process.StartInfo.FileName} {process.StartInfo.Arguments} timed out after {TimeSpan.FromMilliseconds(timeOutInMilliseconds).TotalSeconds:N0} seconds:{Environment.NewLine}Output:{output}{Environment.NewLine}Error:{error}");
             }
-            catch (InvalidOperationException)
+            finally
             {
+                Semaphore.Release();
             }
-            catch (Win32Exception)
+
+            void Kill(Process process)
             {
-            }
-            catch (SystemException)
-            {
+                try
+                {
+                    process.Kill();
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (Win32Exception)
+                {
+                }
+
+                try
+                {
+                    if (!process.HasExited)
+                    {
+                        process.WaitForExit();
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (Win32Exception)
+                {
+                }
+                catch (SystemException)
+                {
+                }
             }
         }
     }
