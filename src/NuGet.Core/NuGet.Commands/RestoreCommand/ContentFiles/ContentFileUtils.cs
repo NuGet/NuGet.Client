@@ -260,7 +260,7 @@ namespace NuGet.Commands
         // Find path relative to the TxM
         // Ex: contentFiles/cs/net45/config/config.xml -> config/config.xml
         // Ex: contentFiles/any/any/config/config.xml -> config/config.xml
-        private static string GetContentFileFolderRelativeToFramework(string itemPath)
+        internal static string GetContentFileFolderRelativeToFramework(string itemPath)
         {
             var parts = itemPath.Split('/');
 
