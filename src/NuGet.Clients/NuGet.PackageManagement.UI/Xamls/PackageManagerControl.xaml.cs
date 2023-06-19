@@ -187,6 +187,7 @@ namespace NuGet.PackageManagement.UI
         private void Settings_SettingsChanged(object sender, EventArgs e)
         {
             _detailModel.PackageSourceMappingViewModel.SettingsChanged();
+            _detailModel.SetInstalledOrUpdateButtonIsEnabled();
         }
 
         public PackageRestoreBar RestoreBar { get; private set; }
