@@ -47,10 +47,26 @@ namespace NuGet.Versioning
         /// </summary>
         public static IVersionRangeComparer Default { get; } = new VersionRangeComparer(VersionComparer.Default);
 
+        internal static IVersionRangeComparer Version { get; } = new VersionRangeComparer(VersionComparer.Version);
+
         /// <summary>
         /// Compare versions using the Version and Release
         /// </summary>
         public static IVersionRangeComparer VersionRelease { get; } = new VersionRangeComparer(VersionComparer.VersionRelease);
+
+        internal static IVersionRangeComparer VersionReleaseMetadata { get; } = new VersionRangeComparer(VersionComparer.VersionReleaseMetadata);
+
+        public static IVersionRangeComparer Get(VersionComparison versionComparison)
+        {
+            return versionComparison switch
+            {
+                VersionComparison.Default => Default,
+                VersionComparison.Version => Version,
+                VersionComparison.VersionRelease => VersionRelease,
+                VersionComparison.VersionReleaseMetadata => VersionReleaseMetadata,
+                _ => new VersionRangeComparer(versionComparison)
+            };
+        }
 
         /// <summary>
         /// Checks if two version ranges are equivalent. This follows the rules of the version comparer
@@ -82,7 +98,7 @@ namespace NuGet.Versioning
         /// Creates a hash code based on all properties of the range. This follows the rules of the
         /// version comparer when comparing the version bounds.
         /// </summary>
-        public int GetHashCode(VersionRangeBase obj)
+        public int GetHashCode(VersionRangeBase? obj)
         {
             if (ReferenceEquals(obj, null))
             {

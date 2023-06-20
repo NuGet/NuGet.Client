@@ -111,7 +111,7 @@ NuGet.Versioning.VersionRangeBase.Satisfies(NuGet.Versioning.NuGetVersion! versi
 NuGet.Versioning.VersionRangeBase.VersionRangeBase(NuGet.Versioning.NuGetVersion? minVersion = null, bool includeMinVersion = true, NuGet.Versioning.NuGetVersion? maxVersion = null, bool includeMaxVersion = false) -> void
 NuGet.Versioning.VersionRangeComparer
 NuGet.Versioning.VersionRangeComparer.Equals(NuGet.Versioning.VersionRangeBase? x, NuGet.Versioning.VersionRangeBase? y) -> bool
-NuGet.Versioning.VersionRangeComparer.GetHashCode(NuGet.Versioning.VersionRangeBase! obj) -> int
+NuGet.Versioning.VersionRangeComparer.GetHashCode(NuGet.Versioning.VersionRangeBase? obj) -> int
 NuGet.Versioning.VersionRangeComparer.VersionRangeComparer() -> void
 NuGet.Versioning.VersionRangeComparer.VersionRangeComparer(NuGet.Versioning.IVersionComparer! versionComparer) -> void
 NuGet.Versioning.VersionRangeComparer.VersionRangeComparer(NuGet.Versioning.VersionComparison versionComparison) -> void
