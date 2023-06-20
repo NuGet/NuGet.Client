@@ -45,12 +45,12 @@ namespace NuGet.Versioning
         /// <summary>
         /// Default Version comparer
         /// </summary>
-        public static IVersionRangeComparer Default { get; } = new VersionRangeComparer(VersionComparison.Default);
+        public static IVersionRangeComparer Default { get; } = new VersionRangeComparer(VersionComparer.Default);
 
         /// <summary>
         /// Compare versions using the Version and Release
         /// </summary>
-        public static IVersionRangeComparer VersionRelease { get; } = new VersionRangeComparer(VersionComparison.VersionRelease);
+        public static IVersionRangeComparer VersionRelease { get; } = new VersionRangeComparer(VersionComparer.VersionRelease);
 
         /// <summary>
         /// Checks if two version ranges are equivalent. This follows the rules of the version comparer
