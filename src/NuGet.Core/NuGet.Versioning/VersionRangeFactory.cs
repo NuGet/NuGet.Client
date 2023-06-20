@@ -328,8 +328,6 @@ namespace NuGet.Versioning
 
             if (ranges.Any())
             {
-                var rangeComparer = new VersionRangeComparer(comparer);
-
                 // start with the first range in the list
                 var first = ranges.First();
 
