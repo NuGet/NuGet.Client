@@ -174,8 +174,8 @@
         MinHeight="24"
         Margin="0,12"
         AutomationProperties.AutomationId="OK"
-        Content="{x:Static nuget:Resources.Button_OK}"
-        Click="OkButtonClicked"
+        Content="{x:Static nuget:Resources.Button_Apply}"
+        Click="ApplyButtonClicked"
         AutomationProperties.LabeledBy="{Binding Text, ElementName=_changesText}"/>
       <Button
         Grid.Column="2"
