@@ -1773,7 +1773,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Visual Studio is about to make changes to this solution. Click OK to proceed with the changes listed below..
+        ///   Looks up a localized string similar to Visual Studio is about to make changes to this solution:.
         /// </summary>
         public static string Text_Changes {
             get {

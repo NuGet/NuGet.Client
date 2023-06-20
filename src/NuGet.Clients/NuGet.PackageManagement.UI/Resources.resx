@@ -319,7 +319,7 @@
     <value>Show preview window</value>
   </data>
   <data name="Text_Changes" xml:space="preserve">
-    <value>Visual Studio is about to make changes to this solution. Click OK to proceed with the changes listed below.</value>
+    <value>Visual Studio is about to make changes to this solution:</value>
   </data>
   <data name="Checkbox_ForceRemove" xml:space="preserve">
     <value>Force uninstall, even if there are dependencies on it</value>

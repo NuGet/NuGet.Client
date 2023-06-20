@@ -43,12 +43,12 @@
         <ColumnDefinition Width="auto" />
       </Grid.ColumnDefinitions>
       <TextBlock
-      Grid.Row="0"
-      Grid.Column="0"
-      Margin="12,12,12,0"
-      TextWrapping="Wrap"
-      x:Name="_changesText"
-      Text="{x:Static nuget:Resources.Text_Changes}" />
+        Grid.Row="0"
+        Grid.Column="0"
+        Margin="12,12,12,0"
+        TextWrapping="Wrap"
+        x:Name="_changesText"
+        Text="{x:Static nuget:Resources.Text_Changes}" />
       <Button
         Grid.Column="1"
         MinWidth="{Binding ButtonMinWidth}"
