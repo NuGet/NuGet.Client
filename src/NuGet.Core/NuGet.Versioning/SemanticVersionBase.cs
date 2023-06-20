@@ -121,7 +121,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual bool Equals(SemanticVersion? other, VersionComparison versionComparison)
         {
-            var comparer = new VersionComparer(versionComparison);
+            var comparer = VersionComparer.Get(versionComparison);
             return comparer.Equals(this, other);
         }
 
@@ -130,7 +130,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual int CompareTo(SemanticVersion? other, VersionComparison versionComparison)
         {
-            var comparer = new VersionComparer(versionComparison);
+            var comparer = VersionComparer.Get(versionComparison);
             return comparer.Compare(this, other);
         }
 

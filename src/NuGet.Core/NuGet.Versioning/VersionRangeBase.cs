@@ -116,7 +116,7 @@ namespace NuGet.Versioning
         /// <returns>True if the given version meets the version requirements.</returns>
         public bool Satisfies(NuGetVersion version, VersionComparison versionComparison)
         {
-            return Satisfies(version, new VersionComparer(versionComparison));
+            return Satisfies(version, VersionComparer.Get(versionComparison));
         }
 
         /// <summary>

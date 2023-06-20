@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Core
         /// Default version range comparer.
         /// </summary>
         public PackageIdentityComparer()
-            : this(new VersionComparer(VersionComparison.Default))
+            : this(VersionComparer.Default)
         {
         }
 
@@ -26,7 +26,7 @@ namespace NuGet.Packaging.Core
         /// Compare versions with a specific VersionComparison
         /// </summary>
         public PackageIdentityComparer(VersionComparison versionComparison)
-            : this(new VersionComparer(versionComparison))
+            : this(VersionComparer.Get(versionComparison))
         {
         }
 

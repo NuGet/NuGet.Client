@@ -17,7 +17,7 @@ namespace NuGet.Versioning
         /// Default version range comparer.
         /// </summary>
         public VersionRangeComparer()
-            : this(new VersionComparer(VersionComparison.Default))
+            : this(VersionComparer.Default)
         {
         }
 
@@ -25,7 +25,7 @@ namespace NuGet.Versioning
         /// Compare versions with a specific VersionComparison
         /// </summary>
         public VersionRangeComparer(VersionComparison versionComparison)
-            : this(new VersionComparer(versionComparison))
+            : this(VersionComparer.Get(versionComparison))
         {
         }
 

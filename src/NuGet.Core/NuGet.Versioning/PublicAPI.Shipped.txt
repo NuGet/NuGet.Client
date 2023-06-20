@@ -62,7 +62,7 @@ NuGet.Versioning.SemanticVersionConverter.SemanticVersionConverter() -> void
 NuGet.Versioning.VersionComparer
 NuGet.Versioning.VersionComparer.Compare(NuGet.Versioning.SemanticVersion? x, NuGet.Versioning.SemanticVersion? y) -> int
 NuGet.Versioning.VersionComparer.Equals(NuGet.Versioning.SemanticVersion? x, NuGet.Versioning.SemanticVersion? y) -> bool
-NuGet.Versioning.VersionComparer.GetHashCode(NuGet.Versioning.SemanticVersion! version) -> int
+NuGet.Versioning.VersionComparer.GetHashCode(NuGet.Versioning.SemanticVersion? version) -> int
 NuGet.Versioning.VersionComparer.VersionComparer() -> void
 NuGet.Versioning.VersionComparer.VersionComparer(NuGet.Versioning.VersionComparison versionComparison) -> void
 NuGet.Versioning.VersionComparison
