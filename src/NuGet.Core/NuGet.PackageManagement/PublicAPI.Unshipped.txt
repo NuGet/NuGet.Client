@@ -5,3 +5,4 @@
 ~const NuGet.ProjectManagement.ProjectBuildProperties.WindowsTargetPlatformMinVersion = "WindowsTargetPlatformMinVersion" -> string
 ~const NuGet.ProjectManagement.ProjectBuildProperties.NuGetAuditMode = "NuGetAuditMode" -> string
 ~static NuGet.PackageManagement.PackageReferenceComparer.Instance.get -> NuGet.PackageManagement.PackageReferenceComparer
+~static NuGet.PackageManagement.SourceRepositoryComparer.Instance.get -> NuGet.PackageManagement.SourceRepositoryComparer
