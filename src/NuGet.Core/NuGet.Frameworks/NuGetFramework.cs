@@ -405,7 +405,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Full framework comparison of the identifier, version, profile, platform, and platform version
         /// </summary>
-        public static readonly IEqualityComparer<NuGetFramework> Comparer = new NuGetFrameworkFullComparer();
+        public static readonly IEqualityComparer<NuGetFramework> Comparer = NuGetFrameworkFullComparer.Instance;
 
         /// <summary>
         /// Framework name only comparison.

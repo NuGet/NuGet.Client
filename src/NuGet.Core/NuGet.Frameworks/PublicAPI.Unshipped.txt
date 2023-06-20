@@ -1,1 +1,2 @@
 #nullable enable
+static NuGet.Frameworks.NuGetFrameworkFullComparer.Instance.get -> NuGet.Frameworks.NuGetFrameworkFullComparer!
