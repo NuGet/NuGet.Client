@@ -34,7 +34,7 @@ namespace NuGet.Frameworks
             _mappings = mappings ?? throw new ArgumentNullException(nameof(mappings));
             _compat = compat ?? throw new ArgumentNullException(nameof(compat));
             _fullComparer = NuGetFrameworkFullComparer.Instance;
-            _fwNameComparer = new NuGetFrameworkNameComparer();
+            _fwNameComparer = NuGetFrameworkNameComparer.Instance;
         }
 
         /// <summary>

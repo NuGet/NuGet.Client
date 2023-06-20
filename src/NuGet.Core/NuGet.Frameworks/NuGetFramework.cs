@@ -410,7 +410,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Framework name only comparison.
         /// </summary>
-        public static readonly IEqualityComparer<NuGetFramework> FrameworkNameComparer = new NuGetFrameworkNameComparer();
+        public static readonly IEqualityComparer<NuGetFramework> FrameworkNameComparer = NuGetFrameworkNameComparer.Instance;
 
         public override string ToString()
         {
