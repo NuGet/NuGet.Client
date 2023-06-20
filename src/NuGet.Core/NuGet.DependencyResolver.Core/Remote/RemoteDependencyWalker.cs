@@ -74,7 +74,7 @@ namespace NuGet.DependencyResolver
             TransitiveCentralPackageVersions transitiveCentralPackageVersions,
             bool hasParentNodes)
         {
-            List<LibraryDependency> runtimeDependencies = null;
+            HashSet<LibraryDependency> runtimeDependencies = null;
             List<Task<GraphNode<RemoteResolveResult>>> tasks = null;
 
             if (runtimeGraph != null && !string.IsNullOrEmpty(runtimeName))
@@ -106,11 +106,8 @@ namespace NuGet.DependencyResolver
                     else
                     {
                         // Otherwise it's a dependency of this node
-                        runtimeDependencies ??= new List<LibraryDependency>(1);
-                        if (!runtimeDependencies.Contains(libraryDependency, LibraryDependencyNameComparer.OrdinalIgnoreCaseNameComparer))
-                        {
-                            runtimeDependencies.Add(libraryDependency);
-                        }
+                        runtimeDependencies ??= new HashSet<LibraryDependency>(LibraryDependencyNameComparer.OrdinalIgnoreCaseNameComparer);
+                        runtimeDependencies.Add(libraryDependency);
                     }
                 }
             }
@@ -137,10 +134,7 @@ namespace NuGet.DependencyResolver
             {
                 foreach (var nodeDep in node.Item.Data.Dependencies)
                 {
-                    if (!runtimeDependencies.Contains(nodeDep, LibraryDependencyNameComparer.OrdinalIgnoreCaseNameComparer))
-                    {
-                        runtimeDependencies.Add(nodeDep);
-                    }
+                    runtimeDependencies.Add(nodeDep);
                 }
 
                 // Create a new item on this node so that we can update it with the new dependencies from
@@ -150,7 +144,7 @@ namespace NuGet.DependencyResolver
                 {
                     Data = new RemoteResolveResult()
                     {
-                        Dependencies = runtimeDependencies,
+                        Dependencies = runtimeDependencies.ToList(),
                         Match = node.Item.Data.Match
                     }
                 };
