@@ -34,7 +34,7 @@ namespace NuGet.Commands
                     PackageSpecificWarningProperties.CreatePackageSpecificWarningProperties(parentProjectSpec),
                     parentProjectSpec.TargetFrameworks.Select(f => f.FrameworkName).AsList().AsReadOnly());
 
-            var parentPackageSpecifcNoWarn = ExtractPackageSpecificNoWarnPerFramework(
+            var parentPackageSpecificNoWarn = ExtractPackageSpecificNoWarnPerFramework(
                 parentWarningProperties.PackageSpecificWarningProperties);
 
             var warningPropertiesCache = new Dictionary<string, Dictionary<NuGetFramework, WarningPropertiesCollection>>(
@@ -44,8 +44,8 @@ namespace NuGet.Commands
             {
                 if (string.IsNullOrEmpty(targetGraph.RuntimeIdentifier))
                 {
-                    if (parentPackageSpecifcNoWarn == null ||
-                        !parentPackageSpecifcNoWarn.TryGetValue(targetGraph.Framework, out var parentPackageSpecificNoWarnForFramework))
+                    if (parentPackageSpecificNoWarn == null ||
+                        !parentPackageSpecificNoWarn.TryGetValue(targetGraph.Framework, out var parentPackageSpecificNoWarnForFramework))
                     {
                         parentPackageSpecificNoWarnForFramework = null;
                     }
