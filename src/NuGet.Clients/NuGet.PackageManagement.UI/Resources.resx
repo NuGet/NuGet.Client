@@ -990,4 +990,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Label_Vulnerable" xml:space="preserve">
     <value>Vulnerable</value>
   </data>
+  <data name="Button_OK" xml:space="preserve">
+    <value>_OK</value>
+    <comment>Button_Cancel and Button_OK must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
+  </data>
 </root>
