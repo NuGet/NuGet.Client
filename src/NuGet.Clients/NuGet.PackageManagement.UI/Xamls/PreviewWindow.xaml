@@ -65,12 +65,12 @@
       BorderThickness="1">
       <ScrollViewer
         HorizontalScrollBarVisibility="Auto"
-        IsTabStop="True"
-        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageChanges}">
+        IsTabStop="True">
         <ItemsControl
           x:Name="_changesItems"
           ItemsSource="{Binding Path=PreviewResults}"
-          IsTabStop="False">
+          IsTabStop="False"
+          AutomationProperties.LabeledBy="{Binding ElementName=_changesText}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <StackPanel

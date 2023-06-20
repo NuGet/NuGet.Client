@@ -88,15 +88,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package changes.
-        /// </summary>
-        public static string Accessibility_PackageChanges {
-            get {
-                return ResourceManager.GetString("Accessibility_PackageChanges", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package deprecation.
         /// </summary>
         public static string Accessibility_PackageDeprecation {

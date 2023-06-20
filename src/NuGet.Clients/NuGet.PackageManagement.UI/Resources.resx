@@ -767,9 +767,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Label_DeprecationReasons" xml:space="preserve">
     <value>Deprecation reason</value>
   </data>
-  <data name="Accessibility_PackageChanges" xml:space="preserve">
-    <value>Package changes</value>
-  </data>
   <data name="Accessibility_PackageIdentity" xml:space="preserve">
     <value>{0} version {1}</value>
     <comment>{1} = Package ID, {2} = Package version</comment>
