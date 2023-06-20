@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using FluentAssertions;
-using Microsoft.Web.XmlTransform;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging.Core;
@@ -276,11 +275,28 @@ namespace Dotnet.Integration.Test
 
                 if (expectSuccess)
                 {
-                    Assert.True(result.ExitCode == 0, $"{TestDotnetCli} {args} should have succeeded but returned exit code {result.ExitCode} after {stopwatch.Elapsed.TotalSeconds:N1}s with the following output:{Environment.NewLine}{result.AllOutput}");
+                    result.ExitCode.Should().Be(
+                        0,
+                        "{0} {1} should have succeeded but returned exit code {2} after {3:N1}s with the following output:{4}{5}",
+                        TestDotnetCli,
+                        args,
+                        result.ExitCode,
+                        stopwatch.Elapsed.TotalSeconds,
+                        Environment.NewLine,
+                        result.AllOutput);
+                    
                 }
                 else
                 {
-                    Assert.True(result.ExitCode == 1, $"{TestDotnetCli} {args} should have failed with exit code 1 but returned exit code {result.ExitCode} after {stopwatch.Elapsed.TotalSeconds:N1}s with the following output:{Environment.NewLine}{result.AllOutput}");
+                    result.ExitCode.Should().Be(
+                        1,
+                        "{0} {1} should have failed with exit code 1 but returned exit code {2} after {3:N1}s with the following output:{4}{5}",
+                        TestDotnetCli,
+                        args,
+                        result.ExitCode,
+                        stopwatch.Elapsed.TotalSeconds,
+                        Environment.NewLine,
+                        result.AllOutput);
                 }
 
                 return result;
