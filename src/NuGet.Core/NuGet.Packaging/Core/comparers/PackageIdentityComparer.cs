@@ -48,6 +48,22 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public static PackageIdentityComparer Default { get; } = new PackageIdentityComparer();
 
+        internal static PackageIdentityComparer Version { get; } = new PackageIdentityComparer(VersionComparison.Version);
+        internal static PackageIdentityComparer VersionRelease { get; } = new PackageIdentityComparer(VersionComparison.VersionRelease);
+        internal static PackageIdentityComparer VersionReleaseMetadata { get; } = new PackageIdentityComparer(VersionComparison.VersionReleaseMetadata);
+
+        internal static PackageIdentityComparer Get(VersionComparison versionComparison)
+        {
+            return versionComparison switch
+            {
+                VersionComparison.Default => Default,
+                VersionComparison.Version => new PackageIdentityComparer(VersionComparison.Version),
+                VersionComparison.VersionRelease => new PackageIdentityComparer(VersionComparison.VersionRelease),
+                VersionComparison.VersionReleaseMetadata => new PackageIdentityComparer(VersionComparison.VersionReleaseMetadata),
+                _ => new PackageIdentityComparer(versionComparison),
+            };
+        }
+
         /// <summary>
         /// True if the package identities are the same when ignoring build metadata.
         /// </summary>
