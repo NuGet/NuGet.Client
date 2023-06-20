@@ -19,12 +19,12 @@ namespace NuGet.PackageManagement.UI.Options
     /// </summary>
     public partial class ConfigPathsControl : UserControl
     {
-        public ObservableCollection<ConfigPathsViewModel> ConfigPaths { get; private set; }
-        private ConfigPathsWindowViewModel _configPathsWindow = new ConfigPathsWindowViewModel();
+        public ConfigPathsWindowViewModel ConfigPathsWindow { get; set; }
+        public ConfigPathsViewModel SelectedPath { get; set; }
 
         public ConfigPathsControl()
         {
-            ConfigPaths = _configPathsWindow.ConfigPaths;
+            ConfigPathsWindow = new ConfigPathsWindowViewModel();
             OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, (object parameter) => true, NuGetUIThreadHelper.JoinableTaskFactory);
             DataContext = this;
             InitializeComponent();
@@ -32,10 +32,10 @@ namespace NuGet.PackageManagement.UI.Options
 
         private void ExecuteOpenConfigurationFile(object obj)
         {
-            var selectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
+            SelectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var projectContext = componentModel.GetService<INuGetProjectContext>();
-            _ = projectContext.ExecutionContext.OpenFile(selectedPath.ConfigPath);
+            _ = projectContext.ExecutionContext.OpenFile(SelectedPath.ConfigPath);
         }
 
         private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -45,8 +45,8 @@ namespace NuGet.PackageManagement.UI.Options
 
         internal void InitializeOnActivated(CancellationToken cancellationToken)
         {
-            ConfigPaths.Clear();
-            ConfigPaths = _configPathsWindow.GetConfigPaths(ConfigPaths);
+            ConfigPathsWindow.ConfigPaths.Clear();
+            ConfigPathsWindow.SetConfigPaths();
         }
 
         public ICommand OpenConfigurationFile { get; set; }

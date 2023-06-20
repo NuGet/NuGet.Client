@@ -17,12 +17,12 @@ namespace NuGet.PackageManagement.UI.Options
     {
         public ObservableCollection<ConfigPathsViewModel> ConfigPaths { get; private set; }
 
-        public ObservableCollection<ConfigPathsViewModel> GetConfigPaths(ObservableCollection<ConfigPathsViewModel> configPathsCollection)
+        public void SetConfigPaths()
         {
             IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModelMapping.GetService<Configuration.ISettings>();
             IReadOnlyList<string> configPaths = settings.GetConfigFilePaths().ToList();
-            return configPathsCollection.AddRange(CreateViewModels(configPaths));
+            ConfigPaths.AddRange(CreateViewModels(configPaths));
         }
 
         private ObservableCollection<ConfigPathsViewModel> CreateViewModels(IReadOnlyList<string> configPaths)
