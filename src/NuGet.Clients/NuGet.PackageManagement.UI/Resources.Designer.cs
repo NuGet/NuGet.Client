@@ -331,6 +331,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to _Apply.
+        /// </summary>
+        public static string Button_Apply {
+            get {
+                return ResourceManager.GetString("Button_Apply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to _Cancel.
         /// </summary>
         public static string Button_Cancel {
@@ -399,15 +408,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Button_NoToAll {
             get {
                 return ResourceManager.GetString("Button_NoToAll", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to _OK.
-        /// </summary>
-        public static string Button_OK {
-            get {
-                return ResourceManager.GetString("Button_OK", resourceCulture);
             }
         }
         
@@ -727,7 +727,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _Do not show this again.
+        ///   Looks up a localized string similar to _Don&apos;t show this again.
         /// </summary>
         public static string DoNotShowThisAgain {
             get {
