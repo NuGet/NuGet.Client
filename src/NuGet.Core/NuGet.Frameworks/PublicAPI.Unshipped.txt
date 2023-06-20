@@ -1,2 +1,3 @@
 #nullable enable
+static NuGet.Frameworks.FrameworkRangeComparer.Instance.get -> NuGet.Frameworks.FrameworkRangeComparer!
 static NuGet.Frameworks.NuGetFrameworkFullComparer.Instance.get -> NuGet.Frameworks.NuGetFrameworkFullComparer!

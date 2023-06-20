@@ -21,7 +21,7 @@ namespace NuGet.Frameworks
                 return false;
             }
 
-            var comparer = new FrameworkRangeComparer();
+            var comparer = FrameworkRangeComparer.Instance;
 
             return comparer.Equals(x.TargetFrameworkRange, y.TargetFrameworkRange)
                    && comparer.Equals(x.SupportedFrameworkRange, y.SupportedFrameworkRange);
@@ -35,7 +35,7 @@ namespace NuGet.Frameworks
             }
 
             var combiner = new HashCodeCombiner();
-            var comparer = new FrameworkRangeComparer();
+            var comparer = FrameworkRangeComparer.Instance;
 
             combiner.AddObject(comparer.GetHashCode(obj.TargetFrameworkRange));
             combiner.AddObject(comparer.GetHashCode(obj.SupportedFrameworkRange));
