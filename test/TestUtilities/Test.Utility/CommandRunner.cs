@@ -7,14 +7,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using System.Threading;
 
 namespace NuGet.Test.Utility
 {
     public class CommandRunner
     {
-        private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1, 1);
-
         // Item1 of the returned tuple is the exit code. Item2 is the standard output, and Item3
         // is the error output.
         public static CommandRunnerResult Run(
@@ -25,77 +22,68 @@ namespace NuGet.Test.Utility
             Action<StreamWriter> inputAction = null,
             IDictionary<string, string> environmentVariables = null)
         {
-            Semaphore.Wait();
+            var output = new StringBuilder();
+            var error = new StringBuilder();
 
-            try
+            using var process = new Process
             {
-                var output = new StringBuilder();
-                var error = new StringBuilder();
-
-                using var process = new Process
+                EnableRaisingEvents = true,
+                StartInfo = new ProcessStartInfo(Path.GetFullPath(filename), arguments)
                 {
-                    EnableRaisingEvents = true,
-                    StartInfo = new ProcessStartInfo(Path.GetFullPath(filename), arguments)
-                    {
-                        WorkingDirectory = Path.GetFullPath(workingDirectory),
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                        RedirectStandardError = true,
-                        RedirectStandardOutput = true,
-                        RedirectStandardInput = inputAction != null
-                    }
-                };
-
-                process.StartInfo.Environment["NuGetTestModeEnabled"] = bool.TrueString;
-
-                if (environmentVariables != null)
-                {
-                    foreach (var pair in environmentVariables)
-                    {
-                        process.StartInfo.EnvironmentVariables[pair.Key] = pair.Value;
-                    }
+                    WorkingDirectory = Path.GetFullPath(workingDirectory),
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = inputAction != null
                 }
+            };
 
-                process.OutputDataReceived += (_, args) =>
-                {
-                    if (args.Data != null)
-                    {
-                        output.AppendLine(args.Data);
-                    }
-                };
+            process.StartInfo.Environment["NuGetTestModeEnabled"] = bool.TrueString;
 
-                process.ErrorDataReceived += (_, args) =>
-                {
-                    if (args.Data != null)
-                    {
-                        error.AppendLine(args.Data);
-                    }
-                };
-
-                process.Start();
-
-                inputAction?.Invoke(process.StandardInput);
-
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-
-                bool processExited = process.WaitForExit(timeOutInMilliseconds);
-
-                if (processExited)
-                {
-                    process.WaitForExit();
-
-                    return new CommandRunnerResult(process, process.ExitCode, output.ToString(), error.ToString());
-                }
-
-                Kill(process);
-
-                throw new TimeoutException($"{process.StartInfo.FileName} {process.StartInfo.Arguments} timed out after {TimeSpan.FromMilliseconds(timeOutInMilliseconds).TotalSeconds:N0} seconds:{Environment.NewLine}Output:{output}{Environment.NewLine}Error:{error}");
-            }
-            finally
+            if (environmentVariables != null)
             {
-                Semaphore.Release();
+                foreach (var pair in environmentVariables)
+                {
+                    process.StartInfo.EnvironmentVariables[pair.Key] = pair.Value;
+                }
             }
+
+            process.OutputDataReceived += (_, args) =>
+            {
+                if (args.Data != null)
+                {
+                    output.AppendLine(args.Data);
+                }
+            };
+
+            process.ErrorDataReceived += (_, args) =>
+            {
+                if (args.Data != null)
+                {
+                    error.AppendLine(args.Data);
+                }
+            };
+
+            process.Start();
+
+            inputAction?.Invoke(process.StandardInput);
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            bool processExited = process.WaitForExit(timeOutInMilliseconds);
+
+            if (processExited)
+            {
+                process.WaitForExit();
+
+                return new CommandRunnerResult(process, process.ExitCode, output.ToString(), error.ToString());
+            }
+
+            Kill(process);
+
+            throw new TimeoutException($"{process.StartInfo.FileName} {process.StartInfo.Arguments} timed out after {TimeSpan.FromMilliseconds(timeOutInMilliseconds).TotalSeconds:N0} seconds:{Environment.NewLine}Output:{output}{Environment.NewLine}Error:{error}");
 
             void Kill(Process process)
             {
