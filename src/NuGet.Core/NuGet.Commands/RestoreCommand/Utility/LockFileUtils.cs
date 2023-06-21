@@ -784,7 +784,7 @@ namespace NuGet.Commands
             NuGetFramework framework,
             string runtimeIdentifier)
         {
-            var managedCriteria = new List<SelectionCriteria>(1);
+            List<SelectionCriteria> managedCriteria;
 
             var fallbackFramework = framework as FallbackFramework;
 
@@ -797,7 +797,10 @@ namespace NuGet.Commands
                     framework,
                     runtimeIdentifier);
 
-                managedCriteria.Add(standardCriteria);
+                managedCriteria = new(capacity: 1)
+                {
+                    standardCriteria
+                };
             }
             else
             {
@@ -807,7 +810,10 @@ namespace NuGet.Commands
                     primaryFramework,
                     runtimeIdentifier);
 
-                managedCriteria.Add(primaryCriteria);
+                managedCriteria = new(capacity: 1 + fallbackFramework.Fallback.Count)
+                {
+                    primaryCriteria
+                };
 
                 // Add each fallback framework in order
                 foreach (var fallback in fallbackFramework.Fallback)
