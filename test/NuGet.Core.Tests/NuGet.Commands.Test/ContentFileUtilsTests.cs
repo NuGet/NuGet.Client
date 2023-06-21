@@ -29,6 +29,11 @@ public sealed class ContentFileUtilsTests
         Assert.Equal(expected, actual);
     }
 
+    /// <summary>
+    /// Suppresses the default trace listeners for a specific duration. Useful to ensure that
+    /// debug asserts don't block unit tests indefinitely by showing modal dialog messages
+    /// about assertion failures.
+    /// </summary>
     private sealed class SuppressAsserts : IDisposable
     {
         private readonly TraceListener[] _suppressedListeners;
