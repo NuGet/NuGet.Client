@@ -65,12 +65,12 @@
       BorderThickness="1">
       <ScrollViewer
         HorizontalScrollBarVisibility="Auto"
-        IsTabStop="True">
+        IsTabStop="True"
+        AutomationProperties.LabeledBy="{Binding ElementName=_changesText, Mode=OneWay}">
         <ItemsControl
           x:Name="_changesItems"
           ItemsSource="{Binding Path=PreviewResults}"
-          IsTabStop="False"
-          AutomationProperties.LabeledBy="{Binding ElementName=_changesText}">
+          IsTabStop="False">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <StackPanel
