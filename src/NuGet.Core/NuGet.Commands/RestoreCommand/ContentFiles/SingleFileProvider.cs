@@ -26,7 +26,7 @@ internal sealed class SingleFileProvider : IFileProvider
 
     public IDirectoryContents GetDirectoryContents(string subpath)
     {
-        if (subpath.Length == 0)
+        if (string.IsNullOrEmpty(subpath))
         {
             return EnumerableDirectoryContents.Empty;
         }
