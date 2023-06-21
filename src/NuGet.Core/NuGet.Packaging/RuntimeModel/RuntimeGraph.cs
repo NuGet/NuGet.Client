@@ -99,8 +99,7 @@ namespace NuGet.RuntimeModel
 
                 Dictionary<string, T> clone = new(source.Count);
 
-                // TODO append .NoAllocEnumerate() here once https://github.com/NuGet/NuGet.Client/pull/5246 is available
-                foreach (var pair in source)
+                foreach (var pair in source.NoAllocEnumerate())
                 {
                     clone[pair.Key] = cloneFunc(pair.Value);
                 }
@@ -127,15 +126,13 @@ namespace NuGet.RuntimeModel
 
             var runtimes = new Dictionary<string, RuntimeDescription>(capacity: left.Runtimes.Count + right.Runtimes.Count);
 
-            // TODO append .NoAllocEnumerate() here once https://github.com/NuGet/NuGet.Client/pull/5246 is available
-            foreach (var pair in left.Runtimes)
+            foreach (var pair in left.Runtimes.NoAllocEnumerate())
             {
                 runtimes[pair.Key] = pair.Value.Clone();
             }
 
             // Merge the right-side runtimes
-            // TODO append .NoAllocEnumerate() here once https://github.com/NuGet/NuGet.Client/pull/5246 is available
-            foreach (var pair in right.Runtimes)
+            foreach (var pair in right.Runtimes.NoAllocEnumerate())
             {
                 // Check if we already have the runtime defined
                 if (runtimes.TryGetValue(pair.Key, out RuntimeDescription? leftRuntime))
@@ -152,15 +149,13 @@ namespace NuGet.RuntimeModel
             var supports = new Dictionary<string, CompatibilityProfile>(capacity: right.Supports.Count + left.Supports.Count);
 
             // Copy over the right ones
-            // TODO append .NoAllocEnumerate() here once https://github.com/NuGet/NuGet.Client/pull/5246 is available
-            foreach (var compatProfile in right.Supports)
+            foreach (var compatProfile in right.Supports.NoAllocEnumerate())
             {
                 supports[compatProfile.Key] = compatProfile.Value;
             }
 
             // Overwrite with non-empty profiles from left
-            // TODO append .NoAllocEnumerate() here once https://github.com/NuGet/NuGet.Client/pull/5246 is available
-            foreach (var compatProfile in left.Supports)
+            foreach (var compatProfile in left.Supports.NoAllocEnumerate())
             {
                 if (compatProfile.Value.RestoreContexts.Count > 0)
                 {
