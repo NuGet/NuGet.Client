@@ -55,7 +55,7 @@
     </Grid>
     <Border
       Grid.Row="1"
-      Margin="12,0,12,12"
+      Margin="12,0,12,0"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
       BorderThickness="1">
       <ScrollViewer
@@ -148,7 +148,7 @@
     <Grid
       Grid.Row="2">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" MinWidth="{Binding DoNotShowAgainMinWidth}" />
         <ColumnDefinition Width="auto" />
         <ColumnDefinition Width="auto" />
       </Grid.ColumnDefinitions>
@@ -156,7 +156,6 @@
         x:Name="_doNotShowCheckBox"
         Grid.Column="0"
         Margin="12"
-        MinWidth="{Binding DoNotShowAgainMinWidth}"
         VerticalAlignment="Center"
         Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
         Content="{x:Static nuget:Resources.DoNotShowThisAgain}"
