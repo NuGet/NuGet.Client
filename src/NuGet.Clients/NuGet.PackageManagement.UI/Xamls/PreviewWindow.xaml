@@ -29,21 +29,16 @@
   </vs:DialogWindow.CommandBindings>
   <Grid>
     <Grid.RowDefinitions>
-      <RowDefinition
-        Height="auto" />
+      <RowDefinition Height="auto" />
       <RowDefinition />
-      <RowDefinition
-        Height="auto" />
+      <RowDefinition Height="auto" />
     </Grid.RowDefinitions>
-    <Grid
-      Grid.Row="0">
+    <Grid Grid.Row="0">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="auto" />
-        <ColumnDefinition Width="auto" />
       </Grid.ColumnDefinitions>
       <TextBlock
-        Grid.Row="0"
         Grid.Column="0"
         Margin="12,12,12,0"
         TextWrapping="Wrap"
@@ -53,14 +48,14 @@
         Grid.Column="1"
         MinWidth="{Binding ButtonMinWidth}"
         MinHeight="24"
-        Margin="12"
+        Margin="12,12,12,9"
         AutomationProperties.AutomationId="Copy"
         Content="{x:Static nuget:Resources.Button_Copy}"
         Click="CopyButtonClicked" />
     </Grid>
     <Border
       Grid.Row="1"
-      Margin="12,12"
+      Margin="12,0,12,12"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
       BorderThickness="1">
       <ScrollViewer
