@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -90,6 +91,21 @@ namespace NuGet.PackageManagement.UI
             }
 
             mappingProvider.SavePackageSourceMappings(newAndExistingPackageSourceMappingItems);
+        }
+
+        internal static string? GetNewSourceMappingSourceName(string packageId, PackageSourceMapping packageSourceMapping, PackageSourceMoniker activePackageSourceMoniker)
+        {
+            bool isInstallCreatingNewSourceMapping = false;
+            if (packageSourceMapping != null && packageSourceMapping.IsEnabled)
+            {
+                isInstallCreatingNewSourceMapping = packageSourceMapping.GetConfiguredPackageSources(packageId)?.Count == 0;
+            }
+
+            string? sourceMappingSourceName = isInstallCreatingNewSourceMapping
+                && activePackageSourceMoniker.IsAggregateSource == false
+                ? activePackageSourceMoniker.PackageSourceNames.FirstOrDefault() : null;
+
+            return sourceMappingSourceName;
         }
     }
 }

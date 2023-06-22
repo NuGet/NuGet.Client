@@ -11,7 +11,9 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using Lucene.Net.Util;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
@@ -112,17 +114,11 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null && model.SelectedVersion != null)
             {
-                bool isInstallCreatingNewSourceMapping = false;
-                var packageSourceMapping = Control.Model.UIController.UIContext.PackageSourceMapping;
-                if (packageSourceMapping.IsEnabled)
-                {
-                    isInstallCreatingNewSourceMapping = packageSourceMapping.GetConfiguredPackageSources(model.Id)?.Count == 0;
-                }
-
-                string sourceMappingSourceName = Control.Model.UIController.ActivePackageSourceMoniker.IsAggregateSource == false ? Control.Model.UIController.ActivePackageSourceMoniker.PackageSourceNames.FirstOrDefault() : null;
+                var packageId = model.Id;
+                var sourceMappingSourceName = PackageSourceMappingUtility.GetNewSourceMappingSourceName(packageId, Control.Model.UIController.UIContext.PackageSourceMapping, Control.Model.UIController.ActivePackageSourceMoniker);
 
                 var userAction = UserAction.CreateInstallAction(
-                    model.Id,
+                    packageId,
                     model.SelectedVersion.Version,
                     Control.Model.IsSolution,
                     UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
