@@ -98,7 +98,8 @@ namespace NuGet.PackageManagement.UI
             bool isInstallCreatingNewSourceMapping = false;
             if (packageSourceMapping != null && packageSourceMapping.IsEnabled)
             {
-                isInstallCreatingNewSourceMapping = packageSourceMapping.GetConfiguredPackageSources(packageId)?.Count == 0;
+                IReadOnlyList<string> configuredPackageSourcesForPackageId = packageSourceMapping.GetConfiguredPackageSources(packageId);
+                isInstallCreatingNewSourceMapping = configuredPackageSourcesForPackageId == null || !configuredPackageSourcesForPackageId.Any();
             }
 
             string? sourceMappingSourceName = isInstallCreatingNewSourceMapping
