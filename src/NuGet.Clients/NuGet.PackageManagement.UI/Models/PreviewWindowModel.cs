@@ -53,13 +53,17 @@ namespace NuGet.PackageManagement.UI
                     }
                     sb.AppendLine("");
                 }
-                if (r.NewSourceMappingsPackageIds.Any())
+                if (r.NewSourceMappings.Any())
                 {
                     sb.AppendLine(Resources.Label_CreatingSourceMappings);
                     sb.AppendLine("");
-                    foreach (var p in r.NewSourceMappingsPackageIds)
+                    foreach (KeyValuePair<string, IEnumerable<string>> newSourceMapping in r.NewSourceMappings)
                     {
-                        sb.AppendLine(p.ToString());
+                        sb.AppendLine(newSourceMapping.Key);
+                        foreach (string newSourceMappingPackageId in newSourceMapping.Value)
+                        {
+                            sb.AppendLine(newSourceMappingPackageId.ToString());
+                        }
                     }
                     sb.AppendLine("");
                 }

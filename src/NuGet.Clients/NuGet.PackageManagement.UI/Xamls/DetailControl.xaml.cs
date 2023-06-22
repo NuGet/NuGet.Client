@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using Lucene.Net.Util;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
@@ -110,12 +112,22 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null && model.SelectedVersion != null)
             {
+                bool isInstallCreatingNewSourceMapping = false;
+                var packageSourceMapping = Control.Model.UIController.UIContext.PackageSourceMapping;
+                if (packageSourceMapping.IsEnabled)
+                {
+                    isInstallCreatingNewSourceMapping = packageSourceMapping.GetConfiguredPackageSources(model.Id)?.Count == 0;
+                }
+
+                string sourceMappingSourceName = Control.Model.UIController.ActivePackageSourceMoniker.IsAggregateSource == false ? Control.Model.UIController.ActivePackageSourceMoniker.PackageSourceNames.FirstOrDefault() : null;
+
                 var userAction = UserAction.CreateInstallAction(
                     model.Id,
                     model.SelectedVersion.Version,
                     Control.Model.IsSolution,
                     UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
-                    model.SelectedVersion.Range);
+                    model.SelectedVersion.Range,
+                    sourceMappingSourceName);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }

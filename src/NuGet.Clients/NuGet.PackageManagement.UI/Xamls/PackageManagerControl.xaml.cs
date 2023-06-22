@@ -1680,24 +1680,24 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
         internal void InstallPackage(string packageId, NuGetVersion version, IEnumerable<PackageItemViewModel> packagesInfo)
         {
-            bool isInstallCreatingNewSourceMapping = false;
-            var packageSourceMapping = Model.UIController.UIContext.PackageSourceMapping;
-            if (packageSourceMapping.IsEnabled)
-            {
-                isInstallCreatingNewSourceMapping = packageSourceMapping.GetConfiguredPackageSources(packageId)?.Count == 0;
-            }
+            //bool isInstallCreatingNewSourceMapping = false;
+            //var packageSourceMapping = Model.UIController.UIContext.PackageSourceMapping;
+            //if (packageSourceMapping.IsEnabled)
+            //{
+            //    isInstallCreatingNewSourceMapping = packageSourceMapping.GetConfiguredPackageSources(packageId)?.Count == 0;
+            //}
 
             UserAction action = null;
 
-            if (isInstallCreatingNewSourceMapping)
-            {
-                var sourceMappingSourceName = Model.UIController.ActivePackageSourceMoniker.PackageSourceNames.FirstOrDefault();
-                action = UserAction.CreateInstallAction(packageId, version, Model.IsSolution, UIUtility.ToContractsItemFilter(_topPanel.Filter), sourceMappingSourceName);
-            }
-            else
-            {
-                action = UserAction.CreateInstallAction(packageId, version, Model.IsSolution, UIUtility.ToContractsItemFilter(_topPanel.Filter));
-            }
+            //if (isInstallCreatingNewSourceMapping)
+            //{
+            //    var sourceMappingSourceName = Model.UIController.ActivePackageSourceMoniker.PackageSourceNames.FirstOrDefault();
+            //    action = UserAction.CreateInstallAction(packageId, version, Model.IsSolution, UIUtility.ToContractsItemFilter(_topPanel.Filter), sourceMappingSourceName);
+            //}
+            //else
+            //{
+            action = UserAction.CreateInstallAction(packageId, version, Model.IsSolution, UIUtility.ToContractsItemFilter(_topPanel.Filter));
+            //}
 
             ExecuteAction(
                 () =>
