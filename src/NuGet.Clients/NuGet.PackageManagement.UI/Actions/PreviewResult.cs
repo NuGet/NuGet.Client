@@ -13,18 +13,22 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<UpdatePreviewResult> Updated { get; }
 
+        public IEnumerable<AccessiblePackageIdentity> NewSourceMapping { get; }
+
         public string Name { get; }
 
         public PreviewResult(
             string projectName,
             IEnumerable<AccessiblePackageIdentity> added,
             IEnumerable<AccessiblePackageIdentity> deleted,
-            IEnumerable<UpdatePreviewResult> updated)
+            IEnumerable<UpdatePreviewResult> updated,
+            IEnumerable<AccessiblePackageIdentity> newSourceMapping)
         {
             Name = projectName;
             Added = added;
             Deleted = deleted;
             Updated = updated;
+            NewSourceMapping = newSourceMapping;
         }
     }
 }
