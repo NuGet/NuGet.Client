@@ -1773,6 +1773,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Note: Configuration files are listed in order from highest to lowest priority..
+        /// </summary>
+        public static string Text_ApplyingConfigurationFiles {
+            get {
+                return ResourceManager.GetString("Text_ApplyingConfigurationFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Common NuGet configurations: How settings are applied.
+        /// </summary>
+        public static string Text_ApplyingConfigurationFiles_DocumentLink {
+            get {
+                return ResourceManager.GetString("Text_ApplyingConfigurationFiles_DocumentLink", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to by {0}.
         /// </summary>
         public static string Text_ByAuthor {
@@ -2349,6 +2367,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Configuration files list.
+        /// </summary>
+        public static string VSOptions_Accessibility_ConfigurationFilesList {
+            get {
+                return ResourceManager.GetString("VSOptions_Accessibility_ConfigurationFilesList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package sources list.
         /// </summary>
         public static string VSOptions_Accessibility_SourcesList {
@@ -2376,6 +2403,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to _Open.
+        /// </summary>
+        public static string VSOptions_Button_Open {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_Open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Remove.
         /// </summary>
         public static string VSOptions_Button_Remove {
@@ -2399,6 +2435,15 @@ namespace NuGet.PackageManagement.UI {
         public static string VSOptions_Label_AddPackageNamespace {
             get {
                 return ResourceManager.GetString("VSOptions_Label_AddPackageNamespace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration Files:.
+        /// </summary>
+        public static string VSOptions_Label_ConfigurationFiles {
+            get {
+                return ResourceManager.GetString("VSOptions_Label_ConfigurationFiles", resourceCulture);
             }
         }
         

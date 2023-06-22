@@ -30,27 +30,32 @@
         <TextBlock Text="{Binding ConfigPath}"/>
       </DataTemplate>
     </Grid.Resources>
-    <TextBlock Grid.Row="0" Text="Config Files"/>
+    <TextBlock Grid.Row="0" Text="{x:Static nuget:Resources.VSOptions_Label_ConfigurationFiles}"/>
     <ListView
       Name="_configurationPaths"
       Grid.Row="1"
       ItemsSource="{Binding ConfigPathsWindow.ConfigPaths}"
-      ItemTemplate="{StaticResource ConfigPathItemTemplate}"/>
+      ItemTemplate="{StaticResource ConfigPathItemTemplate}"
+      AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_ConfigurationFiles}" />
     <Grid Grid.Row="2">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="auto"></ColumnDefinition>
         <ColumnDefinition Width="*"></ColumnDefinition>
         <ColumnDefinition Width="auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
-      <TextBlock Grid.Column="0">
-        <Span xml:space="preserve">
-          <Run>Note: Configuration files are listed in order from highest to lowest priority.</Run>
+      <Grid Grid.Column="0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="auto" />
+          <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" TextWrapping="WrapWithOverflow" MaxWidth="320" Text="{x:Static nuget:Resources.Text_ApplyingConfigurationFiles}"/>
+        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" MaxWidth="320">
           <Hyperlink NavigateUri="https://learn.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior#how-settings-are-applied">Common NuGet configurations: How settings are applied</Hyperlink>
-        </Span>
-      </TextBlock>
+        </TextBlock>
+      </Grid>
       <Button
         Style="{DynamicResource ConfigPathsButtonStyle}"
-        Content="Open"
+        Content="{x:Static nuget:Resources.VSOptions_Button_Open}"
         Grid.Column="2"
         Command="{Binding OpenConfigurationFile}"/>
     </Grid>
