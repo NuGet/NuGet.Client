@@ -800,8 +800,8 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            IEnumerable<SourceRepository> sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-            List<IPackageSearchMetadata> licenseMetadata = await GetPackageMetadataAsync(sources, licenseCheck, token);
+            IEnumerable<SourceRepository> allEnabledSources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+            List<IPackageSearchMetadata> licenseMetadata = licenseMetadata = await GetPackageMetadataAsync(allEnabledSources, licenseCheck, uiService.UIContext.PackageSourceMapping, token);
 
             TelemetryServiceUtility.StopTimer();
 
@@ -1016,6 +1016,7 @@ namespace NuGet.PackageManagement.UI
         private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(
             IEnumerable<SourceRepository> sources,
             IEnumerable<PackageIdentity> packages,
+            PackageSourceMapping packageSourceMapping,
             CancellationToken token)
         {
             var results = new List<IPackageSearchMetadata>();
@@ -1045,14 +1046,27 @@ namespace NuGet.PackageManagement.UI
                 {
                     // get remaining package's metadata from remote repositories
                     var remainingPackages = allPackages.Where(package => package != null && !completed.Any(packageMetadata => packageMetadata != null && packageMetadata.Identity.Equals(package)));
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-                    IPackageSearchMetadata[] remoteResults = (await TaskCombinators.ThrottledAsync(
-                        remainingPackages,
-                        (p, t) => GetPackageMetadataAsync(sources, sourceCacheContext, p, t),
-                        token)).Where(metadata => metadata != null).ToArray();
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+                    IPackageSearchMetadata[] remoteResults;
+                    if (!packageSourceMapping.IsEnabled)
+                    {
+                        remoteResults = await GetPackageMetadataThrottledAsync(sources, sourceCacheContext, remainingPackages, token);
+                        results.AddRange(remoteResults);
+                    }
+                    else // Only look at sources for the package's source mapping.
+                    {
+                        foreach (PackageIdentity package in remainingPackages)
+                        {
+                            IReadOnlyList<string>? sourcesMappedToPackage = packageSourceMapping.GetConfiguredPackageSources(package.Id);
+                            if (sourcesMappedToPackage is null)
+                            {
+                                break;
+                            }
 
-                    results.AddRange(remoteResults);
+                            IEnumerable<SourceRepository> enabledSourcesMappedToPackage = sources.Where(enabledSourceRepository => sourcesMappedToPackage.Contains(enabledSourceRepository.PackageSource.Name, StringComparer.CurrentCultureIgnoreCase));
+                            remoteResults = await GetPackageMetadataThrottledAsync(enabledSourcesMappedToPackage, sourceCacheContext, remainingPackages, token);
+                            results.AddRange(remoteResults);
+                        }
+                    }
                 }
             }
             // check if missing metadata for any package
@@ -1063,6 +1077,18 @@ namespace NuGet.PackageManagement.UI
             }
 
             return results;
+        }
+
+        private static async Task<IPackageSearchMetadata[]> GetPackageMetadataThrottledAsync(IEnumerable<SourceRepository> sources, SourceCacheContext sourceCacheContext, IEnumerable<PackageIdentity> packages, CancellationToken token)
+        {
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+            IPackageSearchMetadata[] remoteResults = (await TaskCombinators.ThrottledAsync(
+                packages,
+                (p, t) => GetPackageMetadataAsync(sources, sourceCacheContext, p, t),
+                token)).Where(metadata => metadata != null).ToArray();
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+
+            return remoteResults;
         }
 
         private static async Task<IPackageSearchMetadata?> GetPackageMetadataAsync(
