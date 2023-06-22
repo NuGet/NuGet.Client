@@ -33,13 +33,16 @@ internal sealed class SingleFileProvider : IFileProvider
 
         ReadOnlySpan<char> span = subpath.AsSpan();
 
+        if (span.EndsWith("/".AsSpan()))
+        {
+            return EnumerableDirectoryContents.Empty;
+        }
+
         // Remove the root identifier from the relative path
         if (span.StartsWith(RootDir.AsSpan(), StringComparison.Ordinal))
         {
-            span = span.Slice(RootDir.Length);
+            span = span.Slice(RootDir.Length).TrimStart('/');
         }
-
-        span = span.TrimStart('/');
 
         if (_path.AsSpan().StartsWith(span, StringComparison.OrdinalIgnoreCase))
         {

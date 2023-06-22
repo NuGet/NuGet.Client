@@ -30,12 +30,19 @@ public sealed class SingleFileProviderTests
 
     [Theory]
     [InlineData("a/b/file.txt", "")]
+    [InlineData("a/b/file.txt", "ROOT/")]
+    [InlineData("a/b/file.txt", "ROOT/a/")]
     [InlineData("a/b/file.txt", "ROOT/z")]
     [InlineData("a/b/file.txt", "ROOT/aa")]
     [InlineData("a/b/file.txt", "ROOT/z/a")]
     [InlineData("a/b/file.txt", "ROOT/a/z")]
     [InlineData("a/b/file.txt", "ROOT/a/b/file")]
     [InlineData("a/b/file.txt", "ROOT/a/b/file.txt")]
+    [InlineData("a/b/file.txt", "/a/b/file.txt")]
+    [InlineData("a/b/file.txt", "/a/")]
+    [InlineData("a/b/file.txt", "/a")]
+    [InlineData("a/b/file.txt", "a/")]
+    [InlineData("a/b/file.txt", "a//b")]
     public void GetDirectoryContents_NoMatch(string source, string search)
     {
         IDirectoryContents contents = new SingleFileProvider(source).GetDirectoryContents(search);
