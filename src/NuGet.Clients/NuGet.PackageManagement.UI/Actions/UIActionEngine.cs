@@ -964,7 +964,7 @@ namespace NuGet.PackageManagement.UI
                 var added = new List<AccessiblePackageIdentity>();
                 var deleted = new List<AccessiblePackageIdentity>();
                 var updated = new List<UpdatePreviewResult>();
-                var addedPackagesWithNewSourceMappings = new List<AccessiblePackageIdentity>();
+                var addedPackageIdsWithNewSourceMappings = new List<string>();
 
                 foreach (var packageId in packageIds)
                 {
@@ -990,15 +990,14 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 // Everything added which didn't already have a source mapping will be mentioned in the Preview Window.
-                addedPackagesWithNewSourceMappings = added.Where(addedPackage =>
+                addedPackageIdsWithNewSourceMappings = added.Select(_ => _.Id).Where(addedPackage =>
                     {
-                        IReadOnlyList<string> configuredSources = uiService.UIContext.PackageSourceMapping.GetConfiguredPackageSources(addedPackage.Id);
+                        IReadOnlyList<string> configuredSources = uiService.UIContext.PackageSourceMapping.GetConfiguredPackageSources(addedPackage);
                         return configuredSources == null || configuredSources.Count == 0;
                     })
                     .Distinct()
                     .ToList();
 
-                actions.
                 IProjectMetadataContextInfo projectMetadata = await projectManagerService.GetMetadataAsync(actions.Key, cancellationToken);
 
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -1013,7 +1012,7 @@ namespace NuGet.PackageManagement.UI
                 }
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
-                var result = new PreviewResult(projectName, added, deleted, updated, addedPackagesWithNewSourceMappings);
+                var result = new PreviewResult(projectName, added, deleted, updated, addedPackageIdsWithNewSourceMappings);
 
                 results.Add(result);
             }
