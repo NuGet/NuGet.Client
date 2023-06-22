@@ -53,6 +53,16 @@ namespace NuGet.PackageManagement.UI
                     }
                     sb.AppendLine("");
                 }
+                if (r.NewSourceMapping.Any())
+                {
+                    sb.AppendLine("New source mappings created:");
+                    sb.AppendLine("");
+                    foreach (var p in r.NewSourceMapping)
+                    {
+                        sb.AppendLine(p.ToString());
+                    }
+                    sb.AppendLine("");
+                }
             }
             return sb.ToString();
         }

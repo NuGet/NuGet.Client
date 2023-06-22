@@ -383,7 +383,7 @@ namespace NuGet.PackageManagement.UI
                     TelemetryServiceUtility.StartOrResumeTimer();
 
                     IReadOnlyList<ProjectAction> actions = await resolveActionsAsync(projectManagerService);
-                    IReadOnlyList<PreviewResult> results = await GetPreviewResultsAsync(projectManagerService, actions, cancellationToken);
+                    IReadOnlyList<PreviewResult> results = await GetPreviewResultsAsync(projectManagerService, actions, uiService, cancellationToken);
 
                     if (operationType == NuGetOperationType.Uninstall)
                     {
@@ -906,6 +906,7 @@ namespace NuGet.PackageManagement.UI
         internal static async ValueTask<IReadOnlyList<PreviewResult>> GetPreviewResultsAsync(
             INuGetProjectManagerService projectManagerService,
             IReadOnlyList<ProjectAction> projectActions,
+            INuGetUI uiService,
             CancellationToken cancellationToken)
         {
             var results = new List<PreviewResult>();
@@ -963,6 +964,7 @@ namespace NuGet.PackageManagement.UI
                 var added = new List<AccessiblePackageIdentity>();
                 var deleted = new List<AccessiblePackageIdentity>();
                 var updated = new List<UpdatePreviewResult>();
+                var addedPackagesWithNewSourceMappings = new List<AccessiblePackageIdentity>();
 
                 foreach (var packageId in packageIds)
                 {
@@ -987,7 +989,16 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
+                // Everything added which didn't already have a source mapping will be mentioned in the Preview Window.
+                addedPackagesWithNewSourceMappings = added.Where(addedPackage =>
+                    {
+                        IReadOnlyList<string> configuredSources = uiService.UIContext.PackageSourceMapping.GetConfiguredPackageSources(addedPackage.Id);
+                        return configuredSources == null || configuredSources.Count == 0;
+                    })
+                    .Distinct()
+                    .ToList();
 
+                actions.
                 IProjectMetadataContextInfo projectMetadata = await projectManagerService.GetMetadataAsync(actions.Key, cancellationToken);
 
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
@@ -1002,7 +1013,7 @@ namespace NuGet.PackageManagement.UI
                 }
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
-                var result = new PreviewResult(projectName, added, deleted, updated);
+                var result = new PreviewResult(projectName, added, deleted, updated, addedPackagesWithNewSourceMappings);
 
                 results.Add(result);
             }

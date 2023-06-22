@@ -138,6 +138,26 @@
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </StackPanel>
+                <!-- New Mapping packages -->
+                <StackPanel
+                  Margin="0,8"
+                  Visibility="{Binding Path=NewSourceMapping,Converter={StaticResource EnumerableToVisibilityConverter}}">
+                  <TextBlock
+                    x:Name="_newMappingPackages"
+                    AutomationProperties.Name="{Binding Text}"
+                    FontWeight="Bold"
+                    Text="Creating Package Source Mappings:" />
+                  <ItemsControl
+                    Margin="10,0,0,0"
+                    ItemsSource="{Binding Path=NewSourceMapping}"
+                    IsTabStop="False">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding}" AutomationProperties.Name="{Binding AutomationName}" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
               </StackPanel>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
