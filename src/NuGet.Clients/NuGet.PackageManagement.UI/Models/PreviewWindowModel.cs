@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 if (r.NewSourceMappingsPackageIds.Any())
                 {
-                    sb.AppendLine("New source mappings created:");
+                    sb.AppendLine(Resources.Label_CreatingSourceMappings);
                     sb.AppendLine("");
                     foreach (var p in r.NewSourceMappingsPackageIds)
                     {
