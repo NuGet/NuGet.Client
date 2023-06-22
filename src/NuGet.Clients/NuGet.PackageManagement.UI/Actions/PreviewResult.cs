@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 
 namespace NuGet.PackageManagement.UI
@@ -13,22 +15,22 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<UpdatePreviewResult> Updated { get; }
 
-        public IEnumerable<string> NewSourceMappingsPackageIds { get; }
+        public IDictionary<string, IEnumerable<string>>? NewSourceMappings { get; }
 
-        public string Name { get; }
+        public string? Name { get; }
 
         public PreviewResult(
-            string projectName,
+            string? projectName,
             IEnumerable<AccessiblePackageIdentity> added,
             IEnumerable<AccessiblePackageIdentity> deleted,
             IEnumerable<UpdatePreviewResult> updated,
-            IEnumerable<string> newSourceMappingsPackageIds)
+            IDictionary<string, IEnumerable<string>>? newSourceMappings)
         {
             Name = projectName;
             Added = added;
             Deleted = deleted;
             Updated = updated;
-            NewSourceMappingsPackageIds = newSourceMappingsPackageIds;
+            NewSourceMappings = newSourceMappings;
         }
     }
 }

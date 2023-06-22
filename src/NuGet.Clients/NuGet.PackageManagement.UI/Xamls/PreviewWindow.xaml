@@ -134,22 +134,37 @@
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </StackPanel>
-                
+
                 <!-- New Source Mapping packages -->
                 <StackPanel
                   Margin="0,8"
-                  Visibility="{Binding Path=NewSourceMappingsPackageIds,Converter={StaticResource EnumerableToVisibilityConverter}}">
+                  Visibility="{Binding Path=NewSourceMappings,Converter={StaticResource EnumerableToVisibilityConverter}}">
                   <TextBlock
                     AutomationProperties.Name="{Binding Text}"
                     FontWeight="Bold"
                     Text="{x:Static nuget:Resources.Label_CreatingSourceMappings}" />
                   <ItemsControl
                     Margin="10,0,0,0"
-                    ItemsSource="{Binding Path=NewSourceMappingsPackageIds}"
+                    ItemsSource="{Binding Path=NewSourceMappings}"
                     IsTabStop="False">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
-                        <TextBlock Text="{Binding}" AutomationProperties.Name="{Binding AutomationName}" />
+                        <StackPanel>
+                          <!-- New Source Mapping Source Name -->
+                          <TextBlock Text="{Binding Key}" />
+
+                          <!-- New Source Mapping Package IDs -->
+                          <ItemsControl ItemsSource="{Binding Value}"
+                            IsTabStop="False">
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate>
+                                <StackPanel>
+                                  <TextBlock Text="{Binding}" />
+                                </StackPanel>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                        </StackPanel>
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>

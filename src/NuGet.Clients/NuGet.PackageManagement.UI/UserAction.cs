@@ -26,8 +26,8 @@ namespace NuGet.PackageManagement.UI
             ActiveTab = activeTab;
         }
 
-        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion? packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, VersionRange versionRange)
-            : this(action, packageId, packageVersion, isSolutionLevel, activeTab)
+        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion? packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, VersionRange versionRange, string? sourceMappingSourceName)
+            : this(action, packageId, packageVersion, isSolutionLevel, activeTab, sourceMappingSourceName)
         {
             VersionRange = versionRange;
         }
@@ -61,14 +61,14 @@ namespace NuGet.PackageManagement.UI
             return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, isSolutionLevel, activeTab, sourceMappingSourceName);
         }
 
-        public static UserAction CreateInstallAction(string packageId, NuGetVersion? packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, VersionRange versionRange)
+        public static UserAction CreateInstallAction(string packageId, NuGetVersion? packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, VersionRange versionRange, string? sourceMappingSourceName)
         {
             if (packageVersion == null && versionRange == null)
             {
                 throw new ArgumentNullException(nameof(packageVersion));
             }
 
-            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, isSolutionLevel, activeTab, versionRange);
+            return new UserAction(NuGetProjectActionType.Install, packageId, packageVersion, isSolutionLevel, activeTab, versionRange, sourceMappingSourceName);
         }
 
         public static UserAction CreateUnInstallAction(string packageId, bool isSolutionLevel, ContractsItemFilter activeTab)

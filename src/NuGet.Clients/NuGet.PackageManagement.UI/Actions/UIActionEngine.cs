@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
@@ -169,7 +170,7 @@ namespace NuGet.PackageManagement.UI
                 string htmlLogFile = GenerateUpgradeReport(projectName, backupPath, upgradeInformationWindowModel);
                 try
                 {
-                    using var process = Process.Start(htmlLogFile);
+                    using var process = System.Diagnostics.Process.Start(htmlLogFile);
                 }
                 catch { }
             }
@@ -383,7 +384,7 @@ namespace NuGet.PackageManagement.UI
                     TelemetryServiceUtility.StartOrResumeTimer();
 
                     IReadOnlyList<ProjectAction> actions = await resolveActionsAsync(projectManagerService);
-                    IReadOnlyList<PreviewResult> results = await GetPreviewResultsAsync(projectManagerService, actions, uiService, cancellationToken);
+                    IReadOnlyList<PreviewResult> results = await GetPreviewResultsAsync(projectManagerService, actions, userAction, uiService, cancellationToken);
 
                     if (operationType == NuGetOperationType.Uninstall)
                     {
@@ -906,6 +907,7 @@ namespace NuGet.PackageManagement.UI
         internal static async ValueTask<IReadOnlyList<PreviewResult>> GetPreviewResultsAsync(
             INuGetProjectManagerService projectManagerService,
             IReadOnlyList<ProjectAction> projectActions,
+            UserAction? userAction,
             INuGetUI uiService,
             CancellationToken cancellationToken)
         {
@@ -964,7 +966,7 @@ namespace NuGet.PackageManagement.UI
                 var added = new List<AccessiblePackageIdentity>();
                 var deleted = new List<AccessiblePackageIdentity>();
                 var updated = new List<UpdatePreviewResult>();
-                var addedPackageIdsWithNewSourceMappings = new List<string>();
+                Dictionary<string, IEnumerable<string>>? newSourceMappings = null;
 
                 foreach (var packageId in packageIds)
                 {
@@ -988,15 +990,8 @@ namespace NuGet.PackageManagement.UI
                         deleted.Add(new AccessiblePackageIdentity(uninstalled[packageId]));
                     }
                 }
-
                 // Everything added which didn't already have a source mapping will be mentioned in the Preview Window.
-                addedPackageIdsWithNewSourceMappings = added.Select(_ => _.Id).Where(addedPackage =>
-                    {
-                        IReadOnlyList<string> configuredSources = uiService.UIContext.PackageSourceMapping.GetConfiguredPackageSources(addedPackage);
-                        return configuredSources == null || configuredSources.Count == 0;
-                    })
-                    .Distinct()
-                    .ToList();
+                newSourceMappings = GetNewSourceMappingsFromAddedPackages(userAction, added, uiService.UIContext.PackageSourceMapping);
 
                 IProjectMetadataContextInfo projectMetadata = await projectManagerService.GetMetadataAsync(actions.Key, cancellationToken);
 
@@ -1012,12 +1007,41 @@ namespace NuGet.PackageManagement.UI
                 }
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
-                var result = new PreviewResult(projectName, added, deleted, updated, addedPackageIdsWithNewSourceMappings);
+                var result = new PreviewResult(projectName, added, deleted, updated, newSourceMappings);
 
                 results.Add(result);
             }
 
             return results;
+        }
+
+        private static Dictionary<string, IEnumerable<string>>? GetNewSourceMappingsFromAddedPackages(UserAction? userAction, List<AccessiblePackageIdentity> added, PackageSourceMapping packageSourceMapping)
+        {
+            string? newMappingSourceName = userAction?.SourceMappingSourceName;
+            if (newMappingSourceName is null || added.Count == 0 || packageSourceMapping is null)
+            {
+                return null;
+            }
+
+            List<string> addedPackagesWithNewSourceMappings = added.Select(_ => _.Id)
+                .Where(addedPackage =>
+                {
+                    IReadOnlyList<string> configuredSources = packageSourceMapping.GetConfiguredPackageSources(addedPackage);
+                    return configuredSources == null || configuredSources.Count == 0;
+                })
+                .Distinct()
+                .ToList();
+
+            if (addedPackagesWithNewSourceMappings.Count > 0)
+            {
+                var newSourceMappings = new Dictionary<string, IEnumerable<string>>
+                {
+                    { newMappingSourceName, addedPackagesWithNewSourceMappings }
+                };
+                return newSourceMappings;
+            }
+
+            return null;
         }
 
         /// <summary>
