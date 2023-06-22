@@ -1,14 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Services.Common;
+using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI.Options
@@ -35,6 +33,13 @@ namespace NuGet.PackageManagement.UI.Options
             }
 
             return configPathsCollection;
+        }
+
+        public void OpenConfigFile(ConfigPathsViewModel selectedPath)
+        {
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
+            var projectContext = componentModel.GetService<INuGetProjectContext>();
+            _ = projectContext.ExecutionContext.OpenFile(selectedPath.ConfigPath);
         }
 
         public ConfigPathsWindowViewModel()
