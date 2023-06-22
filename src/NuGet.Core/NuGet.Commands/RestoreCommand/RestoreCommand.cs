@@ -64,6 +64,7 @@ namespace NuGet.Commands
         private const string NoOpRestoreOutputEvaluationDuration = nameof(NoOpRestoreOutputEvaluationDuration);
         private const string NoOpRestoreOutputEvaluationResult = nameof(NoOpRestoreOutputEvaluationResult);
         private const string NoOpReplayLogsDuration = nameof(NoOpReplayLogsDuration);
+        private const string NoOpCacheFileAgeDays = nameof(NoOpCacheFileAgeDays);
 
         // lock file data names
         private const string EvaluateLockFileDuration = nameof(EvaluateLockFileDuration);
@@ -188,7 +189,8 @@ namespace NuGet.Commands
                     {
                         telemetry.StartIntervalMeasure();
                         bool noOp;
-                        (cacheFile, noOp) = EvaluateCacheFile();
+                        TimeSpan? cacheFileAge;
+                        (cacheFile, noOp, cacheFileAge) = EvaluateCacheFile();
                         telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOp;
                         telemetry.EndIntervalMeasure(NoOpCacheFileEvaluateDuration);
                         if (noOp)
@@ -214,6 +216,7 @@ namespace NuGet.Commands
                                 telemetry.TelemetryEvent[RestoreSuccess] = _success;
                                 telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile.ExpectedPackageFilePaths?.Count ?? -1;
                                 telemetry.TelemetryEvent[NewPackagesInstalledCount] = 0;
+                                if (cacheFileAge.HasValue) { telemetry.TelemetryEvent[NoOpCacheFileAgeDays] = cacheFileAge.Value.TotalDays; }
 
                                 return new NoOpRestoreResult(
                                     _success,
@@ -750,10 +753,11 @@ namespace NuGet.Commands
             return (success, isLockFileValid, packagesLockFile);
         }
 
-        private (CacheFile cacheFile, bool noOp) EvaluateCacheFile()
+        private (CacheFile cacheFile, bool noOp, TimeSpan? cacheFileAge) EvaluateCacheFile()
         {
             CacheFile cacheFile;
             var noOp = false;
+            TimeSpan? cacheFileAge = null;
 
             var noOpDgSpec = NoOpRestoreUtilities.GetNoOpDgSpec(_request);
 
@@ -770,7 +774,7 @@ namespace NuGet.Commands
             // DgSpec doesn't contain log messages, so skip no-op if there are any, as it's not taken into account in the hash
             if (_request.AllowNoOp &&
                 !_request.RestoreForceEvaluate &&
-                File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
+                CacheFileExists(_request.Project.RestoreMetadata.CacheFilePath, out cacheFileAge))
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
@@ -801,7 +805,15 @@ namespace NuGet.Commands
                     _request.Project.RestoreMetadata.CacheFilePath = null;
                 }
             }
-            return (cacheFile, noOp);
+            return (cacheFile, noOp, cacheFileAge);
+
+            static bool CacheFileExists(string path, out TimeSpan? cacheFileAge)
+            {
+                FileInfo fileInfo = new FileInfo(path);
+                if (fileInfo.Exists) { }
+                cacheFileAge = DateTime.UtcNow - fileInfo.LastWriteTimeUtc;
+                return fileInfo.Exists;
+            }
         }
 
         private string GetAssetsFilePath(LockFile lockFile)
