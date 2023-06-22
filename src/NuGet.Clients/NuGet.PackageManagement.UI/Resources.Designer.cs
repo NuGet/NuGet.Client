@@ -916,6 +916,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Creating package source mappings:.
+        /// </summary>
+        public static string Label_CreatingSourceMappings {
+            get {
+                return ResourceManager.GetString("Label_CreatingSourceMappings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Date published:.
         /// </summary>
         public static string Label_DatePublished {

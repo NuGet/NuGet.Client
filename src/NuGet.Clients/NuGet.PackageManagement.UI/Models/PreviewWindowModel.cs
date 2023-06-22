@@ -53,11 +53,11 @@ namespace NuGet.PackageManagement.UI
                     }
                     sb.AppendLine("");
                 }
-                if (r.NewSourceMapping.Any())
+                if (r.NewSourceMappingsPackageIds.Any())
                 {
                     sb.AppendLine("New source mappings created:");
                     sb.AppendLine("");
-                    foreach (var p in r.NewSourceMapping)
+                    foreach (var p in r.NewSourceMappingsPackageIds)
                     {
                         sb.AppendLine(p.ToString());
                     }
