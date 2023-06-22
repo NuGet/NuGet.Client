@@ -82,10 +82,32 @@ namespace NuGet.Commands
         private const string ValidateRestoreGraphsDuration = nameof(ValidateRestoreGraphsDuration);
         private const string CreateRestoreResultDuration = nameof(CreateRestoreResultDuration);
         private const string IsCentralPackageTransitivePinningEnabled = nameof(IsCentralPackageTransitivePinningEnabled);
-        private const string VulnerablePackageCheck = nameof(VulnerablePackageCheck);
 
         // PackageSourceMapping names
         private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
+
+        // NuGetAudit names
+        private const string AuditEnabled = "Audit.Enabled";
+        private const string AuditLevel = "Audit.Level";
+        private const string AuditMode = "Audit.Mode";
+        private const string AuditDirectVulnerabilitiesPackages = "Audit.Vulnerability.Direct.Packages";
+        private const string AuditDirectVulnerabilitiesTotal = "Audit.Vulnerability.Direct.Total";
+        private const string AuditDirectVulnerabilitySev0 = "Audit.Vulnerability.Direct.Severity0";
+        private const string AuditDirectVulnerabilitySev1 = "Audit.Vulnerability.Direct.Severity1";
+        private const string AuditDirectVulnerabilitySev2 = "Audit.Vulnerability.Direct.Severity2";
+        private const string AuditDirectVulnerabilitySev3 = "Audit.Vulnerability.Direct.Severity3";
+        private const string AuditDirectVulnerabilitySevOther = "Audit.Vulnerability.Direct.SeverityOther";
+        private const string AuditTransitiveVulnerabilitiesPackages = "Audit.Vulnerability.Transitive.Packages";
+        private const string AuditTransitiveVulnerabilitiesTotal = "Audit.Vulnerability.Transitive.Total";
+        private const string AuditTransitiveVulnerabilitySev0 = "Audit.Vulnerability.Transitive.Severity0";
+        private const string AuditTransitiveVulnerabilitySev1 = "Audit.Vulnerability.Transitive.Severity1";
+        private const string AuditTransitiveVulnerabilitySev2 = "Audit.Vulnerability.Transitive.Severity2";
+        private const string AuditTransitiveVulnerabilitySev3 = "Audit.Vulnerability.Transitive.Severity3";
+        private const string AuditTransitiveVulnerabilitySevOther = "Audit.Vulnerability.Transitive.SeverityOther";
+        private const string AuditDurationDownload = "Audit.Duration.Download";
+        private const string AuditDurationCheck = "Audit.Duration.Check";
+        private const string AuditDurationOutput = "Audit.Duration.Output";
+        private const string AuditDurationTotal = "Audit.Duration.Total";
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -278,18 +300,10 @@ namespace NuGet.Commands
                 }
 
                 AuditUtility.EnabledValue enableAudit = AuditUtility.ParseEnableValue(_request.Project.RestoreMetadata?.RestoreAuditProperties?.EnableAudit);
+                telemetry.TelemetryEvent[AuditEnabled] = AuditUtility.GetString(enableAudit);
                 if (enableAudit == AuditUtility.EnabledValue.ImplicitOptIn || enableAudit == AuditUtility.EnabledValue.ExplicitOptIn)
                 {
-                    telemetry.StartIntervalMeasure();
-                    var audit = new AuditUtility(
-                        enableAudit,
-                        _request.Project.RestoreMetadata.RestoreAuditProperties,
-                        _request.Project.FilePath,
-                        graphs,
-                        _request.DependencyProviders.VulnerabilityInfoProviders,
-                        _logger);
-                    await audit.CheckPackageVulnerabilitiesAsync(token);
-                    telemetry.EndIntervalMeasure(VulnerablePackageCheck);
+                    await PerformAuditAsync(enableAudit, graphs, telemetry, token);
                 }
 
                 telemetry.StartIntervalMeasure();
@@ -452,6 +466,56 @@ namespace NuGet.Commands
                     dependencyGraphSpec: _request.DependencyGraphSpec,
                     _request.ProjectStyle,
                     restoreTime.Elapsed);
+            }
+        }
+
+        private async Task PerformAuditAsync(AuditUtility.EnabledValue enableAudit, IEnumerable<RestoreTargetGraph> graphs, TelemetryActivity telemetry, CancellationToken token)
+        {
+            telemetry.StartIntervalMeasure();
+            var audit = new AuditUtility(
+                enableAudit,
+                _request.Project.RestoreMetadata.RestoreAuditProperties,
+                _request.Project.FilePath,
+                graphs,
+                _request.DependencyProviders.VulnerabilityInfoProviders,
+                _logger);
+            await audit.CheckPackageVulnerabilitiesAsync(token);
+
+            telemetry.TelemetryEvent[AuditLevel] = audit.MinSeverity;
+            telemetry.TelemetryEvent[AuditMode] = AuditUtility.GetString(audit.AuditMode);
+
+            if (audit.DirectPackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditDirectVulnerabilitiesPackages, audit.DirectPackagesWithAdvisory); }
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitiesTotal] = audit.DirectPackagesWithAdvisory?.Count ?? 0;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitySev0] = audit.Sev0DirectMatches;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitySev1] = audit.Sev1DirectMatches;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitySev2] = audit.Sev2DirectMatches;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitySev3] = audit.Sev3DirectMatches;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitySevOther] = audit.OtherSevDirectMatches;
+
+            if (audit.TransitivePackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditTransitiveVulnerabilitiesPackages, audit.TransitivePackagesWithAdvisory); }
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitiesTotal] = audit.TransitivePackagesWithAdvisory?.Count ?? 0;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev0] = audit.Sev0TransitiveMatches;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev1] = audit.Sev1TransitiveMatches;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev2] = audit.Sev2TransitiveMatches;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev3] = audit.Sev3TransitiveMatches;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySevOther] = audit.OtherSevTransitiveMatches;
+
+            if (audit.DownloadDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationDownload] = audit.DownloadDurationSeconds.Value; }
+            if (audit.CheckPackagesDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationCheck] = audit.CheckPackagesDurationSeconds.Value; }
+            if (audit.GenerateOutputDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationOutput] = audit.GenerateOutputDurationSeconds.Value; }
+            telemetry.EndIntervalMeasure(AuditDurationTotal);
+
+            void AddPackagesList(TelemetryActivity telemetry, string eventName, List<string> packages)
+            {
+                List<TelemetryEvent> result = new List<TelemetryEvent>(packages.Count);
+                foreach (var package in packages)
+                {
+                    TelemetryEvent packageData = new TelemetryEvent(eventName: null);
+                    packageData.AddPiiData("id", package);
+                    result.Add(packageData);
+                }
+
+                telemetry.TelemetryEvent.ComplexData[eventName] = result;
             }
         }
 
