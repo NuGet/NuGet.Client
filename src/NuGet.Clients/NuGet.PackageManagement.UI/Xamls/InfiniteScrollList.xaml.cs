@@ -743,6 +743,11 @@ namespace NuGet.PackageManagement.UI
             ItemsView.GroupDescriptions.Clear();
         }
 
+        internal void ClearPackageSorting()
+        {
+            ItemsView.SortDescriptions.Clear();
+        }
+
         internal void AddPackageLevelGrouping()
         {
             ItemsView.Refresh();
@@ -752,6 +757,14 @@ namespace NuGet.PackageManagement.UI
             {
                 ItemsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PackageItemViewModel.PackageLevel)));
             }
+        }
+
+        internal void AddSortingForVulnerabilitiesAndDeprecation()
+        {
+            ItemsView.SortDescriptions.Add(new SortDescription(nameof(PackageItemViewModel.IsPackageVulnerable), ListSortDirection.Descending));
+            ItemsView.SortDescriptions.Add(new SortDescription(nameof(PackageItemViewModel.IsPackageDeprecated), ListSortDirection.Descending));
+            ItemsView.SortDescriptions.Add(new SortDescription(nameof(PackageItemViewModel.Id), ListSortDirection.Ascending));
+            ItemsView.Refresh();
         }
 
         private void Expander_ExpansionStateToggled(object sender, RoutedEventArgs e)

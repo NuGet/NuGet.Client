@@ -892,6 +892,8 @@ namespace NuGet.PackageManagement.UI
                     _packageList.ClearPackageLevelGrouping();
                 }
 
+                _packageList.ClearPackageSorting();
+
                 bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
                 var loader = await PackageItemLoader.CreateAsync(
                     Model.Context.ServiceBroker,
@@ -931,6 +933,11 @@ namespace NuGet.PackageManagement.UI
                 if (!useCachedPackageMetadata)
                 {
                     await RefreshInstalledAndUpdatesTabsAsync();
+                }
+
+                if (ActiveFilter == ItemFilter.Installed)
+                {
+                    _packageList.AddSortingForVulnerabilitiesAndDeprecation();
                 }
             }
             catch (OperationCanceledException)
@@ -1236,6 +1243,7 @@ namespace NuGet.PackageManagement.UI
                         {
                             _packageList.ClearPackageLevelGrouping();
                         }
+                        _packageList.ClearPackageSorting();
                         await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
                     }, RefreshOperationSource.FilterSelectionChanged, timeSpan, sw);
                     _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
