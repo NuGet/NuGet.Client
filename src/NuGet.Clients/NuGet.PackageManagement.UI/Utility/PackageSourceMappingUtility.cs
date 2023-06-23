@@ -93,18 +93,11 @@ namespace NuGet.PackageManagement.UI
             mappingProvider.SavePackageSourceMappings(newAndExistingPackageSourceMappingItems);
         }
 
-        internal static string? GetNewSourceMappingSourceName(string packageId, PackageSourceMapping packageSourceMapping, PackageSourceMoniker activePackageSourceMoniker)
+        internal static string? GetNewSourceMappingSourceName(PackageSourceMapping packageSourceMapping, PackageSourceMoniker activePackageSourceMoniker)
         {
-            bool isInstallCreatingNewSourceMapping = false;
-            if (packageSourceMapping != null && packageSourceMapping.IsEnabled)
-            {
-                IReadOnlyList<string> configuredPackageSourcesForPackageId = packageSourceMapping.GetConfiguredPackageSources(packageId);
-                isInstallCreatingNewSourceMapping = configuredPackageSourcesForPackageId == null || !configuredPackageSourcesForPackageId.Any();
-            }
-
-            string? sourceMappingSourceName = isInstallCreatingNewSourceMapping
+            string? sourceMappingSourceName = packageSourceMapping.IsEnabled
                 && activePackageSourceMoniker.IsAggregateSource == false
-                ? activePackageSourceMoniker.PackageSourceNames.FirstOrDefault() : null;
+                ? activePackageSourceMoniker.PackageSourceNames.First() : null;
 
             return sourceMappingSourceName;
         }
