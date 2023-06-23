@@ -825,7 +825,8 @@ namespace NuGet.PackageManagement.UI
 
         public PackageSourceMappingActionViewModel PackageSourceMappingViewModel { get; }
 
-        public bool CanInstallWithPackageSourceMapping => true || (!PackageSourceMappingViewModel.IsPackageSourceMappingEnabled || PackageSourceMappingViewModel.IsPackageMapped);
+        public bool CanInstallWithPackageSourceMapping => true // TODO
+            || (!PackageSourceMappingViewModel.IsPackageSourceMappingEnabled || PackageSourceMappingViewModel.IsPackageMapped);
 
         public IEnumerable<IProjectContextInfo> NuGetProjects => _nugetProjects;
 
