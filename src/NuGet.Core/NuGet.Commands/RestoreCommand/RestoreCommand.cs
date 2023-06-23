@@ -811,10 +811,21 @@ namespace NuGet.Commands
 
             static bool CacheFileExists(string path, out TimeSpan? cacheFileAge)
             {
+                cacheFileAge = null;
+
+                if (path is null)
+                {
+                    return false;
+                }
+
                 FileInfo fileInfo = new FileInfo(path);
-                if (fileInfo.Exists) { }
-                cacheFileAge = DateTime.UtcNow - fileInfo.LastWriteTimeUtc;
-                return fileInfo.Exists;
+                if (fileInfo.Exists)
+                {
+                    cacheFileAge = DateTime.UtcNow - fileInfo.LastWriteTimeUtc;
+                    return fileInfo.Exists;
+                }
+
+                return false;
             }
         }
 
