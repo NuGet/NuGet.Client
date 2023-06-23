@@ -115,7 +115,7 @@ namespace NuGet.PackageManagement.UI
             if (model != null && model.SelectedVersion != null)
             {
                 var packageId = model.Id;
-                var sourceMappingSourceName = PackageSourceMappingUtility.GetNewSourceMappingSourceName(packageId, Control.Model.UIController.UIContext.PackageSourceMapping, Control.Model.UIController.ActivePackageSourceMoniker);
+                var sourceMappingSourceName = PackageSourceMappingUtility.GetNewSourceMappingSourceName(Control.Model.UIController.UIContext.PackageSourceMapping, Control.Model.UIController.ActivePackageSourceMoniker);
 
                 var userAction = UserAction.CreateInstallAction(
                     packageId,
@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.UI
             if (model != null && model.SelectedVersion != null)
             {
                 var packageId = model.Id;
-                var sourceMappingSourceName = PackageSourceMappingUtility.GetNewSourceMappingSourceName(packageId, Control.Model.UIController.UIContext.PackageSourceMapping, Control.Model.UIController.ActivePackageSourceMoniker);
+                var sourceMappingSourceName = PackageSourceMappingUtility.GetNewSourceMappingSourceName(Control.Model.UIController.UIContext.PackageSourceMapping, Control.Model.UIController.ActivePackageSourceMoniker);
 
                 var userAction = UserAction.CreateInstallAction(
                     packageId,
