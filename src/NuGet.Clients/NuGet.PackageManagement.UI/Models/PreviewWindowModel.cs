@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     sb.AppendLine(Resources.Label_CreatingSourceMappings);
                     sb.AppendLine("");
-                    foreach (KeyValuePair<string, IEnumerable<string>> newSourceMapping in r.NewSourceMappings)
+                    foreach (var newSourceMapping in r.NewSourceMappings)
                     {
                         sb.AppendLine(newSourceMapping.Key);
                         foreach (string newSourceMappingPackageId in newSourceMapping.Value)

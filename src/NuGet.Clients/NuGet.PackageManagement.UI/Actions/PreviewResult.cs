@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -15,7 +16,7 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<UpdatePreviewResult> Updated { get; }
 
-        public IDictionary<string, IEnumerable<string>>? NewSourceMappings { get; }
+        public Dictionary<string, SortedSet<string>>? NewSourceMappings { get; }
 
         public string? Name { get; }
 
@@ -23,14 +24,21 @@ namespace NuGet.PackageManagement.UI
             string? projectName,
             IEnumerable<AccessiblePackageIdentity> added,
             IEnumerable<AccessiblePackageIdentity> deleted,
-            IEnumerable<UpdatePreviewResult> updated,
-            IDictionary<string, IEnumerable<string>>? newSourceMappings)
+            IEnumerable<UpdatePreviewResult> updated)
         {
             Name = projectName;
             Added = added;
             Deleted = deleted;
             Updated = updated;
+        }
+
+        public PreviewResult(Dictionary<string, SortedSet<string>>? newSourceMappings)
+        {
+            Name = "Solution";
             NewSourceMappings = newSourceMappings;
+            Added = Enumerable.Empty<AccessiblePackageIdentity>();
+            Deleted = Enumerable.Empty<AccessiblePackageIdentity>();
+            Updated = Enumerable.Empty<UpdatePreviewResult>();
         }
     }
 }

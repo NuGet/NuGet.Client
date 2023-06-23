@@ -938,6 +938,8 @@ namespace NuGet.PackageManagement.UI
             // Group actions by project
             var actionsByProject = expandedActions.GroupBy(action => action.ProjectId);
 
+            Dictionary<string, SortedSet<string>>? newSourceMappings = null;
+
             // Group actions by operation
             foreach (IGrouping<string, ProjectAction> actions in actionsByProject)
             {
@@ -965,7 +967,6 @@ namespace NuGet.PackageManagement.UI
                 var added = new List<AccessiblePackageIdentity>();
                 var deleted = new List<AccessiblePackageIdentity>();
                 var updated = new List<UpdatePreviewResult>();
-                Dictionary<string, IEnumerable<string>>? newSourceMappings = null;
 
                 foreach (var packageId in packageIds)
                 {
@@ -990,7 +991,7 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
                 // Everything added which didn't already have a source mapping will be mentioned in the Preview Window.
-                newSourceMappings = GetNewSourceMappingsFromAddedPackages(userAction, added, uiService.UIContext.PackageSourceMapping);
+                GetNewSourceMappingsFromAddedPackages(ref newSourceMappings, userAction, added, uiService.UIContext.PackageSourceMapping);
 
                 IProjectMetadataContextInfo projectMetadata = await projectManagerService.GetMetadataAsync(actions.Key, cancellationToken);
 
@@ -1006,20 +1007,26 @@ namespace NuGet.PackageManagement.UI
                 }
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
-                var result = new PreviewResult(projectName, added, deleted, updated, newSourceMappings);
+                var result = new PreviewResult(projectName, added, deleted, updated);
 
                 results.Add(result);
+            }
+
+            if (newSourceMappings?.Count > 0)
+            {
+                var solutionSourceMappingResult = new PreviewResult(newSourceMappings);
+                results.Add(solutionSourceMappingResult);
             }
 
             return results;
         }
 
-        private static Dictionary<string, IEnumerable<string>>? GetNewSourceMappingsFromAddedPackages(UserAction? userAction, List<AccessiblePackageIdentity> added, PackageSourceMapping packageSourceMapping)
+        private static void GetNewSourceMappingsFromAddedPackages(ref Dictionary<string, SortedSet<string>>? newSourceMappings, UserAction? userAction, List<AccessiblePackageIdentity> added, PackageSourceMapping packageSourceMapping)
         {
             string? newMappingSourceName = userAction?.SourceMappingSourceName;
             if (newMappingSourceName is null || added.Count == 0 || packageSourceMapping is null)
             {
-                return null;
+                return;
             }
 
             List<string> addedPackagesWithNewSourceMappings = added.Select(_ => _.Id)
@@ -1031,16 +1038,26 @@ namespace NuGet.PackageManagement.UI
                 .Distinct()
                 .ToList();
 
-            if (addedPackagesWithNewSourceMappings.Count > 0)
+            if (addedPackagesWithNewSourceMappings.Count == 0)
             {
-                var newSourceMappings = new Dictionary<string, IEnumerable<string>>
-                {
-                    { newMappingSourceName, addedPackagesWithNewSourceMappings }
-                };
-                return newSourceMappings;
+                return;
             }
 
-            return null;
+            if (newSourceMappings is null)
+            {
+                newSourceMappings = new Dictionary<string, SortedSet<string>>(capacity: 1)
+                {
+                    { newMappingSourceName, new SortedSet<string>(addedPackagesWithNewSourceMappings) }
+                };
+            }
+            else if (newSourceMappings.TryGetValue(newMappingSourceName, out SortedSet<string>? newMappingPackageIds))
+            {
+                newMappingPackageIds.UnionWith(addedPackagesWithNewSourceMappings);
+            }
+            else
+            {
+                newSourceMappings.Add(newMappingSourceName, new SortedSet<string>(addedPackagesWithNewSourceMappings));
+            }
         }
 
         /// <summary>
