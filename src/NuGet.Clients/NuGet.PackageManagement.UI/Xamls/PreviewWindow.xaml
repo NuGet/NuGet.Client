@@ -151,7 +151,10 @@
                       <DataTemplate>
                         <StackPanel>
                           <!-- New Source Mapping Source Name -->
-                          <TextBlock Text="{Binding Key}" />
+                          <TextBlock FontStyle="Italic">
+                            <Run Text="{x:Static nuget:Resources.Label_Repository}" />
+                            <Run Text="{Binding Key, Mode=OneTime}" />
+                          </TextBlock>
 
                           <!-- New Source Mapping Package IDs -->
                           <ItemsControl ItemsSource="{Binding Value}"
