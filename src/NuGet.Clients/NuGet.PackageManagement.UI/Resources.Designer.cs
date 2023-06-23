@@ -916,7 +916,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Creating package source mappings:.
+        ///   Looks up a localized string similar to Creating source mappings to &apos;{0}&apos;:.
         /// </summary>
         public static string Label_CreatingSourceMappings {
             get {
@@ -1236,6 +1236,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Repository {
             get {
                 return ResourceManager.GetString("Label_Repository", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Solution.
+        /// </summary>
+        public static string Label_Solution {
+            get {
+                return ResourceManager.GetString("Label_Solution", resourceCulture);
             }
         }
         

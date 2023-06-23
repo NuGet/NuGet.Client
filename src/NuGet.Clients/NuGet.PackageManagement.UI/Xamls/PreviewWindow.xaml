@@ -135,14 +135,10 @@
                   </ItemsControl>
                 </StackPanel>
 
-                <!-- New Source Mapping packages -->
+                <!-- New Source Mappings for added packages -->
                 <StackPanel
                   Margin="0,8"
                   Visibility="{Binding Path=NewSourceMappings,Converter={StaticResource EnumerableToVisibilityConverter}}">
-                  <TextBlock
-                    AutomationProperties.Name="{Binding Text}"
-                    FontWeight="Bold"
-                    Text="{x:Static nuget:Resources.Label_CreatingSourceMappings}" />
                   <ItemsControl
                     Margin="10,0,0,0"
                     ItemsSource="{Binding Path=NewSourceMappings}"
@@ -150,10 +146,10 @@
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
                         <StackPanel>
-                          <!-- New Source Mapping Source Name -->
-                          <TextBlock FontStyle="Italic">
-                            <Run Text="{x:Static nuget:Resources.Label_Repository}" />
-                            <Run Text="{Binding Key, Mode=OneTime}" />
+                          <!-- New Source Mapping with Source Name -->
+                          <TextBlock
+                            FontWeight="Bold"
+                            Text="{Binding Key, Mode=OneWay, StringFormat={x:Static nuget:Resources.Label_CreatingSourceMappings}}">
                           </TextBlock>
 
                           <!-- New Source Mapping Package IDs -->
