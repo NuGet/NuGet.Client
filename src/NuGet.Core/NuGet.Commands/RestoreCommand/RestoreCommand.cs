@@ -91,6 +91,7 @@ namespace NuGet.Commands
         private const string AuditEnabled = "Audit.Enabled";
         private const string AuditLevel = "Audit.Level";
         private const string AuditMode = "Audit.Mode";
+        private const string AuditDataSources = "Audit.DataSources";
         private const string AuditDirectVulnerabilitiesPackages = "Audit.Vulnerability.Direct.Packages";
         private const string AuditDirectVulnerabilitiesTotal = "Audit.Vulnerability.Direct.Total";
         private const string AuditDirectVulnerabilitySev0 = "Audit.Vulnerability.Direct.Severity0";
@@ -503,6 +504,7 @@ namespace NuGet.Commands
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev3] = audit.Sev3TransitiveMatches;
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySevOther] = audit.OtherSevTransitiveMatches;
 
+            telemetry.TelemetryEvent[AuditDataSources] = audit.SourcesWithVulnerabilityData;
             if (audit.DownloadDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationDownload] = audit.DownloadDurationSeconds.Value; }
             if (audit.CheckPackagesDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationCheck] = audit.CheckPackagesDurationSeconds.Value; }
             if (audit.GenerateOutputDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationOutput] = audit.GenerateOutputDurationSeconds.Value; }

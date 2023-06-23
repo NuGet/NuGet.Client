@@ -43,6 +43,7 @@ namespace NuGet.Commands.Restore.Utility
         internal double? DownloadDurationSeconds { get; private set; }
         internal double? CheckPackagesDurationSeconds { get; private set; }
         internal double? GenerateOutputDurationSeconds { get; private set; }
+        internal int SourcesWithVulnerabilityData { get; private set; }
 
         public AuditUtility(
             EnabledValue auditEnabled,
@@ -332,6 +333,7 @@ namespace NuGet.Commands.Restore.Utility
 
                 if (result.KnownVulnerabilities != null)
                 {
+                    SourcesWithVulnerabilityData++;
                     if (knownVulnerabilities == null)
                     {
                         knownVulnerabilities = new();
