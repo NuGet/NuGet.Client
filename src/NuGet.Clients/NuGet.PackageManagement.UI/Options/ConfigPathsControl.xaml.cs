@@ -18,9 +18,14 @@ namespace NuGet.PackageManagement.UI.Options
         public ConfigPathsControl()
         {
             ConfigPathsWindow = new ConfigPathsWindowViewModel();
-            OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, (object parameter) => true, NuGetUIThreadHelper.JoinableTaskFactory);
+            OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, IsSelectedPath, NuGetUIThreadHelper.JoinableTaskFactory);
             DataContext = this;
             InitializeComponent();
+        }
+
+        private bool IsSelectedPath(object obj)
+        {
+            return _configurationPaths.SelectedItem != null;
         }
 
         private void ExecuteOpenConfigurationFile(object obj)
