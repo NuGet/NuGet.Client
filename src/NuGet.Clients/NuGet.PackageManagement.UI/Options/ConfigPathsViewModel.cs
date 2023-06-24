@@ -12,5 +12,10 @@ namespace NuGet.PackageManagement.UI.Options
         {
             ConfigPath = path ?? throw new ArgumentNullException(nameof(path));
         }
+
+        public override string ToString()
+        {
+            return ConfigPath;
+        }
     }
 }
