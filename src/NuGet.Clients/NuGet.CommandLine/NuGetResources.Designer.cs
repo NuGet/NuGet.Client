@@ -286,6 +286,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The resolved msbuild directory is {0} is a architecure specific directory. Could not find msbuild in its parent directory (non-architecutre specific). .
+        /// </summary>
+        public static string Error_CannotFindNonArchitectureSpecificMsbuild {
+            get {
+                return ResourceManager.GetString("Error_CannotFindNonArchitectureSpecificMsbuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot get the GetAllProjectFileNamesMethod from type  Mono.XBuild.CommandLine.SolutionParser..
         /// </summary>
         public static string Error_CannotGetGetAllProjectFileNamesMethod {

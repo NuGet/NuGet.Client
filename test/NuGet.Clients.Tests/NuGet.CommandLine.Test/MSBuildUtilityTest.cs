@@ -333,6 +333,68 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData("arm64", true)]
+        [InlineData("amd64", true)]
+        [InlineData("ARM64", true)]
+        [InlineData("random", false)]
+        public void GetNonArchitectureDirectory_PATHENVWithArchitecture_Succeeds(string architecutre, bool isArchitectureSpecificPath)
+        {
+            if (RuntimeEnvironmentHelper.IsMono)
+            { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+                return;
+            }
+
+            using (var vsPath = TestDirectory.Create())
+            {
+                var msBuildNonArchitectureDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "Current", "Bin"));
+                var msBuildExeNonArchitecturePath = Path.Combine(msBuildNonArchitectureDir.FullName, "msbuild.exe");
+                File.WriteAllText(msBuildExeNonArchitecturePath, "foo");
+
+                var msBuildArchitectureDir = Directory.CreateDirectory(Path.Combine(msBuildNonArchitectureDir.FullName, architecutre));
+                var msBuildExeArchitecturePath = Path.Combine(msBuildArchitectureDir.FullName, "msbuild.exe");
+                File.WriteAllText(msBuildExeArchitecturePath, "foo");
+
+                // Act;
+                var msBuildPath = MsBuildUtility.GetNonArchitectureDirectory(msBuildExeArchitecturePath);
+
+                // Assert
+                if (isArchitectureSpecificPath)
+                {
+                    Assert.Equal(msBuildNonArchitectureDir.FullName, msBuildPath);
+                }
+                else
+                {
+                    Assert.Equal(msBuildArchitectureDir.FullName, msBuildPath);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetNonArchitectureDirectory_PATHENVWithArchitecture_Throws()
+        {
+            if (RuntimeEnvironmentHelper.IsMono)
+            { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+                return;
+            }
+
+            using (var vsPath = TestDirectory.Create())
+            {
+                var msBuildNonArchitectureDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "Current", "Bin"));
+                var msBuildArchitectureDir = Directory.CreateDirectory(Path.Combine(msBuildNonArchitectureDir.FullName, "arm64"));
+                var msBuildExeArchitecturePath = Path.Combine(msBuildArchitectureDir.FullName, "msbuild.exe");
+                File.WriteAllText(msBuildExeArchitecturePath, "foo");
+
+                // Act & Assert
+                CommandException exception = Assert.Throws<CommandException>(
+                    () => MsBuildUtility.GetNonArchitectureDirectory(msBuildExeArchitecturePath));
+
+                Assert.Equal(LocalizedResourceManager.GetString(
+                    nameof(NuGetResources.Error_CannotFindMsbuild)),
+                    exception.Message);
+            }
+        }
+
         [Fact]
         public void CombinePathWithVerboseError_CombinesPaths()
         {

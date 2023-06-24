@@ -735,4 +735,7 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</comment>
     <value>Invalid culture identifier in {0} environment variable. Value read is '{1}'</value>
     <comment>0 - Environment variable name, 1 - value set in environment variable</comment>
   </data>
+  <data name="Error_CannotFindNonArchitectureSpecificMsbuild" xml:space="preserve">
+    <value>The resolved msbuild directory is {0} is a architecure specific directory. Could not find msbuild in its parent directory (non-architecutre specific). </value>
+  </data>
 </root>
