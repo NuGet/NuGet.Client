@@ -34,12 +34,12 @@ namespace NuGet.Commands.Restore.Utility
         internal int Sev1DirectMatches { get; private set; }
         internal int Sev2DirectMatches { get; private set; }
         internal int Sev3DirectMatches { get; private set; }
-        internal int OtherSevDirectMatches { get; private set; }
+        internal int InvalidSevDirectMatches { get; private set; }
         internal int Sev0TransitiveMatches { get; private set; }
         internal int Sev1TransitiveMatches { get; private set; }
         internal int Sev2TransitiveMatches { get; private set; }
         internal int Sev3TransitiveMatches { get; private set; }
-        internal int OtherSevTransitiveMatches { get; private set; }
+        internal int InvalidSevTransitiveMatches { get; private set; }
         internal double? DownloadDurationSeconds { get; private set; }
         internal double? CheckPackagesDurationSeconds { get; private set; }
         internal double? GenerateOutputDurationSeconds { get; private set; }
@@ -179,7 +179,7 @@ namespace NuGet.Commands.Restore.Utility
                         else if (severity == 1) { Sev1DirectMatches++; }
                         else if (severity == 2) { Sev2DirectMatches++; }
                         else if (severity == 3) { Sev3DirectMatches++; }
-                        else { OtherSevDirectMatches++; }
+                        else { InvalidSevDirectMatches++; }
                     }
                 }
                 else
@@ -193,7 +193,7 @@ namespace NuGet.Commands.Restore.Utility
                         else if (severity == 1) { Sev1TransitiveMatches++; }
                         else if (severity == 2) { Sev2TransitiveMatches++; }
                         else if (severity == 3) { Sev3TransitiveMatches++; }
-                        else { OtherSevTransitiveMatches++; }
+                        else { InvalidSevTransitiveMatches++; }
                     }
                 }
             }

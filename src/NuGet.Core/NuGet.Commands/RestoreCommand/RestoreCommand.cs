@@ -93,19 +93,19 @@ namespace NuGet.Commands
         private const string AuditMode = "Audit.Mode";
         private const string AuditDataSources = "Audit.DataSources";
         private const string AuditDirectVulnerabilitiesPackages = "Audit.Vulnerability.Direct.Packages";
-        private const string AuditDirectVulnerabilitiesTotal = "Audit.Vulnerability.Direct.Total";
+        private const string AuditDirectVulnerabilitiesCount = "Audit.Vulnerability.Direct.Count";
         private const string AuditDirectVulnerabilitySev0 = "Audit.Vulnerability.Direct.Severity0";
         private const string AuditDirectVulnerabilitySev1 = "Audit.Vulnerability.Direct.Severity1";
         private const string AuditDirectVulnerabilitySev2 = "Audit.Vulnerability.Direct.Severity2";
         private const string AuditDirectVulnerabilitySev3 = "Audit.Vulnerability.Direct.Severity3";
-        private const string AuditDirectVulnerabilitySevOther = "Audit.Vulnerability.Direct.SeverityOther";
+        private const string AuditDirectVulnerabilitySevInvalid = "Audit.Vulnerability.Direct.SeverityInvalid";
         private const string AuditTransitiveVulnerabilitiesPackages = "Audit.Vulnerability.Transitive.Packages";
-        private const string AuditTransitiveVulnerabilitiesTotal = "Audit.Vulnerability.Transitive.Total";
+        private const string AuditTransitiveVulnerabilitiesCount = "Audit.Vulnerability.Transitive.Count";
         private const string AuditTransitiveVulnerabilitySev0 = "Audit.Vulnerability.Transitive.Severity0";
         private const string AuditTransitiveVulnerabilitySev1 = "Audit.Vulnerability.Transitive.Severity1";
         private const string AuditTransitiveVulnerabilitySev2 = "Audit.Vulnerability.Transitive.Severity2";
         private const string AuditTransitiveVulnerabilitySev3 = "Audit.Vulnerability.Transitive.Severity3";
-        private const string AuditTransitiveVulnerabilitySevOther = "Audit.Vulnerability.Transitive.SeverityOther";
+        private const string AuditTransitiveVulnerabilitySevInvalid = "Audit.Vulnerability.Transitive.SeverityInvalid";
         private const string AuditDurationDownload = "Audit.Duration.Download";
         private const string AuditDurationCheck = "Audit.Duration.Check";
         private const string AuditDurationOutput = "Audit.Duration.Output";
@@ -489,20 +489,20 @@ namespace NuGet.Commands
             telemetry.TelemetryEvent[AuditMode] = AuditUtility.GetString(audit.AuditMode);
 
             if (audit.DirectPackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditDirectVulnerabilitiesPackages, audit.DirectPackagesWithAdvisory); }
-            telemetry.TelemetryEvent[AuditDirectVulnerabilitiesTotal] = audit.DirectPackagesWithAdvisory?.Count ?? 0;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitiesCount] = audit.DirectPackagesWithAdvisory?.Count ?? 0;
             telemetry.TelemetryEvent[AuditDirectVulnerabilitySev0] = audit.Sev0DirectMatches;
             telemetry.TelemetryEvent[AuditDirectVulnerabilitySev1] = audit.Sev1DirectMatches;
             telemetry.TelemetryEvent[AuditDirectVulnerabilitySev2] = audit.Sev2DirectMatches;
             telemetry.TelemetryEvent[AuditDirectVulnerabilitySev3] = audit.Sev3DirectMatches;
-            telemetry.TelemetryEvent[AuditDirectVulnerabilitySevOther] = audit.OtherSevDirectMatches;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitySevInvalid] = audit.InvalidSevDirectMatches;
 
             if (audit.TransitivePackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditTransitiveVulnerabilitiesPackages, audit.TransitivePackagesWithAdvisory); }
-            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitiesTotal] = audit.TransitivePackagesWithAdvisory?.Count ?? 0;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitiesCount] = audit.TransitivePackagesWithAdvisory?.Count ?? 0;
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev0] = audit.Sev0TransitiveMatches;
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev1] = audit.Sev1TransitiveMatches;
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev2] = audit.Sev2TransitiveMatches;
             telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev3] = audit.Sev3TransitiveMatches;
-            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySevOther] = audit.OtherSevTransitiveMatches;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySevInvalid] = audit.InvalidSevTransitiveMatches;
 
             telemetry.TelemetryEvent[AuditDataSources] = audit.SourcesWithVulnerabilityData;
             if (audit.DownloadDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationDownload] = audit.DownloadDurationSeconds.Value; }
