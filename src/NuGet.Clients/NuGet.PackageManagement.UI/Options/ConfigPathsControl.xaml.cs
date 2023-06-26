@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using Microsoft.VisualStudio.PlatformUI;
 using NuGet.VisualStudio;
@@ -43,6 +44,17 @@ namespace NuGet.PackageManagement.UI.Options
         {
             ConfigPathsWindow.ConfigPaths.Clear();
             ConfigPathsWindow.SetConfigPaths();
+        }
+
+        private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
+        {
+            var hyperlink = e.OriginalSource as Hyperlink;
+            if (hyperlink != null && hyperlink.NavigateUri != null)
+            {
+                UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
+
+                e.Handled = true;
+            }
         }
     }
 }

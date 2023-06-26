@@ -19,6 +19,11 @@
       </Style>
     </ResourceDictionary>
   </UserControl.Resources>
+  <UserControl.CommandBindings>
+    <CommandBinding
+      Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+      Executed="ExecuteOpenExternalLink" />
+  </UserControl.CommandBindings>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="auto" />
@@ -39,7 +44,6 @@
       AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_ConfigurationFiles}" />
     <Grid Grid.Row="2">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="auto"></ColumnDefinition>
         <ColumnDefinition Width="*"></ColumnDefinition>
         <ColumnDefinition Width="auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
@@ -48,9 +52,13 @@
           <RowDefinition Height="auto" />
           <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" TextWrapping="WrapWithOverflow" MaxWidth="320" Text="{x:Static nuget:Resources.Text_ApplyingConfigurationFiles}"/>
-        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow" MaxWidth="320">
-          <Hyperlink NavigateUri="https://learn.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior#how-settings-are-applied">Common NuGet configurations: How settings are applied</Hyperlink>
+        <TextBlock Grid.Row="0" TextWrapping="WrapWithOverflow" Text="{x:Static nuget:Resources.Text_ApplyingConfigurationFiles}"/>
+        <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow">
+          <Hyperlink
+              NavigateUri="https://learn.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior#how-settings-are-applied"
+              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+            <Run Text="{x:Static nuget:Resources.Text_ApplyingConfigurationFiles_DocumentLink}"/>
+          </Hyperlink>
         </TextBlock>
       </Grid>
       <Button
