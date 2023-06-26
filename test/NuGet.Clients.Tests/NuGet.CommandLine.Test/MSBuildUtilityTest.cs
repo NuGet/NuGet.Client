@@ -389,8 +389,9 @@ namespace NuGet.CommandLine.Test
                 CommandException exception = Assert.Throws<CommandException>(
                     () => MsBuildUtility.GetNonArchitectureDirectory(msBuildExeArchitecturePath));
 
-                Assert.Equal(LocalizedResourceManager.GetString(
-                    nameof(NuGetResources.Error_CannotFindMsbuild)),
+                Assert.Equal(string.Format(CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_CannotFindNonArchitectureSpecificMsbuild)),
+                    msBuildArchitectureDir.FullName),
                     exception.Message);
             }
         }
