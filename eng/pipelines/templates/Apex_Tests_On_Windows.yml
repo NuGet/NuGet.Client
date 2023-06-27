@@ -107,8 +107,11 @@ stages:
           displayName: Set 'VisualStudio.BaseBuild.ProductsDropName' to drop from target build
           condition: eq(variables['VisualStudio.BaseBuild.ID'], '')
           inputs:
-            targetType: 'inline'
-            script: Write-Host "##vso[task.setvariable variable=VisualStudio.BaseBuild.ProductsDropName]${{parameters.baseBuildDrop}}"
+            scriptType: "inlineScript"
+            inlineScript: |
+              $buildDrop = ${{parameters.baseBuildDrop}} -split "/"
+              $dropName = "$buildDrop[-2]/$buildDrop[-1]"
+              Write-Host "##vso[task.setvariable variable=VisualStudio.BaseBuild.ProductsDropName]$dropName"
       preDeployAndRunTestsStepList:
         - task: PowerShell@1
           displayName: "Print Environment Variables"
