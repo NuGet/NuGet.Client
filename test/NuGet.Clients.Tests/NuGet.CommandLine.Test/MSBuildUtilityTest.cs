@@ -333,18 +333,13 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Theory]
+        [SkipMonoTheory] // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
         [InlineData("arm64", true)]
         [InlineData("amd64", true)]
         [InlineData("ARM64", true)]
         [InlineData("random", false)]
         public void GetNonArchitectureDirectory_PATHENVWithArchitecture_Succeeds(string architecutre, bool isArchitectureSpecificPath)
         {
-            if (RuntimeEnvironmentHelper.IsMono)
-            { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
-                return;
-            }
-
             using (var vsPath = TestDirectory.Create())
             {
                 var msBuildNonArchitectureDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "Current", "Bin"));
@@ -370,14 +365,9 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [SkipMono] // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
         public void GetNonArchitectureDirectory_PATHENVWithArchitecture_Throws()
         {
-            if (RuntimeEnvironmentHelper.IsMono)
-            { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
-                return;
-            }
-
             using (var vsPath = TestDirectory.Create())
             {
                 var msBuildNonArchitectureDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "Current", "Bin"));
