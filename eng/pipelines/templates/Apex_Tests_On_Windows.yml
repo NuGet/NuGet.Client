@@ -107,7 +107,7 @@ stages:
           condition: eq(variables['VisualStudio.BaseBuild.ID'], '')
           inputs:
             targetType: 'inline'
-            script: Write-Host "##vso[task.setvariable variable=VisualStudio.BaseBuild.ProductsDropName]$(setbasebuilddrop.BaseBuildDrop)"
+            script: Write-Host "##vso[task.setvariable variable=VisualStudio.BaseBuild.ProductsDropName]${{parameters.baseBuildDrop}}"
       preDeployAndRunTestsStepList:
         - task: PowerShell@1
           displayName: "Print Environment Variables"
