@@ -558,8 +558,9 @@ namespace NuGet.CommandLine
         {
             var msbuildFile = Path.GetFileName(msbuildExe);
             var directory = Path.GetDirectoryName(msbuildExe);
-            var directoryName = new DirectoryInfo(directory).Name;
-            var parentDirectory = new DirectoryInfo(directory).Parent.FullName;
+            var directoryInfo = new DirectoryInfo(directory);
+            var directoryName = directoryInfo.Name;
+            var parentDirectory = directoryInfo.Parent.FullName;
 
             //Given Visual Studio 2022 or later, the PATH environment variable in Developer Command Prompt contains the architecture specific path of msbuild.exe.
             // e.g. C:\Program Files\Microsoft Visual Studio\2022\Preview\\MSBuild\Current\Bin\arm64
