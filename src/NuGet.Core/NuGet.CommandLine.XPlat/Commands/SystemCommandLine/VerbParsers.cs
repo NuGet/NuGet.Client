@@ -98,6 +98,122 @@ namespace NuGet.CommandLine.XPlat.Commands
 
     /// <summary>Generated with VerbParsers.tt</summary>
     [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
+    internal partial class DisableVerbParser
+    {
+        internal static Func<ILogger> GetLoggerFunction;
+        internal static Func<Exception, int> CommandExceptionHandler;
+
+        internal static Command Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
+        {
+            var DisableCmd = new Command(name: "disable", description: Strings.Disable_Description);
+
+            // Options directly under the verb 'disable'
+
+            // noun sub-command: disable source
+            var SourceCmd = new Command(name: "source", description: Strings.DisableSourceCommandDescription);
+
+            // Options under sub-command: disable source
+            RegisterOptionsForCommandDisableSource(SourceCmd, getLogger);
+
+            DisableCmd.AddCommand(SourceCmd);
+
+            GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
+            app.AddCommand(DisableCmd);
+
+            return DisableCmd;
+        } // End noun method
+
+        private static void RegisterOptionsForCommandDisableSource(Command cmd, Func<ILogger> getLogger)
+        {
+            var name_Argument = new Argument<string>(name: "name", description: Strings.SourcesCommandNameDescription)
+            {
+                Arity = ArgumentArity.ExactlyOne,
+            };
+            cmd.Add(name_Argument);
+            var configfile_Option = new Option<string>(name: "--configfile", description: Strings.Option_ConfigFile)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(configfile_Option);
+            // Create handler delegate handler for cmd
+            cmd.SetHandler((args) =>
+            {
+                int exitCode;
+                try
+                {
+                    DisableSourceRunner.Run(args, getLogger);
+                    exitCode = 0;
+                }
+                catch (Exception e)
+                {
+                    exitCode = CommandExceptionHandler(e);
+                }
+                return Task.FromResult(exitCode);
+            }, new DisableSourceCustomBinder(name_Argument, configfile_Option));
+        }
+    } // end class
+
+    /// <summary>Generated with VerbParsers.tt</summary>
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
+    internal partial class EnableVerbParser
+    {
+        internal static Func<ILogger> GetLoggerFunction;
+        internal static Func<Exception, int> CommandExceptionHandler;
+
+        internal static Command Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
+        {
+            var EnableCmd = new Command(name: "enable", description: Strings.Enable_Description);
+
+            // Options directly under the verb 'enable'
+
+            // noun sub-command: enable source
+            var SourceCmd = new Command(name: "source", description: Strings.EnableSourceCommandDescription);
+
+            // Options under sub-command: enable source
+            RegisterOptionsForCommandEnableSource(SourceCmd, getLogger);
+
+            EnableCmd.AddCommand(SourceCmd);
+
+            GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
+            app.AddCommand(EnableCmd);
+
+            return EnableCmd;
+        } // End noun method
+
+        private static void RegisterOptionsForCommandEnableSource(Command cmd, Func<ILogger> getLogger)
+        {
+            var name_Argument = new Argument<string>(name: "name", description: Strings.SourcesCommandNameDescription)
+            {
+                Arity = ArgumentArity.ExactlyOne,
+            };
+            cmd.Add(name_Argument);
+            var configfile_Option = new Option<string>(name: "--configfile", description: Strings.Option_ConfigFile)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(configfile_Option);
+            // Create handler delegate handler for cmd
+            cmd.SetHandler((args) =>
+            {
+                int exitCode;
+                try
+                {
+                    EnableSourceRunner.Run(args, getLogger);
+                    exitCode = 0;
+                }
+                catch (Exception e)
+                {
+                    exitCode = CommandExceptionHandler(e);
+                }
+                return Task.FromResult(exitCode);
+            }, new EnableSourceCustomBinder(name_Argument, configfile_Option));
+        }
+    } // end class
+
+    /// <summary>Generated with VerbParsers.tt</summary>
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
     internal partial class ListVerbParser
     {
         internal static Func<ILogger> GetLoggerFunction;
@@ -151,6 +267,147 @@ namespace NuGet.CommandLine.XPlat.Commands
                 }
                 return Task.FromResult(exitCode);
             }, new ListSourceCustomBinder(format_Option, configfile_Option));
+        }
+    } // end class
+
+    /// <summary>Generated with VerbParsers.tt</summary>
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
+    internal partial class RemoveVerbParser
+    {
+        internal static Func<ILogger> GetLoggerFunction;
+        internal static Func<Exception, int> CommandExceptionHandler;
+
+        internal static Command Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
+        {
+            var RemoveCmd = new Command(name: "remove", description: Strings.Remove_Description);
+
+            // Options directly under the verb 'remove'
+
+            // noun sub-command: remove source
+            var SourceCmd = new Command(name: "source", description: Strings.RemoveSourceCommandDescription);
+
+            // Options under sub-command: remove source
+            RegisterOptionsForCommandRemoveSource(SourceCmd, getLogger);
+
+            RemoveCmd.AddCommand(SourceCmd);
+
+            GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
+            app.AddCommand(RemoveCmd);
+
+            return RemoveCmd;
+        } // End noun method
+
+        private static void RegisterOptionsForCommandRemoveSource(Command cmd, Func<ILogger> getLogger)
+        {
+            var name_Argument = new Argument<string>(name: "name", description: Strings.SourcesCommandNameDescription)
+            {
+                Arity = ArgumentArity.ExactlyOne,
+            };
+            cmd.Add(name_Argument);
+            var configfile_Option = new Option<string>(name: "--configfile", description: Strings.Option_ConfigFile)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(configfile_Option);
+            // Create handler delegate handler for cmd
+            cmd.SetHandler((args) =>
+            {
+                int exitCode;
+                try
+                {
+                    RemoveSourceRunner.Run(args, getLogger);
+                    exitCode = 0;
+                }
+                catch (Exception e)
+                {
+                    exitCode = CommandExceptionHandler(e);
+                }
+                return Task.FromResult(exitCode);
+            }, new RemoveSourceCustomBinder(name_Argument, configfile_Option));
+        }
+    } // end class
+
+    /// <summary>Generated with VerbParsers.tt</summary>
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
+    internal partial class UpdateVerbParser
+    {
+        internal static Func<ILogger> GetLoggerFunction;
+        internal static Func<Exception, int> CommandExceptionHandler;
+
+        internal static Command Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
+        {
+            var UpdateCmd = new Command(name: "update", description: Strings.Update_Description);
+
+            // Options directly under the verb 'update'
+
+            // noun sub-command: update source
+            var SourceCmd = new Command(name: "source", description: Strings.UpdateSourceCommandDescription);
+
+            // Options under sub-command: update source
+            RegisterOptionsForCommandUpdateSource(SourceCmd, getLogger);
+
+            UpdateCmd.AddCommand(SourceCmd);
+
+            GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
+            app.AddCommand(UpdateCmd);
+
+            return UpdateCmd;
+        } // End noun method
+
+        private static void RegisterOptionsForCommandUpdateSource(Command cmd, Func<ILogger> getLogger)
+        {
+            var name_Argument = new Argument<string>(name: "name", description: Strings.SourcesCommandNameDescription)
+            {
+                Arity = ArgumentArity.ExactlyOne,
+            };
+            cmd.Add(name_Argument);
+            var source_Option = new Option<string>(aliases: new[] { "-s", "--source" }, description: Strings.SourcesCommandSourceDescription)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(source_Option);
+            var username_Option = new Option<string>(aliases: new[] { "-u", "--username" }, description: Strings.SourcesCommandUsernameDescription)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(username_Option);
+            var password_Option = new Option<string>(aliases: new[] { "-p", "--password" }, description: Strings.SourcesCommandPasswordDescription)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(password_Option);
+            var storePasswordInClearText_Option = new Option<bool>(name: "--store-password-in-clear-text", description: Strings.SourcesCommandStorePasswordInClearTextDescription)
+            {
+                Arity = ArgumentArity.Zero,
+            };
+            cmd.Add(storePasswordInClearText_Option);
+            var validAuthenticationTypes_Option = new Option<string>(name: "--valid-authentication-types", description: Strings.SourcesCommandValidAuthenticationTypesDescription)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(validAuthenticationTypes_Option);
+            var configfile_Option = new Option<string>(name: "--configfile", description: Strings.Option_ConfigFile)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(configfile_Option);
+            // Create handler delegate handler for cmd
+            cmd.SetHandler((args) =>
+            {
+                int exitCode;
+                try
+                {
+                    UpdateSourceRunner.Run(args, getLogger);
+                    exitCode = 0;
+                }
+                catch (Exception e)
+                {
+                    exitCode = CommandExceptionHandler(e);
+                }
+                return Task.FromResult(exitCode);
+            }, new UpdateSourceCustomBinder(name_Argument, source_Option, username_Option, password_Option, storePasswordInClearText_Option, validAuthenticationTypes_Option, configfile_Option));
         }
     } // end class
 

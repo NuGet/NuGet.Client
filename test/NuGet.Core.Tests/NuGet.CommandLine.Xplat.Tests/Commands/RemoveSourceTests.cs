@@ -10,33 +10,40 @@ using Xunit;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
-    public class AddSourceTests
+    public class RemoveSourceTests
     {
         [Fact]
-        public void AddSource_RunSameCommandInBothCommandLineInterfaces_CommandOutputEqual()
+        public void RemoveSource_RunSameCommandInBothCommandLineInterfaces_CommandOutputEqual()
         {
+            // Arrange
             string file1 = Path.GetTempFileName();
             string file2 = Path.GetTempFileName();
+            string initialConfig = @"<configuration>
+  <packageSources>
+    <add key=""nugetv3"" value=""https://api.nuget.org/v3/index.json2"" />
+  </packageSources>
+</configuration>";
+            File.WriteAllText(file1, initialConfig);
+            File.WriteAllText(file2, initialConfig);
 
-            File.WriteAllText(file1, "<configuration></configuration>");
-            File.WriteAllText(file2, "<configuration></configuration>");
+            var enableSourceCmd1 = new[] { "remove", "source", "NuGetV3", "--configfile", file1 };
+            var enableSourceCmd2 = new[] { "remove", "source", "NuGetV3", "--configfile", file2 };
 
-            // Arrange
             var currentCli = new CommandLineApplication();
             var testLoggerCurrent = new TestLogger();
-            AddVerbParser.Register(currentCli, () => testLoggerCurrent);
+            RemoveVerbParser.Register(currentCli, () => testLoggerCurrent);
 
             var newCli = new RootCommand();
             var testLoggerNew = new TestLogger();
-            XPlat.Commands.AddVerbParser.Register(newCli, getLogger: () => testLoggerNew, commandExceptionHandler: e =>
+            XPlat.Commands.RemoveVerbParser.Register(newCli, getLogger: () => testLoggerNew, commandExceptionHandler: e =>
             {
                 XPlat.Program.LogException(e, testLoggerNew);
                 return 1;
             });
 
             // Act
-            int statusCurrent = currentCli.Execute(new[] { "add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", file1 });
-            int statusNew = newCli.Invoke(new[] { "add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", file2 });
+            int statusCurrent = currentCli.Execute(enableSourceCmd1);
+            int statusNew = newCli.Invoke(enableSourceCmd2);
 
             // Assert
             CommandTestUtils.AssertEqualCommandOutput(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);
