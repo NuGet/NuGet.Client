@@ -52,6 +52,54 @@ namespace NuGet.CommandLine.XPlat.Commands
 
     /// <summary>Generated with CustomBinders.tt</summary>
     [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
+    internal partial class AddClientCertCustomBinder : BinderBase<AddClientCertArgs>
+    {
+        private readonly Option<string> _packageSource;
+        private readonly Option<string> _path;
+        private readonly Option<string> _password;
+        private readonly Option<bool> _storePasswordInClearText;
+        private readonly Option<string> _storeLocation;
+        private readonly Option<string> _storeName;
+        private readonly Option<string> _findBy;
+        private readonly Option<string> _findValue;
+        private readonly Option<bool> _force;
+        private readonly Option<string> _configfile;
+
+        public AddClientCertCustomBinder(Option<string> packageSource, Option<string> path, Option<string> password, Option<bool> storePasswordInClearText, Option<string> storeLocation, Option<string> storeName, Option<string> findBy, Option<string> findValue, Option<bool> force, Option<string> configfile)
+        {
+            _packageSource = packageSource;
+            _path = path;
+            _password = password;
+            _storePasswordInClearText = storePasswordInClearText;
+            _storeLocation = storeLocation;
+            _storeName = storeName;
+            _findBy = findBy;
+            _findValue = findValue;
+            _force = force;
+            _configfile = configfile;
+        }
+
+        protected override AddClientCertArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new AddClientCertArgs()
+            {
+                PackageSource = bindingContext.ParseResult.GetValueForOption(_packageSource),
+                Path = bindingContext.ParseResult.GetValueForOption(_path),
+                Password = bindingContext.ParseResult.GetValueForOption(_password),
+                StorePasswordInClearText = bindingContext.ParseResult.GetValueForOption(_storePasswordInClearText),
+                StoreLocation = bindingContext.ParseResult.GetValueForOption(_storeLocation),
+                StoreName = bindingContext.ParseResult.GetValueForOption(_storeName),
+                FindBy = bindingContext.ParseResult.GetValueForOption(_findBy),
+                FindValue = bindingContext.ParseResult.GetValueForOption(_findValue),
+                Force = bindingContext.ParseResult.GetValueForOption(_force),
+                Configfile = bindingContext.ParseResult.GetValueForOption(_configfile),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
+    /// <summary>Generated with CustomBinders.tt</summary>
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
     internal partial class DisableSourceCustomBinder : BinderBase<DisableSourceArgs>
     {
         private readonly Argument<string> _name;

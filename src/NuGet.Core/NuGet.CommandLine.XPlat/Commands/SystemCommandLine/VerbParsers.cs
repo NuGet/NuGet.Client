@@ -34,6 +34,14 @@ namespace NuGet.CommandLine.XPlat.Commands
 
             AddCmd.AddCommand(SourceCmd);
 
+            // noun sub-command: add client-cert
+            var ClientCertCmd = new Command(name: "client-cert", description: Strings.AddClientCertCommandDescription);
+
+            // Options under sub-command: add client-cert
+            RegisterOptionsForCommandAddClientCert(ClientCertCmd, getLogger);
+
+            AddCmd.AddCommand(ClientCertCmd);
+
             GetLoggerFunction = getLogger;
             CommandExceptionHandler = commandExceptionHandler;
             app.AddCommand(AddCmd);
@@ -93,6 +101,75 @@ namespace NuGet.CommandLine.XPlat.Commands
                 }
                 return Task.FromResult(exitCode);
             }, new AddSourceCustomBinder(source_Argument, name_Option, username_Option, password_Option, storePasswordInClearText_Option, validAuthenticationTypes_Option, configfile_Option));
+        }
+
+        private static void RegisterOptionsForCommandAddClientCert(Command cmd, Func<ILogger> getLogger)
+        {
+            var packageSource_Option = new Option<string>(aliases: new[] { "-s", "--package-source" }, description: Strings.Option_PackageSource)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(packageSource_Option);
+            var path_Option = new Option<string>(name: "--path", description: Strings.Option_Path)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(path_Option);
+            var password_Option = new Option<string>(name: "--password", description: Strings.Option_Password)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(password_Option);
+            var storePasswordInClearText_Option = new Option<bool>(name: "--store-password-in-clear-text", description: Strings.Option_StorePasswordInClearText)
+            {
+                Arity = ArgumentArity.Zero,
+            };
+            cmd.Add(storePasswordInClearText_Option);
+            var storeLocation_Option = new Option<string>(name: "--store-location", description: Strings.Option_StoreLocation)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(storeLocation_Option);
+            var storeName_Option = new Option<string>(name: "--store-name", description: Strings.Option_StoreName)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(storeName_Option);
+            var findBy_Option = new Option<string>(name: "--find-by", description: Strings.Option_FindBy)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(findBy_Option);
+            var findValue_Option = new Option<string>(name: "--find-value", description: Strings.Option_FindValue)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(findValue_Option);
+            var force_Option = new Option<bool>(aliases: new[] { "-f", "--force" }, description: Strings.Option_Force)
+            {
+                Arity = ArgumentArity.Zero,
+            };
+            cmd.Add(force_Option);
+            var configfile_Option = new Option<string>(name: "--configfile", description: Strings.Option_ConfigFile)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+            };
+            cmd.Add(configfile_Option);
+            // Create handler delegate handler for cmd
+            cmd.SetHandler((args) =>
+            {
+                int exitCode;
+                try
+                {
+                    AddClientCertRunner.Run(args, getLogger);
+                    exitCode = 0;
+                }
+                catch (Exception e)
+                {
+                    exitCode = CommandExceptionHandler(e);
+                }
+                return Task.FromResult(exitCode);
+            }, new AddClientCertCustomBinder(packageSource_Option, path_Option, password_Option, storePasswordInClearText_Option, storeLocation_Option, storeName_Option, findBy_Option, findValue_Option, force_Option, configfile_Option));
         }
     } // end class
 
