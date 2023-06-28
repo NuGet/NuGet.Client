@@ -687,6 +687,18 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void List_WithoutNoun_ShowsHelp()
+        {
+            // Arrange & Act
+            CommandRunnerResult result = _fixture.RunDotnet(Environment.CurrentDirectory, "nuget list", ignoreExitCode: true);
+
+            // Assert
+            Assert.Equal(0, result.ExitCode);
+            Assert.Contains("source", result.Output);
+            Assert.Contains("client-cert", result.Output);
+        }
+
         [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/12503")]
         public void List_Sources_LocalizatedPackagesourceKeys_ConsideredDiffererent()
         {

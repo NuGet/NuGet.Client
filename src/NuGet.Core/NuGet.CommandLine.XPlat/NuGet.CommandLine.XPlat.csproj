@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>NuGet executable wrapper for the dotnet CLI nuget functionality.</Description>
     <TargetFrameworks>$(MinimalTargetFrameworksExeSigning)</TargetFrameworks>
@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+	<PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.Diagnostics.Debug" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
   </ItemGroup>
@@ -28,6 +29,16 @@
 
   <ItemGroup>
     <Compile Remove="external\*" />
+    <Compile Update="Commands\SystemCommandLine\CommandParsers.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CommandParsers.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Commands\SystemCommandLine\VerbParsers.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>VerbParsers.tt</DependentUpon>
+    </Compile>
     <Compile Update="Commands\Verbs.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -57,6 +68,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Commands\SystemCommandLine\CommandParsers.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>CommandParsers.cs</LastGenOutput>
+    </None>
+    <None Update="Commands\SystemCommandLine\VerbParsers.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>VerbParsers.cs</LastGenOutput>
+    </None>
     <None Update="Commands\Verbs.tt">
       <LastGenOutput>Verbs.cs</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>
