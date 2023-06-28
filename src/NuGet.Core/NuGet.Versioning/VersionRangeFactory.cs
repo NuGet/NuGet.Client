@@ -9,11 +9,10 @@ using System.Linq;
 
 namespace NuGet.Versioning
 {
-    /// <summary>
-    /// Static factory methods for creating version range objects.
-    /// </summary>
     public partial class VersionRange
     {
+        // Static factory methods for creating version range objects.
+
         /// <summary>
         /// A range that accepts all versions, prerelease and stable.
         /// </summary>
