@@ -98,83 +98,96 @@ namespace NuGet.CommandLine.XPlat
             log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.OutputNuGetVersion, app.FullName, app.LongVersionGetter()));
 
             int exitCode = 0;
-
-            try
+            ParseResult result = command.Parse(args);
+            if (result.Errors.Any())
             {
-                ParseResult result = command.Parse(args);
-                if (result.Errors.Any())
+                // Fallback to old way for now: CommandLineUtils
+                try
                 {
                     exitCode = app.Execute(args);
                 }
-                else
+                catch (Exception e)
                 {
-                    exitCode = command.Invoke(args);
-                }
-            }
-            catch (Exception e)
-            {
-                bool handled = false;
-                string verb = null;
-                if (args.Length > 1)
-                {
-                    // Redirect users nicely if they do 'dotnet nuget sources add' or 'dotnet nuget add sources'
-                    if (StringComparer.OrdinalIgnoreCase.Compare(args[0], "sources") == 0)
+                    bool handled = HandleCommandLineHelp(args, log);
+                    if (!handled)
                     {
-                        verb = args[1];
+                        LogException(e, log);
+                        ShowBestHelp(app, args);
                     }
-                    else if (StringComparer.OrdinalIgnoreCase.Compare(args[1], "sources") == 0)
-                    {
-                        verb = args[0];
-                    }
-
-                    if (verb != null)
-                    {
-                        switch (verb.ToLowerInvariant())
-                        {
-                            case "add":
-                            case "remove":
-                            case "update":
-                            case "enable":
-                            case "disable":
-                            case "list":
-                                log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                                    Strings.Sources_Redirect, $"dotnet nuget {verb} source"));
-                                handled = true;
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-
-                if (!handled)
-                {
-                    // Log the error
-                    if (ExceptionLogger.Instance.ShowStack)
-                    {
-                        log.LogError(e.ToString());
-                    }
-                    else
-                    {
-                        log.LogError(ExceptionUtilities.DisplayMessage(e));
-                    }
-
-                    // Log the stack trace as verbose output.
-                    log.LogVerbose(e.ToString());
 
                     exitCode = 1;
-
-                    ShowBestHelp(app, args);
+                }
+                finally
+                {
+                    // Limit the exit code range to 0-255 to support POSIX
+                    if (exitCode < 0 || exitCode > 255)
+                    {
+                        exitCode = 1;
+                    }
                 }
             }
-
-            // Limit the exit code range to 0-255 to support POSIX
-            if (exitCode < 0 || exitCode > 255)
+            else
             {
-                exitCode = 1;
+                // Run with System.CommandLine
+                exitCode = command.Invoke(args);
             }
 
             return exitCode;
+        }
+
+        private static bool HandleCommandLineHelp(string[] args, CommandOutputLogger log)
+        {
+            string verb = null;
+            bool handled = false;
+
+            if (args.Length > 1)
+            {
+                // Redirect users nicely if they do 'dotnet nuget sources add' or 'dotnet nuget add sources'
+                if (StringComparer.OrdinalIgnoreCase.Compare(args[0], "sources") == 0)
+                {
+                    verb = args[1];
+                }
+                else if (StringComparer.OrdinalIgnoreCase.Compare(args[1], "sources") == 0)
+                {
+                    verb = args[0];
+                }
+
+                if (verb != null)
+                {
+                    switch (verb.ToUpperInvariant())
+                    {
+                        case "ADD":
+                        case "REMOVE":
+                        case "UPDATE":
+                        case "ENABLE":
+                        case "DISABLE":
+                        case "LIST":
+                            log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Sources_Redirect, $"dotnet nuget {verb} source"));
+                            handled = true;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            return handled;
+        }
+
+        internal static void LogException(Exception e, ILogger log)
+        {
+            // Log the error
+            if (ExceptionLogger.Instance.ShowStack)
+            {
+                log.LogError(e.ToString());
+            }
+            else
+            {
+                log.LogError(ExceptionUtilities.DisplayMessage(e));
+            }
+
+            // Log the stack trace as verbose output.
+            log.LogVerbose(e.ToString());
         }
 
         private static Func<ILogger> GenerateLoggerHidePrefix(CommandOutputLogger log)
@@ -190,7 +203,11 @@ namespace NuGet.CommandLine.XPlat
         {
             var app = new RootCommand();
 
-            Commands.CommandParsers.Register(app, GenerateLoggerHidePrefix(log));
+            Commands.CommandParsers.Register(app, getLogger: GenerateLoggerHidePrefix(log), commandExceptionHandler: e =>
+            {
+                LogException(e, log);
+                return 1;
+            });
 
             return app;
         }
