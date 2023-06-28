@@ -64,13 +64,13 @@ stages:
             filePath: $(DartLab.Path)\Scripts\AzureDevOps\Build\Get-BuildIdFromCloudBuildSessionID.ps1
             arguments: -ClientSecret (ConvertTo-SecureString '$(CloudBuild-ClientSecret)' -AsPlainText -Force) -ClientID '$(CloudBuild-ClientID)' -SessionID '${{ parameters.QBuildSessionId }}' -OutVariableName 'BaselineBuildID'
         
-        - task: PowerShell@1
+        - task: PowerShell@2
           displayName: "Get Baseline build commit ids"
           name: "getbaselinebuildcommitids"
           continueOnError: true
           inputs:
-            scriptType: "inlineScript"
-            inlineScript: |
+            targetType: 'inline'
+            script: |
               try {
               Write-Host "Getting Baseline build commit ids for build: '$(BaselineBuildID)'"
               
@@ -107,8 +107,8 @@ stages:
           displayName: Set 'VisualStudio.BaseBuild.ProductsDropName' to drop from target build
           condition: eq(variables['VisualStudio.BaseBuild.ID'], '')
           inputs:
-            scriptType: "inlineScript"
-            inlineScript: |
+            targetType: 'inline'
+            script: |
               $buildDrop = "${{parameters.baseBuildDrop}}" -split "/"
               $dropName = "$($buildDrop[-2])/$($buildDrop[-1])"
               Write-Host "##vso[task.setvariable variable=VisualStudio.BaseBuild.ProductsDropName]$dropName"
