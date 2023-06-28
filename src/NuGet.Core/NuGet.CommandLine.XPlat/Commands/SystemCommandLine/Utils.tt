@@ -1,4 +1,5 @@
 <#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
 <#+
     string InitCaps(string input)
     {
@@ -177,7 +178,6 @@ public class OptionData
         Shortcut = element.Attribute(XName.Get("Shortcut",""))?.Value;
         IsRequired = element.Attribute(XName.Get("Required", ""))?.Value == "true";
         DataType = StringUtilities.GetClrType(element);
-
         string optionType = StringUtilities.GetOptionType(element);
 
         switch (elementName)
@@ -211,6 +211,10 @@ public class OptionData
             default:
                 throw new Exception("Unknown Element Type " + element.Name.LocalName);
         }
+
+        var textInfo = CultureInfo.InvariantCulture.TextInfo;
+        CamelCaseName = $"{textInfo.ToLower(InitCapsName[0])}{InitCapsName.Substring(1)}";
+        PrivateMemberName = $"_{CamelCaseName}";
     }
 
     public string BaseClass { get; set; }
@@ -228,13 +232,19 @@ public class OptionData
     public string ShortcutName { get { return "-" + Shortcut; } }
     public string FullName { get { return "--" + Name.ToLower(); } }
     public string DataType { get; set; }
+    public string PrivateMemberName { get; }
+    public string CamelCaseName { get; }
 }
 
-    string getSeparator(bool isFirst)
+    string getSeparator(bool isFirst, bool isFirstWithSpace = true)
     {
         if (isFirst)
         {
-            return "  ";
+            if (isFirstWithSpace)
+            {
+                return " ";
+            }
+            return string.Empty;
         }
         return ", ";
     }
@@ -278,7 +288,7 @@ public class OptionData
                 if (data.HasShortcut)
                 {
 #>
-<#= Indent(indent) #>var <#= optionNameVar #> = new Option<<#= data.DataType #>>(aliases: new[] { "<#= data.ShortcutName #>", "<#= data.FullName #>" }, description: <#= data.Help #>);
+<#= Indent(indent) #>var <#= optionNameVar #> = new Option<<#= data.DataType #>>(aliases: new[] { "<#= data.ShortcutName #>", "<#= data.FullName #>" }, description: <#= data.Help #>)
 <#+
                 }
                 else
@@ -320,79 +330,33 @@ public class OptionData
         }
     }
 
-    string GenerateCommandHandlerFunctionArgs(XElement optionsNode)
+    string GenerateCommandHandlerFunctionArgs(IReadOnlyCollection<OptionData> options, bool hasInitialComma = true, bool hasInitialSpace = true)
     {
         var sb = new StringBuilder();
-        var paramEnumerator = optionsNode.Elements().GetEnumerator();
-        while (paramEnumerator.MoveNext())
+        bool isFirst = !hasInitialComma;
+        foreach (OptionData data in options)
         {
-            XElement option = paramEnumerator.Current;
-            if (!isValidOption(option))
-            {
-                continue;
-            }
-            var data = new OptionData(option);
-
-            sb.Append($", {GenerateOptionNameVar(data)}");
+            sb.Append($"{getSeparator(isFirst, hasInitialSpace)}{GenerateOptionNameVar(data)}");
+            isFirst = false;
         }
 
         return sb.ToString();
     }
 
-    void GenerateCommandHandler(string commandNameVar, string verbNounPrefix, XElement noun, int indent = 4)
+    void GenerateCommandHandlerCustomBinder(string commandNameVar, string verbNounPrefix, string binderClassName, IReadOnlyCollection<OptionData> options)
     {
-#>
-<#= Indent(indent) #>// Create handler delegate handler for <#= commandNameVar #>
-<#= Indent(indent) #><#= commandNameVar #>.SetHandler((
-<#+
-        GenerateHandlerArguments(noun, indent + 4);
-#>
-<#= Indent(indent) #>) =>
-<#= Indent(indent) #>{
-<#= Indent(indent) #>    var args = new <#= verbNounPrefix #>Args()
-<#= Indent(indent) #>    {
-<#+
-        // Generate option arg assignment
-        foreach (XElement option in noun.Elements())
-        {
-            if (!isValidOption(option))
-            {
-                continue;
-            }
+        string runnerClassName = $"{verbNounPrefix}Runner";
 
-            var data = new OptionData(option);
-#>
-<#= Indent(indent) #>        <#= data.FormalName #> = <#= StringUtilities.GetParamName(data.Name) #>,
-<#+
-        } // end foreach option arg assignment
-#>
-<#= Indent(indent) #>    }; // end of args assignment
-
-<#+
-        // Generate Required Argument/Options validation code
-        foreach (XElement requiredArg in noun.Elements())
-        {
-            if (!isValidOption(requiredArg))
-            {
-                continue;
-            }
-            var optionData = new OptionData(requiredArg);
-            if (optionData.IsRequired)
-            {
-#>
-<#= Indent(indent) #>    if (args.<#= optionData.FormalName #> == null)
-<#= Indent(indent) #>    {
-<#= Indent(indent) #>        throw new CommandException("'<#= optionData.FormalName #>' argument is missing but required.");
-<#= Indent(indent) #>    }
-<#+
-            }
-        } // end foreach of required arguments
-#>
-<#= Indent(indent) #>    <#= verbNounPrefix #>Runner.Run(args, getLogger);
-<#= Indent(indent) #>}<#= GenerateCommandHandlerFunctionArgs(noun) #>); // End handler of <#= commandNameVar #>
-<#+
-    } // end method GenerateCommandHandler
-
+        WriteLine($"// Create handler delegate handler for {commandNameVar}");
+        WriteLine($"{commandNameVar}.SetHandler((args) =>");
+        WriteLine("{");
+        PushIndent(Indent(4));
+        WriteLine($"{runnerClassName}.Run(args, getLogger);"); // logger comes from param arg
+        PopIndent();
+        Write($"}}, new {binderClassName}(");
+        Write(GenerateCommandHandlerFunctionArgs(options, hasInitialComma: false, hasInitialSpace: false));
+        WriteLine("));");
+    }
 
     void GenerateArgsClass(string className, XElement nodeMembers, string classVisibility = "public", int indent = 4)
     {
@@ -438,17 +402,136 @@ public class OptionData
         return sb.ToString();
     }
 
-    bool GenerateSetCustomHandler(string commandVarName, XElement node, int indent = 4)
+    void GenerateSetCustomHandler(string commandVarName, string customHandler, IReadOnlyCollection<OptionData> options)
     {
-        PushIndent(Indent(indent));
-        string customHandler = node.Attribute(XName.Get("Handler", ""))?.Value;
-        bool hasCustomHandler = !string.IsNullOrEmpty(customHandler);
-        if (hasCustomHandler)
+        Write($"{commandVarName}.SetHandler({customHandler}");
+        Write(GenerateCommandHandlerFunctionArgs(options));
+        WriteLine(");");
+    }
+
+    string GetNodeFormalName(XElement nodeWithArgs)
+    {
+        string name = nodeWithArgs.Attribute(XName.Get("Name", ""))?.Value;
+        string formalName = StringUtilities.GetFormalName(name);
+
+        return formalName;
+    }
+
+    string GetArgsClassName(XElement verb, XElement noun = null) => $"{GetNodeFormalName(verb)}{GetNodeFormalName(noun)}Args";
+
+    string GetCustomBinderClassName(XElement verb, XElement noun = null) => $"{GetNodeFormalName(verb)}{GetNodeFormalName(noun)}CustomBinder";
+
+    IReadOnlyCollection<OptionData> GetOptionsFromNode(XElement argsOptionsNode)
+    {
+        if (argsOptionsNode == null)
         {
-            WriteLine($"{commandVarName}.SetHandler({customHandler});");
+            throw new ArgumentNullException(nameof(argsOptionsNode));
+        }
+
+        List<OptionData> options = new List<OptionData>();
+        foreach (XElement option in argsOptionsNode.Elements())
+        {
+            if (isValidOption(option))
+            {
+                options.Add(new OptionData(option));
+            }
+        }
+
+        return options;
+    }
+
+    void GenerateBinderClass(string className, string binderClassName, IReadOnlyCollection<OptionData> options)
+    {
+        if (string.IsNullOrWhiteSpace(className))
+        {
+            throw new ArgumentException("Value cannot be null or empty", nameof(className));
+        }
+        if (string.IsNullOrWhiteSpace(binderClassName))
+        {
+            throw new ArgumentException("Value cannot be null or empty", nameof(binderClassName));
+        }
+        if (options == null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
+        WriteLine($"internal partial class {className} : BinderBase<{binderClassName}>");
+        WriteLine("{");
+        PushIndent(Indent(4));
+
+        // Binder members
+        foreach (OptionData data in options)
+        {
+            WriteLine($"private readonly {data.BaseClass}<{data.DataType}> {data.PrivateMemberName};");
+        }
+        WriteLine(string.Empty);
+
+        // Constructor arguments
+        bool isFirst = true;
+        Write($"public {className}(");
+
+        foreach (OptionData data in options)
+        {
+            Write($"{getSeparator(isFirst, isFirstWithSpace: false)}{data.BaseClass}<{data.DataType}> {data.CamelCaseName}");
+            isFirst = false;
+        }
+        WriteLine(")");
+        WriteLine("{");
+        PushIndent(Indent(4));
+        // Assignment
+        foreach (OptionData data in options)
+        {
+            WriteLine($"{data.PrivateMemberName} = {data.CamelCaseName};");
         }
         PopIndent();
+        WriteLine("}");
+        WriteLine(string.Empty);
 
-        return hasCustomHandler;
-    } // GenerateSetCustomHandler
+        WriteLine($"protected override {binderClassName} GetBoundValue(BindingContext bindingContext)");
+        WriteLine("{");
+        PushIndent(Indent(4));
+
+        WriteLine($"var returnValue = new {binderClassName}()");
+        WriteLine("{");
+        PushIndent(Indent(4));
+        // Argument assignment
+        foreach (OptionData data in options)
+        {
+            if (data.BaseClass == "Option")
+            {
+                WriteLine($"{data.InitCapsName} = bindingContext.ParseResult.GetValueForOption({data.PrivateMemberName}),");
+            }
+            else
+            {
+                WriteLine($"{data.InitCapsName} = bindingContext.ParseResult.GetValueForArgument({data.PrivateMemberName}),");
+            }
+        }
+        PopIndent();
+        WriteLine("};");
+
+        WriteLine("return returnValue;");
+
+        PopIndent();
+        WriteLine("} // end GetBoundValue method");
+        PopIndent();
+        WriteLine("} // end class");
+    }
+
+    void GenerateBinderClass(XElement membersNode, XElement verbNameNode, XElement nounNameNode = null)
+    {
+        if (membersNode == null)
+        {
+            throw new ArgumentNullException(nameof(membersNode));
+        }
+        if (verbNameNode == null)
+        {
+            throw new ArgumentNullException(nameof(verbNameNode));
+        }
+
+        string binderTypeClassName = GetArgsClassName(verbNameNode, nounNameNode);
+        string binderClassName = GetCustomBinderClassName(verbNameNode, nounNameNode);
+        IReadOnlyCollection<OptionData> options = GetOptionsFromNode(membersNode);
+        GenerateBinderClass(binderClassName, binderTypeClassName, options);
+        WriteLine(string.Empty);
+    }
 #>
