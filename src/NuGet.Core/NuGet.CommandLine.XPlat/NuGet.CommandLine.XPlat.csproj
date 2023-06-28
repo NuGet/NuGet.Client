@@ -34,6 +34,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CommandParsers.tt</DependentUpon>
     </Compile>
+    <Compile Update="Commands\SystemCommandLine\CustomBinders.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CustomBinders.tt</DependentUpon>
+    </Compile>
     <Compile Update="Commands\SystemCommandLine\VerbParsers.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -71,6 +76,10 @@
     <None Update="Commands\SystemCommandLine\CommandParsers.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>CommandParsers.cs</LastGenOutput>
+    </None>
+    <None Update="Commands\SystemCommandLine\CustomBinders.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>CustomBinders.cs</LastGenOutput>
     </None>
     <None Update="Commands\SystemCommandLine\VerbParsers.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

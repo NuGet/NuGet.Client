@@ -37,18 +37,10 @@ namespace NuGet.CommandLine.XPlat.Commands
             };
             SourceCmd.Add(configfile_Option);
             // Create handler delegate handler for SourceCmd
-            SourceCmd.SetHandler((
-                  format
-                , configfile
-            ) =>
+            SourceCmd.SetHandler((args) =>
             {
-                var args = new ListSourceArgs()
-                {
-                    Format = format,
-                    Configfile = configfile,
-                }; // end of args assignment
                 ListSourceRunner.Run(args, getLogger);
-            }, format_Option, configfile_Option); // End handler of SourceCmd
+            }, new ListSourceCustomBinder(format_Option, configfile_Option));
 
             ListCmd.AddCommand(SourceCmd);
 
