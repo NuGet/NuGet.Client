@@ -110,7 +110,7 @@ stages:
             targetType: 'inline'
             script: |
               $buildDrop = "${{parameters.baseBuildDrop}}" -split "/"
-              $dropName = "$($buildDrop[-2])/$($buildDrop[-1])"
+              $dropName = "Products/DevDiv/VS/$($buildDrop[-2])/$($buildDrop[-1])"
               Write-Host "##vso[task.setvariable variable=VisualStudio.BaseBuild.ProductsDropName]$dropName"
       preDeployAndRunTestsStepList:
         - task: PowerShell@1
