@@ -4,6 +4,8 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using Microsoft.VisualStudio.PlatformUI;
 using NuGet.VisualStudio;
+using NuGet.PackageManagement.Telemetry;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.UI.Options
 {
@@ -31,13 +33,26 @@ namespace NuGet.PackageManagement.UI.Options
 
         private void ExecuteOpenConfigurationFile(object obj)
         {
-            SelectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
-            ConfigPathsWindow.OpenConfigFile(SelectedPath);
+            try
+            {
+                SelectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
+                ConfigPathsWindow.OpenConfigFile(SelectedPath);
+                var evt = new NavigatedTelemetryEvent(NavigationType.Button, NavigationOrigin.Options_ConfigurationFiles_Open);
+                TelemetryActivity.EmitTelemetryEvent(evt);
+            }
+            catch (System.Exception)
+            {
+                // this is currently never executing even if the file doesn't open
+                throw;
+                // add telemetry event here?
+            }
         }
 
         private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             ExecuteOpenConfigurationFile(sender);
+            var evt = new NavigatedTelemetryEvent(NavigationType.DoubleClick, NavigationOrigin.Options_ConfigurationFiles_ListItem);
+            TelemetryActivity.EmitTelemetryEvent(evt);
         }
 
         internal void InitializeOnActivated(CancellationToken cancellationToken)
