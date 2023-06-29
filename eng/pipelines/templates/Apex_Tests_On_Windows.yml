@@ -86,7 +86,7 @@ stages:
 
               $(DartLab.Path)\Scripts\VisualStudio\Build\Get-BaselineBuildCommitIDs.ps1 -BuildJson $baselineBuildsFile -OutVariableName "BaselineBuildCommitIds"
               } catch {
-                Write-Host "##vso[task.LogIssue type=error;]Unable to get Baseline build commit ids: $_"
+                Write-Host "Unable to get Baseline build commit ids: $_"
               }
         - task: PowerShell@2
           name: SetVisualStudioBaseBuildID
