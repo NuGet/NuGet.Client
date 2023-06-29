@@ -13,6 +13,8 @@ namespace NuGet.RuntimeModel
     /// </remarks>
     public sealed class RuntimeDescription : IEquatable<RuntimeDescription>
     {
+        private static readonly IReadOnlyDictionary<string, RuntimeDependencySet> EmptyRuntimeDependencySets = new Dictionary<string, RuntimeDependencySet>();
+
         public string RuntimeIdentifier { get; }
 
         public IReadOnlyList<string> InheritedRuntimes { get; }
@@ -23,25 +25,33 @@ namespace NuGet.RuntimeModel
         public IReadOnlyDictionary<string, RuntimeDependencySet> RuntimeDependencySets { get; }
 
         public RuntimeDescription(string runtimeIdentifier)
-            : this(runtimeIdentifier, Enumerable.Empty<string>(), Enumerable.Empty<RuntimeDependencySet>())
+            : this(runtimeIdentifier, null, null)
         {
         }
 
         public RuntimeDescription(string runtimeIdentifier, IEnumerable<string> inheritedRuntimes)
-            : this(runtimeIdentifier, inheritedRuntimes, Enumerable.Empty<RuntimeDependencySet>())
+            : this(runtimeIdentifier, inheritedRuntimes, null)
         {
         }
 
         public RuntimeDescription(string runtimeIdentifier, IEnumerable<RuntimeDependencySet> runtimeDependencySets)
-            : this(runtimeIdentifier, Enumerable.Empty<string>(), runtimeDependencySets)
+            : this(runtimeIdentifier, null, runtimeDependencySets)
         {
         }
 
         public RuntimeDescription(string runtimeIdentifier, IEnumerable<string> inheritedRuntimes, IEnumerable<RuntimeDependencySet> runtimeDependencySets)
+            : this(
+                runtimeIdentifier,
+                inheritedRuntimes?.ToList(),
+                runtimeDependencySets?.ToDictionary(d => d.Id, StringComparer.OrdinalIgnoreCase))
+        {
+        }
+
+        private RuntimeDescription(string runtimeIdentifier, IReadOnlyList<string> inheritedRuntimes, IReadOnlyDictionary<string, RuntimeDependencySet> runtimeDependencySets)
         {
             RuntimeIdentifier = runtimeIdentifier;
-            InheritedRuntimes = inheritedRuntimes.ToList().AsReadOnly();
-            RuntimeDependencySets = runtimeDependencySets.ToDictionary(d => d.Id, StringComparer.OrdinalIgnoreCase);
+            InheritedRuntimes = inheritedRuntimes is null or { Count: 0 } ? Array.Empty<string>() : inheritedRuntimes;
+            RuntimeDependencySets = runtimeDependencySets is null or { Count: 0 } ? EmptyRuntimeDependencySets : runtimeDependencySets;
         }
 
         public bool Equals(RuntimeDescription other)
@@ -106,7 +116,11 @@ namespace NuGet.RuntimeModel
                 newSets[dependencySet.Id] = dependencySet;
             }
 
-            return new RuntimeDescription(left.RuntimeIdentifier, inheritedRuntimes, newSets.Values);
+            return new RuntimeDescription(
+                left.RuntimeIdentifier,
+                // If collections are empty, pass null to avoid allocations.
+                inheritedRuntimes.Count == 0 ? null : inheritedRuntimes,
+                newSets.Count == 0 ? null : newSets);
         }
 
         public override bool Equals(object obj)
