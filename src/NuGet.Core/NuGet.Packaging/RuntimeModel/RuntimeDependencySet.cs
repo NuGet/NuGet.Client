@@ -8,7 +8,10 @@ using NuGet.Shared;
 
 namespace NuGet.RuntimeModel
 {
-    public class RuntimeDependencySet : IEquatable<RuntimeDependencySet>
+    /// <remarks>
+    /// Immutable.
+    /// </remarks>
+    public sealed class RuntimeDependencySet : IEquatable<RuntimeDependencySet>
     {
         private static readonly IReadOnlyDictionary<string, RuntimePackageDependency> EmptyDependencies = new Dictionary<string, RuntimePackageDependency>();
 
@@ -67,29 +70,10 @@ namespace NuGet.RuntimeModel
             return combiner.CombinedHash;
         }
 
+        [Obsolete("This type is immutable, so there is no need or point to clone it.")]
         public RuntimeDependencySet Clone()
         {
-            return new RuntimeDependencySet(
-                Id,
-                CloneDependencies());
-
-            IReadOnlyDictionary<string, RuntimePackageDependency> CloneDependencies()
-            {
-                if (Dependencies.Count == 0)
-                {
-                    return EmptyDependencies;
-                }
-
-                Dictionary<string, RuntimePackageDependency> clone = new(capacity: Dependencies.Count, StringComparer.OrdinalIgnoreCase);
-
-                // No allocations for this enumeration
-                foreach (var pair in (Dictionary<string, RuntimePackageDependency>)Dependencies)
-                {
-                    clone[pair.Key] = pair.Value.Clone();
-                }
-
-                return clone;
-            }
+            return this;
         }
 
         public override string ToString()

@@ -32,14 +32,15 @@ namespace NuGet.CommandLine.Test
         private const int _failureCode = 1;
         private const int _successCode = 0;
 
-        [Fact]
-        public void RestoreCommand_BadInputPath()
+        [Theory]
+        [InlineData("bad/pat.h/myfile.blah")]
+        [InlineData("**/*.sln")]
+        public void RestoreCommand_BadInputPath(string solutionPath)
         {
             using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
-                var solutionPath = "bad/pat.h/myfile.blah";
 
                 var args = new string[]
                 {
@@ -59,7 +60,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.NotEqual(_successCode, r.ExitCode);
                 var error = r.Errors;
-                Assert.Contains("Input file does not exist: bad/pat.h/myfile.blah", r.Errors, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Input file does not exist: " + solutionPath, r.Errors, StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -371,6 +372,24 @@ namespace NuGet.CommandLine.Test
                 var packageFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.False(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+            }
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = Util.CreateBasicTwoProjectSolutionWithSolutionFilters(workingPath, "packages.config", "packages.config");
+
+                // Act
+                var r = CommandRunner.Run(nugetexe,
+                    workingPath, "restore " + Path.Combine(workingPath, "filter", "filterinsubfolder.slnf") + " -Source " + repositoryPath,
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(_successCode == r.ExitCode, r.Output + " " + r.Errors);
+                var packageFileA = Path.Combine(pathContext.PackagesV2, "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(pathContext.PackagesV2, "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
         }

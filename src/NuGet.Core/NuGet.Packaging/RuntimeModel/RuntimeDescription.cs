@@ -8,15 +8,19 @@ using NuGet.Shared;
 
 namespace NuGet.RuntimeModel
 {
-    public class RuntimeDescription : IEquatable<RuntimeDescription>
+    /// <remarks>
+    /// Immutable.
+    /// </remarks>
+    public sealed class RuntimeDescription : IEquatable<RuntimeDescription>
     {
         private static readonly IReadOnlyDictionary<string, RuntimeDependencySet> EmptyRuntimeDependencySets = new Dictionary<string, RuntimeDependencySet>();
 
         public string RuntimeIdentifier { get; }
+
         public IReadOnlyList<string> InheritedRuntimes { get; }
 
         /// <summary>
-        /// RID specific package dependencies.
+        /// RID specific package dependencies, keyed by <see cref="RuntimeDependencySet.Id"/>.
         /// </summary>
         public IReadOnlyDictionary<string, RuntimeDependencySet> RuntimeDependencySets { get; }
 
@@ -67,30 +71,10 @@ namespace NuGet.RuntimeModel
                 && RuntimeDependencySets.OrderedEquals(other.RuntimeDependencySets, p => p.Key, StringComparer.OrdinalIgnoreCase);
         }
 
+        [Obsolete("This type is immutable, so there is no need or point to clone it.")]
         public RuntimeDescription Clone()
         {
-            return new RuntimeDescription(
-                RuntimeIdentifier,
-                InheritedRuntimes,
-                CloneRuntimeDependencySets());
-
-            IReadOnlyDictionary<string, RuntimeDependencySet> CloneRuntimeDependencySets()
-            {
-                if (RuntimeDependencySets.Count == 0)
-                {
-                    return EmptyRuntimeDependencySets;
-                }
-
-                Dictionary<string, RuntimeDependencySet> clone = new(capacity: RuntimeDependencySets.Count, StringComparer.OrdinalIgnoreCase);
-
-                // No allocations for this enumeration
-                foreach (var pair in (Dictionary<string, RuntimeDependencySet>)RuntimeDependencySets)
-                {
-                    clone[pair.Key] = pair.Value.Clone();
-                }
-
-                return clone;
-            }
+            return this;
         }
 
         /// <summary>
@@ -123,13 +107,13 @@ namespace NuGet.RuntimeModel
             var newSets = new Dictionary<string, RuntimeDependencySet>();
             foreach (var dependencySet in left.RuntimeDependencySets.Values)
             {
-                newSets[dependencySet.Id] = dependencySet.Clone();
+                newSets[dependencySet.Id] = dependencySet;
             }
 
             // Overwrite with things from the right
             foreach (var dependencySet in right.RuntimeDependencySets.Values)
             {
-                newSets[dependencySet.Id] = dependencySet.Clone();
+                newSets[dependencySet.Id] = dependencySet;
             }
 
             return new RuntimeDescription(

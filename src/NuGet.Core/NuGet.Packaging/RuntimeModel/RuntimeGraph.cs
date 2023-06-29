@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using NuGet.Shared;
 
@@ -50,15 +49,15 @@ namespace NuGet.RuntimeModel
         {
         }
 
-        private RuntimeGraph(Dictionary<string, RuntimeDescription> runtimes, Dictionary<string, CompatibilityProfile> supports)
+        private RuntimeGraph(IReadOnlyDictionary<string, RuntimeDescription> runtimes, IReadOnlyDictionary<string, CompatibilityProfile> supports)
         {
-            Runtimes = new ReadOnlyDictionary<string, RuntimeDescription>(runtimes);
-            Supports = new ReadOnlyDictionary<string, CompatibilityProfile>(supports);
+            Runtimes = runtimes;
+            Supports = supports;
         }
 
         public RuntimeGraph Clone()
         {
-            return new RuntimeGraph(Runtimes.Values.Select(r => r.Clone()), Supports.Values.Select(s => s.Clone()));
+            return new RuntimeGraph(Runtimes, Supports.ToDictionary(pair => pair.Key, pair => pair.Value.Clone()));
         }
 
         /// <summary>
@@ -70,7 +69,7 @@ namespace NuGet.RuntimeModel
             var runtimes = new Dictionary<string, RuntimeDescription>();
             foreach (var runtime in left.Runtimes.Values)
             {
-                runtimes[runtime.RuntimeIdentifier] = runtime.Clone();
+                runtimes[runtime.RuntimeIdentifier] = runtime;
             }
 
             // Merge the right-side runtimes
