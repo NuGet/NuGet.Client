@@ -8,13 +8,17 @@ using NuGet.Shared;
 
 namespace NuGet.RuntimeModel
 {
-    public class RuntimeDescription : IEquatable<RuntimeDescription>
+    /// <remarks>
+    /// Immutable.
+    /// </remarks>
+    public sealed class RuntimeDescription : IEquatable<RuntimeDescription>
     {
         public string RuntimeIdentifier { get; }
+
         public IReadOnlyList<string> InheritedRuntimes { get; }
 
         /// <summary>
-        /// RID specific package dependencies.
+        /// RID specific package dependencies, keyed by <see cref="RuntimeDependencySet.Id"/>.
         /// </summary>
         public IReadOnlyDictionary<string, RuntimeDependencySet> RuntimeDependencySets { get; }
 
@@ -57,9 +61,10 @@ namespace NuGet.RuntimeModel
                 && RuntimeDependencySets.OrderedEquals(other.RuntimeDependencySets, p => p.Key, StringComparer.OrdinalIgnoreCase);
         }
 
+        [Obsolete("This type is immutable, so there is no need or point to clone it.")]
         public RuntimeDescription Clone()
         {
-            return new RuntimeDescription(RuntimeIdentifier, InheritedRuntimes, RuntimeDependencySets.Values.Select(d => d.Clone()));
+            return this;
         }
 
         /// <summary>
@@ -92,13 +97,13 @@ namespace NuGet.RuntimeModel
             var newSets = new Dictionary<string, RuntimeDependencySet>();
             foreach (var dependencySet in left.RuntimeDependencySets.Values)
             {
-                newSets[dependencySet.Id] = dependencySet.Clone();
+                newSets[dependencySet.Id] = dependencySet;
             }
 
             // Overwrite with things from the right
             foreach (var dependencySet in right.RuntimeDependencySets.Values)
             {
-                newSets[dependencySet.Id] = dependencySet.Clone();
+                newSets[dependencySet.Id] = dependencySet;
             }
 
             return new RuntimeDescription(left.RuntimeIdentifier, inheritedRuntimes, newSets.Values);

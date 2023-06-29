@@ -99,7 +99,7 @@ namespace NuGet.Commands
             }
 
             // Virtual root for file globbing
-            var rootDirectory = new VirtualFileInfo(VirtualFileProvider.RootDir, isDirectory: true);
+            var rootDirectory = new VirtualFileInfo(SingleFileProvider.RootDir, isDirectory: true);
 
             // Apply all nuspec property mappings to the files returned by content model
             foreach (var filesEntry in nuspecContentFiles)
@@ -129,9 +129,8 @@ namespace NuGet.Commands
                         var relativePath = file.Substring(rootFolderPathLength, file.Length - rootFolderPathLength);
 
                         // Check if the nuspec group include/exclude patterns apply to the file
-                        var virtualDirectory = new VirtualFileProvider(new List<string>() { relativePath });
                         var globbingDirectory = new FileProviderGlobbingDirectory(
-                            virtualDirectory,
+                            fileProvider: new SingleFileProvider(relativePath),
                             fileInfo: rootDirectory,
                             parent: null);
 
@@ -139,7 +138,7 @@ namespace NuGet.Commands
                         // check individually.
                         var matchResults = matcher.Execute(globbingDirectory);
 
-                        if (matchResults.Files.Any())
+                        if (matchResults.HasMatches)
                         {
                             entries.Add(filesEntry);
                         }
@@ -207,7 +206,7 @@ namespace NuGet.Commands
 
                 if (copyToOutput)
                 {
-                    string destination = null;
+                    string destination;
 
                     if (flatten)
                     {
@@ -217,7 +216,7 @@ namespace NuGet.Commands
                     {
                         // Find path relative to the TxM
                         // Ex: contentFiles/cs/net45/config/config.xml -> config/config.xml
-                        destination = GetContentFileFolderRelativeToFramework(file);
+                        destination = GetContentFileFolderRelativeToFramework(file.AsSpan());
                     }
 
                     if (isPP)
@@ -232,8 +231,8 @@ namespace NuGet.Commands
                 // Add the pp transform file if one exists
                 if (isPP)
                 {
-                    var destination = lockFileItem.Path.Substring(0, lockFileItem.Path.Length - 3);
-                    destination = GetContentFileFolderRelativeToFramework(destination);
+                    var destination = GetContentFileFolderRelativeToFramework(
+                        lockFileItem.Path.AsSpan().Slice(0, lockFileItem.Path.Length - 3));
 
                     lockFileItem.PPOutputPath = destination;
                 }
@@ -260,17 +259,36 @@ namespace NuGet.Commands
         // Find path relative to the TxM
         // Ex: contentFiles/cs/net45/config/config.xml -> config/config.xml
         // Ex: contentFiles/any/any/config/config.xml -> config/config.xml
-        private static string GetContentFileFolderRelativeToFramework(string itemPath)
+        internal static string GetContentFileFolderRelativeToFramework(ReadOnlySpan<char> itemPath)
         {
-            var parts = itemPath.Split('/');
+            ReadOnlySpan<char> span = itemPath;
 
-            if (parts.Length > 3)
+            int found = 0;
+
+            while (true)
             {
-                return string.Join("/", parts.Skip(3));
+                int slashIndex = span.IndexOf('/');
+
+                if (slashIndex == -1)
+                {
+                    // Didn't find enough parts
+                    break;
+                }
+
+                span = span.Slice(slashIndex + 1);
+
+                found++;
+
+                if (found == 3)
+                {
+                    // We have skipped three levels. Return what remains.
+                    return span.ToString();
+                }
             }
 
-            Debug.Fail("Unable to get relative path: " + itemPath);
-            return itemPath;
+            var path = itemPath.ToString();
+            Debug.Fail("Unable to get relative path: " + path);
+            return path;
         }
     }
 }

@@ -86,7 +86,7 @@ namespace NuGet.RuntimeModel
             }
 
             return new RuntimeGraph(
-                runtimes: Clone(Runtimes, r => r.Clone()),
+                runtimes: Runtimes,
                 supports: Clone(Supports, s => s.Clone()));
 
             static IReadOnlyDictionary<string, T> Clone<T>(IReadOnlyDictionary<string, T> source, Func<T, T> cloneFunc)
@@ -128,7 +128,7 @@ namespace NuGet.RuntimeModel
 
             foreach (var pair in left.Runtimes.NoAllocEnumerate())
             {
-                runtimes[pair.Key] = pair.Value.Clone();
+                runtimes[pair.Key] = pair.Value;
             }
 
             // Merge the right-side runtimes
