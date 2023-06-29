@@ -262,7 +262,7 @@
         Name="datePublished"
         Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=Published,Converter={StaticResource NullToVisibilityConverter}}"
-        Text="{Binding Path=Published,ConverterCulture={x:Static glob:CultureInfo.CurrentCulture},StringFormat={}{0:D} ({0:d})}"
+        Text="{Binding Path=Published,ConverterCulture={x:Static glob:CultureInfo.CurrentUICulture},StringFormat={}{0:D} ({0:d})}"
         AutomationProperties.LabeledBy="{Binding ElementName=_datePublishedLabel}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
