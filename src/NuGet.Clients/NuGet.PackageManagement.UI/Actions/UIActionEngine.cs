@@ -1029,7 +1029,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            List<string> addedPackagesWithNewSourceMappings = added.Select(_ => _.Id)
+            List<string> addedPackagesWithNoSourceMappings = added.Select(_ => _.Id)
                 .Where(addedPackage =>
                 {
                     IReadOnlyList<string> configuredSources = packageSourceMapping.GetConfiguredPackageSources(addedPackage);
@@ -1038,7 +1038,7 @@ namespace NuGet.PackageManagement.UI
                 .Distinct()
                 .ToList();
 
-            if (addedPackagesWithNewSourceMappings.Count == 0)
+            if (addedPackagesWithNoSourceMappings.Count == 0)
             {
                 return;
             }
@@ -1047,16 +1047,16 @@ namespace NuGet.PackageManagement.UI
             {
                 newSourceMappings = new Dictionary<string, SortedSet<string>>(capacity: 1)
                 {
-                    { newMappingSourceName, new SortedSet<string>(addedPackagesWithNewSourceMappings) }
+                    { newMappingSourceName, new SortedSet<string>(addedPackagesWithNoSourceMappings) }
                 };
             }
             else if (newSourceMappings.TryGetValue(newMappingSourceName, out SortedSet<string>? newMappingPackageIds))
             {
-                newMappingPackageIds.UnionWith(addedPackagesWithNewSourceMappings);
+                newMappingPackageIds.UnionWith(addedPackagesWithNoSourceMappings);
             }
             else
             {
-                newSourceMappings.Add(newMappingSourceName, new SortedSet<string>(addedPackagesWithNewSourceMappings));
+                newSourceMappings.Add(newMappingSourceName, new SortedSet<string>(addedPackagesWithNoSourceMappings));
             }
         }
 
