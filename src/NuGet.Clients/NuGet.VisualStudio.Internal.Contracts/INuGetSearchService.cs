@@ -86,7 +86,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             bool includePrerelease,
             CancellationToken cancellationToken);
 
-        ValueTask<IReadOnlyList<SourceRepository>> GetAllPackageFoldersAsync(
+        Task<IReadOnlyList<SourceRepository>> GetAllPackageFoldersAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             CancellationToken cancellationToken);
     }
