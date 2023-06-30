@@ -732,10 +732,10 @@ namespace NuGet.PackageManagement.UI
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
                     IsPackageWithNetworkErrors = true;
-        }
+                }
                 catch (OperationCanceledException)
                 {
-                    // task cancelation
+                    // if cancellationToken cancelled before the above is scheduled on UI thread, don't log fault telemetry
                 }
             }
         }
@@ -770,7 +770,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 catch (OperationCanceledException)
                 {
-                    // task cancelation
+                    // if cancellationToken cancelled before the above is scheduled on UI thread, don't log fault telemetry
                 }
             }
         }

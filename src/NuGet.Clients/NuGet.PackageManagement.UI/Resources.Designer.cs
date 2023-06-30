@@ -1096,7 +1096,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error getting additional information about package. Refresh to try again..
+        ///   Looks up a localized string similar to Error getting additional information about the package. Refresh to try again..
         /// </summary>
         public static string Label_NetworkError {
             get {
