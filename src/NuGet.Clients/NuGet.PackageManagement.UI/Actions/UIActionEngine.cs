@@ -799,9 +799,11 @@ namespace NuGet.PackageManagement.UI
                     licenseCheck.Add(pkg.New);
                 }
             }
+            var searchService = uiService.UIContext.ReconnectingSearchService;
+            var projects = (IReadOnlyCollection<IProjectContextInfo>)uiService.Projects;
 
-            IEnumerable<SourceRepository> sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-            List<IPackageSearchMetadata> licenseMetadata = await GetPackageMetadataAsync(sources, licenseCheck, token);
+            IReadOnlyList<SourceRepository> localSources = await searchService.GetAllPackageFoldersAsync(projects, token);
+            List<IPackageSearchMetadata> licenseMetadata = await GetOnlyLocalPackageMetadataAsync(localSources, licenseCheck, token);
 
             TelemetryServiceUtility.StopTimer();
 
@@ -1013,47 +1015,23 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Get the package metadata to see if RequireLicenseAcceptance is true
         /// </summary>
-        private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(
-            IEnumerable<SourceRepository> sources,
+        private async Task<List<IPackageSearchMetadata>> GetOnlyLocalPackageMetadataAsync(
+            IEnumerable<SourceRepository> localSources,
             IEnumerable<PackageIdentity> packages,
             CancellationToken token)
         {
             var results = new List<IPackageSearchMetadata>();
 
-            // local sources
-            var localSources = new List<SourceRepository>
-            {
-                _packageManager.PackagesFolderSourceRepository
-            };
-            localSources.AddRange(_packageManager.GlobalPackageFolderRepositories);
-
             var allPackages = packages.ToArray();
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
-                // first check all the packages with local sources.
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
                 IPackageSearchMetadata[] completed = (await TaskCombinators.ThrottledAsync(
                     allPackages,
                     (p, t) => GetPackageMetadataAsync(localSources, sourceCacheContext, p, t),
-                    token)).Where(metadata => metadata != null).ToArray();
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+                    token)).Cast<IPackageSearchMetadata>().Where(metadata => metadata != null).ToArray();
 
                 results.AddRange(completed);
-
-                if (completed.Length != allPackages.Length)
-                {
-                    // get remaining package's metadata from remote repositories
-                    var remainingPackages = allPackages.Where(package => package != null && !completed.Any(packageMetadata => packageMetadata != null && packageMetadata.Identity.Equals(package)));
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-                    IPackageSearchMetadata[] remoteResults = (await TaskCombinators.ThrottledAsync(
-                        remainingPackages,
-                        (p, t) => GetPackageMetadataAsync(sources, sourceCacheContext, p, t),
-                        token)).Where(metadata => metadata != null).ToArray();
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-
-                    results.AddRange(remoteResults);
-                }
             }
             // check if missing metadata for any package
             if (allPackages.Length != results.Count)
