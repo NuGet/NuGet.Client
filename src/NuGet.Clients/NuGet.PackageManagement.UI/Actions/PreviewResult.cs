@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.UI
 
         public IEnumerable<UpdatePreviewResult> Updated { get; }
 
-        public Dictionary<string, SortedSet<string>>? NewSourceMappings { get; }
+        public IReadOnlyDictionary<string, SortedSet<string>>? NewSourceMappings { get; }
 
         public string? Name { get; }
 
