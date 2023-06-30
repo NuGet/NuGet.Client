@@ -1029,7 +1029,7 @@ namespace NuGet.PackageManagement.UI
                 IPackageSearchMetadata[] completed = (await TaskCombinators.ThrottledAsync(
                     allPackages,
                     (p, t) => GetPackageMetadataAsync(localSources, sourceCacheContext, p, t),
-                    token)).Cast<IPackageSearchMetadata>().Where(metadata => metadata != null).ToArray();
+                    token)).Where(metadata => metadata != null).Cast<IPackageSearchMetadata>().ToArray();
 
                 results.AddRange(completed);
             }
