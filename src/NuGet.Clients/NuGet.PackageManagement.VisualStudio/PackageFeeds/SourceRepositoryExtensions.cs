@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <summary>
     /// Helper class encapsulating common scenarios of source repository operations.
     /// </summary>
-    public static class SourceRepositoryExtensions
+    internal static class SourceRepositoryExtensions
     {
         public static Task<SearchResult<IPackageSearchMetadata>> SearchAsync(this SourceRepository sourceRepository, string searchText, SearchFilter searchFilter, int pageSize, CancellationToken cancellationToken)
         {
