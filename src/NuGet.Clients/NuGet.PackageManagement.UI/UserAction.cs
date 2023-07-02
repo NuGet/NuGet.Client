@@ -26,16 +26,16 @@ namespace NuGet.PackageManagement.UI
             ActiveTab = activeTab;
         }
 
-        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion? packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, VersionRange versionRange, string? sourceMappingSourceName)
-            : this(action, packageId, packageVersion, isSolutionLevel, activeTab, sourceMappingSourceName)
+        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion? packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, VersionRange versionRange, string? selectedSourceName)
+            : this(action, packageId, packageVersion, isSolutionLevel, activeTab, selectedSourceName)
         {
             VersionRange = versionRange;
         }
 
-        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion? packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, string? sourceMappingSourceName)
+        private UserAction(NuGetProjectActionType action, string packageId, NuGetVersion? packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab, string? selectedSourceName)
            : this(action, packageId, packageVersion, isSolutionLevel, activeTab)
         {
-            SourceMappingSourceName = sourceMappingSourceName;
+            SelectedSourceName = selectedSourceName;
         }
 
         public NuGetProjectActionType Action { get; private set; }
@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.UI
         public string PackageId { get; }
         public NuGetVersion? Version { get; }
         public VersionRange? VersionRange { get; }
-        public string? SourceMappingSourceName { get; }
+        public string? SelectedSourceName { get; }
 
         public static UserAction CreateInstallAction(string packageId, NuGetVersion? packageVersion, bool isSolutionLevel, ContractsItemFilter activeTab)
         {

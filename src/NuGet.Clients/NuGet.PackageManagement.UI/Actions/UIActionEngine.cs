@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.UI
                     uiService.RemoveDependencies,
                     uiService.ForceRemove,
                     newMappingID: userAction.PackageId,
-                    newMappingSource: userAction.SourceMappingSourceName,
+                    newMappingSource: userAction.SelectedSourceName,
                     cancellationToken),
                 cancellationToken);
         }
@@ -1023,7 +1023,7 @@ namespace NuGet.PackageManagement.UI
 
         private static void GetNewSourceMappingsFromAddedPackages(ref Dictionary<string, SortedSet<string>>? newSourceMappings, UserAction? userAction, List<AccessiblePackageIdentity> added, PackageSourceMapping packageSourceMapping)
         {
-            string? newMappingSourceName = userAction?.SourceMappingSourceName;
+            string? newMappingSourceName = userAction?.SelectedSourceName;
             if (newMappingSourceName is null || added.Count == 0 || packageSourceMapping is null)
             {
                 return;

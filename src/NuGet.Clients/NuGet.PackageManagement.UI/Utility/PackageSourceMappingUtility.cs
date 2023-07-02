@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI
             PackageSourceMappingProvider sourceMappingProvider,
             IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingSourceItems)
         {
-            if (userAction?.SourceMappingSourceName is null || addedPackageIds is null)
+            if (userAction?.SelectedSourceName is null || addedPackageIds is null)
             {
                 return;
             }
@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.UI
                 .ToArray();
 
             CreateAndSavePackageSourceMappings(
-                userAction.SourceMappingSourceName,
+                userAction.SelectedSourceName,
                 packageIdsNeedingNewSourceMappings,
                 sourceMappingProvider,
                 existingPackageSourceMappingSourceItems);
