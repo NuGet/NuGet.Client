@@ -3075,6 +3075,10 @@ namespace NuGet.PackageManagement
                         r.SummaryRequest.Request.Project.RestoreMetadata.ProjectPath,
                         buildIntegratedProject.MSBuildProjectPath,
                         StringComparison.OrdinalIgnoreCase));
+                string[] metadataFiles = Directory.GetFileSystemEntries(request.GlobalPackagesFolder, PackagingCoreConstants.NupkgMetadataFileExtension, SearchOption.AllDirectories);
+                NupkgMetadataFile metadata = NupkgMetadataFileFormat.Read(metadataPath);
+                string source = metadata.Source;
+                // restoreResult.SummaryRequest.Request.DependencyProviders
 
                 var unsuccessfulFrameworks = restoreResult
                     .Result
