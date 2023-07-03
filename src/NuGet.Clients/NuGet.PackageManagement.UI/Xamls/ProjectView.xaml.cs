@@ -165,7 +165,8 @@ namespace NuGet.PackageManagement.UI
                             {
                                 // Search for the best version
                                 NuGetVersion rangeBestVersion = userRequestedVersionRange.FindBestMatch(versions);
-                                bool isBestOption = rangeBestVersion.ToString() == _versions.Items[_versions.SelectedIndex].ToString();
+                                DisplayVersion selectedVersion = _versions.Items.CurrentItem as DisplayVersion;
+                                bool isBestOption = rangeBestVersion.ToString() == selectedVersion.Version.ToString();
                                 if (isBestOption)
                                 {
                                     PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null, isVulnerable: false);
@@ -248,10 +249,13 @@ namespace NuGet.PackageManagement.UI
             for (int i = 0; i < _versions.Items.Count; i++)
             {
                 DisplayVersion currentItem = _versions.Items[i] as DisplayVersion;
-                if (currentItem != null && (comboboxText == _versions.Items[i].ToString() || _versions.Items[i].ToString() == matchVersion?.ToString()))
+                if (currentItem != null &&
+                    _versions.Items[i] != null && // null separator
+                    (comboboxText.Trim() == currentItem.Version.ToNormalizedString() || // trim extra spaces and compare versions without labels
+                     matchVersion?.ToString() == currentItem.Version.ToNormalizedString()))
                 {
                     _versions.SelectedIndex = i; // This is the "select" effect in the dropdown
-                    PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRange, matchVersion, additionalInfo: null, isVulnerable: currentItem.IsVulnerable);
+                    PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRange, matchVersion, additionalInfo: null, isDeprecated: currentItem.IsDeprecated, isVulnerable: currentItem.IsVulnerable);
                 }
             }
         }
