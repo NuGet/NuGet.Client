@@ -539,6 +539,8 @@ namespace NuGet.DependencyResolver
         {
             public static readonly IEqualityComparer<LibraryDependency> OrdinalIgnoreCaseNameComparer = new LibraryDependencyNameComparer();
 
+            private LibraryDependencyNameComparer() { }
+
             public bool Equals(LibraryDependency x, LibraryDependency y)
             {
                 return string.Equals(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
