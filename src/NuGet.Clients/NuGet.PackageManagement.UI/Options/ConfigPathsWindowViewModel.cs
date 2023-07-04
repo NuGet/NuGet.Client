@@ -3,9 +3,11 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Services.Common;
+using NuGet.Common;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -39,7 +41,15 @@ namespace NuGet.PackageManagement.UI.Options
         {
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var projectContext = componentModel.GetService<INuGetProjectContext>();
+            if (!File.Exists(selectedPath.ConfigPath))
+            {
+                var error = new FileNotFoundException(selectedPath.ConfigPath);
+                var errorEvent = new TelemetryEvent("ConfigPathsFileNotFoundException");
+                MessageHelper.ShowErrorMessage(error.Message, Resources.ShowError_FileNotFound);
+                TelemetryActivity.EmitTelemetryEvent(errorEvent);
+            }
             _ = projectContext.ExecutionContext.OpenFile(selectedPath.ConfigPath);
+
         }
 
         public ConfigPathsWindowViewModel()

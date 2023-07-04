@@ -1636,6 +1636,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The following file could not be found:.
+        /// </summary>
+        public static string ShowError_FileNotFound {
+            get {
+                return ResourceManager.GetString("ShowError_FileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to initialize NuGet Package Manager Settings. Please report a problem using Help &gt; Send Feedback &gt; Report a Problem..
         /// </summary>
         public static string ShowError_SettingActivatedFailed {

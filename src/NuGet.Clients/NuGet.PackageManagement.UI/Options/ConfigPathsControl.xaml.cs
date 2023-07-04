@@ -33,24 +33,16 @@ namespace NuGet.PackageManagement.UI.Options
 
         private void ExecuteOpenConfigurationFile(object obj)
         {
-            try
-            {
-                SelectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
-                ConfigPathsWindow.OpenConfigFile(SelectedPath);
-                var evt = new NavigatedTelemetryEvent(NavigationType.Button, NavigationOrigin.Options_ConfigurationFiles_Open);
-                TelemetryActivity.EmitTelemetryEvent(evt);
-            }
-            catch (System.Exception)
-            {
-                // this is currently never executing even if the file doesn't open
-                throw;
-                // add telemetry event here?
-            }
+            SelectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
+            ConfigPathsWindow.OpenConfigFile(SelectedPath);
+            var evt = new NavigatedTelemetryEvent(NavigationType.Button, NavigationOrigin.Options_ConfigurationFiles_Open);
+            TelemetryActivity.EmitTelemetryEvent(evt);
         }
 
         private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            ExecuteOpenConfigurationFile(sender);
+            SelectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
+            ConfigPathsWindow.OpenConfigFile(SelectedPath);
             var evt = new NavigatedTelemetryEvent(NavigationType.DoubleClick, NavigationOrigin.Options_ConfigurationFiles_ListItem);
             TelemetryActivity.EmitTelemetryEvent(evt);
         }
