@@ -45,11 +45,10 @@ namespace NuGet.PackageManagement.UI.Options
             {
                 var error = new FileNotFoundException(selectedPath.ConfigPath);
                 var errorEvent = new TelemetryEvent("ConfigPathsFileNotFoundException");
-                MessageHelper.ShowErrorMessage(error.Message, Resources.ShowError_FileNotFound);
                 TelemetryActivity.EmitTelemetryEvent(errorEvent);
+                MessageHelper.ShowErrorMessage(error.Message, Resources.ShowError_FileNotFound);
             }
             _ = projectContext.ExecutionContext.OpenFile(selectedPath.ConfigPath);
-
         }
 
         public ConfigPathsWindowViewModel()
