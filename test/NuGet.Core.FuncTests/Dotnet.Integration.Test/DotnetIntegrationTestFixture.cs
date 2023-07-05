@@ -456,9 +456,18 @@ namespace Dotnet.Integration.Test
 
         private static void KillDotnetExe(string pathToDotnetExe, params string[] workingDirectories)
         {
-            foreach (Process process in Process.GetProcessesByName("dotnet").Where(i => i.MainModule.FileName.Equals(pathToDotnetExe, StringComparison.OrdinalIgnoreCase)))
+            foreach (Process process in Process.GetProcessesByName("dotnet"))
             {
-                process.Kill();
+                try
+                {
+                    if (string.Equals(process.MainModule.FileName, pathToDotnetExe, StringComparison.OrdinalIgnoreCase))
+                    {
+                        process.Kill();
+                    }
+                }
+                catch (Exception)
+                {
+                }
             }
 
             foreach (Process process in Process.GetProcesses())
