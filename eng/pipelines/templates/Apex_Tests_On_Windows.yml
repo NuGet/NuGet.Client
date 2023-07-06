@@ -67,6 +67,7 @@ stages:
         - task: PowerShell@2
           displayName: "Get Baseline build commit ids"
           name: "getbaselinebuildcommitids"
+          retryCountOnTaskFailure: 3
           continueOnError: true
           inputs:
             targetType: 'inline'
@@ -91,6 +92,7 @@ stages:
         - task: PowerShell@2
           name: SetVisualStudioBaseBuildID
           displayName: Set 'VisualStudio.BaseBuild.ID'
+          retryCountOnTaskFailure: 3
           condition: ne(variables['BaselineBuildCommitIds'], '')
           continueOnError: true
           inputs:
@@ -99,6 +101,7 @@ stages:
         - task: PowerShell@2
           name: SetVisualStudioBaseBuildProductsDropName
           displayName: Set 'VisualStudio.BaseBuild.ProductsDropName'
+          retryCountOnTaskFailure: 3
           condition: ne(variables['VisualStudio.BaseBuild.ID'], '')
           inputs:
             filePath: $(DartLab.Path)\Scripts\VisualStudio\Build\Get-VisualStudioDropName.ps1
@@ -106,6 +109,7 @@ stages:
         - task: PowerShell@2
           name: SetBaseProductsDropNameToTarget
           displayName: Set 'VisualStudio.BaseBuild.ProductsDropName' to drop from target build
+          retryCountOnTaskFailure: 3
           condition: eq(variables['VisualStudio.BaseBuild.ID'], '')
           inputs:
             targetType: 'inline'
