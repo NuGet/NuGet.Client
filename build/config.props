@@ -100,6 +100,9 @@
   <Target Name="GetVsTargetMajorVersion">
     <Message Text="$(VsTargetMajorVersion)" Importance="High"/>
   </Target>
+  <Target Name="GetVersion">
+    <Message Text="$(Version)" Importance="High"/>
+  </Target>
   <Target Name="GetVsTargetBranch">
     <Message Text="$(VsTargetBranch)" Importance="High"/>
   </Target>
