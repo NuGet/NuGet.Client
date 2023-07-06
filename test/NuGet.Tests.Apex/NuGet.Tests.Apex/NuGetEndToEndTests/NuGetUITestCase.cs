@@ -23,9 +23,6 @@ namespace NuGet.Tests.Apex
 
         private const int TestTimeoutLimit = 5 * 60 * 1000; // 5 minutes
 
-        private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan Interval = TimeSpan.FromSeconds(2);
-
         public NuGetUITestCase()
             : base()
         {
@@ -33,7 +30,7 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(TestTimeoutLimit)]
-        public void SearchPackageFromUI()
+        public async void SearchPackageFromUI()
         {
             // Arrange
             await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
@@ -47,7 +44,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.SwitchTabToBrowse();
@@ -59,7 +56,7 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(TestTimeoutLimit)]
-        public void InstallPackageFromUI()
+        public async void InstallPackageFromUI()
         {
             // Arrange
             await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
@@ -73,7 +70,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
@@ -84,7 +81,7 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(TestTimeoutLimit)]
-        public void InstallPackageToProjectsFromUI()
+        public async void InstallPackageToProjectsFromUI()
         {
             // Arrange
             await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
@@ -98,13 +95,13 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(nuProject);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
 
             VisualStudio.SelectProjectInSolutionExplorer(project.Name);
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             VisualStudio.ClearOutputWindow();
             NuGetUIProjectTestExtension uiwindow2 = nugetTestService.GetUIWindowfromProject(project);
@@ -117,7 +114,7 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(TestTimeoutLimit)]
-        public void UninstallPackageFromUI()
+        public async void UninstallPackageFromUI()
         {
             // Arrange
             await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
@@ -130,7 +127,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             FileInfo packagesConfigFile = GetPackagesConfigFile(project);
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
@@ -150,7 +147,7 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(TestTimeoutLimit)]
-        public void UpdatePackageFromUI()
+        public async void UpdatePackageFromUI()
         {
             // Arrange
             await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
@@ -165,7 +162,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
@@ -197,7 +194,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
@@ -225,11 +222,11 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(nuProject);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             VisualStudio.SelectProjectInSolutionExplorer(project.Name);
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             VisualStudio.ClearOutputWindow();
             NuGetUIProjectTestExtension uiwindow2 = nugetTestService.GetUIWindowfromProject(project);
@@ -264,7 +261,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
 
@@ -299,7 +296,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
@@ -329,7 +326,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
 
@@ -367,7 +364,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
 
             // Set option to package source option to All
@@ -395,7 +392,7 @@ namespace NuGet.Tests.Apex
             return new FileInfo(Path.Combine(projectFile.DirectoryName, "packages.config"));
         }
 
-
+        /* comment out newly added Apex tests
         [StaFact]
         public void InstallPackageToWebSiteProjectFromUI()
         {

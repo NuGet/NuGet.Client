@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
-using Microsoft.Build.Utilities;
 using System.Diagnostics;
+using System.Threading;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.Test.Utility;
@@ -61,9 +60,10 @@ namespace NuGet.Tests.Apex
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine($"Failed to close VS on dispose. Attempt #{attempt}");
+                    Trace.TraceError($"Failed to close VS on dispose. Attempt #{attempt}");
                     Thread.Sleep(TimeSpan.FromSeconds(3));
-                    ExceptionUtilities.LogException(ex, _logger);
+                    Trace.TraceError($"{ex.Message}");
+                    //ExceptionUtilities.LogException(ex, _logger);
                 }
             }
             _pathContext.Dispose();

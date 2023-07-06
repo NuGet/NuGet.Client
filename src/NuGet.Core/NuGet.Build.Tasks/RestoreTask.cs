@@ -12,7 +12,6 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Commands;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.Build.Tasks

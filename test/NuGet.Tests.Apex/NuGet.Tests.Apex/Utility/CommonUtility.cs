@@ -316,19 +316,19 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        internal static void OpenNuGetPackageManagerWithDte(VisualStudioHost visualStudio, ILogger logger)
+        internal static void OpenNuGetPackageManagerWithDte(VisualStudioHost visualStudio)
         {
             visualStudio.ObjectModel.Solution.WaitForOperationsInProgress(TimeSpan.FromMinutes(3));
-            WaitForCommandAvailable(visualStudio, "Project.ManageNuGetPackages", TimeSpan.FromMinutes(1), logger);
+            WaitForCommandAvailable(visualStudio, "Project.ManageNuGetPackages", TimeSpan.FromMinutes(1));
             visualStudio.Dte.ExecuteCommand("Project.ManageNuGetPackages");
         }
 
-        private static void WaitForCommandAvailable(VisualStudioHost visualStudio, string commandName, TimeSpan timeout, ILogger logger)
+        private static void WaitForCommandAvailable(VisualStudioHost visualStudio, string commandName, TimeSpan timeout)
         {
-            WaitForCommandAvailable(visualStudio.Dte.Commands.Item(commandName), timeout, logger);
+            WaitForCommandAvailable(visualStudio.Dte.Commands.Item(commandName), timeout);
         }
 
-        private static void WaitForCommandAvailable(Command cmd, TimeSpan timeout, ILogger logger)
+        private static void WaitForCommandAvailable(Command cmd, TimeSpan timeout)
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -341,7 +341,7 @@ namespace NuGet.Tests.Apex
                 Thread.Sleep(250);
             }
 
-            logger.LogWarning($"Timed out waiting for {cmd.Name} to be available");
+            Trace.TraceWarning($"Timed out waiting for {cmd.Name} to be available");
         }
 
         private static bool IsPackageInstalledInAssetsFile(string assetsFilePath, string packageName, string packageVersion, bool expected)

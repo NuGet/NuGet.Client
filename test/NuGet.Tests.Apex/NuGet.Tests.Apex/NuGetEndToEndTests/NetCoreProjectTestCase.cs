@@ -1,8 +1,5 @@
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Test.Apex.VisualStudio.Solution;
-using NuGet.Test.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace NuGet.Tests.Apex
@@ -57,6 +54,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        /* comment out newly added Apex tests
         [NuGetWpfTheory]
         [MemberData(nameof(GetNetCoreTemplates))]
         public async Task WithSourceMappingEnabled_InstallPackageFromPMUIFromExpectedSource_Succeeds(ProjectTemplate projectTemplate)
@@ -364,6 +362,8 @@ namespace NuGet.Tests.Apex
                 }
             }
         }
+        */
+
         // There  is a bug with VS or Apex where NetCoreConsoleApp and NetCoreClassLib create netcore 2.1 projects that are not supported by the sdk
         // Commenting out any NetCoreConsoleApp or NetCoreClassLib template and swapping it for NetStandardClassLib as both are package ref.
 

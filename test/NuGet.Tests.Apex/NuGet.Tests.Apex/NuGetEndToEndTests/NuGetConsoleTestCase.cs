@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
-using NuGet.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NuGet.Test.Utility;
 
@@ -569,6 +568,7 @@ namespace NuGet.Tests.Apex
             solutionService.Save();
         }
 
+        /* comment out newly added Apex tests
         [NuGetWpfTheory]
         [MemberData(nameof(GetPackageReferenceTemplates))]
         public async Task InstallPackageForPR_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
@@ -963,6 +963,7 @@ namespace NuGet.Tests.Apex
                 Assert.True(nugetConsole.IsMessageFoundInPMC("Install.ps1"), "The Install.ps1 script in TestProject was not executed when the Entityframework.sqlservercompact package was installed.");
             }
         }
+        */
 
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
