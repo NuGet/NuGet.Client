@@ -33,6 +33,9 @@ namespace NuGet.DependencyResolver
             GetOrAddEntry(item).Ambiguous = true;
         }
 
+        /// <remarks>
+        /// Note, this method returns <see langword="true"/> for items that were never tracked.
+        /// </remarks>
         public bool IsBestVersion(GraphItem<TItem> item)
         {
             var entry = TryGetEntry(item);
