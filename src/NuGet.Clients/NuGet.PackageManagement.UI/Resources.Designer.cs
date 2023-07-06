@@ -637,6 +637,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Getting Configuration Files....
+        /// </summary>
+        public static string ConfigPathsOptions_OnActivated {
+            get {
+                return ResourceManager.GetString("ConfigPathsOptions_OnActivated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Highest.
         /// </summary>
         public static string DependencyBehavior_Highest {

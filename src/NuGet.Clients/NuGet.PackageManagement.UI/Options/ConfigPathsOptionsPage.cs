@@ -1,3 +1,5 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
@@ -25,21 +27,6 @@ namespace NuGet.PackageManagement.UI.Options
         }
 
         /// <summary>
-        /// This occurs when the User selecting 'Ok' and right before the dialog page UI closes entirely.
-        /// This override handles the case when the user types inside an editable combobox and 
-        /// immediately hits enter causing the window to close without firing the combobox LostFocus event.
-        /// </summary>
-        /// <param name="e">Event arguments.</param>
-        protected override void OnApply(PageApplyEventArgs e)
-        {
-            //bool wasApplied = PackageSourceMappingControl.ApplyChangedSettings();
-            //if (!wasApplied)
-            //{
-            //    e.ApplyBehavior = ApplyKind.CancelNoNavigate;
-            //}
-        }
-
-        /// <summary>
         /// This method is called when VS wants to activate this page.
         /// ie. when the user opens the tools options page.
         /// </summary>
@@ -55,7 +42,7 @@ namespace NuGet.PackageManagement.UI.Options
             {
                 OnActivateAsync(e, CancellationToken);
 
-            }, Resources.PackageSourceMappingOptions_OnActivated);
+            }, Resources.ConfigPathsOptions_OnActivated);
         }
 
         private void OnActivateAsync(CancelEventArgs e, CancellationToken cancellationToken)
@@ -63,6 +50,6 @@ namespace NuGet.PackageManagement.UI.Options
             _configPathsControl.Value.InitializeOnActivated(cancellationToken);
         }
 
-        private ConfigPathsControl PackageSourceMappingControl => _configPathsControl.Value;
+        private ConfigPathsControl ConfigPathsControl => _configPathsControl.Value;
     }
 }
