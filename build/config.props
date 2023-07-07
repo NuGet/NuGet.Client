@@ -65,6 +65,10 @@
   <PropertyGroup Condition=" '$(Version)' == '' ">
     <Version>$(SemanticVersion)$(PreReleaseInformationVersion)</Version>
   </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(NuGetVsVersion)' == '' ">
+    <NuGetVsVersion>$(NuGetSdkVsSemanticVersion)$(PreReleaseInformationVersion)</NuGetVsVersion>
+  </PropertyGroup>
 
   <!-- Config -->
   <PropertyGroup>
@@ -100,8 +104,8 @@
   <Target Name="GetVsTargetMajorVersion">
     <Message Text="$(VsTargetMajorVersion)" Importance="High"/>
   </Target>
-  <Target Name="GetVersion">
-    <Message Text="$(Version)" Importance="High"/>
+  <Target Name="GetNuGetVsVersion">
+    <Message Text="$(NuGetVsVersion)" Importance="High"/>
   </Target>
   <Target Name="GetVsTargetBranch">
     <Message Text="$(VsTargetBranch)" Importance="High"/>
