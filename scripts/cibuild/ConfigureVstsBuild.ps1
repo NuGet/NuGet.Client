@@ -175,6 +175,8 @@ else
     $NuGetSdkVsVersion = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetNuGetSdkVsSemanticVersion) | Out-String).Trim()
     $VsTargetChannel = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetVsTargetChannel) | Out-String).Trim()
     $VsTargetMajorVersion = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetVsTargetMajorVersion) | Out-String).Trim()
+    $Version = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetVersion) | Out-String).Trim()
+
     Write-Host "VS target branch: $VsTargetBranch"
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
@@ -186,6 +188,7 @@ else
         VsTargetChannel = $VstargetChannel
         VsTargetMajorVersion = $VsTargetMajorVersion
         NuGetSdkVsVersion = $NuGetSdkVsVersion
+        Version = $Version
     }
 
     # First create the file locally so that we can laster publish it as a build artifact from a local source file instead of a remote source file.
