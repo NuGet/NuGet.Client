@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NuGet.Configuration;
 using NuGet.Test.Utility;
 
 namespace NuGet.Tests.Apex
@@ -568,9 +569,9 @@ namespace NuGet.Tests.Apex
             solutionService.Save();
         }
 
-        /* comment out newly added Apex tests
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
+        [DataTestMethod]
+        [DataRow(nameof(GetPackageReferenceTemplates))]
+        [Timeout(Timeout)]
         public async Task InstallPackageForPR_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -614,7 +615,7 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
             var nugetConsole = GetConsole(testContext.Project);
 
             // Act
@@ -622,13 +623,14 @@ namespace NuGet.Tests.Apex
 
             // Assert
             var expectedMessage = $"Installed {packageName} {packageVersion1} from {privateRepositoryPath}";
-            Assert.True(nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
+            Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
             VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-            Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+            Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
         }
 
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetPackageReferenceTemplates))]
+        [DataTestMethod]
+        [DataRow(nameof(GetPackageReferenceTemplates))]
+        [Timeout(Timeout)]
         public async Task UpdatePackageForPR_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -675,7 +677,7 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
             var solutionService = VisualStudio.Get<SolutionService>();
             var nugetConsole = GetConsole(testContext.Project);
 
@@ -699,14 +701,15 @@ namespace NuGet.Tests.Apex
             solutionService.Save();
         }
 
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetNetCoreTemplates))]
+        [DataTestMethod]
+        [DataRow(nameof(GetNetCoreTemplates))]
+        [Timeout(Timeout)]
         public async Task VerifyCacheFileInsideObjFolder(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
                 var packageName = "VerifyCacheFilePackage";
                 var packageVersion = "1.0.0";
@@ -730,9 +733,10 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")]
-        [InlineData(ProjectTemplate.NetStandardClassLib, "PackageC", "1.0.0", "2.0.0", "PackageD", "1.1.0", "2.2.0")]
+        [DataTestMethod]
+        [DataRow(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")]
+        [DataRow(ProjectTemplate.NetStandardClassLib, "PackageC", "1.0.0", "2.0.0", "PackageD", "1.1.0", "2.2.0")]
+        [Timeout(Timeout)]
         public async Task UpdateAllPackagesInPMC(ProjectTemplate projectTemplate, string packageName1, string packageVersion1, string packageVersion2, string packageName2, string packageVersion3, string packageVersion4)
         {
             EnsureVisualStudioHost();
@@ -744,7 +748,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion3);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion4);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
                 {
                     var solutionService = VisualStudio.Get<SolutionService>();
                     var nugetConsole = GetConsole(testContext.Project);
@@ -762,22 +766,23 @@ namespace NuGet.Tests.Apex
                     // Assert
                     if (projectTemplate.ToString().Equals("ClassLibrary"))
                     {
-                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
-                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion2);
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion4);
                     }
                     else
                     {
-                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion2, XunitLogger);
-                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion4, XunitLogger);
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion2);
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion4);
                     }
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+                    Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
         }
 
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetIOSTemplates))]
+        [DataTestMethod]
+        [DataRow(nameof(GetIOSTemplates))]
+        [Timeout(Timeout)]
         public async Task InstallPackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
@@ -788,7 +793,7 @@ namespace NuGet.Tests.Apex
                 var v100 = "1.0.0";
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, simpleTestPathContext: simpleTestPathContext))
                 {
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
@@ -803,14 +808,15 @@ namespace NuGet.Tests.Apex
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v100, XunitLogger);
-                    Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v100);
+                    Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
         }
 
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetIOSTemplates))]
+        [DataTestMethod]
+        [DataRow(nameof(GetIOSTemplates))]
+        [Timeout(Timeout)]
         public async Task UpdatePackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
@@ -824,7 +830,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v200);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, simpleTestPathContext: simpleTestPathContext))
                 {
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
@@ -843,14 +849,15 @@ namespace NuGet.Tests.Apex
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v200, XunitLogger);
-                    Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v200);
+                    Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
         }
 
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetIOSTemplates))]
+        [DataTestMethod]
+        [DataRow(nameof(GetIOSTemplates))]
+        [Timeout(Timeout)]
         public async Task UninstallPackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
@@ -862,7 +869,7 @@ namespace NuGet.Tests.Apex
 
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, v100);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, simpleTestPathContext: simpleTestPathContext))
                 {
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
@@ -882,15 +889,16 @@ namespace NuGet.Tests.Apex
 
                     //Asset
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, PackageName, v100, XunitLogger);
-                    Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+                    CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, PackageName, v100);
+                    Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
         }
 
-        [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.WCFServiceApplication)]
-        [InlineData(ProjectTemplate.NetStandardClassLib)]
+        [DataTestMethod]
+        [DataRow(ProjectTemplate.WCFServiceApplication)]
+        [DataRow(ProjectTemplate.NetStandardClassLib)]
+        [Timeout(Timeout)]
 
         public async Task InstallLatestPackageInPMC(ProjectTemplate projectTemplate)
         {
@@ -904,7 +912,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v200);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
                 {
                     var solutionService = VisualStudio.Get<SolutionService>();
                     var nugetConsole = GetConsole(testContext.Project);
@@ -917,24 +925,25 @@ namespace NuGet.Tests.Apex
                     // Assert
                     if (projectTemplate.ToString().Equals("WCFServiceApplication"))
                     {
-                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v200, XunitLogger);
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v200);
                     }
                     else
                     {
-                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, v200, XunitLogger);
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, v200);
                     }
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    Assert.True(VisualStudio.HasNoErrorsInOutputWindows());
+                    Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
         }
 
-        [NuGetWpfTheory]
-        [MemberData(nameof(GetPackagesConfigTemplates))]
+        [DataTestMethod]
+        [DataRow(nameof(GetPackagesConfigTemplates))]
+        [Timeout(Timeout)]
         public void VerifyInitScriptsExecution(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
             {
                 // Arrange
                 SolutionService solutionService = VisualStudio.Get<SolutionService>();
@@ -945,14 +954,14 @@ namespace NuGet.Tests.Apex
                 nugetConsole.Execute($"install-package EntityFramework -source {source} -Verbose");
 
                 // Assert
-                Assert.True(nugetConsole.IsMessageFoundInPMC("init.ps1"), "The init.ps1 script in TestProject was not executed when the EntityFramework package was installed");
+                Assert.IsTrue(nugetConsole.IsMessageFoundInPMC("init.ps1"), "The init.ps1 script in TestProject was not executed when the EntityFramework package was installed");
 
                 // Act
                 nugetConsole.Clear();
                 nugetConsole.Execute($"install-package jquery -source {source} -Verbose");
 
                 // Assert
-                Assert.True(nugetConsole.IsMessageFoundInPMC("install.ps1"), "The install.ps1 script in TestProject was not executed when the jquery package was installed.");
+                Assert.IsTrue(nugetConsole.IsMessageFoundInPMC("install.ps1"), "The install.ps1 script in TestProject was not executed when the jquery package was installed.");
 
                 // Act
                 nugetConsole.Clear();
@@ -960,10 +969,9 @@ namespace NuGet.Tests.Apex
 
                 // Assert
                 // nugetConsole.IsMessageFoundInPMC is case sensitive.
-                Assert.True(nugetConsole.IsMessageFoundInPMC("Install.ps1"), "The Install.ps1 script in TestProject was not executed when the Entityframework.sqlservercompact package was installed.");
+                Assert.IsTrue(nugetConsole.IsMessageFoundInPMC("Install.ps1"), "The Install.ps1 script in TestProject was not executed when the Entityframework.sqlservercompact package was installed.");
             }
         }
-        */
 
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.

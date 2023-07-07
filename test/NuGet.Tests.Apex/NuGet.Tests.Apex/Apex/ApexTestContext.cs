@@ -19,6 +19,7 @@ namespace NuGet.Tests.Apex
         public SolutionService SolutionService { get; }
         public ProjectTestExtension Project { get; }
         public string PackageSource => _pathContext.PackageSource;
+        public string NuGetConfig => _pathContext.NuGetConfig;
 
         public NuGetApexTestService NuGetApexTestService { get; }
 

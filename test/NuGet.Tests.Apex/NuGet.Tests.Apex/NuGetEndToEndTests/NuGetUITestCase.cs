@@ -392,8 +392,8 @@ namespace NuGet.Tests.Apex
             return new FileInfo(Path.Combine(projectFile.DirectoryName, "packages.config"));
         }
 
-        /* comment out newly added Apex tests
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public void InstallPackageToWebSiteProjectFromUI()
         {
             // Arrange
@@ -406,16 +406,17 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("log4net", "2.0.12");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "log4net", "2.0.12", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "log4net", "2.0.12");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public void UpdateWebSitePackageFromUI()
         {
             // Arrange
@@ -428,7 +429,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("log4net", "2.0.13");
@@ -436,10 +437,11 @@ namespace NuGet.Tests.Apex
             uiwindow.UpdatePackageFromUI("log4net", "2.0.15");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "log4net", "2.0.15", XunitLogger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "log4net", "2.0.15");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public void UninstallWebSitePackageFromUI()
         {
             // Arrange
@@ -452,7 +454,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("log4net", "2.0.15");
@@ -460,10 +462,11 @@ namespace NuGet.Tests.Apex
             uiwindow.UninstallPackageFromUI("log4net");
 
             // Assert
-            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "log4net", XunitLogger);
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "log4net");
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public async Task SearchPackageInBrowseTabFromUI()
         {
             // Arrange
@@ -479,7 +482,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.SwitchTabToBrowse();
@@ -490,7 +493,8 @@ namespace NuGet.Tests.Apex
             uiwindow.AssertSearchedPackageItem(tabName, TestPackageName);
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public async Task SearchPackageInInstalledTabFromUI()
         {
             // Arrange
@@ -509,7 +513,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
@@ -521,7 +525,8 @@ namespace NuGet.Tests.Apex
             uiwindow.AssertSearchedPackageItem(tabName, TestPackageName, TestPackageVersionV1);
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(TestTimeoutLimit)]
         public async Task SearchPackageInUpdatesTabFromUI()
         {
             //Arrange
@@ -538,7 +543,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
 
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
