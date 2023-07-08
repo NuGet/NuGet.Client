@@ -17,14 +17,14 @@ namespace NuGet.Tests.Apex
         }
 
         // basic create for .net core template
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public void CreateNetCoreProject_RestoresNewProject()
+        public void CreateNetCoreProject_RestoresNewProject(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.NetStandardClassLib;
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
             {
                 VisualStudio.AssertNoErrors();
@@ -32,14 +32,15 @@ namespace NuGet.Tests.Apex
         }
 
         // basic create for .net core template
-        [TestMethod]
+        [Ignore] //https://github.com/NuGet/Home/issues/9410
+        [DataTestMethod]
+        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public void CreateNetCoreProject_AddProjectReference()
+        public void CreateNetCoreProject_AddProjectReference(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.NetStandardClassLib;
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
             {
                 var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
@@ -56,18 +57,20 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task WithSourceMappingEnabled_InstallPackageFromPMUIFromExpectedSource_Succeeds()
+        public async Task WithSourceMappingEnabled_InstallPackageFromPMUIFromExpectedSource_Succeeds(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.NetStandardClassLib;
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
             {
-                var privateRepositoryPath = Path.Combine(testContext.PackageSource, "PrivateRepository");
-                var externalRepositoryPath = Path.Combine(testContext.PackageSource, "ExternalRepository");
+                var privateRepositoryPath = Path.Combine(testContext.SolutionRoot, "PrivateRepository");
+                Directory.CreateDirectory(privateRepositoryPath);
+                var externalRepositoryPath = Path.Combine(testContext.SolutionRoot, "ExternalRepository");
+                Directory.CreateDirectory(externalRepositoryPath);
 
                 var packageName = "Contoso.a";
                 var packageVersion = "1.0.0";
@@ -77,7 +80,7 @@ namespace NuGet.Tests.Apex
 
 
                 // Create nuget.config with Package source mapping filtering rules before project is created.
-                CommonUtility.CreateConfigurationFile(testContext.NuGetConfig, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                CommonUtility.CreateConfigurationFile(Path.Combine(testContext.SolutionRoot, "NuGet.Config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
@@ -119,18 +122,20 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task WithSourceMappingEnabled_InstallAndUpdatePackageFromPMUIFromExpectedSource_Succeeds()
+        public async Task WithSourceMappingEnabled_InstallAndUpdatePackageFromPMUIFromExpectedSource_Succeeds(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.NetStandardClassLib;
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
             {
-                var privateRepositoryPath = Path.Combine(testContext.PackageSource, "PrivateRepository");
-                var externalRepositoryPath = Path.Combine(testContext.PackageSource, "ExternalRepository");
+                var privateRepositoryPath = Path.Combine(testContext.SolutionRoot, "PrivateRepository");
+                Directory.CreateDirectory(privateRepositoryPath);
+                var externalRepositoryPath = Path.Combine(testContext.SolutionRoot, "ExternalRepository");
+                Directory.CreateDirectory(externalRepositoryPath);
 
                 var packageName = "Contoso.a";
                 var packageVersion1 = "1.0.0";
@@ -143,7 +148,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion2);
 
                 // Create nuget.config with Package source mapping filtering rules before project is created.
-                CommonUtility.CreateConfigurationFile(testContext.NuGetConfig, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                CommonUtility.CreateConfigurationFile(Path.Combine(testContext.SolutionRoot, "NuGet.Config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
@@ -187,18 +192,20 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task WithSourceMappingEnabled_InstallPackageFromPMUIAndNoSourcesFound_Fails()
+        public async Task WithSourceMappingEnabled_InstallPackageFromPMUIAndNoSourcesFound_Fails(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.NetStandardClassLib;
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
             {
-                var privateRepositoryPath = Path.Combine(testContext.PackageSource, "PrivateRepository");
-                var externalRepositoryPath = Path.Combine(testContext.PackageSource, "ExternalRepository");
+                var privateRepositoryPath = Path.Combine(testContext.SolutionRoot, "PrivateRepository");
+                Directory.CreateDirectory(privateRepositoryPath);
+                var externalRepositoryPath = Path.Combine(testContext.SolutionRoot, "ExternalRepository");
+                Directory.CreateDirectory(externalRepositoryPath);
 
                 var packageName = "Contoso.a";
                 var packageVersion = "1.0.0";
@@ -206,7 +213,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion);
 
                 // Create nuget.config with Package source mapping filtering rules before project is created.
-                CommonUtility.CreateConfigurationFile(testContext.NuGetConfig, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                CommonUtility.CreateConfigurationFile(testContext.SolutionRoot, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
@@ -245,13 +252,13 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task InstallPackageToNetCoreProjectFromUI()
+        public async Task InstallPackageToNetCoreProjectFromUI(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.NetStandardClassLib;
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
             {
                 // Arrange
@@ -273,13 +280,13 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task UpdatePackageToNetCoreProjectFromUI()
+        public async Task UpdatePackageToNetCoreProjectFromUI(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.NetStandardClassLib;
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
             {
                 // Arrange
@@ -310,13 +317,13 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task UninstallPackageFromNetCoreProjectFromUI()
+        public async Task UninstallPackageFromNetCoreProjectFromUI(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.NetStandardClassLib;
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
             {
                 // Arrange

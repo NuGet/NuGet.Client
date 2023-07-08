@@ -21,7 +21,7 @@ namespace NuGet.Tests.Apex
 
         private readonly SimpleTestPathContext _pathContext = new SimpleTestPathContext();
 
-        private const int TestTimeoutLimit = 5 * 60 * 1000; // 5 minutes
+        private const int Timeout = 5 * 60 * 1000; // 5 minutes
 
         public NuGetUITestCase()
             : base()
@@ -29,7 +29,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task SearchPackageFromUI()
         {
             // Arrange
@@ -55,7 +55,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task InstallPackageFromUI()
         {
             // Arrange
@@ -80,7 +80,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task InstallPackageToProjectsFromUI()
         {
             // Arrange
@@ -113,7 +113,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task UninstallPackageFromUI()
         {
             // Arrange
@@ -146,7 +146,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task UpdatePackageFromUI()
         {
             // Arrange
@@ -176,7 +176,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
@@ -204,7 +204,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task InstallPackageToProjectsFromUI_PC_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
@@ -238,7 +238,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
@@ -274,7 +274,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Fails()
         {
             // Arrange
@@ -307,7 +307,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task UpdatePackageFromUI_PC_PackageSourceMapping_WithSingleFeed_Succeeds()
         {
             // Arrange
@@ -340,7 +340,7 @@ namespace NuGet.Tests.Apex
 
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task UpdatePackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
@@ -393,7 +393,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public void InstallPackageToWebSiteProjectFromUI()
         {
             // Arrange
@@ -416,7 +416,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public void UpdateWebSitePackageFromUI()
         {
             // Arrange
@@ -441,7 +441,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public void UninstallWebSitePackageFromUI()
         {
             // Arrange
@@ -466,7 +466,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task SearchPackageInBrowseTabFromUI()
         {
             // Arrange
@@ -494,7 +494,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task SearchPackageInInstalledTabFromUI()
         {
             // Arrange
@@ -526,7 +526,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutLimit)]
+        [Timeout(Timeout)]
         public async Task SearchPackageInUpdatesTabFromUI()
         {
             //Arrange
