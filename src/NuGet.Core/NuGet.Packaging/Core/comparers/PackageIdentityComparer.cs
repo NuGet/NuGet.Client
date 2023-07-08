@@ -57,9 +57,9 @@ namespace NuGet.Packaging.Core
             return versionComparison switch
             {
                 VersionComparison.Default => Default,
-                VersionComparison.Version => new PackageIdentityComparer(VersionComparison.Version),
-                VersionComparison.VersionRelease => new PackageIdentityComparer(VersionComparison.VersionRelease),
-                VersionComparison.VersionReleaseMetadata => new PackageIdentityComparer(VersionComparison.VersionReleaseMetadata),
+                VersionComparison.Version => Version,
+                VersionComparison.VersionRelease => VersionRelease,
+                VersionComparison.VersionReleaseMetadata => VersionReleaseMetadata,
                 _ => new PackageIdentityComparer(versionComparison),
             };
         }
