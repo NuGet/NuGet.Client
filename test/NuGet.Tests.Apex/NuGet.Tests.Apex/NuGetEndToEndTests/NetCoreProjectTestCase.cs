@@ -118,7 +118,7 @@ namespace NuGet.Tests.Apex
                 // Assert
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion);
-                StringAssert.Contains($"Installed {packageName} {packageVersion} from {privateRepositoryPath}", GetPackageManagerOutputWindowPaneText());
+                StringAssert.Contains(GetPackageManagerOutputWindowPaneText(), $"Installed {packageName} {packageVersion} from {privateRepositoryPath}");
             }
         }
 
@@ -188,7 +188,7 @@ namespace NuGet.Tests.Apex
                 // Assert
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion2);
-                StringAssert.Contains($"Installed {packageName} {packageVersion2} from {privateRepositoryPath}", GetPackageManagerOutputWindowPaneText());
+                StringAssert.Contains(GetPackageManagerOutputWindowPaneText(), $"Installed {packageName} {packageVersion2} from {privateRepositoryPath}");
             }
         }
 
@@ -213,7 +213,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(externalRepositoryPath, packageName, packageVersion);
 
                 // Create nuget.config with Package source mapping filtering rules before project is created.
-                CommonUtility.CreateConfigurationFile(testContext.SolutionRoot, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                CommonUtility.CreateConfigurationFile(Path.Combine(testContext.SolutionRoot, "NuGet.Config"), $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
         <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
