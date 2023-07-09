@@ -115,7 +115,7 @@ namespace NuGet.CommandLine.XPlat
                     IEnumerable<FrameworkPackages> packages;
                     try
                     {
-                        packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive, includeProjects: listPackageArgs.ReportType == ReportType.Default);
+                        packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive, includeProjects: (listPackageArgs.ReportType == ReportType.Default && !listPackageArgs.ExcludeProject));
                     }
                     catch (InvalidOperationException ex)
                     {

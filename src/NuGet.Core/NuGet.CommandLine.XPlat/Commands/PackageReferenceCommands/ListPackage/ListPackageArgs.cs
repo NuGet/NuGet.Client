@@ -22,6 +22,7 @@ namespace NuGet.CommandLine.XPlat
         public IReportRenderer Renderer { get; }
         public string ArgumentText { get; }
         public bool IncludeTransitive { get; }
+        public bool ExcludeProject { get; }
         public bool Prerelease { get; }
         public bool HighestPatch { get; }
         public bool HighestMinor { get; }
@@ -50,6 +51,7 @@ namespace NuGet.CommandLine.XPlat
             ReportType reportType,
             IReportRenderer renderer,
             bool includeTransitive,
+            bool excludeProject,
             bool prerelease,
             bool highestPatch,
             bool highestMinor,
@@ -62,6 +64,7 @@ namespace NuGet.CommandLine.XPlat
             ReportType = reportType;
             Renderer = renderer;
             IncludeTransitive = includeTransitive;
+            ExcludeProject = excludeProject;
             Prerelease = prerelease;
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
@@ -94,6 +97,11 @@ namespace NuGet.CommandLine.XPlat
             if (IncludeTransitive)
             {
                 sb.Append(" --include-transitive");
+            }
+
+            if (ExcludeProject)
+            {
+                sb.Append(" --exclude-project");
             }
 
             if (Frameworks != null && Frameworks.Any())

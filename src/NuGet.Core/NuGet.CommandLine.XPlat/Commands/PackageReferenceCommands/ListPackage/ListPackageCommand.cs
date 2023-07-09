@@ -65,6 +65,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.ListPkg_TransitiveDescription,
                     CommandOptionType.NoValue);
 
+                var excludeProject = listpkg.Option(
+                    "--exclude-project",
+                    Strings.ListPkg_ExcludeProjectDescription,
+                    CommandOptionType.NoValue);
+
                 var prerelease = listpkg.Option(
                     "--include-prerelease",
                     Strings.ListPkg_PrereleaseDescription,
@@ -137,6 +142,7 @@ namespace NuGet.CommandLine.XPlat
                         reportType,
                         reportRenderer,
                         includeTransitive.HasValue(),
+                        excludeProject.HasValue(),
                         prerelease.HasValue(),
                         highestPatch.HasValue(),
                         highestMinor.HasValue(),
@@ -212,6 +218,11 @@ namespace NuGet.CommandLine.XPlat
                 (packageRefArgs.Prerelease || packageRefArgs.HighestMinor || packageRefArgs.HighestPatch))
             {
                 reportRenderer.AddProblem(ProblemType.Warning, Strings.ListPkg_VulnerableIgnoredOptions);
+            }
+
+            if (packageRefArgs.ReportType != ReportType.Default && packageRefArgs.ExcludeProject)
+            {
+                reportRenderer.AddProblem(ProblemType.Warning, Strings.ListPkg_DefaultIgnoredOptions);
             }
         }
 

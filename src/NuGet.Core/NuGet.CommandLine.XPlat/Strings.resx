@@ -358,6 +358,9 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="ListPkg_TransitiveDescription" xml:space="preserve">
     <value>Includes transitive packages too in the result.</value>
   </data>
+  <data name="ListPkg_ExcludeProjectDescription" xml:space="preserve">
+    <value>Exclude projects from transitive packages in the result.</value>
+  </data>
   <data name="ListPkg_PathDescription" xml:space="preserve">
     <value>A path to a project, solution file or directory.</value>
   </data>
@@ -450,6 +453,9 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="ListPkg_VulnerableIgnoredOptions" xml:space="preserve">
     <value>The command option(s) '--include-prerelease', '--highest-minor', and '--highest-patch' are ignored by this command.</value>
+  </data>
+  <data name="ListPkg_DefaultIgnoredOptions" xml:space="preserve">
+    <value>The command option '--exclude-project' is ignored by this command.</value>
   </data>
   <data name="ListPkg_ProjectDeprecationsHeaderLog" xml:space="preserve">
     <value>Project `{0}` has the following deprecated packages</value>
