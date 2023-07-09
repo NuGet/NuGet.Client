@@ -195,7 +195,7 @@ namespace NuGet.XPlat.FuncTest
         {
             Type listPackageArgsType = typeof(ListPackageArgs);
             FieldInfo[] fields = listPackageArgsType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            Assert.True(12 == fields.Length, "Number of fields are changed in ListPackageArgs.cs. Please make sure this change is accounted for GetReportParameters method in that file.");
+            Assert.True(13 == fields.Length, "Number of fields are changed in ListPackageArgs.cs. Please make sure this change is accounted for GetReportParameters method in that file.");
         }
     }
 }

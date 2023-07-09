@@ -122,6 +122,52 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetListPackage_Transitive_ExcludeProject_FiltersProjects()
+        {
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
+            {
+                string dependencyProjectName = $"{ProjectName}Dependency";
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+                var projectB = XPlatTestUtils.CreateProject(dependencyProjectName, pathContext, "net46");
+
+                var packageX = XPlatTestUtils.CreatePackage();
+                var packageY = XPlatTestUtils.CreatePackage(packageId: "packageY");
+                packageX.Dependencies.Add(packageY);
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} reference {projectB.ProjectPath}");
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectB.ProjectPath).FullName,
+                    $"add {projectB.ProjectPath} package packageX --no-restore");
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"restore {projectA.ProjectName}.csproj");
+
+                CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package --include-transitive");
+
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, projectB.ProjectName));
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageX"));
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageY"));
+
+                listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package --include-transitive --exclude-project");
+
+                Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, projectB.ProjectName));
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageX"));
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageY"));
+
+            }
+        }
+
         [PlatformTheory(Platform.Windows)]
         [InlineData("", "net48", null)]
         [InlineData("", "net46", null)]

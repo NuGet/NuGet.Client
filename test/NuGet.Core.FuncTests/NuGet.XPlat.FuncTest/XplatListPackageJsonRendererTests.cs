@@ -48,6 +48,7 @@ namespace NuGet.XPlat.FuncTest
                                 reportType: reportType,
                                 renderer: jsonRenderer,
                                 includeTransitive: false,
+                                excludeProject: false,
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
@@ -194,6 +195,7 @@ namespace NuGet.XPlat.FuncTest
                                 reportType: reportType,
                                 renderer: jsonRenderer,
                                 includeTransitive: false,
+                                excludeProject: false,
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
@@ -292,6 +294,7 @@ namespace NuGet.XPlat.FuncTest
                                 reportType: reportType,
                                 renderer: jsonRenderer,
                                 includeTransitive: false,
+                                excludeProject: false,
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
@@ -381,6 +384,7 @@ namespace NuGet.XPlat.FuncTest
                                 reportType: reportType,
                                 renderer: jsonRenderer,
                                 includeTransitive: false,
+                                excludeProject: false,
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
@@ -484,6 +488,7 @@ namespace NuGet.XPlat.FuncTest
                                 reportType: reportType,
                                 renderer: jsonRenderer,
                                 includeTransitive: false,
+                                excludeProject: false,
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
@@ -595,6 +600,7 @@ namespace NuGet.XPlat.FuncTest
                                 reportType: reportType,
                                 renderer: jsonRenderer,
                                 includeTransitive: false,
+                                excludeProject: false,
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
@@ -651,6 +657,7 @@ namespace NuGet.XPlat.FuncTest
         [Fact]
         public void JsonRenderer_ListPackage_IncludeTransitives_SucceedsAsync()
         {
+            Assert.Fail("TODO");
             // Arrange
             var reportType = ReportType.Default;
             var includeTransitive = true;
@@ -675,6 +682,7 @@ namespace NuGet.XPlat.FuncTest
                                 reportType: reportType,
                                 renderer: jsonRenderer,
                                 includeTransitive: includeTransitive,
+                                excludeProject: false,
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
@@ -845,6 +853,7 @@ namespace NuGet.XPlat.FuncTest
                                 reportType: reportType,
                                 renderer: jsonRenderer,
                                 includeTransitive: includeTransitive,
+                                excludeProject: false,
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
@@ -975,6 +984,7 @@ namespace NuGet.XPlat.FuncTest
                                 reportType: reportType,
                                 renderer: jsonRenderer,
                                 includeTransitive: includeTransitive,
+                                excludeProject: false,
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
@@ -1117,6 +1127,7 @@ namespace NuGet.XPlat.FuncTest
                                 reportType: reportType,
                                 renderer: jsonRenderer,
                                 includeTransitive: false,
+                                excludeProject: false,
                                 prerelease: false,
                                 highestPatch: false,
                                 highestMinor: false,
