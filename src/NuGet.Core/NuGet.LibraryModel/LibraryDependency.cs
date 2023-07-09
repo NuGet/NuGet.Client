@@ -3,10 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Shared;
 using NuGet.Versioning;
+
+#nullable enable
 
 namespace NuGet.LibraryModel
 {
@@ -58,7 +61,7 @@ namespace NuGet.LibraryModel
         /// <summary>
         /// Lazily allocated backing collection for the <see cref="NoWarn"/> property.
         /// </summary>
-        private IList<NuGetLogCode> _noWarn;
+        private IList<NuGetLogCode>? _noWarn;
 
         public bool GeneratePathProperty
         {
@@ -118,6 +121,7 @@ namespace NuGet.LibraryModel
         /// This property lazily allocates its backing collection. Callers should check <see cref="NoWarnCount"/>
         /// for a non-zero value before reading this property to avoid redundant allocations.
         /// </remarks>
+        [AllowNull]
         public IList<NuGetLogCode> NoWarn
         {
             // Lazily allocate the list if needed.
@@ -130,16 +134,16 @@ namespace NuGet.LibraryModel
         /// </summary>
         public int NoWarnCount => _noWarn?.Count ?? 0;
 
-        public LibraryRange LibraryRange { get; set; }
+        public LibraryRange? LibraryRange { get; set; }
 
-        public string Name => LibraryRange.Name;
+        public string Name => LibraryRange!.Name;
 
-        public string Aliases { get; set; }
+        public string? Aliases { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating a version override for any centrally defined version.
         /// </summary>
-        public VersionRange VersionOverride { get; set; }
+        public VersionRange? VersionOverride { get; set; }
 
         public LibraryDependency()
         {
@@ -149,13 +153,13 @@ namespace NuGet.LibraryModel
             LibraryRange libraryRange,
             LibraryIncludeFlags includeType,
             LibraryIncludeFlags suppressParent,
-            IList<NuGetLogCode> noWarn,
+            IList<NuGetLogCode>? noWarn,
             bool autoReferenced,
             bool generatePathProperty,
             bool versionCentrallyManaged,
             LibraryDependencyReferenceType libraryDependencyReferenceType,
-            string aliases,
-            VersionRange versionOverride)
+            string? aliases,
+            VersionRange? versionOverride)
         {
             LibraryRange = libraryRange;
             IncludeType = includeType;
@@ -171,10 +175,10 @@ namespace NuGet.LibraryModel
 
         private LibraryDependency(
             int flags,
-            LibraryRange libraryRange,
-            IList<NuGetLogCode> noWarn,
-            string aliases,
-            VersionRange versionOverride)
+            LibraryRange? libraryRange,
+            IList<NuGetLogCode>? noWarn,
+            string? aliases,
+            VersionRange? versionOverride)
         {
             _flags = flags;
             LibraryRange = libraryRange;
@@ -186,7 +190,7 @@ namespace NuGet.LibraryModel
         public override string ToString()
         {
             // Explicitly call .ToString() to ensure string.Concat(string, string, string) overload is called.
-            return LibraryRange.ToString() + " " + LibraryIncludeFlagUtils.GetFlagString(IncludeType);
+            return LibraryRange?.ToString() + " " + LibraryIncludeFlagUtils.GetFlagString(IncludeType);
         }
 
         public override int GetHashCode()
@@ -201,12 +205,12 @@ namespace NuGet.LibraryModel
             return hashCode.CombinedHash;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as LibraryDependency);
         }
 
-        public bool Equals(LibraryDependency other)
+        public bool Equals(LibraryDependency? other)
         {
             if (other == null)
             {
@@ -228,7 +232,7 @@ namespace NuGet.LibraryModel
 
         public LibraryDependency Clone()
         {
-            var clonedLibraryRange = new LibraryRange(LibraryRange.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
+            var clonedLibraryRange = new LibraryRange(LibraryRange!.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
             var clonedNoWarn = _noWarn is null ? null : new List<NuGetLogCode>(_noWarn);
 
             return new LibraryDependency(_flags, clonedLibraryRange, clonedNoWarn, Aliases, VersionOverride);
@@ -249,18 +253,18 @@ namespace NuGet.LibraryModel
             }
             if (centralPackageVersions.Count > 0)
             {
-                foreach (LibraryDependency d in packageReferences.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
+                foreach (LibraryDependency d in packageReferences.Where(d => !d.AutoReferenced && d.LibraryRange!.VersionRange == null))
                 {
                     if (d.VersionOverride != null)
                     {
-                        d.LibraryRange.VersionRange = d.VersionOverride;
+                        d.LibraryRange!.VersionRange = d.VersionOverride;
 
                         continue;
                     }
 
                     if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
                     {
-                        d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
+                        d.LibraryRange!.VersionRange = centralPackageVersion.VersionRange;
                     }
 
                     d.VersionCentrallyManaged = true;

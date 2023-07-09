@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace NuGet.Shared
@@ -176,8 +177,8 @@ namespace NuGet.Shared
         /// null for equality.
         /// </summary>
         internal static bool SequenceEqualWithNullCheck<T>(
-            this IList<T> self,
-            IList<T> other,
+            this IList<T>? self,
+            IList<T>? other,
             IEqualityComparer<T>? comparer = null)
         {
             bool identityEquals;
@@ -324,7 +325,10 @@ namespace NuGet.Shared
             return !string.IsNullOrWhiteSpace(value) && bool.FalseString.Equals(value.Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool TryIdentityEquals<T>(T? self, T? other, out bool equals)
+        private static bool TryIdentityEquals<T>(
+            [NotNullWhen(returnValue: false)] T? self,
+            [NotNullWhen(returnValue: false)] T? other,
+            out bool equals)
         {
             // Are they the same instance? This handles the case where both are null.
             if (ReferenceEquals(self, other))
