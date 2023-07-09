@@ -122,6 +122,66 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetListPackage_DoesNotReturnProjects()
+        {
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
+            {
+                string directDependencyProjectName = $"{ProjectName}Dependency";
+                string transitiveDependencyProjectName = $"{ProjectName}TransitiveDependency";
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+                var projectB = XPlatTestUtils.CreateProject(directDependencyProjectName, pathContext, "net46");
+                var projectC = XPlatTestUtils.CreateProject(transitiveDependencyProjectName, pathContext, "net46");
+
+                var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX");
+                var packageY = XPlatTestUtils.CreatePackage(packageId: "packageY");
+                var packageZ = XPlatTestUtils.CreatePackage(packageId: "packageZ");
+                var packageT = XPlatTestUtils.CreatePackage(packageId: "packageT");
+                packageX.Dependencies.Add(packageT);
+                packageY.Dependencies.Add(packageT);
+                packageZ.Dependencies.Add(packageT);
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY,
+                    packageZ,
+                    packageT);
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} reference {projectB.ProjectPath}");
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectB.ProjectPath} reference {projectC.ProjectPath}");
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectB.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} package packageX --no-restore");
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectB.ProjectPath).FullName,
+                    $"add {projectB.ProjectPath} package packageY --no-restore");
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectB.ProjectPath).FullName,
+                    $"add {projectC.ProjectPath} package packageZ --no-restore");
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"restore {projectA.ProjectName}.csproj");
+
+                CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package");
+
+                Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, projectB.ProjectName));
+                Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, projectC.ProjectName));
+
+                listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package --include-transitive");
+
+                Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, projectB.ProjectName));
+                Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, projectC.ProjectName));
+            }
+        }
+
         [PlatformTheory(Platform.Windows)]
         [InlineData("", "net48", null)]
         [InlineData("", "net46", null)]
