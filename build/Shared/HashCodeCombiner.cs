@@ -17,13 +17,13 @@ namespace NuGet.Shared
         // seed from String.GetHashCode()
         private const long Seed = 0x1505L;
 
-        private bool _initialized;
-        private long _combinedHash;
+        private long _combinedHash = Seed;
 
-        internal int CombinedHash
+        public HashCodeCombiner()
         {
-            get { return _combinedHash.GetHashCode(); }
         }
+
+        internal int CombinedHash => _combinedHash.GetHashCode();
 
         private void AddHashCode(int i)
         {
@@ -32,20 +32,17 @@ namespace NuGet.Shared
 
         internal void AddObject(int i)
         {
-            CheckInitialized();
             AddHashCode(i);
         }
 
         internal void AddObject(bool b)
         {
-            CheckInitialized();
             AddHashCode(b ? 1 : 0);
         }
 
         internal void AddObject<T>(T? o, IEqualityComparer<T> comparer)
             where T : class
         {
-            CheckInitialized();
             if (o != null)
             {
                 AddHashCode(comparer.GetHashCode(o));
@@ -55,7 +52,6 @@ namespace NuGet.Shared
         internal void AddObject<T>(T? o)
             where T : class
         {
-            CheckInitialized();
             if (o != null)
             {
                 AddHashCode(o.GetHashCode());
@@ -66,8 +62,6 @@ namespace NuGet.Shared
         internal void AddStruct<T>(T? o)
             where T : struct
         {
-            CheckInitialized();
-
             if (o.HasValue)
             {
                 AddHashCode(o.GetHashCode());
@@ -78,14 +72,11 @@ namespace NuGet.Shared
         internal void AddStruct<T>(T o)
             where T : struct
         {
-            CheckInitialized();
-
             AddHashCode(o.GetHashCode());
         }
 
         internal void AddStringIgnoreCase(string? s)
         {
-            CheckInitialized();
             if (s != null)
             {
                 AddHashCode(StringComparer.OrdinalIgnoreCase.GetHashCode(s));
@@ -96,7 +87,6 @@ namespace NuGet.Shared
         {
             if (sequence != null)
             {
-                CheckInitialized();
                 foreach (var item in sequence)
                 {
                     AddHashCode(item.GetHashCode());
@@ -108,7 +98,6 @@ namespace NuGet.Shared
         {
             if (array != null)
             {
-                CheckInitialized();
                 foreach (var item in array)
                 {
                     AddHashCode(item.GetHashCode());
@@ -120,7 +109,6 @@ namespace NuGet.Shared
         {
             if (list != null)
             {
-                CheckInitialized();
                 var count = list.Count;
                 for (var i = 0; i < count; i++)
                 {
@@ -133,7 +121,6 @@ namespace NuGet.Shared
         {
             if (list != null)
             {
-                CheckInitialized();
                 var count = list.Count;
                 for (var i = 0; i < count; i++)
                 {
@@ -148,7 +135,6 @@ namespace NuGet.Shared
         {
             if (dictionary != null)
             {
-                CheckInitialized();
                 foreach (var pair in dictionary.OrderBy(x => x.Key))
                 {
                     AddHashCode(pair.Key.GetHashCode());
@@ -165,7 +151,6 @@ namespace NuGet.Shared
             where T2 : notnull
         {
             var combiner = new HashCodeCombiner();
-            combiner.CheckInitialized();
 
             combiner.AddHashCode(o1.GetHashCode());
             combiner.AddHashCode(o2.GetHashCode());
@@ -182,22 +167,12 @@ namespace NuGet.Shared
             where T3 : notnull
         {
             var combiner = new HashCodeCombiner();
-            combiner.CheckInitialized();
 
             combiner.AddHashCode(o1.GetHashCode());
             combiner.AddHashCode(o2.GetHashCode());
             combiner.AddHashCode(o3.GetHashCode());
 
             return combiner.CombinedHash;
-        }
-
-        private void CheckInitialized()
-        {
-            if (!_initialized)
-            {
-                _combinedHash = Seed;
-                _initialized = true;
-            }
         }
     }
 }
