@@ -12,7 +12,7 @@ namespace NuGet.Shared
     /// <summary>
     /// Hash code creator, based on the original NuGet hash code combiner/ASP hash code combiner implementations
     /// </summary>
-    internal struct HashCodeCombiner
+    internal ref struct HashCodeCombiner
     {
         // seed from String.GetHashCode()
         private const long Seed = 0x1505L;
