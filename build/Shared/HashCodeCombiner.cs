@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NuGet.Shared
 {
@@ -87,7 +86,7 @@ namespace NuGet.Shared
         {
             if (sequence != null)
             {
-                foreach (var item in sequence)
+                foreach (var item in sequence.NoAllocEnumerate())
                 {
                     AddHashCode(item.GetHashCode());
                 }
@@ -109,10 +108,9 @@ namespace NuGet.Shared
         {
             if (list != null)
             {
-                var count = list.Count;
-                for (var i = 0; i < count; i++)
+                foreach (var item in list.NoAllocEnumerate())
                 {
-                    AddHashCode(list[i].GetHashCode());
+                    AddHashCode(item.GetHashCode());
                 }
             }
         }
@@ -129,17 +127,61 @@ namespace NuGet.Shared
             }
         }
 
+        internal void AddUnorderedSequence<T>(IEnumerable<T>? list) where T : notnull
+        {
+            if (list != null)
+            {
+                int count = 0;
+                int hashCode = 0;
+                foreach (var item in list)
+                {
+                    // XOR is commutative -- the order of operations doesn't matter
+                    hashCode ^= item.GetHashCode();
+                    count++;
+                }
+                AddHashCode(hashCode);
+                AddHashCode(count);
+            }
+        }
+
+        internal void AddUnorderedSequence<T>(IEnumerable<T>? list, IEqualityComparer<T> comparer) where T : notnull
+        {
+            if (list != null)
+            {
+                int count = 0;
+                int hashCode = 0;
+                foreach (var item in list)
+                {
+                    // XOR is commutative -- the order of operations doesn't matter
+                    hashCode ^= comparer.GetHashCode(item);
+                    count++;
+                }
+                AddHashCode(hashCode);
+                AddHashCode(count);
+            }
+        }
+
         internal void AddDictionary<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>>? dictionary)
             where TKey : notnull
             where TValue : notnull
         {
             if (dictionary != null)
             {
-                foreach (var pair in dictionary.OrderBy(x => x.Key))
+                int count = 0;
+                int dictionaryHash = 0;
+
+                foreach (var pair in dictionary.NoAllocEnumerate())
                 {
-                    AddHashCode(pair.Key.GetHashCode());
-                    AddHashCode(pair.Value.GetHashCode());
+                    int keyHash = pair.Key.GetHashCode();
+                    int valHash = pair.Value.GetHashCode();
+                    int pairHash = ((keyHash << 5) + keyHash) ^ valHash;
+
+                    // XOR is commutative -- the order of operations doesn't matter
+                    dictionaryHash ^= pairHash;
+                    count++;
                 }
+
+                AddHashCode(dictionaryHash + count);
             }
         }
 
