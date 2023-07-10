@@ -73,6 +73,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 jobContext: restoreJobContext,
                 logger: logger,
                 trackingData: new Dictionary<string, object>(),
+                infoBarService: null,
                 token: CancellationToken.None);
 
             Assert.Equal(NuGetOperationStatus.NoOp, job.Status);
@@ -124,6 +125,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 jobContext: restoreJobContext,
                 logger: logger,
                 trackingData: new Dictionary<string, object>(),
+                infoBarService: null,
                 token: cts.Token);
 
             Assert.Equal(NuGetOperationStatus.Cancelled, job.Status);

@@ -45,6 +45,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<INuGetLockService> _lockService;
         private readonly Lazy<Common.ILogger> _logger;
+        private readonly Lazy<IInfoBarService> _infoBarService;
         private readonly AsyncLazy<IComponentModel> _componentModel;
 
         private EnvDTE.SolutionEvents _solutionEvents;
@@ -97,14 +98,17 @@ namespace NuGet.SolutionRestoreManager
             Lazy<Common.ILogger> logger,
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
-            Lazy<INuGetFeatureFlagService> nugetFeatureFlagService)
+            Lazy<INuGetFeatureFlagService> nugetFeatureFlagService,
+            [Import(typeof(IInfoBarService))]
+            Lazy<IInfoBarService> infoBarService)
             : this(AsyncServiceProvider.GlobalProvider,
                   solutionManager,
                   lockService,
                   logger,
                   errorList,
                   outputConsoleProvider,
-                  nugetFeatureFlagService)
+                  nugetFeatureFlagService,
+                  infoBarService)
         { }
 
         public SolutionRestoreWorker(
@@ -114,7 +118,8 @@ namespace NuGet.SolutionRestoreManager
             Lazy<Common.ILogger> logger,
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
-            Lazy<INuGetFeatureFlagService> nugetFeatureFlagService)
+            Lazy<INuGetFeatureFlagService> nugetFeatureFlagService,
+            Lazy<IInfoBarService> infoBarService)
         {
             if (asyncServiceProvider == null)
             {
@@ -158,6 +163,7 @@ namespace NuGet.SolutionRestoreManager
             _errorList = errorList;
             _outputConsoleProvider = outputConsoleProvider;
             _nugetFeatureFlagService = nugetFeatureFlagService;
+            _infoBarService = infoBarService;
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
             _joinableCollection = joinableTaskContextNode.CreateCollection();
@@ -170,7 +176,6 @@ namespace NuGet.SolutionRestoreManager
                 JoinableTaskFactory);
             _solutionLoadedEvent = new AsyncManualResetEvent();
             _isCompleteEvent = new AsyncManualResetEvent();
-            InfoBarService.Initialize(asyncServiceProvider);
 
             Reset();
         }
@@ -782,7 +787,7 @@ namespace NuGet.SolutionRestoreManager
 
                             // Run restore
                             var job = componentModel.GetService<ISolutionRestoreJob>();
-                            return await job.ExecuteAsync(request, _restoreJobContext, logger, restoreStartTrackingData, jobCts.Token);
+                            return await job.ExecuteAsync(request, _restoreJobContext, logger, restoreStartTrackingData, _infoBarService, jobCts.Token);
                         }
                         finally
                         {

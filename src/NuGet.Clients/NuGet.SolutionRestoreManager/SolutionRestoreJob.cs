@@ -54,6 +54,7 @@ namespace NuGet.SolutionRestoreManager
         private RestoreOperationLogger _logger;
         private INuGetProjectContext _nuGetProjectContext;
         private PackageRestoreConsent _packageRestoreConsent;
+        private Lazy<IInfoBarService> _infoBarService;
 
         private NuGetOperationStatus _status;
         private int _packageCount;
@@ -129,6 +130,7 @@ namespace NuGet.SolutionRestoreManager
             SolutionRestoreJobContext jobContext,
             RestoreOperationLogger logger,
             Dictionary<string, object> trackingData,
+            Lazy<IInfoBarService> infoBarService,
             CancellationToken token)
         {
             if (request == null)
@@ -146,7 +148,13 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            if (infoBarService == null)
+            {
+                throw new ArgumentNullException(nameof(infoBarService));
+            }
+
             _logger = logger;
+            _infoBarService = infoBarService;
 
             // update instance attributes with the shared context values
             _nuGetProjectContext = jobContext.NuGetProjectContext;
@@ -500,8 +508,11 @@ namespace NuGet.SolutionRestoreManager
                                     if (isRestoreSucceeded)
                                     {
                                         var errors = restoreSummaries.SelectMany(summary => summary.Errors.Where(e => e.Code.Equals(NuGetLogCode.NU1901) || e.Code.Equals(NuGetLogCode.NU1902) || e.Code.Equals(NuGetLogCode.NU1903) || e.Code.Equals(NuGetLogCode.NU1904)));
-                                        await InfoBarService.Instance.RefreshAsync(errors.Any(), token);
 
+                                        if (errors.Any())
+                                        {
+                                            await _infoBarService.Value.ShowInfoBar(t);
+                                        }
                                         if (_noOpProjectsCount < restoreSummaries.Count)
                                         {
                                             _status = NuGetOperationStatus.Succeeded;
