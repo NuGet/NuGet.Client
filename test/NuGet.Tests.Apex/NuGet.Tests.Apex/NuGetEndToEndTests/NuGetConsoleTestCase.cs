@@ -981,11 +981,6 @@ namespace NuGet.Tests.Apex
             yield return new object[] { ProjectTemplate.NetStandardClassLib };
         }
 
-        public static IEnumerable<object[]> GetPackageReferenceTemplates(string flag, string expectedVersion)
-        {
-            yield return new object[] { ProjectTemplate.NetStandardClassLib, flag, expectedVersion };
-        }
-
         public static IEnumerable<object[]> GetPackageReferenceTemplates()
         {
             yield return new object[] { ProjectTemplate.NetStandardClassLib };
