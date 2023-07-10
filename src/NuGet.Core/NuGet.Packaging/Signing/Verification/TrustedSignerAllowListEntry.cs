@@ -60,11 +60,7 @@ namespace NuGet.Packaging.Signing
             combiner.AddStruct(Target);
             combiner.AddObject(Fingerprint);
             combiner.AddStruct(FingerprintAlgorithm);
-
-            if (Owners != null)
-            {
-                combiner.AddSequence(Owners);
-            }
+            combiner.AddSequence(Owners);
 
             return combiner.GetHashCode();
         }
