@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -64,8 +65,59 @@ public class AuditUtilityTests
         auditUtility.TransitivePackagesWithAdvisory.Should().BeNullOrEmpty();
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Check_TransitivePackageHasKnownVulnerability_WarningInAllMode(bool auditModeAll)
+    {
+        // Arrange
+        var context = new AuditTestContext();
+        if (auditModeAll)
+        {
+            context.Mode = "all";
+        }
+
+        string vulnerablePackage = "pkga";
+        string vulnerableVersion = "1.2.3";
+
+        context.PackagesDependencyProvider.Package(vulnerablePackage, vulnerableVersion);
+        context.PackagesDependencyProvider.Package("pkgb", "1.0.0").DependsOn(vulnerablePackage, vulnerableVersion);
+
+        context.WithRestoreTarget()
+            .DependsOn("pkgb", "1.0.0");
+
+        var pkgaVulnerabilities = context.WithPackageVulnerability(vulnerablePackage);
+        pkgaVulnerabilities.Add(
+            new PackageVulnerabilityInfo(
+                new Uri("https://cve.test/cve1"),
+                severity: 1,
+                new VersionRange(maxVersion: new NuGetVersion(2, 0, 0), includeMaxVersion: false)));
+
+        // Act
+        AuditUtility auditUtility = await context.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
+
+        //Assert
+        auditUtility.CheckPackagesDurationSeconds.Should().NotBeNull("audit utility early exit before checking graph for known vulnerabilities");
+
+        if (auditModeAll)
+        {
+            context.Log.Messages.Count.Should().Be(1);
+            RestoreLogMessage message = (RestoreLogMessage)context.Log.LogMessages.Single();
+            message.Message.Should().Contain(vulnerablePackage).And.Contain(vulnerableVersion);
+            message.ProjectPath.Should().Be(context.ProjectFullPath);
+        }
+        else
+        {
+            context.Log.Messages.Count().Should().Be(0);
+        }
+
+        auditUtility.DirectPackagesWithAdvisory.Should().BeNullOrEmpty();
+        auditUtility.TransitivePackagesWithAdvisory.Should().BeEquivalentTo(new[] { vulnerablePackage });
+    }
+
     private class AuditTestContext
     {
+        public string ProjectFullPath { get; set; } = RuntimeEnvironmentHelper.IsWindows ? @"n:\proj\proj.csproj" : "/src/proj/proj.csproj";
         public string? Enabled { get; set; } = "default";
         public string? Level { get; set; }
         public string? Mode { get; set; }
@@ -125,13 +177,11 @@ public class AuditUtilityTests
                 AuditMode = Mode,
             };
 
-            string projectFullPath = RuntimeEnvironmentHelper.IsWindows ? @"n:\proj\proj.csproj" : "/src/proj/proj.csproj";
-
             var graphs = await CreateGraphsAsync();
 
             var vulnProviders = CreateVulnerabilityInformationProviders();
 
-            var audit = new AuditUtility(AuditUtility.EnabledValue.ImplicitOptIn, restoreAuditProperties, projectFullPath, graphs, vulnProviders, Log);
+            var audit = new AuditUtility(AuditUtility.EnabledValue.ImplicitOptIn, restoreAuditProperties, ProjectFullPath, graphs, vulnProviders, Log);
             await audit.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
 
             return audit;
