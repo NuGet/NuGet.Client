@@ -83,7 +83,7 @@ namespace NuGet.Shared
             AddHashCode(o.GetHashCode());
         }
 
-        internal void AddStringIgnoreCase(string s)
+        internal void AddStringIgnoreCase(string? s)
         {
             CheckInitialized();
             if (s != null)
@@ -92,7 +92,7 @@ namespace NuGet.Shared
             }
         }
 
-        internal void AddSequence<T>(IEnumerable<T> sequence) where T : notnull
+        internal void AddSequence<T>(IEnumerable<T>? sequence) where T : notnull
         {
             if (sequence != null)
             {
@@ -104,7 +104,7 @@ namespace NuGet.Shared
             }
         }
 
-        internal void AddSequence<T>(T[] array) where T : notnull
+        internal void AddSequence<T>(T[]? array) where T : notnull
         {
             if (array != null)
             {
@@ -116,7 +116,7 @@ namespace NuGet.Shared
             }
         }
 
-        internal void AddSequence<T>(IList<T> list) where T : notnull
+        internal void AddSequence<T>(IList<T>? list) where T : notnull
         {
             if (list != null)
             {
@@ -129,7 +129,7 @@ namespace NuGet.Shared
             }
         }
 
-        internal void AddSequence<T>(IReadOnlyList<T> list) where T : notnull
+        internal void AddSequence<T>(IReadOnlyList<T>? list) where T : notnull
         {
             if (list != null)
             {
@@ -142,7 +142,7 @@ namespace NuGet.Shared
             }
         }
 
-        internal void AddDictionary<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> dictionary)
+        internal void AddDictionary<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>>? dictionary)
             where TKey : notnull
             where TValue : notnull
         {
