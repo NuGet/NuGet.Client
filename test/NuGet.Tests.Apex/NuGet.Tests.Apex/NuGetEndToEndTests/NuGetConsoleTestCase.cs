@@ -30,7 +30,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, noAutoRestore: true, addNetStandardFeeds: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: true, addNetStandardFeeds: true))
             {
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
@@ -40,7 +40,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion);
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
             }
         }
 
@@ -52,7 +52,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
@@ -62,7 +62,7 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
             }
         }
 
@@ -74,7 +74,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
@@ -85,7 +85,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
                 nugetConsole.UninstallPackageFromPMC(packageName);
 
-                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion);
+                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
             }
         }
 
@@ -97,7 +97,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 var packageName = "TestPackage";
                 var packageVersion1 = "1.0.0";
@@ -110,7 +110,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
 
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, Logger);
             }
         }
 
@@ -122,7 +122,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 var packageName1 = "TestPackage1";
                 var packageVersion1 = "1.0.0";
@@ -137,8 +137,8 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
                 nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
 
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion1);
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion2);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion1, Logger);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion2, Logger);
             }
         }
 
@@ -154,7 +154,7 @@ namespace NuGet.Tests.Apex
             var packageName2 = "TestPackage2";
             var packageVersion2 = "1.2.3";
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName1, packageVersion1);
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName2, packageVersion2);
@@ -177,8 +177,8 @@ namespace NuGet.Tests.Apex
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion1);
-                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion2);
+                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion1, Logger);
+                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion2, Logger);
             }
         }
 
@@ -193,7 +193,7 @@ namespace NuGet.Tests.Apex
             var packageVersion1 = "1.0.0";
             var packageVersion2 = "2.0.0";
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion1);
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion2);
@@ -203,7 +203,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion2);
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion1);
 
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1, Logger);
             }
         }
 
@@ -216,7 +216,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
             {
                 var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
                 project2.Build();
@@ -245,10 +245,10 @@ namespace NuGet.Tests.Apex
                 projectX.Build();
                 testContext.SolutionService.Build();
 
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, project3, packageName, packageVersion);
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion);
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, project2, packageName, packageVersion);
-                CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, projectX, packageName, packageVersion);
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, project3, packageName, packageVersion, Logger);
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, project2, packageName, packageVersion, Logger);
+                CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, projectX, packageName, packageVersion, Logger);
             }
         }
 
@@ -266,7 +266,7 @@ namespace NuGet.Tests.Apex
             var packageVersion2 = "2.0.0";
             var source = "https://api.nuget.org/v3/index.json";
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
             {
                 // Arrange
                 var solutionService = VisualStudio.Get<SolutionService>();
@@ -339,7 +339,7 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
             {
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -347,7 +347,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
                 // Assert
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
             }
         }
 
@@ -387,7 +387,7 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
             {
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -396,7 +396,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
 
                 // Assert
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, Logger);
             }
         }
 
@@ -447,7 +447,7 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
             {
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -455,7 +455,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
 
                 // Assert
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1 , Logger);
 
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
                 var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion1, "lib", "net45", "Thisisfromprivaterepo1.txt");
@@ -511,7 +511,7 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: false, simpleTestPathContext: simpleTestPathContext))
             {
                 var nugetConsole = GetConsole(testContext.Project);
 
@@ -520,7 +520,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
 
                 // Assert
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion2, Logger);
 
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
                 var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion2, "lib", "net45", "Thisisfromprivaterepo2.txt");
@@ -540,7 +540,7 @@ namespace NuGet.Tests.Apex
             var packageName = "TestPackage";
             var packageVersion1 = "1.0.0";
 
-            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true);
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true);
             // Arrange
             var solutionService = VisualStudio.Get<SolutionService>();
             testContext.SolutionService.Build();
@@ -616,7 +616,7 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
             var nugetConsole = GetConsole(testContext.Project);
 
             // Act
@@ -678,7 +678,7 @@ namespace NuGet.Tests.Apex
     </packageSourceMapping>
 </configuration>");
 
-            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, noAutoRestore: false, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext);
             var solutionService = VisualStudio.Get<SolutionService>();
             var nugetConsole = GetConsole(testContext.Project);
 
@@ -710,7 +710,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 var packageName = "VerifyCacheFilePackage";
                 var packageVersion = "1.0.0";
@@ -749,7 +749,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion3);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName2, packageVersion4);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
                 {
                     var solutionService = VisualStudio.Get<SolutionService>();
                     var nugetConsole = GetConsole(testContext.Project);
@@ -767,13 +767,13 @@ namespace NuGet.Tests.Apex
                     // Assert
                     if (projectTemplate.ToString().Equals("ClassLibrary"))
                     {
-                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion2);
-                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion4);
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion2, Logger);
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion4, Logger);
                     }
                     else
                     {
-                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion2);
-                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion4);
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName1, packageVersion2, Logger);
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName2, packageVersion4, Logger);
                     }
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
@@ -794,7 +794,7 @@ namespace NuGet.Tests.Apex
                 var v100 = "1.0.0";
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
                 {
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
@@ -809,7 +809,7 @@ namespace NuGet.Tests.Apex
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v100);
+                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v100, Logger);
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
@@ -831,7 +831,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v200);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
                 {
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
@@ -850,7 +850,7 @@ namespace NuGet.Tests.Apex
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v200);
+                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v200, Logger);
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
@@ -870,7 +870,7 @@ namespace NuGet.Tests.Apex
 
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, v100);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
                 {
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
@@ -890,7 +890,7 @@ namespace NuGet.Tests.Apex
 
                     //Asset
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, PackageName, v100);
+                    CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, PackageName, v100, Logger);
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
@@ -913,7 +913,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v200);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
                 {
                     var solutionService = VisualStudio.Get<SolutionService>();
                     var nugetConsole = GetConsole(testContext.Project);
@@ -926,11 +926,11 @@ namespace NuGet.Tests.Apex
                     // Assert
                     if (projectTemplate.ToString().Equals("WCFServiceApplication"))
                     {
-                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v200);
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v200, Logger);
                     }
                     else
                     {
-                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, v200);
+                        CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, v200, Logger);
                     }
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
@@ -944,7 +944,7 @@ namespace NuGet.Tests.Apex
         public void VerifyInitScriptsExecution(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 // Arrange
                 SolutionService solutionService = VisualStudio.Get<SolutionService>();

@@ -41,7 +41,7 @@ namespace NuGet.Tests.Apex
             ProjectTemplate projectTemplate = ProjectTemplate.ClassLibrary;
             var signedPackage = Fixture.RepositorySignedTestPackage;
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
 
@@ -49,11 +49,11 @@ namespace NuGet.Tests.Apex
 
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
 
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, Logger);
             }
         }
 
-        [TestMethod]
+        [TestMethod]    
         [Timeout(Timeout)]
         public async Task UninstallFromPMCForPC_SucceedAsync()
         {
@@ -63,7 +63,7 @@ namespace NuGet.Tests.Apex
             ProjectTemplate projectTemplate = ProjectTemplate.ClassLibrary;
             var signedPackage = Fixture.RepositorySignedTestPackage;
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
 
@@ -72,7 +72,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
                 nugetConsole.UninstallPackageFromPMC(signedPackage.Id);
 
-                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version);
+                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, Logger);
             }
         }
 
@@ -87,7 +87,7 @@ namespace NuGet.Tests.Apex
             var packageVersion09 = "0.9.0";
             var signedPackage = Fixture.RepositorySignedTestPackage;
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, signedPackage.Id, packageVersion09);
                 await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
@@ -97,7 +97,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, packageVersion09);
                 nugetConsole.UpdatePackageFromPMC(signedPackage.Id, signedPackage.Version);
 
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, Logger);
             }
         }
 
@@ -109,17 +109,17 @@ namespace NuGet.Tests.Apex
             EnsureVisualStudioHost();
 
             ProjectTemplate projectTemplate = ProjectTemplate.ClassLibrary;
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             using (var trustedExpiringTestCert = SigningUtility.GenerateTrustedTestCertificateThatWillExpireSoon())
             {
-                Trace.WriteLine("Creating package");
+                Logger.WriteMessage("Creating package");
                 var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
 
-                Trace.WriteLine("Signing package");
+                Logger.WriteMessage("Signing package");
                 var expiredTestPackage = CommonUtility.RepositorySignPackage(package, trustedExpiringTestCert.Source.Cert, new Uri("https://v3serviceIndexUrl.test/api/index.json"));
                 await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, expiredTestPackage);
 
-                Trace.WriteLine("Waiting for package to expire");
+                Logger.WriteMessage("Waiting for package to expire");
                 SigningUtility.WaitForCertificateToExpire(trustedExpiringTestCert.Source.Cert);
 
                 var nugetConsole = GetConsole(testContext.Project);
@@ -128,7 +128,7 @@ namespace NuGet.Tests.Apex
 
                 // TODO: Fix bug where no warnings are shown when package is untrusted but still installed
                 //nugetConsole.IsMessageFoundInPMC("expired certificate").Should().BeTrue("expired certificate warning");
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, expiredTestPackage.Id, expiredTestPackage.Version, Logger);
             }
         }
 
@@ -142,7 +142,7 @@ namespace NuGet.Tests.Apex
             ProjectTemplate projectTemplate = ProjectTemplate.ClassLibrary;
             var signedPackage = Fixture.RepositorySignedTestPackage;
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             {
                 await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, signedPackage);
                 SignedArchiveTestUtility.TamperWithPackage(Path.Combine(testContext.PackageSource, signedPackage.PackageName));
@@ -152,7 +152,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(signedPackage.Id, signedPackage.Version);
                 nugetConsole.IsMessageFoundInPMC("package integrity check failed").Should().BeTrue("Integrity failed message shown.");
 
-                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version);
+                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, Logger);
             }
         }
     }

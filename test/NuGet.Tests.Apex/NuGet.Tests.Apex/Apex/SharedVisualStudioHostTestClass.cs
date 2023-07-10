@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using FluentAssertions;
-using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -48,14 +47,14 @@ namespace NuGet.Tests.Apex
 
         protected NuGetConsoleTestExtension GetConsole(ProjectTestExtension project)
         {
-            Trace.WriteLine("GetConsole");
+            Logger.WriteMessage("GetConsole");
             VisualStudio.ClearWindows();
             NuGetApexTestService nugetTestService = GetNuGetTestService();
 
-            Trace.WriteLine("EnsurePackageManagerConsoleIsOpen");
+            Logger.WriteMessage("EnsurePackageManagerConsoleIsOpen");
             nugetTestService.EnsurePackageManagerConsoleIsOpen().Should().BeTrue("Console was opened");
 
-            Trace.WriteLine("GetPackageManagerConsole");
+            Logger.WriteMessage("GetPackageManagerConsole");
             _console = nugetTestService.GetPackageManagerConsole(project.Name);
 
             // This is not a magic number.
@@ -65,13 +64,11 @@ namespace NuGet.Tests.Apex
 
             nugetTestService.WaitForAutoRestore();
 
-            Trace.WriteLine("GetConsole complete");
+            Logger.WriteMessage("GetConsole complete");
 
 
             return _console;
         }
-
-        public IOperations Operations => _hostFixture.Value.Operations;
 
         public override void Dispose()
         {
@@ -79,12 +76,12 @@ namespace NuGet.Tests.Apex
             {
                 string text = _console.GetText();
 
-                Trace.WriteLine($"Package Manager Console contents:  {text}");
+                Logger.WriteMessage($"Package Manager Console contents:  {text}");
             }
 
             _packageManagerOutputWindowText = _packageManagerOutputWindowText ?? GetPackageManagerOutputWindowPaneText();
 
-            Trace.WriteLine($"Package Manager Output Window Pane contents:  {_packageManagerOutputWindowText}");
+            Logger.WriteMessage($"Package Manager Output Window Pane contents:  {_packageManagerOutputWindowText}");
 
             base.Dispose();
         }

@@ -25,7 +25,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
             {
                 VisualStudio.AssertNoErrors();
             }
@@ -41,7 +41,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
             {
                 var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
                 project2.Build();
@@ -53,7 +53,7 @@ namespace NuGet.Tests.Apex
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
                 VisualStudio.AssertNoErrors();
-                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "TestProject2", "1.0.0");
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "TestProject2", "1.0.0", Logger);
             }
         }
 
@@ -65,7 +65,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
             {
                 var privateRepositoryPath = Path.Combine(testContext.SolutionRoot, "PrivateRepository");
                 Directory.CreateDirectory(privateRepositoryPath);
@@ -106,7 +106,7 @@ namespace NuGet.Tests.Apex
                 VisualStudio.AssertNoErrors();
 
                 // Act
-                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
+                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
                 var nugetTestService = GetNuGetTestService();
                 var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
 
@@ -117,7 +117,7 @@ namespace NuGet.Tests.Apex
 
                 // Assert
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion);
+                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion, Logger);
                 StringAssert.Contains(GetPackageManagerOutputWindowPaneText(), $"Installed {packageName} {packageVersion} from {privateRepositoryPath}");
             }
         }
@@ -130,7 +130,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
             {
                 var privateRepositoryPath = Path.Combine(testContext.SolutionRoot, "PrivateRepository");
                 Directory.CreateDirectory(privateRepositoryPath);
@@ -174,7 +174,7 @@ namespace NuGet.Tests.Apex
                 VisualStudio.AssertNoErrors();
 
                 // Arrange
-                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
+                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
                 var nugetTestService = GetNuGetTestService();
                 var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
                 uiwindow.InstallPackageFromUI(packageName, packageVersion1);
@@ -187,7 +187,7 @@ namespace NuGet.Tests.Apex
 
                 // Assert
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion2);
+                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion2, Logger);
                 StringAssert.Contains(GetPackageManagerOutputWindowPaneText(), $"Installed {packageName} {packageVersion2} from {privateRepositoryPath}");
             }
         }
@@ -200,7 +200,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
             {
                 var privateRepositoryPath = Path.Combine(testContext.SolutionRoot, "PrivateRepository");
                 Directory.CreateDirectory(privateRepositoryPath);
@@ -238,7 +238,7 @@ namespace NuGet.Tests.Apex
                 VisualStudio.AssertNoErrors();
 
                 // Act
-                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
+                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
                 var nugetTestService = GetNuGetTestService();
                 var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
 
@@ -248,7 +248,7 @@ namespace NuGet.Tests.Apex
                 uiwindow.InstallPackageFromUI(packageName, packageVersion);
 
                 // Assert
-                CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion);
+                CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion, Logger);
             }
         }
 
@@ -259,7 +259,7 @@ namespace NuGet.Tests.Apex
         {
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
             {
                 // Arrange
                 var packageName = "NetCoreInstallTestPackage";
@@ -269,14 +269,14 @@ namespace NuGet.Tests.Apex
                 VisualStudio.AssertNoErrors();
 
                 // Act
-                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
+                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
                 var nugetTestService = GetNuGetTestService();
                 var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.Project);
                 uiwindow.InstallPackageFromUI(packageName, packageVersion);
 
                 // Assert
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion);
+                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
             }
         }
 
@@ -287,7 +287,7 @@ namespace NuGet.Tests.Apex
         {
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
             {
                 // Arrange
                 var packageName = "NetCoreUpdateTestPackage";
@@ -300,7 +300,7 @@ namespace NuGet.Tests.Apex
                 VisualStudio.AssertNoErrors();
 
                 // Act
-                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
+                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
                 var nugetTestService = GetNuGetTestService();
                 var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.Project);
                 uiwindow.InstallPackageFromUI(packageName, packageVersion1);
@@ -313,7 +313,7 @@ namespace NuGet.Tests.Apex
 
                 // Assert
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion2);
+                CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.Project, packageName, packageVersion2, Logger);
             }
         }
 
@@ -324,7 +324,7 @@ namespace NuGet.Tests.Apex
         {
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, addNetStandardFeeds: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
             {
                 // Arrange
                 var packageName = "NetCoreUninstallTestPackage";
@@ -335,7 +335,7 @@ namespace NuGet.Tests.Apex
                 VisualStudio.AssertNoErrors();
 
                 // Act
-                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio);
+                CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
                 var nugetTestService = GetNuGetTestService();
                 var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.Project);
                 uiwindow.InstallPackageFromUI(packageName, packageVersion);
@@ -348,7 +348,7 @@ namespace NuGet.Tests.Apex
 
                 // Assert
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, packageName);
+                CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, testContext.Project, packageName, Logger);
             }
         }
 

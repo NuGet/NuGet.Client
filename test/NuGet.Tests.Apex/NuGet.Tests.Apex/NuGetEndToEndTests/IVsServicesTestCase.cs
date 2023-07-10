@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -45,7 +44,7 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, "newtonsoft.json");
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, "newtonsoft.json");
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", Logger);
         }
 
         [TestMethod]
@@ -65,7 +64,7 @@ namespace NuGet.Tests.Apex
             nugetTestService.UninstallPackage(projectUniqueName, "newtonsoft.json");
 
             // Assert
-            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, projExt, "newtonsoft.json");
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", Logger);
         }
 
 
@@ -107,7 +106,7 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName);
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName, Logger);
         }
 
         [TestMethod]
@@ -132,7 +131,7 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName, TestPackageVersionV2);
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName, Logger);
 
             string uniqueContentFile = Path.Combine(_pathContext.PackagesV2, TestPackageName + '.' + TestPackageVersionV2, "lib", "net45", "Thisisfromprivaterepo2.txt");
 
@@ -166,7 +165,7 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName, TestPackageVersionV1);
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName, Logger);
 
             string uniqueContentFile = Path.Combine(_pathContext.PackagesV2, TestPackageName + '.' + TestPackageVersionV1, "lib", "net45", "Thisisfromprivaterepo1.txt");
 
@@ -200,7 +199,7 @@ namespace NuGet.Tests.Apex
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName, TestPackageVersionV1);
             nugetTestService.InstallPackage(project.UniqueName, TestPackageName, TestPackageVersionV2);
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName, Logger);
             string uniqueContentFile = Path.Combine(_pathContext.PackagesV2, TestPackageName + '.' + TestPackageVersionV2, "lib", "net45", "Thisisfromprivaterepo2.txt");
 
             // Make sure name squatting package not restored from  opensource repository.
