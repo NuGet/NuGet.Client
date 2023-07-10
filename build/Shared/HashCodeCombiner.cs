@@ -42,8 +42,8 @@ namespace NuGet.Shared
             AddHashCode(b ? 1 : 0);
         }
 
-        internal void AddObject<TValue>(TValue? o, IEqualityComparer<TValue> comparer)
-            where TValue : class
+        internal void AddObject<T>(T? o, IEqualityComparer<T> comparer)
+            where T : class
         {
             CheckInitialized();
             if (o != null)
