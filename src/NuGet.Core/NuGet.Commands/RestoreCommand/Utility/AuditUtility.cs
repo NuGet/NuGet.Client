@@ -258,10 +258,11 @@ namespace NuGet.Commands.Restore.Utility
 
             foreach (RestoreTargetGraph graph in _targetGraphs)
             {
-                LibraryIdentity? currentProject = graph.Graphs.FirstOrDefault()?.Item.Key;
+                GraphItem<RemoteResolveResult>? currentProject = graph.Graphs.FirstOrDefault()?.Item;
 
-                foreach ((LibraryIdentity package, bool isDirect) in WalkAcceptedPackages(graph))
+                foreach (GraphItem<RemoteResolveResult>? node in graph.Flattened.Where(r => r.Key.Type == LibraryType.Package))
                 {
+                    LibraryIdentity package = node.Key;
                     List<PackageVulnerabilityInfo>? knownVulnerabilitiesForPackage = GetKnownVulnerabilities(package.Name, package.Version, knownVulnerabilities);
 
                     if (knownVulnerabilitiesForPackage?.Count > 0)
@@ -298,7 +299,8 @@ namespace NuGet.Commands.Restore.Utility
                                 affectedGraphs.Add(graph.TargetGraphName);
                             }
 
-                            if (!auditInfo.IsDirect && isDirect)
+                            if (!auditInfo.IsDirect &&
+                                currentProject?.Data.Dependencies.Any(d => string.Equals(d.Name, packageIdentity.Id, StringComparison.OrdinalIgnoreCase)) == true)
                             {
                                 auditInfo.IsDirect = true;
                             }
@@ -307,40 +309,6 @@ namespace NuGet.Commands.Restore.Utility
                 }
             }
             return result;
-
-            IEnumerable<(LibraryIdentity package, bool isDirect)> WalkAcceptedPackages(RestoreTargetGraph graph)
-            {
-                Stack<(GraphNode<RemoteResolveResult> node, bool isDirect)> stack = new();
-                foreach (var projectNode in graph.Graphs)
-                {
-                    foreach (var subNode in projectNode.InnerNodes)
-                    {
-                        if (subNode.Disposition == Disposition.Accepted)
-                        {
-                            stack.Push((subNode, true));
-                        }
-                    }
-                }
-
-                while (stack.Count > 0)
-                {
-                    var (current, isDirect) = stack.Pop();
-
-                    if (current.Item.Key.Type == LibraryType.Package)
-                    {
-                        yield return (current.Item.Key, isDirect);
-                    }
-
-                    for (int i = 0; i < current.InnerNodes.Count; i++)
-                    {
-                        var inner = current.InnerNodes[i];
-                        if (inner.Disposition == Disposition.Accepted)
-                        {
-                            stack.Push((inner, false));
-                        }
-                    }
-                }
-            }
         }
 
         private async Task<GetVulnerabilityInfoResult?> GetAllVulnerabilityDataAsync(CancellationToken cancellationToken)
