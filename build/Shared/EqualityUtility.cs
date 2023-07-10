@@ -70,6 +70,12 @@ namespace NuGet.Shared
                 return true;
             }
 
+            if (self.Count == 1)
+            {
+                sequenceComparer ??= EqualityComparer<TSource>.Default;
+                return sequenceComparer.Equals(self.First(), other.First());
+            }
+
             return self
                 .OrderBy(keySelector, orderComparer)
                 .SequenceEqual(other.OrderBy(keySelector, orderComparer), sequenceComparer);
