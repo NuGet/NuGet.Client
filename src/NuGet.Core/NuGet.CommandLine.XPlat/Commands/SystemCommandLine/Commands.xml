@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <!-- Copyright (c) .NET Foundation. All rights reserved.
      Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. -->
 <!-- 
@@ -91,4 +91,11 @@ Run CommandParsers.tt, CustomBinders.tt, VerbParsers.tt in this folder to update
 			<SeeAlso Title="sources command (nuget.exe)" Url="/nuget/reference/cli-reference/cli-ref-sources" />
 		</Noun>
 	</Verb>
+  <Verb Name="config">
+    <Noun Name="paths" Version="3.1.200"
+       Description="lists all the paths of NuGet configuration files that will be applied." >
+      <Argument Name="working-directory" Help="ConfigPathsWorkingDirectoryDescription"/>
+      <Example Title="List configuration files that will be applied in the current directory:" Command="dotnet nuget config paths" />
+    </Noun>
+  </Verb>
 </Commands>

@@ -488,4 +488,57 @@ namespace NuGet.CommandLine.XPlat.Commands
         }
     } // end class
 
+    /// <summary>Generated with VerbParsers.tt</summary>
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
+    internal partial class ConfigVerbParser
+    {
+        internal static Func<ILogger> GetLoggerFunction;
+        internal static Func<Exception, int> CommandExceptionHandler;
+
+        internal static Command Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
+        {
+            var ConfigCmd = new Command(name: "config", description: Strings.Config_Description);
+
+            // Options directly under the verb 'config'
+
+            // noun sub-command: config paths
+            var PathsCmd = new Command(name: "paths", description: Strings.ConfigPathsCommandDescription);
+
+            // Options under sub-command: config paths
+            RegisterOptionsForCommandConfigPaths(PathsCmd, getLogger);
+
+            ConfigCmd.AddCommand(PathsCmd);
+
+            GetLoggerFunction = getLogger;
+            CommandExceptionHandler = commandExceptionHandler;
+            app.AddCommand(ConfigCmd);
+
+            return ConfigCmd;
+        } // End noun method
+
+        private static void RegisterOptionsForCommandConfigPaths(Command cmd, Func<ILogger> getLogger)
+        {
+            var workingDirectory_Argument = new Argument<string>(name: "working-directory", description: Strings.ConfigPathsWorkingDirectoryDescription)
+            {
+                Arity = ArgumentArity.ExactlyOne,
+            };
+            cmd.Add(workingDirectory_Argument);
+            // Create handler delegate handler for cmd
+            cmd.SetHandler((args) =>
+            {
+                int exitCode;
+                try
+                {
+                    ConfigPathsRunner.Run(args, getLogger);
+                    exitCode = 0;
+                }
+                catch (Exception e)
+                {
+                    exitCode = CommandExceptionHandler(e);
+                }
+                return Task.FromResult(exitCode);
+            }, new ConfigPathsCustomBinder(workingDirectory_Argument));
+        }
+    } // end class
+
 } // end namespace

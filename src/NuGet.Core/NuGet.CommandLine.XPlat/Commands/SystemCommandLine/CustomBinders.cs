@@ -233,4 +233,25 @@ namespace NuGet.CommandLine.XPlat.Commands
         } // end GetBoundValue method
     } // end class
 
+    /// <summary>Generated with CustomBinders.tt</summary>
+    [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
+    internal partial class ConfigPathsCustomBinder : BinderBase<ConfigPathsArgs>
+    {
+        private readonly Argument<string> _workingDirectory;
+
+        public ConfigPathsCustomBinder(Argument<string> workingDirectory)
+        {
+            _workingDirectory = workingDirectory;
+        }
+
+        protected override ConfigPathsArgs GetBoundValue(BindingContext bindingContext)
+        {
+            var returnValue = new ConfigPathsArgs()
+            {
+                WorkingDirectory = bindingContext.ParseResult.GetValueForArgument(_workingDirectory),
+            };
+            return returnValue;
+        } // end GetBoundValue method
+    } // end class
+
 } // end namespace

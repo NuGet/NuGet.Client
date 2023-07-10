@@ -23,6 +23,7 @@ namespace NuGet.CommandLine.XPlat.Commands
             ListVerbParser.Register(app, getLogger, commandExceptionHandler);
             RemoveVerbParser.Register(app, getLogger, commandExceptionHandler);
             UpdateVerbParser.Register(app, getLogger, commandExceptionHandler);
+            ConfigVerbParser.Register(app, getLogger, commandExceptionHandler);
         }
     }
 }
