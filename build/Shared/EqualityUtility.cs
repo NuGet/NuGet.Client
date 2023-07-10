@@ -322,7 +322,7 @@ namespace NuGet.Shared
         }
 
         /// <summary>
-        /// Determines if the current string contains a value equal "false".  Leading and trailing whitespace are trimmed and the comparision is case-insensitive
+        /// Determines if the current string contains a value equal "false".  Leading and trailing whitespace are trimmed and the comparison is case-insensitive
         /// </summary>
         /// <param name="value">The string to compare.</param>
         /// <returns><c>true</c> if the current string is equal to a value of "false", otherwise <c>false></c>.</returns>
