@@ -44,8 +44,6 @@ namespace NuGet.PackageManagement.UI.Options
             if (!File.Exists(selectedPath.ConfigPath))
             {
                 var error = new FileNotFoundException(selectedPath.ConfigPath);
-                var errorEvent = new TelemetryEvent("ConfigPathsFileNotFoundException");
-                TelemetryActivity.EmitTelemetryEvent(errorEvent);
                 MessageHelper.ShowErrorMessage(error.Message, Resources.ShowError_FileNotFound);
             }
             _ = projectContext.ExecutionContext.OpenFile(selectedPath.ConfigPath);

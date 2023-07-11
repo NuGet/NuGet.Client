@@ -37,16 +37,12 @@ namespace NuGet.PackageManagement.UI.Options
         {
             SelectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
             ConfigPathsWindow.OpenConfigFile(SelectedPath);
-            var evt = new NavigatedTelemetryEvent(NavigationType.Button, NavigationOrigin.Options_ConfigurationFiles_Open);
-            TelemetryActivity.EmitTelemetryEvent(evt);
         }
 
         private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             SelectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
             ConfigPathsWindow.OpenConfigFile(SelectedPath);
-            var evt = new NavigatedTelemetryEvent(NavigationType.DoubleClick, NavigationOrigin.Options_ConfigurationFiles_ListItem);
-            TelemetryActivity.EmitTelemetryEvent(evt);
         }
 
         internal void InitializeOnActivated(CancellationToken cancellationToken)
