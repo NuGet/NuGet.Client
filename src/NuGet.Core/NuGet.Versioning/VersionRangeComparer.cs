@@ -98,7 +98,7 @@ namespace NuGet.Versioning
         /// Creates a hash code based on all properties of the range. This follows the rules of the
         /// version comparer when comparing the version bounds.
         /// </summary>
-        public int GetHashCode(VersionRangeBase? obj)
+        public int GetHashCode(VersionRangeBase obj)
         {
             if (ReferenceEquals(obj, null))
             {
