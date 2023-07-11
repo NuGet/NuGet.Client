@@ -6,8 +6,6 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using Microsoft.VisualStudio.PlatformUI;
 using NuGet.VisualStudio;
-using NuGet.PackageManagement.Telemetry;
-using NuGet.Common;
 
 namespace NuGet.PackageManagement.UI.Options
 {
@@ -28,12 +26,12 @@ namespace NuGet.PackageManagement.UI.Options
             InitializeComponent();
         }
 
-        private bool IsSelectedPath(object obj)
+        private bool IsSelectedPath()
         {
             return _configurationPaths.SelectedItem != null;
         }
 
-        private void ExecuteOpenConfigurationFile(object obj)
+        private void ExecuteOpenConfigurationFile()
         {
             SelectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
             ConfigPathsWindow.OpenConfigFile(SelectedPath);

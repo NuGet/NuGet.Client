@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Services.Common;
-using NuGet.Common;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
