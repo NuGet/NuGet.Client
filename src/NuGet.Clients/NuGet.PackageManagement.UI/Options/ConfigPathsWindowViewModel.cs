@@ -40,6 +40,8 @@ namespace NuGet.PackageManagement.UI.Options
         {
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var projectContext = componentModel.GetService<INuGetProjectContext>();
+
+            // This check is performed in case the user moves or deletes a config file while they have it selected in the Options window.
             if (!File.Exists(selectedPath.ConfigPath))
             {
                 var error = new FileNotFoundException(selectedPath.ConfigPath);
