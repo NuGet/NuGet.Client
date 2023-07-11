@@ -169,6 +169,7 @@ namespace NuGet.PackageManagement.UI
                                 bool isBestOption = rangeBestVersion.ToString() == selectedVersion.Version.ToString();
                                 if (isBestOption)
                                 {
+                                    // Add vulnerable/deprecated labels to non floating/range versions
                                     if (userRequestedVersionRange.OriginalString.StartsWith("(", StringComparison.OrdinalIgnoreCase) ||
                                         userRequestedVersionRange.OriginalString.StartsWith("[", StringComparison.OrdinalIgnoreCase) ||
                                         userRequestedVersionRange.IsFloating)
