@@ -169,7 +169,16 @@ namespace NuGet.PackageManagement.UI
                                 bool isBestOption = rangeBestVersion.ToString() == selectedVersion.Version.ToString();
                                 if (isBestOption)
                                 {
-                                    PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null, isVulnerable: selectedVersion.IsVulnerable, isDeprecated: selectedVersion.IsDeprecated);
+                                    if (userRequestedVersionRange.OriginalString.StartsWith("(", StringComparison.OrdinalIgnoreCase) ||
+                                        userRequestedVersionRange.OriginalString.StartsWith("[", StringComparison.OrdinalIgnoreCase) ||
+                                        userRequestedVersionRange.IsFloating)
+                                    {
+                                        PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null);
+                                    }
+                                    else
+                                    {
+                                        PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null, isVulnerable: selectedVersion.IsVulnerable, isDeprecated: selectedVersion.IsDeprecated);
+                                    }
                                     _versions.Text = PackageDetailControlModel.SelectedVersion.ToString();
                                 }
                                 else
