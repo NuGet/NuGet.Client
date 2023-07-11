@@ -161,7 +161,7 @@ namespace NuGet.PackageManagement.UI
                         if (_versions.SelectedIndex >= 0 && isAVersion)
                         {
                             // Check if the user typed a custom version
-                            if (isUserInputValidNuGetVersionRange)
+                            if (isUserInputValidNuGetVersionRange && userRequestedVersionRange != null && _versions.Items?.CurrentItem != null)
                             {
                                 // Search for the best version
                                 NuGetVersion rangeBestVersion = userRequestedVersionRange.FindBestMatch(versions);
@@ -169,8 +169,8 @@ namespace NuGet.PackageManagement.UI
                                 bool isBestOption = rangeBestVersion.ToString() == selectedVersion.Version.ToString();
                                 if (isBestOption)
                                 {
-                                    PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null, isVulnerable: false);
-                                    _versions.Text = comboboxText;
+                                    PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRequestedVersionRange, rangeBestVersion, additionalInfo: null, isVulnerable: selectedVersion.IsVulnerable, isDeprecated: selectedVersion.IsDeprecated);
+                                    _versions.Text = PackageDetailControlModel.SelectedVersion.ToString();
                                 }
                                 else
                                 {
