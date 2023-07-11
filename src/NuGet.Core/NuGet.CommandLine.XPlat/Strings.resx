@@ -860,4 +860,10 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="ConfigGetCommandDescription" xml:space="preserve">
     <value>Gets the NuGet configuration settings that will be applied.</value>
   </data>
+  <data name="ConfigGetCommandExample" xml:space="preserve">
+    <value>Get all merged NuGet configuration settings from multiple NuGet configuration files that will be applied, when invoking NuGet command in the current working directory.</value>
+  </data>
+  <data name="ConfigPathsCommandExample" xml:space="preserve">
+    <value>Lists the paths to all NuGet configuration files that will be applied when invoking NuGet command in the current directory:</value>
+  </data>
 </root>

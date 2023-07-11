@@ -91,11 +91,31 @@ Run CommandParsers.tt, CustomBinders.tt, VerbParsers.tt in this folder to update
 			<SeeAlso Title="sources command (nuget.exe)" Url="/nuget/reference/cli-reference/cli-ref-sources" />
 		</Noun>
 	</Verb>
-  <Verb Name="config">
+  <Verb Name="config" >
     <Noun Name="paths" Version="3.1.200"
-       Description="lists all the paths of NuGet configuration files that will be applied." >
-      <Argument Name="working-directory" Help="ConfigPathsWorkingDirectoryDescription"/>
-      <Example Title="List configuration files that will be applied in the current directory:" Command="dotnet nuget config paths" />
+       Description="ConfigPathsCommandDescription">
+      <Argument Name="WORKING_DIRECTORY" Help="ConfigPathsWorkingDirectoryDescription"/>
+      <Example Title="ConfigPathsCommandExample" Command="dotnet nuget config paths"/>
+    </Noun>
+    <Noun Name="get" Version="3.1.200"
+       Description="ConfigGetCommandDescription">
+      <Argument Name="&lt;ALL|CONFIG_KEY>" Help="ConfigGetAllOrConfigKeyDescription"/>
+      <Argument Name="WORKING_DIRECTORY" Help="ConfigPathsWorkingDirectoryDescription"/>
+      <NoValueOption Name="--show-path" Help="ConfigGetShowPathDescription"/>
+      <Example Title="ConfigGetcommandExample" Command="dotnet nuget config get"/>
+    </Noun>
+    <Noun Name="set" Version="3.1.200"
+       Description="ConfigSetCommandDescription" >
+      <Argument Name="CONFIG_KEY" Help="ConfigSetConfigKeyDescription"/>
+      <Argument Name="CONFIG_VALUE" Help="ConfigSetConfigValueDescription"/>
+      <SingleValueOption Name="--configfile" Help="Option_ConfigFile"/>
+      <Example />
+    </Noun>
+    <Noun Name="unset" Version="3.1.200"
+       Description="ConfigUnsetCommandDescription" >
+      <Argument Name="CONFIG_KEY" Help="ConfigUnsetConfigKeyDescription"/>
+      <SingleValueOption Name="--configfile" Help="Option_ConfigFile"/>
+      <Example />
     </Noun>
   </Verb>
 </Commands>

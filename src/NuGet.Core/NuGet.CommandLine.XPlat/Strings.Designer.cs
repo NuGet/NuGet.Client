@@ -259,6 +259,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Get all merged NuGet configuration settings from multiple NuGet configuration files that will be applied, when invoking NuGet command in the current working directory..
+        /// </summary>
+        internal static string ConfigGetCommandExample {
+            get {
+                return ResourceManager.GetString("ConfigGetCommandExample", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Indicate that the NuGet configuration file path will be shown beside the configuration settings..
         /// </summary>
         internal static string ConfigGetShowPathDescription {
@@ -273,6 +282,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ConfigPathsCommandDescription {
             get {
                 return ResourceManager.GetString("ConfigPathsCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lists the paths to all NuGet configuration files that will be applied when invoking NuGet command in the current directory:.
+        /// </summary>
+        internal static string ConfigPathsCommandExample {
+            get {
+                return ResourceManager.GetString("ConfigPathsCommandExample", resourceCulture);
             }
         }
         
