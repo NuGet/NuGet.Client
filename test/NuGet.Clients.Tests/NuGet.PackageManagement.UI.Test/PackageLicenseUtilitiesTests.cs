@@ -156,23 +156,32 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public void PackageLicenseUtility_GeneratesLinkForFiles()
         {
-            // Setup
-            var licenseFileLocation = "License.txt";
-            var licenseFileHeader = "header";
-            var licenseData = new LicenseMetadata(LicenseType.File, licenseFileLocation, null, null, LicenseMetadata.CurrentVersion);
+            using (TestDirectory testDir = TestDirectory.Create())
+            {
+                // Setup
+                // Create decoy nuget package
+                var zipPath = Path.Combine(testDir.Path, "file.nupkg");
+                CreateDummyPackage(zipPath: zipPath, licenseFile: "License.txt", licenseFileTargetElement: "");
 
-            // Act
-            var links = PackageLicenseUtilities.GenerateLicenseLinks(
-                licenseData,
-                licenseFileHeader,
-                licenseFileLocation,
-                packageIdentity: null);
+                var licenseFileLocation = "License.txt";
+                var licenseFileHeader = "header";
+                var licenseData = new LicenseMetadata(LicenseType.File, licenseFileLocation, null, null, LicenseMetadata.CurrentVersion);
 
-            Assert.Equal(1, links.Count);
-            Assert.True(links[0] is LicenseFileText);
-            var licenseFileText = links[0] as LicenseFileText;
-            Assert.Equal(Resources.Text_ViewLicense, licenseFileText.Text);
-            Assert.Equal(Resources.LicenseFile_Loading, ((Run)((Paragraph)licenseFileText.LicenseText.Blocks.AsEnumerable().First()).Inlines.First()).Text);
+                var packageIdentity = new PackageIdentity("AddLicenseToCache", NuGetVersion.Parse("1.0.0"));
+
+                // Act
+                var links = PackageLicenseUtilities.GenerateLicenseLinks(
+                    licenseData,
+                    licenseFileHeader,
+                    zipPath,
+                    packageIdentity: packageIdentity);
+
+                Assert.Equal(1, links.Count);
+                Assert.True(links[0] is LicenseFileText);
+                var licenseFileText = links[0] as LicenseFileText;
+                Assert.Equal(Resources.Text_ViewLicense, licenseFileText.Text);
+                Assert.Equal(Resources.LicenseFile_Loading, ((Run)((Paragraph)licenseFileText.LicenseText.Blocks.AsEnumerable().First()).Inlines.First()).Text);
+            }
         }
 
         private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
