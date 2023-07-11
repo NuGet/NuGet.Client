@@ -195,7 +195,7 @@
     <Logger Condition="'$(RunName)' == 'NuGet.Tests.Apex'" Include="logger:console">
       <FriendlyName>console</FriendlyName>
       <Configuration>
-        <Verbosity>Detailed</Verbosity>
+        <Verbosity>Normal</Verbosity>
       </Configuration>
     </Logger>
     <Logger Condition="'$(TRXLogger)' == 'enabled'" Include="logger://Microsoft/TestPlatform/TrxLogger/v1">
