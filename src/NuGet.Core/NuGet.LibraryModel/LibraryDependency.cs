@@ -261,7 +261,7 @@ namespace NuGet.LibraryModel
                         continue;
                     }
 
-                    if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
+                    if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion? centralPackageVersion))
                     {
                         d.LibraryRange!.VersionRange = centralPackageVersion.VersionRange;
                     }
