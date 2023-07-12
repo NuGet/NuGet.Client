@@ -223,10 +223,9 @@ namespace NuGet.LibraryModel
             }
 
             return _flags == other._flags &&
-                   EqualityUtility.EqualsWithNullCheck(LibraryRange, other.LibraryRange) &&
-                   _noWarn is null == other._noWarn is null &&
-                   (_noWarn is null || _noWarn.SequenceEqualWithNullCheck(other._noWarn)) &&
                    Aliases == other.Aliases &&
+                   EqualityUtility.EqualsWithNullCheck(LibraryRange, other.LibraryRange) &&
+                   (_noWarn ?? Enumerable.Empty<NuGetLogCode>()).SequenceEqualWithNullCheck(other._noWarn ?? Enumerable.Empty<NuGetLogCode>()) &&
                    EqualityUtility.EqualsWithNullCheck(VersionOverride, other.VersionOverride);
         }
 

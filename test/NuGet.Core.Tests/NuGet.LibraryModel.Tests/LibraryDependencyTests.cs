@@ -125,6 +125,23 @@ namespace NuGet.LibraryModel.Tests
             Assert.Equal(0, libraryDependency.NoWarn.Count);
         }
 
+        [Fact]
+        public void Equal_NoWarn()
+        {
+            LibraryDependency dep1 = new();
+            LibraryDependency dep2 = new();
+
+            Assert.Equal(dep1, dep2);
+
+            _ = dep1.NoWarn; // force initialization of collection
+
+            Assert.Equal(dep1, dep2);
+
+            dep1.NoWarn.Add(new NuGetLogCode());
+
+            Assert.NotEqual(dep1, dep2);
+        }
+
         [Theory]
         //[CombinatorialData]
         [PairwiseData]
