@@ -259,11 +259,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Get all merged NuGet configuration settings from multiple NuGet configuration files that will be applied, when invoking NuGet command in the current working directory..
+        ///   Looks up a localized string similar to Get all merged NuGet configuration settings from multiple NuGet configuration files that will be applied, when invoking NuGet command in the current working directory:.
         /// </summary>
-        internal static string ConfigGetCommandExample {
+        internal static string ConfigGetCommandExampleAll {
             get {
-                return ResourceManager.GetString("ConfigGetCommandExample", resourceCulture);
+                return ResourceManager.GetString("ConfigGetCommandExampleAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gets the value of http_proxy from the merged config section in the current working directory:.
+        /// </summary>
+        internal static string ConfigGetCommandExampleConfigKey {
+            get {
+                return ResourceManager.GetString("ConfigGetCommandExampleConfigKey", resourceCulture);
             }
         }
         
@@ -313,6 +322,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sets the signatureValidationMode to true in the closest NuGet configuration file:.
+        /// </summary>
+        internal static string ConfigSetCommandExample {
+            get {
+                return ResourceManager.GetString("ConfigSetCommandExample", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The key of the settings that are to be set..
         /// </summary>
         internal static string ConfigSetConfigKeyDescription {
@@ -336,6 +354,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ConfigUnsetCommandDescription {
             get {
                 return ResourceManager.GetString("ConfigUnsetCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsets the signatureValidationMode in the user-wide NuGet configuration file:.
+        /// </summary>
+        internal static string ConfigUnsetCommandExample {
+            get {
+                return ResourceManager.GetString("ConfigUnsetCommandExample", resourceCulture);
             }
         }
         
