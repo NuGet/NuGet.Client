@@ -14,13 +14,13 @@ namespace NuGet.PackageManagement.UI.Options
     /// </summary>
     public partial class ConfigPathsControl : UserControl
     {
-        public ConfigPathsWindowViewModel ConfigPathsWindow { get; set; }
-        public ConfigPathsViewModel SelectedPath { get; set; }
+        public ConfigPathsViewModel ConfigPathsWindow { get; set; }
+        public ConfigPathViewModel SelectedPath { get; set; }
         public ICommand OpenConfigurationFile { get; set; }
 
         public ConfigPathsControl()
         {
-            ConfigPathsWindow = new ConfigPathsWindowViewModel();
+            ConfigPathsWindow = new ConfigPathsViewModel();
             OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, IsSelectedPath, NuGetUIThreadHelper.JoinableTaskFactory);
             DataContext = this;
             InitializeComponent();
@@ -33,13 +33,13 @@ namespace NuGet.PackageManagement.UI.Options
 
         private void ExecuteOpenConfigurationFile()
         {
-            SelectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
+            SelectedPath = (ConfigPathViewModel)_configurationPaths.SelectedItem;
             ConfigPathsWindow.OpenConfigFile(SelectedPath);
         }
 
         private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            SelectedPath = (ConfigPathsViewModel)_configurationPaths.SelectedItem;
+            SelectedPath = (ConfigPathViewModel)_configurationPaths.SelectedItem;
             ConfigPathsWindow.OpenConfigFile(SelectedPath);
         }
 
@@ -51,8 +51,7 @@ namespace NuGet.PackageManagement.UI.Options
 
         private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
         {
-            var hyperlink = e.OriginalSource as Hyperlink;
-            if (hyperlink != null && hyperlink.NavigateUri != null)
+            if (e.OriginalSource is Hyperlink hyperlink && hyperlink.NavigateUri != null)
             {
                 UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
 
