@@ -119,7 +119,7 @@ namespace NuGet.Commands.Restore.Utility
             foreach (Exception exception in exceptions.InnerExceptions)
             {
                 var messageText = string.Format(Strings.Error_VulnerabilityDataFetch, exception.Message);
-                RestoreLogMessage logMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1900, messageText);
+                RestoreLogMessage logMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1900, messageText);
                 logMessage.ProjectPath = _projectFullPath;
                 _logger.Log(logMessage);
             }

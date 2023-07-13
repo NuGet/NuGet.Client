@@ -334,6 +334,82 @@ public class AuditUtilityTests
         auditUtility.TransitivePackagesWithAdvisory.Should().BeEquivalentTo(new[] { vulnerablePackage });
     }
 
+    [Fact]
+    public async Task Check_MultiTargetingProjectFile_WarningsHaveExpectedProperties()
+    {
+        // Arrange
+
+        DependencyProvider packageDependencyProvider = new();
+        packageDependencyProvider.Package("pkga", "1.0.0");
+        packageDependencyProvider.Package("pkgb", "1.0.0");
+
+        Task<RestoreTargetGraph>[] createGraphTasks =
+        {
+            CreateGraphAsync(packageDependencyProvider, "pkga", FrameworkConstants.CommonFrameworks.Net60),
+            CreateGraphAsync(packageDependencyProvider, "pkgb", FrameworkConstants.CommonFrameworks.Net50)
+        };
+
+        List<VulnerabilityProviderTestContext> vulnerabilityProviderContexts = new(1)
+        {
+            new VulnerabilityProviderTestContext()
+        };
+        vulnerabilityProviderContexts[0].WithPackageVulnerability("pkga").Add(new PackageVulnerabilityInfo(CveUrl, 0, UpToV2));
+        vulnerabilityProviderContexts[0].WithPackageVulnerability("pkgb").Add(new PackageVulnerabilityInfo(CveUrl, 0, UpToV2));
+
+        var vulnerabilityProviders = AuditTestContext.CreateVulnerabilityInformationProviders(vulnerabilityProviderContexts);
+
+        RestoreTargetGraph[] graphs =
+        {
+            await createGraphTasks[0],
+            await createGraphTasks[1]
+        };
+
+        RestoreAuditProperties restoreAuditProperties = new()
+        {
+            EnableAudit = "default",
+        };
+
+        var log = new TestLogger();
+
+        // Act
+        var audit = new AuditUtility(
+            AuditUtility.ParseEnableValue(restoreAuditProperties.EnableAudit),
+            restoreAuditProperties,
+            "/path/proj.csproj",
+            graphs,
+            vulnerabilityProviders,
+            log);
+        await audit.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
+
+        // Assert
+        log.LogMessages.Count.Should().Be(2);
+
+        RestoreLogMessage message = log.LogMessages.Cast<RestoreLogMessage>().Single(m => m.LibraryId == "pkga");
+        message.TargetGraphs.Should().BeEquivalentTo(new[] { "net6.0" });
+
+        message = log.LogMessages.Cast<RestoreLogMessage>().Single(m => m.LibraryId == "pkgb");
+        message.TargetGraphs.Should().BeEquivalentTo(new[] { "net5.0" });
+
+        static async Task<RestoreTargetGraph> CreateGraphAsync(DependencyProvider packageProvider, string dependencyId, NuGetFramework targetFramework)
+        {
+            DependencyProvider projectProvider = new();
+            projectProvider.Package("proj", "1.0.0", LibraryType.Project).DependsOn(dependencyId, "1.0.0");
+
+            var walkContext = new TestRemoteWalkContext();
+            walkContext.LocalLibraryProviders.Add(packageProvider);
+            walkContext.ProjectLibraryProviders.Add(projectProvider);
+            var walker = new RemoteDependencyWalker(walkContext);
+
+            LibraryRange restoreTarget = new("proj", new VersionRange(NuGetVersion.Parse("1.0.0")), LibraryDependencyTarget.Project);
+
+            var walkResult = await walker.WalkAsync(restoreTarget, targetFramework, "", RuntimeGraph.Empty, true);
+
+            var graph = RestoreTargetGraph.Create(new[] { walkResult }, walkContext, NullLogger.Instance, targetFramework);
+
+            return graph;
+        }
+    }
+
     private class AuditTestContext
     {
         public string ProjectFullPath { get; set; } = RuntimeEnvironmentHelper.IsWindows ? @"n:\proj\proj.csproj" : "/src/proj/proj.csproj";
@@ -404,7 +480,7 @@ public class AuditUtilityTests
 
             var graphs = await CreateGraphsAsync();
 
-            var vulnProviders = CreateVulnerabilityInformationProviders();
+            var vulnProviders = CreateVulnerabilityInformationProviders(_vulnerabilityProviders);
 
             var audit = new AuditUtility(enabled, restoreAuditProperties, ProjectFullPath, graphs, vulnProviders, Log);
             await audit.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
@@ -428,29 +504,29 @@ public class AuditUtilityTests
 
                 return graphs;
             }
+        }
 
-            List<IVulnerabilityInformationProvider> CreateVulnerabilityInformationProviders()
+        public static List<IVulnerabilityInformationProvider> CreateVulnerabilityInformationProviders(List<VulnerabilityProviderTestContext>? providers)
+        {
+            List<IVulnerabilityInformationProvider> result = new();
+
+            if (providers is null)
             {
-                List<IVulnerabilityInformationProvider> result = new();
-
-                if (_vulnerabilityProviders is null)
-                {
-                    return result;
-                }
-
-                foreach (var provider in _vulnerabilityProviders)
-                {
-                    List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities =
-                        provider.KnownVulnerabilities is not null ? new() { provider.KnownVulnerabilities } : null;
-                    GetVulnerabilityInfoResult getVulnerabilityInfoResult = new(knownVulnerabilities, provider.Exceptions);
-                    var vulnProvider = new Mock<IVulnerabilityInformationProvider>();
-                    vulnProvider.Setup(p => p.GetVulnerabilityInformationAsync(It.IsAny<CancellationToken>()))
-                        .Returns(Task.FromResult<GetVulnerabilityInfoResult?>(getVulnerabilityInfoResult));
-                    result.Add(vulnProvider.Object);
-                }
-
                 return result;
             }
+
+            foreach (var provider in providers)
+            {
+                List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities =
+                    provider.KnownVulnerabilities is not null ? new() { provider.KnownVulnerabilities } : null;
+                GetVulnerabilityInfoResult getVulnerabilityInfoResult = new(knownVulnerabilities, provider.Exceptions);
+                var vulnProvider = new Mock<IVulnerabilityInformationProvider>();
+                vulnProvider.Setup(p => p.GetVulnerabilityInformationAsync(It.IsAny<CancellationToken>()))
+                    .Returns(Task.FromResult<GetVulnerabilityInfoResult?>(getVulnerabilityInfoResult));
+                result.Add(vulnProvider.Object);
+            }
+
+            return result;
         }
     }
 
