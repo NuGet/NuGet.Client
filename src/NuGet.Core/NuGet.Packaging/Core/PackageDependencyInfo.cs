@@ -20,9 +20,10 @@ namespace NuGet.Packaging.Core
     /// </remarks>
     public class PackageDependencyInfo : PackageIdentity, IEquatable<PackageDependencyInfo>
     {
-        private readonly static PackageDependency[] EmptyDependencies = Array.Empty<PackageDependency>();
-
-        private readonly PackageDependency[] _dependencies;
+        /// <summary>
+        /// Package dependencies
+        /// </summary>
+        public IEnumerable<PackageDependency> Dependencies { get; }
 
         public PackageDependencyInfo(string id, NuGetVersion version)
             : this(id, version, null)
@@ -43,13 +44,8 @@ namespace NuGet.Packaging.Core
         public PackageDependencyInfo(string id, NuGetVersion version, IEnumerable<PackageDependency>? dependencies)
             : base(id, version)
         {
-            _dependencies = dependencies?.ToArray() ?? EmptyDependencies;
+            Dependencies = dependencies?.ToArray() ?? Array.Empty<PackageDependency>();
         }
-
-        /// <summary>
-        /// Package dependencies
-        /// </summary>
-        public IEnumerable<PackageDependency> Dependencies => _dependencies;
 
         public bool Equals(PackageDependencyInfo? other)
         {
