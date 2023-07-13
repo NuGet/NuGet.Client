@@ -248,7 +248,9 @@ For example the following are correct:
    ```cs
    ListItem item = (ListItem)selectedItem; // InvalidCastException if wrong type
    string name = item.Name;
+   ```
 
+   ```cs
    if (obj is Type1 t1)
    {
        return t1.Value;
