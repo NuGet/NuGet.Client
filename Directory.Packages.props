@@ -32,7 +32,6 @@
   <ItemGroup>
     <PackageVersion Include="FluentAssertions" Version="6.6.0" />
     <PackageVersion Include="ILMerge" Version="3.0.41" />
-    <PackageVersion Include="IsExternalInit" Version="1.0.3" />
     <PackageVersion Include="Lucene.Net" Version="3.0.3" />
     <PackageVersion Include="MessagePack" Version="2.5.108" />
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
@@ -170,7 +169,6 @@
 
       <_allowBuildFromSourcePackage Include="@(PackageReference)" Condition=" '%(PackageReference.IsImplicitlyDefined)' == 'true' " />
 
-      <_allowBuildFromSourcePackage Include="IsExternalInit" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Framework" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Tasks.Core" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Utilities.Core" />
