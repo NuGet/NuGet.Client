@@ -40,13 +40,13 @@ namespace NuGet.Tests.Apex
 
         public void AssertVulnerablePackage()
         {
-            var vulnerablePackageResult = _uiproject.VerifyVulnerablePackageOnTab();
+            var vulnerablePackageResult = _uiproject.VerifyVulnerablePackageOnTopOfInstalledTab();
             vulnerablePackageResult.Should().BeTrue();
         }
 
         public void AssertNotAVulnerablePackage()
         {
-            var vulnerablePackageResult = _uiproject.VerifyVulnerablePackageOnTab();
+            var vulnerablePackageResult = _uiproject.VerifyVulnerablePackageOnTopOfInstalledTab();
             vulnerablePackageResult.Should().BeFalse();
         }
 
