@@ -30,17 +30,11 @@
       <RowDefinition Height="*" />
       <RowDefinition Height="auto" />
     </Grid.RowDefinitions>
-    <Grid.Resources>
-      <DataTemplate x:Uid="ConfigPathItemTemplate" x:Key="ConfigPathItemTemplate">
-        <TextBlock Text="{Binding ConfigPath}"/>
-      </DataTemplate>
-    </Grid.Resources>
     <TextBlock Grid.Row="0" Text="{x:Static nuget:Resources.VSOptions_Label_ConfigurationFiles}"/>
     <ListView
       Name="_configurationPaths"
       Grid.Row="1"
-      ItemsSource="{Binding ConfigPathsWindow.ConfigPaths}"
-      ItemTemplate="{StaticResource ConfigPathItemTemplate}"
+      ItemsSource="{Binding ConfigPaths.ConfigPathsCollection}"
       AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_ConfigurationFiles}" />
     <Grid Grid.Row="2">
       <Grid.ColumnDefinitions>

@@ -14,13 +14,13 @@ namespace NuGet.PackageManagement.UI.Options
     /// </summary>
     public partial class ConfigPathsControl : UserControl
     {
-        public ConfigPathsViewModel ConfigPathsWindow { get; set; }
-        public ConfigPathViewModel SelectedPath { get; set; }
+        public ConfigPathsViewModel ConfigPaths { get; set; }
+        public string SelectedPath { get; set; }
         public ICommand OpenConfigurationFile { get; set; }
 
         public ConfigPathsControl()
         {
-            ConfigPathsWindow = new ConfigPathsViewModel();
+            ConfigPaths = new ConfigPathsViewModel();
             OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, IsSelectedPath, NuGetUIThreadHelper.JoinableTaskFactory);
             DataContext = this;
             InitializeComponent();
@@ -33,20 +33,20 @@ namespace NuGet.PackageManagement.UI.Options
 
         private void ExecuteOpenConfigurationFile()
         {
-            SelectedPath = (ConfigPathViewModel)_configurationPaths.SelectedItem;
-            ConfigPathsWindow.OpenConfigFile(SelectedPath);
+            SelectedPath = (string)_configurationPaths.SelectedItem;
+            ConfigPaths.OpenConfigFile(SelectedPath);
         }
 
         private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            SelectedPath = (ConfigPathViewModel)_configurationPaths.SelectedItem;
-            ConfigPathsWindow.OpenConfigFile(SelectedPath);
+            SelectedPath = (string)_configurationPaths.SelectedItem;
+            ConfigPaths.OpenConfigFile(SelectedPath);
         }
 
         internal void InitializeOnActivated(CancellationToken cancellationToken)
         {
-            ConfigPathsWindow.ConfigPaths.Clear();
-            ConfigPathsWindow.SetConfigPaths();
+            ConfigPaths.ConfigPathsCollection.Clear();
+            ConfigPaths.SetConfigPaths();
         }
 
         private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)

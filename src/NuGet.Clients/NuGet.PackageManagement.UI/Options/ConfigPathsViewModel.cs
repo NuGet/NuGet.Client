@@ -14,45 +14,44 @@ namespace NuGet.PackageManagement.UI.Options
 {
     public class ConfigPathsViewModel
     {
+        public ObservableCollection<string> ConfigPathsCollection { get; private set; }
+
         public ConfigPathsViewModel()
         {
-            ConfigPaths = new ObservableCollection<ConfigPathViewModel>();
+            ConfigPathsCollection = new ObservableCollection<string>();
         }
-
-        public ObservableCollection<ConfigPathViewModel> ConfigPaths { get; private set; }
 
         public void SetConfigPaths()
         {
             IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModelMapping.GetService<Configuration.ISettings>();
             IReadOnlyList<string> configPaths = settings.GetConfigFilePaths().ToList();
-            ConfigPaths.AddRange(CreateViewModels(configPaths));
+            ConfigPathsCollection.AddRange(CreateViewModels(configPaths));
         }
 
-        private ObservableCollection<ConfigPathViewModel> CreateViewModels(IReadOnlyList<string> configPaths)
+        private ObservableCollection<string> CreateViewModels(IReadOnlyList<string> configPaths)
         {
-            var configPathsCollection = new ObservableCollection<ConfigPathViewModel>();
+            var configPathsCollection = new ObservableCollection<string>();
             foreach (var configPath in configPaths)
             {
-                var viewModel = new ConfigPathViewModel(configPath);
-                configPathsCollection.Add(viewModel);
+                configPathsCollection.Add(configPath);
             }
 
             return configPathsCollection;
         }
 
-        public void OpenConfigFile(ConfigPathViewModel selectedPath)
+        public void OpenConfigFile(string selectedPath)
         {
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var projectContext = componentModel.GetService<INuGetProjectContext>();
 
             // This check is performed in case the user moves or deletes a config file while they have it selected in the Options window.
-            if (!File.Exists(selectedPath.ConfigPath))
+            if (!File.Exists(selectedPath))
             {
-                var error = new FileNotFoundException(selectedPath.ConfigPath);
+                var error = new FileNotFoundException(selectedPath);
                 MessageHelper.ShowErrorMessage(error.Message, Resources.ShowError_FileNotFound);
             }
-            _ = projectContext.ExecutionContext.OpenFile(selectedPath.ConfigPath);
+            _ = projectContext.ExecutionContext.OpenFile(selectedPath);
         }
     }
 }
