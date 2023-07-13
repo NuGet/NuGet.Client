@@ -199,6 +199,48 @@ public class AuditUtilityTests
         }
     }
 
+    [Fact]
+    public async Task Check_TwoVulnerabilityProviders_MergesKnownVulnerabilities()
+    {
+        // Arrange
+        var context = new AuditTestContext();
+        context.Mode = "all";
+
+        PackageVulnerabilityInfo commonKnownVulnerability = new PackageVulnerabilityInfo(CveUrl, severity: 1, UpToV2);
+        Uri cve2Url = new("https://cve.test/2");
+        Uri cve3Url = new("https://cve.test/3");
+
+        // provider 1 knows about vulnerabilities 1 and 2
+        var vulnerabilityProvider = context.WithVulnerabilityProvider();
+        var knownVulnerabilities = vulnerabilityProvider.WithPackageVulnerability("pkga");
+        knownVulnerabilities.Add(commonKnownVulnerability);
+        knownVulnerabilities.Add(new PackageVulnerabilityInfo(cve2Url, severity: 1, UpToV2));
+
+        // provider 2 knows about vulnerabilities 1 and 3
+        vulnerabilityProvider = context.WithVulnerabilityProvider();
+        knownVulnerabilities = vulnerabilityProvider.WithPackageVulnerability("pkga");
+        knownVulnerabilities.Add(commonKnownVulnerability);
+        knownVulnerabilities.Add(new PackageVulnerabilityInfo(cve3Url, severity: 1, UpToV2));
+
+        context.WithRestoreTarget().DependsOn("pkga", "1.0.0");
+        context.PackagesDependencyProvider.Package("pkga", "1.0.0");
+
+        // Act
+        var auditUtility = await context.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
+
+        // Assert
+        // the common cve both vulnerability providers know about should be deduplicated
+        context.Log.LogMessages.Count.Should().Be(3);
+
+        List<RestoreLogMessage> messages = new(3);
+        messages.AddRange(context.Log.LogMessages.Cast<RestoreLogMessage>());
+
+        messages.All(m => m.LibraryId == "pkga").Should().BeTrue();
+        messages.Any(m => m.Message.Contains(CveUrl.OriginalString)).Should().BeTrue();
+        messages.Any(m => m.Message.Contains(cve2Url.OriginalString)).Should().BeTrue();
+        messages.Any(m => m.Message.Contains(cve3Url.OriginalString)).Should().BeTrue();
+    }
+
     /// <summary>
     /// Diamond dependency pkga has a known vulnerability on the lower version, but none on the higher version.
     /// Therefore, no warnings or vulnerable packages should be detected.
