@@ -38,13 +38,13 @@ namespace NuGet.Tests.Apex
             searchPackageResult.Should().BeTrue($"searching for the package {packageId} in the {tabName} tab failed");
         }
 
-        public void AssertVulnerablePackage()
+        public void AssertInstalledPackageVulnerable()
         {
             var vulnerablePackageResult = _uiproject.VerifyVulnerablePackageOnTopOfInstalledTab();
             vulnerablePackageResult.Should().BeTrue();
         }
 
-        public void AssertNotAVulnerablePackage()
+        public void AssertInstalledPackageNotVulnerable()
         {
             var vulnerablePackageResult = _uiproject.VerifyVulnerablePackageOnTopOfInstalledTab();
             vulnerablePackageResult.Should().BeFalse();

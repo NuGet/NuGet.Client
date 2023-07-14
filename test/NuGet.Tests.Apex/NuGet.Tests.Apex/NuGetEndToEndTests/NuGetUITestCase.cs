@@ -555,7 +555,7 @@ namespace NuGet.Tests.Apex
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "Newtonsoft.Json", "10.0.1", XunitLogger);
-            uiwindow.AssertVulnerablePackage();
+            uiwindow.AssertInstalledPackageVulnerable();
         }
 
         [StaFact]
@@ -577,14 +577,14 @@ namespace NuGet.Tests.Apex
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "Newtonsoft.Json", "12.0.1", XunitLogger);
-            uiwindow.AssertVulnerablePackage();
+            uiwindow.AssertInstalledPackageVulnerable();
 
             // Act
             uiwindow.UpdatePackageFromUI("Newtonsoft.Json", "13.0.1");
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "Newtonsoft.Json", "13.0.1", XunitLogger);
-            uiwindow.AssertNotAVulnerablePackage();
+            uiwindow.AssertInstalledPackageNotVulnerable();
         }
 
         [StaFact]
@@ -606,7 +606,7 @@ namespace NuGet.Tests.Apex
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "Newtonsoft.Json", "12.0.3", XunitLogger);
-            uiwindow.AssertVulnerablePackage();
+            uiwindow.AssertInstalledPackageVulnerable();
 
             // Act
             VisualStudio.ClearWindows();
