@@ -443,7 +443,8 @@ namespace NuGet.Configuration
                 validSettingFiles,
                 machineWideSettings,
                 loadUserWideSettings,
-                useTestingGlobalPath);
+                useTestingGlobalPath,
+                settingsLoadingContext);
         }
 
         /// <summary>
