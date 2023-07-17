@@ -9,5 +9,7 @@ namespace NuGet.SolutionRestoreManager
     public interface IInfoBarService
     {
         Task ShowInfoBar(CancellationToken cancellationToken);
+
+        Task HideInfoBar(CancellationToken cancellationToken);
     }
 }

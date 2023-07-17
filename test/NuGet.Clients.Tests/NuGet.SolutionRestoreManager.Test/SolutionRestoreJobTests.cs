@@ -40,6 +40,7 @@ namespace NuGet.SolutionRestoreManager.Test
             ISourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             _globalProvider.AddService(typeof(ISourceRepositoryProvider), sourceRepositoryProvider);
 
+            var infoBar = Mock.Of<Lazy<IInfoBarService>>();
             var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
             var eventsPublisher = Mock.Of<IRestoreEventsPublisher>();
             var settings = Mock.Of<ISettings>();
@@ -73,7 +74,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 jobContext: restoreJobContext,
                 logger: logger,
                 trackingData: new Dictionary<string, object>(),
-                infoBarService: null,
+                infoBarService: infoBar,
                 token: CancellationToken.None);
 
             Assert.Equal(NuGetOperationStatus.NoOp, job.Status);
@@ -89,6 +90,7 @@ namespace NuGet.SolutionRestoreManager.Test
             ISourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             _globalProvider.AddService(typeof(ISourceRepositoryProvider), sourceRepositoryProvider);
 
+            var infoBar = Mock.Of<Lazy<IInfoBarService>>();
             var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
             var eventsPublisher = Mock.Of<IRestoreEventsPublisher>();
             var settings = Mock.Of<ISettings>();
@@ -125,7 +127,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 jobContext: restoreJobContext,
                 logger: logger,
                 trackingData: new Dictionary<string, object>(),
-                infoBarService: null,
+                infoBarService: infoBar,
                 token: cts.Token);
 
             Assert.Equal(NuGetOperationStatus.Cancelled, job.Status);

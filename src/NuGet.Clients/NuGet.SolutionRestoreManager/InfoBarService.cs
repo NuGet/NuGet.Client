@@ -21,6 +21,7 @@ namespace NuGet.SolutionRestoreManager
         private IVsInfoBarUIElement _infoBarUIElement;
         private bool _visible;
         private bool _closed = false;
+        private bool _closeFromHide = false;
         private uint? _eventCookie;
 
         [Import]
@@ -29,6 +30,28 @@ namespace NuGet.SolutionRestoreManager
         public async Task ShowInfoBar(CancellationToken cancellationToken)
         {
             await ShowInfoBarAsync(cancellationToken);
+        }
+
+        public async Task HideInfoBar(CancellationToken cancellationToken)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+            if (!_visible)
+            {
+                return;
+            }
+
+            _closeFromHide = true;
+
+            try
+            {
+                _infoBarUIElement?.Close();
+                _infoBarUIElement = null;
+            }
+            finally
+            {
+                _closeFromHide = false;
+            }
         }
 
         protected async Task<IVsInfoBarHost> GetInfoBarHostAsync(CancellationToken cancellationToken)
@@ -59,10 +82,10 @@ namespace NuGet.SolutionRestoreManager
         {
             return new InfoBarModel(
                 new IVsInfoBarTextSpan[] {
-                    new InfoBarTextSpan("This solution contains packages with vulnerabilities."),
+                    new InfoBarTextSpan(Resources.InfoBar_TextMessage),
                 },
                 new IVsInfoBarActionItem[] {
-                    new InfoBarHyperlink("Open package manager", "Open package manager"),
+                    new InfoBarHyperlink(Resources.InfoBar_HyperlinkMessage),
                 },
                 KnownMonikers.StatusWarning);
         }
@@ -120,7 +143,11 @@ namespace NuGet.SolutionRestoreManager
             }
 
             _visible = false;
-            _closed = true;
+
+            if (!_closeFromHide)
+            {
+                _closed = true;
+            }
         }
 
         public void OnActionItemClicked(IVsInfoBarUIElement infoBarUIElement, IVsInfoBarActionItem actionItem)

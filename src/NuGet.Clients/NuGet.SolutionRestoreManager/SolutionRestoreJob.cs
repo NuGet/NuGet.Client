@@ -513,6 +513,11 @@ namespace NuGet.SolutionRestoreManager
                                         {
                                             await _infoBarService.Value.ShowInfoBar(t);
                                         }
+                                        if (!errors.Any() && _infoBarService.IsValueCreated)
+                                        {
+                                            await _infoBarService.Value.HideInfoBar(t);
+                                        }
+
                                         if (_noOpProjectsCount < restoreSummaries.Count)
                                         {
                                             _status = NuGetOperationStatus.Succeeded;
