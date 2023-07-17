@@ -639,9 +639,9 @@ namespace NuGet.PackageManagement.UI {
         /// <summary>
         ///   Looks up a localized string similar to Getting Configuration Files....
         /// </summary>
-        public static string ConfigPathsOptions_OnActivated {
+        public static string ConfigurationFilesOptions_OnActivated {
             get {
-                return ResourceManager.GetString("ConfigPathsOptions_OnActivated", resourceCulture);
+                return ResourceManager.GetString("ConfigurationFilesOptions_OnActivated", resourceCulture);
             }
         }
         

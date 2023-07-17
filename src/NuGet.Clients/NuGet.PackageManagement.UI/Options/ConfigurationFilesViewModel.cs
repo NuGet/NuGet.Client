@@ -15,15 +15,15 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI.Options
 {
-    public class ConfigPathsViewModel
+    public class ConfigurationFilesViewModel
     {
-        public ObservableCollection<string> ConfigPathsCollection { get; private set; }
+        public ObservableCollection<string> ConfigurationFilesCollection { get; private set; }
         public string SelectedPath { get; set; }
         public ICommand OpenConfigurationFile { get; set; }
 
-        public ConfigPathsViewModel()
+        public ConfigurationFilesViewModel()
         {
-            ConfigPathsCollection = new ObservableCollection<string>();
+            ConfigurationFilesCollection = new ObservableCollection<string>();
             OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, IsSelectedPath, NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
@@ -46,8 +46,8 @@ namespace NuGet.PackageManagement.UI.Options
             IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModelMapping.GetService<Configuration.ISettings>();
             IReadOnlyList<string> configPaths = settings.GetConfigFilePaths().ToList();
-            ConfigPathsCollection.Clear();
-            ConfigPathsCollection.AddRange(configPaths);
+            ConfigurationFilesCollection.Clear();
+            ConfigurationFilesCollection.AddRange(configPaths);
         }
 
         private void OpenConfigFile(string selectedPath)

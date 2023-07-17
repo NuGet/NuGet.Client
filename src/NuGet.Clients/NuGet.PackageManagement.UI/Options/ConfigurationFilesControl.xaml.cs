@@ -8,17 +8,17 @@ using System.Windows.Input;
 namespace NuGet.PackageManagement.UI.Options
 {
     /// <summary>
-    /// Interaction logic for ConfigPathsControl.xaml
+    /// Interaction logic for ConfigurationFilesControl.xaml
     /// </summary>
-    public partial class ConfigPathsControl : UserControl
+    public partial class ConfigurationFilesControl : UserControl
     {
-        private ConfigPathsViewModel _viewModel;
+        private ConfigurationFilesViewModel _viewModel;
 
-        public ConfigPathsControl(ConfigPathsViewModel configPaths)
+        public ConfigurationFilesControl(ConfigurationFilesViewModel configurationFiles)
         {
             InitializeComponent();
-            _viewModel = configPaths;
-            DataContext = configPaths;
+            _viewModel = configurationFiles;
+            DataContext = configurationFiles;
         }
 
         private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)

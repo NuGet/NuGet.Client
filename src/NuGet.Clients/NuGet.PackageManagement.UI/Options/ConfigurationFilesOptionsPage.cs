@@ -11,19 +11,19 @@ namespace NuGet.PackageManagement.UI.Options
 {
     [Guid("C17B308A-00BB-446E-9212-2D14E1005985")]
 
-    public class ConfigPathsOptionsPage : UIElementDialogPage
+    public class ConfigurationFilesOptionsPage : UIElementDialogPage
     {
-        private Lazy<ConfigPathsControl> _configPathsControl;
+        private Lazy<ConfigurationFilesControl> _configurationFilesControl;
 
         /// <summary>
         /// Gets the Windows Presentation Foundation (WPF) child element to be hosted inside the Options dialog page.
         /// </summary>
         /// <returns>The WPF child element.</returns>
-        protected override UIElement Child => _configPathsControl.Value;
+        protected override UIElement Child => _configurationFilesControl.Value;
 
-        public ConfigPathsOptionsPage()
+        public ConfigurationFilesOptionsPage()
         {
-            _configPathsControl = new Lazy<ConfigPathsControl>(() => new ConfigPathsControl(new ConfigPathsViewModel()));
+            _configurationFilesControl = new Lazy<ConfigurationFilesControl>(() => new ConfigurationFilesControl(new ConfigurationFilesViewModel()));
         }
 
         /// <summary>
@@ -42,14 +42,14 @@ namespace NuGet.PackageManagement.UI.Options
             {
                 OnActivateAsync(e, CancellationToken);
 
-            }, Resources.ConfigPathsOptions_OnActivated);
+            }, Resources.ConfigurationFilesOptions_OnActivated);
         }
 
         private void OnActivateAsync(CancelEventArgs e, CancellationToken cancellationToken)
         {
-            _configPathsControl.Value.InitializeOnActivated(cancellationToken);
+            _configurationFilesControl.Value.InitializeOnActivated(cancellationToken);
         }
 
-        private ConfigPathsControl ConfigPathsControl => _configPathsControl.Value;
+        private ConfigurationFilesControl ConfigurationFilesControl => _configurationFilesControl.Value;
     }
 }

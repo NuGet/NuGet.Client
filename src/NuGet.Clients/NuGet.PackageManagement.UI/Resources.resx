@@ -1015,7 +1015,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="ShowError_FileNotFound" xml:space="preserve">
     <value>The following file could not be found:</value>
   </data>
-  <data name="ConfigPathsOptions_OnActivated" xml:space="preserve">
+  <data name="ConfigurationFilesOptions_OnActivated" xml:space="preserve">
     <value>Getting Configuration Files...</value>
   </data>
 </root>
