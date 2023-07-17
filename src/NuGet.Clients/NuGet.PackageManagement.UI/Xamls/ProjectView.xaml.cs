@@ -161,7 +161,7 @@ namespace NuGet.PackageManagement.UI
                         if (_versions.SelectedIndex >= 0 && isAVersion)
                         {
                             // Check if the user typed a custom version
-                            if (isUserInputValidNuGetVersionRange && userRequestedVersionRange != null && _versions.Items?.CurrentItem != null)
+                            if (isUserInputValidNuGetVersionRange)
                             {
                                 // Search for the best version
                                 NuGetVersion rangeBestVersion = userRequestedVersionRange.FindBestMatch(versions);
@@ -259,10 +259,8 @@ namespace NuGet.PackageManagement.UI
             for (int i = 0; i < _versions.Items.Count; i++)
             {
                 DisplayVersion currentItem = _versions.Items[i] as DisplayVersion;
-                if (currentItem != null &&
-                    _versions.Items[i] != null && // null separator
-                    (comboboxText.Trim() == currentItem.Version.ToNormalizedString() || // trim extra spaces and compare versions without labels
-                     matchVersion?.ToString() == currentItem.Version.ToNormalizedString()))
+                if (currentItem != null && // null, this represent a bar in UI in the Versions combobox 
+                    (comboboxText.Trim() == currentItem.Version.ToNormalizedString() || matchVersion?.ToString() == currentItem.Version.ToNormalizedString())) // trim extra spaces and compare versions without labels
                 {
                     _versions.SelectedIndex = i; // This is the "select" effect in the dropdown
                     PackageDetailControlModel.SelectedVersion = new DisplayVersion(userRange, matchVersion, additionalInfo: null, isDeprecated: currentItem.IsDeprecated, isVulnerable: currentItem.IsVulnerable);
