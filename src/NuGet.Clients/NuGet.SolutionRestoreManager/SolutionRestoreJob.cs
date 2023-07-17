@@ -507,13 +507,13 @@ namespace NuGet.SolutionRestoreManager
                                 {
                                     if (isRestoreSucceeded)
                                     {
-                                        var errors = restoreSummaries.SelectMany(summary => summary.Errors.Where(e => e.Code.Equals(NuGetLogCode.NU1901) || e.Code.Equals(NuGetLogCode.NU1902) || e.Code.Equals(NuGetLogCode.NU1903) || e.Code.Equals(NuGetLogCode.NU1904)));
+                                        var errors = restoreSummaries.Any(summary => summary.Errors.Any(e => e.Code.Equals(NuGetLogCode.NU1901) || e.Code.Equals(NuGetLogCode.NU1902) || e.Code.Equals(NuGetLogCode.NU1903) || e.Code.Equals(NuGetLogCode.NU1904)));
 
-                                        if (errors.Any())
+                                        if (errors)
                                         {
                                             await _infoBarService.Value.ShowInfoBar(t);
                                         }
-                                        if (!errors.Any() && _infoBarService.IsValueCreated)
+                                        if (!errors && _infoBarService.IsValueCreated)
                                         {
                                             await _infoBarService.Value.HideInfoBar(t);
                                         }
