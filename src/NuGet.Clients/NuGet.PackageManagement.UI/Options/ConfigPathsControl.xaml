@@ -34,7 +34,8 @@
     <ListView
       Name="_configurationPaths"
       Grid.Row="1"
-      ItemsSource="{Binding ConfigPaths.ConfigPathsCollection}"
+      SelectedItem="{Binding SelectedPath}"
+      ItemsSource="{Binding ConfigPathsCollection}"
       AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Label_ConfigurationFiles}" />
     <Grid Grid.Row="2">
       <Grid.ColumnDefinitions>
@@ -56,6 +57,7 @@
         </TextBlock>
       </Grid>
       <Button
+        Name="_openButton"
         Style="{DynamicResource ConfigPathsButtonStyle}"
         Content="{x:Static nuget:Resources.VSOptions_Button_Open}"
         Grid.Column="2"

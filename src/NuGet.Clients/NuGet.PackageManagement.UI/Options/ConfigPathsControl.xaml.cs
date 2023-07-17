@@ -4,8 +4,6 @@ using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using Microsoft.VisualStudio.PlatformUI;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI.Options
 {
@@ -14,39 +12,23 @@ namespace NuGet.PackageManagement.UI.Options
     /// </summary>
     public partial class ConfigPathsControl : UserControl
     {
-        public ConfigPathsViewModel ConfigPaths { get; set; }
-        public string SelectedPath { get; set; }
-        public ICommand OpenConfigurationFile { get; set; }
+        private ConfigPathsViewModel _viewModel;
 
-        public ConfigPathsControl()
+        public ConfigPathsControl(ConfigPathsViewModel configPaths)
         {
-            ConfigPaths = new ConfigPathsViewModel();
-            OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, IsSelectedPath, NuGetUIThreadHelper.JoinableTaskFactory);
-            DataContext = this;
             InitializeComponent();
-        }
-
-        private bool IsSelectedPath()
-        {
-            return _configurationPaths.SelectedItem != null;
-        }
-
-        private void ExecuteOpenConfigurationFile()
-        {
-            SelectedPath = (string)_configurationPaths.SelectedItem;
-            ConfigPaths.OpenConfigFile(SelectedPath);
+            _viewModel = configPaths;
+            DataContext = configPaths;
         }
 
         private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            SelectedPath = (string)_configurationPaths.SelectedItem;
-            ConfigPaths.OpenConfigFile(SelectedPath);
+            _openButton.Command.Execute(null);
         }
 
         internal void InitializeOnActivated(CancellationToken cancellationToken)
         {
-            ConfigPaths.ConfigPathsCollection.Clear();
-            ConfigPaths.SetConfigPaths();
+            _viewModel.SetConfigPaths();
         }
 
         private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)

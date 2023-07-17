@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.UI.Options
 
         public ConfigPathsOptionsPage()
         {
-            _configPathsControl = new Lazy<ConfigPathsControl>(() => new ConfigPathsControl());
+            _configPathsControl = new Lazy<ConfigPathsControl>(() => new ConfigPathsControl(new ConfigPathsViewModel()));
         }
 
         /// <summary>

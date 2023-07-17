@@ -5,7 +5,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Windows.Input;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Services.Common;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -15,10 +18,27 @@ namespace NuGet.PackageManagement.UI.Options
     public class ConfigPathsViewModel
     {
         public ObservableCollection<string> ConfigPathsCollection { get; private set; }
+        public string SelectedPath { get; set; }
+        public ICommand OpenConfigurationFile { get; set; }
 
         public ConfigPathsViewModel()
         {
             ConfigPathsCollection = new ObservableCollection<string>();
+            OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, IsSelectedPath, NuGetUIThreadHelper.JoinableTaskFactory);
+        }
+
+        private bool IsSelectedPath()
+        {
+            return SelectedPath != null;
+        }
+
+        private void ExecuteOpenConfigurationFile()
+        {
+            OpenConfigFile(SelectedPath);
+        }
+        internal void InitializeOnActivated(CancellationToken cancellationToken)
+        {
+            SetConfigPaths();
         }
 
         public void SetConfigPaths()
@@ -26,21 +46,11 @@ namespace NuGet.PackageManagement.UI.Options
             IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var settings = componentModelMapping.GetService<Configuration.ISettings>();
             IReadOnlyList<string> configPaths = settings.GetConfigFilePaths().ToList();
-            ConfigPathsCollection.AddRange(CreateViewModels(configPaths));
+            ConfigPathsCollection.Clear();
+            ConfigPathsCollection.AddRange(configPaths);
         }
 
-        private ObservableCollection<string> CreateViewModels(IReadOnlyList<string> configPaths)
-        {
-            var configPathsCollection = new ObservableCollection<string>();
-            foreach (var configPath in configPaths)
-            {
-                configPathsCollection.Add(configPath);
-            }
-
-            return configPathsCollection;
-        }
-
-        public void OpenConfigFile(string selectedPath)
+        private void OpenConfigFile(string selectedPath)
         {
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             var projectContext = componentModel.GetService<INuGetProjectContext>();
