@@ -165,7 +165,7 @@ namespace NuGet.PackageManagement.UI
                             {
                                 // Search for the best version
                                 NuGetVersion rangeBestVersion = userRequestedVersionRange.FindBestMatch(versions);
-                                DisplayVersion selectedVersion = _versions.Items.CurrentItem as DisplayVersion;
+                                DisplayVersion selectedVersion = (DisplayVersion)_versions.Items.CurrentItem;
                                 bool isBestOption = rangeBestVersion.ToString() == selectedVersion.Version.ToString();
                                 if (isBestOption)
                                 {
