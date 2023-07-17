@@ -507,13 +507,19 @@ namespace NuGet.SolutionRestoreManager
                                 {
                                     if (isRestoreSucceeded)
                                     {
-                                        var errors = restoreSummaries.Any(summary => summary.Errors.Any(e => e.Code.Equals(NuGetLogCode.NU1901) || e.Code.Equals(NuGetLogCode.NU1902) || e.Code.Equals(NuGetLogCode.NU1903) || e.Code.Equals(NuGetLogCode.NU1904)));
-
-                                        if (errors)
+                                        foreach (RestoreSummary summary in restoreSummaries)
                                         {
-                                            await _infoBarService.Value.ShowInfoBar(t);
+                                            foreach (IRestoreLogMessage error in summary.Errors)
+                                            {
+                                                if (error.Code.Equals(NuGetLogCode.NU1901) || error.Code.Equals(NuGetLogCode.NU1902) || error.Code.Equals(NuGetLogCode.NU1903) || error.Code.Equals(NuGetLogCode.NU1904))
+                                                {
+                                                    await _infoBarService.Value.ShowInfoBar(t);
+                                                    break;
+                                                }
+                                            }
                                         }
-                                        if (!errors && _infoBarService.IsValueCreated)
+
+                                        if (_infoBarService.IsValueCreated) // if the InfoBar was created and no vulnerabilities found, hide it.
                                         {
                                             await _infoBarService.Value.HideInfoBar(t);
                                         }
