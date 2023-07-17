@@ -393,4 +393,15 @@ Condition=" ('%(Extension)' == '.dll' OR '%(Filename)' == 'NuGet.CommandLine.XPl
       Text="Newtonsoft.Json must be version $(NewtonsoftJsonPackageVersion) but resolved %(Reference.NuGetPackageVersion)"
       Condition=" %(Reference.NuGetPackageId) == 'Newtonsoft.Json' AND %(Reference.NuGetPackageVersion) != '$(NewtonsoftJsonPackageVersion)' " />
   </Target>
+
+  <!--
+    ============================================================
+    EnsureNuGetSourceLink ensures that Source Link has added a link for the repo root
+    ============================================================
+  -->
+  <Target Name="EnsureNuGetSourceLink" AfterTargets="GenerateSourceLinkFile">
+    <Error
+      Text="Source link did not add an entry for repo root."
+      Condition=" @(SourceRoot->WithMetadataValue('MappedPath', '$(RepositoryRootDirectory)')->Count()) != 1 " />
+  </Target>
 </Project>
