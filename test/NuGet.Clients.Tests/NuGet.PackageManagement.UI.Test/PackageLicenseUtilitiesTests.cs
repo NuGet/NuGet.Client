@@ -156,29 +156,27 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public void PackageLicenseUtility_GeneratesLinkForFiles()
         {
-            using (TestDirectory testDir = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Setup
-                // Create decoy nuget package
-                var zipPath = Path.Combine(testDir.Path, "file.nupkg");
-                CreateDummyPackage(zipPath: zipPath, licenseFile: "License.txt", licenseFileTargetElement: "");
+                var packageA1 = new SimpleTestPackageContext("AddLicenseToCache", "1.0.0");
+                string licenseFileLocation = "License.txt";
+                string licenseFileHeader = "header";
+                LicenseMetadata licenseData = new LicenseMetadata(LicenseType.File, licenseFileLocation, null, null, LicenseMetadata.CurrentVersion);
+                packageA1.AddFile(licenseFileLocation, StreamLicenseContents);
 
-                var licenseFileLocation = "License.txt";
-                var licenseFileHeader = "header";
-                var licenseData = new LicenseMetadata(LicenseType.File, licenseFileLocation, null, null, LicenseMetadata.CurrentVersion);
-
-                var packageIdentity = new PackageIdentity("AddLicenseToCache", NuGetVersion.Parse("1.0.0"));
+                PackageIdentity packageIdentity = new PackageIdentity("AddLicenseToCache", NuGetVersion.Parse("1.0.0"));
 
                 // Act
-                var links = PackageLicenseUtilities.GenerateLicenseLinks(
+                IReadOnlyList<IText> links = PackageLicenseUtilities.GenerateLicenseLinks(
                     licenseData,
                     licenseFileHeader,
-                    zipPath,
+                    pathContext.SolutionRoot,
                     packageIdentity: packageIdentity);
 
                 Assert.Equal(1, links.Count);
                 Assert.True(links[0] is LicenseFileText);
-                var licenseFileText = links[0] as LicenseFileText;
+                LicenseFileText licenseFileText = links[0] as LicenseFileText;
                 Assert.Equal(Resources.Text_ViewLicense, licenseFileText.Text);
                 Assert.Equal(Resources.LicenseFile_Loading, ((Run)((Paragraph)licenseFileText.LicenseText.Blocks.AsEnumerable().First()).Inlines.First()).Text);
             }
@@ -189,35 +187,38 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public async Task PackageLicenseUtility_GeneratesLinkForFiles_And_CacheIsUpdated()
         {
-            using (TestDirectory testDir = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 // Setup
-                // Create decoy nuget package
-                var zipPath = Path.Combine(testDir.Path, "file.nupkg");
-                CreateDummyPackage(zipPath: zipPath, licenseFile: "License.txt", licenseFileTargetElement: "");
+                var package = new SimpleTestPackageContext("AddLicenseToCache", "1.0.0");
+                string licenseFileLocation = "License.txt";
+                string licenseFileHeader = "header";
+                LicenseMetadata licenseData = new LicenseMetadata(LicenseType.File, licenseFileLocation, null, null, LicenseMetadata.CurrentVersion);
+                package.AddFile(licenseFileLocation, StreamLicenseContents);
 
-                var packageFileService = new NuGetPackageFileService(
+                NuGetPackageFileService packageFileService = new NuGetPackageFileService(
                         default(ServiceActivationOptions),
                         Mock.Of<IServiceBroker>(),
                         new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                         _telemetryProvider.Object);
 
-                var licenseFileLocation = "License.txt";
-                var licenseFileHeader = "header";
-                var licenseData = new LicenseMetadata(LicenseType.File, licenseFileLocation, null, null, LicenseMetadata.CurrentVersion);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    package);
 
-                var packageIdentity = new PackageIdentity("AddLicenseToCache", NuGetVersion.Parse("1.0.0"));
+                PackageIdentity packageIdentity = new PackageIdentity("AddLicenseToCache", NuGetVersion.Parse("1.0.0"));
 
                 // Act
-                var links = PackageLicenseUtilities.GenerateLicenseLinks(
+                IReadOnlyList<IText> links = PackageLicenseUtilities.GenerateLicenseLinks(
                     licenseData,
                     licenseFileHeader,
-                    zipPath,
+                    Path.Combine(pathContext.PackageSource, packageIdentity.Id, packageIdentity.Version.ToString(), package.PackageName),
                     packageIdentity);
 
                 Assert.Equal(1, links.Count);
                 Assert.True(links[0] is LicenseFileText);
-                var licenseFileText = links[0] as LicenseFileText;
+                LicenseFileText licenseFileText = links[0] as LicenseFileText;
                 Assert.Equal(Resources.Text_ViewLicense, licenseFileText.Text);
                 Assert.Equal(Resources.LicenseFile_Loading, ((Run)((Paragraph)licenseFileText.LicenseText.Blocks.AsEnumerable().First()).Inlines.First()).Text);
 
@@ -246,42 +247,6 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal("https://licenses.nuget.org/MIT", licenseText.Link.AbsoluteUri);
         }
 
-        private static void CreateDummyPackage(
-            string zipPath,
-            string licenseFile = "License.txt",
-            string licenseFileTargetElement = "")
-        {
-            var dir = Path.GetDirectoryName(zipPath);
-            var holdDir = "pkg";
-            var folderPath = Path.Combine(dir, holdDir);
-
-            // base dir
-            Directory.CreateDirectory(folderPath);
-
-            // create nuspec
-            var nuspec = NuspecBuilder.Create()
-                .WithFile(licenseFile, licenseFileTargetElement);
-
-            // create license file
-            var licensePath = Path.Combine(folderPath, licenseFile);
-            var licenseDir = Path.GetDirectoryName(licensePath);
-            Directory.CreateDirectory(licenseDir);
-
-            File.WriteAllText(licensePath, StreamLicenseContents);
-
-            // Create nuget package
-            using (var nuspecStream = new MemoryStream())
-            using (FileStream nupkgStream = File.Create(zipPath))
-            using (var writer = new StreamWriter(nuspecStream))
-            {
-                nuspec.Write(writer);
-                writer.Flush();
-                nuspecStream.Position = 0;
-                var pkgBuilder = new PackageBuilder(stream: nuspecStream, basePath: folderPath);
-                pkgBuilder.Save(nupkgStream);
-            }
-        }
-
-        private static string StreamLicenseContents = "I am  license";
+        private const string StreamLicenseContents = "I am a license";
     }
 }

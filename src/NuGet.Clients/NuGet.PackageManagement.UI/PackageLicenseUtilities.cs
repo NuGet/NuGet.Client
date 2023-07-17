@@ -125,7 +125,7 @@ namespace NuGet.PackageManagement.UI
 
         private static Uri CreateEmbeddedLicenseUri(string packagePath, LicenseMetadata licenseMetadata)
         {
-            Uri baseUri = Convert(packagePath);
+            Uri baseUri = new Uri(packagePath, UriKind.Absolute);
 
             var builder = new UriBuilder(baseUri)
             {
@@ -133,21 +133,6 @@ namespace NuGet.PackageManagement.UI
             };
 
             return builder.Uri;
-        }
-
-        /// <summary>
-        /// Convert a string to a URI safely. This will return null if there are errors.
-        /// </summary>
-        private static Uri Convert(string uri)
-        {
-            Uri fullUri = null;
-
-            if (!string.IsNullOrEmpty(uri))
-            {
-                Uri.TryCreate(uri, UriKind.Absolute, out fullUri);
-            }
-
-            return fullUri;
         }
 
         private static void PopulateLicenseIdentifiers(NuGetLicenseExpression expression, IList<string> identifiers)
