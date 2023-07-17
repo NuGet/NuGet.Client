@@ -122,6 +122,13 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /property:GitRepositoryRemoteName=github /property:IncludeApex=$(IncludeApex) /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog"
 
+- task: PowerShell@2
+  displayName: "Check PDB SourceLinks data 1"
+  name: "CheckSourceLink1"
+  inputs:
+    targetType: "inline"
+    script: (Get-ChildItem .\artifacts\ -Recurse -Filter *.pdb | Where-Object { !(Select-String "raw.githubusercontent.com/NuGet/NuGet.Client" $_ -Quiet) } ).FullName
+
 - task: CodeQL3000Finalize@0
   displayName: Finalize CodeQL
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['Codeql.Enabled'], 'true'))"
@@ -200,12 +207,26 @@ steps:
     ArtifactType: "Container"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
+- task: PowerShell@2
+  displayName: "Check PDB SourceLinks data 2"
+  name: "CheckSourceLink2"
+  inputs:
+    targetType: "inline"
+    script: (Get-ChildItem .\artifacts\ -Recurse -Filter *.pdb | Where-Object { !(Select-String "raw.githubusercontent.com/NuGet/NuGet.Client" $_ -Quiet) } ).FullName
+
 - task: MSBuild@1
   displayName: "Sign Assemblies"
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore /binarylogger:$(Build.StagingDirectory)\\binlog\\07.SignAssemblies.binlog"
+
+- task: PowerShell@2
+  displayName: "Check PDB SourceLinks data 3"
+  name: "CheckSourceLink3"
+  inputs:
+    targetType: "inline"
+    script: (Get-ChildItem .\artifacts\ -Recurse -Filter *.pdb | Where-Object { !(Select-String "raw.githubusercontent.com/NuGet/NuGet.Client" $_ -Quiet) } ).FullName
 
 - task: MSBuild@1
   displayName: "Pack Nupkgs"
