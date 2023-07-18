@@ -461,6 +461,11 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
+            var emptyHttpCache = new Dictionary<string, string>
+                {
+                    { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder },
+                };
+
             var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
             var packageA200 = new SimpleTestPackageContext("A", "2.0.0");
 
@@ -473,13 +478,13 @@ namespace Dotnet.Integration.Test
 
             using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             mockServer.Start();
-            pathContext.Settings.AddSource("http-source", mockServer.ServiceIndexUri);
+                pathContext.Settings.AddSource("http-source", mockServer.ServiceIndexUri);
 
             _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"add package A --version 1.0.0");
 
-            // Act
+                // Act
             CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"list package --outdated");
-            mockServer.Stop();
+                mockServer.Stop();
 
             // Assert
             var lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
