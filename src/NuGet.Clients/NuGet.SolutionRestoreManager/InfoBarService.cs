@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio;
 using System.Threading.Tasks;
 using System.Threading;
+using NuGet.VisualStudio.Telemetry;
 
 #nullable enable
 
@@ -58,7 +59,7 @@ namespace NuGet.SolutionRestoreManager
 
         protected async Task<IVsInfoBarHost?> GetInfoBarHostAsync(CancellationToken cancellationToken)
         {
-            var uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>(throwOnFailure: false);
+            IVsUIShell? uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>(throwOnFailure: false);
             if (uiShell == null)
             {
                 return null;
@@ -103,22 +104,26 @@ namespace NuGet.SolutionRestoreManager
 
             try
             {
-                var infoBarFactory = await _asyncServiceProvider.GetServiceAsync<SVsInfoBarUIFactory, IVsInfoBarUIFactory>(throwOnFailure: false);
+                IVsInfoBarUIFactory? infoBarFactory = await _asyncServiceProvider.GetServiceAsync<SVsInfoBarUIFactory, IVsInfoBarUIFactory>(throwOnFailure: false);
                 if (infoBarFactory == null)
                 {
+                    var exception = new NullReferenceException(nameof(infoBarFactory));
+                    await TelemetryUtility.PostFaultAsync(exception, typeof(IVsInfoBarUIFactory).Name, nameof(CreateAndShowInfoBarAsync));
                     return;
                 }
 
-                var infoBarHost = await GetInfoBarHostAsync(cancellationToken);
+                IVsInfoBarHost? infoBarHost = await GetInfoBarHostAsync(cancellationToken);
                 if (infoBarHost == null)
                 {
+                    var exception = new NullReferenceException(nameof(infoBarHost));
+                    await TelemetryUtility.PostFaultAsync(exception, typeof(IVsInfoBarHost).Name, nameof(CreateAndShowInfoBarAsync));
                     return;
                 }
 
                 // Ensure that we are on the UI thread before interacting with the UI
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
-                var infoBarModel = GetInfoBarModel();
+                InfoBarModel infoBarModel = GetInfoBarModel();
 
                 _infoBarUIElement = infoBarFactory.CreateInfoBar(infoBarModel);
                 _infoBarUIElement.Advise(this, out uint cookie);
