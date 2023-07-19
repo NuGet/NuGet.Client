@@ -507,21 +507,15 @@ namespace NuGet.SolutionRestoreManager
                                 {
                                     if (isRestoreSucceeded)
                                     {
-                                        foreach (RestoreSummary summary in restoreSummaries)
-                                        {
-                                            foreach (IRestoreLogMessage error in summary.Errors)
-                                            {
-                                                if (error.Code.Equals(NuGetLogCode.NU1901) || error.Code.Equals(NuGetLogCode.NU1902) || error.Code.Equals(NuGetLogCode.NU1903) || error.Code.Equals(NuGetLogCode.NU1904))
-                                                {
-                                                    await _infoBarService.Value.ShowInfoBar(t);
-                                                    break;
-                                                }
-                                            }
-                                        }
+                                        bool shouldDisplayVulnerabilitiesInfoBar = LogUtility.AreVulnerabilitiesInRestoreSummaries(restoreSummaries);
 
-                                        if (_infoBarService.IsValueCreated) // if the InfoBar was created and no vulnerabilities found, hide it.
+                                        if (shouldDisplayVulnerabilitiesInfoBar)
                                         {
-                                            await _infoBarService.Value.HideInfoBar(t);
+                                            await _infoBarService.Value.Show(t);
+                                        }
+                                        else if (_infoBarService.IsValueCreated) // if the InfoBar was created and all vulnerabilities are fixed, hide it.
+                                        {
+                                            await _infoBarService.Value.Hide(t);
                                         }
 
                                         if (_noOpProjectsCount < restoreSummaries.Count)

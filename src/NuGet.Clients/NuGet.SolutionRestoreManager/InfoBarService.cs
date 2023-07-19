@@ -11,6 +11,8 @@ using Microsoft.VisualStudio;
 using System.Threading.Tasks;
 using System.Threading;
 
+#nullable enable
+
 namespace NuGet.SolutionRestoreManager
 {
     [Export(typeof(IInfoBarService))]
@@ -18,21 +20,21 @@ namespace NuGet.SolutionRestoreManager
     public class InfoBarService : IInfoBarService, IVsInfoBarUIEvents
     {
         IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
-        private IVsInfoBarUIElement _infoBarUIElement;
+        private IVsInfoBarUIElement? _infoBarUIElement;
         private bool _visible;
         private bool _closed = false;
         private bool _closeFromHide = false;
         private uint? _eventCookie;
 
         [Import]
-        private Lazy<IPMUIStarter> PackageManagerUIStarter { get; set; }
+        private Lazy<IPMUIStarter>? PackageManagerUIStarter { get; set; }
 
-        public async Task ShowInfoBar(CancellationToken cancellationToken)
+        public async Task Show(CancellationToken cancellationToken)
         {
-            await ShowInfoBarAsync(cancellationToken);
+            await CreateAndShowInfoBarAsync(cancellationToken);
         }
 
-        public async Task HideInfoBar(CancellationToken cancellationToken)
+        public async Task Hide(CancellationToken cancellationToken)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
@@ -54,7 +56,7 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        protected async Task<IVsInfoBarHost> GetInfoBarHostAsync(CancellationToken cancellationToken)
+        protected async Task<IVsInfoBarHost?> GetInfoBarHostAsync(CancellationToken cancellationToken)
         {
             var uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>(throwOnFailure: false);
             if (uiShell == null)
@@ -90,7 +92,7 @@ namespace NuGet.SolutionRestoreManager
                 KnownMonikers.StatusWarning);
         }
 
-        internal async Task ShowInfoBarAsync(CancellationToken cancellationToken)
+        internal async Task CreateAndShowInfoBarAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -152,7 +154,7 @@ namespace NuGet.SolutionRestoreManager
 
         public void OnActionItemClicked(IVsInfoBarUIElement infoBarUIElement, IVsInfoBarActionItem actionItem)
         {
-            PackageManagerUIStarter.Value.PMUIStarter();
+            PackageManagerUIStarter?.Value.PMUIStarter();
         }
     }
 }

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -48,6 +50,22 @@ namespace NuGet.PackageManagement
                 EndLineNumber = logMessage.EndLineNumber,
                 EndColumnNumber = logMessage.EndColumnNumber
             };
+        }
+
+        public static bool AreVulnerabilitiesInRestoreSummaries(IReadOnlyList<RestoreSummary> restoreSummaries)
+        {
+            foreach (RestoreSummary summary in restoreSummaries)
+            {
+                foreach (IRestoreLogMessage error in summary.Errors)
+                {
+                    if (error.Code.Equals(NuGetLogCode.NU1901) || error.Code.Equals(NuGetLogCode.NU1902) || error.Code.Equals(NuGetLogCode.NU1903) || error.Code.Equals(NuGetLogCode.NU1904))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }
