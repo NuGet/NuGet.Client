@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using NuGet.CommandLine.XPlat.ListPackage;
@@ -276,42 +277,15 @@ namespace NuGet.CommandLine.XPlat
             List<string> allPackages = GetAllPackageIdentifiers(targetFrameworks, listPackageArgs.IncludeTransitive);
             var packageMetadataById = new Dictionary<string, List<IPackageSearchMetadata>>(capacity: allPackages.Count);
 
-            // We're (probably) going to make a bunch of HTTP requests, so limit to max 4 packages in parallel to avoid being unkind to servers.
-            // Note, each package will also run all sources in parallel, so the max concurrent HTTP requests is higher.
-            int taskCount = Math.Min(allPackages.Count, 4);
-            var tasks = new Task<KeyValuePair<string, List<IPackageSearchMetadata>>>[taskCount];
+            int maxParallel = listPackageArgs.PackageSources.Any(s => s.IsHttp)
+                ? 8 // Try to be nice to HTTP package sources
+                : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
 
-            // ramp up throttling
-            int packageIndex;
-            for (packageIndex = 0; packageIndex < taskCount; packageIndex++)
-            {
-                tasks[packageIndex] = GetPackageVersionsAsync(allPackages[packageIndex], listPackageArgs);
-            }
-
-            // throttling steady state
-            while (packageIndex < allPackages.Count)
-            {
-                _ = await Task.WhenAny(tasks);
-                for (int i = 0; i < tasks.Length; i++)
-                {
-                    if (tasks[i].IsCompleted)
-                    {
-                        KeyValuePair<string, List<IPackageSearchMetadata>> result = await tasks[i];
-                        packageMetadataById[result.Key] = result.Value;
-
-                        tasks[i] = GetPackageVersionsAsync(allPackages[packageIndex++], listPackageArgs);
-                        break;
-                    }
-                }
-            }
-
-            // ramp down throttling
-            await Task.WhenAll(tasks);
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                KeyValuePair<string, List<IPackageSearchMetadata>> result = await tasks[i];
-                packageMetadataById[result.Key] = result.Value;
-            }
+            await ThrottledForEachAsync(allPackages,
+                async (packageId, cancellationToken) => await GetPackageVersionsAsync(packageId, listPackageArgs, cancellationToken),
+                packageMetadata => packageMetadataById[packageMetadata.Key] = packageMetadata.Value,
+                maxParallel,
+                listPackageArgs.CancellationToken);
 
             return packageMetadataById;
 
@@ -324,6 +298,89 @@ namespace NuGet.CommandLine.XPlat
                 }
                 List<string> allPackages = intermediateEnumerable.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
                 return allPackages;
+            }
+        }
+
+        /// <summary>Run a throttled iteration of a list that performs async work, with a "single threaded" collection of results.</summary>
+        /// <remarks>
+        /// <para>The continuation delegate is called sequentially, so results can be safely added to non-synchronized collections.</para>
+        /// <para>If any task factory invocation throws, or any task faults, the cancellation token will be triggered and the iteration will end early.</para>
+        /// </remarks>
+        /// <typeparam name="TItem">The item type for the input list</typeparam>
+        /// <typeparam name="TResult">The result type of the async work</typeparam>
+        /// <param name="items">The input list to iterate</param>
+        /// <param name="taskFactory">Delegate to start async work.</param>
+        /// <param name="continuation">Delegate with result of async work. Will not be called concurrently.</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <param name="maxParallel">The maximum number of tasks to allow running in parallel.</param>
+        /// <returns>A task that can be awaited to wait for completion of the iteration.</returns>
+        private async Task ThrottledForEachAsync<TItem, TResult>(
+            IList<TItem> items,
+            Func<TItem, CancellationToken, Task<TResult>> taskFactory,
+            Action<TResult> continuation,
+            int maxParallel,
+            CancellationToken cancellationToken)
+        {
+            int taskCount = Math.Min(items.Count, maxParallel);
+            var tasks = new Task<TResult>[taskCount];
+
+            using CancellationTokenSource faultCancelationTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+            try
+            {
+                // ramp up throttling (fill task array)
+                int itemIndex;
+                for (itemIndex = 0; itemIndex < taskCount; itemIndex++)
+                {
+                    tasks[itemIndex] = taskFactory(items[itemIndex], faultCancelationTokenSource.Token);
+                }
+
+                // throttling steady state (max parallel tasks running, more input items waiting to queue)
+                while (itemIndex < items.Count)
+                {
+                    _ = await Task.WhenAny(tasks);
+                    for (int i = 0; i < tasks.Length; i++)
+                    {
+                        if (tasks[i].IsCompleted)
+                        {
+                            TResult result = await tasks[i];
+                            continuation(result);
+
+                            tasks[i] = taskFactory(items[itemIndex++], faultCancelationTokenSource.Token);
+                            break;
+                        }
+                    }
+                }
+
+                // ramp down throttling (no more inputs waiting to start, just need to wait for last tasks to finish)
+                await Task.WhenAll(tasks);
+                for (int i = 0; i < tasks.Length; i++)
+                {
+                    TResult result = await tasks[i];
+                    continuation(result);
+                }
+            }
+            catch
+            {
+                // Don't leave un-awaited tasks. Request cancellation, then wait for tasks to finish.
+                faultCancelationTokenSource.Cancel();
+
+                // Make sure none of the tasks are null (factory exception during ramp-up)
+                for (int i = 0; i < tasks.Length; i++)
+                {
+                    if (tasks[i] is null)
+                    {
+                        tasks[i] = Task.FromResult(default(TResult));
+                    }
+                }
+
+                await Task.WhenAll(tasks);
+                throw;
+            }
+            finally
+            {
+                faultCancelationTokenSource.Cancel();
             }
         }
 
@@ -450,26 +507,19 @@ namespace NuGet.CommandLine.XPlat
         /// <returns>A list of tasks for all latest versions for packages from all sources</returns>
         private async Task<KeyValuePair<string, List<IPackageSearchMetadata>>> GetPackageVersionsAsync(
             string package,
-            ListPackageArgs listPackageArgs)
+            ListPackageArgs listPackageArgs,
+            CancellationToken cancellationToken)
         {
-            var result = new List<IPackageSearchMetadata>();
+            var results = new List<IPackageSearchMetadata>();
             var sources = listPackageArgs.PackageSources;
 
-            var tasks = new Task<IEnumerable<IPackageSearchMetadata>>[sources.Count];
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                tasks[i] = GetLatestVersionPerSourceAsync(listPackageArgs.PackageSources[i], listPackageArgs, package);
-            }
+            await ThrottledForEachAsync(sources,
+                async (source, innerCancellationToken) => await GetLatestVersionPerSourceAsync(source, listPackageArgs, package, innerCancellationToken),
+                continuation: results.AddRange,
+                maxParallel: listPackageArgs.PackageSources.Count,
+                cancellationToken);
 
-            await Task.WhenAll(tasks);
-
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                IEnumerable<IPackageSearchMetadata> sourceResult = await tasks[i];
-                result.AddRange(sourceResult);
-            }
-
-            return new KeyValuePair<string, List<IPackageSearchMetadata>>(package, result);
+            return new KeyValuePair<string, List<IPackageSearchMetadata>>(package, results);
         }
 
         /// <summary>
@@ -517,10 +567,11 @@ namespace NuGet.CommandLine.XPlat
         private async Task<IEnumerable<IPackageSearchMetadata>> GetLatestVersionPerSourceAsync(
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
-            string package)
+            string package,
+            CancellationToken cancellationToken)
         {
             SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
-            var packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
+            var packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
             using var sourceCacheContext = new SourceCacheContext();
             IEnumerable<IPackageSearchMetadata> packages =
