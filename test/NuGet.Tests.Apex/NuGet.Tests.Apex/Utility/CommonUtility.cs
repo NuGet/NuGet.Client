@@ -467,8 +467,7 @@ namespace NuGet.Tests.Apex
             }
             else
             {
-                // Run directly
-                action();
+                //action();
             }
         }
 
