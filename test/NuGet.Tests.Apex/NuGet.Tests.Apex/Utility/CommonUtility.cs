@@ -324,23 +324,35 @@ namespace NuGet.Tests.Apex
 
         private static void WaitForCommandAvailable(VisualStudioHost visualStudio, string commandName, TimeSpan timeout, ILogger logger)
         {
-            WaitForCommandAvailable(visualStudio.Dte.Commands.Item(commandName), timeout, logger);
+            var command = visualStudio.Dte.Commands.Item(commandName);
+            if (command == null)
+            {
+                logger.LogWarning("DGTEST visualStudio.Dte.Commands.Item("+commandName+") returned null!");
+            }
+            WaitForCommandAvailable(command, timeout, logger);
         }
 
         private static void WaitForCommandAvailable(Command cmd, TimeSpan timeout, ILogger logger)
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            while (stopWatch.Elapsed < timeout)
+            try
             {
-                if (cmd.IsAvailable)
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
+                while (stopWatch.Elapsed < timeout)
                 {
-                    return;
+                    if (cmd.IsAvailable)
+                    {
+                        return;
+                    }
+                    Thread.Sleep(250);
                 }
-                Thread.Sleep(250);
-            }
 
-            logger.LogWarning($"Timed out waiting for {cmd.Name} to be available");
+                logger.LogWarning($"Timed out waiting for {cmd.Name} to be available");
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning("DGTEST EXCEPTION: " + ex);
+            }
         }
 
         private static bool IsPackageInstalledInAssetsFile(string assetsFilePath, string packageName, string packageVersion, bool expected)
