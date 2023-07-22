@@ -179,8 +179,8 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.RemoveDependencies = model.Options.RemoveDependencies;
                     nugetUi.ForceRemove = model.Options.ForceRemove;
                     nugetUi.Projects = model.GetSelectedProjects(action);
-                    nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
-                    nugetUi.DisplayDeprecatedFrameworkWindow = model.Options.ShowDeprecatedFrameworkWindow;
+                    nugetUi.DisplayPreviewWindow = false;
+                    nugetUi.DisplayDeprecatedFrameworkWindow = false;
                     nugetUi.ProjectContext.ActionType = actionType;
                     nugetUi.SelectedIndex = model.SelectedIndex;
                     nugetUi.RecommendedCount = model.RecommendedCount;

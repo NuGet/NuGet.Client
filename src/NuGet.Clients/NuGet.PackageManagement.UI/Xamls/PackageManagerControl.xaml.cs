@@ -1602,12 +1602,12 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<int> vulnerablePkgsMaxSeverities = vulnerablePkgs
                 .Select(pkg => pkg.Vulnerabilities.Max(v => v.Severity));
 
-            nugetUi.FileConflictAction = options.SelectedFileConflictAction.Action;
+            nugetUi.FileConflictAction = FileConflictAction.OverwriteAll;
             nugetUi.DependencyBehavior = options.SelectedDependencyBehavior.Behavior;
             nugetUi.RemoveDependencies = options.RemoveDependencies;
             nugetUi.ForceRemove = options.ForceRemove;
-            nugetUi.DisplayPreviewWindow = options.ShowPreviewWindow;
-            nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
+            nugetUi.DisplayPreviewWindow = false;
+            nugetUi.DisplayDeprecatedFrameworkWindow = false;
             nugetUi.Projects = Model.Context.Projects;
             nugetUi.ProjectContext.ActionType = actionType;
             nugetUi.TopLevelVulnerablePackagesCount = vulnerablePkgsCount;
