@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.UI.Options
 
         private void OnActivateAsync(CancelEventArgs e, CancellationToken cancellationToken)
         {
-            _configurationFilesControl.Value.InitializeOnActivated(cancellationToken);
+            _configurationFilesControl.Value.InitializeOnActivated();
         }
 
         private ConfigurationFilesControl ConfigurationFilesControl => _configurationFilesControl.Value;

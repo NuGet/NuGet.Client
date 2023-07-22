@@ -50,7 +50,7 @@
         <TextBlock Grid.Row="0" TextWrapping="WrapWithOverflow" Text="{x:Static nuget:Resources.Text_ApplyingConfigurationFiles}"/>
         <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow">
           <Hyperlink
-              NavigateUri="https://learn.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior#how-settings-are-applied"
+              NavigateUri="https://aka.ms/nuget/how-settings-are-applied"
               Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
             <Run Text="{x:Static nuget:Resources.Text_ApplyingConfigurationFiles_DocumentLink}"/>
           </Hyperlink>
