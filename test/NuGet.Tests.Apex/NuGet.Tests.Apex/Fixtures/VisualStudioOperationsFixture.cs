@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.Services;
@@ -55,6 +56,18 @@ namespace NuGet.Tests.Apex
                     foreach(var testAssembly in compositionAssemblies)
                     {
                         _visualStudioHostConfiguration.AddCompositionAssembly(testAssembly);
+                    }
+                    string suppressUIDisclaimerRegistryName = "SuppressUILegalDisclaimer";
+
+                    if (Environment.GetEnvironmentVariable(suppressUIDisclaimerRegistryName) == null)
+                    {
+                        Environment.SetEnvironmentVariable(suppressUIDisclaimerRegistryName, "true");
+                    }
+
+                    string doNotShowPreviewWindowRegistryName = "DoNotShowPreviewWindow";
+                    if (Environment.GetEnvironmentVariable(doNotShowPreviewWindowRegistryName) == null)
+                    {
+                        Environment.SetEnvironmentVariable(doNotShowPreviewWindowRegistryName, "true");
                     }
 
                     // If test is being run in VS, "Developer PowerShell" , or "Developer Command Prompt", use the same install of VS.
