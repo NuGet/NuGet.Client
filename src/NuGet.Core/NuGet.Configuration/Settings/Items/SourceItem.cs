@@ -3,7 +3,6 @@
 
 using System;
 using System.Xml.Linq;
-using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -34,16 +33,7 @@ namespace NuGet.Configuration
 
         public override int GetHashCode()
         {
-            var combiner = new HashCodeCombiner();
-
-            combiner.AddObject(Key);
-
-            if (ProtocolVersion != null)
-            {
-                combiner.AddObject(ProtocolVersion);
-            }
-
-            return combiner.CombinedHash;
+            return Key.GetHashCode();
         }
 
         internal SourceItem(XElement element, SettingsFile origin)
@@ -77,8 +67,7 @@ namespace NuGet.Configuration
                 return true;
             }
 
-            return string.Equals(Key, source.Key, StringComparison.Ordinal) &&
-                string.Equals(ProtocolVersion, source.ProtocolVersion, StringComparison.Ordinal);
+            return string.Equals(Key, source.Key, StringComparison.Ordinal);
         }
     }
 }

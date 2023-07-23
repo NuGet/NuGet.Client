@@ -697,8 +697,7 @@ namespace NuGet.Configuration
                 var existingSourceIsEnabled = existingDisabledSourcesLookup == null || existingDisabledSourcesLookup.TryGetValue(source.Name, out existingDisabledSourceItem);
 
                 if (existingSettingsLookup != null &&
-                    existingSettingsLookup.TryGetValue(source.Name, out existingSourceItem) &&
-                    ReadProtocolVersion(existingSourceItem) == source.ProtocolVersion)
+                    existingSettingsLookup.TryGetValue(source.Name, out existingSourceItem))
                 {
                     var oldPackageSource = ReadPackageSource(existingSourceItem, existingSourceIsEnabled, Settings);
 
