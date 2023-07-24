@@ -303,13 +303,6 @@ namespace NuGet.Commands
                     });
                 }
 
-                AuditUtility.EnabledValue enableAudit = AuditUtility.ParseEnableValue(_request.Project.RestoreMetadata?.RestoreAuditProperties?.EnableAudit);
-                telemetry.TelemetryEvent[AuditEnabled] = AuditUtility.GetString(enableAudit);
-                if (enableAudit == AuditUtility.EnabledValue.ImplicitOptIn || enableAudit == AuditUtility.EnabledValue.ExplicitOptIn)
-                {
-                    await PerformAuditAsync(enableAudit, graphs, telemetry, token);
-                }
-
                 telemetry.StartIntervalMeasure();
                 // Create assets file
                 LockFile assetsFile = BuildAssetsFile(
