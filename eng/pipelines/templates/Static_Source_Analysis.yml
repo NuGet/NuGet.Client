@@ -76,6 +76,16 @@ steps:
 
 - script: dotnet format whitespace --verify-no-changes NuGet.sln
   name: dotnetFormatWhitespace
-  displayName: Check formatting whitespace
+  displayName: Check whitespace formatting
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
+
+- task: PowerShell@2
+  displayName: "Initialize Git Commit Status on GitHub"
+  inputs:
+    targetType: "inline"
+    script: |
+      . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
+      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "Static Analysis"
+    failOnStderr: "true"
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
