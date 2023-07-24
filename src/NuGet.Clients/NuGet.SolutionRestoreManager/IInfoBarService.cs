@@ -8,8 +8,8 @@ namespace NuGet.SolutionRestoreManager
 {
     public interface IInfoBarService
     {
-        Task Show(CancellationToken cancellationToken);
+        Task ShowAsync(CancellationToken cancellationToken);
 
-        Task Hide(CancellationToken cancellationToken);
+        Task HideAsync(CancellationToken cancellationToken);
     }
 }

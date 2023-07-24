@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
+using System.Collections.Generic;
 
 namespace NuGet.PackageManagement
 {
@@ -52,17 +52,15 @@ namespace NuGet.PackageManagement
             };
         }
 
-        public static bool AreVulnerabilitiesInRestoreSummaries(IReadOnlyList<RestoreSummary> restoreSummaries)
+        public static bool IsVulnerabilityCode(NuGetLogCode nuGetLogCode)
         {
-            foreach (RestoreSummary summary in restoreSummaries)
+
+            if (nuGetLogCode.Equals(NuGetLogCode.NU1901) ||
+                nuGetLogCode.Equals(NuGetLogCode.NU1902) ||
+                nuGetLogCode.Equals(NuGetLogCode.NU1903) ||
+                nuGetLogCode.Equals(NuGetLogCode.NU1904))
             {
-                foreach (IRestoreLogMessage error in summary.Errors)
-                {
-                    if (error.Code.Equals(NuGetLogCode.NU1901) || error.Code.Equals(NuGetLogCode.NU1902) || error.Code.Equals(NuGetLogCode.NU1903) || error.Code.Equals(NuGetLogCode.NU1904))
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
 
             return false;

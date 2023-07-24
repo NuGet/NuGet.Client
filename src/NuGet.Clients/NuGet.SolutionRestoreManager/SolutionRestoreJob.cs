@@ -507,15 +507,16 @@ namespace NuGet.SolutionRestoreManager
                                 {
                                     if (isRestoreSucceeded)
                                     {
-                                        bool shouldDisplayVulnerabilitiesInfoBar = LogUtility.AreVulnerabilitiesInRestoreSummaries(restoreSummaries);
+                                        IEnumerable<NuGetLogCode> nugetLogCodes = restoreSummaries.SelectMany(r => r.Errors.Select(e => e.Code));
+                                        bool shouldDisplayVulnerabilitiesInfoBar = NuGetLogCodeUtility.AreVulnerabilitiesInCodes(nugetLogCodes);
 
                                         if (shouldDisplayVulnerabilitiesInfoBar)
                                         {
-                                            await _infoBarService.Value.Show(t);
+                                            await _infoBarService.Value.ShowAsync(t);
                                         }
                                         else if (_infoBarService.IsValueCreated) // if the InfoBar was created and all vulnerabilities are fixed, hide it.
                                         {
-                                            await _infoBarService.Value.Hide(t);
+                                            await _infoBarService.Value.HideAsync(t);
                                         }
 
                                         if (_noOpProjectsCount < restoreSummaries.Count)

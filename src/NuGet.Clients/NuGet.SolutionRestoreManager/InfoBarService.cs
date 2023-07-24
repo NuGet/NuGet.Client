@@ -3,13 +3,13 @@
 
 using System;
 using System.ComponentModel.Composition;
-using NuGet.VisualStudio;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Imaging;
-using Microsoft.VisualStudio;
-using System.Threading.Tasks;
-using System.Threading;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
 #nullable enable
@@ -30,12 +30,12 @@ namespace NuGet.SolutionRestoreManager
         [Import]
         private Lazy<IPMUIStarter>? PackageManagerUIStarter { get; set; }
 
-        public async Task Show(CancellationToken cancellationToken)
+        public async Task ShowAsync(CancellationToken cancellationToken)
         {
             await CreateAndShowInfoBarAsync(cancellationToken);
         }
 
-        public async Task Hide(CancellationToken cancellationToken)
+        public async Task HideAsync(CancellationToken cancellationToken)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
@@ -48,37 +48,17 @@ namespace NuGet.SolutionRestoreManager
 
             try
             {
-                _infoBarUIElement?.Close();
-                _infoBarUIElement = null;
+                if (_eventCookie.HasValue)
+                {
+                    _infoBarUIElement?.Close();
+                    _infoBarUIElement?.Unadvise(_eventCookie.Value);
+                    _infoBarUIElement = null;
+                }
             }
             finally
             {
                 _closeFromHide = false;
             }
-        }
-
-        protected async Task<IVsInfoBarHost?> GetInfoBarHostAsync(CancellationToken cancellationToken)
-        {
-            IVsUIShell? uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>(throwOnFailure: false);
-            if (uiShell == null)
-            {
-                return null;
-            }
-
-            // Ensure that we are on the UI thread before interacting with the Solution Explorer UI Element
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-            if (ErrorHandler.Failed(uiShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fFindFirst, VSConstants.StandardToolWindows.SolutionExplorer, out var windowFrame)))
-            {
-                return null;
-            }
-
-            object tempObject;
-            if (ErrorHandler.Failed(windowFrame.GetProperty((int)__VSFPROPID7.VSFPROPID_InfoBarHost, out tempObject)))
-            {
-                return null;
-            }
-
-            return tempObject as IVsInfoBarHost;
         }
 
         protected InfoBarModel GetInfoBarModel()
@@ -96,9 +76,38 @@ namespace NuGet.SolutionRestoreManager
         internal async Task CreateAndShowInfoBarAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             if (_closed || _visible)
             {
+                return;
+            }
+
+            IVsInfoBarHost? infoBarHost;
+            try
+            {
+                IVsUIShell? uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>(throwOnFailure: false);
+                if (uiShell == null)
+                {
+                    throw new NullReferenceException(nameof(uiShell));
+                }
+
+                if (ErrorHandler.Failed(uiShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fFindFirst, VSConstants.StandardToolWindows.SolutionExplorer, out var windowFrame)))
+                {
+                    throw new NullReferenceException(nameof(windowFrame));
+                }
+
+                object tempObject;
+                if (ErrorHandler.Failed(windowFrame.GetProperty((int)__VSFPROPID7.VSFPROPID_InfoBarHost, out tempObject)))
+                {
+                    throw new NullReferenceException(nameof(tempObject));
+                }
+
+                infoBarHost = (IVsInfoBarHost)tempObject;
+            }
+            catch (Exception ex)
+            {
+                await TelemetryUtility.PostFaultAsync(ex, nameof(InfoBarService));
                 return;
             }
 
@@ -107,21 +116,10 @@ namespace NuGet.SolutionRestoreManager
                 IVsInfoBarUIFactory? infoBarFactory = await _asyncServiceProvider.GetServiceAsync<SVsInfoBarUIFactory, IVsInfoBarUIFactory>(throwOnFailure: false);
                 if (infoBarFactory == null)
                 {
-                    var exception = new NullReferenceException(nameof(infoBarFactory));
-                    await TelemetryUtility.PostFaultAsync(exception, typeof(IVsInfoBarUIFactory).Name, nameof(CreateAndShowInfoBarAsync));
+                    NullReferenceException exception = new NullReferenceException(nameof(infoBarFactory));
+                    await TelemetryUtility.PostFaultAsync(exception, nameof(InfoBarService));
                     return;
                 }
-
-                IVsInfoBarHost? infoBarHost = await GetInfoBarHostAsync(cancellationToken);
-                if (infoBarHost == null)
-                {
-                    var exception = new NullReferenceException(nameof(infoBarHost));
-                    await TelemetryUtility.PostFaultAsync(exception, typeof(IVsInfoBarHost).Name, nameof(CreateAndShowInfoBarAsync));
-                    return;
-                }
-
-                // Ensure that we are on the UI thread before interacting with the UI
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
                 InfoBarModel infoBarModel = GetInfoBarModel();
 
@@ -146,6 +144,7 @@ namespace NuGet.SolutionRestoreManager
             if (_eventCookie.HasValue)
             {
                 infoBarUIElement?.Unadvise(_eventCookie.Value);
+                infoBarUIElement?.Close();
                 _eventCookie = null;
             }
 
