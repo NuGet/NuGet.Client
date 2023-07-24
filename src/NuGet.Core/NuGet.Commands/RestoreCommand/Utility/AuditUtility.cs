@@ -273,7 +273,7 @@ namespace NuGet.Commands.Restore.Utility
 
                         foreach (PackageVulnerabilityInfo knownVulnerability in knownVulnerabilitiesForPackage)
                         {
-                            if ((int)knownVulnerability.Severity < (int)MinSeverity)
+                            if ((int)knownVulnerability.Severity < (int)MinSeverity && knownVulnerability.Severity != PackageVulnerabilitySeverity.Unknown)
                             {
                                 continue;
                             }
