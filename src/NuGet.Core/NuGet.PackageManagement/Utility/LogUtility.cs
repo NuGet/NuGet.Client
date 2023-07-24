@@ -51,19 +51,5 @@ namespace NuGet.PackageManagement
                 EndColumnNumber = logMessage.EndColumnNumber
             };
         }
-
-        public static bool IsVulnerabilityCode(NuGetLogCode nuGetLogCode)
-        {
-
-            if (nuGetLogCode.Equals(NuGetLogCode.NU1901) ||
-                nuGetLogCode.Equals(NuGetLogCode.NU1902) ||
-                nuGetLogCode.Equals(NuGetLogCode.NU1903) ||
-                nuGetLogCode.Equals(NuGetLogCode.NU1904))
-            {
-                return true;
-            }
-
-            return false;
-        }
     }
 }
