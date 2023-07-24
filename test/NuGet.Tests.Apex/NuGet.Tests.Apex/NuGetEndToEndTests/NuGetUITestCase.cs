@@ -530,7 +530,7 @@ namespace NuGet.Tests.Apex
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             uiwindow.SwitchTabToUpdate();
             uiwindow.SearchPackageFromUI(TestPackageName);
-            
+
             // Assert
             VisualStudio.AssertNoErrors();
             uiwindow.AssertSearchedPackageItem(tabName, TestPackageName, TestPackageVersionV2);
