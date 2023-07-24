@@ -177,7 +177,7 @@ namespace NuGet.Commands.Restore.Utility
 
                     foreach (var advisory in auditInfo.GraphsPerVulnerability.Keys)
                     {
-                        PackageVulnerabilitySeverity severity = (PackageVulnerabilitySeverity)advisory.Severity;
+                        PackageVulnerabilitySeverity severity = advisory.Severity;
                         if (severity == PackageVulnerabilitySeverity.Low) { Sev0DirectMatches++; }
                         else if (severity == PackageVulnerabilitySeverity.Moderate) { Sev1DirectMatches++; }
                         else if (severity == PackageVulnerabilitySeverity.High) { Sev2DirectMatches++; }
@@ -191,7 +191,7 @@ namespace NuGet.Commands.Restore.Utility
 
                     foreach (var advisory in auditInfo.GraphsPerVulnerability.Keys)
                     {
-                        PackageVulnerabilitySeverity severity = (PackageVulnerabilitySeverity)advisory.Severity;
+                        PackageVulnerabilitySeverity severity = advisory.Severity;
                         if (severity == PackageVulnerabilitySeverity.Low) { Sev0TransitiveMatches++; }
                         else if (severity == PackageVulnerabilitySeverity.Moderate) { Sev1TransitiveMatches++; }
                         else if (severity == PackageVulnerabilitySeverity.High) { Sev2TransitiveMatches++; }
@@ -235,17 +235,17 @@ namespace NuGet.Commands.Restore.Utility
             return vulnerabilities != null ? vulnerabilities.ToList() : null;
         }
 
-        private static (string severityLabel, NuGetLogCode code) GetSeverityLabelAndCode(int severity)
+        private static (string severityLabel, NuGetLogCode code) GetSeverityLabelAndCode(PackageVulnerabilitySeverity severity)
         {
             switch (severity)
             {
-                case (int)PackageVulnerabilitySeverity.Low:
+                case PackageVulnerabilitySeverity.Low:
                     return (Strings.Vulnerability_Severity_Low, NuGetLogCode.NU1901);
-                case (int)PackageVulnerabilitySeverity.Moderate:
+                case PackageVulnerabilitySeverity.Moderate:
                     return (Strings.Vulnerability_Severity_Moderate, NuGetLogCode.NU1902);
-                case (int)PackageVulnerabilitySeverity.High:
+                case PackageVulnerabilitySeverity.High:
                     return (Strings.Vulnerability_Severity_High, NuGetLogCode.NU1903);
-                case (int)PackageVulnerabilitySeverity.Critical:
+                case PackageVulnerabilitySeverity.Critical:
                     return (Strings.Vulnerability_Severity_Critical, NuGetLogCode.NU1904);
                 default:
                     return (Strings.Vulnerability_Severity_unknown, NuGetLogCode.NU1900);
@@ -273,7 +273,7 @@ namespace NuGet.Commands.Restore.Utility
 
                         foreach (PackageVulnerabilityInfo knownVulnerability in knownVulnerabilitiesForPackage)
                         {
-                            if (knownVulnerability.Severity < (int)MinSeverity)
+                            if ((int)knownVulnerability.Severity < (int)MinSeverity)
                             {
                                 continue;
                             }
