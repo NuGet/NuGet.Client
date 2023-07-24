@@ -88,7 +88,6 @@ namespace NuGet.Commands
         private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
 
         // NuGetAudit names
-        private const string AuditEnabled = "Audit.Enabled";
         private const string AuditLevel = "Audit.Level";
         private const string AuditMode = "Audit.Mode";
         private const string AuditDataSources = "Audit.DataSources";
