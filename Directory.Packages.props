@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    
-    <CryptographyPackagesVersion Condition="'$(CryptographyPackagesVersion)' == ''">5.0.0</CryptographyPackagesVersion>
-    <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.0.0</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
+
+    <CryptographyPackagesVersion Condition="'$(CryptographyPackagesVersion)' == ''">6.0.4</CryptographyPackagesVersion>
+    <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <NewtonsoftJsonPackageVersion Condition="'$(NewtonsoftJsonPackageVersion)' == ''">13.0.1</NewtonsoftJsonPackageVersion>
     <SystemPackagesVersion Condition="'$(SystemPackagesVersion)' == ''">4.3.0</SystemPackagesVersion>
     <VSFrameworkVersion Condition="'$(VSFrameworkVersion)' == ''">17.2.0-preview-2-32304-091</VSFrameworkVersion>
@@ -82,7 +82,6 @@
     <PackageVersion Include="System.Resources.ResourceManager" Version="$(SystemPackagesVersion)" />
     <PackageVersion Include="System.Runtime.Extensions" Version="$(SystemPackagesVersion)" />
     <PackageVersion Include="System.Runtime.InteropServices" Version="$(SystemPackagesVersion)" />
-    <PackageVersion Include="System.Security.Cryptography.Cng" Version="$(CryptographyPackagesVersion)" />
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="$(CryptographyPackagesVersion)" />
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="4.4.0" />
     <PackageVersion Include="System.Text.Encoding.Extensions" Version="$(SystemPackagesVersion)" />
