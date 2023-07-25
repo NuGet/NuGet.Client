@@ -7,10 +7,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Input;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Services.Common;
+using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -21,11 +21,15 @@ namespace NuGet.PackageManagement.UI.Options
         public ObservableCollection<string> ConfigurationFilesCollection { get; private set; }
         public string? SelectedPath { get; set; }
         public ICommand OpenConfigurationFile { get; }
+        private ISettings _settings;
+        private INuGetProjectContext _projectContext;
 
-        public ConfigurationFilesViewModel()
+        public ConfigurationFilesViewModel(ISettings settings, INuGetProjectContext projectContext)
         {
             ConfigurationFilesCollection = new ObservableCollection<string>();
             OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, IsSelectedPath, NuGetUIThreadHelper.JoinableTaskFactory);
+            _settings = settings;
+            _projectContext = projectContext;
         }
 
         private bool IsSelectedPath()
@@ -40,24 +44,19 @@ namespace NuGet.PackageManagement.UI.Options
 
         public void SetConfigPaths()
         {
-            IComponentModel componentModelMapping = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
-            var settings = componentModelMapping.GetService<Configuration.ISettings>();
-            IReadOnlyList<string> configPaths = settings.GetConfigFilePaths().ToList();
+            IReadOnlyList<string> configPaths = _settings.GetConfigFilePaths().ToList();
             ConfigurationFilesCollection.Clear();
             ConfigurationFilesCollection.AddRange(configPaths);
         }
 
         private void OpenConfigFile(string? selectedPath)
         {
-            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
-            var projectContext = componentModel.GetService<INuGetProjectContext>();
-
             // This check is performed in case the user moves or deletes a config file while they have it selected in the Options window.
             if (!File.Exists(selectedPath))
             {
                 MessageHelper.ShowErrorMessage(selectedPath, Resources.ShowError_FileNotFound);
             }
-            _ = projectContext.ExecutionContext.OpenFile(selectedPath);
+            _ = _projectContext.ExecutionContext.OpenFile(selectedPath);
         }
     }
 }

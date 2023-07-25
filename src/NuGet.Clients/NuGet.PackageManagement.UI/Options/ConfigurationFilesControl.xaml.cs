@@ -30,9 +30,9 @@ namespace NuGet.PackageManagement.UI.Options
             _viewModel.SetConfigPaths();
         }
 
-        private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
+        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
-            if (e.OriginalSource is Hyperlink hyperlink && hyperlink.NavigateUri != null)
+            if (sender is Hyperlink hyperlink)
             {
                 UIUtility.LaunchExternalLink(hyperlink.NavigateUri);
 

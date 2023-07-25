@@ -19,11 +19,6 @@
       </Style>
     </ResourceDictionary>
   </UserControl.Resources>
-  <UserControl.CommandBindings>
-    <CommandBinding
-      Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
-      Executed="ExecuteOpenExternalLink" />
-  </UserControl.CommandBindings>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="auto" />
@@ -51,7 +46,7 @@
         <TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow">
           <Hyperlink
               NavigateUri="https://aka.ms/nuget/how-settings-are-applied"
-              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+              RequestNavigate="Hyperlink_RequestNavigate">
             <Run Text="{x:Static nuget:Resources.Text_ApplyingConfigurationFiles_DocumentLink}"/>
           </Hyperlink>
         </TextBlock>

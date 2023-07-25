@@ -6,11 +6,13 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Configuration;
+using NuGet.ProjectManagement;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI.Options
 {
     [Guid("C17B308A-00BB-446E-9212-2D14E1005985")]
-
     public class ConfigurationFilesOptionsPage : UIElementDialogPage
     {
         private Lazy<ConfigurationFilesControl> _configurationFilesControl;
@@ -23,7 +25,10 @@ namespace NuGet.PackageManagement.UI.Options
 
         public ConfigurationFilesOptionsPage()
         {
-            _configurationFilesControl = new Lazy<ConfigurationFilesControl>(() => new ConfigurationFilesControl(new ConfigurationFilesViewModel()));
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
+            ISettings settings = componentModel.GetService<Configuration.ISettings>();
+            INuGetProjectContext projectContext = componentModel.GetService<INuGetProjectContext>();
+            _configurationFilesControl = new Lazy<ConfigurationFilesControl>(() => new ConfigurationFilesControl(new ConfigurationFilesViewModel(settings, projectContext)));
         }
 
         /// <summary>
