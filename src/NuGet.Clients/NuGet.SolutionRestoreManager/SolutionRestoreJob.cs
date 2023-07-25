@@ -148,11 +148,6 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (infoBarService == null)
-            {
-                throw new ArgumentNullException(nameof(infoBarService));
-            }
-
             _logger = logger;
             _infoBarService = infoBarService;
 
@@ -522,14 +517,17 @@ namespace NuGet.SolutionRestoreManager
                                     }
 
                                     // Display info bar in SolutionExplorer if there is a vulnerability during restore.
-                                    bool shouldDisplayVulnerabilitiesInfoBar = AnyProjectHasVulnerablePackageWarning(restoreSummaries);
-                                    if (shouldDisplayVulnerabilitiesInfoBar)
+                                    if (_infoBarService != null)
                                     {
-                                        await _infoBarService.Value.ShowAsync(t);
-                                    }
-                                    else if (_infoBarService.IsValueCreated) // if the InfoBar was created and all vulnerabilities are fixed, hide it.
-                                    {
-                                        await _infoBarService.Value.HideAsync(t);
+                                        bool shouldDisplayVulnerabilitiesInfoBar = AnyProjectHasVulnerablePackageWarning(restoreSummaries);
+                                        if (shouldDisplayVulnerabilitiesInfoBar)
+                                        {
+                                            await _infoBarService.Value.ShowAsync(t);
+                                        }
+                                        else if (_infoBarService.IsValueCreated) // if the InfoBar was created and all vulnerabilities are fixed, hide it.
+                                        {
+                                            await _infoBarService.Value.RemoveAsync(t);
+                                        }
                                     }
 
                                     _nuGetProgressReporter.EndSolutionRestore(projectList);

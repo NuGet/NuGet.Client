@@ -35,7 +35,7 @@ namespace NuGet.SolutionRestoreManager
             await CreateAndShowInfoBarAsync(cancellationToken);
         }
 
-        public async Task HideAsync(CancellationToken cancellationToken)
+        public async Task RemoveAsync(CancellationToken cancellationToken)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
@@ -158,6 +158,7 @@ namespace NuGet.SolutionRestoreManager
 
         public void OnActionItemClicked(IVsInfoBarUIElement infoBarUIElement, IVsInfoBarActionItem actionItem)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             PackageManagerUIStarter?.Value.PMUIStarter();
         }
     }

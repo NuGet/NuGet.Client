@@ -10,6 +10,6 @@ namespace NuGet.SolutionRestoreManager
     {
         Task ShowAsync(CancellationToken cancellationToken);
 
-        Task HideAsync(CancellationToken cancellationToken);
+        Task RemoveAsync(CancellationToken cancellationToken);
     }
 }
