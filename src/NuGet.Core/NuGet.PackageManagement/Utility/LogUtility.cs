@@ -4,7 +4,6 @@
 using NuGet.Common;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
-using System.Collections.Generic;
 
 namespace NuGet.PackageManagement
 {
