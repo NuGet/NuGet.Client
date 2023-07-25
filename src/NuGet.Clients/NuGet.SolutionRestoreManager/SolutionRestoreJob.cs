@@ -507,18 +507,6 @@ namespace NuGet.SolutionRestoreManager
                                 {
                                     if (isRestoreSucceeded)
                                     {
-                                        IEnumerable<NuGetLogCode> nugetLogCodes = restoreSummaries.SelectMany(r => r.Errors.Select(e => e.Code));
-                                        bool shouldDisplayVulnerabilitiesInfoBar = NuGetLogCodeUtility.AreVulnerabilitiesInCodes(nugetLogCodes);
-
-                                        if (shouldDisplayVulnerabilitiesInfoBar)
-                                        {
-                                            await _infoBarService.Value.ShowAsync(t);
-                                        }
-                                        else if (_infoBarService.IsValueCreated) // if the InfoBar was created and all vulnerabilities are fixed, hide it.
-                                        {
-                                            await _infoBarService.Value.HideAsync(t);
-                                        }
-
                                         if (_noOpProjectsCount < restoreSummaries.Count)
                                         {
                                             _status = NuGetOperationStatus.Succeeded;
@@ -532,6 +520,18 @@ namespace NuGet.SolutionRestoreManager
                                     {
                                         _status = NuGetOperationStatus.Failed;
                                     }
+
+                                    // Display info bar in SolutionExplorer if there is a vulnerability during restore.
+                                    bool shouldDisplayVulnerabilitiesInfoBar = AnyProjectHasVulnerablePackageWarning(restoreSummaries);
+                                    if (shouldDisplayVulnerabilitiesInfoBar)
+                                    {
+                                        await _infoBarService.Value.ShowAsync(t);
+                                    }
+                                    else if (_infoBarService.IsValueCreated) // if the InfoBar was created and all vulnerabilities are fixed, hide it.
+                                    {
+                                        await _infoBarService.Value.HideAsync(t);
+                                    }
+
                                     _nuGetProgressReporter.EndSolutionRestore(projectList);
                                 }
                             },
@@ -543,6 +543,25 @@ namespace NuGet.SolutionRestoreManager
             {
                 await _logger.ShowErrorAsync(Resources.PackageRefNotRestoredBecauseOfNoConsent);
             }
+        }
+
+        private bool AnyProjectHasVulnerablePackageWarning(IReadOnlyList<RestoreSummary> restoreSummaries)
+        {
+            foreach (RestoreSummary restoreSummary in restoreSummaries)
+            {
+                foreach (IRestoreLogMessage restoreLogMessage in restoreSummary.Errors)
+                {
+                    if (restoreLogMessage.Code == NuGetLogCode.NU1901 ||
+                        restoreLogMessage.Code == NuGetLogCode.NU1902 ||
+                        restoreLogMessage.Code == NuGetLogCode.NU1903 ||
+                        restoreLogMessage.Code == NuGetLogCode.NU1904)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         // This event could be raised from multiple threads. Only perform thread-safe operations
