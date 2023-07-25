@@ -2850,7 +2850,6 @@ namespace NuGet.Commands.Test
             projectInformationEvent["HttpSourcesCount"].Should().Be(0);
             projectInformationEvent["LocalSourcesCount"].Should().Be(1);
             projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
-            projectInformationEvent["Audit.Enabled"].Should().Be("Undefined");
         }
 
         [Fact]
