@@ -88,7 +88,6 @@ namespace NuGet.Commands
         private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
 
         // NuGetAudit names
-        private const string AuditEnabled = "Audit.Enabled";
         private const string AuditLevel = "Audit.Level";
         private const string AuditMode = "Audit.Mode";
         private const string AuditDataSources = "Audit.DataSources";
@@ -301,13 +300,6 @@ namespace NuGet.Commands
                     {
                         return RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), contextForProject, _logger, e.Framework, e.RuntimeIdentifier);
                     });
-                }
-
-                AuditUtility.EnabledValue enableAudit = AuditUtility.ParseEnableValue(_request.Project.RestoreMetadata?.RestoreAuditProperties?.EnableAudit);
-                telemetry.TelemetryEvent[AuditEnabled] = AuditUtility.GetString(enableAudit);
-                if (enableAudit == AuditUtility.EnabledValue.ImplicitOptIn || enableAudit == AuditUtility.EnabledValue.ExplicitOptIn)
-                {
-                    await PerformAuditAsync(enableAudit, graphs, telemetry, token);
                 }
 
                 telemetry.StartIntervalMeasure();
