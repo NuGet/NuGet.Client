@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -28,8 +29,8 @@ namespace NuGet.PackageManagement.UI.Options
         {
             ConfigurationFilesCollection = new ObservableCollection<string>();
             OpenConfigurationFile = new DelegateCommand(ExecuteOpenConfigurationFile, IsSelectedPath, NuGetUIThreadHelper.JoinableTaskFactory);
-            _settings = settings;
-            _projectContext = projectContext;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _projectContext = projectContext ?? throw new ArgumentNullException(nameof(projectContext));
         }
 
         private bool IsSelectedPath()
