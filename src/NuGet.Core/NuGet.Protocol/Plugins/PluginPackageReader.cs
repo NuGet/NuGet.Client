@@ -513,7 +513,7 @@ namespace NuGet.Protocol.Plugins
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var frameworks = new HashSet<NuGetFramework>(new NuGetFrameworkFullComparer());
+            var frameworks = new HashSet<NuGetFramework>(NuGetFrameworkFullComparer.Instance);
 
             frameworks.UnionWith((await GetLibItemsAsync(cancellationToken)).Select(g => g.TargetFramework));
 
@@ -525,7 +525,7 @@ namespace NuGet.Protocol.Plugins
 
             frameworks.UnionWith((await GetFrameworkItemsAsync(cancellationToken)).Select(g => g.TargetFramework));
 
-            return frameworks.Where(f => !f.IsUnsupported).OrderBy(f => f, new NuGetFrameworkSorter());
+            return frameworks.Where(f => !f.IsUnsupported).OrderBy(f => f, NuGetFrameworkSorter.Instance);
         }
 
         /// <summary>
@@ -990,7 +990,7 @@ namespace NuGet.Protocol.Plugins
             string folder,
             CancellationToken cancellationToken)
         {
-            var groups = new Dictionary<NuGetFramework, List<string>>(new NuGetFrameworkFullComparer());
+            var groups = new Dictionary<NuGetFramework, List<string>>(NuGetFrameworkFullComparer.Instance);
 
             var isContentFolder = StringComparer.OrdinalIgnoreCase.Equals(folder, PackagingConstants.Folders.Content);
             var allowSubFolders = true;
@@ -1011,7 +1011,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             // Sort the groups by framework, and the items by ordinal string compare to keep things deterministic
-            return groups.Keys.OrderBy(e => e, new NuGetFrameworkSorter())
+            return groups.Keys.OrderBy(e => e, NuGetFrameworkSorter.Instance)
                 .Select(framework => new FrameworkSpecificGroup(framework, groups[framework].OrderBy(e => e, StringComparer.OrdinalIgnoreCase)));
         }
 

@@ -940,7 +940,7 @@ namespace NuGet.Frameworks
                 {
                     if (!_portableCompatibilityMappings.TryGetValue(mapping.Key, out HashSet<FrameworkRange>? entries))
                     {
-                        entries = new HashSet<FrameworkRange>(new FrameworkRangeComparer());
+                        entries = new HashSet<FrameworkRange>(FrameworkRangeComparer.Instance);
                         _portableCompatibilityMappings.Add(mapping.Key, entries);
                     }
 
@@ -1083,7 +1083,7 @@ namespace NuGet.Frameworks
                 }
             }
 
-            _netStandardVersions.Sort(new NuGetFrameworkSorter());
+            _netStandardVersions.Sort(NuGetFrameworkSorter.Instance);
         }
 
         private void AddCompatibleCandidates()
@@ -1152,7 +1152,7 @@ namespace NuGet.Frameworks
             }
 
             _compatibleCandidates.AddRange(set);
-            _compatibleCandidates.Sort(new NuGetFrameworkSorter());
+            _compatibleCandidates.Sort(NuGetFrameworkSorter.Instance);
         }
 
         // Strong typed non-IEnumerator based HashSet functions

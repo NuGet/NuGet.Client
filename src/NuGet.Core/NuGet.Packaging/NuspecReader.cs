@@ -215,7 +215,7 @@ namespace NuGet.Packaging
 
             var ns = Xml.Root.GetDefaultNamespace().NamespaceName;
 
-            var groups = new Dictionary<NuGetFramework, HashSet<string>>(new NuGetFrameworkFullComparer());
+            var groups = new Dictionary<NuGetFramework, HashSet<string>>(NuGetFrameworkFullComparer.Instance);
 
             foreach (var group in MetadataNode.Elements(XName.Get(FrameworkAssemblies, ns)).Elements(XName.Get(FrameworkAssembly, ns))
                 .GroupBy(n => GetAttributeValue(n, TargetFramework)))
@@ -255,7 +255,7 @@ namespace NuGet.Packaging
             }
 
             // Sort items to make this deterministic for the caller
-            foreach ((var framework, var items) in groups.OrderBy(e => e.Key, new NuGetFrameworkSorter()))
+            foreach ((var framework, var items) in groups.OrderBy(e => e.Key, NuGetFrameworkSorter.Instance))
             {
                 var group = new FrameworkSpecificGroup(framework, items.OrderBy(item => item, StringComparer.OrdinalIgnoreCase));
 
