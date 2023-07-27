@@ -6,6 +6,8 @@ namespace NuGet.PackageManagement.Telemetry
     public enum NavigationOrigin
     {
         None,
+        Options_ConfigurationFiles_ListItem,
+        Options_ConfigurationFiles_Open,
         Options_PackageSourceMapping_Add,
         Options_PackageSourceMapping_Remove,
         Options_PackageSourceMapping_RemoveAll,

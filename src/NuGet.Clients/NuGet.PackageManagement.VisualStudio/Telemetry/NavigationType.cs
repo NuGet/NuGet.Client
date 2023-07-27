@@ -6,6 +6,7 @@ namespace NuGet.PackageManagement.Telemetry
     public enum NavigationType
     {
         Hyperlink,
+        DoubleClick,
         Button
     }
 }

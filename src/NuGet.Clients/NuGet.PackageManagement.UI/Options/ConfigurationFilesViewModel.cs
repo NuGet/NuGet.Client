@@ -11,7 +11,9 @@ using System.Windows.Input;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Services.Common;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -46,6 +48,8 @@ namespace NuGet.PackageManagement.UI.Options
                 MessageHelper.ShowErrorMessage(SelectedPath, Resources.ShowError_FileNotFound);
             }
             _ = _projectContext.ExecutionContext.OpenFile(SelectedPath);
+            var evt = new NavigatedTelemetryEvent(NavigationType.Button, NavigationOrigin.Options_ConfigurationFiles_Open);
+            TelemetryActivity.EmitTelemetryEvent(evt);
         }
 
         public void SetConfigPaths()
