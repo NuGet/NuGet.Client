@@ -40,7 +40,12 @@ namespace NuGet.PackageManagement.UI.Options
 
         private void ExecuteOpenConfigurationFile()
         {
-            OpenConfigFile(SelectedPath);
+            // This check is performed in case the user moves or deletes a config file while they have it selected in the Options window.
+            if (!File.Exists(SelectedPath))
+            {
+                MessageHelper.ShowErrorMessage(SelectedPath, Resources.ShowError_FileNotFound);
+            }
+            _ = _projectContext.ExecutionContext.OpenFile(SelectedPath);
         }
 
         public void SetConfigPaths()
@@ -48,16 +53,6 @@ namespace NuGet.PackageManagement.UI.Options
             IReadOnlyList<string> configPaths = _settings.GetConfigFilePaths().ToList();
             ConfigurationFilesCollection.Clear();
             ConfigurationFilesCollection.AddRange(configPaths);
-        }
-
-        private void OpenConfigFile(string? selectedPath)
-        {
-            // This check is performed in case the user moves or deletes a config file while they have it selected in the Options window.
-            if (!File.Exists(selectedPath))
-            {
-                MessageHelper.ShowErrorMessage(selectedPath, Resources.ShowError_FileNotFound);
-            }
-            _ = _projectContext.ExecutionContext.OpenFile(selectedPath);
         }
     }
 }
