@@ -2886,7 +2886,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var project = await PrepareTestProjectAsync(testContext) as CpsPackageReferenceProject;
 
-            var tasks = new []
+            var tasks = new[]
             {
                 project.GetInstalledPackagesAsync(CancellationToken.None),
                 project.GetInstalledPackagesAsync(CancellationToken.None),
