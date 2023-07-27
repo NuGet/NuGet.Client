@@ -18,7 +18,7 @@ namespace NuGet.SolutionRestoreManager
 {
     [Export(typeof(IInfoBarService))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class InfoBarService : IInfoBarService, IVsInfoBarUIEvents
+    public class VulnerablePackagesInfoBar : IInfoBarService, IVsInfoBarUIEvents
     {
         IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
         private IVsInfoBarUIElement? _infoBarUIElement;
@@ -50,8 +50,8 @@ namespace NuGet.SolutionRestoreManager
             {
                 if (_eventCookie.HasValue)
                 {
-                    _infoBarUIElement?.Close();
                     _infoBarUIElement?.Unadvise(_eventCookie.Value);
+                    _infoBarUIElement?.Close();
                     _infoBarUIElement = null;
                 }
             }
@@ -64,9 +64,7 @@ namespace NuGet.SolutionRestoreManager
         protected InfoBarModel GetInfoBarModel()
         {
             return new InfoBarModel(
-                new IVsInfoBarTextSpan[] {
-                    new InfoBarTextSpan(Resources.InfoBar_TextMessage),
-                },
+                Resources.InfoBar_TextMessage,
                 new IVsInfoBarActionItem[] {
                     new InfoBarHyperlink(Resources.InfoBar_HyperlinkMessage),
                 },
@@ -107,7 +105,7 @@ namespace NuGet.SolutionRestoreManager
             }
             catch (Exception ex)
             {
-                await TelemetryUtility.PostFaultAsync(ex, nameof(InfoBarService));
+                await TelemetryUtility.PostFaultAsync(ex, nameof(VulnerablePackagesInfoBar));
                 return;
             }
 
@@ -117,7 +115,7 @@ namespace NuGet.SolutionRestoreManager
                 if (infoBarFactory == null)
                 {
                     NullReferenceException exception = new NullReferenceException(nameof(infoBarFactory));
-                    await TelemetryUtility.PostFaultAsync(exception, nameof(InfoBarService));
+                    await TelemetryUtility.PostFaultAsync(exception, nameof(VulnerablePackagesInfoBar));
                     return;
                 }
 
