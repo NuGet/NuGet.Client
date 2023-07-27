@@ -22,7 +22,7 @@ namespace NuGet.Commands.Restore.Utility
     internal class AuditUtility
     {
         private readonly EnabledValue _auditEnabled;
-        private readonly ProjectModel.RestoreAuditProperties _restoreAuditProperties;
+        private readonly ProjectModel.RestoreAuditProperties? _restoreAuditProperties;
         private readonly string _projectFullPath;
         private readonly IEnumerable<RestoreTargetGraph> _targetGraphs;
         private readonly IReadOnlyList<IVulnerabilityInformationProvider> _vulnerabilityInfoProviders;
@@ -49,7 +49,7 @@ namespace NuGet.Commands.Restore.Utility
 
         public AuditUtility(
             EnabledValue auditEnabled,
-            ProjectModel.RestoreAuditProperties restoreAuditProperties,
+            ProjectModel.RestoreAuditProperties? restoreAuditProperties,
             string projectFullPath,
             IEnumerable<RestoreTargetGraph> graphs,
             IReadOnlyList<IVulnerabilityInformationProvider> vulnerabilityInformationProviders,
@@ -366,7 +366,7 @@ namespace NuGet.Commands.Restore.Utility
 
         private PackageVulnerabilitySeverity ParseAuditLevel()
         {
-            string? auditLevel = _restoreAuditProperties.AuditLevel?.Trim();
+            string? auditLevel = _restoreAuditProperties?.AuditLevel?.Trim();
 
             if (auditLevel == null)
             {
@@ -401,7 +401,7 @@ namespace NuGet.Commands.Restore.Utility
 
         private NuGetAuditMode ParseAuditMode()
         {
-            string? auditMode = _restoreAuditProperties.AuditMode?.Trim();
+            string? auditMode = _restoreAuditProperties?.AuditMode?.Trim();
 
             if (auditMode == null)
             {
@@ -431,9 +431,9 @@ namespace NuGet.Commands.Restore.Utility
             ExplicitOptOut
         }
 
-        public static EnabledValue ParseEnableValue(string value)
+        public static EnabledValue ParseEnableValue(string? value)
         {
-            if (string.Equals(value, "default", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(value))
             {
                 return EnabledValue.ImplicitOptIn;
             }

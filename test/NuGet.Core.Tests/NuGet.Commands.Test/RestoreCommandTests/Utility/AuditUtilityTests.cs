@@ -31,6 +31,28 @@ public class AuditUtilityTests
     private static Uri CveUrl = new Uri("https://cve.test/1");
     private static VersionRange UpToV2 = new VersionRange(maxVersion: new NuGetVersion(2, 0, 0), includeMaxVersion: false);
 
+    [Theory]
+    [InlineData(null, nameof(AuditUtility.EnabledValue.ImplicitOptIn))]
+    [InlineData("", nameof(AuditUtility.EnabledValue.ImplicitOptIn))]
+    [InlineData("true", nameof(AuditUtility.EnabledValue.ExplicitOptIn))]
+    [InlineData("enable", nameof(AuditUtility.EnabledValue.ExplicitOptIn))]
+    [InlineData("TRUE", nameof(AuditUtility.EnabledValue.ExplicitOptIn))]
+    [InlineData("false", nameof(AuditUtility.EnabledValue.ExplicitOptOut))]
+    [InlineData("disable", nameof(AuditUtility.EnabledValue.ExplicitOptOut))]
+    [InlineData("FALSE", nameof(AuditUtility.EnabledValue.ExplicitOptOut))]
+    [InlineData("invalid", nameof(AuditUtility.EnabledValue.Undefined))]
+    public void ParseEnableValue_WithValue_ReturnsExpectedEnum(string input, string expected)
+    {
+        // Arrange
+        AuditUtility.EnabledValue expectedValue = (AuditUtility.EnabledValue)Enum.Parse(typeof(AuditUtility.EnabledValue), expected);
+
+        // Act
+        AuditUtility.EnabledValue actual = AuditUtility.ParseEnableValue(input);
+
+        // Assert
+        actual.Should().Be(expectedValue);
+    }
+
     [Fact]
     public async Task Check_VulnerabilityProviderWithExceptions_WarningsReplayedToLogger()
     {
@@ -56,7 +78,7 @@ public class AuditUtilityTests
     }
 
     [Theory]
-    [InlineData("default", false)]
+    [InlineData("", false)]
     [InlineData("true", true)]
     public async Task Check_WithNoVulnerabilitySources_NU1905Warning(string enable, bool expectWarning)
     {
@@ -364,17 +386,12 @@ public class AuditUtilityTests
             await createGraphTasks[1]
         };
 
-        RestoreAuditProperties restoreAuditProperties = new()
-        {
-            EnableAudit = "default",
-        };
-
         var log = new TestLogger();
 
         // Act
         var audit = new AuditUtility(
-            AuditUtility.ParseEnableValue(restoreAuditProperties.EnableAudit),
-            restoreAuditProperties,
+            AuditUtility.ParseEnableValue(null),
+            restoreAuditProperties: null,
             "/path/proj.csproj",
             graphs,
             vulnerabilityProviders,
@@ -413,7 +430,7 @@ public class AuditUtilityTests
     private class AuditTestContext
     {
         public string ProjectFullPath { get; set; } = RuntimeEnvironmentHelper.IsWindows ? @"n:\proj\proj.csproj" : "/src/proj/proj.csproj";
-        public string? Enabled { get; set; } = "default";
+        public string? Enabled { get; set; }
         public string? Level { get; set; }
         public string? Mode { get; set; }
 
@@ -458,9 +475,8 @@ public class AuditUtilityTests
 
         public async Task<AuditUtility> CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
-            AuditUtility.EnabledValue enabled;
-            if (Enabled is null
-                || (enabled = AuditUtility.ParseEnableValue(Enabled)) == AuditUtility.EnabledValue.Undefined
+            AuditUtility.EnabledValue enabled = AuditUtility.ParseEnableValue(Enabled);
+            if (enabled == AuditUtility.EnabledValue.Undefined
                 || enabled == AuditUtility.EnabledValue.ExplicitOptOut)
             {
                 throw new InvalidOperationException($"{nameof(Enabled)} must have a value that does not disable NuGetAudit.");
