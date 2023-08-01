@@ -11,8 +11,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
@@ -512,6 +514,23 @@ namespace NuGet.SolutionRestoreManager
                                     {
                                         _status = NuGetOperationStatus.Failed;
                                     }
+
+                                    bool shouldDisplayVulnerabilitiesInfoBar = AnyProjectHasVulnerablePackageWarning(restoreSummaries);
+                                    if (shouldDisplayVulnerabilitiesInfoBar)
+                                    {
+                                        IVsInfoBar vsInfoBar = new InfoBarModel(
+                                            "Vulnerable Packages Found",
+                                            new IVsInfoBarActionItem[] {
+                                                new InfoBarHyperlink("Click here"),
+                                            },
+                                            KnownMonikers.StatusWarning);
+                                        IVsWindowFrame frame = await WindowFrame.GetSolutionExplorerFrameAsync(_asyncServiceProvider);
+                                        IVsInfoBarUIElement infoBarUIElement = await InfoBarUIElement.CreateAsync(_asyncServiceProvider, vsInfoBar);
+
+                                        VisualStudioInfoBarPresenter visualStudioInfoBarPresenter = new VisualStudioInfoBarPresenter(frame, infoBarUIElement);
+                                        VulnerablePackagesInfoBar vulnerablePackagesInfoBar = new VulnerablePackagesInfoBar(visualStudioInfoBarPresenter, infoBarUIElement);
+                                        vulnerablePackagesInfoBar.ShowInfoBar();
+                                    }
                                     _nuGetProgressReporter.EndSolutionRestore(projectList);
                                 }
                             },
@@ -523,6 +542,24 @@ namespace NuGet.SolutionRestoreManager
             {
                 await _logger.ShowErrorAsync(Resources.PackageRefNotRestoredBecauseOfNoConsent);
             }
+        }
+        private bool AnyProjectHasVulnerablePackageWarning(IReadOnlyList<RestoreSummary> restoreSummaries)
+        {
+            foreach (RestoreSummary restoreSummary in restoreSummaries)
+            {
+                foreach (IRestoreLogMessage restoreLogMessage in restoreSummary.Errors)
+                {
+                    if (restoreLogMessage.Code == NuGetLogCode.NU1901 ||
+                        restoreLogMessage.Code == NuGetLogCode.NU1902 ||
+                        restoreLogMessage.Code == NuGetLogCode.NU1903 ||
+                        restoreLogMessage.Code == NuGetLogCode.NU1904)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         // This event could be raised from multiple threads. Only perform thread-safe operations
