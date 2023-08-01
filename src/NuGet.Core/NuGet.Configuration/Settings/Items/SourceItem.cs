@@ -1,7 +1,6 @@
 // Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Xml.Linq;
 
 namespace NuGet.Configuration
@@ -31,11 +30,6 @@ namespace NuGet.Configuration
             }
         }
 
-        public override int GetHashCode()
-        {
-            return Key.GetHashCode();
-        }
-
         internal SourceItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {
@@ -51,23 +45,6 @@ namespace NuGet.Configuration
             }
 
             return newSetting;
-        }
-
-        public override bool Equals(object other)
-        {
-            var source = other as SourceItem;
-
-            if (source == null)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, source))
-            {
-                return true;
-            }
-
-            return string.Equals(Key, source.Key, StringComparison.Ordinal);
         }
     }
 }

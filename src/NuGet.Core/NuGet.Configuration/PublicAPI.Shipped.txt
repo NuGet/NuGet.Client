@@ -327,8 +327,8 @@ const NuGet.Configuration.PackageSource.DefaultProtocolVersion = 2 -> int
 ~override NuGet.Configuration.AddItem.Clone() -> NuGet.Configuration.SettingBase
 ~override NuGet.Configuration.AddItem.DisallowedValues.get -> System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyCollection<string>>
 ~override NuGet.Configuration.AddItem.ElementName.get -> string
-~override NuGet.Configuration.AddItem.Equals(object other) -> bool
-override NuGet.Configuration.AddItem.GetHashCode() -> int
+~override sealed NuGet.Configuration.AddItem.Equals(object other) -> bool
+override sealed NuGet.Configuration.AddItem.GetHashCode() -> int
 ~override NuGet.Configuration.AddItem.RequiredAttributes.get -> System.Collections.Generic.IReadOnlyCollection<string>
 ~override NuGet.Configuration.AuthorItem.Clone() -> NuGet.Configuration.SettingBase
 ~override NuGet.Configuration.AuthorItem.ElementName.get -> string
