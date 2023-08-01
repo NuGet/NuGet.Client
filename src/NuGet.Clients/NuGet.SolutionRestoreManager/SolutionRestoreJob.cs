@@ -518,6 +518,7 @@ namespace NuGet.SolutionRestoreManager
                                     bool shouldDisplayVulnerabilitiesInfoBar = AnyProjectHasVulnerablePackageWarning(restoreSummaries);
                                     if (shouldDisplayVulnerabilitiesInfoBar)
                                     {
+                                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                                         IVsInfoBar vsInfoBar = new InfoBarModel(
                                             "Vulnerable Packages Found",
                                             new IVsInfoBarActionItem[] {

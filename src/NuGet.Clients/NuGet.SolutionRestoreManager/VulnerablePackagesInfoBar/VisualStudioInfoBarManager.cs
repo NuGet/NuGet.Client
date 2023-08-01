@@ -41,6 +41,7 @@ namespace NuGet.SolutionRestoreManager
         {
             _infoBarUIElement = vsInfoBarUIElement ?? throw new ArgumentNullException(nameof(vsInfoBarUIElement));
 
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (!TryGetInfoBarHost(vsWindowFrame, out IVsInfoBarHost? infoBarHost))
             {
                 throw new ArgumentException("Failed to get InfoBar host from the provided frame.", nameof(vsWindowFrame));
