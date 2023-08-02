@@ -22,7 +22,7 @@ namespace NuGet.Configuration
         /// </summary>
         internal IReadOnlyDictionary<string, IReadOnlyList<string>> Patterns { get; }
 
-        private Lazy<SearchTree?> SearchTree { get; }
+        private Lazy<SearchTree>? SearchTree { get; }
 
         /// <summary>
         /// Indicate if any packageSource exist in package source mapping section
@@ -37,7 +37,7 @@ namespace NuGet.Configuration
         /// <exception cref="ArgumentException"> if <paramref name="packageId"/> is null, empty, or whitespace only.</exception>
         public IReadOnlyList<string> GetConfiguredPackageSources(string packageId)
         {
-            if (SearchTree.Value is null)
+            if (SearchTree?.Value is null)
             {
                 return Array.Empty<string>();
             }
@@ -47,14 +47,14 @@ namespace NuGet.Configuration
 
         public string? SearchForPattern(string packageId)
         {
-            return SearchTree.Value?.SearchForPattern(packageId);
+            return SearchTree?.Value.SearchForPattern(packageId);
         }
 
         public PackageSourceMapping(IReadOnlyDictionary<string, IReadOnlyList<string>> patterns)
         {
             Patterns = patterns ?? throw new ArgumentNullException(nameof(patterns));
             IsEnabled = Patterns.Count > 0;
-            SearchTree = new Lazy<SearchTree?>(() => GetSearchTree());
+            SearchTree = IsEnabled ? new Lazy<SearchTree>(() => GetSearchTree()) : null;
         }
 
         /// <summary>
@@ -82,16 +82,9 @@ namespace NuGet.Configuration
             return new PackageSourceMapping(patterns);
         }
 
-        private SearchTree? GetSearchTree()
+        private SearchTree GetSearchTree()
         {
-            SearchTree? patternsLookup = null;
-
-            if (IsEnabled)
-            {
-                patternsLookup = new SearchTree(this);
-            }
-
-            return patternsLookup;
+            return new SearchTree(this);
         }
     }
 }
