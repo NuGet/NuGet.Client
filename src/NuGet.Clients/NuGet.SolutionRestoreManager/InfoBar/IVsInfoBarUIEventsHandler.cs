@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell.Interop;
 
 #nullable enable
 
