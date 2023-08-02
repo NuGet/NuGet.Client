@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
@@ -100,6 +99,45 @@ namespace NuGet.PackageManagement.UI
                 ? activePackageSourceMoniker.PackageSourceNames.First() : null;
 
             return sourceMappingSourceName;
+        }
+
+        internal static void GetNewSourceMappingsFromAddedPackages(ref Dictionary<string, SortedSet<string>>? newSourceMappings, UserAction? userAction, List<AccessiblePackageIdentity> added, PackageSourceMapping packageSourceMapping)
+        {
+            string? newMappingSourceName = userAction?.SelectedSourceName;
+            if (newMappingSourceName is null || added.Count == 0 || packageSourceMapping is null)
+            {
+                return;
+            }
+
+            List<string> addedPackagesWithNoSourceMappings = added.Select(_ => _.Id)
+                .Where(addedPackage =>
+                {
+                    IReadOnlyList<string> configuredSources = packageSourceMapping.GetConfiguredPackageSources(addedPackage);
+                    return configuredSources == null || configuredSources.Count == 0;
+                })
+                .Distinct()
+                .ToList();
+
+            if (addedPackagesWithNoSourceMappings.Count == 0)
+            {
+                return;
+            }
+
+            if (newSourceMappings is null)
+            {
+                newSourceMappings = new Dictionary<string, SortedSet<string>>(capacity: 1)
+                {
+                    { newMappingSourceName, new SortedSet<string>(addedPackagesWithNoSourceMappings) }
+                };
+            }
+            else if (newSourceMappings.TryGetValue(newMappingSourceName, out SortedSet<string>? newMappingPackageIds))
+            {
+                newMappingPackageIds.UnionWith(addedPackagesWithNoSourceMappings);
+            }
+            else
+            {
+                newSourceMappings.Add(newMappingSourceName, new SortedSet<string>(addedPackagesWithNoSourceMappings));
+            }
         }
     }
 }
