@@ -611,7 +611,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            uiwindow.InstallPackageFromUI("Newtonsoft.json", "12.0.3");
+            uiwindow.InstallPackageFromUI(packageName, packageVersion);
             solutionService.Build();
 
             // Assert
@@ -620,16 +620,16 @@ namespace NuGet.Tests.Apex
 
             // Act
             VisualStudio.ClearWindows();
-            uiwindow.UninstallPackageFromUI("Newtonsoft.json");
+            uiwindow.UninstallPackageFromUI(packageName);
 
             // Assert
             if (projectTemplate.Equals(ProjectTemplate.ClassLibrary))
             {
-                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "Newtonsoft.json", XunitLogger);
+                CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, packageName, XunitLogger);
             }
             else
             {
-                CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, "Newtonsoft.json", XunitLogger);
+                CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, packageName, XunitLogger);
             }
         }
     }
