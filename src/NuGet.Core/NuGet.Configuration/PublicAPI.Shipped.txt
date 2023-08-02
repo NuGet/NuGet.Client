@@ -171,9 +171,9 @@ NuGet.Configuration.PackageSourceCredential.IsValid() -> bool
 ~NuGet.Configuration.PackageSourceCredential.ValidAuthenticationTypes.get -> System.Collections.Generic.IEnumerable<string>
 ~NuGet.Configuration.PackageSourceCredential.ValidAuthenticationTypesText.get -> string
 NuGet.Configuration.PackageSourceMapping
-~NuGet.Configuration.PackageSourceMapping.GetConfiguredPackageSources(string packageId) -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.Configuration.PackageSourceMapping.GetConfiguredPackageSources(string! packageId) -> System.Collections.Generic.IReadOnlyList<string!>!
 NuGet.Configuration.PackageSourceMapping.IsEnabled.get -> bool
-~NuGet.Configuration.PackageSourceMapping.PackageSourceMapping(System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<string>> patterns) -> void
+NuGet.Configuration.PackageSourceMapping.PackageSourceMapping(System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<string!>!>! patterns) -> void
 NuGet.Configuration.PackageSourceMappingProvider
 ~NuGet.Configuration.PackageSourceMappingProvider.GetPackageSourceMappingItems() -> System.Collections.Generic.IReadOnlyList<NuGet.Configuration.PackageSourceMappingSourceItem>
 ~NuGet.Configuration.PackageSourceMappingProvider.PackageSourceMappingProvider(NuGet.Configuration.ISettings settings) -> void
@@ -407,7 +407,7 @@ override NuGet.Configuration.UnknownItem.IsEmpty() -> bool
 ~static NuGet.Configuration.NuGetPathContext.Create(string settingsRoot) -> NuGet.Configuration.NuGetPathContext
 ~static NuGet.Configuration.NullSettings.Instance.get -> NuGet.Configuration.NullSettings
 ~static NuGet.Configuration.PackageSourceCredential.FromUserInput(string source, string username, string password, bool storePasswordInClearText, string validAuthenticationTypesText) -> NuGet.Configuration.PackageSourceCredential
-~static NuGet.Configuration.PackageSourceMapping.GetPackageSourceMapping(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.PackageSourceMapping
+static NuGet.Configuration.PackageSourceMapping.GetPackageSourceMapping(NuGet.Configuration.ISettings! settings) -> NuGet.Configuration.PackageSourceMapping!
 ~static NuGet.Configuration.PackageSourceProvider.LoadPackageSources(NuGet.Configuration.ISettings settings) -> System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource>
 ~static NuGet.Configuration.ProxyCache.Instance.get -> NuGet.Configuration.ProxyCache
 ~static NuGet.Configuration.Settings.ApplyEnvironmentTransform(string value) -> string
