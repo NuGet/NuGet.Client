@@ -83,8 +83,6 @@ NuGet.Configuration.IPackageSourceProvider.PackageSourcesChanged -> System.Event
 ~NuGet.Configuration.IPackageSourceProvider.SaveActivePackageSource(NuGet.Configuration.PackageSource source) -> void
 ~NuGet.Configuration.IPackageSourceProvider.SavePackageSources(System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource> sources) -> void
 ~NuGet.Configuration.IPackageSourceProvider.UpdatePackageSource(NuGet.Configuration.PackageSource source, bool updateCredentials, bool updateEnabled) -> void
-NuGet.Configuration.IPackageSourceProvider2
-~NuGet.Configuration.IPackageSourceProvider2.SavePackageSources(System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource> sources, NuGet.Configuration.PackageSourceUpdateOptions packageSourceUpdateOptions) -> void
 NuGet.Configuration.IProxyCache
 ~NuGet.Configuration.IProxyCache.Add(System.Net.IWebProxy proxy) -> void
 ~NuGet.Configuration.IProxyCache.GetProxy(System.Uri uri) -> System.Net.IWebProxy
@@ -203,13 +201,8 @@ NuGet.Configuration.PackageSourceProvider.PackageSourcesChanged -> System.EventH
 ~NuGet.Configuration.PackageSourceProvider.RemovePackageSource(string name) -> void
 ~NuGet.Configuration.PackageSourceProvider.SaveActivePackageSource(NuGet.Configuration.PackageSource source) -> void
 ~NuGet.Configuration.PackageSourceProvider.SavePackageSources(System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource> sources) -> void
-~NuGet.Configuration.PackageSourceProvider.SavePackageSources(System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource> sources, NuGet.Configuration.PackageSourceUpdateOptions sourceUpdateSettings) -> void
 ~NuGet.Configuration.PackageSourceProvider.Settings.get -> NuGet.Configuration.ISettings
 ~NuGet.Configuration.PackageSourceProvider.UpdatePackageSource(NuGet.Configuration.PackageSource source, bool updateCredentials, bool updateEnabled) -> void
-NuGet.Configuration.PackageSourceUpdateOptions
-NuGet.Configuration.PackageSourceUpdateOptions.PackageSourceUpdateOptions(bool updateCredentials, bool updateEnabled) -> void
-NuGet.Configuration.PackageSourceUpdateOptions.UpdateCredentials.get -> bool
-NuGet.Configuration.PackageSourceUpdateOptions.UpdateEnabled.get -> bool
 NuGet.Configuration.ProxyCache
 ~NuGet.Configuration.ProxyCache.Add(System.Net.IWebProxy proxy) -> void
 ~NuGet.Configuration.ProxyCache.GetCredential(System.Uri proxyAddress, string authType) -> System.Net.NetworkCredential
@@ -388,8 +381,6 @@ override NuGet.Configuration.SettingText.GetHashCode() -> int
 override NuGet.Configuration.SettingText.IsEmpty() -> bool
 override NuGet.Configuration.SettingsGroup<T>.IsEmpty() -> bool
 ~override NuGet.Configuration.SourceItem.Clone() -> NuGet.Configuration.SettingBase
-~override NuGet.Configuration.SourceItem.Equals(object other) -> bool
-override NuGet.Configuration.SourceItem.GetHashCode() -> int
 ~override NuGet.Configuration.StoreClientCertItem.Clone() -> NuGet.Configuration.SettingBase
 ~override NuGet.Configuration.StoreClientCertItem.ElementName.get -> string
 ~override NuGet.Configuration.StoreClientCertItem.Search() -> System.Collections.Generic.IEnumerable<System.Security.Cryptography.X509Certificates.X509Certificate>
@@ -523,7 +514,6 @@ override NuGet.Configuration.UnknownItem.IsEmpty() -> bool
 ~static readonly NuGet.Configuration.NuGetConstants.V2LegacyFeedUrl -> string
 ~static readonly NuGet.Configuration.NuGetConstants.V2LegacyOfficialPackageSourceUrl -> string
 static readonly NuGet.Configuration.OwnersItem.OwnersListSeparator -> char
-~static readonly NuGet.Configuration.PackageSourceUpdateOptions.Default -> NuGet.Configuration.PackageSourceUpdateOptions
 ~static readonly NuGet.Configuration.Settings.DefaultSettingsFileName -> string
 ~static readonly NuGet.Configuration.Settings.OrderedSettingsFileNames -> string[]
 ~static readonly NuGet.Configuration.Settings.SupportedMachineWideConfigExtension -> string[]

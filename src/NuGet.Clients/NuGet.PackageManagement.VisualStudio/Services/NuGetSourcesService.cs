@@ -23,10 +23,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly AuthorizationServiceClient _authorizationServiceClient;
         private readonly IPackageSourceProvider _packageSourceProvider;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        private readonly IPackageSourceProvider2? _packageSourceProvider2;
-#pragma warning restore CS0618 // Type or member is obsolete
-
         public event EventHandler<IReadOnlyList<PackageSourceContextInfo>>? PackageSourcesChanged;
 
         public NuGetSourcesService(
@@ -43,9 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _serviceBroker = serviceBroker;
             _authorizationServiceClient = authorizationServiceClient;
             _packageSourceProvider = packageSourceProvider;
-#pragma warning disable CS0618 // Type or member is obsolete
-            _packageSourceProvider2 = packageSourceProvider as IPackageSourceProvider2;
-#pragma warning restore CS0618 // Type or member is obsolete
+            _packageSourceProvider.PackageSourcesChanged += PackageSourceProvider_PackageSourcesChanged;
         }
 
         public ValueTask<IReadOnlyList<PackageSourceContextInfo>> GetPackageSourcesAsync(CancellationToken cancellationToken)
@@ -55,22 +49,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 .LoadPackageSources()
                 .Select(PackageSourceContextInfo.Create)
                 .ToList());
-        }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-        public ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, PackageSourceUpdateOptions packageSourceUpdateOptions, CancellationToken cancellationToken)
-#pragma warning restore CS0618 // Type or member is obsolete
-        {
-            if (_packageSourceProvider2 != null)
-            {
-                _packageSourceProvider2.SavePackageSources(sources, packageSourceUpdateOptions);
-            }
-            else
-            {
-                _packageSourceProvider.SavePackageSources(sources);
-            }
-
-            return new ValueTask();
         }
 
         public ValueTask SavePackageSourceContextInfosAsync(IReadOnlyList<PackageSourceContextInfo> sources, CancellationToken cancellationToken)
