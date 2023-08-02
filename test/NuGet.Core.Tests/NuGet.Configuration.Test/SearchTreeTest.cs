@@ -58,7 +58,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
-            Assert.Null(configuredSources);
+            Assert.Empty(configuredSources);
         }
 
         [Theory]
@@ -105,7 +105,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
-            Assert.Null(configuredSources);
+            Assert.Empty(configuredSources);
         }
 
         [Theory]
@@ -119,7 +119,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
-            Assert.Null(configuredSources);
+            Assert.Empty(configuredSources);
         }
 
         [Theory]
@@ -139,7 +139,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
-            Assert.Null(configuredSources);
+            Assert.Empty(configuredSources);
         }
 
         [Fact]
@@ -194,7 +194,7 @@ namespace NuGet.Configuration.Test
 
             // Act & Assert
             var packageSourcesMatch = searchTree.GetConfiguredPackageSources(term);
-            Assert.Null(packageSourcesMatch);
+            Assert.Empty(packageSourcesMatch);
         }
 
         [Theory]
