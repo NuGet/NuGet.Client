@@ -24,7 +24,7 @@ namespace NuGet.Common
         /// <param name="properties"> Properties to add to the event. </param>
         public TelemetryEvent(string eventName, Dictionary<string, object?> properties)
         {
-            Name = eventName ?? throw new ArgumentNullException(nameof(eventName));
+            Name = eventName;
             _properties = properties;
             _piiProperties = new Dictionary<string, object?>();
         }
