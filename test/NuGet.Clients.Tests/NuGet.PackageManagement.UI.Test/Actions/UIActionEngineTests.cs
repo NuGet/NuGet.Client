@@ -78,9 +78,17 @@ namespace NuGet.PackageManagement.UI.Test
                         packageIdentityB2,
                         NuGetProjectActionType.Install)
                 });
+
+            var mockUiController = new Mock<INuGetUI>();
+            var mockUIContext = new Mock<INuGetUIContext>();
+            mockUIContext.Setup(_ => _.PackageSourceMapping).Returns((PackageSourceMapping)null);
+            mockUiController.Setup(_ => _.UIContext).Returns(mockUIContext.Object);
+
             IReadOnlyList<PreviewResult> previewResults = await UIActionEngine.GetPreviewResultsAsync(
                 Mock.Of<INuGetProjectManagerService>(),
-                new[] { uninstallAction, installAction },
+                projectActions: new[] { uninstallAction, installAction },
+                userAction: null,
+                mockUiController.Object,
                 CancellationToken.None);
 
             Assert.Equal(1, previewResults.Count);
@@ -128,9 +136,17 @@ namespace NuGet.PackageManagement.UI.Test
                         packageIdentityC,
                         NuGetProjectActionType.Install)
                 });
+
+            var mockUiController = new Mock<INuGetUI>();
+            var mockUIContext = new Mock<INuGetUIContext>();
+            mockUIContext.Setup(_ => _.PackageSourceMapping).Returns((PackageSourceMapping)null);
+            mockUiController.Setup(_ => _.UIContext).Returns(mockUIContext.Object);
+
             IReadOnlyList<PreviewResult> previewResults = await UIActionEngine.GetPreviewResultsAsync(
                 Mock.Of<INuGetProjectManagerService>(),
-                new[] { installAction },
+                projectActions: new[] { installAction },
+                userAction: null,
+                mockUiController.Object,
                 CancellationToken.None);
 
             Assert.Equal(1, previewResults.Count);
