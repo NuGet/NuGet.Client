@@ -574,7 +574,7 @@ namespace NuGet.PackageManagement.UI
 
         internal static TelemetryEvent ToTelemetryPackage(string packageId, string packageVersion, string? packageVersionRange)
         {
-            var subEvent = new TelemetryEvent(eventName: null);
+            var subEvent = new TelemetryEvent(eventName: string.Empty);
             subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(packageId));
             subEvent["version"] = packageVersion;
             if (packageVersionRange != null)

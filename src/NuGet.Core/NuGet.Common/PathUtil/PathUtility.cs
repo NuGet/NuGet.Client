@@ -460,34 +460,39 @@ namespace NuGet.Common
                 var isCaseInsensitive = true;
                 foreach (var path in listOfPathsToCheck)
                 {
-                    bool ignore;
-                    var result = CheckCaseSenstivityRecursivelyTillDirectoryExists(path, out ignore);
-                    if (!ignore)
+                    string? firstParentDirectory = GetFirstParentDirectoryThatExists(path);
+                    if (firstParentDirectory is not null)
                     {
-                        isCaseInsensitive &= result;
+                        isCaseInsensitive &= CheckIfFileSystemIsCaseInsensitive(firstParentDirectory);
                     }
                 }
                 return isCaseInsensitive;
             }
         }
 
-        private static bool CheckCaseSenstivityRecursivelyTillDirectoryExists(string path, out bool ignoreResult)
+        private static string? GetFirstParentDirectoryThatExists(string path)
         {
-            string? check = Path.GetFullPath(path);
-            while (true)
+            string? parentDirectory = Path.GetFullPath(path);
+            while (parentDirectory != null)
             {
-                if (check is null || check.Length <= 1)
+                if (Directory.Exists(parentDirectory))
                 {
-                    ignoreResult = true;
-                    return false;
+                    return parentDirectory;
                 }
-                if (Directory.Exists(check))
+                else
                 {
-                    ignoreResult = false;
-                    return Directory.Exists(check.ToLowerInvariant()) && Directory.Exists(check.ToUpperInvariant());
+                    parentDirectory = Path.GetDirectoryName(parentDirectory);
                 }
-                check = Path.GetDirectoryName(check);
             }
+
+            return null;
+        }
+
+        private static bool CheckIfFileSystemIsCaseInsensitive(string path)
+        {
+#pragma warning disable CA1308 // Normalize strings to uppercase
+            return Directory.Exists(path.ToLowerInvariant()) && Directory.Exists(path.ToUpperInvariant());
+#pragma warning restore CA1308 // Normalize strings to uppercase
         }
 
         public static string StripLeadingDirectorySeparators(string filename)

@@ -446,9 +446,9 @@ NuGet.Common.TelemetryEvent.ComplexData.get -> System.Collections.Generic.IDicti
 NuGet.Common.TelemetryEvent.Count.get -> int
 NuGet.Common.TelemetryEvent.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string!, object?>>!
 NuGet.Common.TelemetryEvent.GetPiiData() -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>!
-NuGet.Common.TelemetryEvent.Name.get -> string?
-NuGet.Common.TelemetryEvent.TelemetryEvent(string? eventName) -> void
-NuGet.Common.TelemetryEvent.TelemetryEvent(string? eventName, System.Collections.Generic.Dictionary<string!, object?>! properties) -> void
+NuGet.Common.TelemetryEvent.Name.get -> string!
+NuGet.Common.TelemetryEvent.TelemetryEvent(string! eventName) -> void
+NuGet.Common.TelemetryEvent.TelemetryEvent(string! eventName, System.Collections.Generic.Dictionary<string!, object?>! properties) -> void
 NuGet.Common.TelemetryEvent.this[string! key].get -> object?
 NuGet.Common.TelemetryEvent.this[string! key].set -> void
 NuGet.Common.TelemetryServiceUtility

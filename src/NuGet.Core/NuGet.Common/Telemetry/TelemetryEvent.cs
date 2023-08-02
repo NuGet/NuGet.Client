@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.Common
@@ -13,7 +14,7 @@ namespace NuGet.Common
 
         /// <summary> Creates a new instance of <see cref="TelemetryEvent"/>. </summary>
         /// <param name="eventName"> Event name. </param>
-        public TelemetryEvent(string? eventName) :
+        public TelemetryEvent(string eventName) :
             this(eventName, new Dictionary<string, object?>())
         {
         }
@@ -21,15 +22,15 @@ namespace NuGet.Common
         /// <summary> Creates a new instance of <see cref="TelemetryEvent"/>. </summary>
         /// <param name="eventName"> Event name. </param>
         /// <param name="properties"> Properties to add to the event. </param>
-        public TelemetryEvent(string? eventName, Dictionary<string, object?> properties)
+        public TelemetryEvent(string eventName, Dictionary<string, object?> properties)
         {
-            Name = eventName;
+            Name = eventName ?? throw new ArgumentNullException(nameof(eventName));
             _properties = properties;
             _piiProperties = new Dictionary<string, object?>();
         }
 
         /// <summary> Name of the event. </summary>
-        public string? Name { get; }
+        public string Name { get; }
 
         /// <summary> Number of properties. </summary>
         public int Count => _properties.Count;
