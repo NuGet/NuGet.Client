@@ -5,7 +5,7 @@
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <NewtonsoftJsonPackageVersion Condition="'$(NewtonsoftJsonPackageVersion)' == ''">13.0.1</NewtonsoftJsonPackageVersion>
     <SystemPackagesVersion Condition="'$(SystemPackagesVersion)' == ''">4.3.0</SystemPackagesVersion>
-    <VSFrameworkVersion Condition="'$(VSFrameworkVersion)' == ''">17.7.37246</VSFrameworkVersion>
+    <VSFrameworkVersion Condition="'$(VSFrameworkVersion)' == ''">17.7.37247</VSFrameworkVersion>
     <VSServicesVersion Condition="'$(VSServicesVersion)' == ''">16.153.0</VSServicesVersion>
     <!-- Default MSBuild version -->
     <MicrosoftBuildVersion Condition="'$(MicrosoftBuildVersion)' == ''">17.3.1</MicrosoftBuildVersion>
