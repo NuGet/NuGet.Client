@@ -997,4 +997,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Label_NetworkError" xml:space="preserve">
     <value>An error occurred while fetching additional information about the package. Refresh to try again.</value>
   </data>
+  <data name="Error_MetadataNotFound" xml:space="preserve">
+    <value>Unable to find metadata of {0}</value>
+    <comment>{0} is the package ID</comment>
+  </data>
 </root>
