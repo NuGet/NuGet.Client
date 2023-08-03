@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.UI
         internal static string? GetNewSourceMappingSourceName(PackageSourceMapping packageSourceMapping, PackageSourceMoniker activePackageSourceMoniker)
         {
             string? sourceMappingSourceName = packageSourceMapping.IsEnabled
-                && activePackageSourceMoniker.IsAggregateSource == false
+                && !activePackageSourceMoniker.IsAggregateSource
                 ? activePackageSourceMoniker.PackageSourceNames.First() : null;
 
             return sourceMappingSourceName;

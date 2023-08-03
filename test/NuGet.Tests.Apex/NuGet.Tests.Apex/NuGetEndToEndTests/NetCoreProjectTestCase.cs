@@ -107,6 +107,7 @@ namespace NuGet.Tests.Apex
                     CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
                     var nugetTestService = GetNuGetTestService();
                     var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
+                    uiwindow.SetPackageSourceOptionToSource("PrivateRepository");
                     uiwindow.InstallPackageFromUI(packageName, packageVersion);
 
                     // Assert
