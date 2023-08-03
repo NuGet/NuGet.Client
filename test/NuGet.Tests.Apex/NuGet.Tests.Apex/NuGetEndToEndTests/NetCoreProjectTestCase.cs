@@ -107,6 +107,9 @@ namespace NuGet.Tests.Apex
                     CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
                     var nugetTestService = GetNuGetTestService();
                     var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
+
+                    // The Install action will automatically create a package source mapping to the selected package source if it's missing,
+                    // so select the source which already has a mapping.
                     uiwindow.SetPackageSourceOptionToSource("PrivateRepository");
                     uiwindow.InstallPackageFromUI(packageName, packageVersion);
 
@@ -241,6 +244,10 @@ namespace NuGet.Tests.Apex
                     CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
                     var nugetTestService = GetNuGetTestService();
                     var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
+
+                    // The Install action will automatically create a package source mapping to the selected package source if it's missing,
+                    // so select the source which already has a mapping.
+                    uiwindow.SetPackageSourceOptionToSource("PrivateRepository");
                     uiwindow.InstallPackageFromUI(packageName, packageVersion);
 
                     // Assert                    
@@ -295,6 +302,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion1);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion2);
 
+                XunitLogger.LogInformation($"{nameof(UpdatePackageToNetCoreProjectFromUI)} projectTemplate={projectTemplate}");
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
                 {
                     VisualStudio.AssertNoErrors();
