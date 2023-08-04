@@ -2055,6 +2055,102 @@ namespace NuGet.CommandLine.Test
             result.AllOutput.Should().Contain("You are running the 'restore' operation with an 'http' source, 'http://api.source/api/v2'. Support for 'http' sources will be removed in a future version.");
         }
 
+        [Theory]
+        [InlineData("true")]
+        [InlineData("TRUE")]
+        public async Task Install_PackagesConfigWithHttpSourceAndTrueAllowInsecureConnections_NoWarns(string allowInsecureConnections)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            var packageAPath = Path.Combine(pathContext.PackageSource, packageA.Id, packageA.Version, packageA.PackageName);
+
+            pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
+            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
+
+
+            var projectA = new SimpleTestProjectContext(
+                "a",
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+
+            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var config = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config");
+            var args = new string[]
+            {
+                "-OutputDirectory",
+                pathContext.PackagesV2
+            };
+
+            // Act
+            var result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
+            Assert.DoesNotContain("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
+            Assert.DoesNotContain("You are running the 'restore' operation with an 'http' source, 'https://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
+        }
+
+        [Theory]
+        [InlineData("false")]
+        [InlineData("FALSE")]
+        [InlineData("invalidString")]
+        [InlineData("")]
+        public async Task Install_PackagesConfigWithHttpSourceAndFalseAllowInsecureConnections_Warns(string allowInsecureConnections)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            var packageAPath = Path.Combine(pathContext.PackageSource, packageA.Id, packageA.Version, packageA.PackageName);
+
+            pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
+            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
+
+
+            var projectA = new SimpleTestProjectContext(
+                "a",
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+
+            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var config = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config");
+            var args = new string[]
+            {
+                "-OutputDirectory",
+                pathContext.PackagesV2
+            };
+
+            // Act
+            var result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
+            Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
+            Assert.DoesNotContain("You are running the 'restore' operation with an 'http' source, 'https://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
+        }
+
         [Fact]
         public async Task Install_WithPackageIdAndHttpSource_Warns()
         {

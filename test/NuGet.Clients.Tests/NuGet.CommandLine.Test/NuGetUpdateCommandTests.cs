@@ -1909,5 +1909,136 @@ namespace NuGet.CommandLine.Test
             r.Success.Should().BeTrue(r.AllOutput);
             r.AllOutput.Should().Contain("You are running the 'update' operation with an 'http' source");
         }
+
+        [Theory]
+        [InlineData("true")]
+        [InlineData("TRUE")]
+        public async Task UpdateCommand_WithHttpSourceAndTrueAllowInsecureConnections_NoWarns(string allowInsecureConnections)
+        {
+            //Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var httpSourceDirectory = Path.Combine(pathContext.WorkingDirectory, "http-source");
+            var packageA100 = new SimpleTestPackageContext("a", "1.0.0");
+            var packageA200 = new SimpleTestPackageContext("a", "2.0.0");
+            await SimpleTestPackageUtility.CreatePackagesAsync(httpSourceDirectory, packageA100, packageA200);
+            var packageA100FileInfo = new FileInfo(Path.Combine(httpSourceDirectory, packageA100.PackageName));
+            var packageA200FileInfo = new FileInfo(Path.Combine(httpSourceDirectory, packageA200.PackageName));
+
+            using var server = Util.CreateMockServer(new[] { packageA100FileInfo, packageA200FileInfo });
+            server.Start();
+
+            var sourceUri = $"{server.Uri}nuget";
+            pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnections);
+
+            var projectA = new SimpleTestProjectContext(
+                  "a",
+                  ProjectStyle.PackagesConfig,
+                  pathContext.SolutionRoot);
+
+            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var args = new[]
+            {
+                    "restore",
+                    solution.SolutionPath
+            };
+
+            var restoreResult = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                pathContext.WorkingDirectory,
+                string.Join(" ", args));
+            restoreResult.Success.Should().BeTrue(restoreResult.AllOutput);
+            args = new[]
+            {
+                    "update",
+                    solution.SolutionPath,
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                pathContext.WorkingDirectory,
+                string.Join(" ", args));
+            server.Stop();
+
+            // Assert
+            r.Success.Should().BeTrue(r.AllOutput);
+            r.AllOutput.Should().NotContain("You are running the 'update' operation with an 'http' source", because: r.AllOutput);
+        }
+
+        [Theory]
+        [InlineData("false")]
+        [InlineData("FALSE")]
+        [InlineData("invalidString")]
+        [InlineData("")]
+        public async Task UpdateCommand_WithHttpSourceAndFalseAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections)
+        {
+            //Arrange
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.AddSource("http", "http://api.source/index.json", allowInsecureConnections);
+            pathContext.Settings.AddSource("https", "https://api.source/index.json", allowInsecureConnections);
+
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var httpSourceDirectory = Path.Combine(pathContext.WorkingDirectory, "http-source");
+            var packageA100 = new SimpleTestPackageContext("a", "1.0.0");
+            var packageA200 = new SimpleTestPackageContext("a", "2.0.0");
+            await SimpleTestPackageUtility.CreatePackagesAsync(httpSourceDirectory, packageA100, packageA200);
+            var packageA100FileInfo = new FileInfo(Path.Combine(httpSourceDirectory, packageA100.PackageName));
+            var packageA200FileInfo = new FileInfo(Path.Combine(httpSourceDirectory, packageA200.PackageName));
+
+            using var server = Util.CreateMockServer(new[] { packageA100FileInfo, packageA200FileInfo });
+            server.Start();
+
+            var sourceUri = $"{server.Uri}nuget";
+            pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnections);
+
+            var projectA = new SimpleTestProjectContext(
+                  "a",
+                  ProjectStyle.PackagesConfig,
+                  pathContext.SolutionRoot);
+
+            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var args = new[]
+            {
+                    "restore",
+                    solution.SolutionPath
+            };
+
+            var restoreResult = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                pathContext.WorkingDirectory,
+                string.Join(" ", args));
+            restoreResult.Success.Should().BeTrue(restoreResult.AllOutput);
+            args = new[]
+            {
+                    "update",
+                    solution.SolutionPath
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                pathContext.WorkingDirectory,
+                string.Join(" ", args));
+            server.Stop();
+
+            // Assert
+            r.Success.Should().BeTrue(r.AllOutput);
+            r.AllOutput.Should().Contain("You are running the 'update' operation with an 'http' source", because: r.AllOutput);
+        }
     }
 }
