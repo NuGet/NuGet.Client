@@ -11,7 +11,7 @@ namespace NuGet.Configuration
 
         public static readonly string AllowUntrustedRoot = "allowUntrustedRoot";
 
-        public static readonly string AllowInsecureConnections = "AllowInsecureConnections";
+        public static readonly string AllowInsecureConnections = "allowInsecureConnections";
 
         public static readonly string ApiKeys = "apikeys";
 
