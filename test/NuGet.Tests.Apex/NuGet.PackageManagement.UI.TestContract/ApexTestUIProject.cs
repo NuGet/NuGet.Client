@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Navigation;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -58,7 +59,12 @@ namespace NuGet.PackageManagement.UI.TestContract
 
         public bool VerifyFirstPackageOnTab(string tabName, string packageId, string packageVersion = null)
         {
-            var result = _packageManagerControl.PackageList.PackageItems.FirstOrDefault();
+            var result = UIInvoke(() => _packageManagerControl.PackageList.PackageItems.FirstOrDefault());
+            if (result is null)
+            {
+                return false;
+            }
+
             if (tabName == "Browse")
             {
                 return result.Id == packageId;
@@ -71,8 +77,8 @@ namespace NuGet.PackageManagement.UI.TestContract
 
         public bool VerifyVulnerablePackageOnTopOfInstalledTab()
         {
-            var result = _packageManagerControl.PackageList.PackageItems.FirstOrDefault().IsPackageVulnerable;
-            return result;
+            var result = UIInvoke(() => _packageManagerControl.PackageList.PackageItems.FirstOrDefault());
+            return result?.IsPackageVulnerable == true;
         }
 
         public void InstallPackage(string packageId, string version)
