@@ -9,18 +9,15 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
+#nullable enable
+
 namespace NuGetVSExtension
 {
-    [Export(typeof(IPMUIStarter))]
+    [Export(typeof(IPackageManagerLaunchService))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class PMUIStarterDelegateService : IPMUIStarter
+    internal class PackageManagerLaunchService : IPackageManagerLaunchService
     {
-        public void PMUIStarter()
-        {
-            OpenSolutionPackageManager();
-        }
-
-        public void OpenSolutionPackageManager()
+        public void LaunchSolutionPackageManager()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
@@ -34,7 +31,7 @@ namespace NuGetVSExtension
                     (uint)PkgCmdIDList.cmdidAddPackageDialogForSolution,
                     (uint)0,
                     ref targetGuid);
-            }).PostOnFailure(nameof(PMUIStarterDelegateService), nameof(OpenSolutionPackageManager));
+            }).PostOnFailure(nameof(PackageManagerLaunchService), nameof(LaunchSolutionPackageManager));
         }
     }
 }

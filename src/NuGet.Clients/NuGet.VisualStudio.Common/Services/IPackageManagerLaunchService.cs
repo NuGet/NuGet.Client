@@ -3,8 +3,8 @@
 
 namespace NuGet.VisualStudio
 {
-    public interface IPMUIStarter
+    public interface IPackageManagerLaunchService
     {
-        void PMUIStarter();
+        void LaunchSolutionPackageManager();
     }
 }

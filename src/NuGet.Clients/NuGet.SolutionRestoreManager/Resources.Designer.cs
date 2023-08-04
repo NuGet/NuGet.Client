@@ -88,7 +88,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open package manager.
+        ///   Looks up a localized string similar to Manage NuGet Packages.
         /// </summary>
         internal static string InfoBar_HyperlinkMessage {
             get {

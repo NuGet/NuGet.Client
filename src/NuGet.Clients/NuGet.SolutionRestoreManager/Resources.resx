@@ -128,7 +128,7 @@
     <comment>0 - the version string that's not exact</comment>
   </data>
   <data name="InfoBar_HyperlinkMessage" xml:space="preserve">
-    <value>Open package manager</value>
+    <value>Manage NuGet Packages</value>
   </data>
   <data name="InfoBar_TextMessage" xml:space="preserve">
     <value>This solution contains packages with vulnerabilities.</value>

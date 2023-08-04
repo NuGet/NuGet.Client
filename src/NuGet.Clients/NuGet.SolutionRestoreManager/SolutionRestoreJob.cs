@@ -54,7 +54,7 @@ namespace NuGet.SolutionRestoreManager
         private RestoreOperationLogger _logger;
         private INuGetProjectContext _nuGetProjectContext;
         private PackageRestoreConsent _packageRestoreConsent;
-        private Lazy<IInfoBarService> _infoBarService;
+        private Lazy<IVulnerabilitiesFoundService> _infoBarService;
 
         private NuGetOperationStatus _status;
         private int _packageCount;
@@ -130,7 +130,7 @@ namespace NuGet.SolutionRestoreManager
             SolutionRestoreJobContext jobContext,
             RestoreOperationLogger logger,
             Dictionary<string, object> trackingData,
-            Lazy<IInfoBarService> infoBarService,
+            Lazy<IVulnerabilitiesFoundService> infoBarService,
             CancellationToken token)
         {
             if (request == null)
@@ -146,6 +146,11 @@ namespace NuGet.SolutionRestoreManager
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (infoBarService == null)
+            {
+                throw new ArgumentNullException(nameof(infoBarService));
             }
 
             _logger = logger;
@@ -517,18 +522,7 @@ namespace NuGet.SolutionRestoreManager
                                     }
 
                                     // Display info bar in SolutionExplorer if there is a vulnerability during restore.
-                                    if (_infoBarService != null)
-                                    {
-                                        bool shouldDisplayVulnerabilitiesInfoBar = AnyProjectHasVulnerablePackageWarning(restoreSummaries);
-                                        if (shouldDisplayVulnerabilitiesInfoBar)
-                                        {
-                                            await _infoBarService.Value.ShowAsync(t);
-                                        }
-                                        else if (_infoBarService.IsValueCreated) // if the InfoBar was created and all vulnerabilities are fixed, hide it.
-                                        {
-                                            await _infoBarService.Value.RemoveAsync(t);
-                                        }
-                                    }
+                                    await _infoBarService.Value.HasAnyVulnerabilitiesInSolution(AnyProjectHasVulnerablePackageWarning(restoreSummaries), t);
 
                                     _nuGetProgressReporter.EndSolutionRestore(projectList);
                                 }

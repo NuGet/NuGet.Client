@@ -4,12 +4,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace NuGet.SolutionRestoreManager
 {
-    public interface IInfoBarService
+    public interface IVulnerabilitiesFoundService
     {
-        Task ShowAsync(CancellationToken cancellationToken);
-
-        Task RemoveAsync(CancellationToken cancellationToken);
+        Task HasAnyVulnerabilitiesInSolution(bool shouldDisplayVulnerabilitiesInfoBar, CancellationToken cancellationToken);
     }
 }

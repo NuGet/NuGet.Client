@@ -40,7 +40,7 @@ namespace NuGet.SolutionRestoreManager.Test
             ISourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             _globalProvider.AddService(typeof(ISourceRepositoryProvider), sourceRepositoryProvider);
 
-            var infoBar = Mock.Of<Lazy<IInfoBarService>>();
+            var infoBar = Mock.Of<Lazy<IVulnerabilitiesFoundService>>();
             var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
             var eventsPublisher = Mock.Of<IRestoreEventsPublisher>();
             var settings = Mock.Of<ISettings>();
@@ -90,7 +90,7 @@ namespace NuGet.SolutionRestoreManager.Test
             ISourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             _globalProvider.AddService(typeof(ISourceRepositoryProvider), sourceRepositoryProvider);
 
-            var infoBar = Mock.Of<Lazy<IInfoBarService>>();
+            var infoBar = Mock.Of<Lazy<IVulnerabilitiesFoundService>>();
             var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
             var eventsPublisher = Mock.Of<IRestoreEventsPublisher>();
             var settings = Mock.Of<ISettings>();

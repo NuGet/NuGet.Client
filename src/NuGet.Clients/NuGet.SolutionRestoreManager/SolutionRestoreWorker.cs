@@ -45,7 +45,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<INuGetLockService> _lockService;
         private readonly Lazy<Common.ILogger> _logger;
-        private readonly Lazy<IInfoBarService> _infoBarService;
+        private readonly Lazy<IVulnerabilitiesFoundService> _infoBarService;
         private readonly AsyncLazy<IComponentModel> _componentModel;
 
         private EnvDTE.SolutionEvents _solutionEvents;
@@ -99,8 +99,7 @@ namespace NuGet.SolutionRestoreManager
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
             Lazy<INuGetFeatureFlagService> nugetFeatureFlagService,
-            [Import(typeof(IInfoBarService))]
-            Lazy<IInfoBarService> infoBarService)
+            Lazy<IVulnerabilitiesFoundService> infoBarService)
             : this(AsyncServiceProvider.GlobalProvider,
                   solutionManager,
                   lockService,
@@ -119,7 +118,7 @@ namespace NuGet.SolutionRestoreManager
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
             Lazy<INuGetFeatureFlagService> nugetFeatureFlagService,
-            Lazy<IInfoBarService> infoBarService)
+            Lazy<IVulnerabilitiesFoundService> infoBarService)
         {
             if (asyncServiceProvider == null)
             {
