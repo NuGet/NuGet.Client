@@ -833,14 +833,16 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                var abc = !PackageSourceMappingViewModel.IsPackageSourceMappingEnabled // Package Source Mapping is disabled.
-                || _uiController.ActivePackageSourceMoniker is null // We don't know the current selected source, so just enable the button.
+                // Don't allow install if package source mapping is enabled, with the selected package unmapped, and the 'All' package source selected.
+                if (PackageSourceMappingViewModel.IsPackageSourceMappingEnabled
+                    || !PackageSourceMappingViewModel.IsPackageMapped
+                    || (_uiController.ActivePackageSourceMoniker != null &&
+                        _uiController.ActivePackageSourceMoniker.IsAggregateSource))
+                {
+                    return false;
+                }
 
-                // Allow install if the package is Mapped, or if a single source is selected so a mapping can be automatically created.
-                || (!_uiController.ActivePackageSourceMoniker.IsAggregateSource
-                    && PackageSourceMappingViewModel.IsPackageMapped);
-
-                return abc;
+                return true;
             }
         }
 
