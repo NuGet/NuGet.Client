@@ -387,11 +387,20 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
+                if (PackageManagerControl is null)
+                {
+                    return null;
+                }
+
                 PackageSourceMoniker source = null;
 
-                if (PackageManagerControl != null)
+                if (!ThreadHelper.CheckAccess())
                 {
                     InvokeOnUIThread(() => { source = PackageManagerControl.SelectedSource; });
+                }
+                else
+                {
+                    source = PackageManagerControl.SelectedSource;
                 }
 
                 return source;
