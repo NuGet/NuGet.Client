@@ -745,6 +745,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to find metadata of {0}.
+        /// </summary>
+        public static string Error_MetadataNotFound {
+            get {
+                return ResourceManager.GetString("Error_MetadataNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Project {0} does not exist in the project system cache..
         /// </summary>
         public static string Error_ProjectNotInCache {
