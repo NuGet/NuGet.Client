@@ -54,7 +54,7 @@ namespace NuGet.SolutionRestoreManager
         private RestoreOperationLogger _logger;
         private INuGetProjectContext _nuGetProjectContext;
         private PackageRestoreConsent _packageRestoreConsent;
-        private Lazy<IVulnerabilitiesFoundService> _infoBarService;
+        private Lazy<IVulnerabilitiesFoundService> _vulnerabilitiesFoundService;
 
         private NuGetOperationStatus _status;
         private int _packageCount;
@@ -130,7 +130,7 @@ namespace NuGet.SolutionRestoreManager
             SolutionRestoreJobContext jobContext,
             RestoreOperationLogger logger,
             Dictionary<string, object> trackingData,
-            Lazy<IVulnerabilitiesFoundService> infoBarService,
+            Lazy<IVulnerabilitiesFoundService> vulnerabilitiesFoundService,
             CancellationToken token)
         {
             if (request == null)
@@ -148,13 +148,13 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (infoBarService == null)
+            if (vulnerabilitiesFoundService == null)
             {
-                throw new ArgumentNullException(nameof(infoBarService));
+                throw new ArgumentNullException(nameof(vulnerabilitiesFoundService));
             }
 
             _logger = logger;
-            _infoBarService = infoBarService;
+            _vulnerabilitiesFoundService = vulnerabilitiesFoundService;
 
             // update instance attributes with the shared context values
             _nuGetProjectContext = jobContext.NuGetProjectContext;
@@ -522,7 +522,7 @@ namespace NuGet.SolutionRestoreManager
                                     }
 
                                     // Display info bar in SolutionExplorer if there is a vulnerability during restore.
-                                    await _infoBarService.Value.HasAnyVulnerabilitiesInSolution(AnyProjectHasVulnerablePackageWarning(restoreSummaries), t);
+                                    await _vulnerabilitiesFoundService.Value.HasAnyVulnerabilitiesInSolution(AnyProjectHasVulnerablePackageWarning(restoreSummaries), t);
 
                                     _nuGetProgressReporter.EndSolutionRestore(projectList);
                                 }

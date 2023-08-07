@@ -30,7 +30,7 @@ namespace NuGet.SolutionRestoreManager
         [Import]
         private Lazy<IPackageManagerLaunchService>? PackageManagerUIStarter { get; set; }
 
-        public async Task HasAnyVulnerabilitiesInSolution(bool shouldShowVulnerablePackagesInfoBar, CancellationToken cancellationToken)
+        public async Task HasAnyVulnerabilitiesInSolution(bool hasVulnerabilitiesInSolution, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -44,7 +44,7 @@ namespace NuGet.SolutionRestoreManager
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             // Hide the InfoBar if Vulnerabilities were fixed
-            if (!shouldShowVulnerablePackagesInfoBar)
+            if (!hasVulnerabilitiesInSolution)
             {
                 _infoBarUIElement?.Close(); // This is going to call OnClosed
                 _wasVulnerablePackagesInfoBarHide = false;

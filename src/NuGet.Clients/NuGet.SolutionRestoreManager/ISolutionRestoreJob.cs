@@ -26,14 +26,14 @@ namespace NuGet.SolutionRestoreManager
         /// There is not functional impact here, rather it's about telemetry reporting.</param>
         /// <param name="logger">Logger.</param>
         /// <param name="token">Cancellation token.</param>
-        /// <param name="infoBarService">InfoBar service.</param>
+        /// <param name="vulnerabilitiesFoundService">InfoBar service.</param>
         /// <returns>Result of restore operation. True if it succeeded.</returns>
         Task<bool> ExecuteAsync(
             SolutionRestoreRequest request,
             SolutionRestoreJobContext jobContext,
             RestoreOperationLogger logger,
             Dictionary<string, object> restoreStartTrackingData,
-            Lazy<IVulnerabilitiesFoundService> infoBarService,
+            Lazy<IVulnerabilitiesFoundService> vulnerabilitiesFoundService,
             CancellationToken token);
     }
 }
