@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -122,8 +121,12 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public async Task DotnetListPackage_DoesNotReturnProjects()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("")]
+        [InlineData(" --outdated")]
+        [InlineData(" --vulnerable")]
+        [InlineData(" --deprecated")]
+        public async Task DotnetListPackage_DoesNotReturnProjects(string args)
         {
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
@@ -169,13 +172,13 @@ namespace Dotnet.Integration.Test
                     $"restore {projectA.ProjectName}.csproj");
 
                 CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"list {projectA.ProjectPath} package");
+                    $"list {projectA.ProjectPath} package{args}");
 
                 Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, projectB.ProjectName));
                 Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, projectC.ProjectName));
 
                 listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"list {projectA.ProjectPath} package --include-transitive");
+                    $"list {projectA.ProjectPath} package{args} --include-transitive");
 
                 Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, projectB.ProjectName));
                 Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, projectC.ProjectName));
@@ -343,55 +346,6 @@ namespace Dotnet.Integration.Test
 
                 Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, $"packageX{currentVersion}{currentVersion}{expectedVersion}"));
 
-            }
-        }
-
-        [PlatformTheory(Platform.Windows)]
-        [InlineData(false, false)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(true, true)]
-        public void DotnetListPackage_ProjectReference_Succeeds(bool includeTransitive, bool outdated)
-        {
-            // Arrange
-            using (var pathContext = _fixture.CreateSimpleTestPathContext())
-            {
-                var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net46");
-                var projectB = XPlatTestUtils.CreateProject("ProjectB", pathContext, "net46");
-
-                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"add {projectA.ProjectPath} reference {projectB.ProjectPath}");
-
-                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"restore {projectA.ProjectName}.csproj");
-
-                var argsBuilder = new StringBuilder();
-                if (includeTransitive)
-                {
-                    argsBuilder.Append(" --include-transitive");
-                }
-                if (outdated)
-                {
-                    argsBuilder.Append(" --outdated");
-                }
-
-                // Act
-                CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"list {projectA.ProjectPath} package {argsBuilder}");
-
-                // Assert
-                if (outdated)
-                {
-                    Assert.Contains("The given project `ProjectA` has no updates given the current sources.", listResult.AllOutput);
-                }
-                else if (includeTransitive)
-                {
-                    Assert.Contains("ProjectB", listResult.AllOutput);
-                }
-                else
-                {
-                    Assert.Contains("No packages were found for this framework.", listResult.AllOutput);
-                }
             }
         }
 
