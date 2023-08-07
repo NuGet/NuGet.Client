@@ -11,6 +11,7 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
