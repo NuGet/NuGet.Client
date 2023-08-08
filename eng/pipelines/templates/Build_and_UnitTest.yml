@@ -42,14 +42,15 @@ steps:
 - task: MicroBuildSwixPlugin@4
   displayName: "Install Swix Plugin"
 
-- task: MicroBuildOptProfPlugin@6
-  displayName: 'OptProfV2:  install the plugin'
-  inputs:
-    getDropNameByDrop: true
-    optimizationInputsDropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-    ShouldSkipOptimize: $(ShouldSkipOptimize)
-    AccessToken: $(System.AccessToken)
-  condition: "and(succeeded(), not(eq(variables['Build.SourceBranch'], 'release-6.3.x')), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+# disable for 'release-6.3.x'
+# - task: MicroBuildOptProfPlugin@6
+#   displayName: 'OptProfV2:  install the plugin'
+#   inputs:
+#     getDropNameByDrop: true
+#     optimizationInputsDropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
+#     ShouldSkipOptimize: $(ShouldSkipOptimize)
+#     AccessToken: $(System.AccessToken)
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 # NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
 # However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
@@ -291,14 +292,15 @@ steps:
     arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.655 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: MicroBuildBuildVSBootstrapper@2
-  displayName: 'Build a Visual Studio bootstrapper'
-  inputs:
-    channelName: "$(VsTargetChannel)"
-    vsMajorVersion: "$(VsTargetMajorVersion)"
-    manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
-    outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
-  condition: "and(succeeded(), not(eq(variables['Build.SourceBranch'], 'release-6.3.x')), eq(variables['BuildRTM'], 'false'))"
+# disable for 'release-6.3.x'
+# - task: MicroBuildBuildVSBootstrapper@2
+#   displayName: 'Build a Visual Studio bootstrapper'
+#   inputs:
+#     channelName: "$(VsTargetChannel)"
+#     vsMajorVersion: "$(VsTargetMajorVersion)"
+#     manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
+#     outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish BootstrapperInfo.json as a build artifact'
