@@ -298,7 +298,7 @@ steps:
     vsMajorVersion: "$(VsTargetMajorVersion)"
     manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
     outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(), not(eq(variables['Build.SourceBranch'], 'release-6.3.x')), eq(variables['BuildRTM'], 'false'))"
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish BootstrapperInfo.json as a build artifact'
