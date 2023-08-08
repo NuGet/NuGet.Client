@@ -49,7 +49,7 @@ steps:
     optimizationInputsDropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
     ShouldSkipOptimize: $(ShouldSkipOptimize)
     AccessToken: $(System.AccessToken)
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+  condition: "and(succeeded(), not(eq(variables['Build.SourceBranch'], 'release-6.3.x')), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 # NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
 # However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
