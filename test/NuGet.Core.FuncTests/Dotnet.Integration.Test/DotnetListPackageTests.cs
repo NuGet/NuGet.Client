@@ -84,6 +84,94 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        public async Task DotnetListPackage_WithCPM()
+        {
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net7.0");
+
+                var packageX = XPlatTestUtils.CreatePackage();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var propsFile = @$"<Project>
+                                <PropertyGroup>
+                                <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                                </PropertyGroup>
+                            </Project>
+                            ";
+
+                File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props"), propsFile);
+
+                _fixture.RunDotnetExpectSuccess(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName),
+                    $"add {projectA.ProjectPath} package packageX -v 0.1.0");
+
+                CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package");
+
+                // Assert Requested version is 0.1.0, but 1.0.0 was resolved
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "0.1.0"));
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "1.0.0"));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetListPackage_WithCPM_WithOverrideVersion()
+        {
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject("projectA", pathContext, "net7.0");
+
+                var packageX = XPlatTestUtils.CreatePackage();
+                var packageX2 = XPlatTestUtils.CreatePackage("X", "2.0.0");
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageX2);
+
+                var propsFile =
+@$"<Project>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageVersion Include=""X"" Version=""2.0.0"" />
+    </ItemGroup>
+</Project>";
+
+                File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props"), propsFile);
+
+                string projectContent =
+@$"<Project  Sdk=""Microsoft.NET.Sdk"">
+<PropertyGroup>                   
+	<TargetFramework>net7.0</TargetFramework>
+	</PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include=""X"" VersionOverride=""1.0.0""/>
+    </ItemGroup>
+</Project>";
+                File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "projectA", "projectA.csproj"), projectContent);
+
+                _fixture.RunDotnetExpectSuccess(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName),
+                    $"restore {projectA.ProjectName}.csproj");
+
+                CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package");
+
+                // Assert Requested version is 2.0.0, but was override by VersionOverride tag
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "2.0.0"));
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "1.0.0"));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public async Task DotnetListPackage_Transitive()
         {
             using (var pathContext = _fixture.CreateSimpleTestPathContext())

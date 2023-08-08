@@ -750,7 +750,19 @@ namespace NuGet.CommandLine.XPlat
                         {
                             try
                             { // In case proj and assets file are not in sync and some refs were deleted
-                                installedPackage = projPackages.Where(p => p.Name.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
+                                var isPackageCentrallyManaged = tfmInformation.CentralPackageVersions.Any(cpv => cpv.Key.Equals(topLevelPackage.Name, StringComparison.Ordinal));
+                                if (isPackageCentrallyManaged)
+                                {
+                                    var packageCentralVersion = tfmInformation.CentralPackageVersions.Where(cpv => cpv.Key.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
+                                    installedPackage = new InstalledPackageReference(topLevelPackage.Name)
+                                    {
+                                        OriginalRequestedVersion = packageCentralVersion.Value.VersionRange.MinVersion.ToString(),
+                                    };
+                                }
+                                else
+                                {
+                                    installedPackage = projPackages.Where(p => p.Name.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
+                                }
                             }
                             catch (Exception)
                             {
