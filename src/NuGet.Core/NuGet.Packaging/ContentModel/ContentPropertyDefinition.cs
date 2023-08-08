@@ -105,7 +105,54 @@ namespace NuGet.ContentModel
         public bool FileExtensionAllowSubFolders { get; }
 
         public Func<string, PatternTable, object> Parser { get; }
+        public virtual bool TryLookup(ReadOnlySpan<char> spanName, PatternTable table, out object value)
+        {
 
+            if (spanName.IsEmpty)
+            {
+                value = null;
+                return false;
+            }
+
+            if (FileExtensions?.Count > 0)
+            {
+                if (FileExtensionAllowSubFolders || !ContainsSlash(spanName))
+                {
+                    foreach (var fileExtension in FileExtensions)
+                    {
+                        if (spanName.EndsWith(fileExtension.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                        {
+                            value = spanName.ToString();
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            if (Parser != null)
+            {
+                value = Parser.Invoke(spanName.ToString(), table);
+                if (value != null)
+                {
+                    return true;
+                }
+            }
+
+            value = null;
+            return false;
+        }
+        private static bool ContainsSlash(ReadOnlySpan<char> name)
+        {
+            foreach (var ch in name)
+            {
+                if (ch == '/' || ch == '\\')
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
         public virtual bool TryLookup(string name, PatternTable table, out object value)
         {
             if (name == null)
@@ -141,6 +188,7 @@ namespace NuGet.ContentModel
             value = null;
             return false;
         }
+
 
         private static bool ContainsSlash(string name)
         {

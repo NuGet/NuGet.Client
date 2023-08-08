@@ -190,9 +190,8 @@ namespace NuGet.ContentModel.Infrastructure
                     {
                         break;
                     }
-                    var substring = path.Substring(startIndex, delimiterIndex - startIndex);
                     object value;
-                    if (propertyDefinition.TryLookup(substring, _table, out value))
+                    if (propertyDefinition.TryLookup(path.AsSpan(startIndex, delimiterIndex - startIndex), _table, out value))
                     {
                         if (!_matchOnly)
                         {
@@ -206,7 +205,7 @@ namespace NuGet.ContentModel.Infrastructure
                             }
                             if (StringComparer.Ordinal.Equals(_token, "tfm"))
                             {
-                                item.Properties.Add("tfm_raw", substring);
+                                item.Properties.Add("tfm_raw", path.AsSpan(startIndex, delimiterIndex - startIndex).ToString());
                             }
                             item.Properties.Add(_token, value);
                         }

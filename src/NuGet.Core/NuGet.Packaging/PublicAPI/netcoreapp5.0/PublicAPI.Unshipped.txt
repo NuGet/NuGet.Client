@@ -1,1 +1,2 @@
 #nullable enable
+~virtual NuGet.ContentModel.ContentPropertyDefinition.TryLookup(System.ReadOnlySpan<char> spanName, NuGet.ContentModel.PatternTable table, out object value) -> bool

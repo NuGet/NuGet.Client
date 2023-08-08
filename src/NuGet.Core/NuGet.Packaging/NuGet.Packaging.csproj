@@ -41,6 +41,10 @@
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Memory" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
