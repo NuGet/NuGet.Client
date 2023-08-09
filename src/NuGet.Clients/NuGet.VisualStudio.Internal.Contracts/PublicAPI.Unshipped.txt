@@ -4,6 +4,7 @@ NuGet.VisualStudio.Internal.Contracts.INuGetSearchService.GetAllPackageFoldersAs
 NuGet.VisualStudio.Internal.Contracts.IPackageReferenceContextInfo.VersionOverride.get -> NuGet.Versioning.VersionRange?
 NuGet.VisualStudio.Internal.Contracts.PackageReferenceContextInfo.VersionOverride.get -> NuGet.Versioning.VersionRange?
 NuGet.VisualStudio.Internal.Contracts.PackageSourceContextInfo.AllowInsecureConnections.get -> bool
+NuGet.VisualStudio.Internal.Contracts.PackageSourceContextInfo.AllowInsecureConnections.set -> void
 NuGet.VisualStudio.Internal.Contracts.PackageSourceContextInfo.PackageSourceContextInfo(string! source, string! name, bool isEnabled, int protocolVersion) -> void
 NuGet.VisualStudio.Internal.Contracts.PackageSourceContextInfo.PackageSourceContextInfo(string! source, string! name, bool isEnabled, int protocolVersion, bool allowInsecureConnections) -> void
 NuGet.VisualStudio.Internal.Contracts.PackageSourceContextInfo.ProtocolVersion.get -> int

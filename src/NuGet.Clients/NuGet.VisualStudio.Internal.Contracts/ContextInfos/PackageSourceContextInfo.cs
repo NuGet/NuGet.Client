@@ -47,7 +47,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             hash.AddStringIgnoreCase(Name);
             hash.AddStringIgnoreCase(Source);
             hash.AddObject(ProtocolVersion);
-            hash.AddObject(allowInsecureConnections);
+            hash.AddObject(AllowInsecureConnections);
             _hashCode = hash.CombinedHash;
             OriginalHashCode = _hashCode;
         }
