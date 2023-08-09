@@ -31,7 +31,7 @@ namespace NuGetVSExtension
                     (uint)PkgCmdIDList.cmdidAddPackageDialogForSolution,
                     (uint)0,
                     ref targetGuid);
-            }).PostOnFailure(nameof(PackageManagerLaunchService), nameof(LaunchSolutionPackageManager));
+            }).PostOnFailure(nameof(PackageManagerLaunchService));
         }
     }
 }

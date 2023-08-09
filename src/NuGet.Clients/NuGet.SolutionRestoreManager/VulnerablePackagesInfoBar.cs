@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.ComponentModel.Composition;
 using System.Threading;
@@ -12,31 +14,30 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
-#nullable enable
-
 namespace NuGet.SolutionRestoreManager
 {
     [Export(typeof(IVulnerabilitiesFoundService))]
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class VulnerablePackagesInfoBar : IVulnerabilitiesFoundService, IVsInfoBarUIEvents
     {
-        IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
+        private IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
         private IVsInfoBarUIElement? _infoBarUIElement;
-        private bool _isVulnerablePackagesInfoBarVisible; // InfoBar is currently being displayed in the Solution Explorer
-        private bool _wasVulnerablePackagesInfoBarClosed = false; // InfoBar was closed by the user, using the 'x'(close) in the InfoBar
-        private bool _wasVulnerablePackagesInfoBarHide = false; // InfoBar was hid, this is caused because there are no more vulnerabilities to address
+        private bool _infoBarVisible = false; // InfoBar is currently being displayed in the Solution Explorer
+        private bool _wasInfoBarClosed = false; // InfoBar was closed by the user, using the 'x'(close) in the InfoBar
+        private bool _wasInfoBarHidden = false; // InfoBar was hid, this is caused because there are no more vulnerabilities to address
         private uint? _eventCookie; // To hold the connection cookie
 
         [Import]
-        private Lazy<IPackageManagerLaunchService>? PackageManagerUIStarter { get; set; }
+        private Lazy<IPackageManagerLaunchService>? PackageManagerLaunchService { get; set; }
 
-        public async Task HasAnyVulnerabilitiesInSolution(bool hasVulnerabilitiesInSolution, CancellationToken cancellationToken)
+        public async Task UpdateInfoBar(bool hasVulnerabilitiesInSolution, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // If the InfoBar was closed, don't show it for the rest of the VS session
-            // if the infobar is already visible, no work needed
-            if (_wasVulnerablePackagesInfoBarClosed || _isVulnerablePackagesInfoBarVisible)
+            // If the infoBar was closed, don't show it for the rest of the VS session
+            // if the infobar is visible and there are vulnerabilities, no work needed
+            // if the infobar is not visible and there are no vulnerabilities, no work needed
+            if (_wasInfoBarClosed || (hasVulnerabilitiesInSolution == _infoBarVisible))
             {
                 return;
             }
@@ -44,10 +45,10 @@ namespace NuGet.SolutionRestoreManager
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             // Hide the InfoBar if Vulnerabilities were fixed
-            if (!hasVulnerabilitiesInSolution)
+            if (!hasVulnerabilitiesInSolution && _infoBarVisible)
             {
-                _infoBarUIElement?.Close(); // This is going to call OnClosed
-                _wasVulnerablePackagesInfoBarHide = false;
+                _wasInfoBarHidden = true;
+                _infoBarUIElement?.Close();
                 return;
             }
 
@@ -55,7 +56,7 @@ namespace NuGet.SolutionRestoreManager
             IVsInfoBarHost? infoBarHost;
             try
             {
-                IVsUIShell? uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>(throwOnFailure: false);
+                IVsUIShell? uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>(throwOnFailure: true);
                 if (ErrorHandler.Failed(uiShell!.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fFindFirst, VSConstants.StandardToolWindows.SolutionExplorer, out var windowFrame)))
                 {
                     NullReferenceException exception = new NullReferenceException(nameof(windowFrame));
@@ -72,16 +73,8 @@ namespace NuGet.SolutionRestoreManager
                 }
 
                 infoBarHost = (IVsInfoBarHost)tempObject;
-            }
-            catch (Exception ex)
-            {
-                await TelemetryUtility.PostFaultAsync(ex, nameof(VulnerablePackagesInfoBar));
-                return;
-            }
 
-            // Create the VulnerabilitiesFound InfoBar
-            try
-            {
+                // Create the VulnerabilitiesFound InfoBar
                 IVsInfoBarUIFactory? infoBarFactory = await _asyncServiceProvider.GetServiceAsync<SVsInfoBarUIFactory, IVsInfoBarUIFactory>(throwOnFailure: false);
                 if (infoBarFactory == null)
                 {
@@ -98,7 +91,8 @@ namespace NuGet.SolutionRestoreManager
 
                 infoBarHost.AddInfoBar(_infoBarUIElement);
 
-                _isVulnerablePackagesInfoBarVisible = true;
+                _infoBarVisible = true;
+                _wasInfoBarHidden = false;
             }
             catch (Exception ex)
             {
@@ -118,25 +112,26 @@ namespace NuGet.SolutionRestoreManager
                 _eventCookie = null;
             }
 
-            _isVulnerablePackagesInfoBarVisible = false;
+            _infoBarVisible = false;
 
-            if (!_wasVulnerablePackagesInfoBarHide)
+            if (!_wasInfoBarHidden)
             {
-                _wasVulnerablePackagesInfoBarClosed = true;
+                _wasInfoBarClosed = true;
             }
         }
 
         public void OnActionItemClicked(IVsInfoBarUIElement infoBarUIElement, IVsInfoBarActionItem actionItem)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            PackageManagerUIStarter?.Value.LaunchSolutionPackageManager();
+            PackageManagerLaunchService?.Value.LaunchSolutionPackageManager();
         }
 
         protected InfoBarModel GetInfoBarModel()
         {
             return new InfoBarModel(
                 Resources.InfoBar_TextMessage,
-                new IVsInfoBarActionItem[] {
+                new IVsInfoBarActionItem[]
+                {
                     new InfoBarHyperlink(Resources.InfoBar_HyperlinkMessage),
                 },
                 KnownMonikers.StatusWarning);

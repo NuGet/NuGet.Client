@@ -10,6 +10,6 @@ namespace NuGet.SolutionRestoreManager
 {
     public interface IVulnerabilitiesFoundService
     {
-        Task HasAnyVulnerabilitiesInSolution(bool hasVulnerabilitiesInSolution, CancellationToken cancellationToken);
+        Task UpdateInfoBar(bool hasVulnerabilitiesInSolution, CancellationToken cancellationToken);
     }
 }
