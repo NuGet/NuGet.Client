@@ -823,17 +823,13 @@ namespace NuGet.Configuration.Test
         }
 
         [Theory]
-        [InlineData(true, null, null)]
-        [InlineData(true, "3", null)]
-        [InlineData(true, "3", "false")]
-        [InlineData(true, "2", "true")]
-        [InlineData(false, null, "true")]
-        [InlineData(false, "", "true")]
-        public void LoadPackageSources_ReadsSourcesWithAllowInsecureConnectionsFromPackageSourceSections(bool useStaticMethod, string protocolVersion, string allowInsecureConnections)
+        [InlineData(true)]
+        [InlineData(false)]
+        public void LoadPackageSources_ReadsSourcesWithNullAllowInsecureConnectionsFromPackageSourceSections_LoadsDefault(bool useStaticMethod)
         {
             // Arrange
             var settings = new Mock<ISettings>();
-            var sourceItem = new SourceItem("Source", "https://some-source.test", protocolVersion, allowInsecureConnections);
+            var sourceItem = new SourceItem("Source", "https://some-source.test", protocolVersion: null, allowInsecureConnections: null);
 
             settings.Setup(s => s.GetSection("packageSources"))
                 .Returns(new VirtualSettingSection("packageSources",
@@ -854,22 +850,40 @@ namespace NuGet.Configuration.Test
             Assert.Equal("Source", loadedSource.Name);
             Assert.Equal("https://some-source.test", loadedSource.Source);
             AssertCredentials(loadedSource.Credentials, "Source", "source-user", "source-password");
-            if (string.IsNullOrEmpty(protocolVersion))
-            {
-                Assert.Equal(PackageSource.DefaultProtocolVersion, loadedSource.ProtocolVersion);
-            }
-            else
-            {
-                Assert.Equal(int.Parse(protocolVersion), loadedSource.ProtocolVersion);
-            }
-            if (string.IsNullOrEmpty(allowInsecureConnections))
-            {
-                Assert.Equal(PackageSource.DefaultAllowInsecureConnections, loadedSource.AllowInsecureConnections);
-            }
-            else
-            {
-                Assert.Equal(bool.Parse(allowInsecureConnections), loadedSource.AllowInsecureConnections);
-            }
+            Assert.Equal(PackageSource.DefaultAllowInsecureConnections, loadedSource.AllowInsecureConnections);
+        }
+
+        [Theory]
+        [InlineData(true, "true")]
+        [InlineData(true, "false")]
+        [InlineData(false, "false")]
+        [InlineData(false, "true")]
+        public void LoadPackageSources_ReadsSourcesWithNotNullAllowInsecureConnectionsFromPackageSourceSections_LoadsValue(bool useStaticMethod, string allowInsecureConnections)
+        {
+            // Arrange
+            var settings = new Mock<ISettings>();
+            var sourceItem = new SourceItem("Source", "https://some-source.test", protocolVersion: null, allowInsecureConnections: allowInsecureConnections);
+
+            settings.Setup(s => s.GetSection("packageSources"))
+                .Returns(new VirtualSettingSection("packageSources",
+                    sourceItem));
+
+            settings
+                .Setup(s => s.GetSection("packageSourceCredentials"))
+                .Returns(new VirtualSettingSection("packageSourceCredentials",
+                    new CredentialsItem("Source", "source-user", "source-password", isPasswordClearText: true, validAuthenticationTypes: null)));
+
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
+            // Act
+            List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
+
+            // Assert
+            var loadedSource = values.Single();
+            Assert.Equal("Source", loadedSource.Name);
+            Assert.Equal("https://some-source.test", loadedSource.Source);
+            AssertCredentials(loadedSource.Credentials, "Source", "source-user", "source-password");
+            Assert.Equal(bool.Parse(allowInsecureConnections), loadedSource.AllowInsecureConnections);
         }
 
         [Fact]
