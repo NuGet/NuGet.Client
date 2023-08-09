@@ -743,7 +743,7 @@ namespace NuGet.CommandLine.XPlat
                     if (matchingPackages.Any())
                     {
                         var topLevelPackage = matchingPackages.Single();
-                        InstalledPackageReference installedPackage;
+                        InstalledPackageReference installedPackage = default;
 
                         //If the package is not auto-referenced, get the version from the project file. Otherwise fall back on the assets file
                         if (!topLevelPackage.AutoReferenced)
@@ -752,11 +752,17 @@ namespace NuGet.CommandLine.XPlat
                             { // In case proj and assets file are not in sync and some refs were deleted
                                 if (assetsFile.PackageSpec.RestoreMetadata.CentralPackageVersionsEnabled)
                                 {
-                                    var packageCentralVersion = tfmInformation.CentralPackageVersions.Where(cpv => cpv.Key.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
-                                    installedPackage = new InstalledPackageReference(topLevelPackage.Name)
+                                    foreach (KeyValuePair<string, CentralPackageVersion> packageCentralVersion in tfmInformation.CentralPackageVersions)
                                     {
-                                        OriginalRequestedVersion = packageCentralVersion.Value.VersionRange.MinVersion.ToString(),
-                                    };
+                                        if (packageCentralVersion.Key.Equals(topLevelPackage.Name, StringComparison.Ordinal))
+                                        {
+                                            installedPackage = new InstalledPackageReference(topLevelPackage.Name)
+                                            {
+                                                OriginalRequestedVersion = packageCentralVersion.Value.VersionRange.MinVersion.ToString(),
+                                            };
+                                            break;
+                                        }
+                                    }
                                 }
                                 else
                                 {

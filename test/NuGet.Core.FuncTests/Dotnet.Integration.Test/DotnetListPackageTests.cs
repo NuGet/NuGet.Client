@@ -124,7 +124,7 @@ namespace Dotnet.Integration.Test
         {
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject("projectA", pathContext, "net7.0");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net7.0");
 
                 var packageX = XPlatTestUtils.CreatePackage("X", "1.0.0", "net7.0");
                 var packageX2 = XPlatTestUtils.CreatePackage("X", "2.0.0", "net7.0");
@@ -157,7 +157,7 @@ namespace Dotnet.Integration.Test
         <PackageReference Include=""X"" VersionOverride=""1.0.0""/>
     </ItemGroup>
 </Project>";
-                File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "projectA", "projectA.csproj"), projectContent);
+                File.WriteAllText(Path.Combine(pathContext.SolutionRoot, ProjectName, string.Concat(ProjectName, ".csproj")), projectContent);
 
                 _fixture.RunDotnetExpectSuccess(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName),
                     $"restore {projectA.ProjectName}.csproj");
