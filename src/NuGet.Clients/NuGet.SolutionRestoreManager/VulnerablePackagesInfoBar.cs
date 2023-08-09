@@ -58,7 +58,7 @@ namespace NuGet.SolutionRestoreManager
             try
             {
                 IVsUIShell? uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>(throwOnFailure: true);
-                int windowFrameCode = uiShell!.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fFindFirst, VSConstants.StandardToolWindows.SolutionExplorer, out var windowFrame));
+                int windowFrameCode = uiShell!.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fFindFirst, VSConstants.StandardToolWindows.SolutionExplorer, out var windowFrame);
                 if (ErrorHandler.Failed(windowFrameCode))
                 {
                     Exception exception = new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find Solution Explorer window. HRRESULT {0}", windowFrameCode));
