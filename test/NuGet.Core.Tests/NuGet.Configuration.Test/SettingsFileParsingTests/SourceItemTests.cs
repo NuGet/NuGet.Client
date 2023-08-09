@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
@@ -96,6 +97,42 @@ namespace NuGet.Configuration.Test
                     children[i].AllowInsecureConnections.Should().Be(expectedValues[i].AllowInsecureConnections, because: $"SourceItem[{i}].AllowInsecureConnections is {children[i].AllowInsecureConnections}, but it's expected to be {expectedValues[i].AllowInsecureConnections}");
                 }
             }
+        }
+
+        [Fact]
+        public void SourceItem_AsXNode_ReturnsExpectedXNode()
+        {
+            var configuration = new NuGetConfiguration(
+                new VirtualSettingSection("packageSources",
+                    new SourceItem("nuget1", "http://serviceIndex.test1/api/index.json", protocolVersion: "3", allowInsecureConnections: "true"),
+                    new SourceItem("nuget2", "http://serviceIndex.test2/api/index.json", protocolVersion: "2", allowInsecureConnections: "false"),
+                    new SourceItem("nuget3", "http://serviceIndex.test3/api/index.json", allowInsecureConnections: "true"),
+                    new SourceItem("nuget4", "http://serviceIndex.test4/api/index.json", protocolVersion: "3")));
+
+            var expectedXNode = new XElement("configuration",
+                new XElement("packageSources",
+                    new XElement("add",
+                        new XAttribute("key", "nuget1"),
+                        new XAttribute("value", "http://serviceIndex.test1/api/index.json"),
+                        new XAttribute("protocolVersion", "3"),
+                        new XAttribute("allowInsecureConnections", "true")),
+                    new XElement("add",
+                        new XAttribute("key", "nuget2"),
+                        new XAttribute("value", "http://serviceIndex.test2/api/index.json"),
+                        new XAttribute("protocolVersion", "2"),
+                        new XAttribute("allowInsecureConnections", "false")),
+                    new XElement("add",
+                        new XAttribute("key", "nuget3"),
+                        new XAttribute("value", "http://serviceIndex.test3/api/index.json"),
+                        new XAttribute("allowInsecureConnections", "true")),
+                    new XElement("add",
+                        new XAttribute("key", "nuget4"),
+                        new XAttribute("value", "http://serviceIndex.test4/api/index.json"),
+                        new XAttribute("protocolVersion", "3"))));
+
+            var xNode = configuration.AsXNode();
+
+            XNode.DeepEquals(xNode, expectedXNode).Should().BeTrue();
         }
 
         [Fact]
