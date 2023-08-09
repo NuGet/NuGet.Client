@@ -3398,6 +3398,27 @@ namespace NuGet.Commands.Test
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems));
         }
+        [Fact]
+        public void MSBuildRestoreUtility_AddPackageDownloads_NoVersion()
+        {
+            // Arrange
+            var spec = MSBuildRestoreUtility.GetPackageSpec(new[]
+            {
+                CreateItems(new Dictionary<string, string>())
+            });
+
+            var packageX = new Mock<IMSBuildItem>();
+            packageX.Setup(p => p.GetProperty("Type")).Returns("DownloadDependency");
+            packageX.Setup(p => p.GetProperty("Id")).Returns("x");
+
+            var msbuildItems = new[]
+            {
+                packageX.Object
+            };
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems));
+        }
 
         [Fact]
         public void MSBuildRestoreUtility_GetDependencySpec_CentralVersionIsMergedWhenCPVMEnabled()
