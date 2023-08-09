@@ -750,8 +750,7 @@ namespace NuGet.CommandLine.XPlat
                         {
                             try
                             { // In case proj and assets file are not in sync and some refs were deleted
-                                var isPackageCentrallyManaged = tfmInformation.CentralPackageVersions.Any(cpv => cpv.Key.Equals(topLevelPackage.Name, StringComparison.Ordinal));
-                                if (isPackageCentrallyManaged)
+                                if (assetsFile.PackageSpec.RestoreMetadata.CentralPackageVersionsEnabled)
                                 {
                                     var packageCentralVersion = tfmInformation.CentralPackageVersions.Where(cpv => cpv.Key.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
                                     installedPackage = new InstalledPackageReference(topLevelPackage.Name)
