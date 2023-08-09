@@ -433,7 +433,7 @@ namespace NuGet.Commands.Restore.Utility
 
         public static EnabledValue ParseEnableValue(string? value, string projectFullPath, ILogger logger)
         {
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value) || string.Equals(value, "default", StringComparison.OrdinalIgnoreCase))
             {
                 return EnabledValue.ImplicitOptIn;
             }

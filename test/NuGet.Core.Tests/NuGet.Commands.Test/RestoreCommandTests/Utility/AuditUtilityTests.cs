@@ -34,6 +34,7 @@ public class AuditUtilityTests
     [Theory]
     [InlineData(null, nameof(AuditUtility.EnabledValue.ImplicitOptIn))]
     [InlineData("", nameof(AuditUtility.EnabledValue.ImplicitOptIn))]
+    [InlineData("default", nameof(AuditUtility.EnabledValue.ImplicitOptIn))]
     [InlineData("true", nameof(AuditUtility.EnabledValue.ExplicitOptIn))]
     [InlineData("enable", nameof(AuditUtility.EnabledValue.ExplicitOptIn))]
     [InlineData("TRUE", nameof(AuditUtility.EnabledValue.ExplicitOptIn))]
@@ -486,8 +487,7 @@ public class AuditUtilityTests
         public async Task<AuditUtility> CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
             AuditUtility.EnabledValue enabled = AuditUtility.ParseEnableValue(Enabled, ProjectFullPath, Log);
-            if (enabled == AuditUtility.EnabledValue.Invalid
-                || enabled == AuditUtility.EnabledValue.ExplicitOptOut)
+            if (enabled == AuditUtility.EnabledValue.ExplicitOptOut)
             {
                 throw new InvalidOperationException($"{nameof(Enabled)} must have a value that does not disable NuGetAudit.");
             }
