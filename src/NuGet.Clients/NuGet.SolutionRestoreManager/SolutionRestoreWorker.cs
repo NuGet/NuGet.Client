@@ -155,6 +155,11 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(nugetFeatureFlagService));
             }
 
+            if (vulnerabilitiesFoundService == null)
+            {
+                throw new ArgumentNullException(nameof(vulnerabilitiesFoundService));
+            }
+
             _asyncServiceProvider = asyncServiceProvider;
             _solutionManager = solutionManager;
             _lockService = lockService;

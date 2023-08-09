@@ -5,6 +5,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
@@ -57,17 +58,19 @@ namespace NuGet.SolutionRestoreManager
             try
             {
                 IVsUIShell? uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>(throwOnFailure: true);
-                if (ErrorHandler.Failed(uiShell!.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fFindFirst, VSConstants.StandardToolWindows.SolutionExplorer, out var windowFrame)))
+                int windowFrameCode = uiShell!.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fFindFirst, VSConstants.StandardToolWindows.SolutionExplorer, out var windowFrame));
+                if (ErrorHandler.Failed(windowFrameCode))
                 {
-                    NullReferenceException exception = new NullReferenceException(nameof(windowFrame));
+                    Exception exception = new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find Solution Explorer window. HRRESULT {0}", windowFrameCode));
                     await TelemetryUtility.PostFaultAsync(exception, nameof(VulnerablePackagesInfoBar));
                     return;
                 }
 
                 object tempObject;
-                if (ErrorHandler.Failed(windowFrame.GetProperty((int)__VSFPROPID7.VSFPROPID_InfoBarHost, out tempObject)))
+                int hostBarCode = windowFrame.GetProperty((int)__VSFPROPID7.VSFPROPID_InfoBarHost, out tempObject);
+                if (ErrorHandler.Failed(hostBarCode))
                 {
-                    NullReferenceException exception = new NullReferenceException(nameof(tempObject));
+                    Exception exception = new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find InfoBarHost. HRRESULT {0}", hostBarCode));
                     await TelemetryUtility.PostFaultAsync(exception, nameof(VulnerablePackagesInfoBar));
                     return;
                 }
