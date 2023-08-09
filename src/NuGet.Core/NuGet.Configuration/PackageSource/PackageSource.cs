@@ -19,7 +19,7 @@ namespace NuGet.Configuration
         /// </summary>
         public const int DefaultProtocolVersion = 2;
 
-        internal const bool DefaultAllowInsecureConnections = false;
+        public const bool DefaultAllowInsecureConnections = false;
 
         private int _hashCode;
         private string _source;
