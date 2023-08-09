@@ -247,19 +247,25 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             // Act
 
-            // Enable package source mapping; select an Aggregate package source.
+            //********************************************************************************************************************************************
+            // Enable package source mapping; select an Aggregate package source so it won't allow automatically create a mapping when pressing Install.
+            //********************************************************************************************************************************************
             ConfigureNuGetUIWithPackageSourceMapping(packageSourceMappingPatterns);
             _mockNuGetUI.Setup(_ => _.ActivePackageSourceMoniker).Returns(aggregatePackageSourceMoniker);
 
             var packageNotMapped_AggregateSourceSelected_CanInstallWithPackageSourceMapping = _testInstance.CanInstallWithPackageSourceMapping;
             var packageNotMapped_AggregateSourceSelected_IsInstallorUpdateButtonEnabled = _testInstance.IsInstallorUpdateButtonEnabled;
 
-            // Select a single package source.
+            //********************************************************************************************************************************************
+            // Select a single package source so it will allow automatically create a mapping when pressing Install.
+            //********************************************************************************************************************************************
             _mockNuGetUI.Setup(_ => _.ActivePackageSourceMoniker).Returns(singlePackageSourceMoniker);
             var packageNotMapped_SingleSourceSelected_CanInstallWithPackageSourceMapping = _testInstance.CanInstallWithPackageSourceMapping;
             var packageNotMapped_SingleSourceSelected_IsInstallOrUpdateButtonEnabled = _testInstance.IsInstallorUpdateButtonEnabled;
 
+            //********************************************************************************************************************************************
             // Select a package which has a configured Package Source Mapping.
+            //********************************************************************************************************************************************
             _testInstance.PackageSourceMappingViewModel.PackageId = packageIDWithSourceMapping;
             var afterSelectingPackageWithPackageSourceMapping_CanInstallWithPackageSourceMapping = _testInstance.CanInstallWithPackageSourceMapping;
             var afterSelectingPackageWithPackageSourceMapping_IsInstallOrUpdateButtonEnabled = _testInstance.IsInstallorUpdateButtonEnabled;
@@ -286,8 +292,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 "Selected Package ID has a package source mapping.");
             Assert.True(afterSelectingPackageWithPackageSourceMapping_IsInstallOrUpdateButtonEnabled,
                 "Selected Package ID has a package source mapping, but the " + nameof(PackageDetailControlModel.IsInstallorUpdateButtonEnabled) + " hasn't been updated, yet.");
-
             Assert.True(afterSetInstalledOrUpdateButtonIsEnabled_CanInstallWithPackageSourceMapping, "Package Source Mapping is enabled and the Package ID is mapped.");
+
             Assert.True(setInstalledOrUpdateButtonIsEnabled_RaisedPropertyChange_IsInstallOrUpdateButtonEnabled,
                 nameof(PackageDetailControlModel.IsInstallorUpdateButtonEnabled) + " should have raised a PropertyChanged when calling "
                 + nameof(DetailControlModel.SetInstalledOrUpdateButtonIsEnabled) + " and the value should become true.");
@@ -1623,8 +1629,16 @@ namespace NuGet.PackageManagement.UI.Test.Models
             };
             var packageSourceMappingPatterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(patterns);
 
-            _testInstance.SelectedVersion = new DisplayVersion(NuGetVersion.Parse("1.1.1"), additionalInfo: null);
-            _testInstance.Projects.First().IsSelected = true;
+            var version = NuGetVersion.Parse("1.1.1");
+
+            _testInstance.SelectedVersion = new DisplayVersion(version, additionalInfo: null);
+
+            PackageInstallationInfo firstProject = _testInstance.Projects.First();
+            firstProject.IsSelected = true;
+            firstProject.InstalledVersion = version;
+
+            // Explicitly trigger PropertyChanged event.
+            _testInstance.SetInstalledOrUpdateButtonIsEnabled();
 
             bool afterSetInstalledOrUpdateButtonIsEnabled_CanInstall_RaisedPropertyChanged = false;
             bool afterSetInstalledOrUpdateButtonIsEnabled_CanUninstall_RaisedPropertyChanged = false;
@@ -1662,14 +1676,22 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             // Act
 
-            // Enable package source mapping; select an Aggregate package source.
+            //********************************************************************************************************************************************
+            // Enable package source mapping; select an Aggregate package source so it won't allow automatically create a mapping when pressing Install.
+            //********************************************************************************************************************************************
             ConfigureNuGetUIWithPackageSourceMapping(packageSourceMappingPatterns);
             _mockNuGetUI.Setup(_ => _.ActivePackageSourceMoniker).Returns(aggregatePackageSourceMoniker);
+
+            // Explicitly trigger PropertyChanged event.
+            _testInstance.SetInstalledOrUpdateButtonIsEnabled();
+
             var packageNotMapped_AggregateSourceSelected_CanInstallWithPackageSourceMapping = _testInstance.CanInstallWithPackageSourceMapping;
             var packageNotMapped_AggregateSourceSelected_CanInstall = _testInstance.CanInstall;
             var packageNotMapped_AggregateSourceSelected_CanUninstall = _testInstance.CanUninstall;
 
-            // Select a single package source.
+            //********************************************************************************************************************************************
+            // Select a single package source so it will allow automatically create a mapping when pressing Install.
+            //********************************************************************************************************************************************
             _mockNuGetUI.Setup(_ => _.ActivePackageSourceMoniker).Returns(singlePackageSourceMoniker);
 
             // Explicitly trigger PropertyChanged event.
@@ -1679,15 +1701,18 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var packageNotMapped_SingleSourceSelected_CanInstall = _testInstance.CanInstall;
             var packageNotMapped_SingleSourceSelected_CanUninstall = _testInstance.CanUninstall;
 
+            //********************************************************************************************************************************************
             // Select a package which has a configured Package Source Mapping.
+            //********************************************************************************************************************************************
             _testInstance.PackageSourceMappingViewModel.PackageId = packageIDWithSourceMapping;
 
             var afterSelectingPackageWithPackageSourceMapping_CanInstallWithPackageSourceMapping = _testInstance.CanInstallWithPackageSourceMapping;
-            var afterSelectingPackageWithPackageSourceMapping_CanInstall = _testInstance.CanInstall;
-            var afterSelectingPackageWithPackageSourceMapping_CanUninstall = _testInstance.CanUninstall;
 
             // Explicitly trigger PropertyChanged event.
             _testInstance.SetInstalledOrUpdateButtonIsEnabled();
+
+            var afterSelectingPackageWithPackageSourceMapping_CanInstall = _testInstance.CanInstall;
+            var afterSelectingPackageWithPackageSourceMapping_CanUninstall = _testInstance.CanUninstall;
             var afterSetInstalledOrUpdateButtonIsEnabled_CanInstallWithPackageSourceMapping = _testInstance.CanInstallWithPackageSourceMapping;
 
             // Assert
@@ -1697,10 +1722,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             Assert.False(packageNotMapped_AggregateSourceSelected_CanInstallWithPackageSourceMapping,
                 "Package Source Mapping is enabled but the Selected Package ID has no mapping.");
-            Assert.False(packageNotMapped_AggregateSourceSelected_CanInstall,
-                nameof(PackageSolutionDetailControlModel.CanInstall) + " won't become true due to state of Mocked objects.");
-            Assert.False(packageNotMapped_AggregateSourceSelected_CanUninstall,
-                nameof(PackageSolutionDetailControlModel.CanUninstall) + " won't become true due to state of Mocked objects.");
+            Assert.False(packageNotMapped_AggregateSourceSelected_CanInstall, "Package Source Mapping is enabled but the Selected Package ID has no mapping.");
+            Assert.True(packageNotMapped_AggregateSourceSelected_CanUninstall, "Should be able to Uninstall regardless of package source mapping.");
 
             Assert.True(packageNotMapped_SingleSourceSelected_CanInstallWithPackageSourceMapping,
                 "Selected Package ID doesn't have a mapping but should automatically get one during Install.");
@@ -1711,12 +1734,10 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             Assert.True(afterSelectingPackageWithPackageSourceMapping_CanInstallWithPackageSourceMapping,
                 "Selected Package ID has a package source mapping.");
-            Assert.False(afterSelectingPackageWithPackageSourceMapping_CanInstall,
-                nameof(PackageSolutionDetailControlModel.CanInstall) + " won't become true due to state of Mocked objects.");
-            Assert.False(afterSelectingPackageWithPackageSourceMapping_CanUninstall,
-                nameof(PackageSolutionDetailControlModel.CanUninstall) + " won't become true due to state of Mocked objects.");
-
-            Assert.True(afterSetInstalledOrUpdateButtonIsEnabled_CanInstallWithPackageSourceMapping, "Package Source Mapping is enabled and the Package ID is mapped.");
+            Assert.True(afterSelectingPackageWithPackageSourceMapping_CanInstall, "Selected Package ID has a package source mapping.");
+            Assert.True(afterSelectingPackageWithPackageSourceMapping_CanUninstall, "Selected Package ID has a package source mapping.");
+            Assert.True(afterSetInstalledOrUpdateButtonIsEnabled_CanInstallWithPackageSourceMapping,
+                nameof(PackageSolutionDetailControlModel.SetInstalledOrUpdateButtonIsEnabled) + " should not have changed " + nameof(PackageSolutionDetailControlModel.CanInstallWithPackageSourceMapping) + ".");
 
             Assert.True(afterSetInstalledOrUpdateButtonIsEnabled_CanInstall_RaisedPropertyChanged,
                 nameof(PackageSolutionDetailControlModel.CanInstall) + " should have raised a PropertyChanged when calling "
