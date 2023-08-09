@@ -79,6 +79,15 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package {0} is missing a version number..
+        /// </summary>
+        internal static string Error_VersionNotFound {
+            get {
+                return ResourceManager.GetString("Error_VersionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error occurred while restoring NuGet packages: {0}.
         /// </summary>
         internal static string ErrorOccurredRestoringPackages {

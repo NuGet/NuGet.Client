@@ -152,6 +152,15 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package {0} is missing a version number..
+        /// </summary>
+        public static string Error_VersionNotFound {
+            get {
+                return ResourceManager.GetString("Error_VersionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ProjectReference &apos;{0}&apos; was resolved using &apos;{1}&apos; instead of the project target framework &apos;{2}&apos;. This project may not be fully compatible with your project..
         /// </summary>
         public static string ImportsFallbackWarning {
