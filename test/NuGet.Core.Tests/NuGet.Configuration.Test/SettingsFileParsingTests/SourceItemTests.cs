@@ -55,7 +55,7 @@ namespace NuGet.Configuration.Test
     <packageSources>
         <add key='nugetorg' value='http://serviceIndexorg.test/api/index.json' />
         <add key='nuget2' value='http://serviceIndex.test2/api/index.json' protocolVersion='3' />
-        <add key='nuget3' value='http://serviceIndex.test3/api/index.json' protocolVersion='3' allowInsecureConnections='true' />
+        <add key='nuget3' value='http://serviceIndex.test3/api/index.json' protocolVersion='3' ALLOWInsecureConnections='true' />
         <add key='nuget4' value='http://serviceIndex.test4/api/index.json' allowInsecureConnections='true' />
         <add key='nuget5' value='http://serviceIndex.test5/api/index.json' allowInsecureConnections='false' protocolVersion='2' />
     </packageSources>
