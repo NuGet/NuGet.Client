@@ -425,13 +425,13 @@ namespace NuGet.Commands.Restore.Utility
 
         internal enum EnabledValue
         {
-            Undefined,
+            Invalid,
             ImplicitOptIn,
             ExplicitOptIn,
             ExplicitOptOut
         }
 
-        public static EnabledValue ParseEnableValue(string? value)
+        public static EnabledValue ParseEnableValue(string? value, string projectFullPath, ILogger logger)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -447,14 +447,19 @@ namespace NuGet.Commands.Restore.Utility
             {
                 return EnabledValue.ExplicitOptOut;
             }
-            return EnabledValue.Undefined;
+
+            string messageText = string.Format(Strings.Error_InvalidNuGetAuditValue, value, "true, false");
+            RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+            message.ProjectPath = projectFullPath;
+            logger.Log(message);
+            return EnabledValue.Invalid;
         }
 
         internal static string GetString(EnabledValue enableAudit)
         {
             return enableAudit switch
             {
-                EnabledValue.Undefined => nameof(EnabledValue.Undefined),
+                EnabledValue.Invalid => nameof(EnabledValue.Invalid),
                 EnabledValue.ExplicitOptIn => nameof(EnabledValue.ExplicitOptIn),
                 EnabledValue.ExplicitOptOut => nameof(EnabledValue.ExplicitOptOut),
                 EnabledValue.ImplicitOptIn => nameof(EnabledValue.ImplicitOptIn),

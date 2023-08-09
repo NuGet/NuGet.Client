@@ -1092,4 +1092,10 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>NuGetAudit is enabled, but no package sources contain known vulnerability data.</value>
     <comment>Do not translate NuGetAudit</comment>
   </data>
+  <data name="Error_InvalidNuGetAuditValue" xml:space="preserve">
+    <value>Invalid NuGetAudit value '{0}'. Expected values: {1}</value>
+    <comment>Don't translate 'NuGetAudit'
+{0} - is the value from the customer's project file
+{1} is the list of valid values "true, false"</comment>
+  </data>
 </root>

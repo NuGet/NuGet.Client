@@ -40,17 +40,27 @@ public class AuditUtilityTests
     [InlineData("false", nameof(AuditUtility.EnabledValue.ExplicitOptOut))]
     [InlineData("disable", nameof(AuditUtility.EnabledValue.ExplicitOptOut))]
     [InlineData("FALSE", nameof(AuditUtility.EnabledValue.ExplicitOptOut))]
-    [InlineData("invalid", nameof(AuditUtility.EnabledValue.Undefined))]
+    [InlineData("invalid", nameof(AuditUtility.EnabledValue.Invalid))]
     public void ParseEnableValue_WithValue_ReturnsExpectedEnum(string input, string expected)
     {
         // Arrange
         AuditUtility.EnabledValue expectedValue = (AuditUtility.EnabledValue)Enum.Parse(typeof(AuditUtility.EnabledValue), expected);
+        string projectPath = "my.csproj";
+        TestLogger? logger = expectedValue == AuditUtility.EnabledValue.Invalid
+            ? new TestLogger()
+            : null;
 
         // Act
-        AuditUtility.EnabledValue actual = AuditUtility.ParseEnableValue(input);
+        AuditUtility.EnabledValue actual = AuditUtility.ParseEnableValue(input, projectPath, logger ?? NullLogger.Instance);
 
         // Assert
         actual.Should().Be(expectedValue);
+
+        if (logger is not null)
+        {
+            logger.Errors.Should().Be(1);
+            logger.LogMessages.Cast<RestoreLogMessage>().Single().Code.Should().Be(NuGetLogCode.NU1014);
+        }
     }
 
     [Fact]
@@ -390,7 +400,7 @@ public class AuditUtilityTests
 
         // Act
         var audit = new AuditUtility(
-            AuditUtility.ParseEnableValue(null),
+            AuditUtility.ParseEnableValue(null, "/path/proj.csproj", log),
             restoreAuditProperties: null,
             "/path/proj.csproj",
             graphs,
@@ -475,8 +485,8 @@ public class AuditUtilityTests
 
         public async Task<AuditUtility> CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
-            AuditUtility.EnabledValue enabled = AuditUtility.ParseEnableValue(Enabled);
-            if (enabled == AuditUtility.EnabledValue.Undefined
+            AuditUtility.EnabledValue enabled = AuditUtility.ParseEnableValue(Enabled, ProjectFullPath, Log);
+            if (enabled == AuditUtility.EnabledValue.Invalid
                 || enabled == AuditUtility.EnabledValue.ExplicitOptOut)
             {
                 throw new InvalidOperationException($"{nameof(Enabled)} must have a value that does not disable NuGetAudit.");
