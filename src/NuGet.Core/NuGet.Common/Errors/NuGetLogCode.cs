@@ -122,11 +122,6 @@ namespace NuGet.Common
         NU1013 = 1013,
 
         /// <summary>
-        /// NuGetAudit* MSBuild property input errors
-        /// </summary>
-        NU1014 = 1014,
-
-        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
@@ -370,6 +365,11 @@ namespace NuGet.Common
         /// NuGetAudit enabled, but no vulnerability data found
         /// </summary>
         NU1905 = 1905,
+
+        /// <summary>
+        /// NuGetAudit* MSBuild property input errors
+        /// </summary>
+        NU1906 = 1906,
 
         /// <summary>
         /// Undefined signature error

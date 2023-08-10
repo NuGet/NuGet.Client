@@ -390,8 +390,8 @@ namespace NuGet.Commands.Restore.Utility
                 return PackageVulnerabilitySeverity.Critical;
             }
 
-            string messageText = string.Format(Strings.Error_InvalidNuGetAuditLevelValue, auditLevel, "low, moderate, high, critical");
-            RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+            string messageText = string.Format(Strings.Warning_InvalidNuGetAuditLevelValue, auditLevel, "low, moderate, high, critical");
+            RestoreLogMessage message = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1906, messageText);
             message.ProjectPath = _projectFullPath;
             _logger.Log(message);
             return 0;
@@ -416,8 +416,8 @@ namespace NuGet.Commands.Restore.Utility
                 return NuGetAuditMode.All;
             }
 
-            string messageText = string.Format(Strings.Error_InvalidNuGetAuditModeValue, auditMode, "direct, all");
-            RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+            string messageText = string.Format(Strings.Warning_InvalidNuGetAuditModeValue, auditMode, "direct, all");
+            RestoreLogMessage message = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1906, messageText);
             message.ProjectPath = _projectFullPath;
             _logger.Log(message);
             return NuGetAuditMode.Unknown;
@@ -448,8 +448,8 @@ namespace NuGet.Commands.Restore.Utility
                 return EnabledValue.ExplicitOptOut;
             }
 
-            string messageText = string.Format(Strings.Error_InvalidNuGetAuditValue, value, "true, false");
-            RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+            string messageText = string.Format(Strings.Warning_InvalidNuGetAuditValue, value, "true, false");
+            RestoreLogMessage message = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1906, messageText);
             message.ProjectPath = projectFullPath;
             logger.Log(message);
             return EnabledValue.Invalid;
