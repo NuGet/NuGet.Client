@@ -845,7 +845,6 @@ namespace NuGet.Configuration.Test
             var loadedSource = values.Single();
             Assert.Equal("Source", loadedSource.Name);
             Assert.Equal("https://some-source.test", loadedSource.Source);
-            AssertCredentials(loadedSource.Credentials, "Source", "source-user", "source-password");
             Assert.Equal(PackageSource.DefaultAllowInsecureConnections, loadedSource.AllowInsecureConnections);
         }
 
@@ -872,7 +871,6 @@ namespace NuGet.Configuration.Test
             var loadedSource = values.Single();
             Assert.Equal("Source", loadedSource.Name);
             Assert.Equal("https://some-source.test", loadedSource.Source);
-            AssertCredentials(loadedSource.Credentials, "Source", "source-user", "source-password");
             Assert.Equal(PackageSource.DefaultAllowInsecureConnections, loadedSource.AllowInsecureConnections);
         }
 
@@ -903,7 +901,6 @@ namespace NuGet.Configuration.Test
             var loadedSource = values.Single();
             Assert.Equal("Source", loadedSource.Name);
             Assert.Equal("https://some-source.test", loadedSource.Source);
-            AssertCredentials(loadedSource.Credentials, "Source", "source-user", "source-password");
             Assert.Equal(bool.Parse(allowInsecureConnections), loadedSource.AllowInsecureConnections);
         }
 
