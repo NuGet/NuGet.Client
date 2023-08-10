@@ -59,12 +59,14 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        private bool CanAutomaticallyCreateSourceMapping
+        public bool CanAutomaticallyCreateSourceMapping
         {
             get
             {
-                return UIController.ActivePackageSourceMoniker is null
-                    || !UIController.ActivePackageSourceMoniker.IsAggregateSource;
+                return IsPackageSourceMappingEnabled
+                    && !UIController.UIContext.Projects.Any(_ => _.ProjectStyle != ProjectModel.ProjectStyle.PackageReference)
+                    && (UIController.ActivePackageSourceMoniker != null
+                    && !UIController.ActivePackageSourceMoniker.IsAggregateSource);
             }
         }
 
