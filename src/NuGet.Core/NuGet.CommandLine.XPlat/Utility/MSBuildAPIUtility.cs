@@ -758,7 +758,7 @@ namespace NuGet.CommandLine.XPlat
                                         {
                                             installedPackage = new InstalledPackageReference(topLevelPackage.Name)
                                             {
-                                                OriginalRequestedVersion = packageCentralVersion.Value.VersionRange.MinVersion.ToString(),
+                                                OriginalRequestedVersion = topLevelPackage.VersionOverride?.MinVersion.ToString() ?? packageCentralVersion.Value.VersionRange.MinVersion.ToString(),
                                             };
                                             break;
                                         }
