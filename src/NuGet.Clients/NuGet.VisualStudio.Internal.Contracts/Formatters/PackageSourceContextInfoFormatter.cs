@@ -74,7 +74,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             Assumes.NotNullOrEmpty(source);
             Assumes.NotNullOrEmpty(name);
 
-            return new PackageSourceContextInfo(source, name, isEnabled, protocolVersion)
+            return new PackageSourceContextInfo(source, name, isEnabled, protocolVersion, allowInsecureConnections)
             {
                 IsMachineWide = isMachineWide,
                 Description = description,

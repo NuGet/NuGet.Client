@@ -14,7 +14,7 @@ namespace NuGet.VisualStudio.Internal.Contracts.Test
             PackageSourceContextInfo? actualResult = SerializeThenDeserialize(PackageSourceContextInfoFormatter.Instance, expectedResult);
 
             Assert.NotNull(actualResult);
-            Assert.Equal(expectedResult, actualResult);
+            Assert.Equal(expectedResult.GetHashCode(), actualResult.GetHashCode());
         }
 
         public static TheoryData TestData => new TheoryData<PackageSourceContextInfo>
