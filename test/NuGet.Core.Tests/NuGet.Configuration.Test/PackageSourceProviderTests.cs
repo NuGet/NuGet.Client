@@ -835,13 +835,9 @@ namespace NuGet.Configuration.Test
                 .Returns(new VirtualSettingSection("packageSources",
                     sourceItem));
 
-            settings
-                .Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new VirtualSettingSection("packageSourceCredentials",
-                    new CredentialsItem("Source", "source-user", "source-password", isPasswordClearText: true, validAuthenticationTypes: null)));
-
             settings.Setup(s => s.GetConfigFilePaths())
                 .Returns(new List<string>());
+
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
 
@@ -856,23 +852,19 @@ namespace NuGet.Configuration.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void LoadPackageSources_ReadsSourcesWithRandomAllowInsecureConnectionsFromPackageSourceSections_LoadsDefault(bool useStaticMethod)
+        public void LoadPackageSources_ReadsSourcesWithInvalidAllowInsecureConnectionsFromPackageSourceSections_LoadsDefault(bool useStaticMethod)
         {
             // Arrange
             var settings = new Mock<ISettings>();
-            var sourceItem = new SourceItem("Source", "https://some-source.test", protocolVersion: null, allowInsecureConnections: "randomString");
+            var sourceItem = new SourceItem("Source", "https://some-source.test", protocolVersion: null, allowInsecureConnections: "invalidString");
 
             settings.Setup(s => s.GetSection("packageSources"))
                 .Returns(new VirtualSettingSection("packageSources",
                     sourceItem));
 
-            settings
-                .Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new VirtualSettingSection("packageSourceCredentials",
-                    new CredentialsItem("Source", "source-user", "source-password", isPasswordClearText: true, validAuthenticationTypes: null)));
-
             settings.Setup(s => s.GetConfigFilePaths())
                 .Returns(new List<string>());
+
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
 
@@ -901,13 +893,9 @@ namespace NuGet.Configuration.Test
                 .Returns(new VirtualSettingSection("packageSources",
                     sourceItem));
 
-            settings
-                .Setup(s => s.GetSection("packageSourceCredentials"))
-                .Returns(new VirtualSettingSection("packageSourceCredentials",
-                    new CredentialsItem("Source", "source-user", "source-password", isPasswordClearText: true, validAuthenticationTypes: null)));
-
             settings.Setup(s => s.GetConfigFilePaths())
                 .Returns(new List<string>());
+
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
 

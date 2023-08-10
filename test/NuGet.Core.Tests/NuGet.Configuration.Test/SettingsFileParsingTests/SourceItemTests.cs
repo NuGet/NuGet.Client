@@ -67,7 +67,7 @@ namespace NuGet.Configuration.Test
                 new SourceItem("nugetorg","http://serviceIndexorg.test/api/index.json"),
                 new SourceItem("nuget2","http://serviceIndex.test2/api/index.json", "3" ),
                 new SourceItem("nuget3","http://serviceIndex.test3/api/index.json", protocolVersion: "3", allowInsecureConnections: "true" ),
-                new SourceItem("nuget4","http://serviceIndex.test4/api/index.json", allowInsecureConnections: "true"  ),
+                new SourceItem("nuget4","http://serviceIndex.test4/api/index.json", protocolVersion: null, allowInsecureConnections: "true"  ),
                 new SourceItem("nuget5","http://serviceIndex.test5/api/index.json", protocolVersion: "2", allowInsecureConnections: "false"),
             };
 
@@ -83,7 +83,7 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("packageSources");
                 section.Should().NotBeNull();
 
-                var children = section.Items.Select(c => c as SourceItem).ToList();
+                var children = section.Items.Cast<SourceItem>().ToList();
 
                 children.Should().NotBeEmpty();
                 children.Count.Should().Be(5);
@@ -106,8 +106,9 @@ namespace NuGet.Configuration.Test
                 new VirtualSettingSection("packageSources",
                     new SourceItem("nuget1", "http://serviceIndex.test1/api/index.json", protocolVersion: "3", allowInsecureConnections: "true"),
                     new SourceItem("nuget2", "http://serviceIndex.test2/api/index.json", protocolVersion: "2", allowInsecureConnections: "false"),
-                    new SourceItem("nuget3", "http://serviceIndex.test3/api/index.json", allowInsecureConnections: "true"),
+                    new SourceItem("nuget3", "http://serviceIndex.test3/api/index.json", protocolVersion: null, allowInsecureConnections: "true"),
                     new SourceItem("nuget4", "http://serviceIndex.test4/api/index.json", protocolVersion: "3")));
+            var resultXml = SettingsTestUtils.RemoveWhitespace(configuration.AsXNode().ToString());
 
             var expectedXNode = new XElement("configuration",
                 new XElement("packageSources",
@@ -129,10 +130,9 @@ namespace NuGet.Configuration.Test
                         new XAttribute("key", "nuget4"),
                         new XAttribute("value", "http://serviceIndex.test4/api/index.json"),
                         new XAttribute("protocolVersion", "3"))));
+            var expectedXml = SettingsTestUtils.RemoveWhitespace(expectedXNode.ToString());
 
-            var xNode = configuration.AsXNode();
-
-            XNode.DeepEquals(xNode, expectedXNode).Should().BeTrue();
+            resultXml.Should().Be(expectedXml, because: resultXml);
         }
 
         [Fact]

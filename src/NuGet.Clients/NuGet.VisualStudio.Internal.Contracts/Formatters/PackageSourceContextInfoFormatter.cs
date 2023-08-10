@@ -34,7 +34,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             string? description = null;
             int originalHashCode = 0;
             int protocolVersion = PackageSource.DefaultProtocolVersion;
-            bool allowInsecureConnections = PackageSource.DefaultAllowInsecureConnections;
+            bool allowInsecureConnections = false;
 
             int propertyCount = reader.ReadMapHeader();
             for (int propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)

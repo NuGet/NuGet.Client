@@ -45,7 +45,7 @@ namespace NuGet.Configuration
         {
         }
 
-        public SourceItem(string key, string value, string protocolVersion = "", string allowInsecureConnections = "")
+        public SourceItem(string key, string value, string protocolVersion, string allowInsecureConnections)
             : base(key, value)
         {
             if (!string.IsNullOrEmpty(protocolVersion))

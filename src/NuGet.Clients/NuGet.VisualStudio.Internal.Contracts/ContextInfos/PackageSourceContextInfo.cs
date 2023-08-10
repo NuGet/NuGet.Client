@@ -28,7 +28,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         }
 
         public PackageSourceContextInfo(string source, string name, bool isEnabled, int protocolVersion)
-            : this(source, name, isEnabled, protocolVersion, PackageSource.DefaultAllowInsecureConnections)
+            : this(source, name, isEnabled, protocolVersion, allowInsecureConnections: false)
         {
         }
 
