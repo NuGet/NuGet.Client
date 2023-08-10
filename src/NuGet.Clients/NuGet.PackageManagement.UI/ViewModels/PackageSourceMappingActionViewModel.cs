@@ -59,6 +59,15 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
+        private bool CanAutomaticallyCreateSourceMapping
+        {
+            get
+            {
+                return UIController.ActivePackageSourceMoniker is null
+                    || !UIController.ActivePackageSourceMoniker.IsAggregateSource;
+            }
+        }
+
         public string MappingStatus
         {
             get
@@ -73,6 +82,11 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 }
                 else
                 {
+                    if (CanAutomaticallyCreateSourceMapping)
+                    {
+                        return "A mapping will be created.";
+                    }
+
                     return Resources.Text_PackageMappingsNotFound;
                 }
             }
@@ -92,6 +106,11 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 }
                 else
                 {
+                    if (CanAutomaticallyCreateSourceMapping)
+                    {
+                        return KnownMonikers.StatusInformation;
+                    }
+
                     return KnownMonikers.StatusError;
                 }
             }
@@ -103,6 +122,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             RaisePropertyChanged(nameof(IsPackageMapped));
             RaisePropertyChanged(nameof(MappingStatus));
             RaisePropertyChanged(nameof(MappingStatusIcon));
+            RaisePropertyChanged(nameof(CanAutomaticallyCreateSourceMapping));
         }
 
         public static PackageSourceMappingActionViewModel Create(INuGetUI uiController)
