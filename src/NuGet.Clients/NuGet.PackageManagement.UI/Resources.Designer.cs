@@ -2016,6 +2016,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A package source mapping will be created..
+        /// </summary>
+        public static string Text_PackageMappingsAutoCreate {
+            get {
+                return ResourceManager.GetString("Text_PackageMappingsAutoCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package source mapping is off..
         /// </summary>
         public static string Text_PackageMappingsDisabled {

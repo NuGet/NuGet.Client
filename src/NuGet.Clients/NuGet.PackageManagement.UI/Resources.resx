@@ -1029,4 +1029,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Label_Solution" xml:space="preserve">
     <value>Solution</value>
   </data>
+  <data name="Text_PackageMappingsAutoCreate" xml:space="preserve">
+    <value>A package source mapping will be created.</value>
+  </data>
 </root>

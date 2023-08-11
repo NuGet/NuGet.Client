@@ -64,9 +64,10 @@ namespace NuGet.PackageManagement.UI.ViewModels
             get
             {
                 return IsPackageSourceMappingEnabled
+                    && !IsPackageMapped
                     && !UIController.UIContext.Projects.Any(_ => _.ProjectStyle != ProjectModel.ProjectStyle.PackageReference)
-                    && (UIController.ActivePackageSourceMoniker != null
-                    && !UIController.ActivePackageSourceMoniker.IsAggregateSource);
+                    && UIController.ActivePackageSourceMoniker != null
+                    && !UIController.ActivePackageSourceMoniker.IsAggregateSource;
             }
         }
 
@@ -82,15 +83,13 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 {
                     return Resources.Text_PackageMappingsFound;
                 }
-                else
-                {
-                    if (CanAutomaticallyCreateSourceMapping)
-                    {
-                        return "A mapping will be created.";
-                    }
 
-                    return Resources.Text_PackageMappingsNotFound;
+                if (CanAutomaticallyCreateSourceMapping)
+                {
+                    return Resources.Text_PackageMappingsAutoCreate;
                 }
+
+                return Resources.Text_PackageMappingsNotFound;
             }
         }
 
@@ -106,15 +105,12 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 {
                     return KnownMonikers.StatusOK;
                 }
-                else
+                if (CanAutomaticallyCreateSourceMapping)
                 {
-                    if (CanAutomaticallyCreateSourceMapping)
-                    {
-                        return KnownMonikers.StatusInformation;
-                    }
-
-                    return KnownMonikers.StatusError;
+                    return KnownMonikers.StatusInformation;
                 }
+
+                return KnownMonikers.StatusError;
             }
         }
 
