@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI
 
         public PreviewResult(Dictionary<string, SortedSet<string>>? newSourceMappings)
         {
-            Name = "Solution";
+            Name = Resources.Label_Solution;
             NewSourceMappings = newSourceMappings;
             Added = Enumerable.Empty<AccessiblePackageIdentity>();
             Deleted = Enumerable.Empty<AccessiblePackageIdentity>();
