@@ -47,8 +47,9 @@
                                  MaxLength="100"
                                  Margin="12,0,12,0"
                                  Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
+                                 WatermarkForeground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
                                  Watermark="{x:Static nuget:Resources.VSOptions_Watermark_AddPackageNamespace}"
-                                 TextChanged="PackageID_TextChanged"/>
+                                 TextChanged="PackageID_TextChanged" Background="Transparent"/>
     <nuget:ToggleableListView Grid.Row="2"
                     x:Name="_sourcesListBox"
                     AutomationProperties.Name="{x:Static nuget:Resources.VSOptions_Accessibility_SourcesList}"
