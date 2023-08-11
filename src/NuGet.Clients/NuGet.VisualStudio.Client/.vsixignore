@@ -12,6 +12,7 @@ Microsoft.IdentityModel.Logging.dll
 Microsoft.IdentityModel.Tokens.dll
 Microsoft.Internal.VisualStudio.Interop.dll
 Microsoft.Internal.VisualStudio.Shell.Framework.dll
+Microsoft.Internal.VisualStudio.Shell.Framework.resources.dll
 Microsoft.IO.Redist.dll
 Microsoft.NET.StringTools.dll
 Microsoft.ServiceHub.Framework.dll
@@ -76,6 +77,7 @@ Microsoft.TeamFoundation.WorkItemTracking.Proxy.resources.dll
 Microsoft.TeamFoundation.WorkItemTracking.WebApi.dll
 Microsoft.VisualStudio.Debugger.Interop.16.0.dll
 Microsoft.VisualStudio.Interop.dll
+Microsoft.VisualStudio.Linux.ConnectionManager.Store.dll
 Microsoft.VisualStudio.RpcContracts.dll
 Microsoft.VisualStudio.Services.Client.Interactive.dll
 Microsoft.VisualStudio.Services.Client.Interactive.resources.dll
@@ -85,9 +87,6 @@ Microsoft.VisualStudio.Services.TestManagement.TestPlanning.WebApi.dll
 Microsoft.VisualStudio.Services.TestResults.WebApi.dll
 Microsoft.VisualStudio.Services.WebApi.dll
 Microsoft.VisualStudio.Services.WebApi.resources.dll
-Microsoft.VisualStudio.TextTemplating.dll
-Microsoft.VisualStudio.TextTemplating.Interfaces.dll
-Microsoft.VisualStudio.TextTemplating.resources.dll
 Microsoft.VisualStudio.TextTemplating.VSHost.dll
 Microsoft.VisualStudio.Workspace.dll
 Microsoft.VisualStudio.Workspace.Extensions.dll
@@ -102,7 +101,6 @@ System.IO.Pipelines.dll
 System.Management.Automation.dll
 System.Net.Http.Formatting.dll
 System.Reflection.MetadataLoadContext.dll
-System.Reflection.TypeExtensions.dll
 System.Resources.Extensions.dll
 System.Security.AccessControl.dll
 System.Security.Permissions.dll
