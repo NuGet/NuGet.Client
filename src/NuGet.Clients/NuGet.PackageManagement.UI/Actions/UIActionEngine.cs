@@ -990,8 +990,11 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                // Everything added which didn't already have a source mapping will be mentioned in the Preview Window.
-                PackageSourceMappingUtility.GetNewSourceMappingsFromAddedPackages(ref newSourceMappings, userAction, added, uiService.UIContext.PackageSourceMapping);
+                if (userAction?.SelectedSourceName != null)
+                {
+                    // Everything added which didn't already have a source mapping will be mentioned in the Preview Window.
+                    PackageSourceMappingUtility.GetNewSourceMappingsFromAddedPackages(ref newSourceMappings, userAction.SelectedSourceName, added, uiService.UIContext.PackageSourceMapping);
+                }
 
                 IProjectMetadataContextInfo projectMetadata = await projectManagerService.GetMetadataAsync(actions.Key, cancellationToken);
 
