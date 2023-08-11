@@ -473,7 +473,6 @@ namespace NuGet.Tests.Apex
             solutionService.Save();
 
             logger.LogInformation("Building solution");
-            logger.LogInformation($"project.LoadState={project.LoadState}");
             project.Build();
 
             return project;

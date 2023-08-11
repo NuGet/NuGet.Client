@@ -302,7 +302,6 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion1);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, packageVersion2);
 
-                XunitLogger.LogInformation($"{nameof(UpdatePackageToNetCoreProjectFromUI)} projectTemplate={projectTemplate}");
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
                 {
                     VisualStudio.AssertNoErrors();
