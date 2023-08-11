@@ -65,11 +65,13 @@ namespace NuGet.PackageManagement.UI.ViewModels
             {
                 return IsPackageSourceMappingEnabled
                     && !IsPackageMapped
-                    && !UIController.UIContext.Projects.Any(_ => _.ProjectStyle != ProjectModel.ProjectStyle.PackageReference)
+                    && ProjectsSupportAutomaticSourceMapping
                     && UIController.ActivePackageSourceMoniker != null
                     && !UIController.ActivePackageSourceMoniker.IsAggregateSource;
             }
         }
+
+        internal bool ProjectsSupportAutomaticSourceMapping => !UIController.UIContext.Projects.Any(_ => _.ProjectStyle != ProjectModel.ProjectStyle.PackageReference);
 
         public string MappingStatus
         {

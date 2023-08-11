@@ -836,8 +836,8 @@ namespace NuGet.PackageManagement.UI
                 // Don't allow install if package source mapping is enabled, with the selected package unmapped, and the 'All' package source selected.
                 if (PackageSourceMappingViewModel.IsPackageSourceMappingEnabled
                     && !PackageSourceMappingViewModel.IsPackageMapped
-                    && _uiController.ActivePackageSourceMoniker != null
-                    && _uiController.ActivePackageSourceMoniker.IsAggregateSource)
+                    && PackageSourceMappingViewModel.ProjectsSupportAutomaticSourceMapping
+                    && !PackageSourceMappingViewModel.CanAutomaticallyCreateSourceMapping)
                 {
                     return false;
                 }
