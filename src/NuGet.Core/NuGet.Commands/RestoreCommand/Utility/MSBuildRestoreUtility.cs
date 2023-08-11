@@ -678,7 +678,7 @@ namespace NuGet.Commands
                 var versionString = item.GetProperty("VersionRange");
                 if (versionString == null)
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_VersionNotFound, id));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, ""));
                 }
                 var versions = versionString.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
 
