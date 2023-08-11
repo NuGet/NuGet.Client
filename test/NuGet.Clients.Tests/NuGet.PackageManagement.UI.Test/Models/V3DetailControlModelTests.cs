@@ -1424,9 +1424,9 @@ namespace NuGet.PackageManagement.UI.Test.Models
             project.SetupGet(p => p.ProjectId).Returns("ProjectId1");
 
             Mock<IProjectContextInfo> project2 = new Mock<IProjectContextInfo>();
-            project.SetupGet(p => p.ProjectKind).Returns(NuGetProjectKind.PackageReference);
-            project.SetupGet(p => p.ProjectStyle).Returns(ProjectModel.ProjectStyle.PackageReference);
-            project.SetupGet(p => p.ProjectId).Returns("ProjectId2");
+            project2.SetupGet(p => p.ProjectKind).Returns(NuGetProjectKind.PackageReference);
+            project2.SetupGet(p => p.ProjectStyle).Returns(ProjectModel.ProjectStyle.PackageReference);
+            project2.SetupGet(p => p.ProjectId).Returns("ProjectId2");
 
             ReadOnlyCollection<IProjectContextInfo> projects = new ReadOnlyCollection<IProjectContextInfo>(
                 new List<IProjectContextInfo>()
