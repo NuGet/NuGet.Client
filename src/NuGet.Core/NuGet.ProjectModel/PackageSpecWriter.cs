@@ -9,9 +9,7 @@ using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.RuntimeModel;
-using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -160,8 +158,8 @@ namespace NuGet.ProjectModel
             WriteMetadataTargetFrameworks(writer, msbuildMetadata);
             SetWarningProperties(writer, msbuildMetadata);
 
-            // write NuGet lock file msbuild properties
             WriteNuGetLockFileProperties(writer, msbuildMetadata);
+            WriteNuGetAuditProperties(writer, msbuildMetadata.RestoreAuditProperties);
 
             if (msbuildMetadata is PackagesConfigProjectRestoreMetadata pcMsbuildMetadata)
             {
@@ -200,6 +198,19 @@ namespace NuGet.ProjectModel
             }
         }
 
+        private static void WriteNuGetAuditProperties(IObjectWriter writer, RestoreAuditProperties auditProperties)
+        {
+            if (auditProperties == null) return;
+
+            writer.WriteObjectStart("restoreAuditProperties");
+
+            SetValueIfNotNull(writer, "enableAudit", auditProperties.EnableAudit);
+            SetValueIfNotNull(writer, "auditLevel", auditProperties.AuditLevel);
+            SetValueIfNotNull(writer, "auditMode", auditProperties.AuditMode);
+
+            writer.WriteObjectEnd();
+        }
+
         private static void WriteMetadataTargetFrameworks(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
         {
             if (msbuildMetadata.TargetFrameworks?.Count > 0)
@@ -207,7 +218,7 @@ namespace NuGet.ProjectModel
                 writer.WriteObjectStart("frameworks");
 
                 var frameworkNames = new HashSet<string>();
-                var frameworkSorter = new NuGetFrameworkSorter();
+                var frameworkSorter = NuGetFrameworkSorter.Instance;
                 foreach (var framework in msbuildMetadata.TargetFrameworks.OrderBy(c => c.FrameworkName, frameworkSorter))
                 {
                     var frameworkName = framework.FrameworkName.GetShortFolderName();
@@ -420,18 +431,18 @@ namespace NuGet.ProjectModel
 
                     if (dependency.IncludeType != LibraryIncludeFlags.All)
                     {
-                        SetValue(writer, "include", dependency.IncludeType.ToString());
+                        SetValue(writer, "include", dependency.IncludeType.AsString());
                     }
 
                     if (dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent)
                     {
-                        SetValue(writer, "suppressParent", dependency.SuppressParent.ToString());
+                        SetValue(writer, "suppressParent", dependency.SuppressParent.AsString());
                     }
 
                     if (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference
                         && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference))
                     {
-                        SetValue(writer, "target", dependency.LibraryRange.TypeConstraint.ToString());
+                        SetValue(writer, "target", dependency.LibraryRange.TypeConstraint.AsString());
                     }
 
                     if (VersionRange.All.Equals(versionRange)
@@ -553,7 +564,7 @@ namespace NuGet.ProjectModel
             if (frameworks.Any())
             {
                 writer.WriteObjectStart("frameworks");
-                var frameworkSorter = new NuGetFrameworkSorter();
+                var frameworkSorter = NuGetFrameworkSorter.Instance;
                 foreach (var framework in frameworks.OrderBy(c => c.FrameworkName, frameworkSorter))
                 {
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());

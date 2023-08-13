@@ -19,9 +19,9 @@ namespace Dotnet.Integration.Test
     [Collection(DotnetIntegrationCollection.Name)]
     public class DotnetToolTests
     {
-        private MsbuildIntegrationTestFixture _msbuildFixture;
+        private DotnetIntegrationTestFixture _msbuildFixture;
 
-        public DotnetToolTests(MsbuildIntegrationTestFixture fixture)
+        public DotnetToolTests(DotnetIntegrationTestFixture fixture)
         {
             _msbuildFixture = fixture;
         }
@@ -29,7 +29,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void DotnetToolTests_NoPackageReferenceToolRestore_ThrowsError()
         {
-            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
+            using (TestDirectory testDirectory = _msbuildFixture.CreateTestDirectory())
             {
                 var tfm = "netcoreapp2.0";
                 var projectName = "ToolRestoreProject";
@@ -39,7 +39,7 @@ namespace Dotnet.Integration.Test
                 _msbuildFixture.CreateDotnetToolProject(testDirectory.Path, projectName, tfm, rid);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectFailure(workingDirectory, projectName);
 
                 // Assert
                 Assert.True(result.ExitCode == 1, result.AllOutput);
@@ -50,7 +50,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void DotnetToolTests_RegularDependencyPackageWithDependenciesToolRestore_ThrowsError()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -63,7 +63,7 @@ namespace Dotnet.Integration.Test
                 _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectFailure(workingDirectory, projectName);
 
                 // Assert
                 Assert.True(result.ExitCode == 1, result.AllOutput);
@@ -75,7 +75,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_BasicDotnetToolRestore_SucceedsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -98,10 +98,9 @@ namespace Dotnet.Integration.Test
                 _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectSuccess(workingDirectory, projectName);
 
                 // Assert
-                Assert.True(result.ExitCode == 0, result.AllOutput);
                 Assert.True(2 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
                 // Verify the assets file
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
@@ -118,7 +117,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_MismatchedRID_FailsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -142,7 +141,7 @@ namespace Dotnet.Integration.Test
                 _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, projectRID, packageSource, packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectFailure(workingDirectory, projectName);
 
                 // Assert
                 Assert.True(result.ExitCode == 1, result.AllOutput);
@@ -153,7 +152,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_BasicDotnetToolRestore_WithJsonCompatibleAssets_SucceedsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -178,10 +177,9 @@ namespace Dotnet.Integration.Test
                 _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectSuccess(workingDirectory, projectName);
 
                 // Assert
-                Assert.True(result.ExitCode == 0, result.AllOutput);
                 // Verify the assets file
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);
@@ -200,7 +198,7 @@ namespace Dotnet.Integration.Test
         [InlineData("netcoreapp2.0", "any", "win-x86")]
         public async Task DotnetToolTests_PackageWithRuntimeJson_RuntimeIdentifierAny_SucceedsAsync(string tfm, string packageRID, string projectRID)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var projectName = "ToolRestoreProject";
@@ -223,10 +221,9 @@ namespace Dotnet.Integration.Test
                 _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, projectRID, packageSource, packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectSuccess(workingDirectory, projectName);
 
                 // Assert
-                Assert.True(result.ExitCode == 0, result.AllOutput);
                 // Verify the assets file
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);
@@ -243,7 +240,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_RegularDependencyAndToolPackageWithDependenciesToolRestore_ThrowsErrorAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -274,7 +271,7 @@ namespace Dotnet.Integration.Test
                 _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSources, packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectFailure(workingDirectory, projectName);
 
                 // Assert
                 Assert.True(result.ExitCode == 1, result.AllOutput);
@@ -288,7 +285,7 @@ namespace Dotnet.Integration.Test
         [InlineData("netcoreapp1.0", "any", "win7-x64")]
         public async Task DotnetToolTests_ToolWithPlatformPackage_SucceedsAsync(string tfm, string packageRid, string projectRid)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var projectName = "ToolRestoreProject";
@@ -325,10 +322,9 @@ namespace Dotnet.Integration.Test
                 _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, projectRid, packageSource, packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectSuccess(workingDirectory, projectName);
 
                 // Assert
-                Assert.True(result.ExitCode == 0, result.AllOutput);
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);
                 Assert.Equal(2, lockFile.Targets.Count);
@@ -343,7 +339,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_ToolPackageWithIncompatibleToolsAssets_FailsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -370,7 +366,7 @@ namespace Dotnet.Integration.Test
                 _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectFailure(workingDirectory, projectName);
 
                 // Assert
                 Assert.True(result.ExitCode == 1, result.AllOutput);
@@ -381,7 +377,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_ToolsPackageWithExtraPackageTypes_FailsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -404,7 +400,7 @@ namespace Dotnet.Integration.Test
                 _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectFailure(workingDirectory, projectName);
 
                 // Assert
                 Assert.True(result.ExitCode == 1, result.AllOutput);
@@ -415,7 +411,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_BasicDotnetToolRestoreWithNestedValues_SucceedsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -439,10 +435,9 @@ namespace Dotnet.Integration.Test
                 _msbuildFixture.CreateDotnetToolProject(testDirectory, projectName, tfm, rid, packageSource, packages);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectSuccess(workingDirectory, projectName);
 
                 // Assert
-                Assert.True(result.ExitCode == 0, result.AllOutput);
                 // Verify the assets file
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);
@@ -460,7 +455,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_AutoreferencedDependencyAndToolPackagToolRestore_SucceedsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -495,7 +490,7 @@ namespace Dotnet.Integration.Test
                 MakePackageReferenceImplicitlyDefined(fullProjectPath, autoReferencePackageName);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectSuccess(workingDirectory, projectName);
 
                 // Assert
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
@@ -512,7 +507,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_AutoreferencedDependencyRegularDependencyAndToolPackagToolRestore_ThrowsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -548,7 +543,7 @@ namespace Dotnet.Integration.Test
                 MakePackageReferenceImplicitlyDefined(fullProjectPath, autoReferencePackageName);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectFailure(workingDirectory, projectName);
 
                 // Assert
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
@@ -563,7 +558,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_ToolPackageAndPlatformsPackageAnyRID_SucceedsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -599,7 +594,7 @@ namespace Dotnet.Integration.Test
                 MakePackageReferenceImplicitlyDefined(fullProjectPath, autoReferencePackageName);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectSuccess(workingDirectory, projectName);
 
                 // Assert
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
@@ -616,7 +611,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_IncompatibleAutorefPackageAndToolsPackageAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp1.0";
@@ -657,7 +652,7 @@ namespace Dotnet.Integration.Test
                 MakePackageReferenceImplicitlyDefined(fullProjectPath, autoReferencePackageName);
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectFailure(workingDirectory, projectName);
 
                 // Assert
                 var lockFilePath = Path.Combine(testDirectory, projectName, "project.assets.json");
@@ -675,7 +670,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_ToolRestoreWithFallback_SucceedsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var actualTfm = "netcoreapp2.0";
@@ -712,10 +707,9 @@ namespace Dotnet.Integration.Test
                 }
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectSuccess(workingDirectory, projectName);
 
                 // Assert
-                Assert.True(result.ExitCode == 0, result.AllOutput);
                 // Verify the assets file
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);
@@ -732,7 +726,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetToolTests_ToolRestoreWithRuntimeIdentiferGraphPath_SucceedsAsync()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 string testDirectory = pathContext.WorkingDirectory;
                 var tfm = "netcoreapp2.0";
@@ -773,10 +767,9 @@ namespace Dotnet.Integration.Test
                 }
 
                 // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
+                var result = _msbuildFixture.RestoreToolProjectExpectSuccess(workingDirectory, projectName);
 
                 // Assert
-                Assert.True(result.ExitCode == 0, result.AllOutput);
                 // Verify the assets file
                 var lockFile = LockFileUtilities.GetLockFile(Path.Combine(testDirectory, projectName, "project.assets.json"), NullLogger.Instance);
                 Assert.NotNull(lockFile);

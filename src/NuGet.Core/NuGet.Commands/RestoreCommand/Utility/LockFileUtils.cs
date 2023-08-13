@@ -126,6 +126,8 @@ namespace NuGet.Commands
                     // Exclude items
                     ExcludeItems(lockFileLib, dependencyType);
 
+                    lockFileLib.Freeze();
+
                     return (lockFileLib, fallbackUsed);
                 });
         }
@@ -194,7 +196,7 @@ namespace NuGet.Commands
             string runtimeIdentifier,
             ContentItemCollection contentItems,
             NuspecReader nuspec,
-            IReadOnlyList<SelectionCriteria> orderedCriteria)
+            List<SelectionCriteria> orderedCriteria)
         {
             // Add framework references for desktop projects.
             AddFrameworkReferences(lockFileLib, framework, nuspec);
@@ -267,7 +269,7 @@ namespace NuGet.Commands
             string libraryName,
             ManagedCodeConventions managedCodeConventions,
             LockFileTargetLibrary lockFileLib,
-            IReadOnlyList<SelectionCriteria> orderedCriteria,
+            List<SelectionCriteria> orderedCriteria,
             ContentItemCollection contentItems)
         {
             // Build Transitive
@@ -305,7 +307,7 @@ namespace NuGet.Commands
             ManagedCodeConventions managedCodeConventions,
             LockFileTargetLibrary lockFileLib,
             ContentItemCollection contentItems,
-            IReadOnlyList<SelectionCriteria> orderedCriteria)
+            List<SelectionCriteria> orderedCriteria)
         {
             var toolsGroup = GetLockFileItems(
                 orderedCriteria,
@@ -649,6 +651,8 @@ namespace NuGet.Commands
             // Exclude items
             ExcludeItems(projectLib, dependencyType);
 
+            projectLib.Freeze();
+
             return projectLib;
         }
 
@@ -675,7 +679,7 @@ namespace NuGet.Commands
         /// </summary>
         /// <remarks>Enumerate this once after calling.</remarks>
         private static IEnumerable<LockFileItem> GetLockFileItems(
-            IReadOnlyList<SelectionCriteria> criteria,
+            List<SelectionCriteria> criteria,
             ContentItemCollection items,
             Action<LockFileItem> additionalAction,
             params PatternSet[] patterns)
@@ -689,7 +693,7 @@ namespace NuGet.Commands
 
                 if (group != null)
                 {
-                    foreach (var item in group.Items)
+                    foreach (var item in group.Items.NoAllocEnumerate())
                     {
                         var newItem = new LockFileItem(item.Path);
                         object locale;
@@ -718,7 +722,7 @@ namespace NuGet.Commands
         /// </summary>
         /// <remarks>Enumerate this once after calling.</remarks>
         private static IEnumerable<LockFileItem> GetLockFileItems(
-            IReadOnlyList<SelectionCriteria> criteria,
+            List<SelectionCriteria> criteria,
             ContentItemCollection items,
             params PatternSet[] patterns)
         {
@@ -784,7 +788,7 @@ namespace NuGet.Commands
             NuGetFramework framework,
             string runtimeIdentifier)
         {
-            var managedCriteria = new List<SelectionCriteria>(1);
+            List<SelectionCriteria> managedCriteria;
 
             var fallbackFramework = framework as FallbackFramework;
 
@@ -797,7 +801,10 @@ namespace NuGet.Commands
                     framework,
                     runtimeIdentifier);
 
-                managedCriteria.Add(standardCriteria);
+                managedCriteria = new(capacity: 1)
+                {
+                    standardCriteria
+                };
             }
             else
             {
@@ -807,7 +814,10 @@ namespace NuGet.Commands
                     primaryFramework,
                     runtimeIdentifier);
 
-                managedCriteria.Add(primaryCriteria);
+                managedCriteria = new(capacity: 1 + fallbackFramework.Fallback.Count)
+                {
+                    primaryCriteria
+                };
 
                 // Add each fallback framework in order
                 foreach (var fallback in fallbackFramework.Fallback)
@@ -975,7 +985,7 @@ namespace NuGet.Commands
                 var rid = (string)group.Properties[ManagedCodeConventions.PropertyNames.RuntimeIdentifier];
 
                 // Create lock file entries for each assembly.
-                foreach (var item in group.Items)
+                foreach (var item in group.Items.NoAllocEnumerate())
                 {
                     results.Add(new LockFileRuntimeTarget(item.Path)
                     {

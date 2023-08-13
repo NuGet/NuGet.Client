@@ -50,11 +50,12 @@ namespace NuGet.Versioning.Test
         public void NuGetVersionParseStrict(string versionString)
         {
             // Arrange
-            NuGetVersion semVer = null;
-            NuGetVersion.TryParseStrict(versionString, out semVer);
+            NuGetVersion? semVer;
+            bool successful = NuGetVersion.TryParseStrict(versionString, out semVer);
 
             // Assert
-            Assert.Equal<string>(versionString, semVer.ToFullString());
+            Assert.True(successful);
+            Assert.Equal<string>(versionString, semVer!.ToFullString());
             Assert.Equal<string>(semVer.ToNormalizedString(), semVer.ToString());
         }
 
@@ -81,11 +82,12 @@ namespace NuGet.Versioning.Test
         [Fact]
         public void ParseThrowsIfStringIsNullOrEmpty()
         {
-            ExceptionAssert.ThrowsArgNullOrEmpty(() => NuGetVersion.Parse(null), "value");
+            ExceptionAssert.ThrowsArgNullOrEmpty(() => NuGetVersion.Parse(null!), "value");
             ExceptionAssert.ThrowsArgNullOrEmpty(() => NuGetVersion.Parse(string.Empty), "value");
         }
 
         [Theory]
+        [InlineData("         ")]
         [InlineData("1beta")]
         [InlineData("1.2Av^c")]
         [InlineData("1.2..")]
@@ -102,6 +104,59 @@ namespace NuGet.Versioning.Test
         [InlineData("1.4.7-AA.0A^")]
         [InlineData("1.4.7-A^A")]
         [InlineData("1.4.7+AA.01^")]
+        [InlineData("1.2147483648")]
+        [InlineData("1.1.2147483648")]
+        [InlineData("1.1.1.2147483648")]
+        [InlineData("1.1.1.1.2147483648")]
+        [InlineData("10000000000000000000")]
+        [InlineData("1.10000000000000000000")]
+        [InlineData("1.1.10000000000000000000")]
+        [InlineData("1.1.1.1.10000000000000000000")]
+        [InlineData("1..2")]
+        [InlineData("....")]
+        [InlineData("..1")]
+        [InlineData("-1.1.1.1")]
+        [InlineData("1.-1.1.1")]
+        [InlineData("1.1.-1.1")]
+        [InlineData("1.1.1.-1")]
+        [InlineData("1.")]
+        [InlineData("1.1.")]
+        [InlineData("1.1.1.")]
+        [InlineData("1.1.1.1.")]
+        [InlineData("1.1.1.1.1.")]
+        [InlineData("1     1.1.1.1")]
+        [InlineData("1.1     1.1.1")]
+        [InlineData("1.1.1     1.1")]
+        [InlineData("1.1.1.1     1")]
+        [InlineData(" .1.1.1")]
+        [InlineData("1. .1.1")]
+        [InlineData("1.1. .1")]
+        [InlineData("1.1.1. ")]
+        [InlineData("1 .")]
+        [InlineData("1.1 .")]
+        [InlineData("1.1.1 .")]
+        [InlineData("1.1.1.1 .")]
+        [InlineData("2147483648.2.3.4")]
+        [InlineData("1.2147483648.3.4")]
+        [InlineData("1.2.2147483648.4")]
+        [InlineData("1.2.3.2147483648")]
+        [InlineData("..1.2")]
+        [InlineData("-1.2.3.4")]
+        [InlineData("1.-2.3.4")]
+        [InlineData("1.2.-3.4")]
+        [InlineData("1.2.3.-4")]
+        [InlineData("   1 9")]
+        [InlineData("   19.   1 9")]
+        [InlineData("   19.   19.   1 9")]
+        [InlineData("   19.   19.   19.   1 9")]
+        [InlineData("1 9   ")]
+        [InlineData("19   .1 9   ")]
+        [InlineData("19   .19   .1 9   ")]
+        [InlineData("19   .19   .19   .1 9   ")]
+        [InlineData("   1 9   ")]
+        [InlineData("   19   .   1 9   ")]
+        [InlineData("   19   .   19   .   1 9   ")]
+        [InlineData("   19   .   19   .   19   .   1 9   ")]
         public void ParseThrowsIfStringIsNotAValidSemVer(string versionString)
         {
             ExceptionAssert.ThrowsArgumentException(() => NuGetVersion.Parse(versionString),
@@ -236,16 +291,16 @@ namespace NuGet.Versioning.Test
         public void SemVerEqualityComparisonsWorkForNullValues()
         {
             // Arrange
-            NuGetVersion itemA = null;
-            NuGetVersion itemB = null;
+            NuGetVersion? itemA = null;
+            NuGetVersion? itemB = null;
 
             // Act and Assert
             Assert.True(itemA == itemB);
             Assert.True(itemB == itemA);
-            Assert.True(itemA <= itemB);
-            Assert.True(itemB <= itemA);
-            Assert.True(itemA >= itemB);
-            Assert.True(itemB >= itemA);
+            Assert.True(itemA! <= itemB!);
+            Assert.True(itemB! <= itemA!);
+            Assert.True(itemA! >= itemB!);
+            Assert.True(itemB! >= itemA!);
         }
 
         [Theory]
@@ -336,12 +391,12 @@ namespace NuGet.Versioning.Test
             var versionString = "1.3.2-CTP-2-Refresh-Alpha";
 
             // Act
-            NuGetVersion version;
+            NuGetVersion? version;
             var result = NuGetVersion.TryParseStrict(versionString, out version);
 
             // Assert
             Assert.True(result);
-            Assert.Equal(new Version("1.3.2.0"), version.Version);
+            Assert.Equal(new Version("1.3.2.0"), version!.Version);
             Assert.Equal("CTP-2-Refresh-Alpha", version.Release);
         }
 
@@ -355,12 +410,43 @@ namespace NuGet.Versioning.Test
         public void TryParseReturnsFalseWhenUnableToParseString(string versionString)
         {
             // Act
-            NuGetVersion version;
+            NuGetVersion? version;
             var result = NuGetVersion.TryParseStrict(versionString, out version);
 
             // Assert
             Assert.False(result);
             Assert.Null(version);
+        }
+
+        [Theory]
+        [InlineData("   19", 19, 0, 0, 0)]
+        [InlineData("   19.   19", 19, 19, 0, 0)]
+        [InlineData("   19.   19.   19", 19, 19, 19, 0)]
+        [InlineData("   19.   19.   19.   19", 19, 19, 19, 19)]
+        [InlineData("19   ", 19, 0, 0, 0)]
+        [InlineData("19   .19   ", 19, 19, 0, 0)]
+        [InlineData("19   .19   .19   ", 19, 19, 19, 0)]
+        [InlineData("19   .19   .19   .19   ", 19, 19, 19, 19)]
+        [InlineData("   19   ", 19, 0, 0, 0)]
+        [InlineData("   19   .   19   ", 19, 19, 0, 0)]
+        [InlineData("   19   .   19   .   19   ", 19, 19, 19, 0)]
+        [InlineData("   19   .   19   .   19   .   19   ", 19, 19, 19, 19)]
+        [InlineData("01.1.1.1", 1, 1, 1, 1)]
+        [InlineData("1.01.1.1", 1, 1, 1, 1)]
+        [InlineData("1.1.01.1", 1, 1, 1, 1)]
+        [InlineData("1.1.1.01", 1, 1, 1, 1)]
+        [InlineData("2147483647.1.1.1", 2147483647, 1, 1, 1)]
+        [InlineData("1.2147483647.1.1", 1, 2147483647, 1, 1)]
+        [InlineData("1.1.2147483647.1", 1, 1, 2147483647, 1)]
+        [InlineData("1.1.1.2147483647", 1, 1, 1, 2147483647)]
+        public void TryParseHandlesValidVersionPatterns(string versionString, int major = 0, int minor = 0, int patch = 0, int revision = 0)
+        {
+            Assert.True(NuGetVersion.TryParse(versionString, out var version));
+            Assert.NotNull(version);
+            Assert.Equal(major, version.Major);
+            Assert.Equal(minor, version.Minor);
+            Assert.Equal(patch, version.Patch);
+            Assert.Equal(revision, version.Revision);
         }
     }
 }

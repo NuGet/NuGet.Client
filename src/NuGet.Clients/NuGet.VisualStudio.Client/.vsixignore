@@ -99,6 +99,7 @@ System.Configuration.ConfigurationManager.dll
 System.Diagnostics.DiagnosticSource.dll
 System.IdentityModel.Tokens.Jwt.dll
 System.IO.Pipelines.dll
+System.Management.Automation.dll
 System.Net.Http.Formatting.dll
 System.Reflection.MetadataLoadContext.dll
 System.Reflection.TypeExtensions.dll

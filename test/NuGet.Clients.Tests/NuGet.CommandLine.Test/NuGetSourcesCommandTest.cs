@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
+                CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
@@ -84,8 +84,7 @@ namespace NuGet.CommandLine.Test
                 CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     configFileDirectory,
-                    string.Join(" ", args),
-                    true);
+                    string.Join(" ", args));
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
@@ -133,8 +132,7 @@ namespace NuGet.CommandLine.Test
                 CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -190,8 +188,7 @@ namespace NuGet.CommandLine.Test
                 CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -249,8 +246,7 @@ namespace NuGet.CommandLine.Test
                 CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -287,7 +283,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
+                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == result.ExitCode, result.Output + " " + result.Errors);
@@ -336,7 +332,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
+                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == result.ExitCode, result.Output + " " + result.Errors);
@@ -390,8 +386,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     nugetexe,
                     configFileDirectory,
-                    string.Join(" ", args),
-                    true);
+                    string.Join(" ", args));
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
@@ -653,8 +648,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -730,8 +724,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -785,7 +778,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args), true);
+                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -832,8 +825,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);

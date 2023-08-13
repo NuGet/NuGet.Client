@@ -264,7 +264,10 @@ namespace NuGet.Commands
                     result.RestoreMetadata.ProjectWideWarningProperties = GetWarningProperties(specItem);
 
                     // Packages lock file properties
-                    result.RestoreMetadata.RestoreLockProperties = GetRestoreLockProperites(specItem);
+                    result.RestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
+
+                    // NuGet audit properties
+                    result.RestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem);
                 }
 
                 if (restoreType == ProjectStyle.PackagesConfig)
@@ -281,7 +284,7 @@ namespace NuGet.Commands
                             "packages"
                         );
                     }
-                    pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperites(specItem);
+                    pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
 
                 }
 
@@ -430,6 +433,7 @@ namespace NuGet.Commands
                 var targetPlatforMoniker = item.GetProperty("TargetPlatformMoniker");
                 var targetPlatformMinVersion = item.GetProperty("TargetPlatformMinVersion");
                 var clrSupport = item.GetProperty("CLRSupport");
+                var windowsTargetPlatformMinVersion = item.GetProperty("WindowsTargetPlatformMinVersion");
                 var targetAlias = string.IsNullOrEmpty(frameworkString) ? string.Empty : frameworkString;
                 if (uniqueIds.Contains(targetAlias))
                 {
@@ -442,7 +446,8 @@ namespace NuGet.Commands
                     targetFrameworkMoniker: targetFrameworkMoniker,
                     targetPlatformMoniker: targetPlatforMoniker,
                     targetPlatformMinVersion: targetPlatformMinVersion,
-                    clrSupport: clrSupport);
+                    clrSupport: clrSupport,
+                    windowsTargetPlatformMinVersion: windowsTargetPlatformMinVersion);
 
                 var targetFrameworkInfo = new TargetFrameworkInformation()
                 {
@@ -883,12 +888,31 @@ namespace NuGet.Commands
                 warningsNotAsErrors: specItem.GetProperty("WarningsNotAsErrors"));
         }
 
-        private static RestoreLockProperties GetRestoreLockProperites(IMSBuildItem specItem)
+        private static RestoreLockProperties GetRestoreLockProperties(IMSBuildItem specItem)
         {
             return new RestoreLockProperties(
                 specItem.GetProperty("RestorePackagesWithLockFile"),
                 specItem.GetProperty("NuGetLockFilePath"),
                 IsPropertyTrue(specItem, "RestoreLockedMode"));
+        }
+
+        public static RestoreAuditProperties GetRestoreAuditProperties(IMSBuildItem specItem)
+        {
+            string enableAudit = specItem.GetProperty("NuGetAudit");
+            string auditLevel = specItem.GetProperty("NuGetAuditLevel");
+            string auditMode = specItem.GetProperty("NuGetAuditMode");
+
+            if (enableAudit != null || auditLevel != null || auditMode != null)
+            {
+                return new RestoreAuditProperties()
+                {
+                    EnableAudit = enableAudit,
+                    AuditLevel = auditLevel,
+                    AuditMode = auditMode,
+                };
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -1036,10 +1060,10 @@ namespace NuGet.Commands
         private static void AddCentralPackageVersions(PackageSpec spec, IEnumerable<IMSBuildItem> items)
         {
             var centralVersionsDependencies = CreateCentralVersionDependencies(items, spec.TargetFrameworks);
-            foreach (var targetAlias in centralVersionsDependencies.Keys)
+            foreach ((var targetAlias, var versions) in centralVersionsDependencies)
             {
                 var frameworkInfo = spec.TargetFrameworks.FirstOrDefault(f => targetAlias.Equals(f.TargetAlias, StringComparison.OrdinalIgnoreCase));
-                frameworkInfo.CentralPackageVersions.AddRange(centralVersionsDependencies[targetAlias]);
+                frameworkInfo.CentralPackageVersions.AddRange(versions);
                 LibraryDependency.ApplyCentralVersionInformation(frameworkInfo.Dependencies, frameworkInfo.CentralPackageVersions);
             }
         }

@@ -9,11 +9,14 @@ using System.Threading.Tasks;
 using System.Windows;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -23,6 +26,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using StreamJsonRpc;
 using Task = System.Threading.Tasks.Task;
 
@@ -33,6 +37,8 @@ namespace NuGet.PackageManagement.UI
         public const string LogEntrySource = "NuGet Package Manager";
 
         private readonly NuGetUIProjectContext _projectContext;
+        private PackageManagerControl _packageManagerControl;
+        private string _selectedPackageId;
 
         private NuGetUI(
             ICommonOperations commonOperations,
@@ -58,10 +64,12 @@ namespace NuGet.PackageManagement.UI
             ICommonOperations commonOperations,
             NuGetUIProjectContext projectContext,
             INuGetUILogger logger,
-            NuGetUIContext uiContext)
+            INuGetUIContext uiContext,
+            IPackageManagerControlViewModel packageManagerControlViewModel)
             : this(commonOperations, projectContext, logger)
         {
             UIContext = uiContext;
+            PackageManagerControlViewModel = packageManagerControlViewModel;
         }
 
         public static async Task<NuGetUI> CreateAsync(
@@ -102,21 +110,20 @@ namespace NuGet.PackageManagement.UI
             var nuGetUi = new NuGetUI(
                 commonOperations,
                 projectContext,
-                logger)
-            {
-                UIContext = await NuGetUIContext.CreateAsync(
-                    serviceBroker,
-                    sourceRepositoryProvider,
-                    settings,
-                    solutionManager,
-                    packageRestoreManager,
-                    optionsPageActivator,
-                    solutionUserOptions,
-                    deleteOnRestartManager,
-                    lockService,
-                    restoreProgressReporter,
-                    cancellationToken)
-            };
+                logger);
+
+            nuGetUi.UIContext = await NuGetUIContext.CreateAsync(
+                serviceBroker,
+                sourceRepositoryProvider,
+                settings,
+                solutionManager,
+                packageRestoreManager,
+                optionsPageActivator,
+                solutionUserOptions,
+                deleteOnRestartManager,
+                lockService,
+                restoreProgressReporter,
+                cancellationToken);
 
             nuGetUi.UIContext.Projects = projects;
 
@@ -239,16 +246,64 @@ namespace NuGet.PackageManagement.UI
             UIUtility.LaunchExternalLink(url);
         }
 
+        public void LaunchNuGetOptionsDialog(PackageSourceMappingActionViewModel packageSourceMappingActionViewModel)
+        {
+            LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
+
+            if (packageSourceMappingActionViewModel == null)
+            {
+                return;
+            }
+
+            bool isPackageSourceMappingEnabled = packageSourceMappingActionViewModel.IsPackageSourceMappingEnabled;
+            bool isPackageMapped = packageSourceMappingActionViewModel._isPackageMapped; // Read from cache to avoid recalculating.
+            PackageSourceMappingStatus packageSourceMappingStatus;
+            if (!isPackageSourceMappingEnabled)
+            {
+                packageSourceMappingStatus = PackageSourceMappingStatus.Disabled;
+            }
+            else
+            {
+                packageSourceMappingStatus = isPackageMapped ? PackageSourceMappingStatus.Mapped : PackageSourceMappingStatus.NotMapped;
+            }
+
+            var evt = NavigatedTelemetryEvent.CreateWithPMUIConfigurePackageSourceMapping(
+                UIUtility.ToContractsItemFilter(PackageManagerControlViewModel.ActiveFilter),
+                PackageManagerControlViewModel.IsSolution,
+                packageSourceMappingStatus);
+            TelemetryActivity.EmitTelemetryEvent(evt);
+        }
+
         public void LaunchNuGetOptionsDialog(OptionsPage optionsPageToOpen)
         {
             if (UIContext?.OptionsPageActivator != null)
             {
-                InvokeOnUIThread(() => { UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
+                InvokeOnUIThread(() =>
+                {
+                    if (optionsPageToOpen == OptionsPage.PackageSourceMapping)
+                    {
+                        SetSelectedPackageInNuGetUIOptionsContextService();
+                    }
+
+                    UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null);
+                });
             }
             else
             {
                 MessageBox.Show("Options dialog is not available in the standalone UI");
             }
+        }
+
+        private void SetSelectedPackageInNuGetUIOptionsContextService()
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+#pragma warning disable ISB001 // Dispose of proxies
+                IComponentModel componentModelMapping = await ServiceLocator.GetComponentModelAsync();
+                var nuGetUIOptionsContext = componentModelMapping.GetService<INuGetUIOptionsContext>();
+                nuGetUIOptionsContext.SelectedPackageId = SelectedPackageId;
+#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+            }).PostOnFailure(nameof(NuGetUI), nameof(LaunchNuGetOptionsDialog));
         }
 
         public bool PromptForPreviewAcceptance(IEnumerable<PreviewResult> actions)
@@ -306,7 +361,14 @@ namespace NuGet.PackageManagement.UI
 
         public bool ForceRemove { get; set; }
 
-        public PackageIdentity SelectedPackage { get; set; }
+        public string SelectedPackageId
+        {
+            get => _selectedPackageId;
+            set
+            {
+                _selectedPackageId = value;
+            }
+        }
 
         public int SelectedIndex { get; set; }
 
@@ -350,7 +412,17 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal PackageManagerControl PackageManagerControl { get; set; }
+        public IPackageManagerControlViewModel PackageManagerControlViewModel { get; private set; }
+
+        internal PackageManagerControl PackageManagerControl
+        {
+            get => _packageManagerControl;
+            set
+            {
+                _packageManagerControl = value;
+                PackageManagerControlViewModel = value;
+            }
+        }
 
         private void InvokeOnUIThread(Action action)
         {

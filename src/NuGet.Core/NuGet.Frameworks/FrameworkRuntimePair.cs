@@ -7,42 +7,32 @@ using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
-    public class FrameworkRuntimePair : IEquatable<FrameworkRuntimePair>, IComparable<FrameworkRuntimePair>
+    /// <remarks>
+    /// Immutable.
+    /// </remarks>
+    public sealed class FrameworkRuntimePair : IEquatable<FrameworkRuntimePair>, IComparable<FrameworkRuntimePair>
     {
-        public NuGetFramework Framework
+        public NuGetFramework Framework { get; }
+
+        public string RuntimeIdentifier { get; }
+
+        public string Name { get; }
+
+        public FrameworkRuntimePair(NuGetFramework framework, string? runtimeIdentifier)
         {
-            get { return _framework; }
+            Framework = framework ?? throw new ArgumentNullException(nameof(framework));
+            RuntimeIdentifier = runtimeIdentifier ?? string.Empty;
+            Name = GetName(framework, runtimeIdentifier);
         }
 
-        public string RuntimeIdentifier
-        {
-            get { return _runtimeIdentifier; }
-        }
-
-        public string Name
-        {
-            get { return _name; }
-        }
-
-        private readonly NuGetFramework _framework;
-        private readonly string _runtimeIdentifier;
-        private readonly string _name;
-
-        public FrameworkRuntimePair(NuGetFramework framework, string runtimeIdentifier)
-        {
-            _framework = framework;
-            _runtimeIdentifier = runtimeIdentifier ?? string.Empty;
-            _name = GetName(framework, runtimeIdentifier);
-        }
-
-        public bool Equals(FrameworkRuntimePair other)
+        public bool Equals(FrameworkRuntimePair? other)
         {
             return other != null &&
                 Equals(Framework, other.Framework) &&
                 string.Equals(RuntimeIdentifier, other.RuntimeIdentifier, StringComparison.Ordinal);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as FrameworkRuntimePair);
         }
@@ -61,13 +51,16 @@ namespace NuGet.Frameworks
                 RuntimeIdentifier);
         }
 
+        [Obsolete("This type is immutable, so there is no need or point to clone it.")]
         public FrameworkRuntimePair Clone()
         {
-            return new FrameworkRuntimePair(Framework, RuntimeIdentifier);
+            return this;
         }
 
-        public int CompareTo(FrameworkRuntimePair other)
+        public int CompareTo(FrameworkRuntimePair? other)
         {
+            if (other == null) return 1;
+
             var fxCompare = string.Compare(Framework.GetShortFolderName(), other.Framework.GetShortFolderName(), StringComparison.Ordinal);
             if (fxCompare != 0)
             {
@@ -76,8 +69,10 @@ namespace NuGet.Frameworks
             return string.Compare(RuntimeIdentifier, other.RuntimeIdentifier, StringComparison.Ordinal);
         }
 
-        public static string GetName(NuGetFramework framework, string runtimeIdentifier)
+        public static string GetName(NuGetFramework framework, string? runtimeIdentifier)
         {
+            if (framework is null) throw new ArgumentNullException(nameof(framework));
+
             if (string.IsNullOrEmpty(runtimeIdentifier))
             {
                 return framework.ToString();
@@ -92,8 +87,10 @@ namespace NuGet.Frameworks
             }
         }
 
-        public static string GetTargetGraphName(NuGetFramework framework, string runtimeIdentifier)
+        public static string GetTargetGraphName(NuGetFramework framework, string? runtimeIdentifier)
         {
+            if (framework is null) throw new ArgumentNullException(nameof(framework));
+
             if (string.IsNullOrEmpty(runtimeIdentifier))
             {
                 return framework.ToString();

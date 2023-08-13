@@ -1952,6 +1952,7 @@ namespace NuGet.Test
 
             public bool IsCacheEnabled { get; set; }
 
+            [Obsolete]
             public IProjectBuildProperties BuildProperties => throw new NotImplementedException();
 
             public IProjectSystemCapabilities Capabilities => throw new NotImplementedException();
@@ -1998,7 +1999,7 @@ namespace NuGet.Test
             public Task<bool> ExecutePackageInitScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)
             {
                 ExecuteInitScriptAsyncCalls.Add(packageIdentity);
-                return Task.FromResult(true);
+                return TaskResult.True;
             }
 
             public Task<IEnumerable<LibraryDependency>> GetPackageReferencesAsync(NuGetFramework targetFramework, CancellationToken token)

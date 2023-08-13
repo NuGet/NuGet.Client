@@ -10,9 +10,7 @@ using NuGet.Common;
 
 namespace NuGet.Configuration
 {
-#pragma warning disable CS0618 // Type or member is obsolete
-    public class PackageSourceProvider : IPackageSourceProvider, IPackageSourceProvider2
-#pragma warning restore CS0618 // Type or member is obsolete
+    public class PackageSourceProvider : IPackageSourceProvider
     {
         public ISettings Settings { get; private set; }
 
@@ -201,6 +199,7 @@ namespace NuGet.Configuration
             }
 
             packageSource.ProtocolVersion = ReadProtocolVersion(setting);
+            packageSource.AllowInsecureConnections = ReadAllowInsecureConnections(setting);
 
             return packageSource;
         }
@@ -213,6 +212,16 @@ namespace NuGet.Configuration
             }
 
             return PackageSource.DefaultProtocolVersion;
+        }
+
+        private static bool ReadAllowInsecureConnections(SourceItem setting)
+        {
+            if (bool.TryParse(setting.AllowInsecureConnections, out var allowInsecureConnections))
+            {
+                return allowInsecureConnections;
+            }
+
+            return PackageSource.DefaultAllowInsecureConnections;
         }
 
         private static int AddOrUpdateIndexedSource(
@@ -660,8 +669,7 @@ namespace NuGet.Configuration
             }
         }
 
-        [Obsolete("https://github.com/NuGet/Home/issues/10098")]
-        public void SavePackageSources(IEnumerable<PackageSource> sources, PackageSourceUpdateOptions sourceUpdateSettings)
+        public void SavePackageSources(IEnumerable<PackageSource> sources)
         {
             if (sources == null)
             {
@@ -702,8 +710,7 @@ namespace NuGet.Configuration
                 var existingSourceIsEnabled = existingDisabledSourcesLookup == null || existingDisabledSourcesLookup.TryGetValue(source.Name, out existingDisabledSourceItem);
 
                 if (existingSettingsLookup != null &&
-                    existingSettingsLookup.TryGetValue(source.Name, out existingSourceItem) &&
-                    ReadProtocolVersion(existingSourceItem) == source.ProtocolVersion)
+                    existingSettingsLookup.TryGetValue(source.Name, out existingSourceItem))
                 {
                     var oldPackageSource = ReadPackageSource(existingSourceItem, existingSourceIsEnabled, Settings);
 
@@ -714,8 +721,8 @@ namespace NuGet.Configuration
                         oldPackageSource,
                         existingDisabledSourceItem,
                         existingCredentialsItem,
-                        updateEnabled: sourceUpdateSettings.UpdateEnabled,
-                        updateCredentials: sourceUpdateSettings.UpdateCredentials,
+                        updateEnabled: true,
+                        updateCredentials: true,
                         shouldSkipSave: true,
                         isDirty: ref isDirty);
                 }
@@ -762,17 +769,6 @@ namespace NuGet.Configuration
                 OnPackageSourcesChanged();
                 isDirty = false;
             }
-        }
-
-        public void SavePackageSources(IEnumerable<PackageSource> sources)
-        {
-            if (sources == null)
-            {
-                throw new ArgumentNullException(nameof(sources));
-            }
-#pragma warning disable CS0618 // Type or member is obsolete
-            SavePackageSources(sources, PackageSourceUpdateOptions.Default);
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()

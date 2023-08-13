@@ -237,7 +237,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var msbuildProjectExtensionsPath = await _vsProjectAdapter.GetMSBuildProjectExtensionsPathAsync();
+            var msbuildProjectExtensionsPath = _vsProjectAdapter.GetMSBuildProjectExtensionsPath();
 
             if (string.IsNullOrEmpty(msbuildProjectExtensionsPath))
             {
@@ -256,10 +256,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return msbuildProjectExtensionsPath;
         }
 
-        private static string GetPropertySafe(IProjectBuildProperties projectBuildProperties, string propertyName)
+        private static string GetPropertySafe(IVsProjectBuildProperties projectBuildProperties, string propertyName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var value = projectBuildProperties.GetPropertyValue(propertyName);
+            var value = projectBuildProperties.GetPropertyValueWithDteFallback(propertyName);
 
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -390,7 +390,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectName = ProjectName ?? ProjectUniqueName;
 
-            string specifiedPackageId = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.PackageId);
+            string specifiedPackageId = _vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.PackageId);
 
             if (!string.IsNullOrWhiteSpace(specifiedPackageId))
             {
@@ -398,13 +398,25 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                string specifiedAssemblyName = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.AssemblyName);
+                string specifiedAssemblyName = _vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.AssemblyName);
 
                 if (!string.IsNullOrWhiteSpace(specifiedAssemblyName))
                 {
                     projectName = specifiedAssemblyName;
                 }
             }
+
+            string enableAudit = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAudit);
+            string auditLevel = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditLevel);
+            string auditMode = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditMode);
+            RestoreAuditProperties auditProperties = !string.IsNullOrEmpty(enableAudit) || !string.IsNullOrEmpty(auditLevel)
+                ? new RestoreAuditProperties()
+                {
+                    EnableAudit = enableAudit,
+                    AuditLevel = auditLevel,
+                    AuditMode = auditMode,
+                }
+                : null;
 
             var msbuildProjectExtensionsPath = await GetMSBuildProjectExtensionsPathAsync();
             return new PackageSpec(tfis)
@@ -448,6 +460,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     CentralPackageVersionsEnabled = isCpvmEnabled,
                     CentralPackageVersionOverrideDisabled = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageVersionOverrideEnabled).EqualsFalse(),
                     CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageTransitivePinningEnabled)),
+                    RestoreAuditProperties = auditProperties,
                 }
             };
         }

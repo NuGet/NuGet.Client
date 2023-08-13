@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -35,7 +36,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PackageManagerControl.xaml
     /// </summary>
-    public partial class PackageManagerControl : UserControl, IVsWindowSearch, IDisposable
+    public partial class PackageManagerControl : UserControl, IVsWindowSearch, IDisposable, IPackageManagerControlViewModel
     {
         internal event EventHandler _actionCompleted;
         internal DetailControlModel _detailModel;
@@ -63,7 +64,6 @@ namespace NuGet.PackageManagement.UI
         private string _settingsKey;
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
-        private bool _isTransitiveDependenciesExperimentEnabled;
 
         private PackageManagerInstalledTabData _installedTabTelemetryData;
 
@@ -101,6 +101,7 @@ namespace NuGet.PackageManagement.UI
                     Model.Context.ServiceBroker,
                     Model.Context.SolutionManagerService,
                     Model.Context.Projects,
+                    Model.UIController,
                     CancellationToken.None);
             }
             else
@@ -108,7 +109,8 @@ namespace NuGet.PackageManagement.UI
                 _detailModel = new PackageDetailControlModel(
                     Model.Context.ServiceBroker,
                     Model.Context.SolutionManagerService,
-                    Model.Context.Projects);
+                    Model.Context.Projects,
+                    Model.UIController);
             }
 
             if (_windowSearchHostFactory != null)
@@ -143,7 +145,6 @@ namespace NuGet.PackageManagement.UI
             await IsCentralPackageManagementEnabledAsync(CancellationToken.None);
 
             NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
-            _isTransitiveDependenciesExperimentEnabled = NuGetExperimentationService.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI);
 
             // UI is initialized. Start the first search
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
@@ -177,6 +178,14 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
+
+            Settings.SettingsChanged += Settings_SettingsChanged;
+        }
+
+        private void Settings_SettingsChanged(object sender, EventArgs e)
+        {
+            _detailModel.PackageSourceMappingViewModel.SettingsChanged();
+            _detailModel.SetInstalledOrUpdateButtonIsEnabled();
         }
 
         public PackageRestoreBar RestoreBar { get; private set; }
@@ -185,6 +194,8 @@ namespace NuGet.PackageManagement.UI
         public ISettings Settings { get; private set; }
 
         public ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
+
+        public bool IsSolution => Model.IsSolution;
 
         internal InfiniteScrollList PackageList => _packageList;
 
@@ -874,10 +885,7 @@ namespace NuGet.PackageManagement.UI
 
             try
             {
-                if (_isTransitiveDependenciesExperimentEnabled)
-                {
-                    _packageList.ClearPackageLevelGrouping();
-                }
+                _packageList.ClearPackageLevelGrouping();
 
                 bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
                 var loader = await PackageItemLoader.CreateAsync(
@@ -903,7 +911,7 @@ namespace NuGet.PackageManagement.UI
                 // this will wait for searchResultTask to complete instead of creating a new task
                 await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
 
-                if (_isTransitiveDependenciesExperimentEnabled && ActiveFilter == ItemFilter.Installed)
+                if (ActiveFilter == ItemFilter.Installed)
                 {
                     _packageList.AddPackageLevelGrouping();
                 }
@@ -1085,6 +1093,7 @@ namespace NuGet.PackageManagement.UI
                 EmitSearchSelectionTelemetry(selectedItem);
 
                 await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem);
+                Model.UIController.SelectedPackageId = selectedItem.Id;
                 _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
 
                 _packageDetail.ScrollToHome();
@@ -1218,10 +1227,7 @@ namespace NuGet.PackageManagement.UI
                     await RunAndEmitRefreshAsync(async () =>
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        if (_isTransitiveDependenciesExperimentEnabled)
-                        {
-                            _packageList.ClearPackageLevelGrouping();
-                        }
+                        _packageList.ClearPackageLevelGrouping();
                         await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
                     }, RefreshOperationSource.FilterSelectionChanged, timeSpan, sw);
                     _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
@@ -1488,6 +1494,8 @@ namespace NuGet.PackageManagement.UI
 
             Model.Context.SourceService.PackageSourcesChanged -= PackageSourcesChanged;
 
+            Settings.SettingsChanged -= Settings_SettingsChanged;
+
             Model.Dispose();
 
             // make sure to cancel currently running load or refresh tasks
@@ -1649,7 +1657,7 @@ namespace NuGet.PackageManagement.UI
                         Search(searchQuery);
 
                         var hyperlinkType = tupleParam.Item2;
-                        var evt = new HyperlinkClickedTelemetryEvent(hyperlinkType, currentTab, Model.IsSolution, alternatePackageId);
+                        var evt = NavigatedTelemetryEvent.CreateWithAlternatePackageNavigation(hyperlinkType, currentTab, Model.IsSolution, alternatePackageId);
                         TelemetryActivity.EmitTelemetryEvent(evt);
                     }
                 }

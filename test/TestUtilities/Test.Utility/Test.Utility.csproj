@@ -7,6 +7,7 @@
     <Shipping>true</Shipping>
     <IsPackable>true</IsPackable>
     <SkipShared>true</SkipShared>
+    <TestProject>false</TestProject>
     <NoWarn>$(NoWarn);VSTHRD001;VSTHRD002;VSTHRD110</NoWarn>
     <Description>A collection of test utilities, such as generating packages, mocking servers, stub implementations of interfaces, etc.</Description>
     <SkipAnalyzers>true</SkipAnalyzers>
@@ -88,6 +89,8 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
+    <!-- System.Security.Cryptography.Xml is a dependency of Microsoft.Build.Tasks.Core. Therefore, we have assigned the same ExcludeAssets value. -->
+    <PackageReference Include="System.Security.Cryptography.Xml" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">

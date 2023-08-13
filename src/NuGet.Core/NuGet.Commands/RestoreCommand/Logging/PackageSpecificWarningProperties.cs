@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
@@ -88,24 +87,21 @@ namespace NuGet.Commands
         /// <param name="framework">Target graph for which no warning should be thrown.</param>
         public void Add(NuGetLogCode code, string libraryId, NuGetFramework framework)
         {
-            if (Properties == null)
+            Properties ??= new Dictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>>();
+
+            if (!Properties.TryGetValue(code, out IDictionary<string, ISet<NuGetFramework>> frameworksByLibraryId))
             {
-                Properties = new Dictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>>();
+                frameworksByLibraryId = new Dictionary<string, ISet<NuGetFramework>>(StringComparer.OrdinalIgnoreCase);
+                Properties.Add(code, frameworksByLibraryId);
             }
 
-            if (!Properties.ContainsKey(code))
+            if (!frameworksByLibraryId.TryGetValue(libraryId, out ISet<NuGetFramework> frameworks))
             {
-                Properties.Add(code, new Dictionary<string, ISet<NuGetFramework>>(StringComparer.OrdinalIgnoreCase));
+                frameworks = new HashSet<NuGetFramework>(NuGetFrameworkFullComparer.Instance);
+                frameworksByLibraryId[libraryId] = frameworks;
             }
 
-            if (Properties[code].ContainsKey(libraryId))
-            {
-                Properties[code][libraryId].Add(framework);
-            }
-            else
-            {
-                Properties[code].Add(libraryId, new HashSet<NuGetFramework>(new NuGetFrameworkFullComparer()) { framework });
-            }
+            frameworks.Add(framework);
         }
 
         /// <summary>

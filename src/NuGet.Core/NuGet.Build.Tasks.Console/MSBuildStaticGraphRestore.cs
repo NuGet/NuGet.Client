@@ -20,7 +20,6 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
 using Microsoft.Build.Logging;
-using Microsoft.Build.Utilities;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -599,7 +598,8 @@ namespace NuGet.Build.Tasks.Console
                     targetFrameworkMoniker: msBuildProjectInstance.GetProperty("TargetFrameworkMoniker"),
                     targetPlatformMoniker: msBuildProjectInstance.GetProperty("TargetPlatformMoniker"),
                     targetPlatformMinVersion: msBuildProjectInstance.GetProperty("TargetPlatformMinVersion"),
-                    clrSupport: msBuildProjectInstance.GetProperty("CLRSupport"));
+                    clrSupport: msBuildProjectInstance.GetProperty("CLRSupport"),
+                    windowsTargetPlatformMinVersion: msBuildProjectInstance.GetProperty("WindowsTargetPlatformMinVersion"));
 
                 var targetFrameworkInformation = new TargetFrameworkInformation()
                 {
@@ -799,6 +799,8 @@ namespace NuGet.Build.Tasks.Console
 
             (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled) = GetCentralPackageManagementSettings(project, projectStyleOrNull);
 
+            RestoreAuditProperties auditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(project);
+
             List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled);
 
             (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
@@ -843,6 +845,7 @@ namespace NuGet.Build.Tasks.Console
                     CentralPackageVersionsEnabled = isCentralPackageManagementEnabled && projectStyle == ProjectStyle.PackageReference,
                     CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled,
                     CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled,
+                    RestoreAuditProperties = auditProperties
                 };
             }
 

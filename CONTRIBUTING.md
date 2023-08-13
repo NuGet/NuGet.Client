@@ -92,13 +92,13 @@ NuGet members may contribute directly to the main remote.
     `.\runTests.ps1`
 
 1. Run dotnet code formatters and correct any errors.
-    * You can use `Format Document` in VS: 
+    - You can use `Format Document` in VS:
 
-       `Ctrl+K, Ctrl+D` or Edit > Advanced > Format Document (https://learn.microsoft.com/en-us/visualstudio/ide/default-keyboard-shortcuts-in-visual-studio?view=vs-2022#bkmk_text-editor-context-specific-shortcuts)
+       `Ctrl+K, Ctrl+D` or Edit > Advanced > Format Document (https://learn.microsoft.com/visualstudio/ide/default-keyboard-shortcuts-in-visual-studio#bkmk_text-editor-context-specific-shortcuts)
 
-    * You can use the dotnet CLI tool (https://github.com/dotnet/format):
+    - You can use the dotnet CLI tool (https://learn.microsoft.com/dotnet/core/tools/dotnet-format):
 
-      `dotnet format --check --exclude cli packages submodules`
+      `dotnet format whitespace --verify-no-changes NuGet.sln`
 
 ### Notable `build.ps1` switches
 
@@ -117,6 +117,7 @@ NuGet members may contribute directly to the main remote.
 
 - [Workflow](docs/workflow.md)
 - [Coding Guidelines](docs/coding-guidelines.md)
+- [UI Guidelines](docs/ui-guidelines.md)
 - [Project Overview](docs/project-overview.md)
 - [Debugging](docs/debugging.md)
 - [New Feature Guide](docs/feature-guide.md)

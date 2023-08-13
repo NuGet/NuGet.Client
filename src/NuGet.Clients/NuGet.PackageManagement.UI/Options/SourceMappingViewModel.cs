@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.VisualStudio.Internal.Contracts;
 
-namespace NuGet.Options
+namespace NuGet.PackageManagement.UI.Options
 {
     public class SourceMappingViewModel
     {
@@ -22,7 +22,6 @@ namespace NuGet.Options
 
         public SourceMappingViewModel(string packageId, List<PackageSourceContextInfo> packageSources)
         {
-
             ID = packageId ?? throw new ArgumentNullException(nameof(packageId));
             Sources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
         }

@@ -61,6 +61,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GetReferenceNearestTargetFrameworkTaskSupportsTargetPlatformParameter>true</GetReferenceNearestTargetFrameworkTaskSupportsTargetPlatformParameter>
     <!-- Flag if the Central package file is enabled -->
     <_CentralPackageVersionsEnabled Condition="'$(ManagePackageVersionsCentrally)' == 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
+    <!-- NuGetAudit is enabled by default when using the .NET 8 SDK or above. Customers should set 'true', so we'll use 'default' to signal implicit opt-in -->
+    <NuGetAudit Condition=" '$(NuGetAudit)' == '' AND $([MSBuild]::VersionGreaterThanOrEquals($([MSBuild]::ValueOrDefault('$(NETCoreSdkVersion)', '0.0')), '8.0'))">default</NuGetAudit>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -849,6 +851,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         <_CentralPackageVersionsEnabled>$(_CentralPackageVersionsEnabled)</_CentralPackageVersionsEnabled>
         <CentralPackageVersionOverrideEnabled>$(CentralPackageVersionOverrideEnabled)</CentralPackageVersionOverrideEnabled>
         <CentralPackageTransitivePinningEnabled>$(CentralPackageTransitivePinningEnabled)</CentralPackageTransitivePinningEnabled>
+        <NuGetAudit>$(NuGetAudit)</NuGetAudit>
+        <NuGetAuditLevel>$(NuGetAuditLevel)</NuGetAuditLevel>
+        <NuGetAuditMode>$(NuGetAuditMode)</NuGetAuditMode>
       </_RestoreGraphEntry>
     </ItemGroup>
 
@@ -1061,6 +1066,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <TargetPlatformMinVersion>$(TargetPlatformMinVersion)</TargetPlatformMinVersion>
         <CLRSupport>$(CLRSupport)</CLRSupport>
         <RuntimeIdentifierGraphPath>$(RuntimeIdentifierGraphPath)</RuntimeIdentifierGraphPath>
+        <WindowsTargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</WindowsTargetPlatformMinVersion>
       </_RestoreGraphEntry>
     </ItemGroup>
   </Target>

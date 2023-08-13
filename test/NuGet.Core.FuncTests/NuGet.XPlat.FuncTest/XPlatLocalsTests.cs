@@ -59,7 +59,6 @@ namespace NuGet.XPlat.FuncTest
                       DotnetCli,
                       Directory.GetCurrentDirectory(),
                       $"{XplatDll} {args}",
-                      waitForExit: true,
                     environmentVariables: new Dictionary<string, string>
                     {
                         { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
@@ -105,7 +104,8 @@ namespace NuGet.XPlat.FuncTest
                 var mockHttpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"http-cache"));
                 var mockTmpDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
                 var mockPluginsCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"plugins-cache"));
-                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockTmpDirectory.FullName, @"NuGetScratch"));
+                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockTmpDirectory.FullName,
+                    RuntimeEnvironmentHelper.IsLinux ? "NuGetScratch" + Environment.UserName : "NuGetScratch"));
 
                 DotnetCliUtil.CreateTestFiles(mockGlobalPackagesDirectory.FullName);
                 DotnetCliUtil.CreateTestFiles(mockHttpCacheDirectory.FullName);
@@ -116,10 +116,9 @@ namespace NuGet.XPlat.FuncTest
 
                 // Act
                 var result = CommandRunner.Run(
-                      DotnetCli,
-                      Directory.GetCurrentDirectory(),
-                      $"{XplatDll} {args}",
-                      waitForExit: true,
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} {args}",
                     environmentVariables: new Dictionary<string, string>
                     {
                         { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
@@ -223,8 +222,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
               DotnetCli,
               Directory.GetCurrentDirectory(),
-              $"{XplatDll} {args}",
-              waitForExit: true);
+              $"{XplatDll} {args}");
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -248,8 +246,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
               DotnetCli,
               Directory.GetCurrentDirectory(),
-              $"{XplatDll} {args}",
-              waitForExit: true);
+              $"{XplatDll} {args}");
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -273,8 +270,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
               DotnetCli,
               Directory.GetCurrentDirectory(),
-              $"{XplatDll} {args}",
-              waitForExit: true);
+              $"{XplatDll} {args}");
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -302,8 +298,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
               DotnetCli,
               Directory.GetCurrentDirectory(),
-              $"{XplatDll} {args}",
-              waitForExit: true);
+              $"{XplatDll} {args}");
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -337,8 +332,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
               DotnetCli,
               Directory.GetCurrentDirectory(),
-              $"{XplatDll} {args}",
-              waitForExit: true);
+              $"{XplatDll} {args}");
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);

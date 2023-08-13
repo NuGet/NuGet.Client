@@ -5,6 +5,27 @@ parameters:
   type: string
 
 steps:
+- task: MicroBuildLocalizationPlugin@1
+  displayName: "Install Localization Plugin"
+
+- task: MicroBuildSigningPlugin@1
+  inputs:
+    signType: "$(SigningType)"
+    esrpSigning: "true"
+  displayName: "Install Signing Plugin"
+
+- task: MicroBuildSwixPlugin@4
+  displayName: "Install Swix Plugin"
+
+- task: MicroBuildOptProfPlugin@6
+  displayName: 'OptProfV2:  install the plugin'
+  inputs:
+    getDropNameByDrop: true
+    optimizationInputsDropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
+    ShouldSkipOptimize: $(ShouldSkipOptimize)
+    AccessToken: $(System.AccessToken)
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+
 - task: PowerShell@1
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
@@ -31,27 +52,6 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
-
-- task: MicroBuildLocalizationPlugin@1
-  displayName: "Install Localization Plugin"
-
-- task: MicroBuildSigningPlugin@1
-  inputs:
-    signType: "$(SigningType)"
-    esrpSigning: "true"
-  displayName: "Install Signing Plugin"
-
-- task: MicroBuildSwixPlugin@4
-  displayName: "Install Swix Plugin"
-
-- task: MicroBuildOptProfPlugin@6
-  displayName: 'OptProfV2:  install the plugin'
-  inputs:
-    getDropNameByDrop: true
-    optimizationInputsDropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-    ShouldSkipOptimize: $(ShouldSkipOptimize)
-    AccessToken: $(System.AccessToken)
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 # NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
 # However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
@@ -120,7 +120,7 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /property:GitRepositoryRemoteName=github /property:IncludeApex=$(IncludeApex) /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog"
+    msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /property:GitRepositoryRemoteName=github /property:IncludeApex=$(IncludeApex) /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog /property:MicroBuild_SigningEnabled=false"
 
 - task: CodeQL3000Finalize@0
   displayName: Finalize CodeQL
@@ -131,14 +131,14 @@ steps:
   inputs:
     solution: "build\\loc.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:AfterBuild /property:LocType=${{parameters.NuGetLocalizationType}} /binarylogger:$(Build.StagingDirectory)\\binlog\\03.Localize.binlog"
+    msbuildArguments: "/restore /property:LocType=${{parameters.NuGetLocalizationType}} /binarylogger:$(Build.StagingDirectory)\\binlog\\03.Localize.binlog"
 
 - task: MSBuild@1
   displayName: "Build NuGet.exe Localized"
   inputs:
     solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:Build /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\04.BuildNuGetExe.binlog"
+    msbuildArguments: "/restore:false /t:Build /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\04.BuildNuGetExe.binlog"
 
 - task: MSBuild@1
   displayName: "ILMerge NuGet.exe"
@@ -180,7 +180,6 @@ steps:
     testResultsFiles: "*.trx"
     testRunTitle: "NuGet.Client Unit Tests On Windows"
     searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
-    mergeTestResults: "true"
     publishRunAttachments: "false"
   condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
 
@@ -206,14 +205,14 @@ steps:
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:AfterBuild /binarylogger:$(Build.StagingDirectory)\\binlog\\07.SignAssemblies.binlog"
+    msbuildArguments: "/restore /binarylogger:$(Build.StagingDirectory)\\binlog\\07.SignAssemblies.binlog"
 
 - task: MSBuild@1
   displayName: "Pack Nupkgs"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:Pack /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\09.Pack.binlog"
+    msbuildArguments: "/restore:false /target:Pack /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\09.Pack.binlog /property:MicroBuild_SigningEnabled=false"
 
 - task: MSBuild@1
   displayName: "Ensure all Nupkgs and Symbols are created"
@@ -227,7 +226,7 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:BuildVSIX /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\11.BuildVSIX.binlog"
+    msbuildArguments: "/restore:false /target:BuildVSIX /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\11.PackVSIX.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - ${{ if not(parameters.BuildRTM)}}:
@@ -239,9 +238,9 @@ steps:
 - task: MSBuild@1
   displayName: "Generate Build Tools package"
   inputs:
-    solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
+    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\12.BuildToolsVSIX.binlog"
+    msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\12.BuildToolsVSIX.binlog"
   condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -249,7 +248,7 @@ steps:
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:AfterBuild /property:SignPackages=true /binarylogger:$(Build.StagingDirectory)\\binlog\\13.SignPackages.binlog"
+    msbuildArguments: "/restore /property:SignPackages=true /binarylogger:$(Build.StagingDirectory)\\binlog\\13.SignPackages.binlog"
 
 - task: NuGetToolInstaller@1
   displayName: Use NuGet 6.x
@@ -287,25 +286,25 @@ steps:
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
   inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
+    solution: "setup\\Microsoft.VisualStudio.NuGet.Core\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\14.GenerateVSManifestForVSIX.binlog"
+    msbuildArguments: "/property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\14.GenerateVSManifestForVSIX.binlog"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: MSBuild@1
   displayName: "Generate VSMAN file for Build Tools VSIX"
   inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
+    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\15.GenerateVSManifestForToolsVSIX.binlog"
+    msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\15.GenerateVSManifestForToolsVSIX.binlog"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
-- task: PowerShell@1
+- task: MSBuild@1
   displayName: "Create EndToEnd Test Package"
   inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
-    arguments: "-c $(BuildConfiguration) -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
-    failOnStandardError: "true"
+    solution: "$(Build.Repository.LocalPath)\\test\\TestUtilities\\CreateEndToEndTestPackage\\CreateEndToEndTestPackage.proj"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/property:EndToEndPackageOutputPath=$(Build.Repository.LocalPath)\\artifacts\\VS15 /property:BuildProjectReferences=false /binarylogger:$(Build.StagingDirectory)\\binlog\\16.CreateEndToEndTestPackage.binlog"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
 - task: NuGetCommand@2
@@ -322,7 +321,7 @@ steps:
     arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.655 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: MicroBuildBuildVSBootstrapper@2
+- task: MicroBuildBuildVSBootstrapper@3
   displayName: 'Build a Visual Studio bootstrapper for tests'
   inputs:
     channelName: "$(VsTargetChannelForTests)"
@@ -355,12 +354,46 @@ steps:
         exit 1
       }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  
+- task: PowerShell@1
+  displayName: "Set CloudBuild Session ID variable for tests"
+  name: "setcloudbuildsessionid"
+  continueOnError: true
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      try {
+        $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+        $qBuildSessionId = $json[0].QBuildSessionId;
+        Write-Host "CloudBuild Session ID: $qBuildSessionId"
+        Write-Host "##vso[task.setvariable variable=QBuildSessionId;isOutput=true]$qBuildSessionId"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
+      }
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  
+- task: PowerShell@1
+  displayName: "Set Base Build Drop variable for tests"
+  name: "setbasebuilddrop"
+  continueOnError: true
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      try {
+        $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+        $buildDrop = $json[0].BuildDrop;
+        Write-Host "Base Build Drop: $buildDrop"
+        Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]Unable to set Base Build Drop: $_"
+      }
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
   displayName: 'Generate .runsettings files'
   inputs:
     solution: 'build\runsettings.proj'
-    msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\16.GenerateRunSettings.binlog'
+    msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateRunSettings.binlog'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PowerShell@1
@@ -430,7 +463,7 @@ steps:
   inputs:
     solution: "build\\symbols.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /property:IsSymbolBuild=true /property:BuildRTM=$(BuildRTM) /binarylogger:$(Build.StagingDirectory)\\binlog\\17.CollectBuildSymbols.binlog"
+    msbuildArguments: "/restore:false /property:BuildProjectReferences=false /property:IsSymbolBuild=true /property:BuildRTM=$(BuildRTM) /binarylogger:$(Build.StagingDirectory)\\binlog\\18.CollectBuildSymbols.binlog"
     maximumCpuCount: true
   condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
@@ -452,25 +485,27 @@ steps:
     dropMetadataContainerName: "DropMetadata-Product"
   condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
-- task: PowerShell@1
+- task: MSBuild@1
   displayName: "LocValidation: Verify VSIX"
   inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
-    arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs -TmpPath $(Agent.TempDirectory) -ValidateVsix"
+    solution: "build\\BuildValidator.proj"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/target:ValidateVsix /property:BuildRTM=$(BuildRTM) /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\19.ValidateVsixLocalization.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PowerShell@1
+- task: MSBuild@1
   displayName: "LocValidation: Verify Artifacts"
   inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
-    arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs"
+    solution: "build\\BuildValidator.proj"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/target:ValidateArtifacts /property:BuildRTM=$(BuildRTM) /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\20.ValidateArtifactsLocalization.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PublishPipelineArtifact@1
   displayName: "LocValidation: Publish Logs as an artifact"
   inputs:
     artifactName: LocValidationLogs
-    targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
+    targetPath: "$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   # Use dotnet msbuild instead of MSBuild CLI.
@@ -480,7 +515,7 @@ steps:
 - task: CmdLine@2
   displayName: "Publish to the .NET Core build asset registry (BAR)"
   inputs:
-    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /property:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /property:BUILD_BUILDNUMBER=$(Build.BuildNumber) /property:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /property:BUILD_SOURCEVERSION=$(Build.SourceVersion) /property:BUILD_REPOSITORY_URI=$(Build.Repository.Uri)  /property:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /property:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /property:MaestroApiEndpoint=$(MaestroApiEndpoint) /property:MaestroAccessToken=$(MaestroAccessToken) /binarylogger:$(Build.StagingDirectory)\binlog\PublishToBuildAssetRegistry.binlog
+    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /property:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /property:BUILD_BUILDNUMBER=$(Build.BuildNumber) /property:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /property:BUILD_SOURCEVERSION=$(Build.SourceVersion) /property:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) /property:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /property:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /property:MaestroApiEndpoint=$(MaestroApiEndpoint) /property:MaestroAccessToken=$(MaestroAccessToken) /binarylogger:$(Build.StagingDirectory)\binlog\21.PublishToBuildAssetRegistry.binlog
     workingDirectory: cli
     failOnStderr: true
   env:
@@ -493,7 +528,7 @@ steps:
   inputs:
     artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
     targetPath: $(Build.StagingDirectory)\binlog
-  condition: " or(failed(), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true')) "
+  condition: " or(failed(), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['System.debug'], 'true')) "
 
 - task: MicroBuildCleanup@1
   displayName: "Perform Cleanup Tasks"

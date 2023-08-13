@@ -199,7 +199,7 @@ namespace NuGet.Packaging.Rules
                 set.Add(file);
             }
 
-            var managedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
+            var managedCodeConventions = new ManagedCodeConventions(RuntimeGraph.Empty);
             var collection = new ContentItemCollection();
             collection.Load(set.Select(path => path.Replace('\\', '/')).ToArray());
 
@@ -227,7 +227,7 @@ namespace NuGet.Packaging.Rules
                 ContentExtractor.GetContentForPattern(collection, pattern, targetedItemGroups);
                 foreach (ContentItemGroup group in targetedItemGroups)
                 {
-                    foreach (ContentItem item in group.Items)
+                    foreach (ContentItem item in group.Items.NoAllocEnumerate())
                     {
                         var exists = item.Properties.TryGetValue("tfm_raw", out var frameworkRaw);
                         string frameworkString = (string)frameworkRaw;

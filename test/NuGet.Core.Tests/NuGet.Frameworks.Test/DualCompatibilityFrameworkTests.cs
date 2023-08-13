@@ -14,13 +14,13 @@ namespace NuGet.Frameworks.Test
         [Fact]
         public void Constructor_WithNullFramework_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new DualCompatibilityFramework(framework: null, secondaryFramework: NuGetFramework.AnyFramework));
+            Assert.Throws<ArgumentNullException>(() => new DualCompatibilityFramework(framework: null!, secondaryFramework: NuGetFramework.AnyFramework));
         }
 
         [Fact]
         public void Constructor_WithNullSecondary_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new DualCompatibilityFramework(framework: NuGetFramework.AnyFramework, secondaryFramework: null));
+            Assert.Throws<ArgumentNullException>(() => new DualCompatibilityFramework(framework: NuGetFramework.AnyFramework, secondaryFramework: null!));
         }
 
         [Theory]
@@ -32,7 +32,7 @@ namespace NuGet.Frameworks.Test
         {
             var nugetFramework = NuGetFramework.Parse(shortFrameworkName);
             var extendedFramework = new DualCompatibilityFramework(NuGetFramework.Parse(rootFrameworkName), secondaryFramework: NuGetFramework.Parse(rootFrameworkName));
-            var comparer = new NuGetFrameworkFullComparer();
+            var comparer = NuGetFrameworkFullComparer.Instance;
             comparer.Equals(nugetFramework, extendedFramework).Should().Be(equals);
             nugetFramework.Equals(extendedFramework).Should().Be(equals);
         }
@@ -56,7 +56,7 @@ namespace NuGet.Frameworks.Test
 
             FallbackFramework fallbackFramework = dualCompatibilityFramework.AsFallbackFramework();
 
-            var comparer = new NuGetFrameworkFullComparer();
+            var comparer = NuGetFrameworkFullComparer.Instance;
             Assert.True(comparer.Equals(fallbackFramework, nugetFramework));
 
             fallbackFramework.Fallback.Should().HaveCount(1);

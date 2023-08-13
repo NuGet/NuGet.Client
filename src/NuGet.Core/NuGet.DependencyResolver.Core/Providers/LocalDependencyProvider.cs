@@ -50,6 +50,8 @@ namespace NuGet.DependencyResolver
         /// <remarks>Optional. This will be <c>null</c> for project providers.</remarks>
         public PackageSource Source { get; private set; }
 
+        public SourceRepository SourceRepository { get; private set; }
+
         /// <summary>
         /// Asynchronously discovers all versions of a package from a source and selects the best match.
         /// </summary>
@@ -87,7 +89,7 @@ namespace NuGet.DependencyResolver
 
             if (library == null)
             {
-                return Task.FromResult<LibraryIdentity>(null);
+                return TaskResult.Null<LibraryIdentity>();
             }
 
             return Task.FromResult(library.Identity);

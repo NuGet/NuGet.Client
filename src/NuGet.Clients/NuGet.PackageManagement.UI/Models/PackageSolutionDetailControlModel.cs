@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,8 +35,9 @@ namespace NuGet.PackageManagement.UI
 
         private PackageSolutionDetailControlModel(
             IServiceBroker serviceBroker,
-            IEnumerable<IProjectContextInfo> projects)
-            : base(serviceBroker, projects)
+            IEnumerable<IProjectContextInfo> projects,
+            INuGetUI uiController)
+            : base(serviceBroker, projects, uiController)
         {
             IsRequestedVisible = projects.Any(p => p.ProjectStyle == ProjectStyle.PackageReference);
         }
@@ -68,9 +68,10 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker,
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
+            INuGetUI uiController,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
             await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }
@@ -79,9 +80,10 @@ namespace NuGet.PackageManagement.UI
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
             IServiceBroker serviceBroker,
+            INuGetUI uiController,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
             await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }
@@ -202,14 +204,14 @@ namespace NuGet.PackageManagement.UI
             }
 
             _versions.Clear();
-            List<(NuGetVersion version, bool isDeprecated)> allVersions = _allPackageVersions?.Where(v => v.version != null).OrderByDescending(v => v.version).ToList();
+            List<(NuGetVersion version, bool isDeprecated, bool isVulnerable)> allVersions = _allPackageVersions?.Where(v => v.version != null).OrderByDescending(v => v.version).ToList();
 
             // null, if no version constraint defined in package.config
             VersionRange allowedVersions = await GetAllowedVersionsAsync(cancellationToken);
             var allVersionsAllowed = allVersions.Where(v => allowedVersions.Satisfies(v.version)).ToArray();
 
             var blockedVersions = new List<NuGetVersion>(allVersions.Count);
-            foreach ((NuGetVersion version, bool isDeprecated) in allVersions)
+            foreach ((NuGetVersion version, bool isDeprecated, bool isVulnerable) in allVersions)
             {
                 if (!allVersionsAllowed.Any(a => a.version.Version.Equals(version.Version)))
                 {
@@ -224,12 +226,14 @@ namespace NuGet.PackageManagement.UI
             if (latestPrerelease.version != null
                 && (latestStableVersion.version == null || latestPrerelease.version > latestStableVersion.version))
             {
-                _versions.Add(new DisplayVersion(latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated));
+                var versionRange = new VersionRange(latestPrerelease.version, true, latestPrerelease.version, true);
+                _versions.Add(new DisplayVersion(versionRange, version: latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated, isVulnerable: latestPrerelease.isVulnerable));
             }
 
             if (latestStableVersion.version != null)
             {
-                _versions.Add(new DisplayVersion(latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
+                var versionRange = new VersionRange(latestStableVersion.version, true, latestStableVersion.version, true);
+                _versions.Add(new DisplayVersion(versionRange, version: latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated, isVulnerable: latestStableVersion.isVulnerable));
             }
 
             // add a separator
@@ -241,7 +245,8 @@ namespace NuGet.PackageManagement.UI
             // first add all the available versions to be updated
             foreach (var version in allVersionsAllowed)
             {
-                _versions.Add(new DisplayVersion(version.version, null, isDeprecated: version.isDeprecated));
+                var versionRange = new VersionRange(version.version, true, version.version, true);
+                _versions.Add(new DisplayVersion(versionRange, version: version.version, null, isDeprecated: version.isDeprecated, isVulnerable: version.isVulnerable));
             }
 
             ProjectVersionConstraint[] selectedProjects = (await GetConstraintsForSelectedProjectsAsync(cancellationToken)).ToArray();
@@ -434,9 +439,10 @@ namespace NuGet.PackageManagement.UI
         {
             CanUninstall = Projects.Any(project => project.IsSelected && project.InstalledVersion != null && !project.AutoReferenced);
 
-            CanInstall = SelectedVersion != null && Projects.Any(
-                project => project.IsSelected &&
-                    VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0);
+            CanInstall = SelectedVersion != null
+                && CanInstallWithPackageSourceMapping
+                && Projects.Any(project => project.IsSelected
+                    && VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0);
         }
 
         private async ValueTask<IEnumerable<ProjectVersionConstraint>> GetConstraintsForSelectedProjectsAsync(
@@ -600,6 +606,11 @@ namespace NuGet.PackageManagement.UI
             {
                 _isInBatchUpdate = false;
             }
+        }
+
+        public override void SetInstalledOrUpdateButtonIsEnabled()
+        {
+            UpdateCanInstallAndCanUninstall();
         }
     }
 }

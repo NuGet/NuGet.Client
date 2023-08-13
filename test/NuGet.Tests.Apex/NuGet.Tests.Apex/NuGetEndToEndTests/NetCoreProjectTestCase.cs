@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using EnvDTE;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using NuGet.StaFact;
 using NuGet.Test.Utility;
@@ -182,7 +179,7 @@ namespace NuGet.Tests.Apex
                     VisualStudio.ClearWindows();
 
                     // Act
-                    uiwindow.UpdatePackageFromUI(packageName, packageVersion2);                    
+                    uiwindow.UpdatePackageFromUI(packageName, packageVersion2);
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
@@ -281,7 +278,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [NuGetWpfTheory(Skip = "https://github.com/NuGet/Home/issues/12441")]
+        [NuGetWpfTheory]
         [MemberData(nameof(GetNetCoreTemplates))]
         public async Task UpdatePackageToNetCoreProjectFromUI(ProjectTemplate projectTemplate)
         {
@@ -306,8 +303,12 @@ namespace NuGet.Tests.Apex
                     var nugetTestService = GetNuGetTestService();
                     var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.Project);
                     uiwindow.InstallPackageFromUI(packageName, packageVersion1);
-                    uiwindow.SwitchTabToUpdate();
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
                     uiwindow.UpdatePackageFromUI(packageName, packageVersion2);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
@@ -316,7 +317,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [NuGetWpfTheory(Skip = "https://github.com/NuGet/Home/issues/12441")]
+        [NuGetWpfTheory]
         [MemberData(nameof(GetNetCoreTemplates))]
         public async Task UninstallPackageFromNetCoreProjectFromUI(ProjectTemplate projectTemplate)
         {
@@ -339,8 +340,12 @@ namespace NuGet.Tests.Apex
                     var nugetTestService = GetNuGetTestService();
                     var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.Project);
                     uiwindow.InstallPackageFromUI(packageName, packageVersion);
-                    uiwindow.SwitchTabToInstalled();
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+
                     uiwindow.UninstallPackageFromUI(packageName);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();

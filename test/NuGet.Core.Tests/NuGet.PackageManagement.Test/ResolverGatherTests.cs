@@ -1438,7 +1438,7 @@ namespace NuGet.Test
         public async Task ResolverGather_PackageSourceMapping_Succeed(string packagePatterns, string packageId)
         {
             // Arrange
-            var sourceMappingConfiguration = PackageSourceMappingUtility.GetpackageSourceMapping(packagePatterns);
+            var sourceMappingConfiguration = PackageSourceMappingUtility.GetPackageSourceMapping(packagePatterns);
             IReadOnlyList<string> configuredSources = sourceMappingConfiguration.GetConfiguredPackageSources(packageId);
             var target = new PackageIdentity(packageId, new NuGetVersion(1, 0, 0));
             IEnumerable<PackageIdentity> targets = new[] { target };
@@ -1520,7 +1520,7 @@ namespace NuGet.Test
         public async Task ResolverGather_PackageSourceMapping_Fails(string packagePatterns, string packageId)
         {
             // Arrange
-            var sourceMappingConfiguration = PackageSourceMappingUtility.GetpackageSourceMapping(packagePatterns);
+            var sourceMappingConfiguration = PackageSourceMappingUtility.GetPackageSourceMapping(packagePatterns);
             IReadOnlyList<string> configuredSources = sourceMappingConfiguration.GetConfiguredPackageSources(packageId);
             var target = new PackageIdentity(packageId, new NuGetVersion(1, 0, 0));
             IEnumerable<PackageIdentity> targets = new[] { target };
@@ -1576,7 +1576,7 @@ namespace NuGet.Test
 
             // Assert
             Assert.True(sourceMappingConfiguration.IsEnabled);
-            Assert.Null(configuredSources);
+            Assert.Empty(configuredSources);
 
             // Assert log.
             Assert.Contains($"Package '{packageId} 1.0.0' is not found in the following primary source(s)", exception.Message);

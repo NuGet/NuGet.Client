@@ -161,13 +161,15 @@ namespace NuGet.SolutionRestoreManager
             var targetPlatformMoniker = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformMoniker);
             var targetPlatformMinVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformMinVersion);
             var clrSupport = GetPropertyValueOrNull(properties, ProjectBuildProperties.CLRSupport);
+            var windowsTargetPlatformMinVersion = GetPropertyValueOrNull(properties, ProjectBuildProperties.WindowsTargetPlatformMinVersion);
 
             return MSBuildProjectFrameworkUtility.GetProjectFramework(
                 projectFullPath,
                 targetFrameworkMoniker,
                 targetPlatformMoniker,
                 targetPlatformMinVersion,
-                clrSupport);
+                clrSupport,
+                windowsTargetPlatformMinVersion);
         }
 
         internal static ProjectRestoreMetadataFrameworkInfo ToProjectRestoreMetadataFrameworkInfo(
@@ -298,6 +300,22 @@ namespace NuGet.SolutionRestoreManager
         internal static bool IsCentralPackageTransitivePinningEnabled(IEnumerable tfms)
         {
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.CentralPackageTransitivePinningEnabled, MSBuildStringUtility.IsTrue);
+        }
+
+        internal static RestoreAuditProperties GetRestoreAuditProperties(IEnumerable tfms)
+        {
+            string enableAudit = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAudit, s => s);
+            string auditLevel = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditLevel, s => s);
+            string auditMode = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditMode, s => s);
+
+            return !string.IsNullOrEmpty(enableAudit) || !string.IsNullOrEmpty(auditLevel) || !string.IsNullOrEmpty(auditMode)
+                ? new RestoreAuditProperties()
+                {
+                    EnableAudit = enableAudit,
+                    AuditLevel = auditLevel,
+                    AuditMode = auditMode,
+                }
+                : null;
         }
 
         private static NuGetFramework GetToolFramework(IEnumerable targetFrameworks)

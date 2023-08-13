@@ -244,10 +244,10 @@ namespace NuGet.CommandLine.Test
                 r.Success.Should().BeTrue();
                 projects.Should().NotBeEmpty();
 
-                foreach (var number in projects.Keys)
+                foreach ((var number, var context) in projects)
                 {
-                    projects[number].AssetsFile.Libraries.Select(e => e.Name).Should().Contain(packageId);
-                    projects[number].AssetsFile.Libraries.Single(e => e.Name.Equals(packageId)).Version.ToString().Should().Be(packageVersion);
+                    context.AssetsFile.Libraries.Select(e => e.Name).Should().Contain(packageId);
+                    context.AssetsFile.Libraries.Single(e => e.Name.Equals(packageId)).Version.ToString().Should().Be(packageVersion);
                 }
             }
         }
@@ -891,8 +891,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -954,8 +953,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -3495,8 +3493,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -3586,8 +3583,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -3690,8 +3686,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -3759,8 +3754,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -3846,8 +3840,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -3938,8 +3931,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Assert.False(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -10029,13 +10021,7 @@ namespace NuGet.CommandLine.Test
                 var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     "proj",
                     pathContext.SolutionRoot,
-                    "net5.0-windows");
-
-                // Workaround: Set all the TFM properties ourselves.
-                // We can't rely on the SDK setting them, as only .NET 5 SDK P8 and later applies these correctly.
-                var net50windowsTFM = project.Frameworks.Where(f => f.TargetAlias.Equals("net5.0-windows")).Single();
-                net50windowsTFM.Properties.Add("TargetFrameworkMoniker", ".NETCoreApp, Version=v5.0");
-                net50windowsTFM.Properties.Add("TargetPlatformMoniker", "Windows, Version=7.0");
+                    "net8.0-windows");
 
                 project.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(project);
@@ -10054,7 +10040,7 @@ namespace NuGet.CommandLine.Test
 
                 var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").ToList();
 
-                Assert.Contains("'$(TargetFramework)' == 'net5.0-windows' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Contains("'$(TargetFramework)' == 'net8.0-windows' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
 
@@ -10470,8 +10456,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -10776,8 +10761,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Preconditions
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -10812,8 +10796,7 @@ namespace NuGet.CommandLine.Test
                 r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", lockedModeArgs),
-                    waitForExit: true);
+                    string.Join(" ", lockedModeArgs));
 
                 r.Success.Should().BeTrue(because: r.AllOutput);
             }
@@ -10897,8 +10880,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Pre-Conditions
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
@@ -10913,8 +10895,7 @@ namespace NuGet.CommandLine.Test
                 r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", lockedModeArgs),
-                    waitForExit: true);
+                    string.Join(" ", lockedModeArgs));
 
                 // Assert
                 r.Success.Should().BeFalse(because: r.AllOutput);
@@ -11316,8 +11297,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 var r = CommandRunner.Run(
                     Util.GetNuGetExePath(),
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 r.Success.Should().BeTrue(because: r.AllOutput);
@@ -11384,8 +11364,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 var r = CommandRunner.Run(
                     Util.GetNuGetExePath(),
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 r.Success.Should().BeTrue(because: r.AllOutput);
@@ -11425,8 +11404,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             CommandRunnerResult result = CommandRunner.Run(
                     Util.GetNuGetExePath(),
                     pathContext.WorkingDirectory.Path,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
             // Assert
             result.Success.Should().BeTrue(because: result.AllOutput);
@@ -11483,8 +11461,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             var r = CommandRunner.Run(
                 Util.GetNuGetExePath(),
                 pathContext.WorkingDirectory.Path,
-                string.Join(" ", args),
-                waitForExit: true);
+                string.Join(" ", args));
 
             // Assert
             r.Success.Should().Be(expectedSuccess, because: r.AllOutput);

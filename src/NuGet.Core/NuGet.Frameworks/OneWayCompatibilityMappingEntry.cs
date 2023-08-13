@@ -41,10 +41,10 @@ namespace NuGet.Frameworks
 
         public static CompatibilityMappingComparer Comparer
         {
-            get { return new CompatibilityMappingComparer(); }
+            get { return CompatibilityMappingComparer.Instance; }
         }
 
-        public bool Equals(OneWayCompatibilityMappingEntry other)
+        public bool Equals(OneWayCompatibilityMappingEntry? other)
         {
             return Comparer.Equals(this, other);
         }

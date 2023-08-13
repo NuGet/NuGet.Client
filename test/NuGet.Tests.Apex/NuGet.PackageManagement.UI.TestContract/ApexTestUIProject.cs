@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -55,6 +54,30 @@ namespace NuGet.PackageManagement.UI.TestContract
         public void Search(string searchText)
         {
             UIInvoke(() => _packageManagerControl.Search(searchText));
+        }
+
+        public bool VerifyFirstPackageOnTab(string tabName, string packageId, string packageVersion = null)
+        {
+            var result = UIInvoke(() => _packageManagerControl.PackageList.PackageItems.FirstOrDefault());
+            if (result is null)
+            {
+                return false;
+            }
+
+            if (tabName == "Browse")
+            {
+                return result.Id == packageId;
+            }
+            else
+            {
+                return result.Id == packageId && result.Version == NuGetVersion.Parse(packageVersion);
+            }
+        }
+
+        public bool VerifyVulnerablePackageOnTopOfInstalledTab()
+        {
+            var result = UIInvoke(() => _packageManagerControl.PackageList.PackageItems.FirstOrDefault());
+            return result?.IsPackageVulnerable == true;
         }
 
         public void InstallPackage(string packageId, string version)
@@ -128,7 +151,8 @@ namespace NuGet.PackageManagement.UI.TestContract
         /// <summary>
         /// Used for package source mapping Apex tests which require All option in package sources.
         /// </summary>
-        public void SetPackageSourceOptionToAll() => UIInvoke(() => {
+        public void SetPackageSourceOptionToAll() => UIInvoke(() =>
+        {
             // First one is always 'All' option
             _packageManagerControl.SelectedSource = _packageManagerControl.PackageSources.First();
         });

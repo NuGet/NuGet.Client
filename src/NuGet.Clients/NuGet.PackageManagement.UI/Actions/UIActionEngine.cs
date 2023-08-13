@@ -77,6 +77,8 @@ namespace NuGet.PackageManagement.UI
                     userAction,
                     uiService.RemoveDependencies,
                     uiService.ForceRemove,
+                    newMappingID: userAction.PackageId,
+                    newMappingSource: userAction.SourceMappingSourceName,
                     cancellationToken),
                 cancellationToken);
         }
@@ -354,6 +356,10 @@ namespace NuGet.PackageManagement.UI
             {
                 // don't teardown the process if we have a telemetry failure
             }
+
+            var sourceMappingProvider = new PackageSourceMappingProvider(uiService.Settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingSourceItems = sourceMappingProvider.GetPackageSourceMappingItems();
+
             packageEnumerationTime.Stop();
 
             await _lockService.ExecuteNuGetOperationAsync(async () =>
@@ -459,6 +465,9 @@ namespace NuGet.PackageManagement.UI
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
+                        List<string>? addedPackageIds = addedPackages != null ? addedPackages.Select(pair => pair.Item1).Distinct().ToList() : null;
+                        PackageSourceMappingUtility.ConfigureNewPackageSourceMapping(userAction, addedPackageIds, sourceMappingProvider, existingPackageSourceMappingSourceItems);
+
                         await projectManagerService.ExecuteActionsAsync(
                             actions,
                             cancellationToken);
@@ -519,8 +528,8 @@ namespace NuGet.PackageManagement.UI
                         uiService.Projects,
                         cancellationToken)).ToArray();
 
-                    var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(uiService.Settings);
-                    bool isPackageSourceMappingEnabled = packageSourceMapping?.IsEnabled ?? false;
+                    var isPackageSourceMappingEnabled = existingPackageSourceMappingSourceItems.Count > 0;
+
                     var actionTelemetryEvent = new VSActionsTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         projectIds,
@@ -531,7 +540,7 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         DateTimeOffset.Now,
                         duration.TotalSeconds,
-                        isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
+                        isPackageSourceMappingEnabled);
 
                     var nuGetUI = uiService as NuGetUI;
                     AddUiActionEngineTelemetryProperties(
@@ -565,7 +574,7 @@ namespace NuGet.PackageManagement.UI
 
         internal static TelemetryEvent ToTelemetryPackage(string packageId, string packageVersion, string? packageVersionRange)
         {
-            var subEvent = new TelemetryEvent(eventName: null);
+            var subEvent = new TelemetryEvent(eventName: string.Empty);
             subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(packageId));
             subEvent["version"] = packageVersion;
             if (packageVersionRange != null)
@@ -791,8 +800,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            IEnumerable<SourceRepository> sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-            List<IPackageSearchMetadata> licenseMetadata = await GetPackageMetadataAsync(sources, licenseCheck, token);
+            List<IPackageSearchMetadata> licenseMetadata = await GetPackageMetadataAsync(uiService, licenseCheck, token);
 
             TelemetryServiceUtility.StopTimer();
 
@@ -841,6 +849,8 @@ namespace NuGet.PackageManagement.UI
             UserAction userAction,
             bool removeDependencies,
             bool forceRemove,
+            string? newMappingID,
+            string? newMappingSource,
             CancellationToken token)
         {
             var results = new List<ProjectAction>();
@@ -848,7 +858,7 @@ namespace NuGet.PackageManagement.UI
             // Allow prerelease packages only if the target is prerelease
             bool includePrelease =
                 userAction.Action == NuGetProjectActionType.Uninstall ||
-                userAction.Version.IsPrerelease == true;
+                userAction.Version?.IsPrerelease == true;
 
             IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
             string[] projectIds = projects
@@ -868,6 +878,8 @@ namespace NuGet.PackageManagement.UI
                     uiService.DependencyBehavior,
                     packageSourceNames,
                     userAction.VersionRange,
+                    newMappingID,
+                    newMappingSource,
                     token);
 
                 results.AddRange(actions);
@@ -1001,55 +1013,103 @@ namespace NuGet.PackageManagement.UI
         /// Get the package metadata to see if RequireLicenseAcceptance is true
         /// </summary>
         private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(
-            IEnumerable<SourceRepository> sources,
+            INuGetUI uiService,
             IEnumerable<PackageIdentity> packages,
+            CancellationToken token)
+        {
+            PackageIdentity[] allPackages = packages.ToArray();
+            List<IPackageSearchMetadata> results = new List<IPackageSearchMetadata>(capacity: allPackages.Length);
+            using var sourceCacheContext = new SourceCacheContext();
+
+            IPackageSearchMetadata[] localMetadata = await GetOnlyLocalPackageMetadataAsync(uiService, sourceCacheContext, packages, token);
+            results.AddRange(localMetadata);
+
+            if (localMetadata.Length != allPackages.Length)
+            {
+                // get remaining package's metadata from remote repositories
+                IEnumerable<PackageIdentity> remainingPackages = allPackages.Where(package => package != null && !localMetadata.Any(packageMetadata => packageMetadata != null && packageMetadata.Identity.Equals(package)));
+                IEnumerable<SourceRepository> enabledSources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+
+                List<IPackageSearchMetadata> remoteMetadata = await GetRemotePackageMetadataAsync(enabledSources, sourceCacheContext, remainingPackages, uiService.UIContext.PackageSourceMapping, token);
+                results.AddRange(remoteMetadata);
+            }
+
+            // check if missing metadata for any package
+            if (results.Count != allPackages.Length)
+            {
+                PackageIdentity package = allPackages.First(pkg => !results.Any(result => result != null && result.Identity.Equals(pkg)));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_MetadataNotFound, package));
+            }
+
+            return results;
+        }
+
+        private async Task<List<IPackageSearchMetadata>> GetRemotePackageMetadataAsync(
+            IEnumerable<SourceRepository> enabledSources,
+            SourceCacheContext sourceCacheContext,
+            IEnumerable<PackageIdentity> packages,
+            PackageSourceMapping packageSourceMapping,
             CancellationToken token)
         {
             var results = new List<IPackageSearchMetadata>();
 
-            // local sources
-            var localSources = new List<SourceRepository>
+            if (!packageSourceMapping.IsEnabled)
             {
-                _packageManager.PackagesFolderSourceRepository
-            };
-            localSources.AddRange(_packageManager.GlobalPackageFolderRepositories);
-
-            var allPackages = packages.ToArray();
-
-            using (var sourceCacheContext = new SourceCacheContext())
-            {
-                // first check all the packages with local sources.
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-                IPackageSearchMetadata[] completed = (await TaskCombinators.ThrottledAsync(
-                    allPackages,
-                    (p, t) => GetPackageMetadataAsync(localSources, sourceCacheContext, p, t),
-                    token)).Where(metadata => metadata != null).ToArray();
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-
-                results.AddRange(completed);
-
-                if (completed.Length != allPackages.Length)
-                {
-                    // get remaining package's metadata from remote repositories
-                    var remainingPackages = allPackages.Where(package => package != null && !completed.Any(packageMetadata => packageMetadata != null && packageMetadata.Identity.Equals(package)));
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-                    IPackageSearchMetadata[] remoteResults = (await TaskCombinators.ThrottledAsync(
-                        remainingPackages,
-                        (p, t) => GetPackageMetadataAsync(sources, sourceCacheContext, p, t),
-                        token)).Where(metadata => metadata != null).ToArray();
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-
-                    results.AddRange(remoteResults);
-                }
+                var remoteResults = await GetPackageMetadataThrottledAsync(enabledSources, sourceCacheContext, packages, token);
+                results.AddRange(remoteResults);
             }
-            // check if missing metadata for any package
-            if (allPackages.Length != results.Count)
+            else // Only look at sources for the package's source mapping.
             {
-                PackageIdentity package = allPackages.First(pkg => !results.Any(result => result != null && result.Identity.Equals(pkg)));
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "Unable to find metadata of {0}", package));
+                var remoteResults = await GetPackageMetadataThrottledAsync(packageSourceMapping, enabledSources, sourceCacheContext, packages, token);
+                results.AddRange(remoteResults);
             }
 
             return results;
+        }
+
+        private async Task<IPackageSearchMetadata[]> GetOnlyLocalPackageMetadataAsync(
+            INuGetUI uiService,
+            SourceCacheContext sourceCacheContext,
+            IEnumerable<PackageIdentity> packages,
+            CancellationToken token)
+        {
+            var projects = (IReadOnlyCollection<IProjectContextInfo>)uiService.Projects;
+            var searchService = uiService.UIContext.ReconnectingSearchService;
+            IReadOnlyList<SourceRepository> localSources = await searchService.GetAllPackageFoldersAsync(projects, token);
+
+            IPackageSearchMetadata[] completed = await GetPackageMetadataThrottledAsync(localSources, sourceCacheContext, packages, token);
+            return completed;
+        }
+
+        private static async Task<IPackageSearchMetadata[]> GetPackageMetadataThrottledAsync(IEnumerable<SourceRepository> sources, SourceCacheContext sourceCacheContext, IEnumerable<PackageIdentity> packages, CancellationToken token)
+        {
+            IPackageSearchMetadata[] completed = (await TaskCombinators.ThrottledAsync(
+                packages,
+                (p, t) => GetPackageMetadataAsync(sources, sourceCacheContext, p, t),
+                token)).Where(metadata => metadata != null).Cast<IPackageSearchMetadata>().ToArray();
+
+            return completed;
+        }
+
+        private static async Task<IPackageSearchMetadata[]> GetPackageMetadataThrottledAsync(PackageSourceMapping packageSourceMapping, IEnumerable<SourceRepository> enabledSources, SourceCacheContext sourceCacheContext, IEnumerable<PackageIdentity> packages, CancellationToken token)
+        {
+            IPackageSearchMetadata[] completed = (await TaskCombinators.ThrottledAsync(
+                packages,
+                (p, t) =>
+                {
+                    IReadOnlyList<string> mappedSources = packageSourceMapping.GetConfiguredPackageSources(p.Id);
+                    if (mappedSources.Count == 0)
+                    {
+                        return Task.FromResult<IPackageSearchMetadata?>(null);
+                    }
+
+                    var enabledAndMappedSources = enabledSources.Where(_ => mappedSources.Contains(_.PackageSource.Name));
+
+                    return GetPackageMetadataAsync(enabledAndMappedSources, sourceCacheContext, p, t);
+                },
+                token)).Where(metadata => metadata != null).Cast<IPackageSearchMetadata>().ToArray();
+
+            return completed;
         }
 
         private static async Task<IPackageSearchMetadata?> GetPackageMetadataAsync(
@@ -1070,7 +1130,7 @@ namespace NuGet.PackageManagement.UI
 
                 try
                 {
-                    var packageMetadata = await metadataResource.GetMetadataAsync(
+                    IPackageSearchMetadata? packageMetadata = await metadataResource.GetMetadataAsync(
                         package,
                         sourceCacheContext,
                         log: NullLogger.Instance,

@@ -212,12 +212,14 @@ namespace NuGet.PackageManagement.VisualStudio
             // Transitive packages will have only one version the first time they are loaded, when the package is selected we update the cache with all the versions
             if (backgroundDataCache != null)
             {
-                if (isTransitive &&
-                    (backgroundDataCache.AllVersionsContextInfo.Result == null || backgroundDataCache.AllVersionsContextInfo.Result.Count <= 1))
+                // If the item was cached with search API, PackageSearchMetadata could be null. If so, update it with registration api information
+                if (isTransitive
+                    && !(backgroundDataCache.AllVersionsContextInfo.Result?.Count > 1)
+                    || backgroundDataCache.AllVersionsContextInfo.Result?.First().PackageSearchMetadata == null)
                 {
-                    IPackageMetadataProvider transitivePackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects?.ToList().AsReadOnly(), cancellationToken);
-                    IPackageSearchMetadata transitivePackageMetadata = await transitivePackageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-                    backgroundDataCache.UpdateSearchMetadata(transitivePackageMetadata);
+                    IPackageMetadataProvider newPackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects?.ToList().AsReadOnly(), cancellationToken);
+                    IPackageSearchMetadata newPackageMetadata = await newPackageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+                    backgroundDataCache.UpdateSearchMetadata(newPackageMetadata);
                 }
                 return await backgroundDataCache.AllVersionsContextInfo;
             }
@@ -414,7 +416,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="projectContextInfos">A collection of projects</param>
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>A collection of Global package folder repositories combined with repositories found in packageFolders from PackageReference projects</returns>
-        private async Task<IReadOnlyList<SourceRepository>> GetAllPackageFoldersAsync(
+        public async Task<IReadOnlyList<SourceRepository>> GetAllPackageFoldersAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             CancellationToken cancellationToken)
         {
@@ -501,23 +503,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else // is Project
                 {
-                    CounterfactualLoggers.PMUITransitiveDependencies.EmitIfNeeded();
-                    if (await ExperimentUtility.IsTransitiveOriginExpEnabled.GetValueAsync(cancellationToken))
-                    {
-                        // Installed Tab, Project View, Experiment On: needs installed, transitive packages and transitive origins data
-                        IInstalledAndTransitivePackages installedTabWithTransitiveOrigins = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, includeTransitiveOrigins: true, cancellationToken);
-                        PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.InstalledPackages);
-                        PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.TransitivePackages);
+                    // Installed Tab, Project View, Experiment On: needs installed, transitive packages and transitive origins data
+                    IInstalledAndTransitivePackages installedTabWithTransitiveOrigins = await GetInstalledAndTransitivePackagesAsync(projectContextInfos, includeTransitiveOrigins: true, cancellationToken);
+                    PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.InstalledPackages);
+                    PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.TransitivePackages);
 
-                        packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
-                    }
-                    else
-                    {
-                        // Installed Tab, Project View, Experiment Off: only needs installed packages
-                        IReadOnlyCollection<IPackageReferenceContextInfo> installedTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
-                        PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabPackages);
-                        packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider);
-                    }
+                    packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
                 }
 
                 return packageFeeds;

@@ -14,9 +14,9 @@ namespace Dotnet.Integration.Test
     [Collection(DotnetIntegrationCollection.Name)]
     public class DotnetSourcesTests
     {
-        private readonly MsbuildIntegrationTestFixture _fixture;
+        private readonly DotnetIntegrationTestFixture _fixture;
 
-        public DotnetSourcesTests(MsbuildIntegrationTestFixture fixture)
+        public DotnetSourcesTests(DotnetIntegrationTestFixture fixture)
         {
             _fixture = fixture;
         }
@@ -24,7 +24,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void Sources_WhenAddingSource_GotAdded()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
                 var settings = pathContext.Settings;
@@ -43,10 +43,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
@@ -57,7 +56,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void Sources_WhenAddingSourceWithCredentials_CredentialsWereAddedAndEncrypted()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
                 var settings = pathContext.Settings;
@@ -80,12 +79,10 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
 
                 // Assert
-                Assert.True(result.Success, result.AllOutput);
-
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
 
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
@@ -108,7 +105,7 @@ namespace Dotnet.Integration.Test
         [InlineData("https://source.test", false)]
         public void Sources_WarnWhenAdding(string source, bool shouldWarn)
         {
-            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 TestDirectory workingPath = pathContext.WorkingDirectory;
                 SimpleTestSettingsContext settings = pathContext.Settings;
@@ -127,11 +124,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Success, result.Output + " " + result.Errors);
-
                 ISettings loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
 
                 SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
@@ -187,11 +182,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Success, result.Output + " " + result.Errors);
-
                 ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
 
                 SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
@@ -237,10 +230,9 @@ namespace Dotnet.Integration.Test
                     null);
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Success, result.Output + " " + result.Errors);
                 Assert.Equal(shouldWarn, result.Output.Contains(warningMessage));
             }
         }
@@ -290,12 +282,9 @@ namespace Dotnet.Integration.Test
                 Assert.False(source.IsEnabled);
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
-                Assert.True(result.Success, result.Output + " " + result.Errors);
-
                 settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
@@ -356,12 +345,9 @@ namespace Dotnet.Integration.Test
                 Assert.True(source.IsEnabled);
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
-                Assert.True(result.Success, result.Output + " " + result.Errors);
-
                 settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
@@ -383,7 +369,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void Sources_WhenAddingSourceWithCredentialsInClearText_CredentialsWereAddedAndNotEncrypted()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
                 var settings = pathContext.Settings;
@@ -407,11 +393,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Success, result.AllOutput);
-
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
 
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
@@ -459,11 +443,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Success, result.AllOutput);
-
                 var settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
@@ -748,11 +730,9 @@ namespace Dotnet.Integration.Test
                 Assert.False(source.IsEnabled);
 
                 // Main Act
-                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
-
                 settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
@@ -821,11 +801,9 @@ namespace Dotnet.Integration.Test
                 Assert.True(source.IsEnabled);
 
                 // Main Act
-                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
-
                 settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
@@ -860,7 +838,7 @@ namespace Dotnet.Integration.Test
         [Fact(Skip = "cutting verbosity Quiet for now. #6374 covers fixing it for `dotnet add package` too.")]
         public void TestVerbosityQuiet_DoesNotShowInfoMessages()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
                 var settings = pathContext.Settings;
@@ -881,10 +859,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
                 // Ensure that no messages are shown with Verbosity as Quiet
                 Assert.Equal(string.Empty, result.Output);
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
@@ -898,7 +875,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/12503")]
         public void List_Sources_LocalizatedPackagesourceKeys_ConsideredDiffererent()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var workingPath = pathContext.WorkingDirectory;
                 var settings = pathContext.Settings;
@@ -925,10 +902,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
                 Assert.True(result.Output.StartsWith("Registered Sources:"));
                 Assert.Contains("encyclopaedia [Enabled]", result.Output);
                 Assert.Contains("encyclopædia [Enabled]", result.Output);
@@ -947,7 +923,7 @@ namespace Dotnet.Integration.Test
             using (var testDirectory = _fixture.CreateTestDirectory())
             {
                 // Act
-                var result = _fixture.RunDotnet(testDirectory, command, ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectFailure(testDirectory, command);
 
                 var commandSplit = command.Split(' ');
 
@@ -969,37 +945,17 @@ namespace Dotnet.Integration.Test
                 string invalidMessage;
                 if (badCommand.StartsWith("-"))
                 {
-                    invalidMessage = "error: Unrecognized option";
+                    invalidMessage = ": Unrecognized option";
                 }
                 else
                 {
-                    invalidMessage = "error: Unrecognized command";
+                    invalidMessage = ": Unrecognized command";
                 }
 
-                // Verify Exit code
-                VerifyResultFailure(result, invalidMessage);
+                Assert.True(result.Output.Contains(invalidMessage), "Expected error is " + invalidMessage + ". Actual error is " + result.Output);
                 // Verify traits of help message in stdout
                 Assert.Contains("Specify --help for a list of available options and commands.", result.Output);
             }
-        }
-
-        /// <summary>
-        /// Utility for asserting faulty executions of dotnet.exe
-        /// 
-        /// Asserts a non-zero status code and a message on stderr.
-        /// </summary>
-        /// <param name="result">An instance of <see cref="CommandRunnerResult"/> with command execution results</param>
-        /// <param name="expectedErrorMessage">A portion of the error message to be sent</param>
-        public static void VerifyResultFailure(CommandRunnerResult result,
-                                               string expectedErrorMessage)
-        {
-            Assert.False(
-                result.Success,
-                "dotnet.exe nuget DID NOT FAIL: Output is " + result.Output + ". Error is " + result.Errors);
-
-            Assert.True(
-                result.Output.Contains(expectedErrorMessage),
-                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Output);
         }
     }
 }

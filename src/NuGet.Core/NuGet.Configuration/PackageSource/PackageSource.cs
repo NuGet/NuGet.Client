@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -18,6 +19,8 @@ namespace NuGet.Configuration
         /// </summary>
         public const int DefaultProtocolVersion = 2;
         public const int MaxProtocolVersion = 3;
+
+        internal const bool DefaultAllowInsecureConnections = false;
 
         private int _hashCode;
         private string _source;
@@ -38,7 +41,11 @@ namespace NuGet.Configuration
                 }
 
                 _source = value;
-                _hashCode = Name.ToUpperInvariant().GetHashCode() * 3137 + _source.ToUpperInvariant().GetHashCode();
+
+                HashCodeCombiner hash = new();
+                hash.AddStringIgnoreCase(Name);
+                hash.AddStringIgnoreCase(_source);
+                _hashCode = hash.CombinedHash;
 
                 if (value.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                 {
@@ -98,6 +105,11 @@ namespace NuGet.Configuration
         public int ProtocolVersion { get; set; } = DefaultProtocolVersion;
 
         /// <summary>
+        /// Gets or sets the allowInsecureConnections of the source. Defaults to false.
+        /// </summary>
+        public bool AllowInsecureConnections { get; set; } = DefaultAllowInsecureConnections;
+
+        /// <summary>
         /// Whether the source is using the HTTP protocol, including HTTPS.
         /// </summary>
         public bool IsHttp => _isHttp;
@@ -148,7 +160,13 @@ namespace NuGet.Configuration
             {
                 protocolVersion = $"{ProtocolVersion}";
             }
-            return new SourceItem(Name, Source, protocolVersion);
+
+            string? allowInsecureConnections = null;
+            if (AllowInsecureConnections != DefaultAllowInsecureConnections)
+            {
+                allowInsecureConnections = $"{AllowInsecureConnections}";
+            }
+            return new SourceItem(Name, Source, protocolVersion, allowInsecureConnections);
         }
 
         public bool Equals(PackageSource? other)
@@ -185,6 +203,7 @@ namespace NuGet.Configuration
                 ClientCertificates = ClientCertificates?.ToList(),
                 IsMachineWide = IsMachineWide,
                 ProtocolVersion = ProtocolVersion,
+                AllowInsecureConnections = AllowInsecureConnections,
             };
         }
     }

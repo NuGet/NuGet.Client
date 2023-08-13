@@ -1588,6 +1588,27 @@ namespace NuGet.PackageManagement
             return await PreviewProjectsInstallPackageAsync(nuGetProjects, packageIdentity, resolutionContext, nuGetProjectContext, activeSources, versionRange: null, token);
         }
 
+        public async Task<IEnumerable<ResolvedAction>> PreviewProjectsInstallPackageAsync(
+            IReadOnlyCollection<NuGetProject> nuGetProjects,
+            PackageIdentity packageIdentity,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            IReadOnlyCollection<SourceRepository> activeSources,
+            VersionRange versionRange,
+            CancellationToken token)
+        {
+            return await PreviewProjectsInstallPackageAsync(
+                nuGetProjects,
+                packageIdentity,
+                resolutionContext,
+                nuGetProjectContext,
+                activeSources,
+                versionRange,
+                newMappingID: null,
+                newMappingSource: null,
+                token);
+        }
+
         // Preview and return ResolvedActions for many NuGetProjects.
         public async Task<IEnumerable<ResolvedAction>> PreviewProjectsInstallPackageAsync(
             IReadOnlyCollection<NuGetProject> nuGetProjects,
@@ -1596,6 +1617,8 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext,
             IReadOnlyCollection<SourceRepository> activeSources,
             VersionRange versionRange,
+            string newMappingID,
+            string newMappingSource,
             CancellationToken token)
         {
             if (nuGetProjects == null)
@@ -1657,13 +1680,15 @@ namespace NuGet.PackageManagement
             {
                 // Run build integrated project preview for all projects at the same time
                 var resolvedActions = await PreviewBuildIntegratedProjectsActionsAsync(
-                buildIntegratedProjectsToUpdate,
-                nugetProjectActionsLookup: null, // no nugetProjectActionsLookup so it'll be derived from packageIdentity and activeSources
-                packageIdentity,
-                activeSources,
-                nuGetProjectContext,
-                versionRange,
-                token);
+                    buildIntegratedProjectsToUpdate,
+                    nugetProjectActionsLookup: null, // no nugetProjectActionsLookup so it'll be derived from packageIdentity and activeSources
+                    packageIdentity,
+                    activeSources,
+                    nuGetProjectContext,
+                    versionRange,
+                    newMappingID,
+                    newMappingSource,
+                    token);
                 results.AddRange(resolvedActions);
             }
 
@@ -2222,6 +2247,8 @@ namespace NuGet.PackageManagement
                 primarySources: null, // since we have nuGetProjectActions no need primarySources
                 nuGetProjectContext,
                 versionRange: null,
+                newMappingID: null,
+                newMappingSource: null,
                 token);
 
             return resolvedActions.Select(r => r.Action as BuildIntegratedProjectAction);
@@ -2828,8 +2855,9 @@ namespace NuGet.PackageManagement
                 primarySources: null, // since we have nuGetProjectActions no need primarySources
                 nuGetProjectContext,
                 versionRange: null,
-                token
-                );
+                newMappingID: null,
+                newMappingSource: null,
+                token);
 
             return resolvedAction.FirstOrDefault(r => r.Project == buildIntegratedProject)?.Action as BuildIntegratedProjectAction;
         }
@@ -2844,6 +2872,8 @@ namespace NuGet.PackageManagement
             IReadOnlyCollection<SourceRepository> primarySources,
             INuGetProjectContext nuGetProjectContext,
             VersionRange versionRange,
+            string newMappingID,
+            string newMappingSource,
             CancellationToken token)
         {
             if (nugetProjectActionsLookup == null)
@@ -2878,6 +2908,16 @@ namespace NuGet.PackageManagement
             var result = new List<ResolvedAction>();
 
             var lockFileLookup = new Dictionary<string, LockFile>(PathUtility.GetStringComparerBasedOnOS());
+            PackageSourceMappingProvider packageSourceMappingProvider = null;
+            IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings = null;
+
+            if (newMappingID != null && newMappingSource != null)
+            {
+                packageSourceMappingProvider = new PackageSourceMappingProvider(Settings, shouldSkipSave: true);
+                originalPackageSourceMappings = packageSourceMappingProvider.GetPackageSourceMappingItems();
+                AddNewPackageSourceMappingToSettings(newMappingID, newMappingSource, packageSourceMappingProvider);
+            }
+
             var dependencyGraphContext = new DependencyGraphCacheContext(logger, Settings);
             var pathContext = NuGetPathContext.Create(Settings);
             var providerCache = new RestoreCommandProvidersCache();
@@ -2895,7 +2935,7 @@ namespace NuGet.PackageManagement
 
             // Add all enabled sources for the existing projects
             var enabledSources = SourceRepositoryProvider.GetRepositories();
-            var allSources = new HashSet<SourceRepository>(enabledSources, new SourceRepositoryComparer());
+            var allSources = new HashSet<SourceRepository>(enabledSources, SourceRepositoryComparer.Instance);
 
             foreach (var buildIntegratedProject in buildIntegratedProjects)
             {
@@ -2934,7 +2974,7 @@ namespace NuGet.PackageManagement
                 var sources = new HashSet<SourceRepository>(
                     nuGetProjectActions.Where(action => action.SourceRepository != null)
                         .Select(action => action.SourceRepository),
-                        new SourceRepositoryComparer());
+                        SourceRepositoryComparer.Instance);
 
                 allSources.UnionWith(sources);
                 sources.UnionWith(enabledSources);
@@ -3127,6 +3167,12 @@ namespace NuGet.PackageManagement
                 result.Add(new ResolvedAction(buildIntegratedProject, nugetProjectAction));
             }
 
+            // Put back the Package Source Mappings that existed prior to this Preview.
+            if (originalPackageSourceMappings != null && packageSourceMappingProvider != null)
+            {
+                packageSourceMappingProvider.SavePackageSourceMappings(originalPackageSourceMappings);
+            }
+
             stopWatch.Stop();
             var actionTelemetryEvent = new ActionTelemetryStepEvent(
                 nuGetProjectContext.OperationId.ToString(),
@@ -3135,6 +3181,25 @@ namespace NuGet.PackageManagement
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
 
             return result;
+        }
+
+        /// <summary>
+        /// Reads existing Package Source Mappings from settings and appends a new mapping for the <paramref name="newMappingID"/> and a glob "*" pattern
+        /// for the <paramref name="newMappingSource"/>.
+        /// The intention is that Preview Restore can run and expect all newly installed packages to be source mapped to the new source.
+        /// </summary>
+        /// <returns>If a new mapping was provided, returns all persisted mappings appended with the new mapping. Otherwise, null.</returns>
+        private void AddNewPackageSourceMappingToSettings(string newMappingID, string newMappingSource, PackageSourceMappingProvider mappingProvider)
+        {
+            List<PackagePatternItem> newPatternItems = new()
+            {
+                new PackagePatternItem(newMappingID),
+                new PackagePatternItem("*")
+            };
+
+            List<PackageSourceMappingSourceItem> newAndExistingPackageSourceMappingItems = mappingProvider.GetPackageSourceMappingItems().ToList();
+            newAndExistingPackageSourceMappingItems.Add(new PackageSourceMappingSourceItem(newMappingSource, newPatternItems));
+            mappingProvider.SavePackageSourceMappings(newAndExistingPackageSourceMappingItems);
         }
 
         /// <summary>
@@ -3480,7 +3545,7 @@ namespace NuGet.PackageManagement
                 }
             }
 
-            return Task.FromResult(false);
+            return TaskResult.False;
         }
 
         /// <summary>
@@ -3821,7 +3886,7 @@ namespace NuGet.PackageManagement
                 effectiveSources.AddRange(secondarySources);
             }
 
-            return new HashSet<SourceRepository>(effectiveSources, new SourceRepositoryComparer());
+            return new HashSet<SourceRepository>(effectiveSources, SourceRepositoryComparer.Instance);
         }
 
         public static void SetDirectInstall(PackageIdentity directInstall,

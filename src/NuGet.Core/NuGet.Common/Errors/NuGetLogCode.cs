@@ -122,6 +122,11 @@ namespace NuGet.Common
         NU1013 = 1013,
 
         /// <summary>
+        /// NuGetAuditLevel input errors
+        /// </summary>
+        NU1014 = 1014,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
@@ -335,6 +340,36 @@ namespace NuGet.Common
         /// HTTP Source specified, but HTTP sources will be deprecated.
         /// </summary>
         NU1803 = 1803,
+
+        /// <summary>
+        /// Server/package source vulnerability issue
+        /// </summary>
+        NU1900 = 1900,
+
+        /// <summary>
+        /// Package with known low severity vulnerability
+        /// </summary>
+        NU1901 = 1901,
+
+        /// <summary>
+        /// Package with known moderate severity vulnerability
+        /// </summary>
+        NU1902 = 1902,
+
+        /// <summary>
+        /// Package with known high severity vulnerability
+        /// </summary>
+        NU1903 = 1903,
+
+        /// <summary>
+        /// Package with known critical severity vulnerability
+        /// </summary>
+        NU1904 = 1904,
+
+        /// <summary>
+        /// NuGetAudit enabled, but no vulnerability data found
+        /// </summary>
+        NU1905 = 1905,
 
         /// <summary>
         /// Undefined signature error
@@ -551,6 +586,11 @@ namespace NuGet.Common
         /// Downloading a package from a plugin is not supported since unsigned packages are not allowed and package download plugins do not support signed package verification.
         /// </summary>
         NU3041 = 3041,
+
+        /// <summary>
+        /// An X.509 trust store does not contain a root certificate observed in a package signature.
+        /// </summary>
+        NU3042 = 3042,
 
         /// <summary>
         /// Undefined Package Error.

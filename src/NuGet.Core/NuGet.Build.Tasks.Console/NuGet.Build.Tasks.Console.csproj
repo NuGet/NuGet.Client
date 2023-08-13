@@ -6,7 +6,7 @@
     <PackProject>true</PackProject>
     <SkipShared>true</SkipShared>
     <Description>NuGet Build tasks for MSBuild and dotnet restore. Contains restore logic using the MSBuild static graph functionality.</Description>
-    <NoWarn>$(NoWarn);CS1591;NU5100;NU5128;NU1505</NoWarn> <!-- Remove NU1505 NoWarn when https://github.com/dotnet/sdk/issues/24747 is fixed -->
+    <NoWarn>$(NoWarn);CS1591;NU5100;NU5128</NoWarn>
     <XPLATProject>true</XPLATProject>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackBuildOutputs</TargetsForTfmSpecificContentInPackage>
@@ -15,6 +15,7 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -31,12 +32,18 @@
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <!-- System.Security.Cryptography.Xml is a dependency of Microsoft.Build.Tasks.Core. Therefore, we have assigned the same ExcludeAssets value. -->
+    <PackageReference Include="System.Security.Cryptography.Xml" ExcludeAssets="Runtime" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <Reference Include="Microsoft.Build.Utilities.v4.0" Aliases="MicrosoftBuildUtilitiesv4" />
   </ItemGroup>
-
+  
+  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
+    <PackageReference Include="System.Security.Cryptography.Pkcs" ExcludeAssets="Compile"/>
+  </ItemGroup>
+  
   <ItemGroup>
     <None Include="App.config" Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' " />
     <None Include="app.manifest" />

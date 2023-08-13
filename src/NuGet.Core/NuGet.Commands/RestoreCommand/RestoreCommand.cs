@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Commands.Restore.Utility;
 using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
@@ -63,6 +64,7 @@ namespace NuGet.Commands
         private const string NoOpRestoreOutputEvaluationDuration = nameof(NoOpRestoreOutputEvaluationDuration);
         private const string NoOpRestoreOutputEvaluationResult = nameof(NoOpRestoreOutputEvaluationResult);
         private const string NoOpReplayLogsDuration = nameof(NoOpReplayLogsDuration);
+        private const string NoOpCacheFileAgeDays = nameof(NoOpCacheFileAgeDays);
 
         // lock file data names
         private const string EvaluateLockFileDuration = nameof(EvaluateLockFileDuration);
@@ -84,6 +86,30 @@ namespace NuGet.Commands
 
         // PackageSourceMapping names
         private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
+
+        // NuGetAudit names
+        private const string AuditEnabled = "Audit.Enabled";
+        private const string AuditLevel = "Audit.Level";
+        private const string AuditMode = "Audit.Mode";
+        private const string AuditDataSources = "Audit.DataSources";
+        private const string AuditDirectVulnerabilitiesPackages = "Audit.Vulnerability.Direct.Packages";
+        private const string AuditDirectVulnerabilitiesCount = "Audit.Vulnerability.Direct.Count";
+        private const string AuditDirectVulnerabilitySev0 = "Audit.Vulnerability.Direct.Severity0";
+        private const string AuditDirectVulnerabilitySev1 = "Audit.Vulnerability.Direct.Severity1";
+        private const string AuditDirectVulnerabilitySev2 = "Audit.Vulnerability.Direct.Severity2";
+        private const string AuditDirectVulnerabilitySev3 = "Audit.Vulnerability.Direct.Severity3";
+        private const string AuditDirectVulnerabilitySevInvalid = "Audit.Vulnerability.Direct.SeverityInvalid";
+        private const string AuditTransitiveVulnerabilitiesPackages = "Audit.Vulnerability.Transitive.Packages";
+        private const string AuditTransitiveVulnerabilitiesCount = "Audit.Vulnerability.Transitive.Count";
+        private const string AuditTransitiveVulnerabilitySev0 = "Audit.Vulnerability.Transitive.Severity0";
+        private const string AuditTransitiveVulnerabilitySev1 = "Audit.Vulnerability.Transitive.Severity1";
+        private const string AuditTransitiveVulnerabilitySev2 = "Audit.Vulnerability.Transitive.Severity2";
+        private const string AuditTransitiveVulnerabilitySev3 = "Audit.Vulnerability.Transitive.Severity3";
+        private const string AuditTransitiveVulnerabilitySevInvalid = "Audit.Vulnerability.Transitive.SeverityInvalid";
+        private const string AuditDurationDownload = "Audit.Duration.Download";
+        private const string AuditDurationCheck = "Audit.Duration.Check";
+        private const string AuditDurationOutput = "Audit.Duration.Output";
+        private const string AuditDurationTotal = "Audit.Duration.Total";
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -123,7 +149,7 @@ namespace NuGet.Commands
             {
                 telemetry.TelemetryEvent.AddPiiData(ProjectFilePath, _request.Project.FilePath);
 
-                bool isPackageSourceMappingEnabled = _request?.PackageSourceMapping.IsEnabled ?? false;
+                bool isPackageSourceMappingEnabled = _request.PackageSourceMapping?.IsEnabled ?? false;
                 telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
                 telemetry.TelemetryEvent[SourcesCount] = _request.DependencyProviders.RemoteProviders.Count;
                 int httpSourcesCount = _request.DependencyProviders.RemoteProviders.Where(e => e.IsHttp).Count();
@@ -164,7 +190,8 @@ namespace NuGet.Commands
                     {
                         telemetry.StartIntervalMeasure();
                         bool noOp;
-                        (cacheFile, noOp) = EvaluateCacheFile();
+                        TimeSpan? cacheFileAge;
+                        (cacheFile, noOp, cacheFileAge) = EvaluateCacheFile();
                         telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOp;
                         telemetry.EndIntervalMeasure(NoOpCacheFileEvaluateDuration);
                         if (noOp)
@@ -190,6 +217,7 @@ namespace NuGet.Commands
                                 telemetry.TelemetryEvent[RestoreSuccess] = _success;
                                 telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile.ExpectedPackageFilePaths?.Count ?? -1;
                                 telemetry.TelemetryEvent[NewPackagesInstalledCount] = 0;
+                                if (cacheFileAge.HasValue) { telemetry.TelemetryEvent[NoOpCacheFileAgeDays] = cacheFileAge.Value.TotalDays; }
 
                                 return new NoOpRestoreResult(
                                     _success,
@@ -275,14 +303,21 @@ namespace NuGet.Commands
                     });
                 }
 
+                AuditUtility.EnabledValue enableAudit = AuditUtility.ParseEnableValue(_request.Project.RestoreMetadata?.RestoreAuditProperties?.EnableAudit);
+                telemetry.TelemetryEvent[AuditEnabled] = AuditUtility.GetString(enableAudit);
+                if (enableAudit == AuditUtility.EnabledValue.ImplicitOptIn || enableAudit == AuditUtility.EnabledValue.ExplicitOptIn)
+                {
+                    await PerformAuditAsync(enableAudit, graphs, telemetry, token);
+                }
+
                 telemetry.StartIntervalMeasure();
                 // Create assets file
                 LockFile assetsFile = BuildAssetsFile(
-                _request.ExistingLockFile,
-                _request.Project,
-                graphs,
-                localRepositories,
-                contextForProject);
+                    _request.ExistingLockFile,
+                    _request.Project,
+                    graphs,
+                    localRepositories,
+                    contextForProject);
                 telemetry.EndIntervalMeasure(GenerateAssetsFileDuration);
 
                 IList<CompatibilityCheckResult> checkResults = null;
@@ -435,6 +470,57 @@ namespace NuGet.Commands
                     dependencyGraphSpec: _request.DependencyGraphSpec,
                     _request.ProjectStyle,
                     restoreTime.Elapsed);
+            }
+        }
+
+        private async Task PerformAuditAsync(AuditUtility.EnabledValue enableAudit, IEnumerable<RestoreTargetGraph> graphs, TelemetryActivity telemetry, CancellationToken token)
+        {
+            telemetry.StartIntervalMeasure();
+            var audit = new AuditUtility(
+                enableAudit,
+                _request.Project.RestoreMetadata.RestoreAuditProperties,
+                _request.Project.FilePath,
+                graphs,
+                _request.DependencyProviders.VulnerabilityInfoProviders,
+                _logger);
+            await audit.CheckPackageVulnerabilitiesAsync(token);
+
+            telemetry.TelemetryEvent[AuditLevel] = (int)audit.MinSeverity;
+            telemetry.TelemetryEvent[AuditMode] = AuditUtility.GetString(audit.AuditMode);
+
+            if (audit.DirectPackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditDirectVulnerabilitiesPackages, audit.DirectPackagesWithAdvisory); }
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitiesCount] = audit.DirectPackagesWithAdvisory?.Count ?? 0;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitySev0] = audit.Sev0DirectMatches;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitySev1] = audit.Sev1DirectMatches;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitySev2] = audit.Sev2DirectMatches;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitySev3] = audit.Sev3DirectMatches;
+            telemetry.TelemetryEvent[AuditDirectVulnerabilitySevInvalid] = audit.InvalidSevDirectMatches;
+
+            if (audit.TransitivePackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditTransitiveVulnerabilitiesPackages, audit.TransitivePackagesWithAdvisory); }
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitiesCount] = audit.TransitivePackagesWithAdvisory?.Count ?? 0;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev0] = audit.Sev0TransitiveMatches;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev1] = audit.Sev1TransitiveMatches;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev2] = audit.Sev2TransitiveMatches;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySev3] = audit.Sev3TransitiveMatches;
+            telemetry.TelemetryEvent[AuditTransitiveVulnerabilitySevInvalid] = audit.InvalidSevTransitiveMatches;
+
+            telemetry.TelemetryEvent[AuditDataSources] = audit.SourcesWithVulnerabilityData;
+            if (audit.DownloadDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationDownload] = audit.DownloadDurationSeconds.Value; }
+            if (audit.CheckPackagesDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationCheck] = audit.CheckPackagesDurationSeconds.Value; }
+            if (audit.GenerateOutputDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationOutput] = audit.GenerateOutputDurationSeconds.Value; }
+            telemetry.EndIntervalMeasure(AuditDurationTotal);
+
+            void AddPackagesList(TelemetryActivity telemetry, string eventName, List<string> packages)
+            {
+                List<TelemetryEvent> result = new List<TelemetryEvent>(packages.Count);
+                foreach (var package in packages)
+                {
+                    TelemetryEvent packageData = new TelemetryEvent(eventName: string.Empty);
+                    packageData.AddPiiData("id", package);
+                    result.Add(packageData);
+                }
+
+                telemetry.TelemetryEvent.ComplexData[eventName] = result;
             }
         }
 
@@ -669,10 +755,11 @@ namespace NuGet.Commands
             return (success, isLockFileValid, packagesLockFile);
         }
 
-        private (CacheFile cacheFile, bool noOp) EvaluateCacheFile()
+        private (CacheFile cacheFile, bool noOp, TimeSpan? cacheFileAge) EvaluateCacheFile()
         {
             CacheFile cacheFile;
             var noOp = false;
+            TimeSpan? cacheFileAge = null;
 
             var noOpDgSpec = NoOpRestoreUtilities.GetNoOpDgSpec(_request);
 
@@ -689,7 +776,7 @@ namespace NuGet.Commands
             // DgSpec doesn't contain log messages, so skip no-op if there are any, as it's not taken into account in the hash
             if (_request.AllowNoOp &&
                 !_request.RestoreForceEvaluate &&
-                File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
+                CacheFileExists(_request.Project.RestoreMetadata.CacheFilePath, out cacheFileAge))
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
@@ -720,7 +807,26 @@ namespace NuGet.Commands
                     _request.Project.RestoreMetadata.CacheFilePath = null;
                 }
             }
-            return (cacheFile, noOp);
+            return (cacheFile, noOp, cacheFileAge);
+
+            static bool CacheFileExists(string path, out TimeSpan? cacheFileAge)
+            {
+                cacheFileAge = null;
+
+                if (path is null)
+                {
+                    return false;
+                }
+
+                FileInfo fileInfo = new FileInfo(path);
+                if (fileInfo.Exists)
+                {
+                    cacheFileAge = DateTime.UtcNow - fileInfo.LastWriteTimeUtc;
+                    return fileInfo.Exists;
+                }
+
+                return false;
+            }
         }
 
         private string GetAssetsFilePath(LockFile lockFile)

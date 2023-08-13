@@ -15,13 +15,13 @@ namespace NuGet.Frameworks.Test
         [Fact]
         public void Constructor_WithNullFramework_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new AssetTargetFallbackFramework(framework: null, fallbackFrameworks: SampleFrameworkList));
+            Assert.Throws<ArgumentNullException>(() => new AssetTargetFallbackFramework(framework: null!, fallbackFrameworks: SampleFrameworkList));
         }
 
         [Fact]
         public void Constructor_WithNullFallbacks_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new AssetTargetFallbackFramework(framework: NuGetFramework.AnyFramework, fallbackFrameworks: null));
+            Assert.Throws<ArgumentNullException>(() => new AssetTargetFallbackFramework(framework: NuGetFramework.AnyFramework, fallbackFrameworks: null!));
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace NuGet.Frameworks.Test
         {
             var nugetFramework = NuGetFramework.Parse(shortFrameworkName);
             var assetTargetFallback = new AssetTargetFallbackFramework(nugetFramework, fallbackFrameworks: SampleFrameworkList);
-            var comparer = new NuGetFrameworkFullComparer();
+            var comparer = NuGetFrameworkFullComparer.Instance;
             Assert.True(comparer.Equals(nugetFramework, assetTargetFallback));
         }
 
