@@ -542,17 +542,15 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
+                var command = string.Join(" ", args);
+                var result = shouldSucceed ? _fixture.RunDotnetExpectSuccess(workingPath, command) : _fixture.RunDotnetExpectFailure(workingPath, command);
 
                 // Assert
-                Assert.Equal(shouldSucceed, result.ExitCode == 0);
-
-                // Assert error message
                 if (!shouldSucceed)
                 {
-                    string expectedErrorMessage = "error: The protocol version specified is invalid.";
-                    //Assert.True(result.Output.Contains(expectedErrorMessage), "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Output);
-                    Assert.Contains(expectedErrorMessage, result.Output);
+                    // Assert error message
+                    string expectedErrorMessage = "The protocol version specified is invalid.";
+                    Assert.True(result.Output.Contains(expectedErrorMessage), "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Output);
                 }
             }
         }
@@ -670,15 +668,13 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
-
-                // Assert
-                Assert.Equal(shouldSucceed, result.ExitCode == 0);
+                var command = string.Join(" ", args);
+                CommandRunnerResult result = shouldSucceed ? _fixture.RunDotnetExpectSuccess(configFileDirectory, command) : _fixture.RunDotnetExpectFailure(configFileDirectory, command);
 
                 // Assert error message
                 if (!shouldSucceed)
                 {
-                    string expectedErrorMessage = "error: The protocol version specified is invalid.";
+                    string expectedErrorMessage = "The protocol version specified is invalid.";
                     Assert.Contains(expectedErrorMessage, result.Output);
                 }
             }
