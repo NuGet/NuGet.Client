@@ -501,7 +501,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
@@ -542,7 +542,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
                 Assert.Equal(shouldSucceed, result.ExitCode == 0);
@@ -551,7 +551,8 @@ namespace Dotnet.Integration.Test
                 if (!shouldSucceed)
                 {
                     string expectedErrorMessage = "error: The protocol version specified is invalid.";
-                    VerifyResultFailure(result, expectedErrorMessage);
+                    //Assert.True(result.Output.Contains(expectedErrorMessage), "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Output);
+                    Assert.Contains(expectedErrorMessage, result.Output);
                 }
             }
         }
@@ -604,7 +605,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
                 Assert.True(result.Success, result.Output + " " + result.Errors);
@@ -669,7 +670,7 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
                 Assert.Equal(shouldSucceed, result.ExitCode == 0);
@@ -678,7 +679,7 @@ namespace Dotnet.Integration.Test
                 if (!shouldSucceed)
                 {
                     string expectedErrorMessage = "error: The protocol version specified is invalid.";
-                    VerifyResultFailure(result, expectedErrorMessage);
+                    Assert.Contains(expectedErrorMessage, result.Output);
                 }
             }
         }
