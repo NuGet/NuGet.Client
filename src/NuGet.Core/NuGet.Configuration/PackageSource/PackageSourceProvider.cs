@@ -561,34 +561,11 @@ namespace NuGet.Configuration
         {
             if (string.Equals(newSource.Name, existingSource.Name, StringComparison.OrdinalIgnoreCase))
             {
-                if (newSource.ProtocolVersion != existingSource.ProtocolVersion && newSource.IsPersistable)
+                if ((newSource.ProtocolVersion != existingSource.ProtocolVersion) && newSource.IsPersistable)
                 {
-                    // Below is a hacky workaround for the fact that `SourceItem` overrides equality operator
-                    // and compares both Key and ProtocolVersion
-                    // As a result, when ProtocolVersion is to be updated, using `Settings.AddOrUpdate` results in new line being added
-                    // instead of current one being updated
-
-                    var section = Settings.GetSection(ConfigurationConstants.PackageSources);
-
-                    bool newSourceAlreadyAdded = false;
-
-                    foreach (var source in section.Items)
-                    {
-                        if (newSourceAlreadyAdded)
-                        {
-                            // Remove and re-add all sources that are located after updated one to retain original order
-                            Settings.Remove(ConfigurationConstants.PackageSources, source);
-                            Settings.AddOrUpdate(ConfigurationConstants.PackageSources, source);
-                        }
-                        else if (source is SourceItem && (source as SourceItem).Key.Equals(newSource.Name, StringComparison.OrdinalIgnoreCase))
-                        {
-                            // Remove existing source and add new source it its place
-                            Settings.Remove(ConfigurationConstants.PackageSources, source);
-                            Settings.AddOrUpdate(ConfigurationConstants.PackageSources, newSource.AsSourceItem());
-                            newSourceAlreadyAdded = true;
-                            isDirty = true;
-                        }
-                    }
+                    Settings.Remove(ConfigurationConstants.PackageSources, existingSource.AsSourceItem());
+                    Settings.AddOrUpdate(ConfigurationConstants.PackageSources, newSource.AsSourceItem());
+                    isDirty = true;
                 }
                 else if (newSource.IsPersistable && !string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase))
                 {
