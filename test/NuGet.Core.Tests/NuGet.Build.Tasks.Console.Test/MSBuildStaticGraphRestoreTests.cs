@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -127,6 +128,32 @@ namespace NuGet.Build.Tasks.Console.Test
                 };
 
                 act.Should().Throw<ArgumentException>().WithMessage($"'{expected ?? VersionRange.Parse(version).OriginalString}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.");
+            }
+        }
+
+        [Fact]
+        public void GetPackageDownloads_NoVersion()
+        {
+            string packageName = "PackageA";
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var project = new MockMSBuildProject(testDirectory)
+                {
+                    Items = new Dictionary<string, IList<IMSBuildItem>>
+                    {
+                        ["PackageDownload"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem(packageName, new Dictionary<string, string> { ["Version"] = null }),
+                        }
+                    }
+                };
+
+                Action act = () =>
+                {
+                    var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
+                };
+
+                act.Should().Throw<ArgumentException>().WithMessage(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, packageName));
             }
         }
 
