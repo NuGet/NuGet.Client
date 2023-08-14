@@ -165,8 +165,8 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package");
 
-                // Assert Requested version is 2.0.0, but was override by VersionOverride tag
-                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "2.0.0"));
+                // Assert Resolved version is 1.0.0 and Requested version is 1.0.0, since it was overridden by VersionOverride tag
+                Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, "2.0.0"));
                 Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "1.0.0"));
             }
         }
