@@ -31,7 +31,7 @@ namespace NuGet.SolutionRestoreManager
         [Import]
         private Lazy<IPackageManagerLaunchService>? PackageManagerLaunchService { get; set; }
 
-        public async Task UpdateInfoBar(bool hasVulnerabilitiesInSolution, CancellationToken cancellationToken)
+        public async Task ReportVulnerabilities(bool hasVulnerabilitiesInSolution, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -53,46 +53,9 @@ namespace NuGet.SolutionRestoreManager
                 return;
             }
 
-            // Initialize the InfoBar host in the SolutionExplorer window
-            IVsInfoBarHost? infoBarHost;
             try
             {
-                IVsUIShell? uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>(throwOnFailure: true);
-                int windowFrameCode = uiShell!.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fFindFirst, VSConstants.StandardToolWindows.SolutionExplorer, out var windowFrame);
-                if (ErrorHandler.Failed(windowFrameCode))
-                {
-                    Exception exception = new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find Solution Explorer window. HRRESULT {0}", windowFrameCode));
-                    await TelemetryUtility.PostFaultAsync(exception, nameof(VulnerablePackagesInfoBar));
-                    return;
-                }
-
-                object tempObject;
-                int hostBarCode = windowFrame.GetProperty((int)__VSFPROPID7.VSFPROPID_InfoBarHost, out tempObject);
-                if (ErrorHandler.Failed(hostBarCode))
-                {
-                    Exception exception = new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find InfoBarHost. HRRESULT {0}", hostBarCode));
-                    await TelemetryUtility.PostFaultAsync(exception, nameof(VulnerablePackagesInfoBar));
-                    return;
-                }
-
-                infoBarHost = (IVsInfoBarHost)tempObject;
-
-                // Create the VulnerabilitiesFound InfoBar
-                IVsInfoBarUIFactory? infoBarFactory = await _asyncServiceProvider.GetServiceAsync<SVsInfoBarUIFactory, IVsInfoBarUIFactory>(throwOnFailure: false);
-                if (infoBarFactory == null)
-                {
-                    NullReferenceException exception = new NullReferenceException(nameof(infoBarFactory));
-                    await TelemetryUtility.PostFaultAsync(exception, nameof(VulnerablePackagesInfoBar));
-                    return;
-                }
-
-                InfoBarModel infoBarModel = GetInfoBarModel();
-
-                _infoBarUIElement = infoBarFactory.CreateInfoBar(infoBarModel);
-                _infoBarUIElement.Advise(this, out uint cookie);
-                _eventCookie = cookie;
-
-                infoBarHost.AddInfoBar(_infoBarUIElement);
+                await CreateInfoBar();
 
                 _infoBarVisible = true;
                 _wasInfoBarHidden = false;
@@ -102,6 +65,50 @@ namespace NuGet.SolutionRestoreManager
                 await TelemetryUtility.PostFaultAsync(ex, nameof(VulnerablePackagesInfoBar));
                 return;
             }
+        }
+
+        private async Task CreateInfoBar()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            // Initialize the InfoBar host in the SolutionExplorer window
+            IVsInfoBarHost? infoBarHost;
+            IVsUIShell? uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>(throwOnFailure: true);
+            int windowFrameCode = uiShell!.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fFindFirst, VSConstants.StandardToolWindows.SolutionExplorer, out var windowFrame);
+            if (ErrorHandler.Failed(windowFrameCode))
+            {
+                Exception exception = new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find Solution Explorer window. HRRESULT {0}", windowFrameCode));
+                await TelemetryUtility.PostFaultAsync(exception, nameof(VulnerablePackagesInfoBar));
+                return;
+            }
+
+            object tempObject;
+            int hostBarCode = windowFrame.GetProperty((int)__VSFPROPID7.VSFPROPID_InfoBarHost, out tempObject);
+            if (ErrorHandler.Failed(hostBarCode))
+            {
+                Exception exception = new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find InfoBarHost. HRRESULT {0}", hostBarCode));
+                await TelemetryUtility.PostFaultAsync(exception, nameof(VulnerablePackagesInfoBar));
+                return;
+            }
+
+            infoBarHost = (IVsInfoBarHost)tempObject;
+
+            // Create the VulnerabilitiesFound InfoBar
+            IVsInfoBarUIFactory? infoBarFactory = await _asyncServiceProvider.GetServiceAsync<SVsInfoBarUIFactory, IVsInfoBarUIFactory>(throwOnFailure: false);
+            if (infoBarFactory == null)
+            {
+                NullReferenceException exception = new NullReferenceException(nameof(infoBarFactory));
+                await TelemetryUtility.PostFaultAsync(exception, nameof(VulnerablePackagesInfoBar));
+                return;
+            }
+
+            InfoBarModel infoBarModel = GetInfoBarModel();
+
+            _infoBarUIElement = infoBarFactory.CreateInfoBar(infoBarModel);
+            _infoBarUIElement.Advise(this, out uint cookie);
+            _eventCookie = cookie;
+
+            infoBarHost.AddInfoBar(_infoBarUIElement);
         }
 
         public void OnClosed(IVsInfoBarUIElement infoBarUIElement)

@@ -522,7 +522,7 @@ namespace NuGet.SolutionRestoreManager
                                     }
 
                                     // Display info bar in SolutionExplorer if there is a vulnerability during restore.
-                                    await _vulnerabilitiesFoundService.Value.UpdateInfoBar(AnyProjectHasVulnerablePackageWarning(restoreSummaries), t);
+                                    await _vulnerabilitiesFoundService.Value.ReportVulnerabilities(AnyProjectHasVulnerablePackageWarning(restoreSummaries), t);
 
                                     _nuGetProgressReporter.EndSolutionRestore(projectList);
                                 }
