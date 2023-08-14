@@ -676,7 +676,7 @@ namespace NuGet.Commands
             {
                 var id = item.GetProperty("Id");
                 var versionString = item.GetProperty("VersionRange");
-                if (versionString == null)
+                if (string.IsNullOrEmpty(versionString))
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, id));
                 }
