@@ -3398,6 +3398,7 @@ namespace NuGet.Commands.Test
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems));
         }
+
         [Fact]
         public void MSBuildRestoreUtility_AddPackageDownloads_NoVersion()
         {
