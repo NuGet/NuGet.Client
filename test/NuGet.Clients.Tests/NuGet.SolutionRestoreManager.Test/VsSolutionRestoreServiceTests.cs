@@ -24,7 +24,6 @@ using NuGet.Test.Utility;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Test.Utility.ProjectManagement;
-using VSLangProj150;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
 
