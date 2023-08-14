@@ -678,7 +678,7 @@ namespace NuGet.Commands
                 var versionString = item.GetProperty("VersionRange");
                 if (string.IsNullOrEmpty(versionString))
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, id));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", id));
                 }
                 var versions = versionString.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
 
@@ -688,7 +688,7 @@ namespace NuGet.Commands
 
                     if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
                     {
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString, id));
                     }
 
                     var downloadDependency = new DownloadDependency(id, versionRange);

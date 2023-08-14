@@ -153,7 +153,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
                 };
 
-                act.Should().Throw<ArgumentException>().WithMessage(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, packageName));
+                act.Should().Throw<ArgumentException>().WithMessage(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", packageName));
             }
         }
 

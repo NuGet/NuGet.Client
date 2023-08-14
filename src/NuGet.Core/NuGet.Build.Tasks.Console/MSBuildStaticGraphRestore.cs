@@ -217,7 +217,7 @@ namespace NuGet.Build.Tasks.Console
                 string versionRanges = projectItemInstance.GetProperty("Version");
                 if (string.IsNullOrEmpty(versionRanges))
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, id));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", id));
                 }
                 foreach (var version in MSBuildStringUtility.Split(versionRanges))
                 {
@@ -226,7 +226,7 @@ namespace NuGet.Build.Tasks.Console
 
                     if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
                     {
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString, id));
                     }
 
                     yield return new DownloadDependency(id, versionRange);
