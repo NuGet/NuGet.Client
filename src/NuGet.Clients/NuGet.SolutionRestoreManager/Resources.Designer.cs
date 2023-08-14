@@ -77,7 +77,16 @@ namespace NuGet.SolutionRestoreManager {
                 return ResourceManager.GetString("Error_PackageDownload_OnlyExactVersionsAreAllowed", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to The PackageDownload reference for package ID &apos;{0}&apos; has no version.  An exact version (e.g.:  [1.0.0]) is required..
+        /// </summary>
+        public static string Error_PackageDownload_NoVersion {
+            get {
+                return ResourceManager.GetString("Error_PackageDownload_NoVersion", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Error occurred while restoring NuGet packages: {0}.
         /// </summary>
