@@ -1747,7 +1747,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The NuGet server protocol version to be used. Currently supported versions are 2 and 3. See https://learn.microsoft.com/nuget/api/overview for information about the version 3 protocol. Defaults to &quot;2&quot; if not specified..
+        ///   Looks up a localized string similar to The NuGet server protocol version to be used. Currently supported versions are 2 and 3. See https://learn.microsoft.com/nuget/api/overview for information about the version 3 protocol. Defaults to 2 if not specified..
         /// </summary>
         internal static string SourcesCommandProtocolVersionDescription {
             get {
