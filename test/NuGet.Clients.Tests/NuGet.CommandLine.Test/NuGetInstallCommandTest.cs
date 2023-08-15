@@ -2146,7 +2146,7 @@ namespace NuGet.CommandLine.Test
             result.Success.Should().BeTrue();
             result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
             Assert.Contains("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
-            Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output) ;
+            Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
         }
 
         [Fact]
