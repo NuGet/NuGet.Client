@@ -648,23 +648,23 @@ namespace NuGet.CommandLine.XPlat
         /// Prepares the dictionary that maps frameworks to packages top-level
         /// and transitive.
         /// </summary>
-        /// <param name="projectPath"> Path to the project to get versions for its packages </param>
+        /// <param name="project"> Project </param>
         /// <param name="userInputFrameworks">A list of frameworks</param>
         /// <param name="assetsFile">Assets file for all targets and libraries</param>
         /// <param name="transitive">Include transitive packages/projects in the result</param>
         /// <returns>FrameworkPackages collection with top-level and transitive package/project
         /// references for each framework, or null on error</returns>
         internal List<FrameworkPackages> GetResolvedVersions(
-            string projectPath, IEnumerable<string> userInputFrameworks, LockFile assetsFile, bool transitive)
+            Project project, IEnumerable<string> userInputFrameworks, LockFile assetsFile, bool transitive, bool includeProjects)
         {
             if (userInputFrameworks == null)
             {
                 throw new ArgumentNullException(nameof(userInputFrameworks));
             }
 
-            if (projectPath == null)
+            if (project == null)
             {
-                throw new ArgumentNullException(nameof(projectPath));
+                throw new ArgumentNullException(nameof(project));
             }
 
             if (assetsFile == null)
@@ -672,6 +672,7 @@ namespace NuGet.CommandLine.XPlat
                 throw new ArgumentNullException(nameof(assetsFile));
             }
 
+            var projectPath = project.FullPath;
             var resultPackages = new List<FrameworkPackages>();
             var requestedTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks;
             var requestedTargets = assetsFile.Targets;
@@ -752,13 +753,16 @@ namespace NuGet.CommandLine.XPlat
                             { // In case proj and assets file are not in sync and some refs were deleted
                                 if (assetsFile.PackageSpec.RestoreMetadata.CentralPackageVersionsEnabled)
                                 {
-                                    foreach (KeyValuePair<string, CentralPackageVersion> packageCentralVersion in tfmInformation.CentralPackageVersions)
+                                    ProjectRootElement directoryBuildPropsRootElement = GetDirectoryBuildPropsRootElement(project);
+                                    IEnumerable<ProjectItemElement> packagesInCPM = directoryBuildPropsRootElement.Items.Where(i => i.ItemType == PACKAGE_VERSION_TYPE_TAG);
+
+                                    foreach (ProjectItemElement packageCentralVersion in packagesInCPM)
                                     {
-                                        if (packageCentralVersion.Key.Equals(topLevelPackage.Name, StringComparison.Ordinal))
+                                        if (packageCentralVersion.Include.Equals(topLevelPackage.Name, StringComparison.Ordinal))
                                         {
                                             installedPackage = new InstalledPackageReference(topLevelPackage.Name)
                                             {
-                                                OriginalRequestedVersion = topLevelPackage.VersionOverride?.MinVersion.ToString() ?? packageCentralVersion.Value.VersionRange.MinVersion.ToString(),
+                                                OriginalRequestedVersion = topLevelPackage.VersionOverride?.MinVersion.ToString() ?? packageCentralVersion.Metadata.FirstOrDefault(i => i.Name.Equals("Version", StringComparison.OrdinalIgnoreCase)).Value,
                                             };
                                             break;
                                         }
