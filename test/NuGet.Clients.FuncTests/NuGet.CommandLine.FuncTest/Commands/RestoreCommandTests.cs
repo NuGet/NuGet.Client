@@ -1209,7 +1209,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             // Assert
             result.Success.Should().BeTrue();
             Assert.Contains($"Added package 'A.1.0.0' to folder '{projectAPackages}'", result.Output);
-            Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
+            Assert.Contains("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
         }
 
         [Theory]

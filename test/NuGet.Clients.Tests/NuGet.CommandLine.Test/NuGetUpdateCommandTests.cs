@@ -1907,7 +1907,7 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             r.Success.Should().BeTrue(r.AllOutput);
-            r.AllOutput.Should().Contain("You are running the 'update' operation with an 'http' source");
+            r.AllOutput.Should().Contain("You are running the 'update' operation with an 'HTTP' source");
         }
 
         [Theory]

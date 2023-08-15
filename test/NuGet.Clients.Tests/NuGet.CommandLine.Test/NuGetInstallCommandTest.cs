@@ -2052,7 +2052,7 @@ namespace NuGet.CommandLine.Test
             // Assert
             result.Success.Should().BeTrue();
             result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
-            result.AllOutput.Should().Contain("You are running the 'restore' operation with an 'http' source, 'http://api.source/api/v2'. Support for 'http' sources will be removed in a future version.");
+            result.AllOutput.Should().Contain("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/api/v2'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.");
         }
 
         [Theory]
@@ -2167,7 +2167,7 @@ namespace NuGet.CommandLine.Test
 
             server.Stop();
             result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder");
-            result.AllOutput.Should().Contain("You are running the 'install' operation with an 'http' source");
+            result.AllOutput.Should().Contain("You are running the 'install' operation with an 'HTTP' source");
         }
 
         public static CommandRunnerResult RunInstall(SimpleTestPathContext pathContext, string input, int expectedExitCode = 0, params string[] additionalArgs)
