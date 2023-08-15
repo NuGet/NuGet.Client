@@ -570,15 +570,11 @@ namespace NuGet.Configuration
         {
             if (string.Equals(newSource.Name, existingSource.Name, StringComparison.OrdinalIgnoreCase))
             {
-                if (newSource.IsPersistable)
+                if ((!string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase) ||
+                    newSource.ProtocolVersion != existingSource.ProtocolVersion) && newSource.IsPersistable)
                 {
-                    bool updateProtocolVersion = newSource.ProtocolVersion != existingSource.ProtocolVersion;
-                    bool updateSource = !string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase);
-                    if (updateProtocolVersion || updateSource)
-                    {
-                        Settings.AddOrUpdate(ConfigurationConstants.PackageSources, newSource.AsSourceItem());
-                        isDirty = true;
-                    }
+                    Settings.AddOrUpdate(ConfigurationConstants.PackageSources, newSource.AsSourceItem());
+                    isDirty = true;
                 }
 
                 if (updateEnabled)
