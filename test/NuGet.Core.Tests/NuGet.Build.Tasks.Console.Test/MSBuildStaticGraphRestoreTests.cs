@@ -132,7 +132,7 @@ namespace NuGet.Build.Tasks.Console.Test
         }
 
         [Fact]
-        public void GetPackageDownloads_NoVersion()
+        public void GetPackageDownloads_NoVersion_ThrowsException()
         {
             string packageName = "PackageA";
             using (var testDirectory = TestDirectory.Create())
