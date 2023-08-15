@@ -1223,8 +1223,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using var pathContext = new SimpleTestPathContext();
             // Set up solution, project, and packages
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var packageA = new SimpleTestPackageContext("a", "1.0.0");
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            var packageB = new SimpleTestPackageContext("b", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageB);
             pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
             pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
 
@@ -1238,20 +1238,20 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
 @"<packages>
-  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""B"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
             solution.Projects.Add(projectA);
             solution.Create(pathContext.SolutionRoot);
 
             // Act
-            var result = RunRestore(pathContext, _successExitCode);
+            CommandRunnerResult result = RunRestore(pathContext, _successExitCode);
 
             // Assert
             result.Success.Should().BeTrue();
-            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectAPackages}'", result.Output);
-            Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
-            Assert.DoesNotContain("You are running the 'restore' operation with an 'http' source, 'https://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
+            Assert.Contains($"Added package 'B.1.0.0' to folder '{projectAPackages}'", result.Output);
+            Assert.Contains("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
+            Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
         }
 
         [Theory]
@@ -1263,12 +1263,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using var pathContext = new SimpleTestPathContext();
             // Set up solution, project, and packages
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var packageA = new SimpleTestPackageContext("a", "1.0.0");
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            var packageB = new SimpleTestPackageContext("b", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageB);
 
             pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
             pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
-
 
             var net461 = NuGetFramework.Parse("net461");
             var projectA = new SimpleTestProjectContext(
@@ -1280,20 +1279,20 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
 @"<packages>
-  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""B"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
             solution.Projects.Add(projectA);
             solution.Create(pathContext.SolutionRoot);
 
             // Act
-            var result = RunRestore(pathContext, _successExitCode);
+            CommandRunnerResult result = RunRestore(pathContext, _successExitCode);
 
             // Assert
             result.Success.Should().BeTrue();
-            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectAPackages}'", result.Output);
-            Assert.DoesNotContain("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
-            Assert.DoesNotContain("You are running the 'restore' operation with an 'http' source, 'https://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
+            Assert.Contains($"Added package 'B.1.0.0' to folder '{projectAPackages}'", result.Output);
+            Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
+            Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
         }
 
         public static string GetResource(string name)

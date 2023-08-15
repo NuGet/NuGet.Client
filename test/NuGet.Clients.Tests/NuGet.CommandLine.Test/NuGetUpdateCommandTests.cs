@@ -1931,17 +1931,17 @@ namespace NuGet.CommandLine.Test
             var sourceUri = $"{server.Uri}nuget";
             pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnections);
 
-            var projectA = new SimpleTestProjectContext(
-                  "a",
+            var projectB = new SimpleTestProjectContext(
+                  "b",
                   ProjectStyle.PackagesConfig,
                   pathContext.SolutionRoot);
 
-            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+            Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
 @"<packages>
   <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
-            solution.Projects.Add(projectA);
+            solution.Projects.Add(projectB);
             solution.Create(pathContext.SolutionRoot);
 
             var args = new[]
@@ -1950,7 +1950,7 @@ namespace NuGet.CommandLine.Test
                     solution.SolutionPath
             };
 
-            var restoreResult = CommandRunner.Run(
+            CommandRunnerResult restoreResult = CommandRunner.Run(
                 Util.GetNuGetExePath(),
                 pathContext.WorkingDirectory,
                 string.Join(" ", args));
@@ -1962,7 +1962,7 @@ namespace NuGet.CommandLine.Test
             };
 
             // Act
-            var r = CommandRunner.Run(
+            CommandRunnerResult r = CommandRunner.Run(
                 Util.GetNuGetExePath(),
                 pathContext.WorkingDirectory,
                 string.Join(" ", args));
@@ -1970,7 +1970,7 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             r.Success.Should().BeTrue(r.AllOutput);
-            r.AllOutput.Should().NotContain("You are running the 'update' operation with an 'http' source", because: r.AllOutput);
+            r.AllOutput.Should().NotContain("You are running the 'update' operation with an 'HTTP' source", because: r.AllOutput);
         }
 
         [Theory]
@@ -1999,17 +1999,17 @@ namespace NuGet.CommandLine.Test
             var sourceUri = $"{server.Uri}nuget";
             pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnections);
 
-            var projectA = new SimpleTestProjectContext(
-                  "a",
+            var projectB = new SimpleTestProjectContext(
+                  "b",
                   ProjectStyle.PackagesConfig,
                   pathContext.SolutionRoot);
 
-            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+            Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
 @"<packages>
   <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
-            solution.Projects.Add(projectA);
+            solution.Projects.Add(projectB);
             solution.Create(pathContext.SolutionRoot);
 
             var args = new[]
@@ -2018,7 +2018,7 @@ namespace NuGet.CommandLine.Test
                     solution.SolutionPath
             };
 
-            var restoreResult = CommandRunner.Run(
+            CommandRunnerResult restoreResult = CommandRunner.Run(
                 Util.GetNuGetExePath(),
                 pathContext.WorkingDirectory,
                 string.Join(" ", args));
@@ -2030,7 +2030,7 @@ namespace NuGet.CommandLine.Test
             };
 
             // Act
-            var r = CommandRunner.Run(
+            CommandRunnerResult r = CommandRunner.Run(
                 Util.GetNuGetExePath(),
                 pathContext.WorkingDirectory,
                 string.Join(" ", args));
@@ -2038,7 +2038,7 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             r.Success.Should().BeTrue(r.AllOutput);
-            r.AllOutput.Should().Contain("You are running the 'update' operation with an 'http' source", because: r.AllOutput);
+            r.AllOutput.Should().Contain("You are running the 'update' operation with an 'HTTP' source", because: r.AllOutput);
         }
     }
 }

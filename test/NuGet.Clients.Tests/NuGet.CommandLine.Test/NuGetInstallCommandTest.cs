@@ -355,11 +355,11 @@ namespace NuGet.CommandLine.Test
 
                 Directory.CreateDirectory(repositoryPath);
 
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
 @"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
@@ -368,7 +368,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.ExitCode);
-                var packageADir = Path.Combine(workingPath, "outputDir", "packageA");
+                var packageADir = Path.Combine(workingPath, "outputDir", "packageB");
                 var packageBDir = Path.Combine(workingPath, "outputDir", "packageB");
                 Assert.True(Directory.Exists(packageADir));
                 Assert.True(Directory.Exists(packageBDir));
@@ -414,11 +414,11 @@ namespace NuGet.CommandLine.Test
                 var repositoryPath = Path.Combine(workingPath, "Repository");
 
                 Directory.CreateDirectory(repositoryPath);
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
@@ -435,7 +435,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.ExitCode);
-                var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, "outputDir", "packageB.1.1.0", "packageB.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
@@ -458,12 +458,12 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(repositoryPath);
 
                 // Incorrect versions
-                Util.CreateTestPackage("packageA", "1.0.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "1.0.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.0.0", repositoryPath);
 
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
@@ -496,11 +496,11 @@ namespace NuGet.CommandLine.Test
                 var repositoryPath = Path.Combine(workingPath, "Repository");
 
                 Directory.CreateDirectory(repositoryPath);
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
@@ -533,11 +533,11 @@ namespace NuGet.CommandLine.Test
                 var packagesConfig = Path.Combine(workingPath, "packages.config");
 
                 Directory.CreateDirectory(repositoryPath);
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
@@ -554,7 +554,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.ExitCode);
-                var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, "outputDir", "packageB.1.1.0", "packageB.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
@@ -593,11 +593,11 @@ namespace NuGet.CommandLine.Test
 
                 Directory.CreateDirectory(repositoryPath);
 
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
@@ -616,7 +616,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(0 == r.ExitCode, $"{r.Output} {r.Errors}");
-                var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, "outputDir", "packageB.1.1.0", "packageB.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
@@ -639,11 +639,11 @@ namespace NuGet.CommandLine.Test
                 var relativeFolderPath = $"..\\{folderName}";
 
                 Directory.CreateDirectory(repositoryPath);
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
@@ -671,7 +671,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.ExitCode);
-                var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, "outputDir", "packageB.1.1.0", "packageB.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
@@ -917,7 +917,7 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(proj1Directory);
 
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
 
                 Util.CreateFile(workingPath, "my.config",
@@ -942,7 +942,7 @@ namespace NuGet.CommandLine.Test
 </Project>");
                 Util.CreateFile(proj1Directory, configFileName,
     @"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""1.1.0"" targetFramework=""net45"" />
 </packages>");
                 // Act
                 var r = RunInstall(pathContext, configFileName, 0, " -Source " + repositoryPath + $@" -ConfigFile my.config -RequireConsent");
@@ -978,7 +978,7 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(proj1Directory);
 
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
 
                 Util.CreateFile(workingPath, "my.config",
@@ -1003,7 +1003,7 @@ namespace NuGet.CommandLine.Test
 </Project>");
                 Util.CreateFile(proj1Directory, configFileName,
     @"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""1.1.0"" targetFramework=""net45"" />
 </packages>");
                 // Act
                 var r = RunInstall(pathContext, configFileName, 0, " -Source " + repositoryPath + $@" -ConfigFile my.config");
@@ -2064,13 +2064,12 @@ namespace NuGet.CommandLine.Test
             using var pathContext = new SimpleTestPathContext();
             // Set up solution, project, and packages
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var packageA = new SimpleTestPackageContext("a", "1.0.0");
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
-            var packageAPath = Path.Combine(pathContext.PackageSource, packageA.Id, packageA.Version, packageA.PackageName);
+            var packageB = new SimpleTestPackageContext("b", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageB);
+            var packageBPath = Path.Combine(pathContext.PackageSource, packageB.Id, packageB.Version, packageB.PackageName);
 
             pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
             pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
-
 
             var projectA = new SimpleTestProjectContext(
                 "a",
@@ -2079,7 +2078,7 @@ namespace NuGet.CommandLine.Test
 
             Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
 @"<packages>
-  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""B"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
             solution.Projects.Add(projectA);
@@ -2093,13 +2092,13 @@ namespace NuGet.CommandLine.Test
             };
 
             // Act
-            var result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
+            CommandRunnerResult result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
 
             // Assert
             result.Success.Should().BeTrue();
-            result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
-            Assert.DoesNotContain("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
-            Assert.DoesNotContain("You are running the 'restore' operation with an 'http' source, 'https://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
+            result.AllOutput.Should().Contain($"Added package 'B.1.0.0' to folder '{pathContext.PackagesV2}'");
+            Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
+            Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output); ;
         }
 
         [Theory]
@@ -2113,13 +2112,12 @@ namespace NuGet.CommandLine.Test
             using var pathContext = new SimpleTestPathContext();
             // Set up solution, project, and packages
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var packageA = new SimpleTestPackageContext("a", "1.0.0");
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
-            var packageAPath = Path.Combine(pathContext.PackageSource, packageA.Id, packageA.Version, packageA.PackageName);
+            var packageB = new SimpleTestPackageContext("b", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageB);
+            var packageBPath = Path.Combine(pathContext.PackageSource, packageB.Id, packageB.Version, packageB.PackageName);
 
             pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
             pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
-
 
             var projectA = new SimpleTestProjectContext(
                 "a",
@@ -2128,7 +2126,7 @@ namespace NuGet.CommandLine.Test
 
             Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
 @"<packages>
-  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""B"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
             solution.Projects.Add(projectA);
@@ -2142,13 +2140,13 @@ namespace NuGet.CommandLine.Test
             };
 
             // Act
-            var result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
+            CommandRunnerResult result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
 
             // Assert
             result.Success.Should().BeTrue();
-            result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
-            Assert.Contains("You are running the 'restore' operation with an 'http' source, 'http://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
-            Assert.DoesNotContain("You are running the 'restore' operation with an 'http' source, 'https://api.source/index.json'. Support for 'http' sources will be removed in a future version.", result.Output);
+            result.AllOutput.Should().Contain($"Added package 'B.1.0.0' to folder '{pathContext.PackagesV2}'");
+            Assert.Contains("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
+            Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output) ;
         }
 
         [Fact]
