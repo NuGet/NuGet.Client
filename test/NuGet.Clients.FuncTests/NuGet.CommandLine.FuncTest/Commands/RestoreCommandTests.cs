@@ -1223,25 +1223,25 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using var pathContext = new SimpleTestPathContext();
             // Set up solution, project, and packages
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var packageB = new SimpleTestPackageContext("b", "1.0.0");
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageB);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
             pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
             pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
 
             var net461 = NuGetFramework.Parse("net461");
-            var projectA = new SimpleTestProjectContext(
-                "a",
+            var projectB = new SimpleTestProjectContext(
+                "b",
                 ProjectStyle.PackagesConfig,
                 pathContext.SolutionRoot);
-            projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
-            var projectAPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+            projectB.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+            var projectBPackages = Path.Combine(pathContext.SolutionRoot, "packages");
 
-            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+            Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
 @"<packages>
-  <package id=""B"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
-            solution.Projects.Add(projectA);
+            solution.Projects.Add(projectB);
             solution.Create(pathContext.SolutionRoot);
 
             // Act
@@ -1249,7 +1249,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             // Assert
             result.Success.Should().BeTrue();
-            Assert.Contains($"Added package 'B.1.0.0' to folder '{projectAPackages}'", result.Output);
+            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectBPackages}'", result.Output);
             Assert.Contains("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
             Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
         }
@@ -1263,26 +1263,26 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using var pathContext = new SimpleTestPathContext();
             // Set up solution, project, and packages
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var packageB = new SimpleTestPackageContext("b", "1.0.0");
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageB);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
 
             pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
             pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
 
             var net461 = NuGetFramework.Parse("net461");
-            var projectA = new SimpleTestProjectContext(
-                "a",
+            var projectB = new SimpleTestProjectContext(
+                "b",
                 ProjectStyle.PackagesConfig,
                 pathContext.SolutionRoot);
-            projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
-            var projectAPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+            projectB.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+            var projectBPackages = Path.Combine(pathContext.SolutionRoot, "packages");
 
-            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+            Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
 @"<packages>
-  <package id=""B"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
 </packages>");
 
-            solution.Projects.Add(projectA);
+            solution.Projects.Add(projectB);
             solution.Create(pathContext.SolutionRoot);
 
             // Act
@@ -1290,7 +1290,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             // Assert
             result.Success.Should().BeTrue();
-            Assert.Contains($"Added package 'B.1.0.0' to folder '{projectAPackages}'", result.Output);
+            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectBPackages}'", result.Output);
             Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
             Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
         }
