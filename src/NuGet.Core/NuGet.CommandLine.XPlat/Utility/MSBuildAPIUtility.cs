@@ -751,26 +751,22 @@ namespace NuGet.CommandLine.XPlat
                         {
                             try
                             { // In case proj and assets file are not in sync and some refs were deleted
-                                if (assetsFile.PackageSpec.RestoreMetadata.CentralPackageVersionsEnabled)
+                                var projectPackage = projPackages.Where(p => p.Name.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
+
+                                // If the project is using CPM and its not using VersionOverride, get the version from Directory.Package.props file
+                                if (assetsFile.PackageSpec.RestoreMetadata.CentralPackageVersionsEnabled && !projectPackage.IsVersionOverride)
                                 {
                                     ProjectRootElement directoryBuildPropsRootElement = GetDirectoryBuildPropsRootElement(project);
-                                    IEnumerable<ProjectItemElement> packagesInCPM = directoryBuildPropsRootElement.Items.Where(i => i.ItemType == PACKAGE_VERSION_TYPE_TAG);
+                                    ProjectItemElement packageInCPM = directoryBuildPropsRootElement.Items.Where(i => i.ItemType == PACKAGE_VERSION_TYPE_TAG && i.Include.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
-                                    foreach (ProjectItemElement packageCentralVersion in packagesInCPM)
+                                    installedPackage = new InstalledPackageReference(topLevelPackage.Name)
                                     {
-                                        if (packageCentralVersion.Include.Equals(topLevelPackage.Name, StringComparison.Ordinal))
-                                        {
-                                            installedPackage = new InstalledPackageReference(topLevelPackage.Name)
-                                            {
-                                                OriginalRequestedVersion = topLevelPackage.VersionOverride?.MinVersion.ToString() ?? packageCentralVersion.Metadata.FirstOrDefault(i => i.Name.Equals("Version", StringComparison.OrdinalIgnoreCase)).Value,
-                                            };
-                                            break;
-                                        }
-                                    }
+                                        OriginalRequestedVersion = topLevelPackage.VersionOverride?.OriginalString ?? packageInCPM.Metadata.FirstOrDefault(i => i.Name.Equals("Version", StringComparison.OrdinalIgnoreCase)).Value,
+                                    };
                                 }
                                 else
                                 {
-                                    installedPackage = projPackages.Where(p => p.Name.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
+                                    installedPackage = projectPackage;
                                 }
                             }
                             catch (Exception)
@@ -879,10 +875,15 @@ namespace NuGet.CommandLine.XPlat
             newProject.Build(new[] { CollectPackageReferences }, new List<Microsoft.Build.Framework.ILogger> { }, out var targetOutputs);
 
             return targetOutputs.First(e => e.Key.Equals(CollectPackageReferences, StringComparison.OrdinalIgnoreCase)).Value.Items.Select(p =>
-                new InstalledPackageReference(p.ItemSpec)
+            {
+                var isVersionOverride = p.GetMetadata("VersionOverride") != string.Empty;
+                var originalRequestedVersion = isVersionOverride ? p.GetMetadata("VersionOverride") : p.GetMetadata("version");
+                return new InstalledPackageReference(p.ItemSpec)
                 {
-                    OriginalRequestedVersion = p.GetMetadata("version"),
-                });
+                    OriginalRequestedVersion = originalRequestedVersion,
+                    IsVersionOverride = isVersionOverride,
+                };
+            });
         }
 
         /// <summary>
