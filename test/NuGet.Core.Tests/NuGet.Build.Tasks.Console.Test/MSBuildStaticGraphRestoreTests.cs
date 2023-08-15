@@ -127,7 +127,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
                 };
 
-                act.Should().Throw<ArgumentException>().WithMessage($"'{expected ?? VersionRange.Parse(version).OriginalString}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.");
+                act.Should().Throw<ArgumentException>().WithMessage($"In the package 'PackageA', '{expected ?? VersionRange.Parse(version).OriginalString}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.");
             }
         }
 
