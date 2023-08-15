@@ -435,7 +435,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString, id));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
                 }
 
                 var downloadDependency = new DownloadDependency(id, versionRange);
@@ -509,10 +509,7 @@ namespace NuGet.SolutionRestoreManager
         {
             char[] splitChars = new[] { ';' };
             string versionString = GetPropertyValueOrNull(item, "Version");
-            if (string.IsNullOrEmpty(versionString))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", item.Name));
-            }
+
             if (versionString != null)
             {
                 var versions = versionString.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
