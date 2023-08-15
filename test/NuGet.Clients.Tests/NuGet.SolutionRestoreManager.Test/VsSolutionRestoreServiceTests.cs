@@ -2389,7 +2389,7 @@ namespace NuGet.SolutionRestoreManager.Test
         private delegate bool TryGetProjectNamesReturns(string projectPath, out ProjectNames projectNames);
 
         [Fact]
-        public void ToPackageSpec_PackageDownload_NoVersion()
+        public void ToPackageSpec_NoVersion_ThrowsException()
         {
             // Arrange
             string packageName = "package";
