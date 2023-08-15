@@ -3401,7 +3401,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void MSBuildRestoreUtility_AddPackageDownloads_NoVersion()
+        public void MSBuildRestoreUtility_AddPackageDownloads_NoVersion_ThrowsException()
         {
             // Arrange
             PackageSpec spec = MSBuildRestoreUtility.GetPackageSpec(new[]
