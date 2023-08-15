@@ -70,7 +70,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
+        ///   Looks up a localized string similar to In the package &apos;{1}&apos;, &apos;{0}&apos; is not an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
         /// </summary>
         internal static string Error_PackageDownload_OnlyExactVersionsAreAllowed {
             get {
