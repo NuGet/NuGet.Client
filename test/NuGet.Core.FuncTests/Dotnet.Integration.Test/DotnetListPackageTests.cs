@@ -190,7 +190,7 @@ namespace Dotnet.Integration.Test
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net7.0");
 
-                var packageX = XPlatTestUtils.CreatePackage("X", "1.0.0",);
+                var packageX = XPlatTestUtils.CreatePackage("X", "1.0.0");
                 var packageX2 = XPlatTestUtils.CreatePackage("X", "2.0.0");
 
                 // Generate Package
