@@ -378,6 +378,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        Condition=" '%(RestoreGraphProjectInputItems.Extension)' != '.metaproj'
                    AND '%(RestoreGraphProjectInputItems.Extension)' != '.shproj'
                    AND '%(RestoreGraphProjectInputItems.Extension)' != '.vcxitems'
+                   AND '%(RestoreGraphProjectInputItems.Extension)' != '.vdproj'
                    AND '%(RestoreGraphProjectInputItems.Extension)' != '' " />
     </ItemGroup>
 
