@@ -188,10 +188,10 @@ namespace Dotnet.Integration.Test
         {
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net7.0");
 
-                var packageX = XPlatTestUtils.CreatePackage("X", "1.0.0", "net46");
-                var packageX2 = XPlatTestUtils.CreatePackage("X", "2.0.0", "net46");
+                var packageX = XPlatTestUtils.CreatePackage("X", "1.0.0",);
+                var packageX2 = XPlatTestUtils.CreatePackage("X", "2.0.0");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -240,9 +240,9 @@ namespace Dotnet.Integration.Test
         {
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net7.0");
 
-                var packageX = XPlatTestUtils.CreatePackage("X", "2.0.0", "net46");
+                var packageX = XPlatTestUtils.CreatePackage("X", "2.0.0");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
