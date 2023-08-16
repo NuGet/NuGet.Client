@@ -45,7 +45,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<INuGetLockService> _lockService;
         private readonly Lazy<Common.ILogger> _logger;
-        private readonly Lazy<IVulnerabilitiesFoundService> _vulnerabilitiesFoundService;
+        private readonly Lazy<IVulnerabilitiesNotificationService> _vulnerabilitiesFoundService;
         private readonly AsyncLazy<IComponentModel> _componentModel;
 
         private EnvDTE.SolutionEvents _solutionEvents;
@@ -99,7 +99,7 @@ namespace NuGet.SolutionRestoreManager
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
             Lazy<INuGetFeatureFlagService> nugetFeatureFlagService,
-            Lazy<IVulnerabilitiesFoundService> vulnerabilitiesFoundService)
+            Lazy<IVulnerabilitiesNotificationService> vulnerabilitiesFoundService)
             : this(AsyncServiceProvider.GlobalProvider,
                   solutionManager,
                   lockService,
@@ -118,7 +118,7 @@ namespace NuGet.SolutionRestoreManager
             Lazy<INuGetErrorList> errorList,
             Lazy<IOutputConsoleProvider> outputConsoleProvider,
             Lazy<INuGetFeatureFlagService> nugetFeatureFlagService,
-            Lazy<IVulnerabilitiesFoundService> vulnerabilitiesFoundService)
+            Lazy<IVulnerabilitiesNotificationService> vulnerabilitiesFoundService)
         {
             if (asyncServiceProvider == null)
             {

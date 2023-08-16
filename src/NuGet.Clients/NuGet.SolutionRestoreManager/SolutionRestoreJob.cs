@@ -54,7 +54,7 @@ namespace NuGet.SolutionRestoreManager
         private RestoreOperationLogger _logger;
         private INuGetProjectContext _nuGetProjectContext;
         private PackageRestoreConsent _packageRestoreConsent;
-        private Lazy<IVulnerabilitiesFoundService> _vulnerabilitiesFoundService;
+        private Lazy<IVulnerabilitiesNotificationService> _vulnerabilitiesFoundService;
 
         private NuGetOperationStatus _status;
         private int _packageCount;
@@ -130,7 +130,7 @@ namespace NuGet.SolutionRestoreManager
             SolutionRestoreJobContext jobContext,
             RestoreOperationLogger logger,
             Dictionary<string, object> trackingData,
-            Lazy<IVulnerabilitiesFoundService> vulnerabilitiesFoundService,
+            Lazy<IVulnerabilitiesNotificationService> vulnerabilitiesFoundService,
             CancellationToken token)
         {
             if (request == null)
@@ -522,7 +522,7 @@ namespace NuGet.SolutionRestoreManager
                                     }
 
                                     // Display info bar in SolutionExplorer if there is a vulnerability during restore.
-                                    await _vulnerabilitiesFoundService.Value.ReportVulnerabilities(AnyProjectHasVulnerablePackageWarning(restoreSummaries), t);
+                                    await _vulnerabilitiesFoundService.Value.ReportVulnerabilitiesAsync(AnyProjectHasVulnerablePackageWarning(restoreSummaries), t);
 
                                     _nuGetProgressReporter.EndSolutionRestore(projectList);
                                 }

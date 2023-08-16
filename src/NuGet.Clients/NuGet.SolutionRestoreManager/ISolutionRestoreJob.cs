@@ -33,7 +33,7 @@ namespace NuGet.SolutionRestoreManager
             SolutionRestoreJobContext jobContext,
             RestoreOperationLogger logger,
             Dictionary<string, object> restoreStartTrackingData,
-            Lazy<IVulnerabilitiesFoundService> vulnerabilitiesFoundService,
+            Lazy<IVulnerabilitiesNotificationService> vulnerabilitiesFoundService,
             CancellationToken token);
     }
 }

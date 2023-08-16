@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace NuGet.SolutionRestoreManager
 {
-    public interface IVulnerabilitiesFoundService
+    public interface IVulnerabilitiesNotificationService
     {
-        Task ReportVulnerabilities(bool hasVulnerabilitiesInSolution, CancellationToken cancellationToken);
+        Task ReportVulnerabilitiesAsync(bool hasVulnerabilitiesInSolution, CancellationToken cancellationToken);
     }
 }

@@ -17,9 +17,9 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.SolutionRestoreManager
 {
-    [Export(typeof(IVulnerabilitiesFoundService))]
+    [Export(typeof(IVulnerabilitiesNotificationService))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class VulnerablePackagesInfoBar : IVulnerabilitiesFoundService, IVsInfoBarUIEvents
+    public class VulnerablePackagesInfoBar : IVulnerabilitiesNotificationService, IVsInfoBarUIEvents
     {
         private IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
         private IVsInfoBarUIElement? _infoBarUIElement;
@@ -31,7 +31,7 @@ namespace NuGet.SolutionRestoreManager
         [Import]
         private Lazy<IPackageManagerLaunchService>? PackageManagerLaunchService { get; set; }
 
-        public async Task ReportVulnerabilities(bool hasVulnerabilitiesInSolution, CancellationToken cancellationToken)
+        public async Task ReportVulnerabilitiesAsync(bool hasVulnerabilitiesInSolution, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
