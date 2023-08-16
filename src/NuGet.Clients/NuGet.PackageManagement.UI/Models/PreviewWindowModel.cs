@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.UI
                     }
                     sb.AppendLine("");
                 }
-                if (r.NewSourceMappings?.Any() == true)
+                if (r.NewSourceMappings?.Count > 0)
                 {
                     foreach (var newSourceMapping in r.NewSourceMappings)
                     {
