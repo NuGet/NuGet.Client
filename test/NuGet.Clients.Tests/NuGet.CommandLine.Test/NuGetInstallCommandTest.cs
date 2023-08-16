@@ -2061,7 +2061,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("invalidString", true)]
         [InlineData("", true)]
         [InlineData("true", false)]
-        [InlineData("TRUE",false)]
+        [InlineData("TRUE", false)]
         public async Task Install_PackagesConfigWithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool hasHttpWarning)
         {
             // Arrange
