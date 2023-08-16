@@ -2056,9 +2056,13 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("true")]
-        [InlineData("TRUE")]
-        public async Task Install_PackagesConfigWithHttpSourceAndTrueAllowInsecureConnections_NoWarns(string allowInsecureConnections)
+        [InlineData("false", true)]
+        [InlineData("FALSE", true)]
+        [InlineData("invalidString", true)]
+        [InlineData("", true)]
+        [InlineData("true", false)]
+        [InlineData("TRUE",false)]
+        public async Task Install_PackagesConfigWithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool hasHttpWarning)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -2095,58 +2099,21 @@ namespace NuGet.CommandLine.Test
             CommandRunnerResult result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
 
             // Assert
+            string formatString = "You are running the 'restore' operation with an 'HTTP' source, '{0}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS'";
+            string warningForHttpSource = string.Format(formatString, "http://api.source/index.json");
+            string warningForHttpsSource = string.Format(formatString, "https://api.source/index.json");
+
             result.Success.Should().BeTrue();
             result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
-            Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
-            Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output); ;
-        }
-
-        [Theory]
-        [InlineData("false")]
-        [InlineData("FALSE")]
-        [InlineData("invalidString")]
-        [InlineData("")]
-        public async Task Install_PackagesConfigWithHttpSourceAndFalseAllowInsecureConnections_Warns(string allowInsecureConnections)
-        {
-            // Arrange
-            using var pathContext = new SimpleTestPathContext();
-            // Set up solution, project, and packages
-            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-            var packageA = new SimpleTestPackageContext("a", "1.0.0");
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
-            var packageAPath = Path.Combine(pathContext.PackageSource, packageA.Id, packageA.Version, packageA.PackageName);
-
-            pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
-            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
-
-            var projectB = new SimpleTestProjectContext(
-                "b",
-                ProjectStyle.PackagesConfig,
-                pathContext.SolutionRoot);
-
-            Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
-@"<packages>
-  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
-</packages>");
-
-            solution.Projects.Add(projectB);
-            solution.Create(pathContext.SolutionRoot);
-
-            var config = Path.Combine(Path.GetDirectoryName(projectB.ProjectPath), "packages.config");
-            var args = new string[]
+            Assert.DoesNotContain(warningForHttpsSource, result.Output);
+            if (hasHttpWarning)
             {
-                "-OutputDirectory",
-                pathContext.PackagesV2
-            };
-
-            // Act
-            CommandRunnerResult result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
-
-            // Assert
-            result.Success.Should().BeTrue();
-            result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
-            Assert.Contains("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
-            Assert.DoesNotContain("You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
+                Assert.Contains(warningForHttpSource, result.Output);
+            }
+            else
+            {
+                Assert.DoesNotContain(warningForHttpSource, result.Output); ;
+            }
         }
 
         [Fact]
