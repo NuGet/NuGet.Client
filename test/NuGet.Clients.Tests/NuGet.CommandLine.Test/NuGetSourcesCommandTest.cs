@@ -481,13 +481,14 @@ namespace NuGet.CommandLine.Test
                 CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.Equal(shouldSucceed, result.ExitCode.Equals(0));
-
-                if (!shouldSucceed)
+                if (shouldSucceed)
                 {
-                    string expectedErrorMessage = "The protocol version specified is invalid.";
-
-                    VerifyResultFailure(result, expectedErrorMessage);
+                    Util.VerifyResultSuccess(result);
+                }
+                else
+                {
+                    var expectedErrorMessage = "The protocol version specified is invalid.";
+                    Util.VerifyResultFailure(result, expectedErrorMessage);
                 }
             }
         }
@@ -585,13 +586,14 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args));
 
                 // Assert
-                Assert.Equal(shouldSucceed, result.ExitCode.Equals(0));
-
-                if (!shouldSucceed)
+                if (shouldSucceed)
                 {
-                    string expectedErrorMessage = "The protocol version specified is invalid.";
-
-                    VerifyResultFailure(result, expectedErrorMessage);
+                    Util.VerifyResultSuccess(result);
+                }
+                else
+                {
+                    var expectedErrorMessage = "The protocol version specified is invalid.";
+                    Util.VerifyResultFailure(result, expectedErrorMessage);
                 }
             }
         }
@@ -836,25 +838,6 @@ namespace NuGet.CommandLine.Test
                 Assert.DoesNotContain("Encyclopaedia", result.Output);
                 Assert.DoesNotContain("Encyclopædia", result.Output);
             }
-        }
-
-        /// <summary>
-        /// Utility for asserting faulty executions of nuget.exe
-        ///
-        /// Asserts a non-zero status code and a message on stderr.
-        /// </summary>
-        /// <param name="result">An instance of <see cref="CommandRunnerResult"/> with command execution results</param>
-        /// <param name="expectedErrorMessage">A portion of the error message to be sent</param>
-        public static void VerifyResultFailure(CommandRunnerResult result,
-                                               string expectedErrorMessage)
-        {
-            Assert.False(
-                result.Success,
-                "nuget.exe DID NOT FAIL: Output is " + result.Output + ". Error is " + result.Errors);
-
-            Assert.True(
-                result.Errors.Contains(expectedErrorMessage),
-                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Output);
         }
     }
 }
