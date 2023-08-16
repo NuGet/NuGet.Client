@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
@@ -440,7 +441,8 @@ namespace NuGet.CommandLine.Test
                 CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.Equal(0, result.ExitCode);
+                Util.VerifyResultSuccess(result);
+
                 ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
                 SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
                 SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
@@ -493,11 +495,61 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Theory]
-        [InlineData(@"https://source.test", true)]
-        [InlineData(@"\\myserver\packages", false)]
-        public void SourcesCommandTest_UpdateWithProtocolVersion(string source, bool shouldWriteProtocolVersion)
+        [Fact]
+        public void SourcesCommandTest_UpdateWithProtocolVersion()
         {
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
+            {
+                var nugetexe = Util.GetNuGetExePath();
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test.initial"" />
+  </packageSources>
+</configuration>";
+                Util.CreateFile(configFileDirectory, configFileName, nugetConfig);
+
+                // Arrange
+                var args = new string[] {
+                    "sources",
+                    "Update",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    @"https://source.test",
+                    "-ConfigFile",
+                    configFilePath,
+                    "-ProtocolVersion",
+                    "3"
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    nugetexe,
+                    configFileDirectory,
+                    string.Join(" ", args));
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                Assert.Single(packageSourcesSection.Items);
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("3", sourceItem.ProtocolVersion);
+            }
+        }
+
+        [Fact]
+        public void SourcesCommandTest_UpdateWithProtocolVersion_LocalSource_ShouldNotWriteProtocolVersion()
+        {
+            var source = RuntimeEnvironmentHelper.IsWindows
+                ? @"c:\path\to\packages"
+                : "/path/to/packages";
+
             using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
                 var nugetexe = Util.GetNuGetExePath();
@@ -533,13 +585,13 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args));
 
                 // Assert
-                Assert.Equal(0, result.ExitCode);
+                Util.VerifyResultSuccess(result);
+
                 ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
                 SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
                 Assert.Single(packageSourcesSection.Items);
                 SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                var expectedProtocolVersion = shouldWriteProtocolVersion ? "3" : null;
-                Assert.Equal(expectedProtocolVersion, sourceItem.ProtocolVersion);
+                Assert.Null(sourceItem.ProtocolVersion);
             }
         }
 
