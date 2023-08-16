@@ -356,11 +356,11 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(repositoryPath);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageA", "2.2.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
 @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-  <package id=""packageA"" version=""2.2.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
                 // Act
@@ -369,7 +369,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, r.ExitCode);
                 var packageADir = Path.Combine(workingPath, "outputDir", "packageA");
-                var packageBDir = Path.Combine(workingPath, "outputDir", "packageA");
+                var packageBDir = Path.Combine(workingPath, "outputDir", "packageB");
                 Assert.True(Directory.Exists(packageADir));
                 Assert.True(Directory.Exists(packageBDir));
             }
@@ -415,11 +415,11 @@ namespace NuGet.CommandLine.Test
 
                 Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageA", "2.2.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-  <package id=""packageA"" version=""2.2.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
                 var args = new string[]
@@ -436,7 +436,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, r.ExitCode);
                 var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, "outputDir", "packageA.2.2.0", "packageA.2.2.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -459,12 +459,12 @@ namespace NuGet.CommandLine.Test
 
                 // Incorrect versions
                 Util.CreateTestPackage("packageA", "1.0.0", repositoryPath);
-                Util.CreateTestPackage("packageA", "2.0.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.0.0", repositoryPath);
 
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-  <package id=""packageA"" version=""2.2.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
                 var args = new string[]
@@ -497,11 +497,11 @@ namespace NuGet.CommandLine.Test
 
                 Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageA", "2.2.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-  <package id=""packageA"" version=""2.2.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
                 var args = new string[]
@@ -534,11 +534,11 @@ namespace NuGet.CommandLine.Test
 
                 Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageA", "2.2.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-  <package id=""packageA"" version=""2.2.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
                 var args = new string[]
@@ -555,7 +555,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, r.ExitCode);
                 var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, "outputDir", "packageA.2.2.0", "packageA.2.2.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
 
@@ -594,11 +594,11 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(repositoryPath);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageA", "2.2.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-  <package id=""packageA"" version=""2.2.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
                 var args = new string[]
@@ -617,7 +617,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(0 == r.ExitCode, $"{r.Output} {r.Errors}");
                 var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, "outputDir", "packageA.2.2.0", "packageA.2.2.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -640,11 +640,11 @@ namespace NuGet.CommandLine.Test
 
                 Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageA", "2.2.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
     @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-  <package id=""packageA"" version=""2.2.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
                 var args = new string[]
@@ -672,7 +672,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, r.ExitCode);
                 var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, "outputDir", "packageA.2.2.0", "packageA.2.2.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -918,7 +918,7 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(proj1Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageA", "2.2.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
 
                 Util.CreateFile(workingPath, "my.config",
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -979,7 +979,7 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(proj1Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageA", "2.2.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
 
                 Util.CreateFile(workingPath, "my.config",
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
