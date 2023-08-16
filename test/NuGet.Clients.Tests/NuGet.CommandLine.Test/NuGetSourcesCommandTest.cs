@@ -17,13 +17,13 @@ namespace NuGet.CommandLine.Test
         [InlineData("https://test_source", false)]
         public void SourcesCommandTest_AddSource(string source, bool shouldWarn)
         {
-            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 TestDirectory workingPath = pathContext.WorkingDirectory;
                 SimpleTestSettingsContext settings = pathContext.Settings;
 
                 // Arrange
-                string nugetexe = Util.GetNuGetExePath();
+                var nugetexe = Util.GetNuGetExePath();
                 var args = new string[] {
                     "sources",
                     "Add",
@@ -55,9 +55,9 @@ namespace NuGet.CommandLine.Test
         {
             using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
-                string nugetexe = Util.GetNuGetExePath();
-                string configFileName = "nuget.config";
-                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+                var nugetexe = Util.GetNuGetExePath();
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 var nugetConfig = string.Format(
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -104,8 +104,8 @@ namespace NuGet.CommandLine.Test
 
             using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
-                string configFileName = "nuget.config";
-                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 Util.CreateFile(configFileDirectory, configFileName,
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -160,12 +160,12 @@ namespace NuGet.CommandLine.Test
         public void SourcesCommandTest_DisableSource_NoWarnWhenUsingHttp()
         {
             // Arrange
-            string nugetexe = Util.GetNuGetExePath();
+            var nugetexe = Util.GetNuGetExePath();
 
             using (var configFileDirectory = TestDirectory.Create())
             {
-                string configFileName = "nuget.config";
-                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 Util.CreateFile(configFileDirectory, configFileName,
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -219,7 +219,7 @@ namespace NuGet.CommandLine.Test
         public void SourcesList_WithDefaultFormat_UsesDetailedFormat(string source, string secondSource, bool shouldWarn, string warningMessage)
         {
             // Arrange
-            string nugetexe = Util.GetNuGetExePath();
+            var nugetexe = Util.GetNuGetExePath();
 
             using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
@@ -283,7 +283,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
+                CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == result.ExitCode, result.Output + " " + result.Errors);
@@ -332,7 +332,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
+                CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
 
                 // Assert
                 Assert.True(0 == result.ExitCode, result.Output + " " + result.Errors);
@@ -383,7 +383,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var result = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     configFileDirectory,
                     string.Join(" ", args));
@@ -416,13 +416,13 @@ namespace NuGet.CommandLine.Test
         [InlineData(@"\\myserver\packages", false)]
         public void SourcesCommandTest_AddWithProtocolVersion(string source, bool shouldWriteProtocolVersion)
         {
-            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
+            using (var pathContext = new SimpleTestPathContext())
             {
                 TestDirectory workingPath = pathContext.WorkingDirectory;
                 SimpleTestSettingsContext settings = pathContext.Settings;
 
                 // Arrange
-                string nugetexe = Util.GetNuGetExePath();
+                var nugetexe = Util.GetNuGetExePath();
                 var args = new string[] {
                     "sources",
                     "Add",
@@ -457,13 +457,13 @@ namespace NuGet.CommandLine.Test
         [InlineData("5", false)]
         public void SourcesCommandTest_AddWithProtocolVersion_ValidateProtocolVersion(string protocolVersion, bool shouldSucceed)
         {
-            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                TestDirectory workingPath = pathContext.WorkingDirectory;
-                SimpleTestSettingsContext settings = pathContext.Settings;
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
 
                 // Arrange
-                string nugetexe = Util.GetNuGetExePath();
+                var nugetexe = Util.GetNuGetExePath();
                 var args = new string[] {
                     "sources",
                     "Add",
@@ -499,9 +499,9 @@ namespace NuGet.CommandLine.Test
         {
             using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
-                string nugetexe = Util.GetNuGetExePath();
-                string configFileName = "nuget.config";
-                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+                var nugetexe = Util.GetNuGetExePath();
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 var nugetConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -552,9 +552,9 @@ namespace NuGet.CommandLine.Test
         {
             using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
-                string nugetexe = Util.GetNuGetExePath();
-                string configFileName = "nuget.config";
-                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+                var nugetexe = Util.GetNuGetExePath();
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 var nugetConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -643,7 +643,7 @@ namespace NuGet.CommandLine.Test
                 Assert.False(source.IsEnabled);
 
                 // Main Act
-                var result = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args));
@@ -719,7 +719,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(source.IsEnabled);
 
                 // Main Act
-                var result = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args));
@@ -776,7 +776,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
+                CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -820,7 +820,7 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Main Act
-                var result = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args));
