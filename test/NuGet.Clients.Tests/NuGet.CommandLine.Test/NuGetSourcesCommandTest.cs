@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using NuGet.Configuration;
+using NuGet.Configuration.Test;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -156,6 +157,83 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData("http://source.test", "true", false)]
+        [InlineData("http://source.test", "TRUE", false)]
+        [InlineData("http://source.test", "FALSE", true)]
+        [InlineData("http://source.test", "invalidString", true)]
+        [InlineData("http://source.test", "", true)]
+        [InlineData("https://source.test", "TRUE", false)]
+        [InlineData("https://source.test", "false", false)]
+        public void SourcesCommandTest_EnableSourceWithAllowInsecureConnections_WarnCorrectly(string source, string allowInsecureConnections, bool shouldWarn)
+        {
+            // Arrange
+            string nugetexe = Util.GetNuGetExePath();
+
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                Util.CreateFile(configFileDirectory, configFileName,
+                    @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""{source}"" allowInsecureConnections=""{allowInsecureConnections}""/>
+  </packageSources>
+  <disabledPackageSources>
+    <add key=""test_source"" value=""true"" />
+    <add key=""Microsoft and .NET"" value=""true"" />
+  </disabledPackageSources>
+</configuration>");
+
+                var args = new string[] {
+                    "sources",
+                    "Enable",
+                    "-Name",
+                    "test_source",
+                    "-ConfigFile",
+                    configFilePath
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args));
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                ISettings settings = Configuration.Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                PackageSourceProvider packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                var testSources = sources.Where(s => s.Name == "test_source");
+                Assert.Single(testSources);
+                PackageSource packageSource = testSources.Single();
+
+                Assert.Equal("test_source", packageSource.Name);
+                Assert.Equal(source, packageSource.Source);
+                Assert.True(packageSource.IsEnabled, "Source is not enabled");
+
+                string formatString = "WARNING: You are running the 'enable source' operation with an 'HTTP' source, '{0}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.";
+                string expectedWarning = string.Format(formatString, source);
+                if (shouldWarn)
+                {
+                    Assert.Contains(expectedWarning, result.Output);
+                }
+                else
+                {
+                    Assert.DoesNotContain(expectedWarning, result.Output);
+                }
+            }
+        }
+
         [Fact]
         public void SourcesCommandTest_DisableSource_NoWarnWhenUsingHttp()
         {
@@ -213,6 +291,71 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
+        [InlineData("http://source.test", "true")]
+        [InlineData("http://source.test", "TRUE")]
+        [InlineData("http://source.test", "FALSE")]
+        [InlineData("http://source.test", "invalidString")]
+        [InlineData("http://source.test", "")]
+        [InlineData("https://source.test", "TRUE")]
+        [InlineData("https://source.test", "false")]
+        public void SourcesCommandTest_DisableSourceWithAllowInsecureConnections_NoWarn(string source, string allowInsecureConnections)
+        {
+            // Arrange
+            string nugetexe = Util.GetNuGetExePath();
+
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                Util.CreateFile(configFileDirectory, configFileName,
+                    @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""{source}"" allowInsecureConnections=""{allowInsecureConnections}""/>
+  </packageSources>
+</configuration>");
+
+                var args = new string[] {
+                    "sources",
+                    "Disable",
+                    "-Name",
+                    "test_source",
+                    "-ConfigFile",
+                    configFilePath
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args));
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                ISettings settings = Configuration.Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                PackageSourceProvider packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                var testSources = sources.Where(s => s.Name == "test_source");
+                Assert.Single(testSources);
+                PackageSource packageSource = testSources.Single();
+
+                Assert.Equal("test_source", packageSource.Name);
+                Assert.Equal(source, packageSource.Source);
+                Assert.False(packageSource.IsEnabled, "Source is not disabled");
+
+                string expectedWarning = "WARNING: You are running the 'disable source' operation with an 'HTTP' source";
+                Assert.DoesNotContain(expectedWarning, result.Output);
+            }
+        }
+
+        [Theory]
         [InlineData("http://source.test", "http://source.test.2", true, "WARNING: You are running the 'list source' operation with 'HTTP' source")]
         [InlineData("https://source.test", "http://source.test.2", true, "WARNING: You are running the 'list source' operation with an 'HTTP' source")]
         [InlineData("https://source.test", "https://source.test.2", false, "WARNING")]
@@ -254,6 +397,62 @@ namespace NuGet.CommandLine.Test
                 // test to ensure detailed format is the default
                 Assert.True(result.Output.StartsWith("Registered Sources:"));
                 Assert.Equal(shouldWarn, result.Output.Contains(warningMessage));
+            }
+        }
+
+        [Fact]
+        public void SourcesList_WithAllowInsecureConnections_WarnsCorrectly()
+        {
+            // Arrange
+            string nugetexe = Util.GetNuGetExePath();
+
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                Util.CreateFile(configFileDirectory, configFileName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""source1"" value=""http://source.test1"" />
+    <add key=""source2"" value=""http://source.test2"" allowInsecureConnections=""""/>
+    <add key=""source3"" value=""http://source.test3"" allowInsecureConnections=""false""/>
+    <add key=""source4"" value=""http://source.test4"" allowInsecureConnections=""FASLE""/>
+    <add key=""source5"" value=""http://source.test5"" allowInsecureConnections=""invalidString""/>
+    <add key=""source6"" value=""http://source.test6"" allowInsecureConnections=""true""/>
+    <add key=""source7"" value=""http://source.test7"" allowInsecureConnections=""TRUE""/>
+    <add key=""source8"" value=""https://source.test8"" allowInsecureConnections=""true""/>
+    <add key=""source9"" value=""https://source.test9"" allowInsecureConnections=""false""/>
+  </packageSources>
+</configuration>");
+
+                var args = new string[] {
+                    "sources",
+                    "list",
+                    "-ConfigFile",
+                    configFilePath
+                };
+
+                // Main Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args));
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                // http source with false allowInsecureConnections have warnings.
+                string expectedWarning = SettingsTestUtils.RemoveWhitespace(@"
+WARNING: You are running the 'list source' operation with 'HTTP' sources: 
+source1
+source2
+source3
+source4
+source5
+Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.");
+                Assert.Contains(expectedWarning, SettingsTestUtils.RemoveWhitespace(result.Output));
             }
         }
 
