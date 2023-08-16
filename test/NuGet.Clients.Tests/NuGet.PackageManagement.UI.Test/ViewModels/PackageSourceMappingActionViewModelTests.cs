@@ -56,8 +56,8 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var mockPackageSourceMapping = new Mock<PackageSourceMapping>(patterns);
 
             var mockUIContext = new Mock<INuGetUIContext>();
-            mockUIContext.Setup(_ => _.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
-            mockUiController.Setup(_ => _.UIContext).Returns(mockUIContext.Object);
+            mockUIContext.Setup(uiContext => uiContext.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
+            mockUiController.Setup(uiController => uiController.UIContext).Returns(mockUIContext.Object);
 
             // Act
             var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);
@@ -89,8 +89,8 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var mockPackageSourceMapping = new Mock<PackageSourceMapping>(patterns);
 
             var mockUIContext = new Mock<INuGetUIContext>();
-            mockUIContext.Setup(_ => _.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
-            mockUiController.Setup(_ => _.UIContext).Returns(mockUIContext.Object);
+            mockUIContext.Setup(uiContext => uiContext.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
+            mockUiController.Setup(uiController => uiController.UIContext).Returns(mockUIContext.Object);
 
             // Act
             var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);
@@ -125,9 +125,9 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var mockPackageSourceMapping = new Mock<PackageSourceMapping>(patterns);
 
             var mockUIContext = new Mock<INuGetUIContext>();
-            mockUIContext.Setup(_ => _.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
-            mockUiController.Setup(_ => _.UIContext).Returns(mockUIContext.Object);
-            mockUiController.Setup(_ => _.ActivePackageSourceMoniker).Returns(aggregatePackageSourceMoniker);
+            mockUIContext.Setup(uiContext => uiContext.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
+            mockUiController.Setup(uiController => uiController.UIContext).Returns(mockUIContext.Object);
+            mockUiController.Setup(uiController => uiController.ActivePackageSourceMoniker).Returns(aggregatePackageSourceMoniker);
 
             // Act
             var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);
@@ -160,9 +160,9 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var mockPackageSourceMapping = new Mock<PackageSourceMapping>(patterns);
 
             var mockUIContext = new Mock<INuGetUIContext>();
-            mockUIContext.Setup(_ => _.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
-            mockUiController.Setup(_ => _.UIContext).Returns(mockUIContext.Object);
-            mockUiController.Setup(_ => _.ActivePackageSourceMoniker).Returns(singlePackageSourceMoniker);
+            mockUIContext.Setup(uiContext => uiContext.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
+            mockUiController.Setup(uiController => uiController.UIContext).Returns(mockUIContext.Object);
+            mockUiController.Setup(uiController => uiController.ActivePackageSourceMoniker).Returns(singlePackageSourceMoniker);
 
             // Act
             var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);
@@ -210,10 +210,10 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var mockPackageSourceMapping = new Mock<PackageSourceMapping>(patterns);
 
             var mockUIContext = new Mock<INuGetUIContext>();
-            mockUIContext.Setup(_ => _.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
-            mockUIContext.Setup(_ => _.Projects).Returns(listMockProjects);
-            mockUiController.Setup(_ => _.UIContext).Returns(mockUIContext.Object);
-            mockUiController.Setup(_ => _.ActivePackageSourceMoniker).Returns(singlePackageSourceMoniker);
+            mockUIContext.Setup(uiContext => uiContext.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
+            mockUIContext.Setup(uiContext => uiContext.Projects).Returns(listMockProjects);
+            mockUiController.Setup(uiController => uiController.UIContext).Returns(mockUIContext.Object);
+            mockUiController.Setup(uiController => uiController.ActivePackageSourceMoniker).Returns(singlePackageSourceMoniker);
 
             // Act
             var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);

@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        internal bool ProjectsSupportAutomaticSourceMapping => !UIController.UIContext.Projects.Any(_ => _.ProjectStyle != ProjectModel.ProjectStyle.PackageReference);
+        internal bool ProjectsSupportAutomaticSourceMapping => !UIController.UIContext.Projects.Any(project => project.ProjectStyle != ProjectModel.ProjectStyle.PackageReference);
 
         public string MappingStatus
         {

@@ -108,7 +108,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            List<string> addedPackagesWithNoSourceMappings = added.Select(_ => _.Id)
+            List<string> addedPackagesWithNoSourceMappings = added.Select(package => package.Id)
                 .Where(addedPackage =>
                 {
                     IReadOnlyList<string> configuredSources = packageSourceMapping.GetConfiguredPackageSources(addedPackage);

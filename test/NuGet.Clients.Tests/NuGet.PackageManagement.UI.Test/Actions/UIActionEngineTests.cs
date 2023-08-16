@@ -79,16 +79,16 @@ namespace NuGet.PackageManagement.UI.Test
                         NuGetProjectActionType.Install)
                 });
 
-            var mockUiController = new Mock<INuGetUI>();
+            var mockUIController = new Mock<INuGetUI>();
             var mockUIContext = new Mock<INuGetUIContext>();
-            mockUIContext.Setup(_ => _.PackageSourceMapping).Returns((PackageSourceMapping)null);
-            mockUiController.Setup(_ => _.UIContext).Returns(mockUIContext.Object);
+            mockUIContext.Setup(uiContext => uiContext.PackageSourceMapping).Returns((PackageSourceMapping)null);
+            mockUIController.Setup(uiController => uiController.UIContext).Returns(mockUIContext.Object);
 
             IReadOnlyList<PreviewResult> previewResults = await UIActionEngine.GetPreviewResultsAsync(
                 Mock.Of<INuGetProjectManagerService>(),
                 projectActions: new[] { uninstallAction, installAction },
                 userAction: null,
-                mockUiController.Object,
+                mockUIController.Object,
                 CancellationToken.None);
 
             Assert.Equal(1, previewResults.Count);
@@ -137,16 +137,16 @@ namespace NuGet.PackageManagement.UI.Test
                         NuGetProjectActionType.Install)
                 });
 
-            var mockUiController = new Mock<INuGetUI>();
+            var mockUIController = new Mock<INuGetUI>();
             var mockUIContext = new Mock<INuGetUIContext>();
-            mockUIContext.Setup(_ => _.PackageSourceMapping).Returns((PackageSourceMapping)null);
-            mockUiController.Setup(_ => _.UIContext).Returns(mockUIContext.Object);
+            mockUIContext.Setup(uiContext => uiContext.PackageSourceMapping).Returns((PackageSourceMapping)null);
+            mockUIController.Setup(uiController => uiController.UIContext).Returns(mockUIContext.Object);
 
             IReadOnlyList<PreviewResult> previewResults = await UIActionEngine.GetPreviewResultsAsync(
                 Mock.Of<INuGetProjectManagerService>(),
                 projectActions: new[] { installAction },
                 userAction: null,
-                mockUiController.Object,
+                mockUIController.Object,
                 CancellationToken.None);
 
             Assert.Equal(1, previewResults.Count);
@@ -456,7 +456,7 @@ namespace NuGet.PackageManagement.UI.Test
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => uiActionEngine.PerformInstallOrUninstallAsync(mockUIService.Object, action, CancellationToken.None));
 
             // Assert
-            mockNuGetUIContext.Verify(_ => _.PackageSourceMapping, timesSourceMappingCalled);
+            mockNuGetUIContext.Verify(uiContext => uiContext.PackageSourceMapping, timesSourceMappingCalled);
             Assert.Contains("Unable to find metadata of transitiveA.1.0.0", ex.Message);
         }
 
@@ -504,7 +504,7 @@ namespace NuGet.PackageManagement.UI.Test
             await uiActionEngine.PerformInstallOrUninstallAsync(mockUIService.Object, action, CancellationToken.None);
 
             // Assert
-            mockNuGetUIContext.Verify(_ => _.PackageSourceMapping, timesSourceMappingCalled);
+            mockNuGetUIContext.Verify(uiContext => uiContext.PackageSourceMapping, timesSourceMappingCalled);
         }
 
         [Theory]
@@ -549,7 +549,7 @@ namespace NuGet.PackageManagement.UI.Test
             await uiActionEngine.PerformInstallOrUninstallAsync(mockUIService.Object, action, CancellationToken.None);
 
             // Assert
-            mockNuGetUIContext.Verify(_ => _.PackageSourceMapping, timesSourceMappingCalled);
+            mockNuGetUIContext.Verify(uiContext => uiContext.PackageSourceMapping, timesSourceMappingCalled);
         }
 
         private void SetupUIServiceWithPackageSearchMetadata(
@@ -818,7 +818,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
 
             var mockPackageSourceMapping = new Mock<PackageSourceMapping>(packageSourceMappingPatterns);
-            mockNuGetUIContext.Setup(_ => _.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
+            mockNuGetUIContext.Setup(uiContext => uiContext.PackageSourceMapping).Returns(mockPackageSourceMapping.Object);
         }
 
         private sealed class PackageIdentitySubclass : PackageIdentity
