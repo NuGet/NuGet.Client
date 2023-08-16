@@ -61,8 +61,8 @@ public class AuditUtilityTests
         {
             logger.Errors.Should().Be(1);
             RestoreLogMessage message = logger.LogMessages.Cast<RestoreLogMessage>().Single();
-            message.Code.Should().Be(NuGetLogCode.NU1906);
-            message.Level.Should().Be(LogLevel.Warning);
+            message.Code.Should().Be(NuGetLogCode.NU1014);
+            message.Level.Should().Be(LogLevel.Error);
         }
     }
 
