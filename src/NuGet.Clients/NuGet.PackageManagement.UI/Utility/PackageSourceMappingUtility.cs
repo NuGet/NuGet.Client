@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement.UI
             return sourceMappingSourceName;
         }
 
-        internal static void GetNewSourceMappingsFromAddedPackages(ref Dictionary<string, SortedSet<string>>? newSourceMappings, string newMappingSourceName, List<AccessiblePackageIdentity> added, PackageSourceMapping packageSourceMapping)
+        internal static void AddNewSourceMappingsFromAddedPackages(ref Dictionary<string, SortedSet<string>>? newSourceMappings, string newMappingSourceName, List<AccessiblePackageIdentity> added, PackageSourceMapping packageSourceMapping)
         {
             if (newMappingSourceName is null || added.Count == 0 || packageSourceMapping is null)
             {
