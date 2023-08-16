@@ -98,17 +98,31 @@ namespace Dotnet.Integration.Test
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var propsFile = @$"<Project>
-                                <PropertyGroup>
-                                <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-                                </PropertyGroup>
-                            </Project>
-                            ";
+                var propsFile =
+@$"<Project>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageVersion Include=""X"" Version=""0.1.0"" />
+    </ItemGroup>
+</Project>";
 
                 File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props"), propsFile);
 
+                string projectContent =
+@$"<Project  Sdk=""Microsoft.NET.Sdk"">
+<PropertyGroup>                   
+	<TargetFramework>net46</TargetFramework>
+	</PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include=""X""/>
+    </ItemGroup>
+</Project>";
+                File.WriteAllText(Path.Combine(pathContext.SolutionRoot, ProjectName, string.Concat(ProjectName, ".csproj")), projectContent);
+
                 _fixture.RunDotnetExpectSuccess(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName),
-                    $"add {projectA.ProjectPath} package packageX -v 0.1.0");
+                    $"restore {projectA.ProjectName}.csproj");
 
                 CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package");
@@ -124,7 +138,7 @@ namespace Dotnet.Integration.Test
         {
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net7.0");
 
                 var packageX = XPlatTestUtils.CreatePackage("X", "1.0.0");
 
@@ -134,17 +148,31 @@ namespace Dotnet.Integration.Test
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var propsFile = @$"<Project>
-                                <PropertyGroup>
-                                <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-                                </PropertyGroup>
-                            </Project>
-                            ";
+                var propsFile =
+@$"<Project>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageVersion Include=""X"" Version=""[0.1.0,)"" />
+    </ItemGroup>
+</Project>";
 
                 File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props"), propsFile);
 
+                string projectContent =
+@$"<Project  Sdk=""Microsoft.NET.Sdk"">
+<PropertyGroup>                   
+	<TargetFramework>net46</TargetFramework>
+	</PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include=""X""/>
+    </ItemGroup>
+</Project>";
+                File.WriteAllText(Path.Combine(pathContext.SolutionRoot, ProjectName, string.Concat(ProjectName, ".csproj")), projectContent);
+
                 _fixture.RunDotnetExpectSuccess(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName),
-                    $"add {projectA.ProjectPath} package packageX -v [0.1.0,)");
+                    $"restore {projectA.ProjectName}.csproj");
 
                 CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package");
