@@ -450,6 +450,28 @@ namespace NuGet.Commands.Restore.Utility
             return EnabledValue.Undefined;
         }
 
+        internal static string GetString(EnabledValue enableAudit)
+        {
+            return enableAudit switch
+            {
+                EnabledValue.Undefined => nameof(EnabledValue.Undefined),
+                EnabledValue.ExplicitOptIn => nameof(EnabledValue.ExplicitOptIn),
+                EnabledValue.ExplicitOptOut => nameof(EnabledValue.ExplicitOptOut),
+                EnabledValue.ImplicitOptIn => nameof(EnabledValue.ImplicitOptIn),
+                _ => enableAudit.ToString()
+            };
+        }
+
+        internal static string GetString(NuGetAuditMode auditMode)
+        {
+            return auditMode switch
+            {
+                NuGetAuditMode.All => nameof(NuGetAuditMode.All),
+                NuGetAuditMode.Direct => nameof(NuGetAuditMode.Direct),
+                NuGetAuditMode.Unknown => nameof(NuGetAuditMode.Unknown),
+                _ => auditMode.ToString()
+            };
+        }
 
         private class PackageAuditInfo
         {

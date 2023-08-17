@@ -304,7 +304,7 @@ namespace NuGet.Commands
                 }
 
                 AuditUtility.EnabledValue enableAudit = AuditUtility.ParseEnableValue(_request.Project.RestoreMetadata?.RestoreAuditProperties?.EnableAudit);
-                telemetry.TelemetryEvent[AuditEnabled] = enableAudit.ToString();
+                telemetry.TelemetryEvent[AuditEnabled] = AuditUtility.GetString(enableAudit);
                 if (enableAudit == AuditUtility.EnabledValue.ImplicitOptIn || enableAudit == AuditUtility.EnabledValue.ExplicitOptIn)
                 {
                     await PerformAuditAsync(enableAudit, graphs, telemetry, token);
@@ -486,7 +486,7 @@ namespace NuGet.Commands
             await audit.CheckPackageVulnerabilitiesAsync(token);
 
             telemetry.TelemetryEvent[AuditLevel] = (int)audit.MinSeverity;
-            telemetry.TelemetryEvent[AuditMode] = audit.AuditMode.ToString();
+            telemetry.TelemetryEvent[AuditMode] = AuditUtility.GetString(audit.AuditMode);
 
             if (audit.DirectPackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditDirectVulnerabilitiesPackages, audit.DirectPackagesWithAdvisory); }
             telemetry.TelemetryEvent[AuditDirectVulnerabilitiesCount] = audit.DirectPackagesWithAdvisory?.Count ?? 0;
