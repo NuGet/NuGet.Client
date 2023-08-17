@@ -1169,6 +1169,69 @@ namespace NuGet.CommandLine.Test
             Assert.Contains("WARNING: You are running the 'list' operation with an 'HTTP' source", result.AllOutput);
         }
 
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("true", false)]
+        [InlineData("True", false)]
+        [InlineData("false", true)]
+        [InlineData("FALSE", true)]
+        [InlineData("invalidString", true)]
+        [InlineData("", true)]
+        public void ListCommand_WhenListWithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isWarningExpected)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Arrange
+            using var packageDirectory = TestDirectory.Create();
+            using var server = new MockServer();
+            var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+
+            server.Get.Add("/nuget/$metadata", r =>
+                Util.GetMockServerResource());
+            server.Get.Add("/nuget/Search()", r =>
+                new Action<HttpListenerResponse>(response =>
+                {
+                    string searchRequest = r.Url.ToString();
+                    response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                    string feed = server.ToODataFeed(new[] { new FileInfo(packageFileName1) }, "Search");
+                    MockServer.SetResponseContent(response, feed);
+                }));
+            server.Get.Add("/nuget", r => "OK");
+
+            server.Start();
+
+            // create the config file
+            Util.CreateFile(packageDirectory, "nuget.config", $@"
+<configuration>
+    <packageSources>
+        <add key='http-feed' value='{server.Uri}' allowInsecureConnections=""{allowInsecureConnections}"" />
+    </packageSources>
+</configuration>");
+            var configFile = Path.Combine(packageDirectory, "nuget.config");
+
+            // Act
+            var args = "list test -Source " + server.Uri + "nuget";
+            var result = CommandRunner.Run(
+                nugetexe,
+                packageDirectory,
+                args);
+            server.Stop();
+
+            // Assert
+            Assert.Equal(0, result.ExitCode);
+
+            // verify that only package id & version is displayed
+            var expectedOutput = "testPackage1 1.1.0";
+            Assert.Contains(expectedOutput, result.Output);
+            if (isWarningExpected)
+            {
+                Assert.Contains("WARNING: You are running the 'list' operation with an 'HTTP' source", result.AllOutput);
+            }
+            else
+            {
+                Assert.DoesNotContain("WARNING: You are running the 'list' operation with an 'HTTP' source", result.AllOutput);
+            }
+        }
+
         [Fact]
         public void ListCommand_WhenListWithHttpSources_Warns()
         {
