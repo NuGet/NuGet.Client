@@ -1126,7 +1126,7 @@ namespace NuGet.PackageManagement
                 foreach (SourceRepository enabledSource in allSources)
                 {
                     PackageSource source = enabledSource.PackageSource;
-                    if (source.IsHttp && !source.IsHttps)
+                    if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
                     {
                         nuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_HttpServerUsage, "update", source.Source);
                     }
@@ -1809,7 +1809,7 @@ namespace NuGet.PackageManagement
             foreach (SourceRepository enabledSource in effectiveSources)
             {
                 PackageSource source = enabledSource.PackageSource;
-                if (source.IsHttp && !source.IsHttps)
+                if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
                 {
                     nuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_HttpServerUsage, "install", source.Source);
                 }
