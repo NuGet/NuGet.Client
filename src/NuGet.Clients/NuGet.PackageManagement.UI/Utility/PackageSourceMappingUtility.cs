@@ -108,34 +108,30 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            List<string> addedPackagesWithNoSourceMappings = added.Select(package => package.Id)
-                .Where(addedPackage =>
-                {
-                    IReadOnlyList<string> configuredSources = packageSourceMapping.GetConfiguredPackageSources(addedPackage);
-                    return configuredSources == null || configuredSources.Count == 0;
-                })
-                .Distinct()
-                .ToList();
+            foreach (AccessiblePackageIdentity addedPackage in added)
+            {
+                IReadOnlyList<string> configuredSources = packageSourceMapping.GetConfiguredPackageSources(packageId: addedPackage.Id);
 
-            if (addedPackagesWithNoSourceMappings.Count == 0)
-            {
-                return;
-            }
-
-            if (newSourceMappings is null)
-            {
-                newSourceMappings = new Dictionary<string, SortedSet<string>>(capacity: 1)
+                if (configuredSources.Count > 0)
                 {
-                    { newMappingSourceName, new SortedSet<string>(addedPackagesWithNoSourceMappings) }
-                };
-            }
-            else if (newSourceMappings.TryGetValue(newMappingSourceName, out SortedSet<string>? newMappingPackageIds))
-            {
-                newMappingPackageIds.UnionWith(addedPackagesWithNoSourceMappings);
-            }
-            else
-            {
-                newSourceMappings.Add(newMappingSourceName, new SortedSet<string>(addedPackagesWithNoSourceMappings));
+                    continue;
+                }
+
+                if (newSourceMappings is null)
+                {
+                    newSourceMappings = new Dictionary<string, SortedSet<string>>(capacity: 1)
+                    {
+                        { newMappingSourceName, new SortedSet<string>(new List<string>(capacity: added.Count) { addedPackage.Id }) }
+                    };
+                }
+                else if (newSourceMappings.TryGetValue(newMappingSourceName, out SortedSet<string>? newMappingPackageIds))
+                {
+                    newMappingPackageIds.Add(addedPackage.Id);
+                }
+                else
+                {
+                    newSourceMappings.Add(newMappingSourceName, new SortedSet<string>(new List<string>(capacity: added.Count) { addedPackage.Id }));
+                }
             }
         }
     }
