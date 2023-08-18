@@ -22,7 +22,7 @@ namespace NuGet.Commands.Restore.Utility
     internal class AuditUtility
     {
         private readonly EnabledValue _auditEnabled;
-        private readonly ProjectModel.RestoreAuditProperties _restoreAuditProperties;
+        private readonly ProjectModel.RestoreAuditProperties? _restoreAuditProperties;
         private readonly string _projectFullPath;
         private readonly IEnumerable<RestoreTargetGraph> _targetGraphs;
         private readonly IReadOnlyList<IVulnerabilityInformationProvider> _vulnerabilityInfoProviders;
@@ -49,7 +49,7 @@ namespace NuGet.Commands.Restore.Utility
 
         public AuditUtility(
             EnabledValue auditEnabled,
-            ProjectModel.RestoreAuditProperties restoreAuditProperties,
+            ProjectModel.RestoreAuditProperties? restoreAuditProperties,
             string projectFullPath,
             IEnumerable<RestoreTargetGraph> graphs,
             IReadOnlyList<IVulnerabilityInformationProvider> vulnerabilityInformationProviders,
@@ -366,7 +366,7 @@ namespace NuGet.Commands.Restore.Utility
 
         private PackageVulnerabilitySeverity ParseAuditLevel()
         {
-            string? auditLevel = _restoreAuditProperties.AuditLevel?.Trim();
+            string? auditLevel = _restoreAuditProperties?.AuditLevel?.Trim();
 
             if (auditLevel == null)
             {
@@ -402,7 +402,7 @@ namespace NuGet.Commands.Restore.Utility
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation. 
         private NuGetAuditMode ParseAuditMode()
         {
-            string? auditMode = _restoreAuditProperties.AuditMode?.Trim();
+            string? auditMode = _restoreAuditProperties?.AuditMode?.Trim();
 
             if (auditMode == null)
             {
@@ -426,16 +426,16 @@ namespace NuGet.Commands.Restore.Utility
 
         internal enum EnabledValue
         {
-            Undefined,
+            Invalid,
             ImplicitOptIn,
             ExplicitOptIn,
             ExplicitOptOut
         }
 
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation.
-        public static EnabledValue ParseEnableValue(string value)
+        public static EnabledValue ParseEnableValue(string? value, string projectFullPath, ILogger logger)
         {
-            if (string.Equals(value, "default", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(value) || string.Equals(value, "default", StringComparison.OrdinalIgnoreCase))
             {
                 return EnabledValue.ImplicitOptIn;
             }
@@ -449,7 +449,12 @@ namespace NuGet.Commands.Restore.Utility
             {
                 return EnabledValue.ExplicitOptOut;
             }
-            return EnabledValue.Undefined;
+
+            string messageText = string.Format(Strings.Error_InvalidNuGetAuditValue, value, "true, false");
+            RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+            message.ProjectPath = projectFullPath;
+            logger.Log(message);
+            return EnabledValue.Invalid;
         }
 
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation.
@@ -457,7 +462,7 @@ namespace NuGet.Commands.Restore.Utility
         {
             return enableAudit switch
             {
-                EnabledValue.Undefined => nameof(EnabledValue.Undefined),
+                EnabledValue.Invalid => nameof(EnabledValue.Invalid),
                 EnabledValue.ExplicitOptIn => nameof(EnabledValue.ExplicitOptIn),
                 EnabledValue.ExplicitOptOut => nameof(EnabledValue.ExplicitOptOut),
                 EnabledValue.ImplicitOptIn => nameof(EnabledValue.ImplicitOptIn),
