@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Http;
 using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.UI.ViewModels;
