@@ -291,8 +291,9 @@ Function Install-ProcDump {
         $ProcDumpDir = Join-Path $TestDir 'ProcDump'
 
         Invoke-WebRequest 'https://download.sysinternals.com/files/Procdump.zip' -OutFile $ProcDumpZip
-
-        Remove-Item $ProcDumpDir -Recurse -Force | Out-Null
+        if (Test-Path $ProcDumpDir) {
+            Remove-Item $ProcDumpDir -Recurse -Force | Out-Null
+        }
         New-Item $ProcDumpDir -ItemType Directory -Force | Out-Null
         Expand-Archive $ProcDumpZip -DestinationPath $ProcDumpDir
 
