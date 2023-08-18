@@ -1062,7 +1062,6 @@ namespace NuGet.Commands
                     // Don't do compat checks for the ridless graph of DotnetTooReference restore. Everything relevant will be caught in the graph with the rid
                     if (!(ProjectStyle.DotnetToolReference == project.RestoreMetadata?.ProjectStyle && string.IsNullOrEmpty(graph.RuntimeIdentifier)))
                     {
-
                         var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
 
                         var res = await checker.CheckAsync(graph, includeFlags, project);
