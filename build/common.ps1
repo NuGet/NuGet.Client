@@ -282,6 +282,31 @@ Function Test-BuildEnvironment {
     }
 }
 
+Function Install-ProcDump {
+    [CmdletBinding()]
+    param()
+    if ($Env:OS -eq "Windows_NT")
+    {
+        Trace-Log "Downloading ProcDump..."
+        
+        $ProcDumpZip = Join-Path $env:TEMP 'ProcDump.zip'
+        $TestDir = Join-Path $NuGetClientRoot '.test'
+        $ProcDumpDir = Join-Path $TestDir 'ProcDump'
+
+        Invoke-WebRequest 'https://download.sysinternals.com/files/Procdump.zip' -OutFile $ProcDumpZip
+
+        Remove-Item $ProcDumpDir -Recurse -Force | Out-Null
+        New-Item $ProcDumpDir -ItemType Directory -Force | Out-Null
+        Expand-Archive $ProcDumpZip -DestinationPath $ProcDumpDir
+
+        if ($env:CI -eq "true") {
+            Write-Host "##vso[task.setvariable variable=PROCDUMP_PATH;isOutput=false;issecret=false;]$ProcDumpDir"
+        } else {
+            $env:PROCDUMP_PATH=$ProcDumpDir
+        }
+    }
+}
+
 Function Clear-PackageCache {
     [CmdletBinding()]
     param()
