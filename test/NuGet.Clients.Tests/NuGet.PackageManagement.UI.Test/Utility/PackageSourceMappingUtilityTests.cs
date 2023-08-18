@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
 
                 // Assert
                 Assert.Equal(1, newSourceMappings.Count);
-                Assert.True(newSourceMappings.ContainsKey(newMappingSourceName));;                
+                Assert.True(newSourceMappings.ContainsKey(newMappingSourceName));
                 Assert.Equal(1, newSourceMappings[newMappingSourceName].Count);
             }
         }
