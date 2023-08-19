@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.UI
             ISettings settings)
         {
             ServiceBroker = serviceBroker;
-            ReconnectingSearchService = nuGetSearchService;
+            NuGetSearchService = nuGetSearchService;
             SolutionManager = solutionManager;
             _solutionManagerService = solutionManagerService;
             PackageManager = packageManager;
@@ -117,7 +117,7 @@ namespace NuGet.PackageManagement.UI
             _solutionManagerService.Dispose();
             _sourceService.Dispose();
 
-            ReconnectingSearchService.Dispose();
+            NuGetSearchService.Dispose();
 
             GC.SuppressFinalize(this);
         }
