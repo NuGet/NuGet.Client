@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.UI
         // Non-private only to facilitate testing.
         internal NuGetUIContext(
             IServiceBroker serviceBroker,
-            IReconnectingNuGetSearchService nuGetSearchService,
+            INuGetSearchService nuGetSearchService,
             IVsSolutionManager solutionManager,
             NuGetSolutionManagerServiceWrapper solutionManagerService,
             NuGetPackageManager packageManager,
@@ -74,7 +74,7 @@ namespace NuGet.PackageManagement.UI
 
         public IServiceBroker ServiceBroker { get; }
 
-        public IReconnectingNuGetSearchService ReconnectingSearchService { get; }
+        public INuGetSearchService NuGetSearchService { get; }
 
         public IVsSolutionManager SolutionManager { get; }
 
