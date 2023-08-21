@@ -412,11 +412,50 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Theory]
-        [InlineData(@"https://source.test", true)]
-        [InlineData(@"\\myserver\packages", false)]
-        public void SourcesCommandTest_AddWithProtocolVersion(string source, bool shouldWriteProtocolVersion)
+        [Fact]
+        public void SourcesCommandTest_AddWithProtocolVersion_WritesProtocolVersion()
         {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                TestDirectory workingPath = pathContext.WorkingDirectory;
+                SimpleTestSettingsContext settings = pathContext.Settings;
+
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var args = new string[] {
+                    "sources",
+                    "Add",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    @"https://source.test",
+                    "-ConfigFile",
+                    settings.ConfigPath,
+                    "-ProtocolVersion",
+                    "3",
+                    "-ForceEnglishOutput"
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("3", sourceItem.ProtocolVersion);
+            }
+        }
+
+        [Fact]
+        public void SourcesCommandTest_AddLocalSourceWithProtocolVersion_DoesNotWriteProtocolVersion()
+        {
+            var source = RuntimeEnvironmentHelper.IsWindows
+                ? @"c:\path\to\packages"
+                : "/path/to/packages";
+
             using (var pathContext = new SimpleTestPathContext())
             {
                 TestDirectory workingPath = pathContext.WorkingDirectory;
@@ -434,7 +473,8 @@ namespace NuGet.CommandLine.Test
                     "-ConfigFile",
                     settings.ConfigPath,
                     "-ProtocolVersion",
-                    "3"
+                    "3",
+                    "-ForceEnglishOutput"
                 };
 
                 // Act
@@ -446,8 +486,7 @@ namespace NuGet.CommandLine.Test
                 ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
                 SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
                 SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                var expectedProtocolVersion = shouldWriteProtocolVersion ? "3" : null;
-                Assert.Equal(expectedProtocolVersion, sourceItem.ProtocolVersion);
+                Assert.Null(sourceItem.ProtocolVersion);
             }
         }
 
@@ -476,7 +515,8 @@ namespace NuGet.CommandLine.Test
                     "-ConfigFile",
                     settings.ConfigPath,
                     "-ProtocolVersion",
-                    protocolVersion
+                    protocolVersion,
+                    "-ForceEnglishOutput"
                 };
 
                 // Act
@@ -496,7 +536,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void SourcesCommandTest_UpdateWithProtocolVersion()
+        public void SourcesCommandTest_UpdateWithProtocolVersion_WritesProtocolVersion()
         {
             using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
@@ -523,7 +563,8 @@ namespace NuGet.CommandLine.Test
                     "-ConfigFile",
                     configFilePath,
                     "-ProtocolVersion",
-                    "3"
+                    "3",
+                    "-ForceEnglishOutput"
                 };
 
                 // Act
@@ -544,7 +585,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void SourcesCommandTest_UpdateWithProtocolVersion_LocalSource_ShouldNotWriteProtocolVersion()
+        public void SourcesCommandTest_UpdateLocalSourceWithProtocolVersion_DoesNotWriteProtocolVersion()
         {
             var source = RuntimeEnvironmentHelper.IsWindows
                 ? @"c:\path\to\packages"
@@ -575,7 +616,8 @@ namespace NuGet.CommandLine.Test
                     "-ConfigFile",
                     configFilePath,
                     "-ProtocolVersion",
-                    "3"
+                    "3",
+                    "-ForceEnglishOutput"
                 };
 
                 // Act
@@ -628,7 +670,8 @@ namespace NuGet.CommandLine.Test
                     "-ConfigFile",
                     configFilePath,
                     "-ProtocolVersion",
-                    protocolVersion
+                    protocolVersion,
+                    "-ForceEnglishOutput"
                 };
 
                 // Act
