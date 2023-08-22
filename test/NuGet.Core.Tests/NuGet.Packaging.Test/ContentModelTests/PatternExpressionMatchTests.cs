@@ -131,9 +131,9 @@ namespace NuGet.Client.Test
             };
             var pattern = new PatternDefinition("contentItem/{name}/{version}");
             var expression = new PatternExpression(pattern);
-            var path = "contentItem/mypackage/1.0.0";
-            var expected_name = "mypackage";
-            var expected_version = "1.0.0";
+            var expectedName = "mypackage";
+            var expectedVersion = "1.0.0";
+            var path = $"contentItem/{expectedName}/{expectedVersion}";
             var match_result = expression.Match(path, propertyDefinitions);
             Assert.NotNull(match_result);
             object name_result;
