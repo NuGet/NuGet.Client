@@ -21,9 +21,9 @@ namespace NuGet.Client.Test
             {
                 { "type", new ContentPropertyDefinition("text") }
             };
-            var pattern = new PatternDefinition("content/file.txt");
-            var expression = new PatternExpression(pattern);
             var path = "content/file.txt";
+            var pattern = new PatternDefinition(path);
+            var expression = new PatternExpression(pattern);
             var result = expression.Match(path, propertyDefinitions);
             Assert.NotNull(result);
             Assert.Equal(path, result.Path);
