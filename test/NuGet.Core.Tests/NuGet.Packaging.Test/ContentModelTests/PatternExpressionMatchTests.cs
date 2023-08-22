@@ -8,7 +8,7 @@ using NuGet.ContentModel;
 using NuGet.ContentModel.Infrastructure;
 using Xunit;
 
-namespace NuGet.Client.Test
+namespace NuGet.Packaging.Test
 {
     public class PatternExpressionMatchTests
     {
