@@ -124,7 +124,7 @@ namespace NuGet.Client.Test
         [Fact]
         public void TokenSegment_multipleTokens()
         {
-            Dictionary<string, ContentPropertyDefinition> propertyDefinitions =
+            var propertyDefinitions =
                 new Dictionary<string, ContentPropertyDefinition>() {
         {"name", new ContentPropertyDefinition("any", parser: (o, t) => o) },
         {"version", new ContentPropertyDefinition("any", parser: (o, t) => o) }
