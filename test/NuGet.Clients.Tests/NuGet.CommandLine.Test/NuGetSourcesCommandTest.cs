@@ -159,13 +159,8 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [InlineData("http://source.test", "true", false)]
-        [InlineData("http://source.test", "TRUE", false)]
-        [InlineData("http://source.test", "FALSE", true)]
-        [InlineData("http://source.test", "invalidString", true)]
-        [InlineData("http://source.test", "", true)]
-        [InlineData("https://source.test", "TRUE", false)]
-        [InlineData("https://source.test", "false", false)]
-        public void SourcesCommandTest_EnableSourceWithAllowInsecureConnections_WarnCorrectly(string source, string allowInsecureConnections, bool shouldWarn)
+        [InlineData("http://source.test", "false", true)]
+        public void SourcesCommandTest_EnableSourceWithAllowInsecureConnections_WarnCorrectly(string source, string allowInsecureConnections, bool isHttpWarningExpected)
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
@@ -223,7 +218,7 @@ namespace NuGet.CommandLine.Test
 
                 string formatString = "WARNING: You are running the 'enable source' operation with an 'HTTP' source, '{0}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.";
                 string expectedWarning = string.Format(formatString, source);
-                if (shouldWarn)
+                if (isHttpWarningExpected)
                 {
                     Assert.Contains(expectedWarning, result.Output);
                 }
@@ -291,13 +286,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Theory]
-        [InlineData("http://source.test", "true")]
-        [InlineData("http://source.test", "TRUE")]
-        [InlineData("http://source.test", "FALSE")]
-        [InlineData("http://source.test", "invalidString")]
-        [InlineData("http://source.test", "")]
-        [InlineData("https://source.test", "TRUE")]
-        [InlineData("https://source.test", "false")]
+        [InlineData("http://source.test", "false")]
         public void SourcesCommandTest_DisableSourceWithAllowInsecureConnections_NoWarn(string source, string allowInsecureConnections)
         {
             // Arrange

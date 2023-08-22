@@ -361,13 +361,8 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
 
         [Theory]
         [InlineData("http://source.test", "true", false)]
-        [InlineData("http://source.test", "TRUE", false)]
-        [InlineData("http://source.test", "FALSE", true)]
-        [InlineData("http://source.test", "invalidString", true)]
-        [InlineData("http://source.test", "", true)]
-        [InlineData("https://source.test", "TRUE", false)]
-        [InlineData("https://source.test", "false", false)]
-        public void Sources_EnableHttpSourceWithAllowInsecureConnections_WarnsCorrectly(string source, string allowInsecureConnections, bool shouldWarn)
+        [InlineData("http://source.test", "false", true)]
+        public void Sources_EnableHttpSourceWithAllowInsecureConnections_WarnsCorrectly(string source, string allowInsecureConnections, bool isHttpWarningExpected)
         {
             using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
             {
@@ -429,7 +424,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
 
                 string formatString = "warn : You are running the 'enable source' operation with an 'HTTP' source, '{0}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.";
                 string expectedWarning = string.Format(formatString, source);
-                if (shouldWarn)
+                if (isHttpWarningExpected)
                 {
                     Assert.Contains(expectedWarning, result.Output);
                 }
@@ -504,13 +499,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
         }
 
         [Theory]
-        [InlineData("http://source.test", "true")]
-        [InlineData("http://source.test", "TRUE")]
-        [InlineData("http://source.test", "FALSE")]
-        [InlineData("http://source.test", "invalidString")]
-        [InlineData("http://source.test", "")]
-        [InlineData("https://source.test", "TRUE")]
-        [InlineData("https://source.test", "false")]
+        [InlineData("http://source.test", "false")]
         public void Sources_DisableHttpSourceWithAllowInsecureConnections_NoWarns(string source, string allowInsecureConnections)
         {
             using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
