@@ -71,7 +71,7 @@ namespace NuGet.Client.Test
                 new Dictionary<string, ContentPropertyDefinition>() {
                 {"name", new ContentPropertyDefinition("any") }
             };
-            //this pattern has both a token segment and a litteral segment
+            // this pattern has both a token segment and a literal segment
             var pattern = new PatternDefinition("content/{name}");
             var expression = new PatternExpression(pattern);
             var path = "content/file.txt";
