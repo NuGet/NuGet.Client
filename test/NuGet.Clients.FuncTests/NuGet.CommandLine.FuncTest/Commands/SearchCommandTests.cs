@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
 using NuGet.CommandLine.Test;
+using NuGet.Configuration.Test;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
@@ -1100,6 +1102,141 @@ namespace NuGet.CommandLine.FuncTest.Commands
             Assert.Contains("No results found.", $"{result.AllOutput}");
             Assert.DoesNotContain(">", $"{result.AllOutput}");
             Assert.Contains("WARNING: You are running the 'search' operation with an 'HTTP' source", result.AllOutput);
+        }
+
+        [Theory]
+        [InlineData("true", false)]
+        [InlineData("True", false)]
+        [InlineData("false", true)]
+        [InlineData("FALSE", true)]
+        [InlineData("invalidstring", true)]
+        [InlineData("", true)]
+        public void SearchCommand_WhenSearchWithHttpSourcesWithAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
+        {
+            // Arrange
+            string nugetexe = Util.GetNuGetExePath();
+
+            using MockServer server1 = new MockServer();
+            using MockServer server2 = new MockServer();
+            using SimpleTestPathContext config = new SimpleTestPathContext();
+
+            // Arrange the NuGet.Config file
+            string nugetConfigContent =
+$@"<configuration>
+    <packageSources>
+        <clear />
+        <add key='http-feed1' value='{server1.Uri}v3/index.json' allowInsecureConnections=""{allowInsecureConnections}"" />
+        <add key='http-feed2' value='{server2.Uri}v3/index.json' allowInsecureConnections=""{allowInsecureConnections}"" />
+    </packageSources>
+</configuration>";
+            File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+
+            string index = $@"
+                {{
+                    ""version"": ""3.0.0"",
+
+                    ""resources"": [
+                    {{
+                        ""@id"": ""{server1.Uri + "search/query"}"",
+                        ""@type"": ""SearchQueryService/Versioned"",
+                        ""comment"": ""Query endpoint of NuGet Search service (primary)""
+                    }}
+                    ],
+
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/services#"",
+                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
+                    }}
+                }}";
+
+            server1.Get.Add("/v3/index.json", r => index);
+
+            string queryResult = $@"
+                {{
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/schema#"",
+                        ""@base"": ""https://api.nuget.org/v3/registration5-semver1/""
+                    }},
+                    ""totalHits"": 396,
+                    ""data"": []
+                }}";
+
+            server1.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => queryResult);
+
+            server1.Start();
+
+            string index2 = $@"
+                {{
+                    ""version"": ""3.0.0"",
+
+                    ""resources"": [
+                    {{
+                        ""@id"": ""{server2.Uri + "search/query"}"",
+                        ""@type"": ""SearchQueryService/Versioned"",
+                        ""comment"": ""Query endpoint of NuGet Search service (primary)""
+                    }}
+                    ],
+
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/services#"",
+                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
+                    }}
+                }}";
+
+            server2.Get.Add("/v3/index.json", r => index2);
+
+            string queryResult2 = $@"
+                {{
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/schema#"",
+                        ""@base"": ""https://api.nuget.org/v3/registration5-semver1/""
+                    }},
+                    ""totalHits"": 396,
+                    ""data"": []
+                }}";
+
+            server2.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => queryResult2);
+
+            server2.Start();
+            // Act
+            string[] args = new[]
+            {
+                "search",
+                "json",
+                ""
+            };
+
+            CommandRunnerResult result = CommandRunner.Run(
+                nugetexe,
+                config.WorkingDirectory,
+                string.Join(" ", args));
+
+            server1.Stop();
+            server2.Stop();
+
+            // Assert
+            Assert.True(result.Success, $"{result.AllOutput}");
+            Assert.Contains("No results found.", $"{result.AllOutput}");
+            Assert.DoesNotContain(">", $"{result.AllOutput}");
+
+            string acutalOutputWithoutSpace = SettingsTestUtils.RemoveWhitespace(result.Output);
+            string expectedWarningWithoutSpace = SettingsTestUtils.RemoveWhitespace($@"
+WARNING: You are running the 'search' operation with 'HTTP' sources:  
+http-feed1
+http-feed2
+Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.");
+            if (isHttpWarningExpected)
+            {
+                Assert.Contains(expectedWarningWithoutSpace, acutalOutputWithoutSpace);
+            }
+            else
+            {
+                Assert.DoesNotContain(expectedWarningWithoutSpace, acutalOutputWithoutSpace);
+            }
         }
     }
 }

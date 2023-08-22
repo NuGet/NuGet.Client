@@ -513,7 +513,7 @@ namespace Dotnet.Integration.Test
         [InlineData("FALSE", true)]
         [InlineData("invalidString", true)]
         [InlineData("", true)]
-        public async Task ListPackage_WithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isWarningExpected)
+        public async Task ListPackage_WithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
@@ -545,7 +545,7 @@ namespace Dotnet.Integration.Test
             // Assert
             var lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             Assert.True(lines.Any(l => l.Contains("> A                    1.0.0       1.0.0      2.0.0")), listResult.AllOutput);
-            if (isWarningExpected)
+            if (isHttpWarningExpected)
             {
                 Assert.Contains("warn : You are running the 'list package' operation with an 'HTTP' source", listResult.AllOutput);
             }
