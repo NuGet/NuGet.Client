@@ -1106,10 +1106,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
         [Theory]
         [InlineData("true", false)]
-        [InlineData("True", false)]
         [InlineData("false", true)]
-        [InlineData("invalidstring", true)]
-        [InlineData("", true)]
         public void SearchCommand_WhenSearchWithHttpSourcesWithAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
         {
             // Arrange

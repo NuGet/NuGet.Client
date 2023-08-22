@@ -1214,6 +1214,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
         [Theory]
         [InlineData("false", true)]
+        [InlineData("FALSE", true)]
         [InlineData("invalidString", true)]
         [InlineData("", true)]
         [InlineData("true", false)]

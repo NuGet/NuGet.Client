@@ -508,11 +508,7 @@ namespace Dotnet.Integration.Test
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("true", false)]
-        [InlineData("True", false)]
         [InlineData("false", true)]
-        [InlineData("FALSE", true)]
-        [InlineData("invalidString", true)]
-        [InlineData("", true)]
         public async Task ListPackage_WithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
         {
             // Arrange

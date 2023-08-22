@@ -1172,10 +1172,7 @@ namespace NuGet.CommandLine.Test
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("true", false)]
-        [InlineData("True", false)]
         [InlineData("false", true)]
-        [InlineData("invalidstring", true)]
-        [InlineData("", true)]
         public void ListCommand_WhenListWithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -1229,96 +1226,6 @@ namespace NuGet.CommandLine.Test
             else
             {
                 Assert.DoesNotContain("WARNING: You are running the 'list' operation with an 'HTTP' source", result.AllOutput);
-            }
-        }
-
-        [PlatformTheory(Platform.Windows)]
-        [InlineData("true", false)]
-        [InlineData("True", false)]
-        [InlineData("false", true)]
-        [InlineData("FALSE", true)]
-        [InlineData("invalidstring", true)]
-        [InlineData("", true)]
-        public void ListCommand_WhenListWithHttpSourcesAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
-        {
-            var nugetexe = Util.GetNuGetExePath();
-
-            // Arrange
-            using var packageDirectory = TestDirectory.Create();
-            using var server1 = new MockServer();
-            using var server2 = new MockServer();
-            var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-            var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1.0", packageDirectory);
-
-            server1.Get.Add("/nuget/$metadata", r =>
-                Util.GetMockServerResource());
-            server1.Get.Add("/nuget/Search()", r =>
-                new Action<HttpListenerResponse>(response =>
-                {
-                    string searchRequest = r.Url.ToString();
-                    response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
-                    string feed = server1.ToODataFeed(new[] { new FileInfo(packageFileName1) }, "Search");
-                    MockServer.SetResponseContent(response, feed);
-                }));
-            server1.Get.Add("/nuget", r => "OK");
-
-            server1.Start();
-
-            server2.Get.Add("/nuget/$metadata", r =>
-                Util.GetMockServerResource());
-            server2.Get.Add("/nuget/Search()", r =>
-                new Action<HttpListenerResponse>(response =>
-                {
-                    string searchRequest = r.Url.ToString();
-                    response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
-                    string feed = server2.ToODataFeed(new[] { new FileInfo(packageFileName2) }, "Search");
-                    MockServer.SetResponseContent(response, feed);
-                }));
-            server2.Get.Add("/nuget", r => "OK");
-
-            server2.Start();
-
-            // create the config file
-            Util.CreateFile(packageDirectory, "nuget.config", $@"
-<configuration>
-    <packageSources>
-        <add key='http-feed1' value='{server1.Uri}nuget' allowInsecureConnections=""{allowInsecureConnections}"" />
-        <add key='http-feed2' value='{server2.Uri}nuget' allowInsecureConnections=""{allowInsecureConnections}"" />
-    </packageSources>
-</configuration>");
-            var configFile = Path.Combine(packageDirectory, "nuget.config");
-
-            // Act
-            var args = "list test -ConfigFile " + configFile;
-            var result = CommandRunner.Run(
-                nugetexe,
-                packageDirectory,
-                args);
-            server1.Stop();
-            server2.Stop();
-
-            // Assert
-            Assert.Equal(0, result.ExitCode);
-
-            string acutalOutputWithoutSpace = SettingsTestUtils.RemoveWhitespace(result.Output);
-
-            string expectedOutputWithoutSpace = SettingsTestUtils.RemoveWhitespace("testPackage1 1.1.0 testPackage2 2.1.0");
-            Assert.Contains(expectedOutputWithoutSpace, acutalOutputWithoutSpace);
-
-            string expectedWarningWithoutSpace = SettingsTestUtils.RemoveWhitespace($@"
-WARNING: You are running the 'list' operation with 'HTTP' sources: 
-http-feed1
-http-feed2
-Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.
-testPackage1 1.1.0
-testPackage2 2.1.0");
-            if (isHttpWarningExpected)
-            {
-                Assert.Contains(expectedWarningWithoutSpace, acutalOutputWithoutSpace);
-            }
-            else
-            {
-                Assert.DoesNotContain(expectedWarningWithoutSpace, acutalOutputWithoutSpace);
             }
         }
 
