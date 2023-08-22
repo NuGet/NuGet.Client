@@ -58,9 +58,7 @@ namespace NuGet.Client.Test
             var expression = new PatternExpression(pattern);
             var path = "content/file.txt";
             var match_result = expression.Match(path, propertyDefinitions);
-            object result;
-            match_result.Properties.TryGetValue("name", out result);
-            Assert.NotNull(result);
+            Assert.True(match_result.Properties.TryGetValue("name", out object result));
             Assert.Equal("file.txt", result);
         }
 
