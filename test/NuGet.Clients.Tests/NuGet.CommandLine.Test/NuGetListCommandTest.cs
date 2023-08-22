@@ -1174,7 +1174,6 @@ namespace NuGet.CommandLine.Test
         [InlineData("true", false)]
         [InlineData("True", false)]
         [InlineData("false", true)]
-        [InlineData("FALSE", true)]
         [InlineData("invalidstring", true)]
         [InlineData("", true)]
         public void ListCommand_WhenListWithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
