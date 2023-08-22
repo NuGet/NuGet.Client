@@ -75,7 +75,7 @@ namespace NuGet.Client.Test
             var pattern = new PatternDefinition("content/{name}");
             var expression = new PatternExpression(pattern);
             var path = "content/file.txt";
-            var match_result = expression.Match(path, propertyDefinitions);
+            var matchResult = expression.Match(path, propertyDefinitions);
             Assert.Null(match_result);
         }
 
