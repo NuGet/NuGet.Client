@@ -17,9 +17,9 @@ namespace NuGet.Client.Test
         public void LiteralSegment_OnlyShouldMatch()
         {
             // match literal segments given a pattern
-            Dictionary<string, ContentPropertyDefinition> propertyDefinitions =
-                new Dictionary<string, ContentPropertyDefinition>() {
-                {"type", new ContentPropertyDefinition("text") }
+            Dictionary<string, ContentPropertyDefinition> propertyDefinitions = new()
+            {
+                { "type", new ContentPropertyDefinition("text") }
             };
             var pattern = new PatternDefinition("content/file.txt");
             var expression = new PatternExpression(pattern);
