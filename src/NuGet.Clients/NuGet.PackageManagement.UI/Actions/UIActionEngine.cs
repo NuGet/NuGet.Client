@@ -1010,7 +1010,7 @@ namespace NuGet.PackageManagement.UI
                 }
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
-                var result = new PreviewResult(projectName, added, deleted, updated);
+                var result = new PreviewResult(projectName!, added, deleted, updated);
 
                 results.Add(result);
             }

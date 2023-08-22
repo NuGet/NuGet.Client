@@ -19,10 +19,10 @@ namespace NuGet.PackageManagement.UI
 
         public ImmutableDictionary<string, SortedSet<string>>? NewSourceMappings { get; }
 
-        public string? Name { get; }
+        public string Name { get; }
 
         public PreviewResult(
-            string? projectName,
+            string projectName,
             IEnumerable<AccessiblePackageIdentity> added,
             IEnumerable<AccessiblePackageIdentity> deleted,
             IEnumerable<UpdatePreviewResult> updated)
