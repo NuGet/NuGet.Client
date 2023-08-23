@@ -29,19 +29,21 @@ namespace NuGet.Commands
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
             PackageSource packageSource = CommandRunnerUtility.GetOrCreatePackageSource(sourceProvider, source);
             // Only warn for V3 style sources because they have a service index which is different from the final push url.
-            if (packageSource.IsHttp && !packageSource.IsHttps &&
+            if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections &&
                 (packageSource.ProtocolVersion == 3 || packageSource.Source.EndsWith("json", StringComparison.OrdinalIgnoreCase)))
             {
                 logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "delete", packageSource.Source));
             }
             var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, packageSource);
 
+            bool allowInsecureConnections = packageSource.AllowInsecureConnections;
             await packageUpdateResource.Delete(
                 packageId,
                 packageVersion,
                 endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source),
                 desc => nonInteractive || confirmFunc(desc),
                 noServiceEndpoint,
+                allowInsecureConnections,
                 logger);
         }
     }
