@@ -160,10 +160,8 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Match_TokenSegment_TokenNotFound()
         {
-            Dictionary<string, ContentPropertyDefinition> propertyDefinitions = new()
-                {
-                    // Empty propertyDefinitions, no token definition available
-                };
+            // Empty propertyDefinitions, no token definition available 
+            Dictionary<string, ContentPropertyDefinition> propertyDefinitions = new Dictionary<string, ContentPropertyDefinition>();
             PatternDefinition pattern = new PatternDefinition("contentItem/{name}");
             PatternExpression expression = new PatternExpression(pattern);
             var path = "contentItem/mypackage/file.txt";
