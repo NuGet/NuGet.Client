@@ -29,9 +29,11 @@ namespace NuGet.PackageManagement.UI
             PackageSourceMapping packageSourceMapping = new(patternsReadOnly);
 
             // Expand all patterns/globs so we can later check if this package ID was already mapped.
-            List<string> addedPackageIdsWithoutExistingMappings = new();
+            List<string> addedPackageIdsWithoutExistingMappings = new(capacity: addedPackageIds.Count + 1);
+            bool topLevelPackageIdWasAdded = false;
             foreach (string addedPackageId in addedPackageIds)
             {
+                topLevelPackageIdWasAdded = topLevelPackageIdWasAdded || addedPackageId == userAction.PackageId;
                 IReadOnlyList<string> configuredSource = packageSourceMapping.GetConfiguredPackageSources(addedPackageId);
                 if (configuredSource.Count == 0)
                 {
@@ -41,9 +43,12 @@ namespace NuGet.PackageManagement.UI
 
             // Get all newly added package IDs that were not previously Source Mapped.
             // Always include the Package ID being installed since it takes precedence over any globbing.
-            string[] packageIdsNeedingNewSourceMappings = addedPackageIdsWithoutExistingMappings
-                .Append(userAction.PackageId)
-                .ToArray();
+            if (!topLevelPackageIdWasAdded)
+            {
+                addedPackageIdsWithoutExistingMappings.Add(userAction.PackageId);
+            }
+
+            string[] packageIdsNeedingNewSourceMappings = addedPackageIdsWithoutExistingMappings.ToArray();
 
             CreateAndSavePackageSourceMappings(
                 userAction.SourceMappingSourceName,
