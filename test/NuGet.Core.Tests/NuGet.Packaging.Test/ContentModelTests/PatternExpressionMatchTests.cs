@@ -181,7 +181,7 @@ namespace NuGet.Packaging.Test
             PatternExpression expression = new PatternExpression(pattern);
             var path = "contentItem/mypackage/file.dll";
             ArgumentException exception = Assert.Throws<ArgumentException>(() => expression.Match(path, propertyDefinitions));
-            Assert.Equal(string.Format(CultureInfo.CurrentCulture, "An item with the same key has already been added."), exception.Message);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, "An item with the same key has already been added. Key: name"), exception.Message);
         }
     }
 }
