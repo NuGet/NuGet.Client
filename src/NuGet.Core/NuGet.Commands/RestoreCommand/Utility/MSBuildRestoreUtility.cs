@@ -680,6 +680,7 @@ namespace NuGet.Commands
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", id));
                 }
+                
                 var versions = versionString.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (var version in versions)
