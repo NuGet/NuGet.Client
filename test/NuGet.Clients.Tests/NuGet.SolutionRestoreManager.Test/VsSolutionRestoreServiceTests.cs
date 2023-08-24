@@ -2389,41 +2389,31 @@ namespace NuGet.SolutionRestoreManager.Test
         private delegate bool TryGetProjectNamesReturns(string projectPath, out ProjectNames projectNames);
 
         [Fact]
-        public void ToPackageSpec_NoVersion_ThrowsException()
+        public void ToPackageSpec_PackageDownloadWithNoVersion_ThrowsException()
         {
             // Arrange
             string packageName = "package";
-            string currentProjectPath = @"n:\path\to\current\project.csproj";
-            string referencedProjectPath = @"n:\path\to\some\reference.csproj";
-            string relativePath = new Uri(currentProjectPath).MakeRelativeUri(new Uri(referencedProjectPath)).OriginalString;
-            ProjectNames projectName = new ProjectNames(@"f:\project\project.vcxproj", "project", "project.csproj", "project", Guid.NewGuid().ToString());
+            ProjectNames projectName = new ProjectNames(@"n:\path\to\current\project.csproj", "project", "project.csproj", "project", Guid.NewGuid().ToString());
             var emptyReferenceItems = Array.Empty<VsReferenceItem>();
-            var projectReferenceProperties = new VsReferenceProperties();
-            VsReferenceItem[] projectReferences = new[]
-            {
-                new VsReferenceItem(referencedProjectPath, projectReferenceProperties),
-                new VsReferenceItem(relativePath, projectReferenceProperties)
-            };
             var targetFrameworks = new VsTargetFrameworkInfo2[]
             {
                 new VsTargetFrameworkInfo2("net5.0",
-                packageReferences: emptyReferenceItems,
-                projectReferences: projectReferences,
-                packageDownloads: new List<IVsReferenceItem>
-                { new VsReferenceItem(packageName, new VsReferenceProperties(new []
-                {
-                    new VsReferenceProperty("Version", null)
-                }))
-                },
-                frameworkReferences: emptyReferenceItems,
-                projectProperties: Array.Empty<IVsProjectProperty>())
+                    packageReferences: emptyReferenceItems,
+                    projectReferences: emptyReferenceItems,
+                    packageDownloads: new List<IVsReferenceItem>
+                    { new VsReferenceItem(packageName, new VsReferenceProperties(new []
+                    {
+                        new VsReferenceProperty("Version", null)
+                    }))
+                    },
+                    frameworkReferences: emptyReferenceItems,
+                    projectProperties: Array.Empty<IVsProjectProperty>())
             };
             string expected = string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", packageName);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(() => VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, originalTargetFrameworkstr: string.Empty, msbuildProjectExtensionsPath: string.Empty));
             Assert.Equal(expected, exception.Message);
-
         }
 
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
