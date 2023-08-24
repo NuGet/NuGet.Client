@@ -219,6 +219,7 @@ namespace NuGet.Build.Tasks.Console
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", id));
                 }
+                
                 foreach (var version in MSBuildStringUtility.Split(versionRanges))
                 {
                     // Validate the version range

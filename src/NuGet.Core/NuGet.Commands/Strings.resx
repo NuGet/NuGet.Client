@@ -775,7 +775,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>{0} is the path to the project file. {1} is the restore duration.</comment>
   </data>
   <data name="Error_PackageDownload_OnlyExactVersionsAreAllowed" xml:space="preserve">
-    <value>In the package '{1}', '{0}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
+    <value>Package '{1} {0}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
     <comment>0 - the version string that's not exact. 1 - The package that does not have an exact version. Do not translate 'PackageDownload'.</comment>
   </data>
   <data name="Error_IncompatiblePackageType" xml:space="preserve">
