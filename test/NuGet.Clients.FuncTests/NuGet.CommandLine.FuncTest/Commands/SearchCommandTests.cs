@@ -1107,7 +1107,7 @@ $@"<configuration>
             Assert.Contains("No results found.", $"{result.AllOutput}");
             Assert.DoesNotContain(">", $"{result.AllOutput}");
 
-            string acutalOutputWithoutSpace = SettingsTestUtils.RemoveWhitespace(result.Output);
+            string actualOutputWithoutSpace = SettingsTestUtils.RemoveWhitespace(result.Output);
             string expectedWarningWithoutSpace = SettingsTestUtils.RemoveWhitespace($@"
 WARNING: You are running the 'search' operation with 'HTTP' sources:  
 http-feed1
@@ -1115,11 +1115,11 @@ http-feed2
 Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.");
             if (isHttpWarningExpected)
             {
-                Assert.Contains(expectedWarningWithoutSpace, acutalOutputWithoutSpace);
+                Assert.Contains(expectedWarningWithoutSpace, actualOutputWithoutSpace);
             }
             else
             {
-                Assert.DoesNotContain(expectedWarningWithoutSpace, acutalOutputWithoutSpace);
+                Assert.DoesNotContain(expectedWarningWithoutSpace, actualOutputWithoutSpace);
             }
         }
     }
