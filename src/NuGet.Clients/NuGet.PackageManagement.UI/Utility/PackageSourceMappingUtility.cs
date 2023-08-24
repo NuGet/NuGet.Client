@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
@@ -48,22 +47,20 @@ namespace NuGet.PackageManagement.UI
                 addedPackageIdsWithoutExistingMappings.Add(userAction.PackageId);
             }
 
-            string[] packageIdsNeedingNewSourceMappings = addedPackageIdsWithoutExistingMappings.ToArray();
-
             CreateAndSavePackageSourceMappings(
                 userAction.SourceMappingSourceName,
-                packageIdsNeedingNewSourceMappings,
+                addedPackageIdsWithoutExistingMappings,
                 sourceMappingProvider,
                 existingPackageSourceMappingSourceItems);
         }
 
         private static void CreateAndSavePackageSourceMappings(
             string sourceName,
-            string[] newPackageIdsToSourceMap,
+            List<string> newPackageIdsToSourceMap,
             PackageSourceMappingProvider mappingProvider,
             IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingSourceItems)
         {
-            if (string.IsNullOrWhiteSpace(sourceName) || newPackageIdsToSourceMap is null || newPackageIdsToSourceMap.Length == 0)
+            if (string.IsNullOrWhiteSpace(sourceName) || newPackageIdsToSourceMap is null || newPackageIdsToSourceMap.Count == 0)
             {
                 return;
             }
