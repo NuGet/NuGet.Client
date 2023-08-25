@@ -274,7 +274,9 @@ namespace NuGet.PackageManagement.UI.Test
                 removedPackages: null,
                 updatedPackagesOld: null,
                 updatedPackagesNew: null,
-                targetFrameworks: null);
+                targetFrameworks: null,
+                countCreatedTopLevelSourceMappings: null,
+                countCreatedTransitiveSourceMappings: null);
 
             // Act
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
@@ -290,6 +292,63 @@ namespace NuGet.PackageManagement.UI.Test
                 item => Assert.Equal(1, item),
                 item => Assert.Equal(3, item));
             Assert.Equal(3, pkgSeverities.Count());
+            Assert.Null(lastTelemetryEvent["CreatedTopLevelSourceMappingsCount"]);
+            Assert.Null(lastTelemetryEvent["CreatedTransitiveSourceMappingsCount"]);
+        }
+
+        [Fact]
+        public void ActionCreatingSourceMappings_TopLevelCountAndTransitiveCount_AddsValue()
+        {
+            // Arrange
+            int expectedCountCreatedTopLevelSourceMappings = 42;
+            int expectedCountCreatedTransitiveSourceMappings = 24;
+            var telemetrySession = new Mock<ITelemetrySession>();
+            TelemetryEvent lastTelemetryEvent = null;
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+
+            var operationId = Guid.NewGuid().ToString();
+
+            var actionTelemetryData = new VSActionsTelemetryEvent(
+                operationId,
+                projectIds: new[] { Guid.NewGuid().ToString() },
+                operationType: NuGetOperationType.Install,
+                source: OperationSource.PMC,
+                startTime: DateTimeOffset.Now.AddSeconds(-1),
+                status: NuGetOperationStatus.NoOp,
+                packageCount: 1,
+                endTime: DateTimeOffset.Now,
+                duration: .40,
+                isPackageSourceMappingEnabled: false);
+
+            UIActionEngine.AddUiActionEngineTelemetryProperties(
+                actionTelemetryEvent: actionTelemetryData,
+                continueAfterPreview: true,
+                acceptedLicense: true,
+                userAction: null,
+                selectedIndex: 0,
+                recommendedCount: 0,
+                recommendPackages: false,
+                recommenderVersion: null,
+                topLevelVulnerablePackagesCount: 3,
+                topLevelVulnerablePackagesMaxSeverities: new List<int> { 1, 1, 3 }, // each package has its own max severity
+                existingPackages: null,
+                addedPackages: null,
+                removedPackages: null,
+                updatedPackagesOld: null,
+                updatedPackagesNew: null,
+                targetFrameworks: null,
+                countCreatedTopLevelSourceMappings: expectedCountCreatedTopLevelSourceMappings,
+                countCreatedTransitiveSourceMappings: expectedCountCreatedTransitiveSourceMappings);
+
+            // Act
+            var service = new NuGetVSTelemetryService(telemetrySession.Object);
+            service.EmitTelemetryEvent(actionTelemetryData);
+
+            // Assert
+            Assert.Equal(expectedCountCreatedTopLevelSourceMappings, (int)lastTelemetryEvent["CreatedTopLevelSourceMappingsCount"]);
+            Assert.Equal(expectedCountCreatedTransitiveSourceMappings, (int)lastTelemetryEvent["CreatedTransitiveSourceMappingsCount"]);
         }
 
         [Theory]
