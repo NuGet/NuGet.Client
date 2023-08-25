@@ -39,7 +39,7 @@ namespace NuGet.Protocol
 
                 if (packageFromGlobalPackages != null)
                 {
-                    if (!(downloadContext.SourceCacheContext.NoCache))
+                    if (!downloadContext.SourceCacheContext.NoCache)
                     {
                         return packageFromGlobalPackages;
                     }
