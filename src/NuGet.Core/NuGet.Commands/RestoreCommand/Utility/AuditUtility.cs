@@ -199,11 +199,9 @@ namespace NuGet.Commands.Restore.Utility
         private static List<PackageVulnerabilityInfo>? GetKnownVulnerabilities(
             string name,
             NuGetVersion version,
-            IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities)
+            IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities)
         {
             HashSet<PackageVulnerabilityInfo>? vulnerabilities = null;
-
-            if (knownVulnerabilities == null) return null;
 
             foreach (var file in knownVulnerabilities)
             {
@@ -213,10 +211,7 @@ namespace NuGet.Commands.Restore.Utility
                     {
                         if (vulnInfo.Versions.Satisfies(version))
                         {
-                            if (vulnerabilities == null)
-                            {
-                                vulnerabilities = new();
-                            }
+                            vulnerabilities ??= new();
                             vulnerabilities.Add(vulnInfo);
                         }
                     }
