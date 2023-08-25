@@ -223,7 +223,7 @@ namespace NuGet.Commands.Restore.Utility
                 }
             }
 
-            return vulnerabilities != null ? vulnerabilities.ToList() : null;
+            return vulnerabilities?.ToList();
         }
 
         private static (string severityLabel, NuGetLogCode code) GetSeverityLabelAndCode(PackageVulnerabilitySeverity severity)

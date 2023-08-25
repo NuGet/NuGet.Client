@@ -43,7 +43,6 @@ namespace NuGet.PackageManagement
             PackageRestoreFailedEvent = packageRestoreFailedEvent;
             SourceRepositories = sourceRepositories.ToList();
             MaxNumberOfParallelTasks = maxNumberOfParallelTasks;
-            // TODO NK - Probably need the vulnerability settings here. 
         }
     }
 }

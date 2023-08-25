@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +17,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
-    internal partial class AuditUtility
+    internal class AuditUtility
     {
         private readonly bool _isExplicitOptIn;
         private readonly IEnumerable<PackageRestoreData> _packages;
@@ -26,14 +25,6 @@ namespace NuGet.PackageManagement
         private readonly ILogger _logger;
         private readonly SourceCacheContext _sourceCacheContext;
         private readonly PackageVulnerabilitySeverity _minSeverity;
-
-        internal List<string>? PackagesWithAdvisory { get; private set; }
-        internal int Sev0Matches { get; private set; }
-        internal int Sev1Matches { get; private set; }
-        internal int Sev2Matches { get; private set; }
-        internal int Sev3Matches { get; private set; }
-        internal int InvalidSevDirectMatches { get; private set; }
-        internal int SourcesWithVulnerabilityData { get; private set; }
 
         public AuditUtility(
             bool isExplicitOptIn,
@@ -118,14 +109,7 @@ namespace NuGet.PackageManagement
 
         public async Task CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
-            double? DownloadDurationSeconds;
-            double? CheckPackagesDurationSeconds;
-            double? GenerateOutputDurationSeconds;
-
-            var stopwatch = Stopwatch.StartNew();
             GetVulnerabilityInfoResult? allVulnerabilityData = await GetAllVulnerabilityDataAsync(_sourceRepositories, _sourceCacheContext, _logger, cancellationToken);
-            stopwatch.Stop();
-            DownloadDurationSeconds = stopwatch.Elapsed.TotalSeconds;
 
             if (allVulnerabilityData?.Exceptions is not null)
             {
@@ -144,19 +128,13 @@ namespace NuGet.PackageManagement
 
             if (allVulnerabilityData.KnownVulnerabilities is not null)
             {
-                stopwatch.Restart();
                 Dictionary<PackageIdentity, PackageAuditInfo>? packagesWithKnownVulnerabilities =
                     FindPackagesWithKnownVulnerabilities(allVulnerabilityData.KnownVulnerabilities,
                                                         _packages,
                                                         _minSeverity);
-                stopwatch.Stop();
-                CheckPackagesDurationSeconds = stopwatch.Elapsed.TotalSeconds;
                 if (packagesWithKnownVulnerabilities is not null)
                 {
-                    stopwatch.Restart();
-                    CreateWarningsForPackagesWithVulnerabilities(packagesWithKnownVulnerabilities);
-                    stopwatch.Stop();
-                    GenerateOutputDurationSeconds = stopwatch.Elapsed.TotalSeconds;
+                    CreateWarningsForPackagesWithVulnerabilities(packagesWithKnownVulnerabilities, _logger);
                 }
             }
 
@@ -186,15 +164,13 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private void CreateWarningsForPackagesWithVulnerabilities(Dictionary<PackageIdentity, PackageAuditInfo> packagesWithKnownVulnerabilities)
+        internal static void CreateWarningsForPackagesWithVulnerabilities(Dictionary<PackageIdentity, PackageAuditInfo> packagesWithKnownVulnerabilities, ILogger logger)
         {
-            PackagesWithAdvisory = new(packagesWithKnownVulnerabilities.Count);
             foreach ((PackageIdentity package, PackageAuditInfo auditInfo) in packagesWithKnownVulnerabilities.OrderBy(p => p.Key.Id))
             {
-                PackagesWithAdvisory.Add(package.Id);
                 foreach (PackageVulnerabilityInfo vulnerability in auditInfo.Vulnerabilities)
                 {
-                    (var severityLabel, NuGetLogCode logCode) = PackageVulnerabilitySeverityHelper.GetSeverityLabelAndCode(vulnerability.Severity);
+                    (var severityLabel, NuGetLogCode logCode) = GetSeverityLabelAndCode(vulnerability.Severity);
                     var message = string.Format("Package with known vulnerability",
                         package.Id,
                         package.Version.ToNormalizedString(),
@@ -204,45 +180,9 @@ namespace NuGet.PackageManagement
                         RestoreLogMessage.CreateWarning(logCode,
                         message,
                         package.Id);
-                    _logger.Log(restoreLogMessage);
-                }
-                foreach (var advisory in auditInfo.Vulnerabilities)
-                {
-                    PackageVulnerabilitySeverity severity = advisory.Severity;
-                    if (severity == PackageVulnerabilitySeverity.Low) { Sev0Matches++; }
-                    else if (severity == PackageVulnerabilitySeverity.Moderate) { Sev1Matches++; }
-                    else if (severity == PackageVulnerabilitySeverity.High) { Sev2Matches++; }
-                    else if (severity == PackageVulnerabilitySeverity.Critical) { Sev3Matches++; }
-                    else { InvalidSevDirectMatches++; }
+                    logger.Log(restoreLogMessage);
                 }
             }
-        }
-
-        private static List<PackageVulnerabilityInfo>? GetKnownVulnerabilities(
-            string name,
-            NuGetVersion version,
-            IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities)
-        {
-            HashSet<PackageVulnerabilityInfo>? vulnerabilities = null;
-
-            if (knownVulnerabilities == null) return null;
-
-            foreach (var file in knownVulnerabilities)
-            {
-                if (file.TryGetValue(name, out var packageVulnerabilities))
-                {
-                    foreach (var vulnInfo in packageVulnerabilities)
-                    {
-                        if (vulnInfo.Versions.Satisfies(version))
-                        {
-                            vulnerabilities ??= new();
-                            vulnerabilities.Add(vulnInfo);
-                        }
-                    }
-                }
-            }
-
-            return vulnerabilities != null ? vulnerabilities.ToList() : null;
         }
 
         private static Dictionary<PackageIdentity, PackageAuditInfo>? FindPackagesWithKnownVulnerabilities(
@@ -280,7 +220,49 @@ namespace NuGet.PackageManagement
             return result;
         }
 
-        private class PackageAuditInfo
+        internal static List<PackageVulnerabilityInfo>? GetKnownVulnerabilities(
+            string name,
+            NuGetVersion version,
+            IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities)
+        {
+            HashSet<PackageVulnerabilityInfo>? vulnerabilities = null;
+
+            foreach (var file in knownVulnerabilities)
+            {
+                if (file.TryGetValue(name, out var packageVulnerabilities))
+                {
+                    foreach (var vulnerabilityInfo in packageVulnerabilities)
+                    {
+                        if (vulnerabilityInfo.Versions.Satisfies(version))
+                        {
+                            vulnerabilities ??= new();
+                            vulnerabilities.Add(vulnerabilityInfo);
+                        }
+                    }
+                }
+            }
+
+            return vulnerabilities?.ToList();
+        }
+
+        internal static (string severityLabel, NuGetLogCode code) GetSeverityLabelAndCode(PackageVulnerabilitySeverity severity)
+        {
+            switch (severity)
+            {
+                case PackageVulnerabilitySeverity.Low:
+                    return ("low", NuGetLogCode.NU1901);
+                case PackageVulnerabilitySeverity.Moderate:
+                    return ("moderate", NuGetLogCode.NU1902);
+                case PackageVulnerabilitySeverity.High:
+                    return ("high", NuGetLogCode.NU1903);
+                case PackageVulnerabilitySeverity.Critical:
+                    return ("critical", NuGetLogCode.NU1904);
+                default:
+                    return ("unknown", NuGetLogCode.NU1900);
+            }
+        }
+
+        internal class PackageAuditInfo
         {
             public PackageIdentity Identity { get; }
             public List<PackageVulnerabilityInfo> Vulnerabilities { get; }

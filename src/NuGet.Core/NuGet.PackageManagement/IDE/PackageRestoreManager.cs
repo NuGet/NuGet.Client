@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.PackageManagement.IDE;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
@@ -19,7 +18,6 @@ using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Model;
 using NuGet.Shared;
 
 namespace NuGet.PackageManagement
