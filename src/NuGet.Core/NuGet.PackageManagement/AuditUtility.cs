@@ -185,7 +185,7 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private static Dictionary<PackageIdentity, PackageAuditInfo>? FindPackagesWithKnownVulnerabilities(
+        internal static Dictionary<PackageIdentity, PackageAuditInfo>? FindPackagesWithKnownVulnerabilities(
             IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities,
             IEnumerable<PackageRestoreData> packages, PackageVulnerabilitySeverity minSeverity)
         {
