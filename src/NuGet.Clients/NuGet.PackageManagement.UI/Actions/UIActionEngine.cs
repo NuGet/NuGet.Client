@@ -462,8 +462,10 @@ namespace NuGet.PackageManagement.UI
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        List<string>? addedPackageIds = addedPackages != null ? addedPackages.Select(pair => pair.Item1).Distinct().ToList() : null;
-                        PackageSourceMappingUtility.ConfigureNewPackageSourceMapping(userAction, addedPackageIds, sourceMappingProvider, existingPackageSourceMappingSourceItems, out countCreatedTopLevelSourceMappings, out countCreatedTransitiveSourceMappings);
+                        IReadOnlyList<SourceRepository>? globalPackageFolders = _packageManager.GlobalPackageFolderRepositories;
+                        IEnumerable<SourceRepository> enabledSourceRepositories = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+                        IReadOnlyList<string> enabledSources = enabledSourceRepositories.Where(repository => repository.PackageSource.IsLocal && repository.PackageSource.IsEnabled).Select(repository => repository.PackageSource.Source).ToList().AsReadOnly();
+                        PackageSourceMappingUtility.ConfigureNewPackageSourceMapping(userAction, addedPackages, sourceMappingProvider, existingPackageSourceMappingSourceItems, globalPackageFolders, enabledSources, out countCreatedTopLevelSourceMappings, out countCreatedTransitiveSourceMappings);
 
                         await projectManagerService.ExecuteActionsAsync(
                             actions,
