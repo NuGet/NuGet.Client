@@ -690,9 +690,8 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                using (var server = new MockServer())
+                using (var server = new MockServer(AuthenticationSchemes.Basic))
                 {
-                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
                         var h = r.Headers["Authorization"];
@@ -769,9 +768,8 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                using (var server = new MockServer())
+                using (var server = new MockServer(AuthenticationSchemes.Basic))
                 {
-                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
                         var h = r.Headers["Authorization"];
@@ -847,9 +845,8 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                using (var server = new MockServer())
+                using (var server = new MockServer(AuthenticationSchemes.IntegratedWindowsAuthentication))
                 {
-                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
                     {
                         putUser = user;
@@ -890,9 +887,8 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                using (var server = new MockServer())
+                using (var server = new MockServer(AuthenticationSchemes.IntegratedWindowsAuthentication))
                 {
-                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
                     {
                         putUser = user;
@@ -936,10 +932,9 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                using (var server = new MockServer())
+                using (var server = new MockServer(AuthenticationSchemes.Basic))
                 {
                     var credentialForPutRequest = new List<string>();
-                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
                         var h = r.Headers["Authorization"];
@@ -1001,10 +996,9 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                using (var server = new MockServer())
+                using (var server = new MockServer(AuthenticationSchemes.Basic))
                 {
                     var credentialForPutRequest = new List<string>();
-                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
                         var h = r.Headers["Authorization"];
@@ -1068,9 +1062,8 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                using (var server = new MockServer())
+                using (var server = new MockServer(AuthenticationSchemes.Basic))
                 {
-                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
                         var h = r.Headers["Authorization"];
@@ -1133,9 +1126,8 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                using (var server = new MockServer())
+                using (var server = new MockServer(AuthenticationSchemes.Basic))
                 {
-                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     server.Get.Add("/nuget", r =>
                     {
                         var h = r.Headers["Authorization"];
@@ -1204,9 +1196,8 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                using (var server = new MockServer())
+                using (var server = new MockServer(AuthenticationSchemes.Basic))
                 {
-                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
                     server.Get.Add("/nuget", r =>
                     {
                         var h = r.Headers["Authorization"];
