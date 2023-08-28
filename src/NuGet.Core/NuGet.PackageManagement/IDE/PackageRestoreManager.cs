@@ -18,7 +18,6 @@ using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
-using NuGet.Shared;
 
 namespace NuGet.PackageManagement
 {
@@ -377,8 +376,7 @@ namespace NuGet.PackageManagement
 
             packageRestoreContext.Token.ThrowIfCancellationRequested();
 
-            List<SourceRepository> sourceRepositories = packageRestoreContext.SourceRepositories.AsList();
-            foreach (SourceRepository enabledSource in sourceRepositories)
+            foreach (SourceRepository enabledSource in packageRestoreContext.SourceRepositories)
             {
                 PackageSource source = enabledSource.PackageSource;
                 if (source.IsHttp && !source.IsHttps)
@@ -392,16 +390,6 @@ namespace NuGet.PackageManagement
                 packageRestoreContext,
                 nuGetProjectContext,
                 downloadContext);
-
-            var auditUtility = new AuditUtility(
-                isExplicitOptIn: false,
-                minSeverity: Protocol.PackageVulnerabilitySeverity.Low,
-                packageRestoreContext.Packages,
-                sourceRepositories,
-                downloadContext.SourceCacheContext,
-                packageRestoreContext.Logger);
-
-            await auditUtility.CheckPackageVulnerabilitiesAsync(packageRestoreContext.Token);
 
             packageRestoreContext.Token.ThrowIfCancellationRequested();
 

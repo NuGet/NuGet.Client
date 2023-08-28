@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
@@ -41,7 +40,7 @@ namespace NuGet.PackageManagement
             Token = token;
             PackageRestoredEvent = packageRestoredEvent;
             PackageRestoreFailedEvent = packageRestoreFailedEvent;
-            SourceRepositories = sourceRepositories.ToList();
+            SourceRepositories = sourceRepositories;
             MaxNumberOfParallelTasks = maxNumberOfParallelTasks;
         }
     }
