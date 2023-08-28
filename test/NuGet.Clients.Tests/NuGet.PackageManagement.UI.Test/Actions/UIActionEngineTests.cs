@@ -16,7 +16,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.Telemetry;
-using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -269,6 +268,8 @@ namespace NuGet.PackageManagement.UI.Test
                 recommenderVersion: null,
                 topLevelVulnerablePackagesCount: 3,
                 topLevelVulnerablePackagesMaxSeverities: new List<int> { 1, 1, 3 }, // each package has its own max severity
+                transitiveVulnerablePackagesCount: 2,
+                transitiveVulnerablePackagesMaxSeverities: new List<int> { 2, 3 }, // each package has its own max severity
                 existingPackages: null,
                 addedPackages: null,
                 removedPackages: null,
@@ -285,13 +286,22 @@ namespace NuGet.PackageManagement.UI.Test
             // Assert
             Assert.NotNull(lastTelemetryEvent);
             Assert.NotNull(lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>);
-            var pkgSeverities = lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>;
-            Assert.Equal(lastTelemetryEvent["TopLevelVulnerablePackagesCount"], pkgSeverities.Count());
-            Assert.Collection(pkgSeverities,
+            var topLevelPkgSeverities = lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>;
+            Assert.Equal(lastTelemetryEvent["TopLevelVulnerablePackagesCount"], topLevelPkgSeverities.Count());
+            Assert.Collection(topLevelPkgSeverities,
                 item => Assert.Equal(1, item),
                 item => Assert.Equal(1, item),
                 item => Assert.Equal(3, item));
-            Assert.Equal(3, pkgSeverities.Count());
+            Assert.Equal(3, topLevelPkgSeverities.Count());
+
+            var transitivePkgSeverities = lastTelemetryEvent.ComplexData["TransitiveVulnerablePackagesMaxSeverities"] as List<int>;
+            Assert.Equal(lastTelemetryEvent["TransitiveVulnerablePackagesCount"], transitivePkgSeverities.Count());
+            Assert.Equal(lastTelemetryEvent["TransitiveVulnerablePackagesCount"], transitivePkgSeverities.Count());
+            Assert.Collection(transitivePkgSeverities,
+                item => Assert.Equal(2, item),
+                item => Assert.Equal(3, item));
+            Assert.Equal(2, transitivePkgSeverities.Count());
+
             Assert.Null(lastTelemetryEvent["CreatedTopLevelSourceMappingsCount"]);
             Assert.Null(lastTelemetryEvent["CreatedTransitiveSourceMappingsCount"]);
         }
@@ -333,6 +343,8 @@ namespace NuGet.PackageManagement.UI.Test
                 recommenderVersion: null,
                 topLevelVulnerablePackagesCount: 3,
                 topLevelVulnerablePackagesMaxSeverities: new List<int> { 1, 1, 3 }, // each package has its own max severity
+                transitiveVulnerablePackagesCount: 2,
+                transitiveVulnerablePackagesMaxSeverities: new List<int> { 2, 3 }, // each package has its own max severity
                 existingPackages: null,
                 addedPackages: null,
                 removedPackages: null,
