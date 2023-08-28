@@ -17,9 +17,11 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Model;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
+using static NuGet.PackageManagement.AuditUtility;
 
 namespace NuGet.PackageManagement.Test
 {
@@ -515,6 +517,50 @@ namespace NuGet.PackageManagement.Test
             vulnerabilityData.KnownVulnerabilities.First().Values.Single().Should().HaveCount(1);
             vulnerabilityData.KnownVulnerabilities.Last().Keys.Should().Contain("A");
             vulnerabilityData.KnownVulnerabilities.Last().Values.Single().Should().HaveCount(1);
+        }
+
+        [Fact]
+        public void CreateWarningsForPackagesWithVulnerabilities_CreatesWarningsForAllVulnerabilities()
+        {
+            var packageA = new PackageIdentity("A", new NuGetVersion(1, 0, 0));
+            var packageB = new PackageIdentity("B", new NuGetVersion(2, 0, 0));
+
+            var pva = new PackageAuditInfo(packageA);
+            pva.Vulnerabilities.Add(new PackageVulnerabilityInfo(new Uri("https://vulnerability1"), PackageVulnerabilitySeverity.Low, VersionRange.Parse("[1.0.0,2.0.0)")));
+            pva.Vulnerabilities.Add(new PackageVulnerabilityInfo(new Uri("https://vulnerability2"), PackageVulnerabilitySeverity.Moderate, VersionRange.Parse("[1.0.0,1.1.0)")));
+            var pvb = new PackageAuditInfo(packageB);
+            pvb.Vulnerabilities.Add(new PackageVulnerabilityInfo(new Uri("https://vulnerability3"), PackageVulnerabilitySeverity.High, VersionRange.Parse("[2.0.0,3.0.0)")));
+            pvb.Vulnerabilities.Add(new PackageVulnerabilityInfo(new Uri("https://vulnerability4"), PackageVulnerabilitySeverity.Critical, VersionRange.Parse("[2.0.0,2.1.0)")));
+
+            Dictionary<PackageIdentity, PackageAuditInfo> packagesWithKnownVulnerabilities = new()
+            {
+                { packageA, pva },
+                { packageB, pvb }
+            };
+
+            var testLogger = new TestLogger();
+            AuditUtility.CreateWarningsForPackagesWithVulnerabilities(packagesWithKnownVulnerabilities, testLogger);
+            testLogger.WarningMessages.Should().HaveCount(4);
+            testLogger.WarningMessages.Should().Contain(string.Format(Strings.Warning_PackageWithKnownVulnerability,
+                        packageA.Id,
+                        packageA.Version.ToNormalizedString(),
+                        pva.Vulnerabilities[0].Severity.ToString().ToLower(),
+                        pva.Vulnerabilities[0].Url));
+            testLogger.WarningMessages.Should().Contain(string.Format(Strings.Warning_PackageWithKnownVulnerability,
+                        packageA.Id,
+                        packageA.Version.ToNormalizedString(),
+                        pva.Vulnerabilities[1].Severity.ToString().ToLower(),
+                        pva.Vulnerabilities[1].Url));
+            testLogger.WarningMessages.Should().Contain(string.Format(Strings.Warning_PackageWithKnownVulnerability,
+                        packageB.Id,
+                        packageB.Version.ToNormalizedString(),
+                        pvb.Vulnerabilities[0].Severity.ToString().ToLower(),
+                        pvb.Vulnerabilities[0].Url));
+            testLogger.WarningMessages.Should().Contain(string.Format(Strings.Warning_PackageWithKnownVulnerability,
+                        packageB.Id,
+                        packageB.Version.ToNormalizedString(),
+                        pvb.Vulnerabilities[1].Severity.ToString().ToLower(),
+                        pvb.Vulnerabilities[1].Url));
         }
     }
 }
