@@ -51,6 +51,7 @@ namespace NuGet.Build.Tasks.Test
                     Interactive = true,
                     MSBuildBinPath = msbuildBinPath,
                     NoCache = true,
+                    NoHttpCache = true,
                     ProjectFullPath = projectPath,
                     Recursive = true,
                     RestorePackagesConfig = true,

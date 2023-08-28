@@ -118,7 +118,7 @@ namespace NuGet.Build.Tasks.Console
                     dependencyGraphSpec: dependencyGraphSpec,
                     interactive: IsOptionTrue(nameof(RestoreTaskEx.Interactive), options),
                     recursive: IsOptionTrue(nameof(RestoreTaskEx.Recursive), options),
-                    noCache: IsOptionTrue(nameof(RestoreTaskEx.NoCache), options),
+                    noCache: IsOptionTrue(nameof(RestoreTaskEx.NoCache), options) || IsOptionTrue(nameof(RestoreTaskEx.NoHttpCache), options),
                     ignoreFailedSources: IsOptionTrue(nameof(RestoreTaskEx.IgnoreFailedSources), options),
                     disableParallel: IsOptionTrue(nameof(RestoreTaskEx.DisableParallel), options),
                     force: IsOptionTrue(nameof(RestoreTaskEx.Force), options),
