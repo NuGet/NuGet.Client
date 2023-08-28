@@ -1020,7 +1020,7 @@ namespace NuGet.Protocol.Tests
             {
                 Assert.Equal(0, logger.WarningMessages.Count);
             }
-        }            
+        }
 
         [Fact]
         public async Task Delete_WhenDeletingFromHTTPSource_Warns()
