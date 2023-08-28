@@ -164,7 +164,7 @@ namespace NuGet.CommandLine.XPlat
             List<PackageSource> httpPackageSources = null;
             foreach (PackageSource packageSource in listPackageArgs.PackageSources)
             {
-                if (packageSource.IsHttp && !packageSource.IsHttps)
+                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
                 {
                     if (httpPackageSources == null)
                     {
