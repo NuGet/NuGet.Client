@@ -27,9 +27,7 @@ namespace Test.Utility
         private Task _listenerTask;
         private bool _disposed = false;
         private AuthenticationSchemes _authenticationSchemes;
-#pragma warning disable CA2213 // Disposable fields should be disposed
         private HttpListener _listener;
-#pragma warning restore CA2213 // Disposable fields should be disposed
 
         public string BasePath { get; }
         private PortReserverOfMockServer PortReserver { get; }
@@ -92,7 +90,7 @@ namespace Test.Utility
                         throw;
                     }
 
-                    Thread.Sleep(50);
+                    Thread.Sleep(200);
                 }
             }
             while (_listener == null);
@@ -509,7 +507,7 @@ namespace Test.Utility
                 // Disposing the PortReserver
                 PortReserver.Dispose();
 
-                _listener = null;
+                (_listener as IDisposable)?.Dispose();
 
                 _disposed = true;
             }
