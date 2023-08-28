@@ -19,7 +19,6 @@ namespace NuGet.PackageManagement
 {
     internal class AuditUtility
     {
-        private readonly bool _isExplicitOptIn;
         private readonly IEnumerable<PackageRestoreData> _packages;
         private readonly List<SourceRepository> _sourceRepositories;
         private readonly ILogger _logger;
@@ -27,14 +26,12 @@ namespace NuGet.PackageManagement
         private readonly PackageVulnerabilitySeverity _minSeverity;
 
         public AuditUtility(
-            bool isExplicitOptIn,
             PackageVulnerabilitySeverity minSeverity,
             IEnumerable<PackageRestoreData> packages,
             List<SourceRepository> sourceRepositories,
             SourceCacheContext sourceCacheContext,
             ILogger logger)
         {
-            _isExplicitOptIn = isExplicitOptIn;
             _minSeverity = minSeverity;
             _packages = packages;
             _sourceRepositories = sourceRepositories;
@@ -42,7 +39,50 @@ namespace NuGet.PackageManagement
             _logger = logger;
         }
 
-        public static async Task<GetVulnerabilityInfoResult?> GetAllVulnerabilityDataAsync(List<SourceRepository> sourceRepositories, SourceCacheContext sourceCacheContext, ILogger logger, CancellationToken cancellationToken)
+        public async Task CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
+        {
+            GetVulnerabilityInfoResult? allVulnerabilityData = await GetAllVulnerabilityDataAsync(_sourceRepositories, _sourceCacheContext, _logger, cancellationToken);
+
+            if (allVulnerabilityData?.Exceptions is not null)
+            {
+                foreach (Exception exception in allVulnerabilityData.Exceptions.InnerExceptions)
+                {
+                    var messageText = string.Format(Strings.Error_VulnerabilityDataFetch, exception.Message);
+                    var logMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1900, messageText);
+                    _logger.Log(logMessage);
+                }
+            }
+
+            if (allVulnerabilityData is null || !IsAnyVulnerabilityDataFound(allVulnerabilityData.KnownVulnerabilities))
+            {
+                return;
+            }
+
+            Dictionary<PackageIdentity, PackageAuditInfo>? packagesWithKnownVulnerabilities =
+                FindPackagesWithKnownVulnerabilities(allVulnerabilityData.KnownVulnerabilities!,
+                                                    _packages,
+                                                    _minSeverity);
+            if (packagesWithKnownVulnerabilities is not null)
+            {
+                CreateWarningsForPackagesWithVulnerabilities(packagesWithKnownVulnerabilities, _logger);
+            }
+
+            static bool IsAnyVulnerabilityDataFound(IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities)
+            {
+                if (knownVulnerabilities is null || knownVulnerabilities.Count == 0)
+                {
+                    return false;
+                }
+
+                for (var i = 0; i < knownVulnerabilities.Count; i++)
+                {
+                    if (knownVulnerabilities[i].Count > 0) { return true; }
+                }
+                return false;
+            }
+        }
+
+        internal static async Task<GetVulnerabilityInfoResult?> GetAllVulnerabilityDataAsync(List<SourceRepository> sourceRepositories, SourceCacheContext sourceCacheContext, ILogger logger, CancellationToken cancellationToken)
         {
             List<Task<GetVulnerabilityInfoResult?>>? results = new(sourceRepositories.Count);
 
@@ -107,63 +147,6 @@ namespace NuGet.PackageManagement
             }
         }
 
-        public async Task CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
-        {
-            GetVulnerabilityInfoResult? allVulnerabilityData = await GetAllVulnerabilityDataAsync(_sourceRepositories, _sourceCacheContext, _logger, cancellationToken);
-
-            if (allVulnerabilityData?.Exceptions is not null)
-            {
-                ReplayErrors(allVulnerabilityData.Exceptions);
-            }
-
-            if (allVulnerabilityData is null || !IsAnyVulnerabilityDataFound(allVulnerabilityData.KnownVulnerabilities))
-            {
-                if (_isExplicitOptIn)
-                {
-                    var restoreLogMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1905, "No vulnerability data");
-                    _logger.Log(restoreLogMessage);
-                }
-                return;
-            }
-
-            if (allVulnerabilityData.KnownVulnerabilities is not null)
-            {
-                Dictionary<PackageIdentity, PackageAuditInfo>? packagesWithKnownVulnerabilities =
-                    FindPackagesWithKnownVulnerabilities(allVulnerabilityData.KnownVulnerabilities,
-                                                        _packages,
-                                                        _minSeverity);
-                if (packagesWithKnownVulnerabilities is not null)
-                {
-                    CreateWarningsForPackagesWithVulnerabilities(packagesWithKnownVulnerabilities, _logger);
-                }
-            }
-
-            static bool IsAnyVulnerabilityDataFound(IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities)
-            {
-                if (knownVulnerabilities is null || knownVulnerabilities.Count == 0)
-                {
-                    return false;
-                }
-
-                for (var i = 0; i < knownVulnerabilities.Count; i++)
-                {
-                    if (knownVulnerabilities[i].Count > 0) { return true; }
-                }
-
-                return false;
-            }
-        }
-
-        private void ReplayErrors(AggregateException exceptions)
-        {
-            foreach (Exception exception in exceptions.InnerExceptions)
-            {
-                var messageText = string.Format("Error fetching vulnerabilities", exception.Message);
-                var logMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1900, messageText);
-                _logger.Log(logMessage);
-            }
-        }
-
         internal static void CreateWarningsForPackagesWithVulnerabilities(Dictionary<PackageIdentity, PackageAuditInfo> packagesWithKnownVulnerabilities, ILogger logger)
         {
             foreach ((PackageIdentity package, PackageAuditInfo auditInfo) in packagesWithKnownVulnerabilities.OrderBy(p => p.Key.Id))
@@ -171,7 +154,7 @@ namespace NuGet.PackageManagement
                 foreach (PackageVulnerabilityInfo vulnerability in auditInfo.Vulnerabilities)
                 {
                     (var severityLabel, NuGetLogCode logCode) = GetSeverityLabelAndCode(vulnerability.Severity);
-                    var message = string.Format("Package with known vulnerability",
+                    var message = string.Format(Strings.Warning_PackageWithKnownVulnerability,
                         package.Id,
                         package.Version.ToNormalizedString(),
                         severityLabel,
