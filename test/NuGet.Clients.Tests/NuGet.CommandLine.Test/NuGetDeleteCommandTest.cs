@@ -460,7 +460,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, r.ExitCode);
                 Assert.True(deleteRequestIsCalled);
 
-                string expectedWarning = "WARNING: You are running the 'delete' operation with an 'HTTP' source"; 
+                string expectedWarning = "WARNING: You are running the 'delete' operation with an 'HTTP' source";
                 if (isHttpWarningExpected)
                 {
                     Assert.Contains(expectedWarning, r.AllOutput);
