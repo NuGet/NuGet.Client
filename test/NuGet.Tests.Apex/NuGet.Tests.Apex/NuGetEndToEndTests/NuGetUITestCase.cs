@@ -563,7 +563,7 @@ namespace NuGet.Tests.Apex
         }
 
         [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.ClassLibrary, "Newtonsoft.Json", "12.0.2", "13.0.1")]
+        [InlineData(ProjectTemplate.ClassLibrary, "Newtonsoft.Json", "12.0.2", "13.0.3")]
         [InlineData(ProjectTemplate.NetCoreClassLib, "Newtonsoft.Json", "12.0.2", "13.0.2")]
         public void UpdateVulnerablePackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion1, string packageVersion2)
         {

@@ -2450,7 +2450,7 @@ function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
 
     # Act
     $p | Install-Package NuGet.Protocol -Version 5.10.0
-    $p | Update-Package Newtonsoft.Json -Version 13.0.1
+    $p | Update-Package Newtonsoft.Json -Version 13.0.3
 
     # Assert
     Assert-BindingRedirect $p app.config Newtonsoft.Json '0.0.0.0-13.0.0.0' '13.0.0.0'

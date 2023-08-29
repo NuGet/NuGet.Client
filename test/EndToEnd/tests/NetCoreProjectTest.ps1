@@ -17,7 +17,7 @@ function Test-NetCoreProjectSystemCacheUpdateEvent {
     Try
     {
         # Act
-        $projectA | Install-Package Newtonsoft.Json -Version '13.0.1'
+        $projectA | Install-Package Newtonsoft.Json -Version '13.0.3'
 
         $cacheEvent = Wait-Event -SourceIdentifier SolutionManagerCacheUpdated -TimeoutSec 10
     }

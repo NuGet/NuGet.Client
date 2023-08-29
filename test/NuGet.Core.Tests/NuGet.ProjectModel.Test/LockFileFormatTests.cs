@@ -497,7 +497,7 @@ namespace NuGet.ProjectModel.Test
         ""type"": ""package"",
         ""dependencies"": {
           ""Microsoft.CSharp"": ""4.7.0"",
-          ""Newtonsoft.Json"": ""13.0.1""
+          ""Newtonsoft.Json"": ""13.0.3""
         },
         ""frameworkAssemblies"": [
           ""System.Configuration""
@@ -571,7 +571,7 @@ namespace NuGet.ProjectModel.Test
                                 Dependencies = new List<PackageDependency>
                                 {
                                     new("Microsoft.CSharp", new VersionRange(NuGetVersion.Parse("4.7.0"))),
-                                    new("Newtonsoft.Json", new VersionRange(NuGetVersion.Parse("13.0.1"))),
+                                    new("Newtonsoft.Json", new VersionRange(NuGetVersion.Parse("13.0.3"))),
                                 },
                                 CompileTimeAssemblies = new List<LockFileItem>()
                                 {
