@@ -395,6 +395,7 @@
         Grid.Column="2"
         MinWidth="150"
         MinHeight="22"
+        PreviewKeyDown="Versions_PreviewKeyDown"
         AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
         ItemsSource="{Binding Path=Versions}"
         SelectedItem="{Binding Path=SelectedVersion}">

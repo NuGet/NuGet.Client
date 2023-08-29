@@ -144,7 +144,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     case Key.Tab:
                         _versions.IsDropDownOpen = false;
-                        e.Handled = true;
                         break;
                     default:
                         base.OnPreviewKeyDown(e);
@@ -237,7 +236,15 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                base.OnKeyUp(e);
+                switch (e.Key)
+                {
+                    case Key.Tab:
+                        e.Handled = true;
+                        break;
+                    default:
+                        base.OnKeyUp(e);
+                        break;
+                }
             }
         }
 
