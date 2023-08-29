@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
@@ -14,9 +15,9 @@ namespace Dotnet.Integration.Test
     [Collection(DotnetIntegrationCollection.Name)]
     public class DotnetSourcesTests
     {
-        private readonly MsbuildIntegrationTestFixture _fixture;
+        private readonly DotnetIntegrationTestFixture _fixture;
 
-        public DotnetSourcesTests(MsbuildIntegrationTestFixture fixture)
+        public DotnetSourcesTests(DotnetIntegrationTestFixture fixture)
         {
             _fixture = fixture;
         }
@@ -43,10 +44,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
@@ -80,12 +80,10 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
 
                 // Assert
-                Assert.True(result.Success, result.AllOutput);
-
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
 
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
@@ -127,11 +125,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Success, result.Output + " " + result.Errors);
-
                 ISettings loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
 
                 SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
@@ -187,11 +183,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Success, result.Output + " " + result.Errors);
-
                 ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
 
                 SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
@@ -237,10 +231,9 @@ namespace Dotnet.Integration.Test
                     null);
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Success, result.Output + " " + result.Errors);
                 Assert.Equal(shouldWarn, result.Output.Contains(warningMessage));
             }
         }
@@ -290,12 +283,9 @@ namespace Dotnet.Integration.Test
                 Assert.False(source.IsEnabled);
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
-                Assert.True(result.Success, result.Output + " " + result.Errors);
-
                 settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
@@ -356,12 +346,9 @@ namespace Dotnet.Integration.Test
                 Assert.True(source.IsEnabled);
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
-                Assert.True(result.Success, result.Output + " " + result.Errors);
-
                 settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
@@ -407,11 +394,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Success, result.AllOutput);
-
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
 
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
@@ -459,11 +444,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Success, result.AllOutput);
-
                 var settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
@@ -490,6 +473,305 @@ namespace Dotnet.Integration.Test
             {
                 var nugetConfigXDoc = XDocument.Parse(nugetConfigString);
                 ProjectFileUtils.WriteXmlToFile(nugetConfigXDoc, stream);
+            }
+        }
+
+        [Fact]
+        public void Sources_WhenAddingSourceWithProtocolVersion_WasAddedWithProtocolVersion()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    @"https://source.test",
+                    "--name",
+                    "test_source",
+                    "--configfile",
+                    settings.ConfigPath,
+                    "--protocol-version",
+                    "3"
+                };
+
+                // Act
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
+
+                // Assert
+                Assert.Equal(0, result.ExitCode);
+                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("3", sourceItem.ProtocolVersion);
+            }
+        }
+
+        [Fact]
+        public void Sources_WhenAddingLocalSourceWithProtocolVersion_ProtocolVersionNotWritten()
+        {
+            var source = RuntimeEnvironmentHelper.IsWindows
+                ? @"c:\path\to\packages"
+                : "/path/to/packages";
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    source,
+                    "--name",
+                    "test_source",
+                    "--configfile",
+                    settings.ConfigPath,
+                    "--protocol-version",
+                    "3"
+                };
+
+                // Act
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
+
+                // Assert
+                Assert.Equal(0, result.ExitCode);
+                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Null(sourceItem.ProtocolVersion);
+            }
+        }
+
+        [Theory]
+        [InlineData("1", false)]
+        [InlineData("2", true)]
+        [InlineData("3", true)]
+        [InlineData("4", false)]
+        [InlineData("5", false)]
+        public void Sources_WhenAddingSourceWithProtocolVersion_ProtocolVersionIsValidated(string protocolVersion, bool shouldSucceed)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    "https://source.test",
+                    "--name",
+                    "test_source",
+                    "--configfile",
+                    settings.ConfigPath,
+                    "--protocol-version",
+                    protocolVersion
+                };
+
+                // Act
+                var command = string.Join(" ", args);
+                var result = shouldSucceed ? _fixture.RunDotnetExpectSuccess(workingPath, command) : _fixture.RunDotnetExpectFailure(workingPath, command);
+
+                // Assert
+                if (!shouldSucceed)
+                {
+                    // Assert error message
+                    string expectedErrorMessage = "The protocol version specified is invalid.";
+                    Assert.True(result.Output.Contains(expectedErrorMessage), "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Output);
+                }
+            }
+        }
+
+        [Fact]
+        public void Sources_WhenUpdatingSourceWithProtocolVersion_WasUpdatedWithProtocolVersion()
+        {
+            using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test.initial"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                ISettings settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                PackageSource packageSource = sources.Single();
+                Assert.Equal("test_source", packageSource.Name);
+                Assert.Equal("https://source.test.initial", packageSource.Source);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "update",
+                    "source",
+                    "test_source",
+                    "--source",
+                    @"https://source.test",
+                    "--configfile",
+                    configFilePath,
+                    "--protocol-version",
+                    "3"
+                };
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("3", sourceItem.ProtocolVersion);
+            }
+        }
+
+        [Fact]
+        public void Sources_WhenUpdatingLocalSourceWithProtocolVersion_ProtocolVersionNotWritten()
+        {
+            var source = RuntimeEnvironmentHelper.IsWindows
+                ? @"c:\path\to\packages"
+                : "/path/to/packages";
+
+            using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test.initial"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                ISettings settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                PackageSource packageSource = sources.Single();
+                Assert.Equal("test_source", packageSource.Name);
+                Assert.Equal("https://source.test.initial", packageSource.Source);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "update",
+                    "source",
+                    "test_source",
+                    "--source",
+                    source,
+                    "--configfile",
+                    configFilePath,
+                    "--protocol-version",
+                    "3"
+                };
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Null(sourceItem.ProtocolVersion);
+            }
+        }
+
+        [Theory]
+        [InlineData("1", false)]
+        [InlineData("2", true)]
+        [InlineData("3", true)]
+        [InlineData("4", false)]
+        [InlineData("5", false)]
+        public void Sources_WhenUpdatingSourceWithProtocolVersion_ProtocolVersionIsValidated(string protocolVersion, bool shouldSucceed)
+        {
+            using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test.initial"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                ISettings settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                PackageSource source = sources.Single();
+                Assert.Equal("test_source", source.Name);
+                Assert.Equal("https://source.test.initial", source.Source);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "update",
+                    "source",
+                    "test_source",
+                    "--source",
+                    "https://source.test",
+                    "--configfile",
+                    configFilePath,
+                    "--protocol-version",
+                    protocolVersion
+                };
+
+                // Act
+                var command = string.Join(" ", args);
+                CommandRunnerResult result = shouldSucceed ? _fixture.RunDotnetExpectSuccess(configFileDirectory, command) : _fixture.RunDotnetExpectFailure(configFileDirectory, command);
+
+                // Assert error message
+                if (!shouldSucceed)
+                {
+                    string expectedErrorMessage = "The protocol version specified is invalid.";
+                    Assert.Contains(expectedErrorMessage, result.Output);
+                }
             }
         }
 
@@ -540,11 +822,9 @@ namespace Dotnet.Integration.Test
                 Assert.False(source.IsEnabled);
 
                 // Main Act
-                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
-
                 settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
@@ -613,11 +893,9 @@ namespace Dotnet.Integration.Test
                 Assert.True(source.IsEnabled);
 
                 // Main Act
-                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
-
                 settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
@@ -673,10 +951,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
                 // Ensure that no messages are shown with Verbosity as Quiet
                 Assert.Equal(string.Empty, result.Output);
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
@@ -717,10 +994,9 @@ namespace Dotnet.Integration.Test
                 };
 
                 // Act
-                var result = _fixture.RunDotnet(workingPath, string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.ExitCode == 0);
                 Assert.True(result.Output.StartsWith("Registered Sources:"));
                 Assert.Contains("encyclopaedia [Enabled]", result.Output);
                 Assert.Contains("encyclopædia [Enabled]", result.Output);
@@ -739,7 +1015,7 @@ namespace Dotnet.Integration.Test
             using (var testDirectory = _fixture.CreateTestDirectory())
             {
                 // Act
-                var result = _fixture.RunDotnet(testDirectory, command, ignoreExitCode: true);
+                var result = _fixture.RunDotnetExpectFailure(testDirectory, command);
 
                 var commandSplit = command.Split(' ');
 
@@ -761,37 +1037,17 @@ namespace Dotnet.Integration.Test
                 string invalidMessage;
                 if (badCommand.StartsWith("-"))
                 {
-                    invalidMessage = "error: Unrecognized option";
+                    invalidMessage = ": Unrecognized option";
                 }
                 else
                 {
-                    invalidMessage = "error: Unrecognized command";
+                    invalidMessage = ": Unrecognized command";
                 }
 
-                // Verify Exit code
-                VerifyResultFailure(result, invalidMessage);
+                Assert.True(result.Output.Contains(invalidMessage), "Expected error is " + invalidMessage + ". Actual error is " + result.Output);
                 // Verify traits of help message in stdout
                 Assert.Contains("Specify --help for a list of available options and commands.", result.Output);
             }
-        }
-
-        /// <summary>
-        /// Utility for asserting faulty executions of dotnet.exe
-        /// 
-        /// Asserts a non-zero status code and a message on stderr.
-        /// </summary>
-        /// <param name="result">An instance of <see cref="CommandRunnerResult"/> with command execution results</param>
-        /// <param name="expectedErrorMessage">A portion of the error message to be sent</param>
-        public static void VerifyResultFailure(CommandRunnerResult result,
-                                               string expectedErrorMessage)
-        {
-            Assert.False(
-                result.Success,
-                "dotnet.exe nuget DID NOT FAIL: Output is " + result.Output + ". Error is " + result.Errors);
-
-            Assert.True(
-                result.Output.Contains(expectedErrorMessage),
-                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Output);
         }
     }
 }

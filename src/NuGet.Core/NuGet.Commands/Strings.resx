@@ -117,12 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Log_CheckingCompatibility" xml:space="preserve">
-    <value>Checking compatibility of packages on {0}.</value>
-  </data>
-  <data name="Log_CheckingPackageCompatibility" xml:space="preserve">
-    <value>Checking compatibility for {0} {1} with {2}.</value>
-  </data>
   <data name="Log_GeneratingMsBuildFile" xml:space="preserve">
     <value>Generating MSBuild file {0}.</value>
   </data>
@@ -1041,19 +1035,19 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Warning As Error: {0}</value>
     <comment>{0} is a warning message</comment>
   </data>
-  <data name="Vulnerability_Severity_1" xml:space="preserve">
+  <data name="Vulnerability_Severity_Low" xml:space="preserve">
     <value>low</value>
     <comment>As in "This package has a low severity vulnerability"</comment>
   </data>
-  <data name="Vulnerability_Severity_2" xml:space="preserve">
+  <data name="Vulnerability_Severity_Moderate" xml:space="preserve">
     <value>moderate</value>
     <comment>As in "This package has a moderate severity vulnerability"</comment>
   </data>
-  <data name="Vulnerability_Severity_3" xml:space="preserve">
+  <data name="Vulnerability_Severity_High" xml:space="preserve">
     <value>high</value>
     <comment>As in "This package has a high severity vulnerability"</comment>
   </data>
-  <data name="Vulnerability_Severity_4" xml:space="preserve">
+  <data name="Vulnerability_Severity_Critical" xml:space="preserve">
     <value>critical</value>
     <comment>As in "This package has a critical severity vulnerability"</comment>
   </data>
@@ -1069,7 +1063,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
 {3} - URL for more info on the known vulnerability</comment>
   </data>
   <data name="Error_InvalidNuGetAuditLevelValue" xml:space="preserve">
-    <value>Invalid NuGetAuditLevel value '{0}'. Expected values: {1}</value>
+    <value>Invalid NuGetAuditLevel value '{0}'. Valid values: {1}</value>
     <comment>Don't translate 'NuGetAuditLevel'
 {0} - is the value from the customer's project file
 {1} is the list of valid values "low, moderate, high, critical" (these should not be translated either)</comment>
@@ -1083,7 +1077,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>{0} is the value supplied </comment>
   </data>
   <data name="Error_InvalidNuGetAuditModeValue" xml:space="preserve">
-    <value>Invalid NuGetAuditMode value '{0}'. Expected values: {1}</value>
+    <value>Invalid NuGetAuditMode value '{0}'. Valid values: {1}</value>
     <comment>Don't translate 'NuGetAuditMode'
 {0} - is the value from the customer's project file
 {1} is the list of valid values "direct, all"</comment>
@@ -1091,5 +1085,14 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="Warning_NoVulnerabilityData" xml:space="preserve">
     <value>NuGetAudit is enabled, but no package sources contain known vulnerability data.</value>
     <comment>Do not translate NuGetAudit</comment>
+  </data>
+  <data name="Error_InvalidNuGetAuditValue" xml:space="preserve">
+    <value>Invalid NuGetAudit value '{0}'. Valid values: {1}</value>
+    <comment>Don't translate 'NuGetAudit'
+{0} - is the value from the customer's project file
+{1} is the list of valid values "true, false"</comment>
+  </data>
+  <data name="SourcesCommandValidProtocolVersion" xml:space="preserve">
+    <value>The protocol version specified is invalid. Valid protocol versions are from {0} to {1}.</value>
   </data>
 </root>

@@ -10,8 +10,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.DependencyResolver;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.Protocol.Model;
 using NuGet.Versioning;
 
@@ -20,13 +22,13 @@ namespace NuGet.Commands.Restore.Utility
     internal class AuditUtility
     {
         private readonly EnabledValue _auditEnabled;
-        private readonly ProjectModel.RestoreAuditProperties _restoreAuditProperties;
+        private readonly ProjectModel.RestoreAuditProperties? _restoreAuditProperties;
         private readonly string _projectFullPath;
         private readonly IEnumerable<RestoreTargetGraph> _targetGraphs;
         private readonly IReadOnlyList<IVulnerabilityInformationProvider> _vulnerabilityInfoProviders;
         private readonly ILogger _logger;
 
-        internal int MinSeverity { get; }
+        internal PackageVulnerabilitySeverity MinSeverity { get; }
         internal NuGetAuditMode AuditMode { get; }
         internal List<string>? DirectPackagesWithAdvisory { get; private set; }
         internal List<string>? TransitivePackagesWithAdvisory { get; private set; }
@@ -47,7 +49,7 @@ namespace NuGet.Commands.Restore.Utility
 
         public AuditUtility(
             EnabledValue auditEnabled,
-            ProjectModel.RestoreAuditProperties restoreAuditProperties,
+            ProjectModel.RestoreAuditProperties? restoreAuditProperties,
             string projectFullPath,
             IEnumerable<RestoreTargetGraph> graphs,
             IReadOnlyList<IVulnerabilityInformationProvider> vulnerabilityInformationProviders,
@@ -71,6 +73,11 @@ namespace NuGet.Commands.Restore.Utility
             stopwatch.Stop();
             DownloadDurationSeconds = stopwatch.Elapsed.TotalSeconds;
 
+            if (allVulnerabilityData?.Exceptions is not null)
+            {
+                ReplayErrors(allVulnerabilityData.Exceptions);
+            }
+
             if (allVulnerabilityData is null || !AnyVulnerabilityDataFound(allVulnerabilityData.KnownVulnerabilities))
             {
                 if (_auditEnabled == EnabledValue.ExplicitOptIn)
@@ -83,12 +90,7 @@ namespace NuGet.Commands.Restore.Utility
                 return;
             }
 
-            if (allVulnerabilityData.Exceptions != null)
-            {
-                ReplayErrors(allVulnerabilityData.Exceptions);
-            }
-
-            if (allVulnerabilityData.KnownVulnerabilities != null)
+            if (allVulnerabilityData.KnownVulnerabilities is not null)
             {
                 CheckPackageVulnerabilities(allVulnerabilityData.KnownVulnerabilities);
             }
@@ -118,7 +120,8 @@ namespace NuGet.Commands.Restore.Utility
             foreach (Exception exception in exceptions.InnerExceptions)
             {
                 var messageText = string.Format(Strings.Error_VulnerabilityDataFetch, exception.Message);
-                RestoreLogMessage logMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1900, messageText);
+                RestoreLogMessage logMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1900, messageText);
+                logMessage.ProjectPath = _projectFullPath;
                 _logger.Log(logMessage);
             }
         }
@@ -174,11 +177,11 @@ namespace NuGet.Commands.Restore.Utility
 
                     foreach (var advisory in auditInfo.GraphsPerVulnerability.Keys)
                     {
-                        int severity = advisory.Severity;
-                        if (severity == 0) { Sev0DirectMatches++; }
-                        else if (severity == 1) { Sev1DirectMatches++; }
-                        else if (severity == 2) { Sev2DirectMatches++; }
-                        else if (severity == 3) { Sev3DirectMatches++; }
+                        PackageVulnerabilitySeverity severity = advisory.Severity;
+                        if (severity == PackageVulnerabilitySeverity.Low) { Sev0DirectMatches++; }
+                        else if (severity == PackageVulnerabilitySeverity.Moderate) { Sev1DirectMatches++; }
+                        else if (severity == PackageVulnerabilitySeverity.High) { Sev2DirectMatches++; }
+                        else if (severity == PackageVulnerabilitySeverity.Critical) { Sev3DirectMatches++; }
                         else { InvalidSevDirectMatches++; }
                     }
                 }
@@ -188,11 +191,11 @@ namespace NuGet.Commands.Restore.Utility
 
                     foreach (var advisory in auditInfo.GraphsPerVulnerability.Keys)
                     {
-                        int severity = advisory.Severity;
-                        if (severity == 0) { Sev0TransitiveMatches++; }
-                        else if (severity == 1) { Sev1TransitiveMatches++; }
-                        else if (severity == 2) { Sev2TransitiveMatches++; }
-                        else if (severity == 3) { Sev3TransitiveMatches++; }
+                        PackageVulnerabilitySeverity severity = advisory.Severity;
+                        if (severity == PackageVulnerabilitySeverity.Low) { Sev0TransitiveMatches++; }
+                        else if (severity == PackageVulnerabilitySeverity.Moderate) { Sev1TransitiveMatches++; }
+                        else if (severity == PackageVulnerabilitySeverity.High) { Sev2TransitiveMatches++; }
+                        else if (severity == PackageVulnerabilitySeverity.Critical) { Sev3TransitiveMatches++; }
                         else { InvalidSevTransitiveMatches++; }
                     }
                 }
@@ -232,18 +235,18 @@ namespace NuGet.Commands.Restore.Utility
             return vulnerabilities != null ? vulnerabilities.ToList() : null;
         }
 
-        private static (string severityLabel, NuGetLogCode code) GetSeverityLabelAndCode(int severity)
+        private static (string severityLabel, NuGetLogCode code) GetSeverityLabelAndCode(PackageVulnerabilitySeverity severity)
         {
             switch (severity)
             {
-                case 1:
-                    return (Strings.Vulnerability_Severity_1, NuGetLogCode.NU1901);
-                case 2:
-                    return (Strings.Vulnerability_Severity_2, NuGetLogCode.NU1902);
-                case 3:
-                    return (Strings.Vulnerability_Severity_3, NuGetLogCode.NU1903);
-                case 4:
-                    return (Strings.Vulnerability_Severity_4, NuGetLogCode.NU1904);
+                case PackageVulnerabilitySeverity.Low:
+                    return (Strings.Vulnerability_Severity_Low, NuGetLogCode.NU1901);
+                case PackageVulnerabilitySeverity.Moderate:
+                    return (Strings.Vulnerability_Severity_Moderate, NuGetLogCode.NU1902);
+                case PackageVulnerabilitySeverity.High:
+                    return (Strings.Vulnerability_Severity_High, NuGetLogCode.NU1903);
+                case PackageVulnerabilitySeverity.Critical:
+                    return (Strings.Vulnerability_Severity_Critical, NuGetLogCode.NU1904);
                 default:
                     return (Strings.Vulnerability_Severity_unknown, NuGetLogCode.NU1900);
             }
@@ -257,11 +260,11 @@ namespace NuGet.Commands.Restore.Utility
 
             foreach (RestoreTargetGraph graph in _targetGraphs)
             {
-                LibraryIdentity? currentProject = graph.Graphs.FirstOrDefault()?.Item.Key;
+                GraphItem<RemoteResolveResult>? currentProject = graph.Graphs.FirstOrDefault()?.Item;
 
-                foreach (ResolvedDependencyKey resolvedDependency in graph.ResolvedDependencies.Where(dep => dep.Child.Type == LibraryType.Package))
+                foreach (GraphItem<RemoteResolveResult>? node in graph.Flattened.Where(r => r.Key.Type == LibraryType.Package))
                 {
-                    LibraryIdentity package = resolvedDependency.Child;
+                    LibraryIdentity package = node.Key;
                     List<PackageVulnerabilityInfo>? knownVulnerabilitiesForPackage = GetKnownVulnerabilities(package.Name, package.Version, knownVulnerabilities);
 
                     if (knownVulnerabilitiesForPackage?.Count > 0)
@@ -270,7 +273,7 @@ namespace NuGet.Commands.Restore.Utility
 
                         foreach (PackageVulnerabilityInfo knownVulnerability in knownVulnerabilitiesForPackage)
                         {
-                            if (knownVulnerability.Severity < MinSeverity)
+                            if ((int)knownVulnerability.Severity < (int)MinSeverity && knownVulnerability.Severity != PackageVulnerabilitySeverity.Unknown)
                             {
                                 continue;
                             }
@@ -298,7 +301,8 @@ namespace NuGet.Commands.Restore.Utility
                                 affectedGraphs.Add(graph.TargetGraphName);
                             }
 
-                            if (!auditInfo.IsDirect && resolvedDependency.Parent == currentProject)
+                            if (!auditInfo.IsDirect &&
+                                currentProject?.Data.Dependencies.Any(d => string.Equals(d.Name, packageIdentity.Id, StringComparison.OrdinalIgnoreCase)) == true)
                             {
                                 auditInfo.IsDirect = true;
                             }
@@ -360,44 +364,45 @@ namespace NuGet.Commands.Restore.Utility
             return final;
         }
 
-        private int ParseAuditLevel()
+        private PackageVulnerabilitySeverity ParseAuditLevel()
         {
-            string? auditLevel = _restoreAuditProperties.AuditLevel?.Trim();
+            string? auditLevel = _restoreAuditProperties?.AuditLevel?.Trim();
 
             if (auditLevel == null)
             {
-                return 1;
+                return PackageVulnerabilitySeverity.Low;
             }
 
             if (string.Equals("low", auditLevel, StringComparison.OrdinalIgnoreCase))
             {
-                return 1;
+                return PackageVulnerabilitySeverity.Low;
             }
             if (string.Equals("moderate", auditLevel, StringComparison.OrdinalIgnoreCase))
             {
-                return 2;
+                return PackageVulnerabilitySeverity.Moderate;
             }
             if (string.Equals("high", auditLevel, StringComparison.OrdinalIgnoreCase))
             {
-                return 3;
+                return PackageVulnerabilitySeverity.High;
             }
             if (string.Equals("critical", auditLevel, StringComparison.OrdinalIgnoreCase))
             {
-                return 4;
+                return PackageVulnerabilitySeverity.Critical;
             }
 
             string messageText = string.Format(Strings.Error_InvalidNuGetAuditLevelValue, auditLevel, "low, moderate, high, critical");
             RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
             message.ProjectPath = _projectFullPath;
             _logger.Log(message);
-            return 1;
+            return 0;
         }
 
         internal enum NuGetAuditMode { Unknown, Direct, All }
 
+        // Enum parsing and ToString are a magnitude of times slower than a naive implementation. 
         private NuGetAuditMode ParseAuditMode()
         {
-            string? auditMode = _restoreAuditProperties.AuditMode?.Trim();
+            string? auditMode = _restoreAuditProperties?.AuditMode?.Trim();
 
             if (auditMode == null)
             {
@@ -421,15 +426,16 @@ namespace NuGet.Commands.Restore.Utility
 
         internal enum EnabledValue
         {
-            Undefined,
+            Invalid,
             ImplicitOptIn,
             ExplicitOptIn,
             ExplicitOptOut
         }
 
-        public static EnabledValue ParseEnableValue(string value)
+        // Enum parsing and ToString are a magnitude of times slower than a naive implementation.
+        public static EnabledValue ParseEnableValue(string? value, string projectFullPath, ILogger logger)
         {
-            if (string.Equals(value, "default", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(value) || string.Equals(value, "default", StringComparison.OrdinalIgnoreCase))
             {
                 return EnabledValue.ImplicitOptIn;
             }
@@ -443,14 +449,20 @@ namespace NuGet.Commands.Restore.Utility
             {
                 return EnabledValue.ExplicitOptOut;
             }
-            return EnabledValue.Undefined;
+
+            string messageText = string.Format(Strings.Error_InvalidNuGetAuditValue, value, "true, false");
+            RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+            message.ProjectPath = projectFullPath;
+            logger.Log(message);
+            return EnabledValue.Invalid;
         }
 
+        // Enum parsing and ToString are a magnitude of times slower than a naive implementation.
         internal static string GetString(EnabledValue enableAudit)
         {
             return enableAudit switch
             {
-                EnabledValue.Undefined => nameof(EnabledValue.Undefined),
+                EnabledValue.Invalid => nameof(EnabledValue.Invalid),
                 EnabledValue.ExplicitOptIn => nameof(EnabledValue.ExplicitOptIn),
                 EnabledValue.ExplicitOptOut => nameof(EnabledValue.ExplicitOptOut),
                 EnabledValue.ImplicitOptIn => nameof(EnabledValue.ImplicitOptIn),
@@ -458,6 +470,7 @@ namespace NuGet.Commands.Restore.Utility
             };
         }
 
+        // Enum parsing and ToString are a magnitude of times slower than a naive implementation.
         internal static string GetString(NuGetAuditMode auditMode)
         {
             return auditMode switch

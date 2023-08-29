@@ -303,9 +303,12 @@ namespace NuGet.Commands
                     });
                 }
 
-                AuditUtility.EnabledValue enableAudit = AuditUtility.ParseEnableValue(_request.Project.RestoreMetadata?.RestoreAuditProperties?.EnableAudit);
+                AuditUtility.EnabledValue enableAudit = AuditUtility.ParseEnableValue(
+                    _request.Project.RestoreMetadata?.RestoreAuditProperties?.EnableAudit,
+                    _request.Project.FilePath,
+                    _logger);
                 telemetry.TelemetryEvent[AuditEnabled] = AuditUtility.GetString(enableAudit);
-                if (enableAudit == AuditUtility.EnabledValue.ImplicitOptIn || enableAudit == AuditUtility.EnabledValue.ExplicitOptIn)
+                if (enableAudit != AuditUtility.EnabledValue.ExplicitOptOut)
                 {
                     await PerformAuditAsync(enableAudit, graphs, telemetry, token);
                 }
@@ -485,7 +488,7 @@ namespace NuGet.Commands
                 _logger);
             await audit.CheckPackageVulnerabilitiesAsync(token);
 
-            telemetry.TelemetryEvent[AuditLevel] = audit.MinSeverity;
+            telemetry.TelemetryEvent[AuditLevel] = (int)audit.MinSeverity;
             telemetry.TelemetryEvent[AuditMode] = AuditUtility.GetString(audit.AuditMode);
 
             if (audit.DirectPackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditDirectVulnerabilitiesPackages, audit.DirectPackagesWithAdvisory); }
@@ -515,7 +518,7 @@ namespace NuGet.Commands
                 List<TelemetryEvent> result = new List<TelemetryEvent>(packages.Count);
                 foreach (var package in packages)
                 {
-                    TelemetryEvent packageData = new TelemetryEvent(eventName: null);
+                    TelemetryEvent packageData = new TelemetryEvent(eventName: string.Empty);
                     packageData.AddPiiData("id", package);
                     result.Add(packageData);
                 }
@@ -1062,8 +1065,6 @@ namespace NuGet.Commands
                     // Don't do compat checks for the ridless graph of DotnetTooReference restore. Everything relevant will be caught in the graph with the rid
                     if (!(ProjectStyle.DotnetToolReference == project.RestoreMetadata?.ProjectStyle && string.IsNullOrEmpty(graph.RuntimeIdentifier)))
                     {
-                        await logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));
-
                         var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
 
                         var res = await checker.CheckAsync(graph, includeFlags, project);

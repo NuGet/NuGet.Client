@@ -103,9 +103,9 @@ namespace NuGet.PackageManagement.UI.Utility
             _service?.Dispose();
         }
 
-        public IReconnectingNuGetSearchService Object => _object;
+        public INuGetSearchService Object => _object;
 
-        private class ManagedNuGetSearchService : IReconnectingNuGetSearchService
+        private class ManagedNuGetSearchService : INuGetSearchService
         {
             NuGetSearchServiceReconnector _parent;
 
@@ -122,6 +122,11 @@ namespace NuGet.PackageManagement.UI.Utility
             public void Dispose()
             {
                 // do not dispose `_parent`, it's the responsibility of the object owning the instance.
+            }
+
+            public Task<IReadOnlyList<SourceRepository>> GetAllPackageFoldersAsync(IReadOnlyCollection<IProjectContextInfo> projectContextInfos, CancellationToken cancellationToken)
+            {
+                return _parent._service.GetAllPackageFoldersAsync(projectContextInfos, cancellationToken);
             }
 
             public ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetAllPackagesAsync(

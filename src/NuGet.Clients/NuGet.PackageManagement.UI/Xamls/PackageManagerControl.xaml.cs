@@ -64,7 +64,6 @@ namespace NuGet.PackageManagement.UI
         private string _settingsKey;
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
-        private bool _isTransitiveDependenciesExperimentEnabled;
 
         private PackageManagerInstalledTabData _installedTabTelemetryData;
 
@@ -146,7 +145,6 @@ namespace NuGet.PackageManagement.UI
             await IsCentralPackageManagementEnabledAsync(CancellationToken.None);
 
             NuGetExperimentationService = await ServiceLocator.GetComponentModelServiceAsync<INuGetExperimentationService>();
-            _isTransitiveDependenciesExperimentEnabled = NuGetExperimentationService.IsExperimentEnabled(ExperimentationConstants.TransitiveDependenciesInPMUI);
 
             // UI is initialized. Start the first search
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
@@ -887,15 +885,12 @@ namespace NuGet.PackageManagement.UI
 
             try
             {
-                if (_isTransitiveDependenciesExperimentEnabled)
-                {
-                    _packageList.ClearPackageLevelGrouping();
-                }
+                _packageList.ClearPackageLevelGrouping();
 
                 bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
                 var loader = await PackageItemLoader.CreateAsync(
                     Model.Context.ServiceBroker,
-                    Model.Context.ReconnectingSearchService,
+                    Model.Context.NuGetSearchService,
                     loadContext,
                     SelectedSource.PackageSources,
                     (NuGet.VisualStudio.Internal.Contracts.ItemFilter)_topPanel.Filter,
@@ -916,7 +911,7 @@ namespace NuGet.PackageManagement.UI
                 // this will wait for searchResultTask to complete instead of creating a new task
                 await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
 
-                if (_isTransitiveDependenciesExperimentEnabled && ActiveFilter == ItemFilter.Installed)
+                if (ActiveFilter == ItemFilter.Installed)
                 {
                     _packageList.AddPackageLevelGrouping();
                 }
@@ -965,7 +960,7 @@ namespace NuGet.PackageManagement.UI
             var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
             var loader = await PackageItemLoader.CreateAsync(
                 Model.Context.ServiceBroker,
-                Model.Context.ReconnectingSearchService,
+                Model.Context.NuGetSearchService,
                 loadContext,
                 SelectedSource.PackageSources,
                 NuGet.VisualStudio.Internal.Contracts.ItemFilter.UpdatesAvailable,
@@ -1036,7 +1031,7 @@ namespace NuGet.PackageManagement.UI
                 var loadContext = new PackageLoadContext(Model.IsSolution, Model.Context);
                 var loader = await PackageItemLoader.CreateAsync(
                     Model.Context.ServiceBroker,
-                    Model.Context.ReconnectingSearchService,
+                    Model.Context.NuGetSearchService,
                     loadContext,
                     SelectedSource.PackageSources,
                     NuGet.VisualStudio.Internal.Contracts.ItemFilter.Consolidate,
@@ -1184,6 +1179,8 @@ namespace NuGet.PackageManagement.UI
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
 
+            _detailModel.PackageSourceMappingViewModel.SettingsChanged();
+
             if (_dontStartNewSearch || !_initialized)
             {
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.NoOp);
@@ -1232,10 +1229,7 @@ namespace NuGet.PackageManagement.UI
                     await RunAndEmitRefreshAsync(async () =>
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        if (_isTransitiveDependenciesExperimentEnabled)
-                        {
-                            _packageList.ClearPackageLevelGrouping();
-                        }
+                        _packageList.ClearPackageLevelGrouping();
                         await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: true);
                     }, RefreshOperationSource.FilterSelectionChanged, timeSpan, sw);
                     _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
@@ -1688,7 +1682,8 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesInfo">Corresponding Package ViewModels from PM UI. Only needed for vulnerability telemetry counts. Can be <c>null</c></param>
         internal void InstallPackage(string packageId, NuGetVersion version, IEnumerable<PackageItemViewModel> packagesInfo)
         {
-            var action = UserAction.CreateInstallAction(packageId, version, Model.IsSolution, UIUtility.ToContractsItemFilter(_topPanel.Filter));
+            var sourceMappingSourceName = PackageSourceMappingUtility.GetNewSourceMappingSourceName(Model.UIController.UIContext.PackageSourceMapping, Model.UIController.ActivePackageSourceMoniker);
+            UserAction action = UserAction.CreateInstallAction(packageId, version, Model.IsSolution, UIUtility.ToContractsItemFilter(_topPanel.Filter), sourceMappingSourceName);
 
             ExecuteAction(
                 () =>

@@ -38,6 +38,31 @@ namespace NuGet.Tests.Apex
             searchPackageResult.Should().BeTrue($"searching for the package {packageId} in the {tabName} tab failed");
         }
 
+        public void AssertInstalledPackageVulnerable()
+        {
+            var vulnerablePackageResult = _uiproject.VerifyVulnerablePackageOnTopOfInstalledTab();
+            vulnerablePackageResult.Should().BeTrue();
+        }
+
+        public void AssertInstalledPackageNotVulnerable()
+        {
+            var vulnerablePackageResult = _uiproject.VerifyVulnerablePackageOnTopOfInstalledTab();
+            vulnerablePackageResult.Should().BeFalse();
+        }
+
+        public void AssertInstalledPackageDeprecated()
+        {
+            var DeprecatedPackageResult = _uiproject.VerifyDeprecatedPackageOnTopOfInstalledTab();
+            DeprecatedPackageResult.Should().BeTrue();
+        }
+
+        public void AssertInstalledPackageNotDeprecated()
+        {
+            var DeprecatedPackageResult = _uiproject.VerifyDeprecatedPackageOnTopOfInstalledTab();
+            DeprecatedPackageResult.Should().BeFalse();
+        }
+
+
         public bool InstallPackageFromUI(string packageId, string version)
         {
             Stopwatch sw = Stopwatch.StartNew();
@@ -88,6 +113,11 @@ namespace NuGet.Tests.Apex
         public void SetPackageSourceOptionToAll()
         {
             _uiproject.SetPackageSourceOptionToAll();
+        }
+
+        public void SetPackageSourceOptionToSource(string sourceName)
+        {
+            _uiproject.SetPackageSourceOptionToSource(sourceName);
         }
     }
 }
