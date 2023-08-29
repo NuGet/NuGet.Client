@@ -648,14 +648,14 @@ namespace NuGet.CommandLine.XPlat
         /// Prepares the dictionary that maps frameworks to packages top-level
         /// and transitive.
         /// </summary>
-        /// <param name="project"> Project </param>
+        /// <param name="project">Project to get the resoled versions from</param>
         /// <param name="userInputFrameworks">A list of frameworks</param>
         /// <param name="assetsFile">Assets file for all targets and libraries</param>
         /// <param name="transitive">Include transitive packages/projects in the result</param>
         /// <returns>FrameworkPackages collection with top-level and transitive package/project
         /// references for each framework, or null on error</returns>
         internal List<FrameworkPackages> GetResolvedVersions(
-            Project project, IEnumerable<string> userInputFrameworks, LockFile assetsFile, bool transitive, bool includeProjects)
+            Project project, IEnumerable<string> userInputFrameworks, LockFile assetsFile, bool transitive)
         {
             if (userInputFrameworks == null)
             {
@@ -728,7 +728,7 @@ namespace NuGet.CommandLine.XPlat
 
                 //The packages for the framework that were retrieved with GetRequestedVersions
                 var frameworkDependencies = tfmInformation.Dependencies;
-                var projPackages = GetPackageReferencesFromTargets(projectPath, tfmInformation.ToString());
+                var projectPackages = GetPackageReferencesFromTargets(projectPath, tfmInformation.ToString());
                 var topLevelPackages = new List<InstalledPackageReference>();
                 var transitivePackages = new List<InstalledPackageReference>();
 
@@ -751,9 +751,9 @@ namespace NuGet.CommandLine.XPlat
                         {
                             try
                             { // In case proj and assets file are not in sync and some refs were deleted
-                                var projectPackage = projPackages.Where(p => p.Name.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
+                                var projectPackage = projectPackages.Where(p => p.Name.Equals(topLevelPackage.Name, StringComparison.Ordinal)).First();
 
-                                // If the project is using CPM and its not using VersionOverride, get the version from Directory.Package.props file
+                                // If the project is using CPM and it's not using VersionOverride, get the version from Directory.Package.props file
                                 if (assetsFile.PackageSpec.RestoreMetadata.CentralPackageVersionsEnabled && !projectPackage.IsVersionOverride)
                                 {
                                     ProjectRootElement directoryBuildPropsRootElement = GetDirectoryBuildPropsRootElement(project);

@@ -273,8 +273,11 @@ namespace Dotnet.Integration.Test
 </Project>";
                 File.WriteAllText(Path.Combine(pathContext.SolutionRoot, ProjectName, string.Concat(ProjectName, ".csproj")), projectContent);
 
-                _fixture.RunDotnetExpectSuccess(Path.Combine(pathContext.SolutionRoot, projectA.ProjectName),
-                    $"restore {projectA.ProjectName}.csproj");
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, ProjectName);
+                var projectFilePath = Path.Combine(projectDirectory, $"{ProjectName}.csproj");
+
+                _fixture.RunDotnetExpectSuccess(projectDirectory,
+                    $"restore {projectFilePath}");
 
                 CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package");
