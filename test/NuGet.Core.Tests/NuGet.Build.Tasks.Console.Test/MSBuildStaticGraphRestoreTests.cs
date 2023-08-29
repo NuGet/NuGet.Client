@@ -111,13 +111,14 @@ namespace NuGet.Build.Tasks.Console.Test
         {
             using (var testDirectory = TestDirectory.Create())
             {
+                string packageName = "PackageA";
                 var project = new MockMSBuildProject(testDirectory)
                 {
                     Items = new Dictionary<string, IList<IMSBuildItem>>
                     {
                         ["PackageDownload"] = new List<IMSBuildItem>
                         {
-                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = version }),
+                            new MSBuildItem(packageName, new Dictionary<string, string> { ["Version"] = version }),
                         }
                     }
                 };
@@ -126,8 +127,8 @@ namespace NuGet.Build.Tasks.Console.Test
                 {
                     var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
                 };
-
-                act.Should().Throw<ArgumentException>().WithMessage($"Package 'PackageA {expected ?? version}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.");
+                string expectedMessage = string.Format(Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, expected ?? version, packageName);
+                act.Should().Throws<ArgumentException>().WithMessage(expectedMessage);
             }
         }
 

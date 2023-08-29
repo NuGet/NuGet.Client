@@ -513,6 +513,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", item.Name));
             }
+            
             if (versionString != null)
             {
                 var versions = versionString.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);

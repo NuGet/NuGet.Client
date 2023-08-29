@@ -2397,14 +2397,15 @@ namespace NuGet.SolutionRestoreManager.Test
             var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var targetFrameworks = new VsTargetFrameworkInfo2[]
             {
-                new VsTargetFrameworkInfo2("net5.0",
+                new VsTargetFrameworkInfo2(
+                    targetFrameworkMoniker: "net5.0",
                     packageReferences: emptyReferenceItems,
                     projectReferences: emptyReferenceItems,
                     packageDownloads: new List<IVsReferenceItem>
-                    { new VsReferenceItem(packageName, new VsReferenceProperties(new []
-                    {
-                        new VsReferenceProperty("Version", null)
-                    }))
+                    { 
+                        new VsReferenceItem(
+                            packageName, 
+                            new VsReferenceProperties(new []{ new VsReferenceProperty("Version", null) }))
                     },
                     frameworkReferences: emptyReferenceItems,
                     projectProperties: Array.Empty<IVsProjectProperty>())
