@@ -364,6 +364,9 @@ namespace NuGet.PackageManagement.UI
 
             await _lockService.ExecuteNuGetOperationAsync(async () =>
             {
+                int? countCreatedTopLevelSourceMappings = null;
+                int? countCreatedTransitiveSourceMappings = null;
+
                 try
                 {
                     uiService.BeginOperation();
@@ -466,7 +469,7 @@ namespace NuGet.PackageManagement.UI
                     if (!cancellationToken.IsCancellationRequested)
                     {
                         List<string>? addedPackageIds = addedPackages != null ? addedPackages.Select(pair => pair.Item1).Distinct().ToList() : null;
-                        PackageSourceMappingUtility.ConfigureNewPackageSourceMapping(userAction, addedPackageIds, sourceMappingProvider, existingPackageSourceMappingSourceItems);
+                        PackageSourceMappingUtility.ConfigureNewPackageSourceMapping(userAction, addedPackageIds, sourceMappingProvider, existingPackageSourceMappingSourceItems, out countCreatedTopLevelSourceMappings, out countCreatedTransitiveSourceMappings);
 
                         await projectManagerService.ExecuteActionsAsync(
                             actions,
@@ -559,7 +562,9 @@ namespace NuGet.PackageManagement.UI
                         removedPackages,
                         updatedPackagesOld,
                         updatedPackagesNew,
-                        frameworks);
+                        frameworks,
+                        countCreatedTopLevelSourceMappings,
+                        countCreatedTransitiveSourceMappings);
 
                     if (packageToInstallWasTransitive.HasValue)
                     {
@@ -609,7 +614,9 @@ namespace NuGet.PackageManagement.UI
             List<string>? removedPackages,
             List<Tuple<string, string>>? updatedPackagesOld,
             List<Tuple<string, string>>? updatedPackagesNew,
-            IReadOnlyCollection<string> targetFrameworks)
+            IReadOnlyCollection<string> targetFrameworks,
+            int? countCreatedTopLevelSourceMappings,
+            int? countCreatedTransitiveSourceMappings)
         {
             // log possible cancel reasons
             if (!continueAfterPreview)
@@ -714,6 +721,16 @@ namespace NuGet.PackageManagement.UI
             if (targetFrameworks?.Count > 0)
             {
                 actionTelemetryEvent["TargetFrameworks"] = string.Join(";", targetFrameworks);
+            }
+
+            if (countCreatedTopLevelSourceMappings.HasValue)
+            {
+                actionTelemetryEvent["CreatedTopLevelSourceMappingsCount"] = countCreatedTopLevelSourceMappings.Value;
+            }
+
+            if (countCreatedTransitiveSourceMappings.HasValue)
+            {
+                actionTelemetryEvent["CreatedTransitiveSourceMappingsCount"] = countCreatedTransitiveSourceMappings.Value;
             }
         }
 
