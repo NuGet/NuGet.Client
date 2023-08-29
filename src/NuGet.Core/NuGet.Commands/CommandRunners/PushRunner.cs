@@ -80,7 +80,6 @@ namespace NuGet.Commands
                 }
             }
 
-            bool allowInsecureConnections = packageSource.AllowInsecureConnections;
             await packageUpdateResource.Push(
                 packagePaths,
                 symbolSource,
@@ -91,7 +90,7 @@ namespace NuGet.Commands
                 noServiceEndpoint,
                 skipDuplicate,
                 symbolPackageUpdateResource,
-                allowInsecureConnections,
+                packageSource.AllowInsecureConnections,
                 logger);
         }
 

@@ -36,14 +36,13 @@ namespace NuGet.Commands
             }
             var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, packageSource);
 
-            bool allowInsecureConnections = packageSource.AllowInsecureConnections;
             await packageUpdateResource.Delete(
                 packageId,
                 packageVersion,
                 endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source),
                 desc => nonInteractive || confirmFunc(desc),
                 noServiceEndpoint,
-                allowInsecureConnections,
+                packageSource.AllowInsecureConnections,
                 logger);
         }
     }

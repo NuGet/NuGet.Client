@@ -2581,6 +2581,7 @@ $@"<configuration>
 
             string expectedWarning = $"WARNING: You are running the 'push' operation with an 'HTTP' source, '{pushUri}/'";
             string expectedSymbolWarning = $"WARNING: You are running the 'push' operation with an 'HTTP' source, '{pushSymbolsUri}/'";
+
             if (isHttpWarningExpected)
             {
                 Assert.Contains(expectedWarning, result.AllOutput);
