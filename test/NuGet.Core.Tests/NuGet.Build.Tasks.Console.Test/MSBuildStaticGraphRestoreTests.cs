@@ -127,7 +127,7 @@ namespace NuGet.Build.Tasks.Console.Test
                 {
                     var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
                 };
-                string expectedMessage = string.Format(Strings.Error_PackageDownload_NoVersion, expected ?? version, packageName);
+                string expectedMessage = string.Format(Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, expected ?? version, packageName);
                 act.Should().Throw<ArgumentException>().WithMessage(expectedMessage);
             }
         }
@@ -154,7 +154,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
                 };
 
-                act.Should().Throw<ArgumentException>().WithMessage(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", packageName));
+                act.Should().Throw<ArgumentException>().WithMessage(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, packageName));
             }
         }
 
