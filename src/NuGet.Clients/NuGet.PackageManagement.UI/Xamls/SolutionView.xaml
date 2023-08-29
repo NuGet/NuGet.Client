@@ -193,7 +193,6 @@
       Background="{DynamicResource {x:Static local:Brushes.ListPaneBackground}}"
       Foreground="{DynamicResource {x:Static local:Brushes.UIText}}"
       AutomationProperties.LabeledBy="{Binding ElementName=_installedVersionsCount}"
-      KeyboardNavigation.TabNavigation="Local"
       SelectionMode="Single">
 
       <ListView.Style>
