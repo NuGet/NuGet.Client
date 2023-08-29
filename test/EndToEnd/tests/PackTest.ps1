@@ -46,7 +46,7 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
     install-package Microsoft.jQuery.Unobtrusive.Ajax -version 2.0.30116.0 -ignoreDependencies
     install-package Modernizr -version 2.6.2 -ignoreDependencies
     install-package Microsoft.Web.Infrastructure -version 1.0.0 -ignoreDependencies
-    install-package Newtonsoft.Json -version 13.0.3 -ignoreDependencies
+    install-package Newtonsoft.Json -version 13.0.1 -ignoreDependencies
     install-package Microsoft.AspNet.Razor -version 2.0.20715.0 -ignoreDependencies
     install-package Microsoft.AspNet.WebPages -version 2.0.20710.0 -ignoreDependencies
     install-package Microsoft.AspNet.Mvc -version 4.0.20710.0 -ignoreDependencies
