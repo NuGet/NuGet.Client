@@ -1,4 +1,10 @@
 #nullable enable
+NuGet.Protocol.Core.Types.SourceCacheContext.NoHttpCache.set -> void
+NuGet.Protocol.Core.Types.SourceCacheContext.NoHttpCache.get -> bool
+NuGet.Protocol.Model.GetVulnerabilityInfoResult.GetVulnerabilityInfoResult(System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Model.PackageVulnerabilityInfo!>!>!>? knownVulnerabilities, System.AggregateException? exceptions) -> void
+NuGet.Protocol.Model.GetVulnerabilityInfoResult.KnownVulnerabilities.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Model.PackageVulnerabilityInfo!>!>!>?
+NuGet.Protocol.Model.PackageVulnerabilityInfo
+NuGet.Protocol.Model.PackageVulnerabilityInfo.Equals(NuGet.Protocol.Model.PackageVulnerabilityInfo? other) -> bool
 NuGet.Protocol.Model.PackageVulnerabilityInfo.PackageVulnerabilityInfo(System.Uri! url, NuGet.Protocol.PackageVulnerabilitySeverity severity, NuGet.Versioning.VersionRange! versions) -> void
 NuGet.Protocol.Model.PackageVulnerabilityInfo.Severity.get -> NuGet.Protocol.PackageVulnerabilitySeverity
 NuGet.Protocol.PackageVulnerabilitySeverity

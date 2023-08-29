@@ -287,15 +287,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Disable using the machine cache as the first package source..
-        /// </summary>
-        internal static string CommandNoCache {
-            get {
-                return ResourceManager.GetString("CommandNoCache", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Does not append &quot;api/v2/packages&quot; to the source URL..
         /// </summary>
         internal static string CommandNoServiceEndpointDescription {

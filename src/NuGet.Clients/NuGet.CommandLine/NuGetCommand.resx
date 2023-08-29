@@ -188,7 +188,9 @@ nuget push -?</value>
   <data name="InstallCommandExcludeVersionDescription" xml:space="preserve">
     <value>If set, the destination folder will contain only the package name, not the version number</value>
   </data>
-  <data name="CommandNoCache" xml:space="preserve">
+  <data name="
+
+" xml:space="preserve">
     <value>Disable using the machine cache as the first package source.</value>
   </data>
   <data name="InstallCommandOutputDirDescription" xml:space="preserve">

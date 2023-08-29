@@ -30,6 +30,11 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public bool NoCache { get; set; }
 
+        ///<summary>
+        /// If set, the global http cache will not be written to or read from.
+        /// </summary>
+        public bool NoHttpCache { get; set; }
+
         /// <summary>
         /// If set, the global disk cache will not be written to.
         /// </summary>
@@ -71,7 +76,7 @@ namespace NuGet.Protocol.Core.Types
         {
             var timeSpan = TimeSpan.Zero;
 
-            if (!NoCache)
+            if (!(NoCache || NoHttpCache))
             {
                 // Default
                 timeSpan = defaultTime;
@@ -124,7 +129,7 @@ namespace NuGet.Protocol.Core.Types
                 DirectDownload = DirectDownload,
                 IgnoreFailedSources = IgnoreFailedSources,
                 MaxAge = MaxAge,
-                NoCache = NoCache,
+                NoCache = NoCache || NoHttpCache,
                 GeneratedTempFolder = _generatedTempFolder,
                 RefreshMemoryCache = RefreshMemoryCache,
                 SessionId = SessionId

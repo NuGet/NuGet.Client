@@ -38,6 +38,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandNoCache")]
         public bool NoCache { get; set; }
 
+        [Option(typeof(NuGetCommand), "CommandNoHttpCache")]
+        public bool NoHttpCache { get; set; }
+
         [Option(typeof(NuGetCommand), "CommandDirectDownload")]
         public bool DirectDownload { get; set; }
 
@@ -124,7 +127,7 @@ namespace NuGet.CommandLine
             var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             var packageSources = new List<Configuration.PackageSource>();
 
-            if (!NoCache && !ExcludeCacheAsSource)
+            if (!(NoCache || NoHttpCache) && !ExcludeCacheAsSource)
             {
                 // Add the v3 global packages folder
                 var globalPackageFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
