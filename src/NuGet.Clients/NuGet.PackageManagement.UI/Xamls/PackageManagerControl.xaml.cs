@@ -1002,6 +1002,7 @@ namespace NuGet.PackageManagement.UI
             int deprecatedPackagesCount = 0;
             PackageCollection installedPackageCollection = null;
 
+            // Transitive dependencies are only displayed in Project-level PM UI.
             if (Model.IsSolution)
             {
                 installedPackageCollection = await loadContext.GetInstalledPackagesAsync();
