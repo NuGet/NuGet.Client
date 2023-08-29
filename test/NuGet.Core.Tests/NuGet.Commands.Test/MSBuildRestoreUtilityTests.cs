@@ -3404,11 +3404,7 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreUtility_AddPackageDownloads_NoVersion_ThrowsException()
         {
             // Arrange
-            PackageSpec spec = MSBuildRestoreUtility.GetPackageSpec(new[]
-            {
-                CreateItems(new Dictionary<string, string>())
-            });
-
+            PackageSpec spec = MSBuildRestoreUtility.GetPackageSpec(new[] { CreateItems(new Dictionary<string, string>()) });
             var packageX = new Mock<IMSBuildItem>();
             const string packageId = "x";
             packageX.Setup(p => p.GetProperty("Type")).Returns("DownloadDependency");
