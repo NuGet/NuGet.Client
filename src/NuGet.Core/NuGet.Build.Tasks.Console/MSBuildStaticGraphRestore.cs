@@ -217,9 +217,9 @@ namespace NuGet.Build.Tasks.Console
                 string versionRanges = projectItemInstance.GetProperty("Version");
                 if (string.IsNullOrEmpty(versionRanges))
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", id));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, id));
                 }
-                
+
                 foreach (var version in MSBuildStringUtility.Split(versionRanges))
                 {
                     // Validate the version range

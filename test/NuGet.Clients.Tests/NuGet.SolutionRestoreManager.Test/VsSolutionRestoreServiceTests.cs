@@ -2410,7 +2410,7 @@ namespace NuGet.SolutionRestoreManager.Test
                     frameworkReferences: emptyReferenceItems,
                     projectProperties: Array.Empty<IVsProjectProperty>())
             };
-            string expected = string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", packageName);
+            string expected = string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_NoVersion, packageName);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(() => VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, originalTargetFrameworkstr: string.Empty, msbuildProjectExtensionsPath: string.Empty));

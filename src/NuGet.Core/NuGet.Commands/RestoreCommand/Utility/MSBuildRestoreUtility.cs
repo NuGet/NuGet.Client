@@ -678,9 +678,9 @@ namespace NuGet.Commands
                 var versionString = item.GetProperty("VersionRange");
                 if (string.IsNullOrEmpty(versionString))
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", id));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, id));
                 }
-                
+
                 var versions = versionString.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (var version in versions)

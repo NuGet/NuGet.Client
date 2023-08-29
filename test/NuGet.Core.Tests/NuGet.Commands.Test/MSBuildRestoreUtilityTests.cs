@@ -3421,7 +3421,7 @@ namespace NuGet.Commands.Test
 
             // Act & Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems));
-            string expectedMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, "", packageId);
+            string expectedMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, packageId);
             Assert.Equal(expectedMessage, exception.Message);
         }
 

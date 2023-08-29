@@ -160,6 +160,10 @@
     <value>Package '{1} {0}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
     <comment>0 - the version string that's not exact. 1 - The package that does not have an exact version. Do not translate 'PackageDownload'.</comment>
   </data>
+  <data name="Error_PackageDownload_NoVersion" xml:space="preserve">
+    <value>Package '{0}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
+    <comment>0 - The package that does not have an exact version. Do not translate 'PackageDownload'.</comment>
+  </data>
   <data name="CreatedDependencyGraphSpec" xml:space="preserve">
     <value>Created DependencyGraphSpec in {0:D2}ms.</value>
   </data>
