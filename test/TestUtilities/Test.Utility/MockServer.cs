@@ -64,8 +64,6 @@ namespace Test.Utility
         /// </summary>
         public void Start()
         {
-            // Try creating and starting
-
             int attempts = 1;
             do
             {
