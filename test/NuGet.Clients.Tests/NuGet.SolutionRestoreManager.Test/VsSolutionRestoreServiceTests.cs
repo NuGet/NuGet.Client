@@ -2405,7 +2405,7 @@ namespace NuGet.SolutionRestoreManager.Test
                     { 
                         new VsReferenceItem(
                             packageName, 
-                            new VsReferenceProperties(new []{ new VsReferenceProperty("Version", null) }))
+                            new VsReferenceProperties(new [] { new VsReferenceProperty("Version", null) }))
                     },
                     frameworkReferences: emptyReferenceItems,
                     projectProperties: Array.Empty<IVsProjectProperty>())
