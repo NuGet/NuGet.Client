@@ -145,6 +145,11 @@ namespace NuGet.Build.Tasks
 
             EmbedInBinlog = GetFilesToEmbedInBinlog(dgFile);
 
+            if (RestoreNoCache)
+            {
+                log.LogWarning(Strings.Log_RestoreNoCacheInformation);
+            }
+
             return await BuildTasksUtility.RestoreAsync(
                 dependencyGraphSpec: dgFile,
                 interactive: Interactive,

@@ -188,6 +188,15 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Keep in mind that RestoreNoCache is solely for disabling Http Caching, not the global packages folder. For the same functionality with a more descriptive name, you can use RestoreNoHttpCache instead..
+        /// </summary>
+        public static string Log_RestoreNoCacheInformation {
+            get {
+                return ResourceManager.GetString("Log_RestoreNoCacheInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Running command: &apos;{0}&apos; {1}.
         /// </summary>
         public static string Log_RunningStaticGraphRestoreCommand {
