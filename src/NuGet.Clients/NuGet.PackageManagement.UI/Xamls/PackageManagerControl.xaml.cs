@@ -1621,17 +1621,20 @@ namespace NuGet.PackageManagement.UI
             List<int> topLevelVulnerablePackagesMaxSeverities = new();
             int transitiveVulnerablePackagesCount = 0;
             List<int> transitiveVulnerablePackagesMaxSeverities = new();
-            foreach (PackageItemViewModel package in packages)
+            if (packages != null)
             {
-                if (package.PackageLevel == PackageLevel.TopLevel && package.IsPackageVulnerable)
+                foreach (PackageItemViewModel package in packages)
                 {
-                    topLevelVulnerablePackagesCount++;
-                    topLevelVulnerablePackagesMaxSeverities.Add(package.VulnerabilityMaxSeverity);
-                }
-                else if (package.PackageLevel == PackageLevel.Transitive && package.IsPackageVulnerable)
-                {
-                    transitiveVulnerablePackagesCount++;
-                    transitiveVulnerablePackagesMaxSeverities.Add(package.VulnerabilityMaxSeverity);
+                    if (package.PackageLevel == PackageLevel.TopLevel && package.IsPackageVulnerable)
+                    {
+                        topLevelVulnerablePackagesCount++;
+                        topLevelVulnerablePackagesMaxSeverities.Add(package.VulnerabilityMaxSeverity);
+                    }
+                    else if (package.PackageLevel == PackageLevel.Transitive && package.IsPackageVulnerable)
+                    {
+                        transitiveVulnerablePackagesCount++;
+                        transitiveVulnerablePackagesMaxSeverities.Add(package.VulnerabilityMaxSeverity);
+                    }
                 }
             }
 
