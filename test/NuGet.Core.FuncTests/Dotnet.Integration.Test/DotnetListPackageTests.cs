@@ -242,7 +242,7 @@ namespace Dotnet.Integration.Test
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net7.0");
 
-                var packageX = XPlatTestUtils.CreatePackage("X", "2.0.0");
+                var packageX = XPlatTestUtils.CreatePackage("X", "1.0.0");
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -256,7 +256,7 @@ namespace Dotnet.Integration.Test
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     </PropertyGroup>
     <ItemGroup>
-        <GlobalPackageReference Include=""X"" Version=""1.0.0"" />
+        <GlobalPackageReference Include=""X"" Version=""0.1.0"" />
     </ItemGroup>
 </Project>";
 
@@ -282,9 +282,9 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package");
 
-                // Assert Requested version is 1.0.0, but the resolved version is 2.0.0
+                // Assert Requested version is 0.1.0, but the resolved version is 1.0.0
+                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "0.1.0"));
                 Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "1.0.0"));
-                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "2.0.0"));
             }
         }
 

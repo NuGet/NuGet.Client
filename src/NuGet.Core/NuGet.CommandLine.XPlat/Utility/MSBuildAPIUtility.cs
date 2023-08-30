@@ -756,13 +756,23 @@ namespace NuGet.CommandLine.XPlat
                                 // If the project is using CPM and it's not using VersionOverride, get the version from Directory.Package.props file
                                 if (assetsFile.PackageSpec.RestoreMetadata.CentralPackageVersionsEnabled && !projectPackage.IsVersionOverride)
                                 {
-                                    ProjectRootElement directoryBuildPropsRootElement = GetDirectoryBuildPropsRootElement(project);
-                                    ProjectItemElement packageInCPM = directoryBuildPropsRootElement.Items.Where(i => i.ItemType == PACKAGE_VERSION_TYPE_TAG && i.Include.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-
-                                    installedPackage = new InstalledPackageReference(topLevelPackage.Name)
+                                    if (topLevelPackage.VersionOverride?.OriginalString is not null)
                                     {
-                                        OriginalRequestedVersion = topLevelPackage.VersionOverride?.OriginalString ?? packageInCPM.Metadata.FirstOrDefault(i => i.Name.Equals("Version", StringComparison.OrdinalIgnoreCase)).Value,
-                                    };
+                                        installedPackage = new InstalledPackageReference(topLevelPackage.Name)
+                                        {
+                                            OriginalRequestedVersion = topLevelPackage.VersionOverride?.OriginalString,
+                                        };
+                                    }
+                                    else
+                                    {
+                                        ProjectRootElement directoryBuildPropsRootElement = GetDirectoryBuildPropsRootElement(project);
+                                        ProjectItemElement packageInCPM = directoryBuildPropsRootElement.Items.Where(i => (i.ItemType == PACKAGE_VERSION_TYPE_TAG || i.ItemType.Equals("GlobalPackageReference")) && i.Include.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+                                        installedPackage = new InstalledPackageReference(topLevelPackage.Name)
+                                        {
+                                            OriginalRequestedVersion = packageInCPM.Metadata.FirstOrDefault(i => i.Name.Equals("Version", StringComparison.OrdinalIgnoreCase)).Value,
+                                        };
+                                    }
                                 }
                                 else
                                 {
