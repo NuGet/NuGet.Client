@@ -66,7 +66,7 @@ namespace NuGet.ContentModel.Infrastructure
         
         //This method is tested by the unit test cases in test/NuGet.Core.UnitTests/NuGet.Packaging.Test/ContentModelTests
         public ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
-        { 
+        {
             ContentItem item = null;
             var startIndex = 0;
             foreach (var segment in _segments)
