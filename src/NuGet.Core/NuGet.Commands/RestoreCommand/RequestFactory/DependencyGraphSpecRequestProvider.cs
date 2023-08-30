@@ -211,7 +211,7 @@ namespace NuGet.Commands
             // Standard properties
             restoreArgs.ApplyStandardProperties(request);
 
-            // Apply AllowInsecureConnections attribute
+            // Apply AllowInsecureConnections attribute to RestoreRequest.Project.RestoreMetadata.Sources
             restoreArgs.ApplyAllowInsecureConnectionsAttribute(sources, request);
 
             // Add project references

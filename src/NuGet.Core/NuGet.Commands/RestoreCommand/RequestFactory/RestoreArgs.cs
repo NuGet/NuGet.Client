@@ -243,20 +243,18 @@ namespace NuGet.Commands
             request.RestoreForceEvaluate = RestoreForceEvaluate;
         }
 
-        // Update AllowInsecureConnections in RestoreRequest.Project.RestoreMetadata.Sources based on settings, as the original value is from output.dg file which doesn't have additional attributes for source.
         internal void ApplyAllowInsecureConnectionsAttribute(List<SourceRepository> sourceRepositoryList, RestoreRequest request)
         {
             foreach (var source in request.Project.RestoreMetadata.Sources)
             {
-                if (source.IsEnabled)
+                foreach (var sourceRepository in sourceRepositoryList)
                 {
-                    foreach(var sourceRepository in sourceRepositoryList)
+                    if (source.Source.Equals(sourceRepository.PackageSource.Source, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (source.Source.Equals(sourceRepository.PackageSource.Source, StringComparison.OrdinalIgnoreCase))
-                        {
-                            source.AllowInsecureConnections = sourceRepository.PackageSource.AllowInsecureConnections;
-                            break;
-                        }
+                        // Update AllowInsecureConnections in RestoreRequest.Project.RestoreMetadata.Sources based on settings.
+                        // The original value is from output.dg file which doesn't have additional attributes for source, so the original AllowInsecureConnections is always the default value.
+                        source.AllowInsecureConnections = sourceRepository.PackageSource.AllowInsecureConnections;
+                        break;
                     }
                 }
             }
