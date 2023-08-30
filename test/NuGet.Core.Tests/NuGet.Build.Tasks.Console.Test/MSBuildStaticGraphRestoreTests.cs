@@ -127,7 +127,7 @@ namespace NuGet.Build.Tasks.Console.Test
                 {
                     var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
                 };
-                string expectedMessage = string.Format(Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, expected ?? version, packageName);
+                string expectedMessage = string.Format(Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, packageName, expected ?? version);
                 act.Should().Throw<ArgumentException>().WithMessage(expectedMessage);
             }
         }

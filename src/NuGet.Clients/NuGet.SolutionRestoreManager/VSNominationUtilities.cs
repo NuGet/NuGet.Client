@@ -435,7 +435,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString, id));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_OnlyExactVersionsAreAllowed, id, versionRange.OriginalString));
                 }
 
                 var downloadDependency = new DownloadDependency(id, versionRange);
