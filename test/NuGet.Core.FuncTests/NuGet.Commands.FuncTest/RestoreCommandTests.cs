@@ -4089,22 +4089,21 @@ namespace NuGet.Commands.FuncTest
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             result.LockFile.Libraries.Should().HaveCount(0);
-            result.LockFile.LogMessages.Should().HaveCount(1);
-            IAssetsLogMessage logMessage = result.LockFile.LogMessages[0];
 
             string expectedWarning = "You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.";
             string unExpectedWarning = "You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.";
 
-            Assert.DoesNotContain(unExpectedWarning, logMessage.Message);
             if (isHttpWarningExpected)
             {
+                result.LockFile.LogMessages.Should().HaveCount(1);
+                IAssetsLogMessage logMessage = result.LockFile.LogMessages[0];
                 logMessage.Code.Should().Be(NuGetLogCode.NU1803);
                 Assert.Contains(expectedWarning, logMessage.Message);
+                Assert.DoesNotContain(unExpectedWarning, logMessage.Message);
             }
             else
             {
-                Assert.Equal(0, logger.WarningMessages.Count);
-                Assert.DoesNotContain(expectedWarning, logMessage.Message);
+                result.LockFile.LogMessages.Should().HaveCount(0);
             }
         }
 
