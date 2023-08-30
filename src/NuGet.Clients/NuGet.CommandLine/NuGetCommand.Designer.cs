@@ -296,6 +296,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disable using Http cache as the package source..
+        /// </summary>
+        internal static string CommandNoHttpCache {
+            get {
+                return ResourceManager.GetString("CommandNoHttpCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Does not append &quot;api/v2/packages&quot; to the source URL..
         /// </summary>
         internal static string CommandNoServiceEndpointDescription {
