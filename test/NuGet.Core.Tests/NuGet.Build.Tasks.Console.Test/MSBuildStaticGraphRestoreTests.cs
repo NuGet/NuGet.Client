@@ -149,12 +149,12 @@ namespace NuGet.Build.Tasks.Console.Test
                     }
                 };
 
-                Action act = () =>
+                Action action = () =>
                 {
                     var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
                 };
 
-                act.Should().Throw<ArgumentException>().WithMessage(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, packageName));
+                action.Should().Throw<ArgumentException>().WithMessage(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, packageName));
             }
         }
 
