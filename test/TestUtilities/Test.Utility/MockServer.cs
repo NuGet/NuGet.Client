@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -502,10 +503,18 @@ namespace Test.Utility
                 // Closing the http listener
                 Stop();
 
+                try
+                {
+                    (_listener as IDisposable)?.Dispose();
+                }
+                catch (SocketException)
+                {
+                }
+
+                _listener = null;
+
                 // Disposing the PortReserver
                 PortReserver.Dispose();
-
-                (_listener as IDisposable)?.Dispose();
 
                 _disposed = true;
             }
