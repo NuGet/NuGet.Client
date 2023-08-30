@@ -243,7 +243,7 @@ namespace NuGet.Commands
                 {
                     foreach (var source in _request.Project.RestoreMetadata.Sources)
                     {
-                        if (source.IsHttp && !source.IsHttps)
+                        if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
                         {
                             await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
                                 string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));

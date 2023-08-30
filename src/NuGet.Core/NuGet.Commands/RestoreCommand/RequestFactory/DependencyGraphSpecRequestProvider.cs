@@ -211,6 +211,9 @@ namespace NuGet.Commands
             // Standard properties
             restoreArgs.ApplyStandardProperties(request);
 
+            // Apply AllowInsecureConnections attribute
+            restoreArgs.ApplyAllowInsecureConnectionsAttribute(sources, request);
+
             // Add project references
             request.ExternalProjects = projectReferenceClosure.ToList();
 

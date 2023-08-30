@@ -4065,15 +4065,17 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
-        public async Task Restore_WithHttpSource_Warns()
+        [Theory]
+        [InlineData("true", false)]
+        [InlineData("false", true)]
+        public async Task Restore_WithHttpSource_Warns(string allowInsecureConnections, bool isHttpWarningExpected)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
             var packageA = new SimpleTestPackageContext("a", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
-            pathContext.Settings.AddSource("http-feed", "http://api.source/index.json");
-            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json");
+            pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
+            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
 
             var logger = new TestLogger();
             ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
@@ -4089,8 +4091,21 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Libraries.Should().HaveCount(0);
             result.LockFile.LogMessages.Should().HaveCount(1);
             IAssetsLogMessage logMessage = result.LockFile.LogMessages[0];
-            logMessage.Code.Should().Be(NuGetLogCode.NU1803);
-            logMessage.Message.Should().Be("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.");
+
+            string expectedWarning = "You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.";
+            string unExpectedWarning = "You are running the 'restore' operation with an 'HTTP' source, 'https://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.";
+
+            Assert.DoesNotContain(unExpectedWarning, logMessage.Message);
+            if (isHttpWarningExpected)
+            {
+                logMessage.Code.Should().Be(NuGetLogCode.NU1803);
+                Assert.Contains(expectedWarning, logMessage.Message);
+            }
+            else
+            {
+                Assert.Equal(0, logger.WarningMessages.Count);
+                Assert.DoesNotContain(expectedWarning, logMessage.Message);
+            }
         }
 
         [Fact]
