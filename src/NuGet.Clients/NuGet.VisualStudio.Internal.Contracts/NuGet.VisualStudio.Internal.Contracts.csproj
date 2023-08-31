@@ -4,10 +4,8 @@
     <PackProject>false</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
-    <RootNamespace>NuGet.VisualStudio.Internal.Contracts</RootNamespace>
+    <RootNamespace>NuGeVisualStudio.Internal.Contractst.</RootNamespace>
     <Nullable>enable</Nullable>
-    <!-- This project defines the over-the-wire protocol for Codespaces, hence we need to be backwards compatible, even if the project isn't shared as a nupkg. -->
-    <UsePublicApiAnalyzer>true</UsePublicApiAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
