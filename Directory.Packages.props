@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
-    <NewtonsoftJsonPackageVersion Condition="'$(NewtonsoftJsonPackageVersion)' == ''">13.0.1</NewtonsoftJsonPackageVersion>
+    <NewtonsoftJsonPackageVersion Condition="'$(NewtonsoftJsonPackageVersion)' == ''">13.0.3</NewtonsoftJsonPackageVersion>
     <SystemPackagesVersion Condition="'$(SystemPackagesVersion)' == ''">4.3.0</SystemPackagesVersion>
     <VSFrameworkVersion Condition="'$(VSFrameworkVersion)' == ''">17.4.33103.184</VSFrameworkVersion>
     <VSServicesVersion Condition="'$(VSServicesVersion)' == ''">16.153.0</VSServicesVersion>
