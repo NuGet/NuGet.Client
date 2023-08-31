@@ -3405,12 +3405,12 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             PackageSpec spec = MSBuildRestoreUtility.GetPackageSpec(new[] { CreateItems(new Dictionary<string, string>()) });
-            var packageX = new Mock<IMSBuildItem>();
+            Mock<IMSBuildItem> packageX = new Mock<IMSBuildItem>();
             const string packageId = "x";
             packageX.Setup(p => p.GetProperty("Type")).Returns("DownloadDependency");
             packageX.Setup(p => p.GetProperty("Id")).Returns(packageId);
 
-            var msbuildItems = new[]
+            IMSBuildItem[] msbuildItems = new[]
             {
                 packageX.Object
             };

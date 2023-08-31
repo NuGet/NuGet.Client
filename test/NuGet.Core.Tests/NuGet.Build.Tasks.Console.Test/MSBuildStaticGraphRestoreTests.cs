@@ -136,26 +136,24 @@ namespace NuGet.Build.Tasks.Console.Test
         public void GetPackageDownloads_NoVersion_ThrowsException()
         {
             string packageName = "PackageA";
-            using (var testDirectory = TestDirectory.Create())
+            using var testDirectory = TestDirectory.Create();
+            var project = new MockMSBuildProject(testDirectory)
             {
-                var project = new MockMSBuildProject(testDirectory)
+                Items = new Dictionary<string, IList<IMSBuildItem>>
                 {
-                    Items = new Dictionary<string, IList<IMSBuildItem>>
-                    {
-                        ["PackageDownload"] = new List<IMSBuildItem>
+                    ["PackageDownload"] = new List<IMSBuildItem>
                         {
                             new MSBuildItem(packageName, new Dictionary<string, string> { ["Version"] = null }),
                         }
-                    }
-                };
+                }
+            };
 
-                Action action = () =>
-                {
-                    var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
-                };
+            Action action = () =>
+            {
+                var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
+            };
 
-                action.Should().Throw<ArgumentException>().WithMessage(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, packageName));
-            }
+            action.Should().Throw<ArgumentException>().WithMessage(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, packageName));
         }
 
         [Fact]
