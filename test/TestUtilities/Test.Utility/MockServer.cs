@@ -360,6 +360,11 @@ namespace Test.Utility
             {
                 try
                 {
+                    if (_listener == null)
+                    {
+                        return;
+                    }
+
                     var context = _listener.GetContext();
 
                     GenerateResponse(context);
@@ -505,7 +510,7 @@ namespace Test.Utility
 
                 try
                 {
-                    (_listener as IDisposable)?.Dispose();
+                    _listener?.Close();
                 }
                 catch (SocketException)
                 {
