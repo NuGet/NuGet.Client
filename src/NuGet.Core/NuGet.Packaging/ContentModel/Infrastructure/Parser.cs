@@ -63,8 +63,8 @@ namespace NuGet.ContentModel.Infrastructure
                 scanIndex = endToken + 1;
             }
         }
-        
-        //This method is tested by the unit test cases in test/NuGet.Core.UnitTests/NuGet.Packaging.Test/ContentModelTests
+
+
         public ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
         {
             ContentItem item = null;

@@ -10,6 +10,9 @@ using Xunit;
 
 namespace NuGet.Client.Test
 {
+    /// <summary>
+    /// These unit test cases cover <see cref="ContentModel.Infrastructure.PatternExpression.Match(string, IReadOnlyDictionary{string, ContentPropertyDefinition})"/>
+    /// </summary>
     public class ContentModelTests
     {
         [Fact]
