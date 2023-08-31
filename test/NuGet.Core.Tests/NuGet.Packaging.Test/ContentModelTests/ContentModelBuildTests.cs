@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.RuntimeModel;
@@ -12,6 +11,9 @@ using Xunit;
 
 namespace NuGet.Client.Test
 {
+    /// <summary>
+    /// These unit test cases cover <see cref="NuGet.ContentModel.Infrastructure.PatternExpression.Match(string, IReadOnlyDictionary{string, ContentPropertyDefinition})"/>
+    /// </summary>
     public class ContentModelBuildTests
     {
         [Fact]
