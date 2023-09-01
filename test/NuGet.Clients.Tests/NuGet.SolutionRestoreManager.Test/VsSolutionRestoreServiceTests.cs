@@ -2402,9 +2402,9 @@ namespace NuGet.SolutionRestoreManager.Test
                     packageReferences: emptyReferenceItems,
                     projectReferences: emptyReferenceItems,
                     packageDownloads: new List<IVsReferenceItem>
-                    { 
+                    {
                         new VsReferenceItem(
-                            packageName, 
+                            packageName,
                             new VsReferenceProperties(new [] { new VsReferenceProperty("Version", null) }))
                     },
                     frameworkReferences: emptyReferenceItems,
@@ -2412,7 +2412,7 @@ namespace NuGet.SolutionRestoreManager.Test
             };
 
             string expected = string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_NoVersion, packageName);
-            
+
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(() => VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, originalTargetFrameworkstr: string.Empty, msbuildProjectExtensionsPath: string.Empty));
             Assert.Equal(expected, exception.Message);
