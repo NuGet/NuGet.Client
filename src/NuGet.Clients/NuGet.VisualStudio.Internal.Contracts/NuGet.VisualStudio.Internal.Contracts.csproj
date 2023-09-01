@@ -4,7 +4,7 @@
     <PackProject>false</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
-    <RootNamespace>NuGeVisualStudio.Internal.Contractst.</RootNamespace>
+    <RootNamespace>NuGet.VisualStudio.Internal.Contracts</RootNamespace>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
