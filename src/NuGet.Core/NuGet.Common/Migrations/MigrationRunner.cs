@@ -82,7 +82,7 @@ namespace NuGet.Common.Migrations
                     ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "NuGet", "Migrations")
                     : Path.Combine(XdgDataHome, "NuGet", "Migrations");
             }
-            Directory.CreateDirectory(migrationsDirectory);
+
             return migrationsDirectory;
         }
     }
