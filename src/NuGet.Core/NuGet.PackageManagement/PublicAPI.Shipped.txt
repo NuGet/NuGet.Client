@@ -143,10 +143,6 @@ NuGet.PackageManagement.LogUtility
 ~NuGet.PackageManagement.NuGetEventArgs<T>
 ~NuGet.PackageManagement.NuGetEventArgs<T>.Arg.get -> T
 ~NuGet.PackageManagement.NuGetEventArgs<T>.NuGetEventArgs(T arg) -> void
-NuGet.PackageManagement.NuGetOperationType
-NuGet.PackageManagement.NuGetOperationType.Install = 0 -> NuGet.PackageManagement.NuGetOperationType
-NuGet.PackageManagement.NuGetOperationType.Uninstall = 2 -> NuGet.PackageManagement.NuGetOperationType
-NuGet.PackageManagement.NuGetOperationType.Update = 1 -> NuGet.PackageManagement.NuGetOperationType
 NuGet.PackageManagement.NuGetPackageManager
 NuGet.PackageManagement.NuGetPackageManager.BatchEnd -> System.EventHandler<NuGet.PackageManagement.PackageProjectEventArgs>
 NuGet.PackageManagement.NuGetPackageManager.BatchStart -> System.EventHandler<NuGet.PackageManagement.PackageProjectEventArgs>
