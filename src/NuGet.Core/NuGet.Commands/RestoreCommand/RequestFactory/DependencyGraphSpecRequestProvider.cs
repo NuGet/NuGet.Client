@@ -168,8 +168,6 @@ namespace NuGet.Commands
             var globalPath = GetPackagesPath(restoreArgs, projectPackageSpec);
             var settings = _settings ?? Settings.LoadImmutableSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths, settingsLoadingContext);
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
-            //Update the PackageSource to get the attributes from settings(e.g. AllowInsecureConnections). So that the RestoreRequest to be created will have the updated RestoreRequest.Project.RestoreMetadata.Sources.
-            project.PackageSpec.RestoreMetadata.Sources = sources.Select(s => s.PackageSource).ToList();
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
             var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
             var updateLastAccess = SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings);
@@ -215,6 +213,9 @@ namespace NuGet.Commands
 
             // Add project references
             request.ExternalProjects = projectReferenceClosure.ToList();
+
+            //Update the RestoreRequest.Project.RestoreMetadata.Sources to get the attributes from settings(e.g. AllowInsecureConnections).
+            request.Project.RestoreMetadata.Sources = sources.Select(s => s.PackageSource).ToList();
 
             // The lock file is loaded later since this is an expensive operation
             var summaryRequest = new RestoreSummaryRequest(
