@@ -14,6 +14,12 @@ namespace NuGet.Common.Migrations
         public static void Run()
         {
             string migrationsDirectory = GetMigrationsDirectory();
+
+            Run(migrationsDirectory);
+        }
+
+        internal static void Run(string migrationsDirectory)
+        {
             var expectedMigrationFilename = Path.Combine(migrationsDirectory, MaxMigrationFilename);
 
             if (!File.Exists(expectedMigrationFilename))
@@ -26,6 +32,8 @@ namespace NuGet.Common.Migrations
                     {
                         try
                         {
+                            Directory.CreateDirectory(migrationsDirectory);
+
                             // Only run migrations that have not already been run
                             if (!File.Exists(expectedMigrationFilename))
                             {
