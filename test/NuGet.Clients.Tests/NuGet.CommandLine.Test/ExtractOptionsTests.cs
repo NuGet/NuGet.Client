@@ -30,7 +30,7 @@ namespace NuGet.CommandLine.Test
         {
             //setup
             RestoreCommand command = new RestoreCommand();
-            List<string> args = new() { "-NoCache" };
+            List<string> args = new() { };
             ICommandManager manager = new CommandManager();
             CommandLineParser commandLineParser = new CommandLineParser(manager);
 

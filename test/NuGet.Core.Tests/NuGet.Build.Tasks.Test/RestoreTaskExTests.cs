@@ -63,7 +63,7 @@ namespace NuGet.Build.Tasks.Test
 #if IS_CORECLR
                     Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
 #endif
-                    "Recursive=True;CleanupAssetsForUnsupportedProjects=True;DisableParallel=True;Force=True;ForceEvaluate=True;HideWarningsAndErrors=True;IgnoreFailedSources=True;Interactive=True;NoCache=True;RestorePackagesConfig=True",
+                    "Recursive=True;CleanupAssetsForUnsupportedProjects=True;DisableParallel=True;Force=True;ForceEvaluate=True;HideWarningsAndErrors=True;IgnoreFailedSources=True;Interactive=True;NoCache=True;NoHttpCache=True;RestorePackagesConfig=True",
 #if IS_CORECLR
                     Path.Combine(msbuildBinPath, "MSBuild.dll"),
 #else
