@@ -214,14 +214,20 @@ namespace NuGet.Build.Tasks.Console
                 string id = projectItemInstance.Identity;
 
                 // PackageDownload items can contain multiple versions
-                foreach (var version in MSBuildStringUtility.Split(projectItemInstance.GetProperty("Version")))
+                string versionRanges = projectItemInstance.GetProperty("Version");
+                if (string.IsNullOrEmpty(versionRanges))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, id));
+                }
+
+                foreach (var version in MSBuildStringUtility.Split(versionRanges))
                 {
                     // Validate the version range
                     VersionRange versionRange = !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : VersionRange.All;
 
                     if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
                     {
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, id, versionRange.OriginalString));
                     }
 
                     yield return new DownloadDependency(id, versionRange);

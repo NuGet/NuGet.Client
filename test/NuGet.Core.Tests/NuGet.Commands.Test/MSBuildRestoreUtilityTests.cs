@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -3397,6 +3398,27 @@ namespace NuGet.Commands.Test
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems));
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_AddPackageDownloads_NoVersion_ThrowsException()
+        {
+            // Arrange
+            PackageSpec spec = MSBuildRestoreUtility.GetPackageSpec(new[] { CreateItems(new Dictionary<string, string>()) });
+            Mock<IMSBuildItem> packageX = new Mock<IMSBuildItem>();
+            const string packageId = "x";
+            packageX.Setup(p => p.GetProperty("Type")).Returns("DownloadDependency");
+            packageX.Setup(p => p.GetProperty("Id")).Returns(packageId);
+
+            IMSBuildItem[] msbuildItems = new[]
+            {
+                packageX.Object
+            };
+
+            // Act & Assert
+            ArgumentException exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems));
+            string expectedMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, packageId);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
