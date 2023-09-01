@@ -70,20 +70,16 @@ namespace NuGet.Common.Migrations
 
         internal static string GetMigrationsDirectory()
         {
-            string migrationsDirectory;
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                migrationsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NuGet", "Migrations");
-            }
-            else
-            {
-                var XdgDataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
-                migrationsDirectory = string.IsNullOrEmpty(XdgDataHome)
-                    ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "NuGet", "Migrations")
-                    : Path.Combine(XdgDataHome, "NuGet", "Migrations");
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NuGet", "Migrations");
             }
 
-            return migrationsDirectory;
+            var XdgDataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+
+            return string.IsNullOrEmpty(XdgDataHome)
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "NuGet", "Migrations")
+                : Path.Combine(XdgDataHome, "NuGet", "Migrations");
         }
     }
 }
