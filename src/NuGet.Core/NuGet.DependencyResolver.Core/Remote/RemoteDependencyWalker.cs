@@ -36,7 +36,8 @@ namespace NuGet.DependencyResolver
                 predicate: _ => (recursive ? DependencyResult.Acceptable : DependencyResult.Eclipsed, null),
                 outerEdge: null,
                 transitiveCentralPackageVersions: transitiveCentralPackageVersions,
-                hasParentNodes: false);
+                hasParentNodes: false,
+                projectDependencies: null);
 
             // do not calculate the hashset of the direct dependencies for cases when there are not any elements in the transitiveCentralPackageVersions queue
             var indexedDirectDependenciesKeyNames = new Lazy<HashSet<string>>(
@@ -72,7 +73,8 @@ namespace NuGet.DependencyResolver
             Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate,
             GraphEdge<RemoteResolveResult> outerEdge,
             TransitiveCentralPackageVersions transitiveCentralPackageVersions,
-            bool hasParentNodes)
+            bool hasParentNodes,
+            LibraryDependency[] projectDependencies)
         {
             HashSet<LibraryDependency> runtimeDependencies = null;
             List<Task<GraphNode<RemoteResolveResult>>> tasks = null;
@@ -119,7 +121,8 @@ namespace NuGet.DependencyResolver
                 framework,
                 runtimeName,
                 _context,
-                CancellationToken.None);
+                CancellationToken.None,
+                projectDependencies);
 
             bool hasInnerNodes = (item.Data.Dependencies.Count + (runtimeDependencies == null ? 0 : runtimeDependencies.Count)) > 0;
             GraphNode<RemoteResolveResult> node = new GraphNode<RemoteResolveResult>(libraryRange, hasInnerNodes, hasParentNodes)
@@ -128,6 +131,14 @@ namespace NuGet.DependencyResolver
             };
 
             Debug.Assert(node.Item != null, "FindLibraryCached should return an unresolved item instead of null");
+
+            // Store the nearest project dependencies
+            if (libraryRange.TypeConstraintAllowsAnyOf(LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject))
+            {
+                projectDependencies = item.Data.Dependencies
+                    .Where(dep => dep.LibraryRange.TypeConstraintAllowsAnyOf(LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject))
+                    .ToArray();
+            }
 
             // Merge in runtime dependencies
             if (runtimeDependencies?.Count > 0)
@@ -188,7 +199,8 @@ namespace NuGet.DependencyResolver
                             predicate,
                             innerEdge,
                             transitiveCentralPackageVersions,
-                            hasParentNodes: false));
+                            hasParentNodes: false,
+                            projectDependencies));
                     }
                     else
                     {
@@ -473,7 +485,8 @@ namespace NuGet.DependencyResolver
                     predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode, centralPackageVersionDependency),
                     outerEdge: null,
                     transitiveCentralPackageVersions: transitiveCentralPackageVersions,
-                    hasParentNodes: true);
+                    hasParentNodes: true,
+                    projectDependencies: null);
 
             node.OuterNode = rootNode;
             node.Item.IsCentralTransitive = true;

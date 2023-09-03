@@ -24,14 +24,15 @@ namespace NuGet.DependencyResolver
             NuGetFramework framework,
             string runtimeIdentifier,
             RemoteWalkContext context,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            LibraryDependency[] projectDependencies = null)
         {
             var key = new LibraryRangeCacheKey(libraryRange, framework);
 
             if (cache.TryGetValue(key, out var graphItem))
                 return graphItem;
 
-            graphItem = cache.GetOrAdd(key, FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken));
+            graphItem = cache.GetOrAdd(key, FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken, projectDependencies));
 
             return graphItem;
         }
@@ -41,7 +42,8 @@ namespace NuGet.DependencyResolver
             NuGetFramework framework,
             string runtimeIdentifier,
             RemoteWalkContext context,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            LibraryDependency[] projectDependencies = null)
         {
             GraphItem<RemoteResolveResult> graphItem = null;
             var currentCacheContext = context.CacheContext;
@@ -69,7 +71,8 @@ namespace NuGet.DependencyResolver
                     context.LockFileLibraries,
                     currentCacheContext,
                     context.Logger,
-                    cancellationToken);
+                    cancellationToken,
+                    projectDependencies);
 
                 if (match == null)
                 {
@@ -156,13 +159,31 @@ namespace NuGet.DependencyResolver
             IDictionary<LockFileCacheKey, IList<LibraryIdentity>> lockFileLibraries,
             SourceCacheContext cacheContext,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            LibraryDependency[] projectDependencies = null)
         {
-            var projectMatch = await FindProjectMatchAsync(libraryRange, framework, projectProviders, cancellationToken);
-
-            if (projectMatch != null)
+            bool hasProjectReference = true;
+            if (projectDependencies is not null)
             {
-                return projectMatch;
+                hasProjectReference = false;
+                foreach (LibraryDependency projectDependency in projectDependencies)
+                {
+                    if (projectDependency.Name == libraryRange.Name)
+                    {
+                        hasProjectReference = true;
+                        break;
+                    }
+                }
+            }
+
+            if (hasProjectReference)
+            {
+                var projectMatch = await FindProjectMatchAsync(libraryRange, framework, projectProviders, cancellationToken);
+
+                if (projectMatch != null)
+                {
+                    return projectMatch;
+                }
             }
 
             if (libraryRange.VersionRange == null)
