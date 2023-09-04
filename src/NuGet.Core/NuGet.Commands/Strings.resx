@@ -1099,4 +1099,10 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="SourcesCommandValidProtocolVersion" xml:space="preserve">
     <value>The protocol version specified is invalid. Valid protocol versions are from {0} to {1}.</value>
   </data>
+  <data name="Error_InvalidNuGetAuditRequiredValue" xml:space="preserve">
+    <value>Invalid NuGetAuditRequired value '{0}'. Valid values: {1}</value>
+    <comment>Don't translate 'NuGetAuditRequired'
+{0} - is the value from the customer's project file
+{1} is the list of valid values "true, false"</comment>
+  </data>
 </root>

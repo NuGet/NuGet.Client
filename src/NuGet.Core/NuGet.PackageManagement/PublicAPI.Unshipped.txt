@@ -1,3 +1,4 @@
 #nullable enable
+~const NuGet.ProjectManagement.ProjectBuildProperties.NuGetAuditRequired = "NuGetAuditRequired" -> string
 ~static NuGet.PackageManagement.PackageReferenceComparer.Instance.get -> NuGet.PackageManagement.PackageReferenceComparer
 ~static NuGet.PackageManagement.SourceRepositoryComparer.Instance.get -> NuGet.PackageManagement.SourceRepositoryComparer

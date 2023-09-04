@@ -30,6 +30,7 @@ namespace NuGet.Commands.Restore.Utility
 
         internal PackageVulnerabilitySeverity MinSeverity { get; }
         internal NuGetAuditMode AuditMode { get; }
+        internal bool AuditRequired { get; }
         internal List<string>? DirectPackagesWithAdvisory { get; private set; }
         internal List<string>? TransitivePackagesWithAdvisory { get; private set; }
         internal int Sev0DirectMatches { get; private set; }
@@ -64,6 +65,7 @@ namespace NuGet.Commands.Restore.Utility
 
             MinSeverity = ParseAuditLevel();
             AuditMode = ParseAuditMode();
+            AuditRequired = ParseRequiredValue(_restoreAuditProperties?.AuditRequired, _projectFullPath, _logger);
         }
 
         public async Task CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
@@ -80,7 +82,7 @@ namespace NuGet.Commands.Restore.Utility
 
             if (allVulnerabilityData is null || !AnyVulnerabilityDataFound(allVulnerabilityData.KnownVulnerabilities))
             {
-                if (_auditEnabled == EnabledValue.ExplicitOptIn)
+                if (AuditRequired)
                 {
                     RestoreLogMessage restoreLogMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1905, Strings.Warning_NoVulnerabilityData);
                     restoreLogMessage.ProjectPath = _projectFullPath;
@@ -438,6 +440,20 @@ namespace NuGet.Commands.Restore.Utility
             message.ProjectPath = projectFullPath;
             logger.Log(message);
             return EnabledValue.Invalid;
+        }
+
+        public static bool ParseRequiredValue(string? value, string projectFullPath, ILogger logger)
+        {
+            bool required = false;
+            if (!string.IsNullOrEmpty(value) && !bool.TryParse(value, out required))
+            {
+                string messageText = string.Format(Strings.Error_InvalidNuGetAuditRequiredValue, value, projectFullPath, "true, false");
+                RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+                message.ProjectPath = projectFullPath;
+                logger.Log(message);
+            }
+
+            return required;
         }
 
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation.

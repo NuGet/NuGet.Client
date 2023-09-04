@@ -93,11 +93,12 @@ public class AuditUtilityTests
     [Theory]
     [InlineData("", false)]
     [InlineData("true", true)]
-    public async Task Check_WithNoVulnerabilitySources_NU1905Warning(string enable, bool expectWarning)
+    [InlineData("false", false)]
+    public async Task Check_WithNoVulnerabilitySources_NU1905Warning(string nugetAuditRequired, bool expectWarning)
     {
         // Arrange
         var context = new AuditTestContext();
-        context.Enabled = enable;
+        context.Required = nugetAuditRequired;
 
         context.WithRestoreTarget();
 
@@ -446,6 +447,7 @@ public class AuditUtilityTests
         public string? Enabled { get; set; }
         public string? Level { get; set; }
         public string? Mode { get; set; }
+        public string? Required { get; set; }
 
         public TestLogger Log { get; } = new();
 
@@ -504,6 +506,7 @@ public class AuditUtilityTests
                 EnableAudit = Enabled,
                 AuditLevel = Level,
                 AuditMode = Mode,
+                AuditRequired = Required,
             };
 
             var graphs = await CreateGraphsAsync();

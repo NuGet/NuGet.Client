@@ -27,13 +27,19 @@ namespace NuGet.ProjectModel
         /// <value>direct, all</value>
         public string? AuditMode { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether NuGetAudit should warn when no vulnerability data is available.
+        /// </summary>
+        public string? AuditRequired { get; set; }
+
         public bool Equals(RestoreAuditProperties? other)
         {
             if (other is null) return false;
 
             return EnableAudit == other.EnableAudit &&
                 AuditLevel == other.AuditLevel &&
-                AuditMode == other.AuditMode;
+                AuditMode == other.AuditMode &&
+                AuditRequired == other.AuditRequired;
         }
 
         public override bool Equals(object? obj)
@@ -60,6 +66,7 @@ namespace NuGet.ProjectModel
             hashCodeCombiner.AddObject(EnableAudit);
             hashCodeCombiner.AddObject(AuditLevel);
             hashCodeCombiner.AddObject(AuditMode);
+            hashCodeCombiner.AddObject(AuditRequired);
             return hashCodeCombiner.CombinedHash;
         }
 
@@ -70,6 +77,7 @@ namespace NuGet.ProjectModel
                 EnableAudit = EnableAudit,
                 AuditLevel = AuditLevel,
                 AuditMode = AuditMode,
+                AuditRequired = AuditRequired
             };
             return clone;
         }
