@@ -192,7 +192,7 @@ nuget push -?</value>
     <value>Disable using the machine cache as the first package source.</value>
   </data>
   <data name="CommandNoHttpCache" xml:space="preserve">
-    <value>Disable using Http cache as the package source.</value>
+    <value>Disable using the Http cache and contact all configured package source sources for live information.</value>
   </data>
   <data name="InstallCommandOutputDirDescription" xml:space="preserve">
     <value>Specifies the directory in which packages will be installed. If none specified, uses the current directory.</value>

@@ -296,7 +296,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Disable using Http cache as the package source..
+        ///   Looks up a localized string similar to Disable using the Http cache and contact all configured package source sources for live information..
         /// </summary>
         internal static string CommandNoHttpCache {
             get {
