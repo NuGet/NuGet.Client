@@ -129,7 +129,7 @@ namespace NuGet.CommandLine
                 // Parse the command
                 var command = parser.ParseCommandLine(args) ?? p.HelpCommand;
                 command.CurrentDirectory = workingDirectory;
-                if ((command is RestoreCommand restoreCommand && restoreCommand.NoCache == true) || (command is InstallCommand installCommand && installCommand.NoCache == true))
+                if (command is DownloadCommandBase downloadCommandBase && downloadCommandBase.NoCache)
                 {
                     console.WriteWarning(NuGetCommand.Log_RestoreNoCacheInformation);
                 }
