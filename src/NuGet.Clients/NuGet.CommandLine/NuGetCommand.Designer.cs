@@ -886,7 +886,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Keep in mind that NoCache is solely for disabling Http Caching, not the global packages folder. For the same functionality with a more descriptive name, you can use NoHttpCache instead..
+        ///   Looks up a localized string similar to The NoCache option is only for disabling the HTTP cache and not the global packages folder. It is recommended to use the NoHttpCache option instead to disable the use of the HTTP cache and the global packages folder..
         /// </summary>
         internal static string Log_RestoreNoCacheInformation {
             get {

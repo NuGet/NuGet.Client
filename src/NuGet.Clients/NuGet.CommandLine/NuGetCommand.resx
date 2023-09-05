@@ -254,8 +254,8 @@ nuget list -verbose -allversions</value>
     <value>Displays a detailed list of information for each package.</value>
   </data>
   <data name="Log_RestoreNoCacheInformation" xml:space="preserve">
-    <value>Keep in mind that NoCache is solely for disabling Http Caching, not the global packages folder. For the same functionality with a more descriptive name, you can use NoHttpCache instead.</value>
-    <comment>Do not transate NoCache and NoHttpCache</comment>
+    <value>The NoCache option is only for disabling the HTTP cache and not the global packages folder. It is recommended to use the NoHttpCache option instead to disable the use of the HTTP cache and the global packages folder.</value>
+    <comment>Do not translate NoCache and NoHttpCache</comment>
   </data>
   <data name="Option_NonInteractive" xml:space="preserve">
     <value>Do not prompt for user input or confirmations.</value>
