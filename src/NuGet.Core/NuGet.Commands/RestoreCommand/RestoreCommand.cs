@@ -239,10 +239,11 @@ namespace NuGet.Commands
                     _success = false;
                 }
 
-                if (_request.Project?.RestoreMetadata != null)
+                if (_request.DependencyProviders.RemoteProviders != null)
                 {
-                    foreach (var source in _request.Project.RestoreMetadata.Sources)
+                    foreach (var remoteProvider in _request.DependencyProviders.RemoteProviders)
                     {
+                        var source = remoteProvider.Source;
                         if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
                         {
                             await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
