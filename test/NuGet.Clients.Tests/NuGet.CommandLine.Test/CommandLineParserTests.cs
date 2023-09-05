@@ -6,40 +6,37 @@ using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
-    public class ExtractOptionsTests
+    public class CommandLineParserTests
     {
 
         [Fact]
-        public void ExtractOption_PassOptionNoHttpCache_NoHttpCacheShouldBeSet()
+        public void ExtractOptions_WhenPassingOptionNoHttpCache_NoHttpCacheShouldBeTrue()
         {
-            //setup
+            // Arrange
             RestoreCommand command = new RestoreCommand();
             List<string> args = new() { "-NoHttpCache" };
-            ICommandManager manager = new CommandManager();
-            CommandLineParser commandLineParser = new CommandLineParser(manager);
+            CommandLineParser commandLineParser = new CommandLineParser(new CommandManager());
 
-            //execute extract options
+            // Act
             commandLineParser.ExtractOptions(command, args.GetEnumerator());
 
-            //assert
+            // Assert
             Assert.True(command.NoHttpCache);
         }
 
         [Fact]
-        public void ExtractOption_DoNotPassOptionNoHttpCache_NoHttpCacheShouldNotBeSet()
+        public void ExtractOptions_WhenNotPassingOptionNoHttpCache_NoHttpCacheShouldBeFalse()
         {
-            //setup
+            // Arrange
             RestoreCommand command = new RestoreCommand();
             List<string> args = new();
-            ICommandManager manager = new CommandManager();
-            CommandLineParser commandLineParser = new CommandLineParser(manager);
+            CommandLineParser commandLineParser = new CommandLineParser(new CommandManager());
 
-            //execute extract options
+            // Act
             commandLineParser.ExtractOptions(command, args.GetEnumerator());
 
-            //assert
+            // Assert
             Assert.False(command.NoHttpCache);
         }
-
     }
 }
