@@ -201,7 +201,7 @@
 1 - The command-line arguments</comment>
   </data>
   <data name="Log_RestoreNoCacheInformation" xml:space="preserve">
-    <value>Keep in mind that RestoreNoCache is solely for disabling Http Caching, not the global packages folder. For the same functionality with a more descriptive name, you can use RestoreNoHttpCache instead.</value>
-    <comment>Do not transate RestoreNoCache and RestoreNoHttpCache</comment>
+    <value>The NoCache option is only for disabling the HTTP cache and not the global packages folder. It is recommended to use the NoHttpCache option instead to disable the use of the HTTP cache.</value>
+    <comment>Do not translate RestoreNoCache and RestoreNoHttpCache</comment>
   </data>
 </root>
