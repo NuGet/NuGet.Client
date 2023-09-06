@@ -217,6 +217,7 @@ namespace NuGet.PackageManagement.UI
 
         public INuGetExperimentationService NuGetExperimentationService { get; private set; }
 
+        public bool ShowVulnerabilities => _topPanel.CheckBoxVulnerabilities.IsChecked == true;
 
         private void OnProjectUpdated(object sender, IProjectContextInfo project)
         {
@@ -527,6 +528,7 @@ namespace NuGet.PackageManagement.UI
             _detailModel.Options.RemoveDependencies = settings.RemoveDependencies;
             _detailModel.Options.ForceRemove = settings.ForceRemove;
             _topPanel.CheckboxPrerelease.IsChecked = settings.IncludePrerelease;
+            _topPanel.CheckBoxVulnerabilities.IsChecked = false;
             _packageDetail._optionsControl.IsExpanded = settings.OptionsExpanded;
             _packageDetail._solutionView.RestoreUserSettings(settings);
 
@@ -893,6 +895,11 @@ namespace NuGet.PackageManagement.UI
             {
                 _packageList.ClearPackageLevelGrouping();
 
+                // Reset the vulnerabilities checkbox controls until we have vulnerabilities data available.
+                _topPanel.CheckBoxVulnerabilities.Visibility = ActiveFilter == ItemFilter.Installed ? Visibility.Visible : Visibility.Collapsed;
+                _topPanel.CheckBoxVulnerabilities.IsChecked = false;
+                _topPanel.CheckBoxVulnerabilities.IsEnabled = false;
+
                 bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
                 var loader = await PackageItemLoader.CreateAsync(
                     Model.Context.ServiceBroker,
@@ -934,6 +941,12 @@ namespace NuGet.PackageManagement.UI
                 {
                     await RefreshInstalledAndUpdatesTabsAsync();
                 }
+                else
+                {
+                    // If warning icon is still visible, show the vulnerabilities filter.
+                    _topPanel.CheckBoxVulnerabilities.IsEnabled = _topPanel._warningIcon.IsVisible ? true : false;
+                }
+
             }
             catch (OperationCanceledException)
             {
@@ -981,6 +994,7 @@ namespace NuGet.PackageManagement.UI
             // Update installed tab warning icon
             (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, SelectedSource.PackageSources, refreshCts.Token);
             _topPanel.UpdateWarningStatusOnInstalledTab(vulnerablePackages, deprecatedPackages);
+            _topPanel.CheckBoxVulnerabilities.IsEnabled = vulnerablePackages > 0 ? true : false;
 
             // Update updates tab count
             Model.CachedUpdates = new PackageSearchMetadataCache
@@ -1244,6 +1258,17 @@ namespace NuGet.PackageManagement.UI
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
                 _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
 
+                // Collapse and reset the vulnerabilities controls when not in "Installed"
+                if (ActiveFilter is not ItemFilter.Installed)
+                {
+                    _topPanel.CheckBoxVulnerabilities.Visibility = Visibility.Collapsed;
+                    _topPanel.CheckBoxVulnerabilities.IsChecked = false;
+                }
+                else
+                {
+                    _topPanel.CheckBoxVulnerabilities.Visibility = Visibility.Visible;
+                }
+
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
                 var loadCts = new CancellationTokenSource();
@@ -1269,6 +1294,10 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private async ValueTask RefreshAsync()
         {
+            // Reset the vulnerabilities checkbox on every installation/update until we have vulnerabilities information
+            _topPanel.CheckBoxVulnerabilities.IsChecked = false;
+            _topPanel.CheckBoxVulnerabilities.IsEnabled = false;
+
             if (_topPanel.Filter != ItemFilter.All)
             {
                 // refresh the whole package list
@@ -1306,6 +1335,23 @@ namespace NuGet.PackageManagement.UI
                 await RunAndEmitRefreshAsync(async () => await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false),
                     RefreshOperationSource.CheckboxPrereleaseChanged, timeSpan, sw);
             }).PostOnFailure(nameof(PackageManagerControl), nameof(CheckboxPrerelease_CheckChanged));
+        }
+
+        private void CheckboxVulnerabilties_CheckChanged(object sender, EventArgs e)
+        {
+            if (!_initialized)
+            {
+                return;
+            }
+
+            if (ShowVulnerabilities)
+            {
+                _packageList.AddVulnerabilitiesFiltering();
+            }
+            else
+            {
+                _packageList.RemoveVulnerabilitiesFiltering();
+            }
         }
 
         private async Task RunAndEmitRefreshAsync(Func<Task> runner, RefreshOperationSource source, TimeSpan lastRefresh, Stopwatch sw, bool isUIFiltering = false)

@@ -592,6 +592,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show vulnerable only.
+        /// </summary>
+        public static string Checkbox_Show_Vulnerable_Only {
+            get {
+                return ResourceManager.GetString("Checkbox_Show_Vulnerable_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show preview window.
         /// </summary>
         public static string Checkbox_ShowPreviewWindow {

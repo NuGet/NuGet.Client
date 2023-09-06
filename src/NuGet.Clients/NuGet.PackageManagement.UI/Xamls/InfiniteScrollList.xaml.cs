@@ -56,6 +56,8 @@ namespace NuGet.PackageManagement.UI
 
         private const string LogEntrySource = "NuGet Package Manager";
 
+        private bool FilterByVulnerabilities = false;
+
         // The count of packages that are selected
         private int _selectedCount;
 
@@ -83,10 +85,26 @@ namespace NuGet.PackageManagement.UI
             BindingOperations.EnableCollectionSynchronization(Items, _list.ItemsLock);
 
             ItemsView = new CollectionViewSource() { Source = Items }.View;
+            ItemsView.Filter = item =>
+            {
+                PackageItemViewModel vitem = item as PackageItemViewModel;
+                return IsItemInFilter(vitem);
+            };
+
             DataContext = ItemsView;
             CheckBoxesEnabled = false;
 
             _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
+        }
+
+        internal bool IsItemInFilter(PackageItemViewModel item)
+        {
+            if (FilterByVulnerabilities)
+            {
+                return item is not null && (item.IsPackageVulnerable == FilterByVulnerabilities);
+            }
+
+            return true;
         }
 
         private void LoadingStatusIndicator_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -143,9 +161,29 @@ namespace NuGet.PackageManagement.UI
 
         public Guid? OperationId => _loader?.State.OperationId;
 
-        public int TopLevelPackageCount { get; private set; }
+        public int TopLevelPackageCount
+        {
+            get
+            {
+                return FilterByVulnerabilities is true ? TopLevelVulnerablePackagesCount : TopLevelAllPackagesCount;
+            }
+        }
 
-        public int TransitivePackageCount { get; private set; }
+        public int TransitivePackageCount
+        {
+            get
+            {
+                return FilterByVulnerabilities is true ? TransitiveVulnerablePackagesCount : TransitiveAllPackagesCount;
+            }
+        }
+
+        public int TopLevelAllPackagesCount { get; private set; }
+
+        public int TransitiveAllPackagesCount { get; private set; }
+
+        public int TopLevelVulnerablePackagesCount { get; private set; }
+
+        public int TransitiveVulnerablePackagesCount { get; private set; }
 
         // Load items using the specified loader
         internal async Task LoadItemsAsync(
@@ -502,8 +540,10 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     // update the top-level and transitive package counts
-                    TopLevelPackageCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.TopLevel);
-                    TransitivePackageCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.Transitive);
+                    TopLevelAllPackagesCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.TopLevel);
+                    TransitiveAllPackagesCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.Transitive);
+                    TopLevelVulnerablePackagesCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.TopLevel && p.IsPackageVulnerable == true);
+                    TransitiveVulnerablePackagesCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.Transitive && p.IsPackageVulnerable == true);
 
                     if (removed)
                     {
@@ -741,6 +781,18 @@ namespace NuGet.PackageManagement.UI
         internal void ClearPackageLevelGrouping()
         {
             ItemsView.GroupDescriptions.Clear();
+        }
+
+        internal void AddVulnerabilitiesFiltering()
+        {
+            FilterByVulnerabilities = true;
+            ItemsView.Refresh();
+        }
+
+        internal void RemoveVulnerabilitiesFiltering()
+        {
+            FilterByVulnerabilities = false;
+            ItemsView.Refresh();
         }
 
         internal void AddPackageLevelGrouping()
