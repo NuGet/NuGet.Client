@@ -1022,7 +1022,7 @@ namespace NuGet.Build.Tasks.Console
         /// Determines the current settings for central package management for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="IMSBuildProject" /> to get the central package management settings for.</param>
-        /// <param name="projectStyle">The <see cref="ProjectStyle?" /> of the specified project.  Specify <c>null</c> when the project does not define a restore style.</param>
+        /// <param name="projectStyle">The <see cref="ProjectStyle?" /> of the specified project.  Specify <see langword="null" /> when the project does not define a restore style.</param>
         /// <returns>A <see cref="Tuple{T1, T2}" /> containing values indicating whether or not central package management is enabled and if the ability to override a package version is disabled.</returns>
         internal static (bool IsEnabled, bool IsVersionOverrideDisabled, bool IsCentralPackageTransitivePinningEnabled) GetCentralPackageManagementSettings(IMSBuildProject project, ProjectStyle? projectStyle)
         {

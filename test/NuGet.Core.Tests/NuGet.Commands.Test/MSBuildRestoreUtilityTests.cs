@@ -4082,7 +4082,7 @@ namespace NuGet.Commands.Test
         /// <summary>
         /// Verifies that <see cref="MSBuildRestoreUtility.GetDependencySpec(IEnumerable{IMSBuildItem})" /> applies version overrides correctly depending on whether or not central package management is enabled.
         /// </summary>
-        /// <param name="isCentralPackageManagementEnabled"><c>true</c> if central package management is enabled, otherwise <c>false</c>.</param>
+        /// <param name="isCentralPackageManagementEnabled"><see langword="true" /> if central package management is enabled, otherwise <see langword="false" />.</param>
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
