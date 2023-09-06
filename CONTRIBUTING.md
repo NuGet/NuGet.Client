@@ -3,8 +3,6 @@
 ## Prerequisites
 
 - [Visual Studio 2022 17.4 or above](https://www.visualstudio.com) with the workloads and components specified in [vsconfig](.vsconfig).
-- [.NET 7.0 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
-- Git
 - Windows Powershell v3.0+
 
 ## Contributing step-by-step
