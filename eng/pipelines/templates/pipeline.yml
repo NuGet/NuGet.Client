@@ -153,7 +153,7 @@ stages:
       BuildRTM: "false"
       SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
     pool:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: VSEngSS-MicroBuild2022Preview-1ES
     steps:
     - template: Build_and_UnitTest.yml
       parameters:
@@ -175,7 +175,7 @@ stages:
       VsTargetMajorVersion: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
       BuildRTM: "true"
     pool:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: VSEngSS-MicroBuild2022Preview-1ES
     steps:
     - template: Build_and_UnitTest.yml
       parameters:
@@ -223,7 +223,7 @@ stages:
       MSBuildEnableWorkloadResolver: false
     condition: "and(succeeded(), ne(variables['RunFunctionalTestsOnWindows'], 'false'))"
     pool:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: VSEngSS-MicroBuild2022Preview-1ES
     strategy:
       matrix:
         IsDesktop:
@@ -286,7 +286,7 @@ stages:
       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     pool:
-      vmImage: windows-latest
+      name: VSEngSS-MicroBuild2022Preview-1ES
     steps:
     - template: CrossFramework_Tests_On_Windows.yml
 
