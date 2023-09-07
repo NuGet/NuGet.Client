@@ -121,8 +121,8 @@ namespace NuGet.DependencyResolver
                 framework,
                 runtimeName,
                 _context,
-                CancellationToken.None,
-                projectDependencies);
+                projectDependencies,
+                CancellationToken.None);
 
             bool hasInnerNodes = (item.Data.Dependencies.Count + (runtimeDependencies == null ? 0 : runtimeDependencies.Count)) > 0;
             GraphNode<RemoteResolveResult> node = new GraphNode<RemoteResolveResult>(libraryRange, hasInnerNodes, hasParentNodes)

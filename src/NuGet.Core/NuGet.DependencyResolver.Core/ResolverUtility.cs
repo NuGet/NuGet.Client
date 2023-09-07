@@ -24,17 +24,49 @@ namespace NuGet.DependencyResolver
             NuGetFramework framework,
             string runtimeIdentifier,
             RemoteWalkContext context,
-            CancellationToken cancellationToken,
-            LibraryDependency[] projectDependencies = null)
+            CancellationToken cancellationToken)
+        {
+            return FindLibraryCachedAsync(cache,
+                libraryRange,
+                framework,
+                runtimeIdentifier,
+                context,
+                Array.Empty<LibraryDependency>(),
+                cancellationToken);
+        }
+
+        public static Task<GraphItem<RemoteResolveResult>> FindLibraryCachedAsync(
+            ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>> cache,
+            LibraryRange libraryRange,
+            NuGetFramework framework,
+            string runtimeIdentifier,
+            RemoteWalkContext context,
+            LibraryDependency[] projectDependencies,
+            CancellationToken cancellationToken)
         {
             var key = new LibraryRangeCacheKey(libraryRange, framework);
 
             if (cache.TryGetValue(key, out var graphItem))
                 return graphItem;
 
-            graphItem = cache.GetOrAdd(key, FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken, projectDependencies));
+            graphItem = cache.GetOrAdd(key, FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, projectDependencies, cancellationToken));
 
             return graphItem;
+        }
+
+        public static Task<GraphItem<RemoteResolveResult>> FindLibraryEntryAsync(
+            LibraryRange libraryRange,
+            NuGetFramework framework,
+            string runtimeIdentifier,
+            RemoteWalkContext context,
+            CancellationToken cancellationToken)
+        {
+            return FindLibraryEntryAsync(libraryRange,
+                framework,
+                runtimeIdentifier,
+                context,
+                Array.Empty<LibraryDependency>(),
+                cancellationToken);
         }
 
         public static async Task<GraphItem<RemoteResolveResult>> FindLibraryEntryAsync(
@@ -42,8 +74,8 @@ namespace NuGet.DependencyResolver
             NuGetFramework framework,
             string runtimeIdentifier,
             RemoteWalkContext context,
-            CancellationToken cancellationToken,
-            LibraryDependency[] projectDependencies = null)
+            LibraryDependency[] projectDependencies,
+            CancellationToken cancellationToken)
         {
             GraphItem<RemoteResolveResult> graphItem = null;
             var currentCacheContext = context.CacheContext;
@@ -71,8 +103,8 @@ namespace NuGet.DependencyResolver
                     context.LockFileLibraries,
                     currentCacheContext,
                     context.Logger,
-                    cancellationToken,
-                    projectDependencies);
+                    projectDependencies,
+                    cancellationToken);
 
                 if (match == null)
                 {
@@ -149,6 +181,31 @@ namespace NuGet.DependencyResolver
             };
         }
 
+        public static Task<RemoteMatch> FindLibraryMatchAsync(
+            LibraryRange libraryRange,
+            NuGetFramework framework,
+            string runtimeIdentifier,
+            IEnumerable<IRemoteDependencyProvider> remoteProviders,
+            IEnumerable<IRemoteDependencyProvider> localProviders,
+            IEnumerable<IDependencyProvider> projectProviders,
+            IDictionary<LockFileCacheKey, IList<LibraryIdentity>> lockFileLibraries,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            return FindLibraryMatchAsync(libraryRange,
+                framework,
+                runtimeIdentifier,
+                remoteProviders,
+                localProviders,
+                projectProviders,
+                lockFileLibraries,
+                cacheContext,
+                logger,
+                Array.Empty<LibraryDependency>(),
+                cancellationToken);
+        }
+
         public static async Task<RemoteMatch> FindLibraryMatchAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,
@@ -159,8 +216,8 @@ namespace NuGet.DependencyResolver
             IDictionary<LockFileCacheKey, IList<LibraryIdentity>> lockFileLibraries,
             SourceCacheContext cacheContext,
             ILogger logger,
-            CancellationToken cancellationToken,
-            LibraryDependency[] projectDependencies = null)
+            LibraryDependency[] projectDependencies,
+            CancellationToken cancellationToken)
         {
             bool hasProjectReference = true;
             if (projectDependencies is not null)
