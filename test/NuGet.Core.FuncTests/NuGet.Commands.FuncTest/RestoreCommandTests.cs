@@ -2248,7 +2248,7 @@ namespace NuGet.Commands.FuncTest
             pathContext.Settings.AddPackageSourceMapping("InvalidSource", packageA.Id);
             ISettings settings = Settings.LoadSettingsGivenConfigPaths(new string[] { pathContext.Settings.ConfigPath });
 
-            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecForAllProjects(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
@@ -2303,7 +2303,7 @@ namespace NuGet.Commands.FuncTest
             pathContext.Settings.AddPackageSourceMapping(PrimarySourceName, packageA.Id);
             ISettings settings = Settings.LoadSettingsGivenConfigPaths(new string[] { pathContext.Settings.ConfigPath });
 
-            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecForAllProjects(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
@@ -2359,7 +2359,7 @@ namespace NuGet.Commands.FuncTest
             pathContext.Settings.AddPackageSourceMapping(PrimarySourceName, packageA.Id);
             ISettings settings = Settings.LoadSettingsGivenConfigPaths(new string[] { pathContext.Settings.ConfigPath });
 
-            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecForAllProjects(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
@@ -3726,7 +3726,7 @@ namespace NuGet.Commands.FuncTest
 
             var spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
             var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(spec, pathContext, new TestLogger()));
-            // fix test
+
             // Act
             var result = await command.ExecuteAsync();
 
@@ -4005,7 +4005,7 @@ namespace NuGet.Commands.FuncTest
                 CacheContext = new SourceCacheContext()
             };
 
-            var dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            var dgSpec = ProjectTestHelpers.GetDGSpecForAllProjects(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgSpec);
 
             foreach (var request in await dgProvider.CreateRequests(restoreContext))
@@ -4050,7 +4050,7 @@ namespace NuGet.Commands.FuncTest
                 CacheContext = cacheContext,
             };
 
-            var dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            var dgSpec = ProjectTestHelpers.GetDGSpecForAllProjects(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgSpec);
 
             foreach (var request in await dgProvider.CreateRequests(restoreContext))

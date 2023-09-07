@@ -25,7 +25,7 @@ namespace NuGet.Commands.Test
             RestoreArgs restoreContext,
             params PackageSpec[] projects)
         {
-            var dgSpec = GetDGSpec(projects);
+            var dgSpec = GetDGSpecForFirstProject(projects);
 
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
@@ -38,20 +38,14 @@ namespace NuGet.Commands.Test
         /// <summary>
         /// Create a dg file for the specs. Restore only the first one.
         /// </summary>
-        public static DependencyGraphSpec GetDGSpec(params PackageSpec[] projects)
+        public static DependencyGraphSpec GetDGSpecForFirstProject(params PackageSpec[] projects)
         {
             var dgSpec = new DependencyGraphSpec();
-
-            var project = EnsureRestoreMetadata(projects.First());
-
-            dgSpec.AddProject(project);
-            dgSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
-
-            foreach (var child in projects.Skip(1))
+            foreach (var project in projects)
             {
-                dgSpec.AddProject(EnsureRestoreMetadata(child));
+                dgSpec.AddProject(project);
             }
-
+            dgSpec.AddRestore(projects[0].RestoreMetadata.ProjectUniqueName);
             return dgSpec;
         }
 
@@ -60,7 +54,7 @@ namespace NuGet.Commands.Test
         /// </summary>
         /// <param name="projects"></param>
         /// <returns></returns>
-        public static DependencyGraphSpec GetDGSpecFromPackageSpecs(params PackageSpec[] projects)
+        public static DependencyGraphSpec GetDGSpecForAllProjects(params PackageSpec[] projects)
         {
             var dgSpec = new DependencyGraphSpec();
             foreach (var project in projects)
@@ -220,34 +214,21 @@ namespace NuGet.Commands.Test
         /// <returns></returns>
         public static TestRestoreRequest CreateRestoreRequest(PackageSpec projectToRestore, SimpleTestPathContext pathContext, ILogger logger)
         {
-            var dgSpec = new DependencyGraphSpec();
-            dgSpec.AddProject(projectToRestore);
-            dgSpec.AddRestore(projectToRestore.RestoreMetadata.ProjectUniqueName);
-
+            DependencyGraphSpec dgSpec = GetDGSpecForFirstProject(projectToRestore);
             return CreateRestoreRequest(projectToRestore, pathContext, logger, dgSpec);
         }
 
         public static TestRestoreRequest CreateRestoreRequest(PackageSpec projectToRestore, IEnumerable<PackageSpec> packageSpecsClosure, SimpleTestPathContext pathContext, ILogger logger)
         {
-            var dgSpec = new DependencyGraphSpec();
-            dgSpec.AddProject(projectToRestore);
-            dgSpec.AddRestore(projectToRestore.RestoreMetadata.ProjectUniqueName);
-
-            foreach (var spec in packageSpecsClosure)
-            {
-                dgSpec.AddProject(spec);
-            }
-
+            var projects = new List<PackageSpec>(packageSpecsClosure.Count() + 1);
+            projects.Add(projectToRestore);
+            projects.AddRange(packageSpecsClosure);
+            DependencyGraphSpec dgSpec = GetDGSpecForFirstProject(projects.ToArray());
             return CreateRestoreRequest(projectToRestore, pathContext, logger, dgSpec);
         }
 
         private static TestRestoreRequest CreateRestoreRequest(PackageSpec projectToRestore, SimpleTestPathContext pathContext, ILogger logger, DependencyGraphSpec dgSpec)
         {
-            if (!projectToRestore.RestoreMetadata.Sources.Any())
-            {
-                throw new InvalidOperationException($"The PackageSpec for {projectToRestore.Name} does not contain all of the proper metadata. It is missing the sources.");
-            }
-
             var sources = projectToRestore.RestoreMetadata.Sources.Any() ?
                        projectToRestore.RestoreMetadata.Sources.ToList() :
                        new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
