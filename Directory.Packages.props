@@ -189,6 +189,7 @@
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.Pkcs" />
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.ProtectedData" />
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.Xml" />
+      <_allowBuildFromSourcePackage Include="System.Text.Json" />
 
       <_sourceBuildUnexpectedPackage Include="@(PackageReference)" Exclude="@(_allowBuildFromSourcePackage)" />
     </ItemGroup>
