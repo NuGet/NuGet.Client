@@ -369,6 +369,7 @@ namespace NuGet.Common
         /// <summary>
         /// NuGetAudit enabled, but no vulnerability data found
         /// </summary>
+        /// <remarks>Was added in 6.7 client SDK, but then removed from use in 6.8</remarks>
         NU1905 = 1905,
 
         /// <summary>
