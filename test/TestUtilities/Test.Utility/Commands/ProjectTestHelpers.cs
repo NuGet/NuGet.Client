@@ -211,13 +211,6 @@ namespace NuGet.Commands.Test
         /// <param name="projectToRestore"></param>
         /// <param name="pathContext"></param>
         /// <param name="logger"></param>
-        /// <returns></returns>
-        public static TestRestoreRequest CreateRestoreRequest(PackageSpec projectToRestore, SimpleTestPathContext pathContext, ILogger logger)
-        {
-            DependencyGraphSpec dgSpec = GetDGSpecForFirstProject(projectToRestore);
-            return CreateRestoreRequest(projectToRestore, pathContext, logger, dgSpec);
-        }
-
         public static TestRestoreRequest CreateRestoreRequest(SimpleTestPathContext pathContext, ILogger logger, params PackageSpec[] projects)
         {
             DependencyGraphSpec dgSpec = GetDGSpecForFirstProject(projects);

@@ -44,7 +44,7 @@ namespace NuGet.Commands.FuncTest
                 PackageSpecOperations.AddOrUpdateDependency(packageSpec, packageA.Identity, packageSpec.TargetFrameworks.Select(e => e.FrameworkName));
 
                 // Preconditions.
-                var result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger)).ExecuteAsync();
+                var result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec)).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
 
@@ -56,7 +56,7 @@ namespace NuGet.Commands.FuncTest
                 PackageSpecOperations.RemoveDependency(packageSpec, packageA.Identity.Id);
                 logger.Clear();
                 // Act.
-                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger)).ExecuteAsync();
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec)).ExecuteAsync();
 
                 // Assert.
                 result.Success.Should().BeFalse();
@@ -89,7 +89,7 @@ namespace NuGet.Commands.FuncTest
                 PackageSpecOperations.AddOrUpdateDependency(packageSpec, packageA.Identity, packageSpec.TargetFrameworks.Select(e => e.FrameworkName));
 
                 // Preconditions.
-                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger))).ExecuteAsync();
+                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec))).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
 
@@ -101,7 +101,7 @@ namespace NuGet.Commands.FuncTest
                 PackageSpecOperationsUtility.AddTargetFramework(packageSpec, "net48");
                 logger.Clear();
                 // Act.
-                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger)).ExecuteAsync();
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec)).ExecuteAsync();
 
                 // Assert.
                 result.Success.Should().BeFalse();
@@ -134,7 +134,7 @@ namespace NuGet.Commands.FuncTest
                 PackageSpecOperations.AddOrUpdateDependency(packageSpec, packageA.Identity, packageSpec.TargetFrameworks.Select(e => e.FrameworkName));
 
                 // Preconditions.
-                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger))).ExecuteAsync();
+                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec))).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
 
@@ -147,7 +147,7 @@ namespace NuGet.Commands.FuncTest
                 PackageSpecOperationsUtility.AddTargetFramework(packageSpec, "net48");
                 logger.Clear();
                 // Act.
-                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger)).ExecuteAsync();
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec)).ExecuteAsync();
 
                 // Assert.
                 result.Success.Should().BeFalse();
@@ -183,7 +183,7 @@ namespace NuGet.Commands.FuncTest
                 PackageSpecOperations.AddOrUpdateDependency(packageSpec, packageA.Identity, packageSpec.TargetFrameworks.Select(e => e.FrameworkName));
 
                 // Preconditions.
-                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger))).ExecuteAsync();
+                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec))).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
 
@@ -196,7 +196,7 @@ namespace NuGet.Commands.FuncTest
 
                 logger.Clear();
                 // Act.
-                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger)).ExecuteAsync();
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec)).ExecuteAsync();
 
                 // Assert.
                 result.Success.Should().BeFalse();
@@ -234,7 +234,7 @@ namespace NuGet.Commands.FuncTest
                 PackageSpecOperations.AddOrUpdateDependency(packageSpec, packageB.Identity, packageSpec.TargetFrameworks.Select(e => e.FrameworkName));
 
                 // Preconditions.
-                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger))).ExecuteAsync();
+                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec))).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
 
@@ -247,7 +247,7 @@ namespace NuGet.Commands.FuncTest
 
                 logger.Clear();
                 // Act.
-                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger)).ExecuteAsync();
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec)).ExecuteAsync();
 
                 // Assert.
                 result.Success.Should().BeFalse();
@@ -285,7 +285,7 @@ namespace NuGet.Commands.FuncTest
                 PackageSpecOperations.AddOrUpdateDependency(packageSpec, packageB.Identity, packageSpec.TargetFrameworks.Select(e => e.FrameworkName));
 
                 // Preconditions.
-                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger))).ExecuteAsync();
+                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec))).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
 
@@ -299,7 +299,7 @@ namespace NuGet.Commands.FuncTest
 
                 logger.Clear();
                 // Act.
-                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger)).ExecuteAsync();
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec)).ExecuteAsync();
 
                 // Assert.
                 result.Success.Should().BeFalse();
@@ -335,7 +335,7 @@ namespace NuGet.Commands.FuncTest
                 PackageSpecOperations.AddOrUpdateDependency(packageSpec, packageA.Identity, packageSpec.TargetFrameworks.Select(e => e.FrameworkName));
 
                 // Preconditions.
-                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger))).ExecuteAsync();
+                var result = await (new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec))).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
 
@@ -347,7 +347,7 @@ namespace NuGet.Commands.FuncTest
                 packageSpec.RuntimeGraph = ProjectTestHelpers.GetRuntimeGraph(runtimeIdentifiers: new string[] { "win", "unix", "ios" }, runtimeSupports: new string[] { });
                 logger.Clear();
                 // Act.
-                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(packageSpec, pathContext, logger)).ExecuteAsync();
+                result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec)).ExecuteAsync();
 
                 // Assert.
                 result.Success.Should().BeFalse();
@@ -669,7 +669,7 @@ namespace NuGet.Commands.FuncTest
                    childProject.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath,
                    restoreLockedMode: false);
 
-                var result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(childProject, pathContext, logger)).ExecuteAsync();
+                var result = await new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, childProject)).ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue();
 
