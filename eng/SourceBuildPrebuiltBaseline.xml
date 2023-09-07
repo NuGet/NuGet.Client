@@ -95,4 +95,8 @@
     <UsagePattern IdentityGlob="System.Threading.Tasks/*" />
     <UsagePattern IdentityGlob="System.Threading.Tasks.Dataflow/*" />
   </IgnorePatterns>
+  <Usages>
+    <Usage Id="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
+    <Usage Id="System.Threading.Tasks.Extensions" Version="4.5.4" />
+  </Usages>
 </UsageData>
