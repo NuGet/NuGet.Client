@@ -218,13 +218,10 @@ namespace NuGet.Commands.Test
             return CreateRestoreRequest(projectToRestore, pathContext, logger, dgSpec);
         }
 
-        public static TestRestoreRequest CreateRestoreRequest(PackageSpec projectToRestore, IEnumerable<PackageSpec> packageSpecsClosure, SimpleTestPathContext pathContext, ILogger logger)
+        public static TestRestoreRequest CreateRestoreRequest(SimpleTestPathContext pathContext, ILogger logger, params PackageSpec[] projects)
         {
-            var projects = new List<PackageSpec>(packageSpecsClosure.Count() + 1);
-            projects.Add(projectToRestore);
-            projects.AddRange(packageSpecsClosure);
-            DependencyGraphSpec dgSpec = GetDGSpecForFirstProject(projects.ToArray());
-            return CreateRestoreRequest(projectToRestore, pathContext, logger, dgSpec);
+            DependencyGraphSpec dgSpec = GetDGSpecForFirstProject(projects);
+            return CreateRestoreRequest(projects[0], pathContext, logger, dgSpec);
         }
 
         private static TestRestoreRequest CreateRestoreRequest(PackageSpec projectToRestore, SimpleTestPathContext pathContext, ILogger logger, DependencyGraphSpec dgSpec)

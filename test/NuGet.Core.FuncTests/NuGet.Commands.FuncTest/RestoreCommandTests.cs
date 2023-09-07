@@ -3476,7 +3476,7 @@ namespace NuGet.Commands.FuncTest
             cppCliProject = cppCliProject.WithTestProjectReference(managedProject);
             CreateFakeProjectFile(managedProject);
 
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(cppCliProject, new PackageSpec[] { managedProject }, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), cppCliProject, managedProject));
 
             // Preconditions
             var result = await command.ExecuteAsync();
@@ -3797,7 +3797,7 @@ namespace NuGet.Commands.FuncTest
             project1spec = project1spec.WithTestProjectReference(project2spec);
             CreateFakeProjectFile(project2spec);
 
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec }, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), project1spec, project2spec));
 
             // Act
             var result = await command.ExecuteAsync();
@@ -3829,7 +3829,7 @@ namespace NuGet.Commands.FuncTest
             CreateFakeProjectFile(project2spec);
             CreateFakeProjectFile(project3spec);
 
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec, project3spec }, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), project1spec, project2spec, project3spec));
 
             // Act
             var result = await command.ExecuteAsync();
@@ -3867,7 +3867,7 @@ namespace NuGet.Commands.FuncTest
             project1spec = project1spec.WithTestProjectReference(project2spec);
             CreateFakeProjectFile(project2spec);
 
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec }, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), project1spec, project2spec));
 
             // Act
             var result = await command.ExecuteAsync();
@@ -3910,7 +3910,7 @@ namespace NuGet.Commands.FuncTest
             project1spec = project1spec.WithTestProjectReference(project2spec);
             CreateFakeProjectFile(project2spec);
 
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec, project3spec }, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), project1spec, project2spec, project3spec));
 
             // Act
             var result = await command.ExecuteAsync();
