@@ -1,4 +1,2 @@
 #nullable enable
 NuGet.ProjectModel.LockFileTargetLibrary.Freeze() -> void
-NuGet.ProjectModel.RestoreAuditProperties.AuditRequired.get -> string?
-NuGet.ProjectModel.RestoreAuditProperties.AuditRequired.set -> void

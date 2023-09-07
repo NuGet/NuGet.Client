@@ -906,7 +906,6 @@ namespace NuGet.Commands
             string enableAudit = specItem.GetProperty("NuGetAudit");
             string auditLevel = specItem.GetProperty("NuGetAuditLevel");
             string auditMode = specItem.GetProperty("NuGetAuditMode");
-            string auditRequired = specItem.GetProperty("NuGetAuditRequired");
 
             if (enableAudit != null || auditLevel != null || auditMode != null)
             {
@@ -915,7 +914,6 @@ namespace NuGet.Commands
                     EnableAudit = enableAudit,
                     AuditLevel = auditLevel,
                     AuditMode = auditMode,
-                    AuditRequired = auditRequired,
                 };
             }
 

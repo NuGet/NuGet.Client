@@ -1041,7 +1041,7 @@ namespace NuGet.ProjectModel
                         break;
 
                     case "restoreAuditProperties":
-                        string enableAudit = null, auditLevel = null, auditMode = null, auditRequired = null;
+                        string enableAudit = null, auditLevel = null, auditMode = null;
                         jsonReader.ReadObject(auditPropertyName =>
                         {
 
@@ -1058,10 +1058,6 @@ namespace NuGet.ProjectModel
                                 case "auditMode":
                                     auditMode = jsonReader.ReadNextTokenAsString();
                                     break;
-
-                                case "auditRequired":
-                                    auditRequired = jsonReader.ReadNextTokenAsString();
-                                    break;
                             }
                         });
                         auditProperties = new RestoreAuditProperties()
@@ -1069,7 +1065,6 @@ namespace NuGet.ProjectModel
                             EnableAudit = enableAudit,
                             AuditLevel = auditLevel,
                             AuditMode = auditMode,
-                            AuditRequired = auditRequired,
                         };
                         break;
 

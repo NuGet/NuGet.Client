@@ -91,7 +91,6 @@ namespace NuGet.Commands
         private const string AuditEnabled = "Audit.Enabled";
         private const string AuditLevel = "Audit.Level";
         private const string AuditMode = "Audit.Mode";
-        private const string AuditRequired = "Audit.Required";
         private const string AuditDataSources = "Audit.DataSources";
         private const string AuditDirectVulnerabilitiesPackages = "Audit.Vulnerability.Direct.Packages";
         private const string AuditDirectVulnerabilitiesCount = "Audit.Vulnerability.Direct.Count";
@@ -491,7 +490,6 @@ namespace NuGet.Commands
 
             telemetry.TelemetryEvent[AuditLevel] = (int)audit.MinSeverity;
             telemetry.TelemetryEvent[AuditMode] = AuditUtility.GetString(audit.AuditMode);
-            telemetry.TelemetryEvent[AuditRequired] = audit.AuditRequired;
 
             if (audit.DirectPackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditDirectVulnerabilitiesPackages, audit.DirectPackagesWithAdvisory); }
             telemetry.TelemetryEvent[AuditDirectVulnerabilitiesCount] = audit.DirectPackagesWithAdvisory?.Count ?? 0;

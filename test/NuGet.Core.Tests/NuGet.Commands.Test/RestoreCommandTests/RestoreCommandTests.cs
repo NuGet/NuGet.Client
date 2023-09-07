@@ -2788,7 +2788,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
             PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
             packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit = bool.TrueString;
-            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditRequired = bool.TrueString;
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
@@ -2856,7 +2855,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["Audit.Enabled"] = value => value.Should().Be("ExplicitOptIn"),
                 ["Audit.Level"] = value => value.Should().Be(0),
                 ["Audit.Mode"] = value => value.Should().Be("Unknown"),
-                ["Audit.Required"] = value => value.Should().Be(true),
                 ["Audit.Vulnerability.Direct.Count"] = value => value.Should().Be(0),
                 ["Audit.Vulnerability.Direct.Severity0"] = value => value.Should().Be(0),
                 ["Audit.Vulnerability.Direct.Severity1"] = value => value.Should().Be(0),

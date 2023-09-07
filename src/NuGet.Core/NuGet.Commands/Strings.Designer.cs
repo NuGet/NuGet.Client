@@ -493,15 +493,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid NuGetAuditRequired value &apos;{0}&apos;. Valid values: {1}.
-        /// </summary>
-        internal static string Error_InvalidNuGetAuditRequiredValue {
-            get {
-                return ResourceManager.GetString("Error_InvalidNuGetAuditRequiredValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid NuGetAudit value &apos;{0}&apos;. Valid values: {1}.
         /// </summary>
         internal static string Error_InvalidNuGetAuditValue {
