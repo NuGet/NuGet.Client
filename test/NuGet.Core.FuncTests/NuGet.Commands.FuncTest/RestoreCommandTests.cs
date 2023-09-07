@@ -3726,7 +3726,7 @@ namespace NuGet.Commands.FuncTest
 
             var spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
             var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(spec, pathContext, new TestLogger()));
-
+            // fix test
             // Act
             var result = await command.ExecuteAsync();
 
@@ -3941,7 +3941,7 @@ namespace NuGet.Commands.FuncTest
                     ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.Id),
                     pathContext,
                     new TestLogger()));
-
+            // todo - add sources
             // Act
             var result = await command.ExecuteAsync();
 
@@ -4112,7 +4112,7 @@ namespace NuGet.Commands.FuncTest
                 dependencyName: "a",
                 useAssetTargetFallback: true,
                 assetTargetFallbackFrameworks: "net472",
-                asAssetTargetFallback: true);
+                asAssetTargetFallback: true); // add sources
 
             var request = ProjectTestHelpers.CreateRestoreRequest(projectSpec, pathContext, logger);
             var command = new RestoreCommand(request);

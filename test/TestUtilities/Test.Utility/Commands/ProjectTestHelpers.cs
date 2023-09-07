@@ -214,27 +214,21 @@ namespace NuGet.Commands.Test
         /// <summary>
         /// Creates a restore request, with the only source being the source from the <paramref name="pathContext"/>.
         /// </summary>
-        /// <param name="spec"></param>
+        /// <param name="projectToRestore"></param>
         /// <param name="pathContext"></param>
         /// <param name="logger"></param>
         /// <returns></returns>
-        public static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, SimpleTestPathContext pathContext, ILogger logger)
+        public static TestRestoreRequest CreateRestoreRequest(PackageSpec projectToRestore, SimpleTestPathContext pathContext, ILogger logger)
         {
-            var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
             var dgSpec = new DependencyGraphSpec();
-            dgSpec.AddProject(spec);
-            dgSpec.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
+            dgSpec.AddProject(projectToRestore);
+            dgSpec.AddRestore(projectToRestore.RestoreMetadata.ProjectUniqueName);
 
-            return new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
-            {
-                LockFilePath = Path.Combine(spec.FilePath, LockFileFormat.AssetsFileName),
-                DependencyGraphSpec = dgSpec,
-            };
+            return CreateRestoreRequest(projectToRestore, pathContext, logger, dgSpec);
         }
 
         public static TestRestoreRequest CreateRestoreRequest(PackageSpec projectToRestore, IEnumerable<PackageSpec> packageSpecsClosure, SimpleTestPathContext pathContext, ILogger logger)
         {
-            var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddProject(projectToRestore);
             dgSpec.AddRestore(projectToRestore.RestoreMetadata.ProjectUniqueName);
@@ -243,6 +237,20 @@ namespace NuGet.Commands.Test
             {
                 dgSpec.AddProject(spec);
             }
+
+            return CreateRestoreRequest(projectToRestore, pathContext, logger, dgSpec);
+        }
+
+        private static TestRestoreRequest CreateRestoreRequest(PackageSpec projectToRestore, SimpleTestPathContext pathContext, ILogger logger, DependencyGraphSpec dgSpec)
+        {
+            if (!projectToRestore.RestoreMetadata.Sources.Any())
+            {
+                throw new InvalidOperationException($"The PackageSpec for {projectToRestore.Name} does not contain all of the proper metadata. It is missing the sources.");
+            }
+
+            var sources = projectToRestore.RestoreMetadata.Sources.Any() ?
+                       projectToRestore.RestoreMetadata.Sources.ToList() :
+                       new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
 
             var externalClosure = DependencyGraphSpecRequestProvider.GetExternalClosure(dgSpec, projectToRestore.RestoreMetadata.ProjectUniqueName).ToList();
 
