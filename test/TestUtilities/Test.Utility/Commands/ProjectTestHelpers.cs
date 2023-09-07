@@ -73,20 +73,6 @@ namespace NuGet.Commands.Test
         /// Add restore metadata only if not already set.
         /// Sets the project style to PackageReference.
         /// </summary>
-        public static PackageSpec EnsureRestoreMetadata(this PackageSpec spec)
-        {
-            if (string.IsNullOrEmpty(spec.RestoreMetadata?.ProjectUniqueName))
-            {
-                return spec.WithTestRestoreMetadata();
-            }
-
-            return spec;
-        }
-
-        /// <summary>
-        /// Add restore metadata only if not already set.
-        /// Sets the project style to PackageReference.
-        /// </summary>
         public static PackageSpec EnsureProjectJsonRestoreMetadata(this PackageSpec spec)
         {
             if (string.IsNullOrEmpty(spec.RestoreMetadata?.ProjectUniqueName))
@@ -327,7 +313,7 @@ namespace NuGet.Commands.Test
             return actualAssetTargetFallback;
         }
 
-        private static PackageSpec GetPackageSpecWithProjectNameAndSpec(string projectName, string rootPath, string spec)
+        public static PackageSpec GetPackageSpecWithProjectNameAndSpec(string projectName, string rootPath, string spec)
         {
             return JsonPackageSpecReader.GetPackageSpec(spec, projectName, Path.Combine(rootPath, projectName, projectName)).WithTestRestoreMetadata();
         }
