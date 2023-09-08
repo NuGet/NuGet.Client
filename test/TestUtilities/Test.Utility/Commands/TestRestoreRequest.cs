@@ -205,6 +205,7 @@ namespace NuGet.Commands.Test
             DependencyGraphSpec.AddProject(project);
             DependencyGraphSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
             AllowNoOp = true;
+            ProjectStyle = project.RestoreMetadata.ProjectStyle;
         }
     }
 }

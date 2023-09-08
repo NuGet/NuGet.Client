@@ -24,6 +24,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Test;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Org.BouncyCastle.Asn1.Ocsp;
 using Test.Utility;
 using Test.Utility.Commands;
 using Test.Utility.ProjectManagement;
@@ -3188,6 +3189,91 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 d.DowngradedFrom.Key.ToString().Should().Be("PackageD (>= 2.0.0)");
                 d.DowngradedTo.Key.ToString().Should().Be("PackageD (>= 1.0.0)");
             }
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_WithConditionalProjectAndPackageReferences()
+        {
+            // Arrange
+            using var context = new SourceCacheContext();
+            using var pathContext = new SimpleTestPathContext();
+            // Add nuget.org for the extra package.
+            pathContext.Settings.AddSource("nuget.org", "https://api.nuget.org/v3/index.json");
+
+            var mainProject = "main";
+            var mainProjectPath = Path.Combine(pathContext.SolutionRoot, mainProject);
+
+            var childProject = "System.Numerics.Vectors";
+            var childProjectPath = Path.Combine(pathContext.SolutionRoot, childProject);
+
+            var mainProjectJson = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""netstandard2.0"": {
+                    ""imports"": [
+                                ""net461"",
+                                ""net462"",
+                                ""net47"",
+                                ""net471"",
+                                ""net472"",
+                                ""net48"",
+                                ""net481""
+                              ],
+                    ""assetTargetFallback"": true,
+                    ""dependencies"": {
+                        ""System.Memory"": {
+                                      ""target"": ""Package"",
+                                      ""version"": ""[4.5.5, )""
+                                    },
+                          ""NETStandard.Library"": {
+                                      ""suppressParent"": ""All"",
+                                      ""target"": ""Package"",
+                                      ""version"": ""[2.0.3, )"",
+                                      ""autoReferenced"": true
+                                    }
+                    }
+                },
+                ""net8.0"": {
+                    ""imports"": [
+                                ""net461"",
+                                ""net462"",
+                                ""net47"",
+                                ""net471"",
+                                ""net472"",
+                                ""net48"",
+                                ""net481""
+                              ],
+                    ""assetTargetFallback"": true,
+                    ""dependencies"": {
+                    }
+                }
+              }
+            }";
+            PackageSpec systemNumericsVectorPackageSpec = ProjectTestHelpers.GetPackageSpec(childProject, pathContext.SolutionRoot, "net8.0",
+                useAssetTargetFallback: true, "net461\",\"net462\",\"net47\",\"net471\",\"net472\",\"net48\",\"net481");
+            PackageSpec mainPackageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(mainProject, pathContext.SolutionRoot, mainProjectJson);
+            var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            mainPackageSpec.RestoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
+            mainPackageSpec.RestoreMetadata.Sources = SettingsUtility.GetEnabledSources(settings).ToList();
+            mainPackageSpec.RestoreMetadata.FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList();
+            mainPackageSpec.RestoreMetadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+
+            mainPackageSpec.RestoreMetadata.TargetFrameworks.Single(e => e.FrameworkName.Equals(NuGetFramework.Parse("net8.0")))
+                .ProjectReferences.Add(new ProjectRestoreReference()
+            {
+                ProjectUniqueName = systemNumericsVectorPackageSpec.RestoreMetadata.ProjectUniqueName,
+                ProjectPath = systemNumericsVectorPackageSpec.RestoreMetadata.ProjectPath,
+            });
+
+            var logger = new TestLogger();
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, mainPackageSpec, systemNumericsVectorPackageSpec);
+
+            var restoreCommand = new RestoreCommand(request);
+            RestoreResult result = await restoreCommand.ExecuteAsync();
+            await result.CommitAsync(logger, CancellationToken.None);
+
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
         }
 
         private static PackageSpec GetPackageSpec(string projectName, string testDirectory, string referenceSpec)
