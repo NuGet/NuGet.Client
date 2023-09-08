@@ -24,7 +24,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Test;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using Org.BouncyCastle.Asn1.Ocsp;
 using Test.Utility;
 using Test.Utility.Commands;
 using Test.Utility.ProjectManagement;
@@ -3211,16 +3210,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests
               ""version"": ""1.0.0"",
               ""frameworks"": {
                 ""netstandard2.0"": {
-                    ""imports"": [
-                                ""net461"",
-                                ""net462"",
-                                ""net47"",
-                                ""net471"",
-                                ""net472"",
-                                ""net48"",
-                                ""net481""
-                              ],
-                    ""assetTargetFallback"": true,
                     ""dependencies"": {
                         ""System.Memory"": {
                                       ""target"": ""Package"",
@@ -3235,23 +3224,12 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                     }
                 },
                 ""net8.0"": {
-                    ""imports"": [
-                                ""net461"",
-                                ""net462"",
-                                ""net47"",
-                                ""net471"",
-                                ""net472"",
-                                ""net48"",
-                                ""net481""
-                              ],
-                    ""assetTargetFallback"": true,
                     ""dependencies"": {
                     }
                 }
               }
             }";
-            PackageSpec systemNumericsVectorPackageSpec = ProjectTestHelpers.GetPackageSpec(childProject, pathContext.SolutionRoot, "net8.0",
-                useAssetTargetFallback: true, "net461\",\"net462\",\"net47\",\"net471\",\"net472\",\"net48\",\"net481");
+            PackageSpec systemNumericsVectorPackageSpec = ProjectTestHelpers.GetPackageSpec(childProject, pathContext.SolutionRoot, "net8.0");
             PackageSpec mainPackageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(mainProject, pathContext.SolutionRoot, mainProjectJson);
             var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             mainPackageSpec.RestoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
@@ -3271,9 +3249,17 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var restoreCommand = new RestoreCommand(request);
             RestoreResult result = await restoreCommand.ExecuteAsync();
-            await result.CommitAsync(logger, CancellationToken.None);
 
             result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.LogMessages.Should().BeEmpty();
+            var net80Target = result.LockFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net8.0")));
+            var netstandard20 = result.LockFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("netstandard2.0")));
+            net80Target.Libraries.Should().HaveCount(1);
+            var net80Vectors = net80Target.Libraries.Single(e => e.Name.Equals("System.Numerics.Vectors"));
+            net80Vectors.Version.Should().Be(new NuGetVersion(1, 0, 0));
+            netstandard20.Libraries.Should().HaveCount(6);
+            var ns20Target = netstandard20.Libraries.Single(e => e.Name.Equals("System.Numerics.Vectors"));
+            ns20Target.Version.Should().Be(new NuGetVersion(4, 4, 0));
         }
 
         private static PackageSpec GetPackageSpec(string projectName, string testDirectory, string referenceSpec)
