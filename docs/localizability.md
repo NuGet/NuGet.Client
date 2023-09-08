@@ -28,7 +28,7 @@ Although the steps below are for the dev branch, the process is similar for rele
 1. The localization team grabs the `localizationArtifacts` artifact from a NuGet.Client build.
 1. The localization team localizes strings and merges a ["LEGO" PR][5] with localized strings (in .lcl files).
 1. During the next NuGet.Client build, the build adds the [NuGet.Build.Localization][6] repository as a submodule of the NuGet.Client repository and checks out a branch of the same name as the NuGet.Client repository (e.g.:  dev, release-6.7.x, etc.).  Localized resources are [made available][7] to localized builds through the `NuGetBuildLocalizationRepository` property.
-1. When the build completes, the product is localized using localizations base on an earlier commit.  (This means strings added since then won't be localized.)
+1. When the build completes, the product is localized using localizations based on an earlier commit.  (This means strings added since then won't be localized.)
 
 Typically, the data flow would look something like this.  However, because NuGet.Client's build ignores resource comments in .resx files, those comments and .lce files do not contribute to the localization process.
 
