@@ -742,7 +742,7 @@ namespace NuGet.Commands.FuncTest
                 assetTargetFallbackFrameworks: "net472",
                 asAssetTargetFallback: false);
             var logger = new TestLogger();
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, pathContext, logger));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1spec));
 
             // Act
             var result = await command.ExecuteAsync();
@@ -2248,7 +2248,7 @@ namespace NuGet.Commands.FuncTest
             pathContext.Settings.AddPackageSourceMapping("InvalidSource", packageA.Id);
             ISettings settings = Settings.LoadSettingsGivenConfigPaths(new string[] { pathContext.Settings.ConfigPath });
 
-            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecForAllProjects(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
@@ -2303,7 +2303,7 @@ namespace NuGet.Commands.FuncTest
             pathContext.Settings.AddPackageSourceMapping(PrimarySourceName, packageA.Id);
             ISettings settings = Settings.LoadSettingsGivenConfigPaths(new string[] { pathContext.Settings.ConfigPath });
 
-            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecForAllProjects(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
@@ -2359,7 +2359,7 @@ namespace NuGet.Commands.FuncTest
             pathContext.Settings.AddPackageSourceMapping(PrimarySourceName, packageA.Id);
             ISettings settings = Settings.LoadSettingsGivenConfigPaths(new string[] { pathContext.Settings.ConfigPath });
 
-            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            DependencyGraphSpec dgSpec = ProjectTestHelpers.GetDGSpecForAllProjects(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(
                 new RestoreCommandProvidersCache(),
                 dgSpec,
@@ -3476,7 +3476,7 @@ namespace NuGet.Commands.FuncTest
             cppCliProject = cppCliProject.WithTestProjectReference(managedProject);
             CreateFakeProjectFile(managedProject);
 
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(cppCliProject, new PackageSpec[] { managedProject }, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), cppCliProject, managedProject));
 
             // Preconditions
             var result = await command.ExecuteAsync();
@@ -3689,7 +3689,7 @@ namespace NuGet.Commands.FuncTest
                 packageB);
 
             var spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(spec, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), spec));
 
             // Act
             var result = await command.ExecuteAsync();
@@ -3725,7 +3725,7 @@ namespace NuGet.Commands.FuncTest
                 packageB);
 
             var spec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(spec, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), spec));
 
             // Act
             var result = await command.ExecuteAsync();
@@ -3761,7 +3761,7 @@ namespace NuGet.Commands.FuncTest
                 packageB);
 
             var spec = ProjectTestHelpers.GetPackageSpec("TestProject", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a", useAssetTargetFallback: true, assetTargetFallbackFrameworks: "net472");
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(spec, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), spec));
 
             // Act
             var result = await command.ExecuteAsync();
@@ -3797,7 +3797,7 @@ namespace NuGet.Commands.FuncTest
             project1spec = project1spec.WithTestProjectReference(project2spec);
             CreateFakeProjectFile(project2spec);
 
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec }, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), project1spec, project2spec));
 
             // Act
             var result = await command.ExecuteAsync();
@@ -3829,7 +3829,7 @@ namespace NuGet.Commands.FuncTest
             CreateFakeProjectFile(project2spec);
             CreateFakeProjectFile(project3spec);
 
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec, project3spec }, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), project1spec, project2spec, project3spec));
 
             // Act
             var result = await command.ExecuteAsync();
@@ -3867,7 +3867,7 @@ namespace NuGet.Commands.FuncTest
             project1spec = project1spec.WithTestProjectReference(project2spec);
             CreateFakeProjectFile(project2spec);
 
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec }, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), project1spec, project2spec));
 
             // Act
             var result = await command.ExecuteAsync();
@@ -3910,7 +3910,7 @@ namespace NuGet.Commands.FuncTest
             project1spec = project1spec.WithTestProjectReference(project2spec);
             CreateFakeProjectFile(project2spec);
 
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, new PackageSpec[] { project2spec, project3spec }, pathContext, new TestLogger()));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), project1spec, project2spec, project3spec));
 
             // Act
             var result = await command.ExecuteAsync();
@@ -3938,10 +3938,10 @@ namespace NuGet.Commands.FuncTest
             // Set-up command.
             var command = new RestoreCommand(
                 ProjectTestHelpers.CreateRestoreRequest(
-                    ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.Id),
                     pathContext,
-                    new TestLogger()));
-
+                    new TestLogger(),
+                    ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageA.Id)));
+            // todo - add sources
             // Act
             var result = await command.ExecuteAsync();
 
@@ -4005,7 +4005,7 @@ namespace NuGet.Commands.FuncTest
                 CacheContext = new SourceCacheContext()
             };
 
-            var dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            var dgSpec = ProjectTestHelpers.GetDGSpecForAllProjects(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgSpec);
 
             foreach (var request in await dgProvider.CreateRequests(restoreContext))
@@ -4050,7 +4050,7 @@ namespace NuGet.Commands.FuncTest
                 CacheContext = cacheContext,
             };
 
-            var dgSpec = ProjectTestHelpers.GetDGSpecFromPackageSpecs(project1Spec, project2Spec);
+            var dgSpec = ProjectTestHelpers.GetDGSpecForAllProjects(project1Spec, project2Spec);
             var dgProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgSpec);
 
             foreach (var request in await dgProvider.CreateRequests(restoreContext))
@@ -4078,7 +4078,7 @@ namespace NuGet.Commands.FuncTest
             var logger = new TestLogger();
             ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
-            var request = ProjectTestHelpers.CreateRestoreRequest(project1Spec, pathContext, logger);
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
             var command = new RestoreCommand(request);
 
             // Act
@@ -4112,9 +4112,9 @@ namespace NuGet.Commands.FuncTest
                 dependencyName: "a",
                 useAssetTargetFallback: true,
                 assetTargetFallbackFrameworks: "net472",
-                asAssetTargetFallback: true);
+                asAssetTargetFallback: true); // add sources
 
-            var request = ProjectTestHelpers.CreateRestoreRequest(projectSpec, pathContext, logger);
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, projectSpec);
             var command = new RestoreCommand(request);
 
             // Act
@@ -4150,7 +4150,7 @@ namespace NuGet.Commands.FuncTest
             project1spec.RestoreMetadata.ProjectWideWarningProperties.WarningsNotAsErrors.Add(NuGetLogCode.NU1701);
 
             var logger = new TestLogger();
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(project1spec, pathContext, logger));
+            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1spec));
 
             // Act
             RestoreResult result = await command.ExecuteAsync();
