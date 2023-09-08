@@ -10,6 +10,9 @@ using NuGet.Versioning;
 
 namespace NuGet.Protocol.Converters
 {
+    /// <summary>
+    /// A <see cref="JsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="VersionRange"/>
+    /// </summary>
     internal class VersionRangeStjConverter : JsonConverter<VersionRange>
     {
         public override VersionRange Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -18,7 +21,7 @@ namespace NuGet.Protocol.Converters
             if (stringValue == null)
             {
                 // This is actually impossible to get to, because JsonSerializer won't call into the converter when the JSON is null
-                throw new JsonException("Value for version range cannot be null");
+                throw new InvalidOperationException("Value for version range cannot be null");
             }
 
             return VersionRange.Parse(stringValue);

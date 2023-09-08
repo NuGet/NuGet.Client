@@ -58,5 +58,33 @@ namespace NuGet.Protocol.Tests.Converters
             const string expected = $"\"{rangeString}\"";
             actual.Should().Be(expected);
         }
+
+        [Fact]
+        public void VersionRange_RoundTripsSerialization()
+        {
+            // Arrange
+            var range = VersionRange.Parse("[1.0.0, 2.0.0)");
+
+            // Act
+            var json = JsonSerializer.Serialize(range, JsonExtensions.JsonSerializerOptions);
+            var actual = JsonSerializer.Deserialize<VersionRange>(json, JsonExtensions.JsonSerializerOptions);
+
+            // Assert
+            actual.Should().BeEquivalentTo(range);
+        }
+
+        [Fact]
+        public void Json_RoundTripsSerialization()
+        {
+            // Arrange
+            var json = "\"[1.0.0, 2.0.0)\"";
+
+            // Act
+            var versionRange = JsonSerializer.Deserialize<VersionRange>(json, JsonExtensions.JsonSerializerOptions);
+            var actual = JsonSerializer.Serialize(versionRange, JsonExtensions.JsonSerializerOptions);
+
+            // Assert
+            actual.Should().Be(json);
+        }
     }
 }
