@@ -367,12 +367,6 @@ namespace NuGet.Common
         NU1904 = 1904,
 
         /// <summary>
-        /// NuGetAudit enabled, but no vulnerability data found
-        /// </summary>
-        /// <remarks>Was added in 6.7 client SDK, but then removed from use in 6.8</remarks>
-        NU1905 = 1905,
-
-        /// <summary>
         /// Undefined signature error
         /// </summary>
         NU3000 = 3000,
