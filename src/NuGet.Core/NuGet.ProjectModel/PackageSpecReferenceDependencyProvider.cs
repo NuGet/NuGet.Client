@@ -86,7 +86,8 @@ namespace NuGet.ProjectModel
             // This must exist in the external references
             if (_externalProjectsByUniqueName.TryGetValue(name, out ExternalProjectReference externalReference))
             {
-                if (libraryRange.VersionRange.FindBestMatch(new NuGetVersion[] { externalReference.PackageSpec.Version }) != null)
+                if (externalReference.PackageSpec == null ||
+                    libraryRange.VersionRange.FindBestMatch(new NuGetVersion[] { externalReference.PackageSpec.Version }) != null)
                 {
                     packageSpec = externalReference.PackageSpec;
                 }
