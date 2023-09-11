@@ -9,13 +9,13 @@ using System.Linq;
 
 namespace NuGet.ContentModel.Infrastructure
 {
-    public class PatternExpression
+    internal class PatternExpression
     {
         private readonly List<Segment> _segments = new List<Segment>();
         private readonly Dictionary<string, object> _defaults;
         private readonly PatternTable _table;
 
-        public PatternExpression(PatternDefinition pattern)
+        internal PatternExpression(PatternDefinition pattern)
         {
             _table = pattern.Table;
             _defaults = pattern.Defaults.ToDictionary(p => p.Key, p => p.Value);
@@ -64,7 +64,7 @@ namespace NuGet.ContentModel.Infrastructure
             }
         }
 
-        public ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
+        internal ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
         {
             ContentItem item = null;
             var startIndex = 0;
