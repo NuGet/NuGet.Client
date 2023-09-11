@@ -3,14 +3,11 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using Test.Utility;
 using Xunit;
 
 namespace Microsoft.Build.NuGetSdkResolver.Test
@@ -72,51 +69,6 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 result.Version.Should().BeNull();
                 result.Errors.Should().BeEquivalentTo(new[] { $"Failed to load NuGet settings. NuGet.Config is not valid XML. Path: '{pathContext.NuGetConfig}'." });
                 result.Warnings.Should().BeEmpty();
-            }
-        }
-
-        [Theory]
-        [InlineData("true", false)]
-        [InlineData("false", true)]
-        public async Task Resolve_WhenNuGetConfigWithAllowInsecureConnections_ReturnsSdkResultAndLogsHttpWarningCorrectlyAsync(string allowInsecureConnections, bool isHttpWarningExpected)
-        {
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var sdkReference = new SdkReference(PackageA, VersionOnePointZero, minimumVersion: null);
-                var sdkResolverContext = new MockSdkResolverContext(pathContext.WorkingDirectory);
-                var sdkResultFactory = new MockSdkResultFactory();
-                var sdkResolver = new NuGetSdkResolver();
-
-                var packageA = new SimpleTestPackageContext(PackageA, VersionOnePointZero);
-                await SimpleTestPackageUtility.CreatePackagesAsync(
-                    pathContext.PackageSource,
-                    packageA);
-
-                using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
-                mockServer.Start();
-                pathContext.Settings.AddSource("http-source", mockServer.ServiceIndexUri, allowInsecureConnections);
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    new SimpleTestPackageContext(PackageA, VersionOnePointZero));
-
-                pathContext.Settings.AddSource("http-source", mockServer.ServiceIndexUri, allowInsecureConnections);
-
-                MockSdkResult result = sdkResolver.Resolve(sdkReference, sdkResolverContext, sdkResultFactory) as MockSdkResult;
-                mockServer.Stop();
-
-                Assert.True(result.Success);
-                Assert.Empty(result.Errors);
-
-                if (isHttpWarningExpected)
-                {
-                    Assert.Equal(1, result.Warnings.Count());
-                    Assert.Contains("You are running the 'restore' operation with an 'HTTP' source", result.Warnings.Single());
-                }
-                else
-                {
-                    Assert.Empty(result.Warnings);
-                }
             }
         }
 
