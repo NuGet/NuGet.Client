@@ -9,13 +9,13 @@ using System.Linq;
 
 namespace NuGet.ContentModel.Infrastructure
 {
-    internal class PatternExpression
+    public class PatternExpression
     {
         private readonly List<Segment> _segments = new List<Segment>();
         private readonly Dictionary<string, object> _defaults;
         private readonly PatternTable _table;
 
-        internal PatternExpression(PatternDefinition pattern)
+        public PatternExpression(PatternDefinition pattern)
         {
             _table = pattern.Table;
             _defaults = pattern.Defaults.ToDictionary(p => p.Key, p => p.Value);
