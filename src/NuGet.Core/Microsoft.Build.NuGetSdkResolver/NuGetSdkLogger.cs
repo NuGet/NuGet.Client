@@ -55,6 +55,8 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <inheritdoc cref="ILogger.Log(NuGet.Common.LogLevel, string)" />
         public void Log(LogLevel level, string data)
         {
+            NuGetEventSource.Instance.LogMessage(level, data);
+
             switch (level)
             {
                 case LogLevel.Debug:

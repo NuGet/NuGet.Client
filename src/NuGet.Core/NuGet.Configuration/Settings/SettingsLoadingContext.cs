@@ -71,6 +71,8 @@ namespace NuGet.Configuration
                     // Load the settings file, this will throw an exception if something is wrong with the file
                     var settingsFile = new SettingsFile(fileInfo.DirectoryName, fileInfo.Name, isMachineWide, isReadOnly);
 
+                    NuGetEventSource.Instance.ConfigurationSettingsLoadingContextFileRead(fileInfo.FullName, isMachineWide, isReadOnly);
+
                     // Fire the FileRead event so unit tests can detect when a file was actually read versus cached
                     FileRead?.Invoke(this, fileInfo.FullName);
 

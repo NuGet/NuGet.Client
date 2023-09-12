@@ -108,15 +108,24 @@ namespace NuGet.Configuration
             IsMachineWide = isMachineWide;
             IsReadOnly = IsMachineWide || isReadOnly;
 
-            XDocument config = null;
-            ExecuteSynchronized(() =>
+            NuGetEventSource.Instance.ConfigurationSettingsFileReadStart(ConfigFilePath, isMachineWide, isReadOnly);
+
+            try
             {
-                config = FileSystemUtility.GetOrCreateDocument(CreateDefaultConfig(), ConfigFilePath);
-            });
+                XDocument config = null;
+                ExecuteSynchronized(() =>
+                {
+                    config = FileSystemUtility.GetOrCreateDocument(CreateDefaultConfig(), ConfigFilePath);
+                });
 
-            _xDocument = config;
+                _xDocument = config;
 
-            _rootElement = new NuGetConfiguration(_xDocument.Root, origin: this);
+                _rootElement = new NuGetConfiguration(_xDocument.Root, origin: this);
+            }
+            finally
+            {
+                NuGetEventSource.Instance.ConfigurationSettingsFileReadStop(ConfigFilePath, isMachineWide, isReadOnly);
+            }
         }
 
         /// <summary>

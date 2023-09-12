@@ -20,35 +20,47 @@ namespace NuGet.Common.Migrations
 
         internal static void Run(string migrationsDirectory)
         {
+            NuGetEventSource.Instance.MigrationRunnerStart();
+
+            var migrationPerformed = false;
             var expectedMigrationFilename = Path.Combine(migrationsDirectory, MaxMigrationFilename);
 
-            if (!File.Exists(expectedMigrationFilename))
+            try
             {
-                // Multiple processes or threads might be trying to call this concurrently (especially via NuGetSdkResolver)
-                // so use a global mutex and then check if someone else already did the work.
-                using (var mutex = new Mutex(false, "NuGet-Migrations"))
+                if (!File.Exists(expectedMigrationFilename))
                 {
-                    if (WaitForMutex(mutex))
+                    // Multiple processes or threads might be trying to call this concurrently (especially via NuGetSdkResolver)
+                    // so use a global mutex and then check if someone else already did the work.
+                    using (var mutex = new Mutex(false, "NuGet-Migrations"))
                     {
-                        try
+                        if (WaitForMutex(mutex))
                         {
-                            Directory.CreateDirectory(migrationsDirectory);
-
-                            // Only run migrations that have not already been run
-                            if (!File.Exists(expectedMigrationFilename))
+                            try
                             {
-                                Migration1.Run();
-                                // Create file for the migration run, so that if an older version of NuGet is run, it doesn't try to run migrations again.
-                                File.WriteAllText(expectedMigrationFilename, string.Empty);
+                                Directory.CreateDirectory(migrationsDirectory);
+
+                                // Only run migrations that have not already been run
+                                if (!File.Exists(expectedMigrationFilename))
+                                {
+                                    migrationPerformed = true;
+
+                                    Migration1.Run();
+                                    // Create file for the migration run, so that if an older version of NuGet is run, it doesn't try to run migrations again.
+                                    File.WriteAllText(expectedMigrationFilename, string.Empty);
+                                }
                             }
-                        }
-                        catch { }
-                        finally
-                        {
-                            mutex.ReleaseMutex();
+                            catch { }
+                            finally
+                            {
+                                mutex.ReleaseMutex();
+                            }
                         }
                     }
                 }
+            }
+            finally
+            {
+                NuGetEventSource.Instance.MigrationRunnerStop(expectedMigrationFilename, migrationPerformed);
             }
 
             static bool WaitForMutex(Mutex mutex)
