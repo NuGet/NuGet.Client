@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -28,6 +29,11 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// The name of the section in global.json that contains MSBuild project SDK versions.
         /// </summary>
         public const string MSBuildSdksPropertyName = "msbuild-sdks";
+
+        /// <summary>
+        /// A trace event name for when a global.json file is read.
+        /// </summary>
+        private const string EventNameGlobalJsonRead = nameof(SdkResolver) + "/GlobalJsonRead";
 
         /// <summary>
         /// Represents a thread-safe cache for files based on their full path and last write time.
@@ -239,7 +245,22 @@ namespace Microsoft.Build.NuGetSdkResolver
             // Load the file as a string and check if it has an msbuild-sdks section.  Parsing the contents requires Newtonsoft.Json.dll to be loaded which can be expensive
             string json;
 
-            NuGetEventSource.Instance.SdkResolverGlobalJsonReadStart(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
+            var eventData = new
+            {
+                Path = globalJsonPath,
+                ProjectFullPath = sdkResolverContext.ProjectFilePath,
+                SolutionFullPath = sdkResolverContext.SolutionFilePath
+            };
+
+            NuGetEventSource.Instance.Write(
+                EventNameGlobalJsonRead,
+                new EventSourceOptions
+                {
+                    ActivityOptions = EventActivityOptions.Detachable,
+                    Keywords = NuGetEventSource.Keywords.SdkResolver | NuGetEventSource.Keywords.Performance,
+                    Opcode = EventOpcode.Start
+                },
+                eventData);
 
             try
             {
@@ -278,7 +299,15 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
             finally
             {
-                NuGetEventSource.Instance.SdkResolverGlobalJsonReadStop(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
+                NuGetEventSource.Instance.Write(
+                EventNameGlobalJsonRead,
+                new EventSourceOptions
+                {
+                    ActivityOptions = EventActivityOptions.Detachable,
+                    Keywords = NuGetEventSource.Keywords.SdkResolver | NuGetEventSource.Keywords.Performance,
+                    Opcode = EventOpcode.Stop
+                },
+                eventData);
             }
         }
     }

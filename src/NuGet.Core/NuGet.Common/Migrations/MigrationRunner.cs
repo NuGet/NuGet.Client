@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Threading;
 
@@ -9,6 +10,8 @@ namespace NuGet.Common.Migrations
 {
     public static class MigrationRunner
     {
+        private const string EventNameMigrationRun = nameof(MigrationRunner) + "/" + nameof(Run);
+
         private const string MaxMigrationFilename = "1";
 
         public static void Run()
@@ -20,7 +23,14 @@ namespace NuGet.Common.Migrations
 
         internal static void Run(string migrationsDirectory)
         {
-            NuGetEventSource.Instance.MigrationRunnerStart();
+            NuGetEventSource.Instance.Write(
+                EventNameMigrationRun,
+                new EventSourceOptions
+                {
+                    ActivityOptions = EventActivityOptions.Detachable,
+                    Keywords = NuGetEventSource.Keywords.Common | NuGetEventSource.Keywords.Performance,
+                    Opcode = EventOpcode.Start
+                });
 
             var migrationPerformed = false;
             var expectedMigrationFilename = Path.Combine(migrationsDirectory, MaxMigrationFilename);
@@ -60,7 +70,19 @@ namespace NuGet.Common.Migrations
             }
             finally
             {
-                NuGetEventSource.Instance.MigrationRunnerStop(expectedMigrationFilename, migrationPerformed);
+                NuGetEventSource.Instance.Write(
+                    EventNameMigrationRun,
+                    new EventSourceOptions
+                    {
+                        ActivityOptions = EventActivityOptions.Detachable,
+                        Keywords = NuGetEventSource.Keywords.Common | NuGetEventSource.Keywords.Performance,
+                        Opcode = EventOpcode.Stop
+                    },
+                    new
+                    {
+                        MigrationFileFullPath = expectedMigrationFilename,
+                        MigrationPerformed = migrationPerformed
+                    });
             }
 
             static bool WaitForMutex(Mutex mutex)

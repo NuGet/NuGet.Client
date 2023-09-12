@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.Tracing;
 using System.IO;
 using NuGet.Common;
 
@@ -14,6 +15,11 @@ namespace NuGet.Configuration
     /// </summary>
     public sealed class SettingsLoadingContext : IDisposable
     {
+        /// <summary>
+        /// A trace event name for when a settings file is read.
+        /// </summary>
+        private const string EventNameFileRead = nameof(SettingsLoadingContext) + "/" + nameof(FileRead);
+
         private readonly ConcurrentDictionary<string, Lazy<SettingsFile>> _cache = new ConcurrentDictionary<string, Lazy<SettingsFile>>(PathUtility.GetStringComparerBasedOnOS());
 
         private bool _isDisposed;
@@ -71,15 +77,31 @@ namespace NuGet.Configuration
                     // Load the settings file, this will throw an exception if something is wrong with the file
                     var settingsFile = new SettingsFile(fileInfo.DirectoryName, fileInfo.Name, isMachineWide, isReadOnly);
 
-                    NuGetEventSource.Instance.ConfigurationSettingsLoadingContextFileRead(fileInfo.FullName, isMachineWide, isReadOnly);
-
-                    // Fire the FileRead event so unit tests can detect when a file was actually read versus cached
-                    FileRead?.Invoke(this, fileInfo.FullName);
+                    OnFileRead(fileInfo.FullName, isMachineWide, isReadOnly);
 
                     return settingsFile;
                 }));
 
             return settingsLazy.Value;
+        }
+
+        private void OnFileRead(string fullPath, bool isMachineWide, bool isReadOnly)
+        {
+            NuGetEventSource.Instance.Write(
+                EventNameFileRead,
+                new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Configuration,
+                },
+                new
+                {
+                    FullPath = fullPath,
+                    IsMachineWide = isMachineWide,
+                    IsReadOnly = isReadOnly
+                });
+
+            // Fire the FileRead event so unit tests can detect when a file was actually read versus cached
+            FileRead?.Invoke(this, fullPath);
         }
     }
 }

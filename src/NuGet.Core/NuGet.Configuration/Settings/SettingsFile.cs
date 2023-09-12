@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
 using System.Xml;
@@ -13,6 +14,11 @@ namespace NuGet.Configuration
 {
     internal sealed class SettingsFile
     {
+        /// <summary>
+        /// An trace event name for when a settings file is read.
+        /// </summary>
+        private const string ConfigurationSettingsFileRead = nameof(SettingsFile) + "/FileRead";
+
         /// <summary>
         /// Full path to the settings file
         /// </summary>
@@ -108,7 +114,20 @@ namespace NuGet.Configuration
             IsMachineWide = isMachineWide;
             IsReadOnly = IsMachineWide || isReadOnly;
 
-            NuGetEventSource.Instance.ConfigurationSettingsFileReadStart(ConfigFilePath, isMachineWide, isReadOnly);
+            NuGetEventSource.Instance.Write(
+                ConfigurationSettingsFileRead,
+                new EventSourceOptions
+                {
+                    ActivityOptions = EventActivityOptions.Detachable,
+                    Keywords = NuGetEventSource.Keywords.Configuration,
+                    Opcode = EventOpcode.Start,
+                },
+                new
+                {
+                    ConfigFilePath,
+                    IsMachineWide = isMachineWide,
+                    IsReadOnly = isReadOnly
+                });
 
             try
             {
@@ -124,7 +143,20 @@ namespace NuGet.Configuration
             }
             finally
             {
-                NuGetEventSource.Instance.ConfigurationSettingsFileReadStop(ConfigFilePath, isMachineWide, isReadOnly);
+                NuGetEventSource.Instance.Write(
+                    ConfigurationSettingsFileRead,
+                    new EventSourceOptions
+                    {
+                        ActivityOptions = EventActivityOptions.Detachable,
+                        Keywords = NuGetEventSource.Keywords.Configuration,
+                        Opcode = EventOpcode.Stop,
+                    },
+                    new
+                    {
+                        ConfigFilePath,
+                        IsMachineWide = isMachineWide,
+                        IsReadOnly = isReadOnly
+                    });
             }
         }
 

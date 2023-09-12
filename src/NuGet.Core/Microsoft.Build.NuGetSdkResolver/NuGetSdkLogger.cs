@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using NuGet.Common;
@@ -55,7 +56,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <inheritdoc cref="ILogger.Log(NuGet.Common.LogLevel, string)" />
         public void Log(LogLevel level, string data)
         {
-            NuGetEventSource.Instance.LogMessage(level, data);
+            EventLevel eventLevel = EventLevel.LogAlways;
 
             switch (level)
             {
@@ -63,26 +64,49 @@ namespace Microsoft.Build.NuGetSdkResolver
                 case LogLevel.Verbose:
                     // Debug and Verbose verbosity in NuGet maps to a low importance message in MSBuild
                     _sdkLogger.LogMessage(data, MessageImportance.Low);
+
+                    eventLevel = EventLevel.Verbose;
                     break;
 
                 case LogLevel.Information:
                     // Information verbosity in NuGet maps to a normal importance message in MSBuild
                     _sdkLogger.LogMessage(data, MessageImportance.Normal);
+
+                    eventLevel = EventLevel.Informational;
                     break;
 
                 case LogLevel.Minimal:
                     // Minimal verbosity in NuGet maps to a high importance message in MSBuild
                     _sdkLogger.LogMessage(data, MessageImportance.High);
+
+                    eventLevel = EventLevel.LogAlways;
                     break;
 
                 case LogLevel.Warning:
                     _warnings.Add(data);
+
+                    eventLevel = EventLevel.Warning;
                     break;
 
                 case LogLevel.Error:
                     _errors.Add(data);
+
+                    eventLevel = EventLevel.Error;
                     break;
             }
+
+            NuGetEventSource.Instance.Write(
+                "SdkResolver/LogMessage",
+                new EventSourceOptions
+                {
+                    Level = eventLevel,
+                    Keywords = NuGetEventSource.Keywords.Logging,
+                },
+                new
+                {
+                    Level = level,
+                    Message = data
+                });
         }
 
         /// <inheritdoc cref="ILogger.LogAsync(ILogMessage)" />

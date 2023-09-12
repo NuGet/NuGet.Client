@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -30,6 +31,11 @@ namespace Microsoft.Build.NuGetSdkResolver
     /// </summary>
     public sealed class NuGetSdkResolver : SdkResolver
     {
+        private const string EventNameGetSdkResult = nameof(SdkResolver) + "/" + nameof(NuGetAbstraction.GetSdkResult);
+        private const string EventNameLoadSettings = nameof(SdkResolver) + "/LoadSettings";
+        private const string SdkResolverResolve = nameof(SdkResolver) + "/" + nameof(Resolve);
+        private const string SdkResolverRestorePackage = nameof(SdkResolver) + "/RestorePackage";
+
         private static readonly Lazy<bool> DisableNuGetSdkResolver = new Lazy<bool>(() => Environment.GetEnvironmentVariable("MSBUILDDISABLENUGETSDKRESOLVER") == "1");
 
         private static readonly Lazy<object> SettingsLoadContext = new Lazy<object>(() => new SettingsLoadingContext());
@@ -82,7 +88,21 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return factory.IndicateFailure(errors: new List<string>() { Strings.Error_DisabledSdkResolver }, warnings: null);
             }
 
-            NuGetEventSource.Instance.SdkResolverResolveStart(sdkReference.Name, sdkReference.Version);
+            var eventData = new
+            {
+                sdkReference.Name,
+                sdkReference.Version
+            };
+
+            NuGetEventSource.Instance.Write(
+                SdkResolverResolve,
+                new EventSourceOptions
+                {
+                    ActivityOptions = EventActivityOptions.Detachable,
+                    Keywords = NuGetEventSource.Keywords.SdkResolver | NuGetEventSource.Keywords.Performance,
+                    Opcode = EventOpcode.Start
+                },
+                eventData);
 
             try
             {
@@ -102,7 +122,15 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
             finally
             {
-                NuGetEventSource.Instance.SdkResolverResolveStop(sdkReference.Name, sdkReference.Version);
+                NuGetEventSource.Instance.Write(
+                    SdkResolverResolve,
+                    new EventSourceOptions
+                    {
+                        ActivityOptions = EventActivityOptions.Detachable,
+                        Keywords = NuGetEventSource.Keywords.SdkResolver | NuGetEventSource.Keywords.Performance,
+                        Opcode = EventOpcode.Stop
+                    },
+                    eventData);
             }
         }
 
@@ -153,9 +181,29 @@ namespace Microsoft.Build.NuGetSdkResolver
                 // Cast the NuGet version since the caller does not want to consume NuGet classes directly
                 var parsedSdkVersion = (NuGetVersion)nuGetVersion;
 
-                NuGetEventSource.Instance.SdkResolverGetResultStart(sdk.Name, parsedSdkVersion.OriginalVersion);
 
-                NuGetEventSource.Instance.SdkResolverLoadSettingsStart();
+                NuGetEventSource.Instance.Write(
+                    EventNameGetSdkResult,
+                    new EventSourceOptions
+                    {
+                        ActivityOptions = EventActivityOptions.Detachable,
+                        Keywords = NuGetEventSource.Keywords.Performance | NuGetEventSource.Keywords.SdkResolver,
+                        Opcode = EventOpcode.Start
+                    },
+                    new
+                    {
+                        Id = sdk.Name,
+                        Version = parsedSdkVersion.OriginalVersion
+                    });
+
+                NuGetEventSource.Instance.Write(
+                   EventNameLoadSettings,
+                   new EventSourceOptions
+                   {
+                       ActivityOptions = EventActivityOptions.Detachable,
+                       Keywords = NuGetEventSource.Keywords.Performance | NuGetEventSource.Keywords.SdkResolver,
+                       Opcode = EventOpcode.Start
+                   });
 
                 SdkResult result = null;
 
@@ -177,7 +225,14 @@ namespace Microsoft.Build.NuGetSdkResolver
                     }
                     finally
                     {
-                        NuGetEventSource.Instance.SdkResolverLoadSettingsStop();
+                        NuGetEventSource.Instance.Write(
+                            EventNameLoadSettings,
+                            new EventSourceOptions
+                            {
+                                ActivityOptions = EventActivityOptions.Detachable,
+                                Keywords = NuGetEventSource.Keywords.Performance | NuGetEventSource.Keywords.SdkResolver,
+                                Opcode = EventOpcode.Stop
+                            });
                     }
 
                     var fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
@@ -194,7 +249,21 @@ namespace Microsoft.Build.NuGetSdkResolver
 #if !NETFRAMEWORK
                             X509TrustStore.InitializeForDotNetSdk(logger);
 #endif
-                            NuGetEventSource.Instance.SdkResolverRestorePackageStart(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
+                            var eventData = new
+                            {
+                                libraryIdentity.Name,
+                                Version = libraryIdentity.Version.OriginalVersion
+                            };
+
+                            NuGetEventSource.Instance.Write(
+                                SdkResolverRestorePackage,
+                                new EventSourceOptions
+                                                                                              {
+                                    ActivityOptions = EventActivityOptions.Detachable,
+                                    Keywords = NuGetEventSource.Keywords.Performance | NuGetEventSource.Keywords.SdkResolver,
+                                    Opcode = EventOpcode.Start
+                                },
+                                eventData);
 
                             // Asynchronously run the restore without a commit which find the package on configured feeds, download, and unzip it without generating any other files
                             // This must be run in its own task because legacy project system evaluates projects on the UI thread which can cause RunWithoutCommit() to deadlock
@@ -206,7 +275,15 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                             var results = restoreTask.Result;
 
-                            NuGetEventSource.Instance.SdkResolverRestorePackageStop(libraryIdentity.Name, libraryIdentity.Version.OriginalVersion);
+                            NuGetEventSource.Instance.Write(
+                                SdkResolverRestorePackage,
+                                new EventSourceOptions
+                                {
+                                    ActivityOptions = EventActivityOptions.Detachable,
+                                    Keywords = NuGetEventSource.Keywords.Performance | NuGetEventSource.Keywords.SdkResolver,
+                                    Opcode = EventOpcode.Stop
+                                },
+                                eventData);
 
                             fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
 
@@ -259,7 +336,21 @@ namespace Microsoft.Build.NuGetSdkResolver
                 }
                 finally
                 {
-                    NuGetEventSource.Instance.SdkResolverGetResultStop(sdk.Name, parsedSdkVersion.OriginalVersion, result?.Path, result == null ? false : result.Success);
+                    NuGetEventSource.Instance.Write(
+                        EventNameGetSdkResult,
+                        new EventSourceOptions
+                        {
+                            ActivityOptions = EventActivityOptions.Detachable,
+                            Keywords = NuGetEventSource.Keywords.Performance | NuGetEventSource.Keywords.SdkResolver,
+                            Opcode = EventOpcode.Stop
+                        },
+                        new
+                        {
+                            Id = sdk.Name,
+                            Version = parsedSdkVersion.OriginalVersion,
+                            InstallPath = result?.Path,
+                            Success = result == null ? false : result.Success
+                        });
                 }
             }
 
