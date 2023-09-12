@@ -237,13 +237,9 @@ namespace NuGet.Common
             /// </summary>
             public static class Common
             {
-                public const int LogMessage = 2;
-                public const int LogMessageError = 1;
-                public const int LogMessageMinimal = 3;
-                public const int LogMessageVerbose = 4;
-                public const int LogMessageWarning = 5;
-                public const int MigrationRunnerStart = 6;
-                public const int MigrationRunnerStop = 7;
+                public const int LogMessage = 1;
+                public const int MigrationRunnerStart = 2;
+                public const int MigrationRunnerStop = 3;
             }
 
             /// <summary>
