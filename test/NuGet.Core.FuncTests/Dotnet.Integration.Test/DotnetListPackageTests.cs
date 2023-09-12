@@ -625,8 +625,10 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public async Task ListPackage_WithHttpSource_Warns()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("true", false)]
+        [InlineData("false", true)]
+        public async Task ListPackage_WithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
@@ -647,7 +649,7 @@ namespace Dotnet.Integration.Test
 
             using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             mockServer.Start();
-            pathContext.Settings.AddSource("http-source", mockServer.ServiceIndexUri);
+            pathContext.Settings.AddSource("http-source", mockServer.ServiceIndexUri, allowInsecureConnections);
 
             _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"add package A --version 1.0.0");
 
@@ -658,7 +660,14 @@ namespace Dotnet.Integration.Test
             // Assert
             var lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             Assert.True(lines.Any(l => l.Contains("> A                    1.0.0       1.0.0      2.0.0")), listResult.AllOutput);
-            Assert.True(lines.Any(l => l.Contains("warn : You are running the 'list package' operation with an 'HTTP' source")), listResult.AllOutput);
+            if (isHttpWarningExpected)
+            {
+                Assert.Contains("warn : You are running the 'list package' operation with an 'HTTP' source", listResult.AllOutput);
+            }
+            else
+            {
+                Assert.DoesNotContain("warn : You are running the 'list package' operation with an 'HTTP' source", listResult.AllOutput);
+            }
         }
 
         private static string CollapseSpaces(string input)
