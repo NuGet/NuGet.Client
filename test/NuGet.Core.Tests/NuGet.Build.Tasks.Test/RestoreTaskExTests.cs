@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
@@ -58,21 +59,80 @@ namespace NuGet.Build.Tasks.Test
                     MSBuildStartupDirectory = testDirectory,
                 })
                 {
-                    var arguments = task.GetCommandLineArguments().ToList();
-                    arguments.Should().BeEquivalentTo(
-#if IS_CORECLR
-                    Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
-#endif
-                    "Recursive=True;CleanupAssetsForUnsupportedProjects=True;DisableParallel=True;Force=True;ForceEvaluate=True;HideWarningsAndErrors=True;IgnoreFailedSources=True;Interactive=True;NoCache=True;NoHttpCache=True;RestorePackagesConfig=True",
-#if IS_CORECLR
-                    Path.Combine(msbuildBinPath, "MSBuild.dll"),
-#else
-                    Path.Combine(msbuildBinPath, "MSBuild.exe"),
-#endif
-                    projectPath,
-                        $"Property1=Value1;Property2=  Value2  ;ExcludeRestorePackageImports=True;OriginalMSBuildStartupDirectory={testDirectory}");
+                    string arguments = task.GetCommandLineArguments(globalProperties);
+
+                    arguments.Should().Be(StaticGraphRestoreTaskBase.CreateArgumentString(GetExpectedArguments(msbuildBinPath, projectPath)));
                 }
             }
+
+            IEnumerable<string> GetExpectedArguments(string msbuildBinPath, string projectPath)
+            {
+#if IS_CORECLR
+                yield return Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll");
+#endif
+                yield return "Recursive=True;CleanupAssetsForUnsupportedProjects=True;DisableParallel=True;Force=True;ForceEvaluate=True;HideWarningsAndErrors=True;IgnoreFailedSources=True;Interactive=True;NoCache=True;NoHttpCache=True;RestorePackagesConfig=True";
+#if IS_CORECLR
+                yield return Path.Combine(msbuildBinPath, "MSBuild.dll");
+#else
+                yield return Path.Combine(msbuildBinPath, "MSBuild.exe");
+#endif
+                yield return projectPath;
+
+                yield return $"Property1=Value1;Property2=  Value2  ";
+            }
+        }
+
+        /// <summary>
+        /// Verifies that when the values contained in global properties will exceed the maximum command line length, <see cref="StaticGraphRestoreTaskBase.GetCommandLineArguments(Dictionary{string, string})"/> leaves the global properties are out of the command line arguments and sets <see cref="StaticGraphRestoreTaskBase.SerializeGlobalProperties" /> to <see langword="true" />.
+        /// </summary>
+        [Fact]
+        public void GetCommandLineArguments_WhenLotsOfGlobalProperties_SerializeGlobalPropertiesSetToTrue()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                string msbuildBinPath = Path.Combine(testDirectory, "MSBuild", "Current", "Bin");
+                string projectPath = Path.Combine(testDirectory, "src", "project1", "project1.csproj");
+
+                var globalProperties = new Dictionary<string, string>(100);
+
+                for (int i = 0; i < 100; i++)
+                {
+                    globalProperties.Add($"Property{i}", new string('A', 100));
+                }
+
+                var buildEngine = new TestBuildEngine(globalProperties);
+
+                using (var task = new RestoreTaskEx
+                {
+                    BuildEngine = buildEngine,
+                    MSBuildBinPath = msbuildBinPath,
+                    MSBuildStartupDirectory = testDirectory,
+                    ProjectFullPath = projectPath,
+                    SerializeGlobalProperties = false,
+                })
+                {
+                    string arguments = task.GetCommandLineArguments(globalProperties);
+
+                    arguments.Should().Be(StaticGraphRestoreTaskBase.CreateArgumentString(GetExpectedArguments(msbuildBinPath, projectPath)));
+
+                    task.SerializeGlobalProperties.Should().BeTrue();
+                }
+            }
+
+            IEnumerable<string> GetExpectedArguments(string msbuildBinPath, string projectPath)
+            {
+#if IS_CORECLR
+                yield return Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll");
+#endif
+                yield return "Recursive=False;CleanupAssetsForUnsupportedProjects=True;DisableParallel=False;Force=False;ForceEvaluate=False;HideWarningsAndErrors=False;IgnoreFailedSources=False;Interactive=False;NoCache=False;RestorePackagesConfig=False";
+#if IS_CORECLR
+                yield return Path.Combine(msbuildBinPath, "MSBuild.dll");
+#else
+                yield return Path.Combine(msbuildBinPath, "MSBuild.exe");
+#endif
+                yield return projectPath;
+            }
+
         }
 
         /// <summary>
@@ -169,6 +229,42 @@ namespace NuGet.Build.Tasks.Test
                 {
                     task.IsSolutionPathDefined.Should().BeFalse();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Verifies that the <see cref="StaticGraphRestoreTaskBase.WriteGlobalProperties(Stream, Dictionary{string, string})" /> method serializes the global properties correctly.
+        /// </summary>
+        /// <param name="count">The size of the dictionary to test with.</param>
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(100)]
+        public void WriteGlobalProperties_WhenGivenDictionary_Succeeds(int count)
+        {
+            var globalProperties = new Dictionary<string, string>(count);
+
+            for (int i = 0; i < count; i++)
+            {
+                globalProperties.Add($"Property{i}", $"Value{i}");
+            }
+
+            using var stream = new MemoryStream();
+
+            using var writer = new BinaryWriter(stream);
+
+            StaticGraphRestoreTaskBase.WriteGlobalProperties(writer, globalProperties);
+
+            stream.Position = 0;
+
+            using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
+
+            reader.ReadInt32().Should().Be(count);
+
+            for (int i = 0; i < count; i++)
+            {
+                reader.ReadString().Should().Be($"Property{i}");
+                reader.ReadString().Should().Be($"Value{i}");
             }
         }
     }
