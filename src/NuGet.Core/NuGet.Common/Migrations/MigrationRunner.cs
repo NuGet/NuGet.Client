@@ -10,8 +10,6 @@ namespace NuGet.Common.Migrations
 {
     public static class MigrationRunner
     {
-        private const string EventNameMigrationRun = nameof(MigrationRunner) + "/" + nameof(Run);
-
         private const string MaxMigrationFilename = "1";
 
         public static void Run()
@@ -23,14 +21,7 @@ namespace NuGet.Common.Migrations
 
         internal static void Run(string migrationsDirectory)
         {
-            NuGetEventSource.Instance.Write(
-                EventNameMigrationRun,
-                new EventSourceOptions
-                {
-                    ActivityOptions = EventActivityOptions.Detachable,
-                    Keywords = NuGetEventSource.Keywords.Common | NuGetEventSource.Keywords.Performance,
-                    Opcode = EventOpcode.Start
-                });
+            TraceEvents.RunStart();
 
             var migrationPerformed = false;
             var expectedMigrationFilename = Path.Combine(migrationsDirectory, MaxMigrationFilename);
@@ -70,19 +61,7 @@ namespace NuGet.Common.Migrations
             }
             finally
             {
-                NuGetEventSource.Instance.Write(
-                    EventNameMigrationRun,
-                    new EventSourceOptions
-                    {
-                        ActivityOptions = EventActivityOptions.Detachable,
-                        Keywords = NuGetEventSource.Keywords.Common | NuGetEventSource.Keywords.Performance,
-                        Opcode = EventOpcode.Stop
-                    },
-                    new
-                    {
-                        MigrationFileFullPath = expectedMigrationFilename,
-                        MigrationPerformed = migrationPerformed
-                    });
+                TraceEvents.RunStop(expectedMigrationFilename, migrationPerformed);
             }
 
             static bool WaitForMutex(Mutex mutex)
@@ -114,6 +93,38 @@ namespace NuGet.Common.Migrations
             return string.IsNullOrEmpty(XdgDataHome)
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "NuGet", "Migrations")
                 : Path.Combine(XdgDataHome, "NuGet", "Migrations");
+        }
+
+        private static class TraceEvents
+        {
+            private const string EventNameMigrationRun = "MigrationRunner/Run";
+
+            public static void RunStart()
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    ActivityOptions = EventActivityOptions.Detachable,
+                    Keywords = NuGetEventSource.Keywords.Common | NuGetEventSource.Keywords.Performance,
+                    Opcode = EventOpcode.Start
+                };
+
+                NuGetEventSource.Instance.Write(EventNameMigrationRun, eventOptions);
+            }
+
+            public static void RunStop(string migrationFilePath, bool migrationPerformed)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    ActivityOptions = EventActivityOptions.Detachable,
+                    Keywords = NuGetEventSource.Keywords.Common | NuGetEventSource.Keywords.Performance,
+                    Opcode = EventOpcode.Stop
+                };
+
+                NuGetEventSource.Instance.Write(EventNameMigrationRun, eventOptions, new RunStopEventData(migrationFilePath, migrationPerformed));
+            }
+
+            [EventData]
+            private record struct RunStopEventData(string MigrationFileFullPath, bool MigrationPerformed);
         }
     }
 }

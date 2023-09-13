@@ -15,11 +15,6 @@ namespace NuGet.Configuration
     internal sealed class SettingsFile
     {
         /// <summary>
-        /// An trace event name for when a settings file is read.
-        /// </summary>
-        private const string ConfigurationSettingsFileRead = nameof(SettingsFile) + "/FileRead";
-
-        /// <summary>
         /// Full path to the settings file
         /// </summary>
         internal string ConfigFilePath { get; }
@@ -114,20 +109,7 @@ namespace NuGet.Configuration
             IsMachineWide = isMachineWide;
             IsReadOnly = IsMachineWide || isReadOnly;
 
-            NuGetEventSource.Instance.Write(
-                ConfigurationSettingsFileRead,
-                new EventSourceOptions
-                {
-                    ActivityOptions = EventActivityOptions.Detachable,
-                    Keywords = NuGetEventSource.Keywords.Configuration,
-                    Opcode = EventOpcode.Start,
-                },
-                new
-                {
-                    ConfigFilePath,
-                    IsMachineWide = isMachineWide,
-                    IsReadOnly = isReadOnly
-                });
+            TraceEvents.FileReadStart(ConfigFilePath, isMachineWide, isReadOnly);
 
             try
             {
@@ -143,20 +125,7 @@ namespace NuGet.Configuration
             }
             finally
             {
-                NuGetEventSource.Instance.Write(
-                    ConfigurationSettingsFileRead,
-                    new EventSourceOptions
-                    {
-                        ActivityOptions = EventActivityOptions.Detachable,
-                        Keywords = NuGetEventSource.Keywords.Configuration,
-                        Opcode = EventOpcode.Stop,
-                    },
-                    new
-                    {
-                        ConfigFilePath,
-                        IsMachineWide = isMachineWide,
-                        IsReadOnly = isReadOnly
-                    });
+                TraceEvents.FileReadStop(ConfigFilePath, isMachineWide, isReadOnly);
             }
         }
 
@@ -264,6 +233,38 @@ namespace NuGet.Configuration
                         string.Format(CultureInfo.CurrentCulture, Resources.Unknown_Config_Exception, ConfigFilePath, e.Message), e);
                 }
             });
+        }
+
+        private static class TraceEvents
+        {
+            private const string EventNameFileRead = "SettingsFile/FileRead";
+
+            public static void FileReadStart(string configFilePath, bool isMachineWide, bool isReadOnly)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    ActivityOptions = EventActivityOptions.Detachable,
+                    Keywords = NuGetEventSource.Keywords.Configuration,
+                    Opcode = EventOpcode.Start,
+                };
+
+                NuGetEventSource.Instance.Write(EventNameFileRead, eventOptions, new FileReadEventData(configFilePath, isMachineWide, isReadOnly));
+            }
+
+            public static void FileReadStop(string configFilePath, bool isMachineWide, bool isReadOnly)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    ActivityOptions = EventActivityOptions.Detachable,
+                    Keywords = NuGetEventSource.Keywords.Configuration,
+                    Opcode = EventOpcode.Stop,
+                };
+
+                NuGetEventSource.Instance.Write(EventNameFileRead, eventOptions, new FileReadEventData(configFilePath, isMachineWide, isReadOnly));
+            }
+
+            [EventData]
+            private record struct FileReadEventData(string ConfigFilePath, bool IsMachineWide, bool IsReadOnly);
         }
     }
 }

@@ -95,18 +95,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                     break;
             }
 
-            NuGetEventSource.Instance.Write(
-                "SdkResolver/LogMessage",
-                new EventSourceOptions
-                {
-                    Level = eventLevel,
-                    Keywords = NuGetEventSource.Keywords.Logging,
-                },
-                new
-                {
-                    Level = level,
-                    Message = data
-                });
+            TraceEvents.LogMessage(eventLevel, level, data);
         }
 
         /// <inheritdoc cref="ILogger.LogAsync(ILogMessage)" />
@@ -148,5 +137,22 @@ namespace Microsoft.Build.NuGetSdkResolver
 
         /// <inheritdoc cref="ILogger.LogWarning(string)" />
         public void LogWarning(string data) => Log(LogLevel.Warning, data);
+
+        private static class TraceEvents
+        {
+            public static void LogMessage(EventLevel eventLevel, LogLevel level, string message)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Level = eventLevel,
+                    Keywords = NuGetEventSource.Keywords.Logging,
+                };
+
+                NuGetEventSource.Instance.Write("SdkResolver/LogMessage", eventOptions, new LogMessageEventData(level, message));
+            }
+
+            [EventData]
+            private record struct LogMessageEventData(LogLevel Level, string Message);
+        }
     }
 }
