@@ -282,7 +282,7 @@ namespace NuGet.Build.Tasks.Console
             try
             {
                 // Attempt to read the first 4 bytes into the buffer which contain a variable length preamble or an integer representing the number of items in the dictionary
-                if (reader.Read(buffer, 0, 4) != buffer.Length)
+                if (reader.Read(buffer, 0, buffer.Length) != buffer.Length)
                 {
                     // An error occurred parsing command-line arguments in static graph-based restore as end of the standard input stream was unexpectedly encountered. Please file an issue at https://github.com/NuGet/Home
                     return LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedEndOfStream);
