@@ -186,7 +186,7 @@ namespace NuGet.Build.Tasks.Console
                     else
                     {
 #endif
-                        using var reader = new BinaryReader(getStream());
+                        using var reader = new BinaryReader(getStream(), Encoding.UTF8, leaveOpen: true);
 
                         if (!TryDeserializeGlobalProperties(errorWriter, reader, out globalProperties))
                         {
@@ -233,42 +233,6 @@ namespace NuGet.Build.Tasks.Console
         /// Attempts to deserialize global properties from the standard input stream.
         /// </summary>
         /// <remarks>
-        /// The stream backed by the specified <see cref="BinaryReader" /> may contain a preamble/byte order mark.   Preambles are variable length
-        /// from 2 to 4 bytes.  The first 4 bytes are either:
-        ///   -Variable length preamble and any remaining bytes of the actual content
-        ///   -No preamble and just the integer representing the number of items in the dictionary
-        ///
-        /// Since the preamble could be 3 bytes, that means that the last byte in the buffer will be the first byte of the next segment. So this code
-        /// determines how long the preamble is, replaces the remaining bytes at the beginning of the buffer, and copies the next set of bytes.  This
-        /// effectively "skips" the preamble by eventually having the buffer contain the first 4 bytes of the content that should actually be read.
-        ///
-        /// Example stream:
-        /// 
-        /// |   3 byte preamble  |      4 byte integer       |
-        /// |------|------|------|------|------|------|------|
-        /// | 0xFF | 0XEF | 0x00 | 0x07 | 0x00 | 0x00 | 0x00 |
-        ///
-        /// The first 4 bytes are read into the buffer (notice one of the bytes is actually not the preamble):
-        /// 
-        /// |       4 byte buffer       |
-        /// |------|------|------|------|
-        /// | 0xFF | 0XEF | 0x00 | 0x07 |
-        ///
-        /// If the first three bytes match the preamble (0xFF, 0xEF, 0x00), then the array is shifted so that last item becomes the first:
-        /// 
-        /// |       4 byte buffer       |
-        /// |------|------|------|------|
-        /// | 0x07 | 0XEF | 0x00 | 0x07 |
-        ///
-        /// Since only 1 byte was moved up in the buffer, then the next 3 bytes from the stream are read:
-        ///
-        /// |       4 byte buffer       |
-        /// |------|------|------|------|
-        /// | 0x07 | 0X00 | 0x00 | 0x00 |
-        ///
-        /// Now the buffer contains the integer in the stream and the preamble is skipped.
-        /// 
-        /// </remarks>
         /// <param name="errorWriter">A <see cref="TextWriter" /> to write errors to if one occurs.</param>
         /// <param name="reader">The <see cref="BinaryReader" /> to use when deserializing the arguments.</param>
         /// <param name="globalProperties">Receives a <see cref="Dictionary{TKey, TValue}" /> representing the global properties.</param>
@@ -276,66 +240,29 @@ namespace NuGet.Build.Tasks.Console
         internal static bool TryDeserializeGlobalProperties(TextWriter errorWriter, BinaryReader reader, out Dictionary<string, string> globalProperties)
         {
             globalProperties = null;
-
-            byte[] buffer = new byte[4];
+            
+            int count = 0;
 
             try
             {
-                // Attempt to read the first 4 bytes into the buffer which contain a variable length preamble or an integer representing the number of items in the dictionary
-                if (reader.Read(buffer, 0, buffer.Length) != buffer.Length)
-                {
-                    // An error occurred parsing command-line arguments in static graph-based restore as end of the standard input stream was unexpectedly encountered. Please file an issue at https://github.com/NuGet/Home
-                    return LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedEndOfStream);
-                }
+                // Read the first integer from the stream which is the number of global properties
+                count = reader.ReadInt32();
             }
             catch (Exception e)
             {
-                // An error occurred parsing command-line arguments in static graph-based restore as an exception occurred reading the standard input stream, {0}. Please file an issue at https://github.com/NuGet/Home
                 return LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream, e.Message, e.ToString());
             }
 
-            using (MemoryStream memoryStream = new MemoryStream(buffer, writable: false))
-            using (StreamReader streamReader = new StreamReader(memoryStream, Encoding.Default, detectEncodingFromByteOrderMarks: true, bufferSize: buffer.Length))
-            {
-                // The call to Read() here will detect the preamble in the buffer by populating streamReader.CurrentEncoding
-                int result = streamReader.Read();
-
-                byte[] preamble = streamReader.CurrentEncoding.GetPreamble();
-
-                if (preamble.Length != 0)
-                {
-                    // Copies the bytes from beyond the preamble to the beginning of the buffer
-                    Array.Copy(buffer, preamble.Length, buffer, 0, buffer.Length - preamble.Length);
-
-                    try
-                    {
-                        // Reads in next bytes from the BinaryReader to fill the rest of the buffer so that it contains the integer representing the number of items in the dictionary
-                        if (reader.Read(buffer, buffer.Length - preamble.Length, preamble.Length) != preamble.Length)
-                        {
-                            // An error occurred parsing command-line arguments in static graph-based restore as end of the standard input stream was unexpectedly encountered. Please file an issue at https://github.com/NuGet/Home
-                            return LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedEndOfStream);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        return LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream, e.Message, e.ToString());
-                    }
-                }
-            }
-
-            // Convert the bytes in the buffer to an integer
-            int length = BitConverter.ToInt32(buffer, 0);
-
             // If the integer is negative or greater than or equal to int.MaxValue, then the integer is invalid.  This should never happen unless the bytes in the stream contain completely unexpected values
-            if (length < 0 || length >= int.MaxValue)
+            if (count < 0 || count >= int.MaxValue)
             {
                 // An error occurred parsing command-line arguments in static graph-based restore as the first integer read, {0}, was is greater than the allowable value. Please file an issue at https://github.com/NuGet/Home
-                return LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedUnexpectedIntegerValue, length);
+                return LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedUnexpectedIntegerValue, count);
             }
 
-            globalProperties = new Dictionary<string, string>(length, StringComparer.OrdinalIgnoreCase);
+            globalProperties = new Dictionary<string, string>(capacity: count, StringComparer.OrdinalIgnoreCase);
 
-            for (int i = 0; i < length; i++)
+            for (int i = 0; i < count; i++)
             {
                 try
                 {

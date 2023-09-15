@@ -13,33 +13,11 @@ namespace NuGet.Build.Tasks.Console.Test
 {
     public class ProgramTests
     {
-        public static IEnumerable<object[]> GetEncodingsToTest()
-        {
-            yield return new object[] { System.Console.InputEncoding };
-
-            yield return new object[] { Encoding.ASCII };
-            yield return new object[] { Encoding.Default };
-
-            foreach (bool byteOrderMark in new bool[] { true, false })
-            {
-                yield return new object[] { new UTF8Encoding(encoderShouldEmitUTF8Identifier: byteOrderMark) };
-
-                foreach (bool bigEndian in new bool[] { true, false })
-                {
-                    yield return new object[] { new UTF32Encoding(bigEndian, byteOrderMark) };
-
-                    yield return new object[] { new UnicodeEncoding(bigEndian, byteOrderMark) };
-                }
-            }
-        }
-
         /// <summary>
-        /// Verifies that <see cref="Program.TryDeserializeGlobalProperties(TextWriter, BinaryReader, out Dictionary{string, string})" /> correctly handles if a stream contains a leading preamble.
+        /// Verifies that <see cref="Program.TryDeserializeGlobalProperties(TextWriter, BinaryReader, out Dictionary{string, string})" /> correctly deserializes from a stream.
         /// </summary>
-        /// <param name="encoding">The <see cref="Encoding" /> to use as a preamble to begin a stream with.</param>
-        [Theory]
-        [MemberData(nameof(GetEncodingsToTest))]
-        public void TryDeserializeGlobalProperties_WhenEncodingUsed_PropertiesAreDeserialized(Encoding encoding)
+        [Fact]
+        public void TryDeserializeGlobalProperties_WhenEncodingUsed_PropertiesAreDeserialized()
         {
             var expectedGlobalProperties = new Dictionary<string, string>
             {
@@ -49,8 +27,6 @@ namespace NuGet.Build.Tasks.Console.Test
 
             using var stream = new MemoryStream();
             using var writer = new BinaryWriter(stream);
-
-            writer.Write(encoding.GetPreamble());
 
             StaticGraphRestoreTaskBase.WriteGlobalProperties(writer, expectedGlobalProperties);
 
@@ -74,8 +50,6 @@ namespace NuGet.Build.Tasks.Console.Test
         [Theory]
         [InlineData(new byte[] { 0x00, 0x00, 0x00, 0xFF })] // 4 byte integer that is negative
         [InlineData(new byte[] { 0xFF, 0xFF, 0xFF, 0x7F })] // 4 byte integer that is too big
-        [InlineData(new byte[] { 0xFF, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF })] // Valid UTF-32LE BOM with a 4 byte integer that is negative
-        [InlineData(new byte[] { 0xFF, 0xFE, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x7F })] // Valid UTF-32LE BOM with a 4 byte integer after that is too big
         public void TryDeserializeGlobalProperties_WhenInvalidDictionaryLength_ReturnsFalse(byte[] bytes)
         {
             using var stream = GetStreamWithBytes(bytes);
@@ -86,32 +60,14 @@ namespace NuGet.Build.Tasks.Console.Test
         }
 
         /// <summary>
-        /// Verifies that <see cref="Program.TryDeserializeGlobalProperties(TextWriter, BinaryReader, out Dictionary{string, string})" /> returns <see langword="false" /> and logs an error if the stream contains bytes that are unexpected.
-        /// </summary>
-        /// <param name="bytes">An array of bytes to use as the stream.</param>
-        [Theory]
-        [InlineData(new byte[] { 0x01, 0x02 })] // Only two bytes
-        [InlineData(new byte[] { 0xFF, 0xFE, 0x00, 0x00 })] // Valid UTF-32LE BOM but nothing after that
-        [InlineData(new byte[] { 0xFF, 0xFE, 0x00, 0x00, 0x01, 0x00 })] // Valid UTF-32LE BOM but not a 4 byte integer after that
-        public void TryDeserializeGlobalProperties_WhenInvalidFirstBytes_ReturnsFalse(byte[] bytes)
-        {
-            using var stream = GetStreamWithBytes(bytes);
-
-            VerifyTryDeserializeGlobalPropertiesError(stream, Strings.Error_StaticGraphRestoreArgumentsParsingFailedEndOfStream);
-        }
-
-        /// <summary>
         /// Verifies that <see cref="Program.TryDeserializeGlobalProperties(TextWriter, BinaryReader, out Dictionary{string, string})" /> returns <see langword="false" /> and logs an error if reading the stream causes an exception to be thrown.
         /// </summary>
         /// <param name="throwOnReadCount">Indicates for which call to Stream.Read() should throw, the first, second, or third.</param>
         /// <param name="bytes">An array of bytes to use as the stream.</param>
         [Theory]
-        [InlineData(1, new byte[] { 0x01, 0x00, 0x00, 0x00 })] // No preamble/BOM, throw on first Read()
-        [InlineData(2, new byte[] { 0x01, 0x00, 0x00, 0x00 })] // No preamble/BOM, throw on second Read()
-        [InlineData(1, new byte[] { 0xEF, 0xBB, 0xBF, 0x01, 0x00, 0x00, 0x00 })] // UTF8 preamble/BOM, throw on first Read()
-        [InlineData(2, new byte[] { 0xEF, 0xBB, 0xBF, 0x01, 0x00, 0x00, 0x00 })] // UTF8 preamble/BOM, throw on second Read()
-        [InlineData(3, new byte[] { 0xEF, 0xBB, 0xBF, 0x01, 0x00, 0x00, 0x00 })] // UTF8 preamble/BOM, throw on third Read()
-        public void TryDeserializeGlobalProperties_WhenStreamReadThrows_ReturnsFalse(int throwOnReadCount, byte[] bytes)
+        [InlineData(1)] // Throw on first Read()
+        [InlineData(2)] // Throw on second Read()
+        public void TryDeserializeGlobalProperties_WhenStreamReadThrows_ReturnsFalse(int throwOnReadCount)
         {
             var expectedGlobalProperties = new Dictionary<string, string>
             {
@@ -121,7 +77,7 @@ namespace NuGet.Build.Tasks.Console.Test
 
             Exception exception = new InvalidOperationException();
 
-            using var stream = new StreamThatThrowsAnException(bytes, throwOnReadCount, exception);
+            using var stream = new StreamThatThrowsAnException(BitConverter.GetBytes(1), throwOnReadCount, exception);
 
             VerifyTryDeserializeGlobalPropertiesErrorStartsWith(stream, Strings.Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream, exception.Message, string.Empty);
         }

@@ -120,6 +120,9 @@ namespace NuGet.Build.Tasks
                         RedirectStandardError = true,
                         RedirectStandardInput = true,
                         RedirectStandardOutput = true,
+#if !NETFRAMEWORK
+                        StandardInputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+#endif
                         UseShellExecute = false,
                         WorkingDirectory = Environment.CurrentDirectory,
                     };
@@ -144,17 +147,31 @@ namespace NuGet.Build.Tasks
                     {
                         Log.LogMessageFromResources(MessageImportance.Low, nameof(Strings.Log_RunningStaticGraphRestoreCommand), process.StartInfo.FileName, process.StartInfo.Arguments);
 
-                        process.Start();
+                        Encoding previousConsoleInputEncoding = Console.InputEncoding;
 
-                        if (SerializeGlobalProperties)
+                        // Set the input encoding to UTF8 without a byte order mark, the spawned process will use this encoding on .NET Framework
+                        Console.InputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
+                        try
                         {
-                            using var writer = new BinaryWriter(process.StandardInput.BaseStream, Encoding.UTF8, leaveOpen: true);
+                            process.Start();
 
-                            WriteGlobalProperties(writer, globalProperties);
+                            process.BeginOutputReadLine();
+                            process.BeginErrorReadLine();
+
+                            if (SerializeGlobalProperties)
+                            {
+                                using var writer = new BinaryWriter(process.StandardInput.BaseStream, Encoding.UTF8, leaveOpen: true);
+
+                                WriteGlobalProperties(writer, globalProperties);
+                            }
+
+                            process.StandardInput.Close();
                         }
-
-                        process.BeginOutputReadLine();
-                        process.BeginErrorReadLine();
+                        finally
+                        {
+                            Console.InputEncoding = previousConsoleInputEncoding;
+                        }
 
                         semaphore.Wait(_cancellationTokenSource.Token);
 
