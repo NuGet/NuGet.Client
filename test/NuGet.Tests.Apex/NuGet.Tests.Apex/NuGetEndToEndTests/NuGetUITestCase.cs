@@ -555,9 +555,10 @@ namespace NuGet.Tests.Apex
             uiwindow.AssertSearchedPackageItem(tabName, TestPackageName, TestPackageVersionV2);
         }
 
-        [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.ClassLibrary, "Newtonsoft.Json", "12.0.2")]
-        [InlineData(ProjectTemplate.NetCoreClassLib, "Newtonsoft.Json", "12.0.2")]
+        [DataTestMethod]
+        [DataRow(ProjectTemplate.ClassLibrary, "Newtonsoft.Json", "12.0.2")]
+        [DataRow(ProjectTemplate.NetCoreClassLib, "Newtonsoft.Json", "12.0.2")]
+        [Timeout(Timeout)]
         public void InstallVulnerablePackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange
@@ -569,20 +570,21 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(packageName, packageVersion);
             solutionService.Build();
 
             // Assert
-            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion, XunitLogger);
+            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion, Logger);
             uiwindow.AssertInstalledPackageVulnerable();
         }
 
-        [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.ClassLibrary, "Newtonsoft.Json", "12.0.2", "13.0.1")]
-        [InlineData(ProjectTemplate.NetCoreClassLib, "Newtonsoft.Json", "12.0.2", "13.0.2")]
+        [DataTestMethod]
+        [DataRow(ProjectTemplate.ClassLibrary, "Newtonsoft.Json", "12.0.2", "13.0.1")]
+        [DataRow(ProjectTemplate.NetCoreClassLib, "Newtonsoft.Json", "12.0.2", "13.0.2")]
+        [Timeout(Timeout)]
         public void UpdateVulnerablePackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion1, string packageVersion2)
         {
             // Arrange
@@ -594,27 +596,28 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(packageName, packageVersion1);
             solutionService.Build();
 
             // Assert
-            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion1, XunitLogger);
+            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion1, Logger);
             uiwindow.AssertInstalledPackageVulnerable();
 
             // Act
             uiwindow.UpdatePackageFromUI(packageName, packageVersion2);
 
             // Assert
-            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion2, XunitLogger);
+            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion2, Logger);
             uiwindow.AssertInstalledPackageNotVulnerable();
         }
 
-        [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.ClassLibrary, "Newtonsoft.Json", "12.0.3")]
-        [InlineData(ProjectTemplate.NetCoreClassLib, "Newtonsoft.Json", "12.0.3")]
+        [DataTestMethod]
+        [DataRow(ProjectTemplate.ClassLibrary, "Newtonsoft.Json", "12.0.3")]
+        [DataRow(ProjectTemplate.NetCoreClassLib, "Newtonsoft.Json", "12.0.3")]
+        [Timeout(Timeout)]
         public void UninstallVulnerablePackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange
@@ -626,14 +629,14 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(packageName, packageVersion);
             solutionService.Build();
 
             // Assert
-            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion, XunitLogger);
+            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion, Logger);
             uiwindow.AssertInstalledPackageVulnerable();
 
             // Act
@@ -641,12 +644,13 @@ namespace NuGet.Tests.Apex
             uiwindow.UninstallPackageFromUI(packageName);
 
             // Assert
-            CommonUtility.AssertUninstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, XunitLogger);
+            CommonUtility.AssertUninstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, Logger);
         }
 
-        [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.ClassLibrary, "jquery", "3.5.0")]
-        [InlineData(ProjectTemplate.NetCoreClassLib, "jquery", "3.5.0")]
+        [DataTestMethod]
+        [DataRow(ProjectTemplate.ClassLibrary, "jquery", "3.5.0")]
+        [DataRow(ProjectTemplate.NetCoreClassLib, "jquery", "3.5.0")]
+        [Timeout(Timeout)]
         public void InstallDeprecatedPackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange
@@ -658,20 +662,21 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(packageName, packageVersion);
             solutionService.Build();
 
             // Assert
-            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion, XunitLogger);
+            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion, Logger);
             uiwindow.AssertInstalledPackageDeprecated();
         }
 
-        [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.ClassLibrary, "jQuery", "3.5.0", "3.6.0")]
-        [InlineData(ProjectTemplate.NetCoreClassLib, "jQuery", "3.5.0", "3.6.3")]
+        [DataTestMethod]
+        [DataRow(ProjectTemplate.ClassLibrary, "jQuery", "3.5.0", "3.6.0")]
+        [DataRow(ProjectTemplate.NetCoreClassLib, "jQuery", "3.5.0", "3.6.3")]
+        [Timeout(Timeout)]
         public void UpdateDeprecatedPackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion1, string packageVersion2)
         {
             // Arrange
@@ -683,27 +688,28 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(packageName, packageVersion1);
             solutionService.Build();
 
             // Assert
-            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion1, XunitLogger);
+            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion1, Logger);
             uiwindow.AssertInstalledPackageDeprecated();
 
             // Act
             uiwindow.UpdatePackageFromUI(packageName, packageVersion2);
 
             // Assert
-            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion2, XunitLogger);
+            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion2, Logger);
             uiwindow.AssertInstalledPackageNotDeprecated();
         }
 
-        [NuGetWpfTheory]
-        [InlineData(ProjectTemplate.ClassLibrary, "jQuery", "3.5.0")]
-        [InlineData(ProjectTemplate.NetCoreClassLib, "jQuery", "3.5.0")]
+        [DataTestMethod]
+        [DataRow(ProjectTemplate.ClassLibrary, "jQuery", "3.5.0")]
+        [DataRow(ProjectTemplate.NetCoreClassLib, "jQuery", "3.5.0")]
+        [Timeout(Timeout)]
         public void UninstallDeprecatedPackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange
@@ -715,14 +721,14 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(packageName, packageVersion);
             solutionService.Build();
 
             // Assert
-            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion, XunitLogger);
+            CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion, Logger);
             uiwindow.AssertInstalledPackageDeprecated();
 
             // Act
@@ -730,7 +736,7 @@ namespace NuGet.Tests.Apex
             uiwindow.UninstallPackageFromUI(packageName);
 
             // Assert
-            CommonUtility.AssertUninstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, XunitLogger);
+            CommonUtility.AssertUninstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, Logger);
         }
     }
 }

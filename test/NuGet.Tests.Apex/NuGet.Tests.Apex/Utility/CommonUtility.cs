@@ -491,7 +491,7 @@ namespace NuGet.Tests.Apex
             return s;
         }
 
-        public static void AssertInstalledPackageByProjectType(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, ProjectTestExtension project, string packageName, string packageVersion, ILogger logger)
+        public static void AssertInstalledPackageByProjectType(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, ProjectTestExtension project, string packageName, string packageVersion, ITestLogger logger)
         {
             if (projectTemplate.Equals(ProjectTemplate.ClassLibrary))
             {
@@ -503,7 +503,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        public static void AssertUninstalledPackageByProjectType(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, ProjectTestExtension project, string packageName, ILogger logger)
+        public static void AssertUninstalledPackageByProjectType(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, ProjectTestExtension project, string packageName, ITestLogger logger)
         {
             if (projectTemplate.Equals(ProjectTemplate.ClassLibrary))
             {
