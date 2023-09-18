@@ -455,7 +455,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
 
                 // Assert
-                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1 , Logger);
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion1, Logger);
 
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
                 var uniqueContentFile = Path.Combine(packagesDirectory, packageName + '.' + packageVersion1, "lib", "net45", "Thisisfromprivaterepo1.txt");
