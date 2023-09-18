@@ -10,9 +10,10 @@ namespace NuGet.Client
     /// Most conventions disallow the string 'any' as a txm, so to allow
     /// it for conventions with no txm in the path we use this special type.
     /// </summary>
-    internal class AnyFramework : NuGetFramework
+#pragma warning disable RS0016 // Add public types and members to the declared API
+    public class AnyFramework : NuGetFramework
     {
-        internal static AnyFramework Instance { get; } = new AnyFramework();
+        public static AnyFramework Instance { get; } = new AnyFramework();
 
         private AnyFramework()
             : base(NuGetFramework.AnyFramework)

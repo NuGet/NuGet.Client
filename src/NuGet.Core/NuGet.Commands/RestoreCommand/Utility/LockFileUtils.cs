@@ -198,6 +198,38 @@ namespace NuGet.Commands
             NuspecReader nuspec,
             List<SelectionCriteria> orderedCriteria)
         {
+            // Add Targets
+            AddTarget addTarget = new AddTarget(null, lockFileLib, contentItems.Assets, 0);
+            addTarget.Add();
+            List<ContentItemGroup> contentFileGroups = new();
+            List<(ContentItem Item, Asset Asset)> groupAssets = addTarget.ContentFilesItems;
+            if (groupAssets?.Count > 0)
+            {
+                var grouped = groupAssets.GroupBy(key => key.Item, ContentItemCollection.GroupComparer.DefaultComparer);
+                foreach (var grouping in grouped)
+                {
+                    List<ContentItem> contentItems1 = new List<ContentItem>();
+                    foreach ((ContentItem item, Asset asset) in grouping)
+                    {
+                        contentItems1.Add(item);
+                    }
+                    contentFileGroups.Add(new ContentItemGroup(
+                        properties: new Dictionary<string, object>(grouping.Key.Properties),
+                        items: contentItems1));
+                }
+            }
+            if (contentFileGroups.Count > 0)
+            {
+                // Multiple groups can match the same framework, find all of them
+                var contentFileGroupsForFramework = ContentFileUtils.GetContentGroupsForFramework(
+                    framework,
+                    contentFileGroups);
+
+                lockFileLib.ContentFiles = ContentFileUtils.GetContentFileGroup(
+                    nuspec,
+                    contentFileGroupsForFramework);
+            }
+
             // Add framework references for desktop projects.
             AddFrameworkReferences(lockFileLib, framework, nuspec);
 

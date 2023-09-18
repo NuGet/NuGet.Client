@@ -15,7 +15,9 @@ namespace NuGet.ContentModel
             Items = new List<ContentItem>();
         }
 
-        internal ContentItemGroup(IDictionary<string, object> properties, IList<ContentItem> items)
+#pragma warning disable RS0016 // Add public types and members to the declared API
+        public ContentItemGroup(IDictionary<string, object> properties, IList<ContentItem> items)
+#pragma warning restore RS0016 // Add public types and members to the declared API
         {
             Properties = properties;
             Items = items;

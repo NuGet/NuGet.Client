@@ -13,7 +13,9 @@ namespace NuGet.ContentModel
     {
         private List<Asset> _assets;
         private ConcurrentDictionary<string, string> _assemblyRelatedExtensions;
-
+#pragma warning disable RS0016 // Add public types and members to the declared API
+        public List<Asset> Assets { get { return _assets; } }
+#pragma warning restore RS0016 // Add public types and members to the declared API
         /// <summary>
         /// True if lib/contract exists
         /// </summary>
@@ -334,8 +336,8 @@ namespace NuGet.ContentModel
 
             return false;
         }
-
-        private class GroupComparer : IEqualityComparer<ContentItem>
+#pragma warning disable RS0016 // Add public types and members to the declared API
+        public class GroupComparer : IEqualityComparer<ContentItem>
         {
             public static readonly GroupComparer DefaultComparer = new GroupComparer();
 
