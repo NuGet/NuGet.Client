@@ -283,7 +283,7 @@ namespace NuGet.Commands
             AddMSBuildAssets(library.Name, managedCodeConventions, lockFileLib, orderedCriteria, contentItems);
 
             // Add content files
-            AddContentFiles(managedCodeConventions, lockFileLib, framework, contentItems, nuspec);
+            //AddContentFiles(managedCodeConventions, lockFileLib, framework, contentItems, nuspec);
 
             // Runtime targets
             // These are applied only to non-RID target graphs.
