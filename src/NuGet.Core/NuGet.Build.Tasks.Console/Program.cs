@@ -240,7 +240,7 @@ namespace NuGet.Build.Tasks.Console
         internal static bool TryDeserializeGlobalProperties(TextWriter errorWriter, BinaryReader reader, out Dictionary<string, string> globalProperties)
         {
             globalProperties = null;
-            
+
             int count = 0;
 
             try
