@@ -66,8 +66,6 @@ namespace NuGet.Tests.Apex
                     _logger.WriteMessage($"Failed to close VS on dispose. Attempt #{attempt}");
                     Thread.Sleep(TimeSpan.FromSeconds(3));
                     _logger.WriteMessage($"{ex.Message}");
-                    
-                    //ExceptionUtilities.LogException(ex, _logger);
                 }
             }
             _pathContext.Dispose();
