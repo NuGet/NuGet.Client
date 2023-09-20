@@ -289,11 +289,6 @@ namespace Microsoft.Build.NuGetSdkResolver
 
             public static void GlobalJsonReadStart(string globalJsonPath, SdkResolverContext sdkResolverContext)
             {
-                if (!NuGetEventSource.IsEnabled)
-                {
-                    return;
-                }
-
                 var eventOptions = new EventSourceOptions
                 {
                     ActivityOptions = EventActivityOptions.Detachable,
