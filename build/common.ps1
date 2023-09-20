@@ -228,6 +228,13 @@ Function Install-DotnetCLI {
     # in a different process, to avoid treating their handled errors as build errors.
     & powershell $DotNetInstall -Runtime dotnet -Channel 3.1 -InstallDir $CLIRoot -NoPath
 
+    # Install the 5.x runtime because our tests target netcoreapp5.0
+    Trace-Log "$DotNetInstall -Runtime dotnet -Channel 5.0 -InstallDir $CLIRoot -NoPath"
+    # dotnet-install might make http requests that fail, but it handles those errors internally
+    # However, Invoke-BuildStep checks if any error happened, ever. Hence we need to run dotnet-install
+    # in a different process, to avoid treating their handled errors as build errors.
+    & powershell $DotNetInstall -Runtime dotnet -Channel 5.0 -InstallDir $CLIRoot -NoPath
+
     if ($LASTEXITCODE -ne 0)
     {
         throw "dotnet-install.ps1 exited with non-zero exit code"
