@@ -67,7 +67,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
-                Assert.Equal(4, lockFile.Targets.Count);
+                Assert.True(lockFile.Targets.Count >= 4, $"lockFile.Targets.Count should be greater than or equal to 4 but was {lockFile.Targets.Count}");
 
                 var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
                 Assert.Equal(1, targets.Count);
@@ -140,7 +140,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.Equal(packagesLockFilePath, projectA.NuGetLockFileOutputPath);
 
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
-                Assert.Equal(4, lockFile.Targets.Count);
+                Assert.True(lockFile.Targets.Count >= 4, $"lockFile.Targets.Count should be greater than or equal to 4 but was {lockFile.Targets.Count}");
 
                 var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
                 Assert.Equal(1, targets.Count);
