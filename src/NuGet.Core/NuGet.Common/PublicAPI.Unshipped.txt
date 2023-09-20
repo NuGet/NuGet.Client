@@ -7,3 +7,4 @@ const NuGet.Common.NuGetEventSource.Keywords.SdkResolver = (System.Diagnostics.T
 NuGet.Common.NuGetEventSource
 NuGet.Common.NuGetEventSource.Keywords
 static NuGet.Common.NuGetEventSource.Instance.get -> System.Diagnostics.Tracing.EventSource!
+static NuGet.Common.NuGetEventSource.IsEnabled.get -> bool

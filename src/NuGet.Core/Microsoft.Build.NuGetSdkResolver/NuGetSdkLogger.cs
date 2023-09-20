@@ -95,7 +95,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                     break;
             }
 
-            TraceEvents.LogMessage(eventLevel, level, data);
+            if (NuGetEventSource.IsEnabled) TraceEvents.LogMessage(eventLevel, level, data);
         }
 
         /// <inheritdoc cref="ILogger.LogAsync(ILogMessage)" />

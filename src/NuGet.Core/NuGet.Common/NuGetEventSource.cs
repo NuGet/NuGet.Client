@@ -15,6 +15,11 @@ namespace NuGet.Common
         public static EventSource Instance { get; } = new EventSource("Microsoft-NuGet");
 
         /// <summary>
+        /// Gets a value indicating whether tracing is enabled for the <see cref="NuGetEventSource" />.
+        /// </summary>
+        public static bool IsEnabled { get; } = Instance.IsEnabled();
+
+        /// <summary>
         /// Represents a class for declaring event keywords. Each keyword must be a flag (2^N) for use in a bitwise operation.
         /// </summary>
         public static class Keywords

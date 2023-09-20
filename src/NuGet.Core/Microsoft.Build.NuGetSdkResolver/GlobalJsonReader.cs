@@ -240,7 +240,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             // Load the file as a string and check if it has an msbuild-sdks section.  Parsing the contents requires Newtonsoft.Json.dll to be loaded which can be expensive
             string json;
 
-            TraceEvents.GlobalJsonReadStart(globalJsonPath, sdkResolverContext);
+            if (NuGetEventSource.IsEnabled) TraceEvents.GlobalJsonReadStart(globalJsonPath, sdkResolverContext);
 
             try
             {
@@ -279,7 +279,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
             finally
             {
-                TraceEvents.GlobalJsonReadStop(globalJsonPath, sdkResolverContext);
+                if (NuGetEventSource.IsEnabled) TraceEvents.GlobalJsonReadStop(globalJsonPath, sdkResolverContext);
             }
         }
 
@@ -289,6 +289,11 @@ namespace Microsoft.Build.NuGetSdkResolver
 
             public static void GlobalJsonReadStart(string globalJsonPath, SdkResolverContext sdkResolverContext)
             {
+                if (!NuGetEventSource.IsEnabled)
+                {
+                    return;
+                }
+
                 var eventOptions = new EventSourceOptions
                 {
                     ActivityOptions = EventActivityOptions.Detachable,

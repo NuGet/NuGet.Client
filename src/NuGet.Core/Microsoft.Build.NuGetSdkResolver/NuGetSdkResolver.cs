@@ -83,7 +83,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return factory.IndicateFailure(errors: new List<string>() { Strings.Error_DisabledSdkResolver }, warnings: null);
             }
 
-            TraceEvents.ResolveStart(sdkReference);
+            if (NuGetEventSource.IsEnabled) TraceEvents.ResolveStart(sdkReference);
 
             try
             {
@@ -103,7 +103,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
             finally
             {
-                TraceEvents.ResolveStop(sdkReference);
+                if (NuGetEventSource.IsEnabled) TraceEvents.ResolveStop(sdkReference);
             }
         }
 
@@ -154,13 +154,13 @@ namespace Microsoft.Build.NuGetSdkResolver
                 // Cast the NuGet version since the caller does not want to consume NuGet classes directly
                 var parsedSdkVersion = (NuGetVersion)nuGetVersion;
 
-                TraceEvents.GetResultStart(sdk.Name, parsedSdkVersion.OriginalVersion);
+                if (NuGetEventSource.IsEnabled) TraceEvents.GetResultStart(sdk.Name, parsedSdkVersion.OriginalVersion);
 
                 SdkResult result = null;
 
                 try
                 {
-                    TraceEvents.LoadSettingsStart();
+                    if (NuGetEventSource.IsEnabled) TraceEvents.LoadSettingsStart();
 
                     // Load NuGet settings and a path resolver
                     ISettings settings;
@@ -178,7 +178,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                     }
                     finally
                     {
-                        TraceEvents.LoadSettingsStop();
+                        if (NuGetEventSource.IsEnabled) TraceEvents.LoadSettingsStop();
                     }
 
                     var fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
@@ -196,7 +196,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                             X509TrustStore.InitializeForDotNetSdk(logger);
 #endif
 
-                            TraceEvents.RestorePackageStart(libraryIdentity);
+                            if (NuGetEventSource.IsEnabled) TraceEvents.RestorePackageStart(libraryIdentity);
 
                             // Asynchronously run the restore without a commit which find the package on configured feeds, download, and unzip it without generating any other files
                             // This must be run in its own task because legacy project system evaluates projects on the UI thread which can cause RunWithoutCommit() to deadlock
@@ -208,7 +208,7 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                             var results = restoreTask.Result;
 
-                            TraceEvents.RestorePackageStop(libraryIdentity);
+                            if (NuGetEventSource.IsEnabled) TraceEvents.RestorePackageStop(libraryIdentity);
 
                             fallbackPackagePathResolver = new FallbackPackagePathResolver(NuGetPathContext.Create(settings));
 
@@ -261,7 +261,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 }
                 finally
                 {
-                    TraceEvents.GetResultStop(sdk.Name, parsedSdkVersion.OriginalVersion, result);
+                    if (NuGetEventSource.IsEnabled) TraceEvents.GetResultStop(sdk.Name, parsedSdkVersion.OriginalVersion, result);
                 }
             }
 

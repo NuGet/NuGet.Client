@@ -109,7 +109,7 @@ namespace NuGet.Configuration
             IsMachineWide = isMachineWide;
             IsReadOnly = IsMachineWide || isReadOnly;
 
-            TraceEvents.FileReadStart(ConfigFilePath, isMachineWide, isReadOnly);
+            if (NuGetEventSource.IsEnabled) TraceEvents.FileReadStart(ConfigFilePath, isMachineWide, isReadOnly);
 
             try
             {
@@ -125,7 +125,7 @@ namespace NuGet.Configuration
             }
             finally
             {
-                TraceEvents.FileReadStop(ConfigFilePath, isMachineWide, isReadOnly);
+                if (NuGetEventSource.IsEnabled) TraceEvents.FileReadStop(ConfigFilePath, isMachineWide, isReadOnly);
             }
         }
 

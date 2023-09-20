@@ -21,7 +21,7 @@ namespace NuGet.Common.Migrations
 
         internal static void Run(string migrationsDirectory)
         {
-            TraceEvents.RunStart();
+            if (NuGetEventSource.IsEnabled) TraceEvents.RunStart();
 
             var migrationPerformed = false;
             var expectedMigrationFilename = Path.Combine(migrationsDirectory, MaxMigrationFilename);
@@ -61,7 +61,7 @@ namespace NuGet.Common.Migrations
             }
             finally
             {
-                TraceEvents.RunStop(expectedMigrationFilename, migrationPerformed);
+                if (NuGetEventSource.IsEnabled) TraceEvents.RunStop(expectedMigrationFilename, migrationPerformed);
             }
 
             static bool WaitForMutex(Mutex mutex)
