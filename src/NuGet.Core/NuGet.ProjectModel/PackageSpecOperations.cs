@@ -15,6 +15,9 @@ namespace NuGet.ProjectModel
     {
         public static void AddOrUpdateDependency(PackageSpec spec, PackageDependency dependency)
         {
+            if (spec == null) throw new ArgumentNullException(nameof(spec));
+            if (dependency == null) throw new ArgumentNullException(nameof(dependency));
+
             var existing = GetExistingDependencies(spec, dependency.Id);
 
             var range = dependency.VersionRange;

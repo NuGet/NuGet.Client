@@ -140,7 +140,7 @@ namespace NuGet.ProjectModel
 
         /// <summary>
         /// List of dependencies that apply to all frameworks.
-        /// PackageReference projects are *not* expected to use this list and instead use the one in the `TargetFrameworkInformation` 
+        /// <see cref="ProjectStyle.PackageReference"/> based projects must not use this list and instead use the one in the <see cref="TargetFrameworks"/> property which is a list of the <see cref="TargetFrameworkInformation"/> type.
         /// </summary>
         public IList<LibraryDependency> Dependencies { get; set; }
 
