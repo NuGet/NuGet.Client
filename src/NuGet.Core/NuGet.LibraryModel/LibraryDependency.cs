@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Shared;
@@ -12,7 +13,7 @@ namespace NuGet.LibraryModel
 {
     public class LibraryDependency : IEquatable<LibraryDependency>
     {
-        public LibraryRange LibraryRange { get; set; }
+        public required LibraryRange LibraryRange { get; set; }
 
         public LibraryIncludeFlags IncludeType { get; set; } = LibraryIncludeFlags.All;
 
@@ -28,7 +29,7 @@ namespace NuGet.LibraryModel
         public bool AutoReferenced { get; set; }
 
         /// <summary>
-        /// True if the dependency has the version set through CentralPackagVersionManagement file.
+        /// True if the dependency has the version set through CentralPackageVersionManagement file.
         /// </summary>
         public bool VersionCentrallyManaged { get; set; }
 
@@ -39,18 +40,25 @@ namespace NuGet.LibraryModel
 
         public bool GeneratePathProperty { get; set; }
 
-        public string Aliases { get; set; }
+        public string? Aliases { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating a version override for any centrally defined version.
         /// </summary>
-        public VersionRange VersionOverride { get; set; }
+        public VersionRange? VersionOverride { get; set; }
 
         public LibraryDependency()
         {
             NoWarn = new List<NuGetLogCode>();
         }
 
+        [SetsRequiredMembers]
+        public LibraryDependency(LibraryRange libraryRange) : this()
+        {
+            LibraryRange = libraryRange ?? throw new ArgumentNullException(nameof(libraryRange));
+        }
+
+        [SetsRequiredMembers]
         internal LibraryDependency(
             LibraryRange libraryRange,
             LibraryIncludeFlags includeType,
@@ -60,8 +68,8 @@ namespace NuGet.LibraryModel
             bool generatePathProperty,
             bool versionCentrallyManaged,
             LibraryDependencyReferenceType libraryDependencyReferenceType,
-            string aliases,
-            VersionRange versionOverride)
+            string? aliases,
+            VersionRange? versionOverride)
         {
             LibraryRange = libraryRange;
             IncludeType = includeType;
@@ -98,12 +106,12 @@ namespace NuGet.LibraryModel
             return hashCode.CombinedHash;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as LibraryDependency);
         }
 
-        public bool Equals(LibraryDependency other)
+        public bool Equals(LibraryDependency? other)
         {
             if (other == null)
             {
@@ -159,7 +167,7 @@ namespace NuGet.LibraryModel
                         continue;
                     }
 
-                    if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
+                    if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion? centralPackageVersion))
                     {
                         d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
                     }
