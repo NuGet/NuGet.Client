@@ -8,7 +8,6 @@ namespace NuGet.CommandLine.Test
 {
     public class CommandLineParserTests
     {
-
         [Fact]
         public void ExtractOptions_WhenPassingOptionNoHttpCache_NoHttpCacheShouldBeTrue()
         {
