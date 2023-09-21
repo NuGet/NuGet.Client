@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
@@ -12,6 +13,42 @@ namespace NuGet.ProjectModel.Test
 {
     public class PackageSpecOperationsTests
     {
+        [Fact]
+        public void Test()
+        {
+            var dependency = new LibraryDependency
+            {
+                LibraryRange = new LibraryRange("NuGet.Versioning", new VersionRange(new NuGetVersion("1.0.0")), LibraryDependencyTarget.Package),
+            };
+
+            // Arrange
+            var spec = new PackageSpec(new[]
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.Net45,
+                    Dependencies = new List<LibraryDependency>() { dependency }
+                    
+                },
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.Net46
+                }
+            });
+
+            // Act
+            var identity = new PackageIdentity("NuGet.Versioning", new NuGetVersion("2.0.0"));
+            var packageDependency = new PackageDependency(identity.Id, new VersionRange(identity.Version));
+
+            PackageSpecOperations.AddOrUpdateDependency(spec, packageDependency);
+
+            // Assert
+            spec.Dependencies.Should().BeEmpty();
+            spec.TargetFrameworks[0].Dependencies.Should().HaveCount(1);
+            Assert.Equal(identity.Id, spec.TargetFrameworks[0].Dependencies[0].LibraryRange.Name);
+            Assert.Equal(identity.Version, spec.TargetFrameworks[0].Dependencies[0].LibraryRange.VersionRange.MinVersion);
+            spec.TargetFrameworks[1].Dependencies.Should().HaveCount(0);
+        }
 
         [Fact]
         public void AddOrUpdateDependency_AddsNewPackageDependencyToAllFrameworks()

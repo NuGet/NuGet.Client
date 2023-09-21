@@ -26,7 +26,17 @@ namespace NuGet.ProjectModel
 
             if (!existing.Any())
             {
-                AddDependency(spec.Dependencies, dependency.Id, range, spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false);
+                if (spec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference) // PackageReference does not use the `Dependencies` list in the PackageSpec.
+                {
+                    foreach (var dependenciesList in spec.TargetFrameworks.Select(e => e.Dependencies))
+                    {
+                        AddDependency(dependenciesList, dependency.Id, range, spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false);
+                    }
+                }
+                else
+                {
+                    AddDependency(spec.Dependencies, dependency.Id, range, spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false);
+                }
             }
         }
 
