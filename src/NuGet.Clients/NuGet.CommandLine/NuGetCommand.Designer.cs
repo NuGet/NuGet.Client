@@ -296,7 +296,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Disable using the Http cache and contact all configured package source sources for live information..
+        ///   Looks up a localized string similar to Disable using the Http cache and contact all configured package sources for live information..
         /// </summary>
         internal static string CommandNoHttpCache {
             get {
@@ -886,7 +886,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The NoCache option is only for disabling the HTTP cache and not the global packages folder. It is recommended to use the NoHttpCache option instead to disable the use of the HTTP cache..
+        ///   Looks up a localized string similar to NoCache is deprecated in favor of the appropriately named NoHttpCache..
         /// </summary>
         internal static string Log_RestoreNoCacheInformation {
             get {

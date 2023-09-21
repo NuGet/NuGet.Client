@@ -201,7 +201,7 @@
 1 - The command-line arguments</comment>
   </data>
   <data name="Log_RestoreNoCacheInformation" xml:space="preserve">
-    <value>The NoCache option is only for disabling the HTTP cache and not the global packages folder. It is recommended to use the NoHttpCache option instead to disable the use of the HTTP cache.</value>
+    <value>NoCache is deprecated in favor of the appropriately named NoHttpCache.</value>
     <comment>Do not translate RestoreNoCache and RestoreNoHttpCache</comment>
   </data>
 </root>

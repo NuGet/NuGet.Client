@@ -192,7 +192,7 @@ nuget push -?</value>
     <value>Disable using the machine cache as the first package source.</value>
   </data>
   <data name="CommandNoHttpCache" xml:space="preserve">
-    <value>Disable using the Http cache and contact all configured package source sources for live information.</value>
+    <value>Disable using the Http cache and contact all configured package sources for live information.</value>
   </data>
   <data name="InstallCommandOutputDirDescription" xml:space="preserve">
     <value>Specifies the directory in which packages will be installed. If none specified, uses the current directory.</value>
@@ -254,7 +254,7 @@ nuget list -verbose -allversions</value>
     <value>Displays a detailed list of information for each package.</value>
   </data>
   <data name="Log_RestoreNoCacheInformation" xml:space="preserve">
-    <value>The NoCache option is only for disabling the HTTP cache and not the global packages folder. It is recommended to use the NoHttpCache option instead to disable the use of the HTTP cache.</value>
+    <value>NoCache is deprecated in favor of the appropriately named NoHttpCache.</value>
     <comment>Do not translate NoCache and NoHttpCache</comment>
   </data>
   <data name="Option_NonInteractive" xml:space="preserve">

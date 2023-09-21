@@ -188,7 +188,7 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The NoCache option is only for disabling the HTTP cache and not the global packages folder. It is recommended to use the NoHttpCache option instead to disable the use of the HTTP cache..
+        ///   Looks up a localized string similar to NoCache is deprecated in favor of the appropriately named NoHttpCache..
         /// </summary>
         public static string Log_RestoreNoCacheInformation {
             get {
