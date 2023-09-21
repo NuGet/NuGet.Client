@@ -186,8 +186,8 @@ namespace NuGet.ProjectModel.Test
                 spec.TargetFrameworks[1].Dependencies[0].LibraryRange.VersionRange.MinVersion);
         }
 
-        [Fact]
-        public void AddOrUpdateDependency_AddsNewDependencyToAllFrameworks()
+        [Fact] // TODO NK - These 2 need to match the above 5 for sure - Figure out how to `rewrite` the tests to reduce duplication.
+        public void AddOrUpdateDependency_PackageIdentity_AddsNewDependencyToAllFrameworks()
         {
             // Arrange
             var spec = new PackageSpec(new[]
@@ -210,7 +210,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void AddOrUpdateDependency_UpdatesExistingDependencies()
+        public void AddOrUpdateDependency_PackageIdentity_UpdatesExistingDependencies()
         {
             // Arrange
             var frameworkA = new TargetFrameworkInformation
