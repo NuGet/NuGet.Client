@@ -152,8 +152,8 @@ override NuGet.LibraryModel.LibraryType.ToString() -> string!
 static NuGet.LibraryModel.CentralPackageVersionNameComparer.Default.get -> NuGet.LibraryModel.CentralPackageVersionNameComparer!
 static NuGet.LibraryModel.DownloadDependency.implicit operator NuGet.LibraryModel.LibraryRange!(NuGet.LibraryModel.DownloadDependency! library) -> NuGet.LibraryModel.LibraryRange!
 static NuGet.LibraryModel.FrameworkDependencyFlagsUtils.GetFlagString(NuGet.LibraryModel.FrameworkDependencyFlags flags) -> string!
-static NuGet.LibraryModel.FrameworkDependencyFlagsUtils.GetFlags(System.Collections.Generic.IEnumerable<string!>! values) -> NuGet.LibraryModel.FrameworkDependencyFlags
-static NuGet.LibraryModel.FrameworkDependencyFlagsUtils.GetFlags(string! flags) -> NuGet.LibraryModel.FrameworkDependencyFlags
+static NuGet.LibraryModel.FrameworkDependencyFlagsUtils.GetFlags(System.Collections.Generic.IEnumerable<string!>? values) -> NuGet.LibraryModel.FrameworkDependencyFlags
+static NuGet.LibraryModel.FrameworkDependencyFlagsUtils.GetFlags(string? flags) -> NuGet.LibraryModel.FrameworkDependencyFlags
 static NuGet.LibraryModel.LibraryDependency.ApplyCentralVersionInformation(System.Collections.Generic.IList<NuGet.LibraryModel.LibraryDependency!>! packageReferences, System.Collections.Generic.IDictionary<string!, NuGet.LibraryModel.CentralPackageVersion!>! centralPackageVersions) -> void
 static NuGet.LibraryModel.LibraryDependencyInfo.Create(NuGet.LibraryModel.LibraryIdentity! library, NuGet.Frameworks.NuGetFramework! framework, System.Collections.Generic.IEnumerable<NuGet.LibraryModel.LibraryDependency!>! dependencies) -> NuGet.LibraryModel.LibraryDependencyInfo!
 static NuGet.LibraryModel.LibraryDependencyInfo.CreateUnresolved(NuGet.LibraryModel.LibraryIdentity! library, NuGet.Frameworks.NuGetFramework! framework) -> NuGet.LibraryModel.LibraryDependencyInfo!
