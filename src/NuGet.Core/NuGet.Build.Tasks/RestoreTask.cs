@@ -147,7 +147,9 @@ namespace NuGet.Build.Tasks
 
             if (RestoreNoCache)
             {
-                log.LogWarning(Strings.Log_RestoreNoCacheInformation);
+                //Inform users that NoCache option is just for disabling HttpCache and
+                //suggest them to use NoHttpCache instead, which does the same thing.
+                log.LogInformation(Strings.Log_RestoreNoCacheInformation);
             }
 
             return await BuildTasksUtility.RestoreAsync(
