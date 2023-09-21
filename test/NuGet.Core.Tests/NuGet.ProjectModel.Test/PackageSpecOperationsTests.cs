@@ -173,8 +173,10 @@ namespace NuGet.ProjectModel.Test
             {
                 FrameworkName = FrameworkConstants.CommonFrameworks.Net45
             };
-            var ld = new LibraryDependency();
-            ld.LibraryRange = new LibraryRange(packageId, new VersionRange(oldVersion), LibraryDependencyTarget.Package);
+            var ld = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange(packageId, new VersionRange(oldVersion), LibraryDependencyTarget.Package)
+            };
             var frameworkB = new TargetFrameworkInformation
             {
                 FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard16,
@@ -219,8 +221,10 @@ namespace NuGet.ProjectModel.Test
             {
                 FrameworkName = FrameworkConstants.CommonFrameworks.Net45
             };
-            var ld = new LibraryDependency();
-            ld.LibraryRange = new LibraryRange(packageId, new VersionRange(oldVersion), LibraryDependencyTarget.Package);
+            var ld = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange(packageId, new VersionRange(oldVersion), LibraryDependencyTarget.Package)
+            };
             var frameworkB = new TargetFrameworkInformation
             {
                 FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard16,
