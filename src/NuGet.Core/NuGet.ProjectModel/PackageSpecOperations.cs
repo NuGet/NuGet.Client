@@ -26,7 +26,7 @@ namespace NuGet.ProjectModel
 
             if (!existing.Any())
             {
-                if (spec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference) // PackageReference does not use the `Dependencies` list in the PackageSpec.
+                if (spec.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference) // PackageReference does not use the `Dependencies` list in the PackageSpec.
                 {
                     foreach (var dependenciesList in spec.TargetFrameworks.Select(e => e.Dependencies))
                     {
