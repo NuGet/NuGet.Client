@@ -32,7 +32,6 @@ namespace NuGet.Tests.Apex
         }
 
         // basic create for .net core template
-        [Ignore] //https://github.com/NuGet/Home/issues/9410
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
@@ -122,7 +121,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore] //this test failed constantly, we need to check if there is anything wrong in the test.
+        [Ignore] //https://github.com/NuGet/Home/issues/12898
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]

@@ -51,7 +51,6 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore] // https://github.com/NuGet/Home/issues/9476
         [TestMethod]
         [Timeout(Timeout)]
         public async Task UninstallFromPMCForPC_SucceedAsync()

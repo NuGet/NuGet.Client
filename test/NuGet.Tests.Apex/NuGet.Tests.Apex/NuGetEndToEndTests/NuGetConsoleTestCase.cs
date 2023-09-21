@@ -207,7 +207,6 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore] //https://github.com/NuGet/Home/issues/8469
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
@@ -252,7 +251,6 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore] //https://github.com/NuGet/Home/issues/8386
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, false)]
         [DataRow(ProjectTemplate.NetCoreConsoleApp, true)]
@@ -529,7 +527,6 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore] //https://github.com/NuGet/Home/issues/8386
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, false)]
         [DataRow(ProjectTemplate.NetStandardClassLib, true)]
