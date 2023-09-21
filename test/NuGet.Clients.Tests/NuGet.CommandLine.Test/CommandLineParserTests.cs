@@ -41,7 +41,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void ExtractOptions_WhenPassingOptionNoHttpCacheToHelpCommand_ExtractOptionsShouldRaseCommandException()
+        public void ExtractOptions_WhenPassingOptionNoHttpCacheToDeleteCommand_ExtractOptionsShouldRaseCommandException()
         {
             // Arrange
             DeleteCommand command = new DeleteCommand();
