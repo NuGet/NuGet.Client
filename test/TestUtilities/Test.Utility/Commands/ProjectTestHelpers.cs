@@ -269,26 +269,25 @@ namespace NuGet.Commands.Test
         public static PackageSpec GetPackageSpec(ISettings settings, string projectName, string rootPath = @"C:\", string framework = "net5.0")
         {
             var packageSpec = GetPackageSpec(projectName, rootPath, framework);
-            UpdateRestoreMetadata(settings, packageSpec);
-            return packageSpec;
+            return packageSpec.WithSettingsBasedRestoreMetadata(settings);
         }
 
         public static PackageSpec GetPackageSpec(ISettings settings, string projectName, string rootPath, string framework, string dependencyName, bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "", bool asAssetTargetFallback = true)
         {
             var packageSpec = GetPackageSpec(projectName, rootPath, framework, dependencyName, useAssetTargetFallback, assetTargetFallbackFrameworks, asAssetTargetFallback);
-            UpdateRestoreMetadata(settings, packageSpec);
-            return packageSpec;
+            return packageSpec.WithSettingsBasedRestoreMetadata(settings);
         }
 
         /// <summary>
         /// Update restore metadata based on configuration.
         /// </summary>
-        public static void UpdateRestoreMetadata(ISettings settings, PackageSpec packageSpec)
+        public static PackageSpec WithSettingsBasedRestoreMetadata(this PackageSpec packageSpec, ISettings settings)
         {
             packageSpec.RestoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
             packageSpec.RestoreMetadata.Sources = SettingsUtility.GetEnabledSources(settings).ToList();
             packageSpec.RestoreMetadata.FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList();
             packageSpec.RestoreMetadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+            return packageSpec;
         }
 
         public static PackageSpec GetPackageSpec(string projectName, string rootPath, string framework, string dependencyName, bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "", bool asAssetTargetFallback = true)
