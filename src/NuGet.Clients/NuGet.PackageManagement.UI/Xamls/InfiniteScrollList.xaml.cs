@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -117,7 +118,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (FilterByVulnerabilities)
             {
-                return item is not null && (item.IsPackageVulnerable == FilterByVulnerabilities);
+                return item is not null && item.IsPackageVulnerable;
             }
 
             return true;
@@ -233,7 +234,7 @@ namespace NuGet.PackageManagement.UI
             _logger = logger;
             _initialSearchResultTask = searchResultTask;
             _loadingStatusIndicator.Reset(loadingMessage);
-            _loadingVulnerabilitiesStatusIndicator.Reset("Loading Vulnerabilities Data...");
+            _loadingVulnerabilitiesStatusIndicator.Reset(string.Format(CultureInfo.CurrentCulture, Resx.Resources.Vulnerabilities_Loading));
             _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.Loading;
             _loadingStatusBar.Visibility = Visibility.Hidden;
             _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
@@ -849,15 +850,6 @@ namespace NuGet.PackageManagement.UI
         private void Expander_ExpansionStateToggled(object sender, RoutedEventArgs e)
         {
             GroupExpansionChanged?.Invoke(sender, e);
-        }
-
-        protected void OnPropertyChanged(string propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
-                PropertyChanged(this, e);
-            }
         }
     }
 }

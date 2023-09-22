@@ -895,7 +895,7 @@ namespace NuGet.PackageManagement.UI
             {
                 _packageList.ClearPackageLevelGrouping();
 
-                // Reset the vulnerabilities checkbox controls until we have vulnerabilities data available.
+                // Hide vulnerabilities checkbox if not in the isntalled tab
                 _topPanel.CheckBoxVulnerabilities.Visibility = ActiveFilter == ItemFilter.Installed ? Visibility.Visible : Visibility.Collapsed;
 
                 bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
