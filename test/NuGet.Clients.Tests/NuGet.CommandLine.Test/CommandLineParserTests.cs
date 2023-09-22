@@ -5,53 +5,65 @@ using System.Collections.Generic;
 using Xunit;
 using NuGet.Commands;
 using System;
+using Moq;
+using System.Reflection;
 
 namespace NuGet.CommandLine.Test
 {
     public class CommandLineParserTests
     {
+        private Mock<CommandManager> _mockCommandManager = new Mock<CommandManager>();
+
+        private Dictionary<OptionAttribute, PropertyInfo> _expectedRestoreOptions = new Dictionary<OptionAttribute, PropertyInfo>
+            {
+                { new OptionAttribute(typeof(NuGetCommand), "CommandNoHttpCache"), typeof(DownloadCommandBase).GetProperty(nameof(DownloadCommandBase.NoHttpCache)) } };
+        private Dictionary<OptionAttribute, PropertyInfo> _emptySetOfOptions = new();
+
         [Fact]
         public void ExtractOptions_WhenPassingOptionNoHttpCache_NoHttpCacheShouldBeTrue()
         {
             // Arrange
-            RestoreCommand command = new RestoreCommand();
+            RestoreCommand restoreCommand = new RestoreCommand();
             List<string> args = new() { "-NoHttpCache" };
-            CommandLineParser commandLineParser = new CommandLineParser(new CommandManager());
+            _mockCommandManager.Setup(manager => manager.GetCommandOptions(restoreCommand)).Returns(_expectedRestoreOptions);
+            CommandLineParser commandLineParser = new CommandLineParser(_mockCommandManager.Object);
 
             // Act
-            commandLineParser.ExtractOptions(command, args.GetEnumerator());
+            commandLineParser.ExtractOptions(restoreCommand, args.GetEnumerator());
 
             // Assert
-            Assert.True(command.NoHttpCache);
+            Assert.True(restoreCommand.NoHttpCache);
         }
 
         [Fact]
         public void ExtractOptions_WhenNotPassingOptionNoHttpCache_NoHttpCacheShouldBeFalse()
         {
             // Arrange
-            RestoreCommand command = new RestoreCommand();
+            RestoreCommand restoreCommand = new RestoreCommand();
             List<string> args = new();
-            CommandLineParser commandLineParser = new CommandLineParser(new CommandManager());
+            _mockCommandManager.Setup(manager => manager.GetCommandOptions(restoreCommand)).Returns(_expectedRestoreOptions);
+            CommandLineParser commandLineParser = new CommandLineParser(_mockCommandManager.Object);
 
             // Act
-            commandLineParser.ExtractOptions(command, args.GetEnumerator());
+            commandLineParser.ExtractOptions(restoreCommand, args.GetEnumerator());
 
             // Assert
-            Assert.False(command.NoHttpCache);
+            Assert.False(restoreCommand.NoHttpCache);
         }
 
         [Fact]
         public void ExtractOptions_WhenPassingOptionNoHttpCacheToDeleteCommand_ExtractOptionsShouldRaseCommandException()
         {
             // Arrange
-            DeleteCommand command = new DeleteCommand();
+            DeleteCommand deleteCommand = new DeleteCommand();
             string option = "-NoHttpCache";
             List<string> args = new() { option };
-            CommandLineParser commandLineParser = new CommandLineParser(new CommandManager());
+            _mockCommandManager.Setup(manager => manager.GetCommandOptions(deleteCommand)).Returns(_emptySetOfOptions);
+            CommandLineParser commandLineParser = new CommandLineParser(_mockCommandManager.Object);
             CommandException expectedException = new CommandException(LocalizedResourceManager.GetString("UnknownOptionError"), option);
 
             // Act
-            Action action = () => commandLineParser.ExtractOptions(command, args.GetEnumerator());
+            Action action = () => commandLineParser.ExtractOptions(deleteCommand, args.GetEnumerator());
 
             // Assert
             CommandException exception = Assert.Throws<CommandException>(action);
