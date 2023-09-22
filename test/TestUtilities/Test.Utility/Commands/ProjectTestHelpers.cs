@@ -138,7 +138,6 @@ namespace NuGet.Commands.Test
             updated.RestoreMetadata.ProjectName = spec.Name;
             updated.RestoreMetadata.ProjectUniqueName = projectPath;
             updated.RestoreMetadata.ProjectPath = projectPath;
-            updated.RestoreMetadata.ConfigFilePaths = new List<string>();
             updated.RestoreMetadata.CentralPackageVersionsEnabled = spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
             updated.RestoreMetadata.CentralPackageTransitivePinningEnabled = spec.RestoreMetadata?.CentralPackageTransitivePinningEnabled ?? false;
 
@@ -270,13 +269,26 @@ namespace NuGet.Commands.Test
         public static PackageSpec GetPackageSpec(ISettings settings, string projectName, string rootPath = @"C:\", string framework = "net5.0")
         {
             var packageSpec = GetPackageSpec(projectName, rootPath, framework);
+            UpdateRestoreMetadata(settings, packageSpec);
+            return packageSpec;
+        }
 
+        public static PackageSpec GetPackageSpec(ISettings settings, string projectName, string rootPath, string framework, string dependencyName, bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "", bool asAssetTargetFallback = true)
+        {
+            var packageSpec = GetPackageSpec(projectName, rootPath, framework, dependencyName, useAssetTargetFallback, assetTargetFallbackFrameworks, asAssetTargetFallback);
+            UpdateRestoreMetadata(settings, packageSpec);
+            return packageSpec;
+        }
+
+        /// <summary>
+        /// Update restore metadata based on configuration.
+        /// </summary>
+        public static void UpdateRestoreMetadata(ISettings settings, PackageSpec packageSpec)
+        {
             packageSpec.RestoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
             packageSpec.RestoreMetadata.Sources = SettingsUtility.GetEnabledSources(settings).ToList();
             packageSpec.RestoreMetadata.FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList();
             packageSpec.RestoreMetadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
-
-            return packageSpec;
         }
 
         public static PackageSpec GetPackageSpec(string projectName, string rootPath, string framework, string dependencyName, bool useAssetTargetFallback = false, string assetTargetFallbackFrameworks = "", bool asAssetTargetFallback = true)

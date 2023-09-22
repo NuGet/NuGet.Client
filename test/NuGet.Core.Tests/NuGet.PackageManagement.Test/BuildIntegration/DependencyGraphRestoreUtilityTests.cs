@@ -397,8 +397,6 @@ namespace NuGet.PackageManagement.Test
             var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var mockProjectCache = new Mock<IProjectSystemCache>();
             mockProjectCache.Setup(pc => pc.AddProject(It.IsAny<ProjectNames>(), It.IsAny<IVsProjectAdapter>(), It.IsAny<NuGetProject>())).Returns(true);
-            var mockedDependencyGraphSpec = new Mock<DependencyGraphSpec>().Object;
-            var mockedAssetLogMessage = new Mock<IReadOnlyList<IAssetsLogMessage>>().Object;
 
             var projectName = "project";
             PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(settings, projectName, rootPath: pathContext.SolutionRoot);
@@ -466,8 +464,6 @@ namespace NuGet.PackageManagement.Test
             var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var mockProjectCache = new Mock<IProjectSystemCache>();
             mockProjectCache.Setup(pc => pc.AddProject(It.IsAny<ProjectNames>(), It.IsAny<IVsProjectAdapter>(), It.IsAny<NuGetProject>())).Returns(true);
-            var mockedDependencyGraphSpec = new Mock<DependencyGraphSpec>().Object;
-            var mockedAssetLogMessage = new Mock<IReadOnlyList<IAssetsLogMessage>>().Object;
 
             var projectName = "project";
             PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(settings, projectName, rootPath: pathContext.SolutionRoot);

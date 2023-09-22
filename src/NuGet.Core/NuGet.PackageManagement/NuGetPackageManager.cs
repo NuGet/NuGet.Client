@@ -721,7 +721,6 @@ namespace NuGet.PackageManagement
                     nugetActions.AddRange(actions);
                 }
 
-                // project.json based projects are handled here
                 tasks.Add(Task.Run(async ()
                     => await PreviewUpdatePackagesForBuildIntegratedAsync(
                             packageId,
