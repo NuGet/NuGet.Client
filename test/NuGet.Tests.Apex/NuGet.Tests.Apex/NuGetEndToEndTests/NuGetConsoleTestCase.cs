@@ -527,6 +527,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        [Ignore] //https://github.com/NuGet/Home/issues/12899
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, false)]
         [DataRow(ProjectTemplate.NetStandardClassLib, true)]
