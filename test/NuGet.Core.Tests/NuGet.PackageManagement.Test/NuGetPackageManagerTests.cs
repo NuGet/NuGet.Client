@@ -14,7 +14,6 @@ using FluentAssertions;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
-using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Configuration.Test;
@@ -24,7 +23,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
@@ -7652,7 +7650,7 @@ namespace NuGet.Test
                     Id = contosoPackageIdentity.Id,  // Package id conflict with PrivateRepository
                     Version = "1.0.0"
                 };
-                ExternalA_v1.AddFile("lib/net461/externcolllA.dll");
+                ExternalA_v1.AddFile("lib/net461/externalA.dll");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     externalRepositoryPath,
@@ -7905,16 +7903,13 @@ namespace NuGet.Test
             SimpleTestPackageUtility.CreateOPCPackage(context, dir);
         }
 
-        private SourceRepositoryProvider CreateSource(List<SourcePackageDependencyInfo> packages, string sourceName = null)
+        private SourceRepositoryProvider CreateSource(List<SourcePackageDependencyInfo> packages)
         {
-            var resourceProviders = new List<Lazy<INuGetResourceProvider>>
-            {
-                new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages)),
-                new Lazy<INuGetResourceProvider>(() => new TestMetadataProvider(packages))
-            };
+            var resourceProviders = new List<Lazy<INuGetResourceProvider>>();
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages)));
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestMetadataProvider(packages)));
 
-            sourceName = sourceName ?? "http://temp";
-            var packageSource = new PackageSource(sourceName);
+            var packageSource = new Configuration.PackageSource("http://temp");
             var packageSourceProvider = new TestPackageSourceProvider(new[] { packageSource });
 
             return new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
