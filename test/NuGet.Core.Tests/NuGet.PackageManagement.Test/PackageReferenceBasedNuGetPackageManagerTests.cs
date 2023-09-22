@@ -32,17 +32,9 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             using SimpleTestPathContext pathContext = new();
             using var solutionManager = new TestSolutionManager(pathContext);
-            var packageID = "A";
-            var packageToInstall = new PackageIdentity(packageID, new NuGetVersion(1, 0, 0));
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
-                packageToInstall);
             SourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
             var settings = Settings.LoadDefaultSettings(solutionManager.SolutionDirectory);
-            var nuGetPackageManager = new NuGetPackageManager(
-                sourceRepositoryProvider,
-                settings,
-                solutionManager,
-                new TestDeleteOnRestartManager());
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, solutionManager, new TestDeleteOnRestartManager());
 
             string referenceSpec = @"
                 {
@@ -57,12 +49,12 @@ namespace NuGet.PackageManagement.Test
                         }
                     }
                 }";
-            var packageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project", solutionManager.SolutionDirectory, referenceSpec).WithSettingsBasedRestoreMetadata(settings);
-            var dependencyGraphSpec = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
-            var mockProjectCache = new Mock<IProjectSystemCache>();
-            mockProjectCache.Setup(pc => pc.AddProject(It.IsAny<ProjectNames>(), It.IsAny<IVsProjectAdapter>(), It.IsAny<NuGetProject>())).Returns(true);
-            mockProjectCache.Setup(pc => pc.TryGetProjectRestoreInfo(It.IsAny<string>(), out dependencyGraphSpec, out It.Ref<IReadOnlyList<IAssetsLogMessage>>.IsAny)).Returns(true);
-            var buildIntegratedProject = solutionManager.AddCPSPackageReferenceBasedProject(mockProjectCache.Object, packageSpec);
+            NuGetProject buildIntegratedProject = CreateBuildIntegratedProjectAndAddToSolutionManager(solutionManager, settings, referenceSpec);
+
+            var packageID = "A";
+            var packageToInstall = new PackageIdentity(packageID, new NuGetVersion(1, 0, 0));
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
+                packageToInstall);
 
             // Main Act
             var result = (await nuGetPackageManager.PreviewInstallPackageAsync(
@@ -104,19 +96,9 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             using SimpleTestPathContext pathContext = new();
             using var solutionManager = new TestSolutionManager(pathContext);
-            var packageID = "A";
-            var before = new PackageIdentity(packageID, new NuGetVersion(1, 0, 0));
-            var after = new PackageIdentity(packageID, new NuGetVersion(2, 0, 0));
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
-                before,
-                after);
             SourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
             var settings = Settings.LoadDefaultSettings(solutionManager.SolutionDirectory);
-            var nuGetPackageManager = new NuGetPackageManager(
-                sourceRepositoryProvider,
-                settings,
-                solutionManager,
-                new TestDeleteOnRestartManager());
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, solutionManager, new TestDeleteOnRestartManager());
 
             string referenceSpec = @"
                 {
@@ -132,12 +114,14 @@ namespace NuGet.PackageManagement.Test
                         }
                     }
                 }";
-            var packageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project", solutionManager.SolutionDirectory, referenceSpec).WithSettingsBasedRestoreMetadata(settings);
-            var dependencyGraphSpec = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
-            var mockProjectCache = new Mock<IProjectSystemCache>();
-            mockProjectCache.Setup(pc => pc.AddProject(It.IsAny<ProjectNames>(), It.IsAny<IVsProjectAdapter>(), It.IsAny<NuGetProject>())).Returns(true);
-            mockProjectCache.Setup(pc => pc.TryGetProjectRestoreInfo(It.IsAny<string>(), out dependencyGraphSpec, out It.Ref<IReadOnlyList<IAssetsLogMessage>>.IsAny)).Returns(true);
-            var buildIntegratedProject = solutionManager.AddCPSPackageReferenceBasedProject(mockProjectCache.Object, packageSpec);
+            NuGetProject buildIntegratedProject = CreateBuildIntegratedProjectAndAddToSolutionManager(solutionManager, settings, referenceSpec);
+
+            var packageID = "A";
+            var before = new PackageIdentity(packageID, new NuGetVersion(1, 0, 0));
+            var after = new PackageIdentity(packageID, new NuGetVersion(2, 0, 0));
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
+                before,
+                after);
 
             // Main Act
             var result = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
@@ -178,19 +162,9 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             using SimpleTestPathContext pathContext = new();
             using var solutionManager = new TestSolutionManager(pathContext);
-            var packageID = "A";
-            var before = new PackageIdentity(packageID, new NuGetVersion(1, 0, 0));
-            var after = new PackageIdentity(packageID, new NuGetVersion(2, 0, 0));
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
-                before,
-                after);
             SourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
             var settings = Settings.LoadDefaultSettings(solutionManager.SolutionDirectory);
-            var nuGetPackageManager = new NuGetPackageManager(
-                sourceRepositoryProvider,
-                settings,
-                solutionManager,
-                new TestDeleteOnRestartManager());
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, solutionManager, new TestDeleteOnRestartManager());
 
             string referenceSpec = @"
                 {
@@ -207,12 +181,14 @@ namespace NuGet.PackageManagement.Test
                         }
                     }
                 }";
-            var packageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project", solutionManager.SolutionDirectory, referenceSpec).WithSettingsBasedRestoreMetadata(settings);
-            var dependencyGraphSpec = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
-            var mockProjectCache = new Mock<IProjectSystemCache>();
-            mockProjectCache.Setup(pc => pc.AddProject(It.IsAny<ProjectNames>(), It.IsAny<IVsProjectAdapter>(), It.IsAny<NuGetProject>())).Returns(true);
-            mockProjectCache.Setup(pc => pc.TryGetProjectRestoreInfo(It.IsAny<string>(), out dependencyGraphSpec, out It.Ref<IReadOnlyList<IAssetsLogMessage>>.IsAny)).Returns(true);
-            var buildIntegratedProject = solutionManager.AddCPSPackageReferenceBasedProject(mockProjectCache.Object, packageSpec);
+            NuGetProject buildIntegratedProject = CreateBuildIntegratedProjectAndAddToSolutionManager(solutionManager, settings, referenceSpec);
+
+            var packageID = "A";
+            var before = new PackageIdentity(packageID, new NuGetVersion(1, 0, 0));
+            var after = new PackageIdentity(packageID, new NuGetVersion(2, 0, 0));
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
+                before,
+                after);
 
             // Main Act
             var result = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
@@ -247,6 +223,17 @@ namespace NuGet.PackageManagement.Test
             net50Target.Libraries.Should().HaveCount(1);
             net50Target.Libraries[0].Name.Should().Be(after.Id);
             net50Target.Libraries[0].Version.Should().Be(after.Version);
+        }
+
+        private static NuGetProject CreateBuildIntegratedProjectAndAddToSolutionManager(TestSolutionManager solutionManager, ISettings settings, string referenceSpec)
+        {
+            var packageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project", solutionManager.SolutionDirectory, referenceSpec).WithSettingsBasedRestoreMetadata(settings);
+            var dependencyGraphSpec = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
+            var mockProjectCache = new Mock<IProjectSystemCache>();
+            mockProjectCache.Setup(pc => pc.AddProject(It.IsAny<ProjectNames>(), It.IsAny<IVsProjectAdapter>(), It.IsAny<NuGetProject>())).Returns(true);
+            mockProjectCache.Setup(pc => pc.TryGetProjectRestoreInfo(It.IsAny<string>(), out dependencyGraphSpec, out It.Ref<IReadOnlyList<IAssetsLogMessage>>.IsAny)).Returns(true);
+            var buildIntegratedProject = solutionManager.AddCPSPackageReferenceBasedProject(mockProjectCache.Object, packageSpec);
+            return buildIntegratedProject;
         }
     }
 }
