@@ -23,6 +23,9 @@
       <nuget:PackageLevelToGroupNameConverter
       x:Key="PackageLevelToGroupNameConverter" />
 
+      <nuget:GroupTypeToExpanderConverter
+       x:Key="GroupTypeToExpanderConverter" />
+
       <DataTemplate
       DataType="{x:Type nuget:PackageDependencyMetadata}">
         <TextBlock
@@ -306,11 +309,22 @@
         </Expander>
       </ControlTemplate>
 
+      <ControlTemplate
+        x:Key="GroupedListItemNoExpanderControlTemplate"
+        TargetType="{x:Type GroupItem}">
+        <ItemsPresenter />
+      </ControlTemplate>
+
       <Style
         x:Key="GroupedListContainerStyle"
         TargetType="{x:Type GroupItem}">
         <Setter Property="Template" Value="{StaticResource GroupedListItemControlTemplate}" />
         <Setter Property="AutomationProperties.Name" Value="{StaticResource GroupHeaderMultiBinding}" />
+        <Style.Triggers>
+          <DataTrigger Binding="{Binding Converter={StaticResource GroupTypeToExpanderConverter}}" Value="False">
+            <Setter Property="Template" Value="{StaticResource GroupedListItemNoExpanderControlTemplate}" />
+          </DataTrigger>
+        </Style.Triggers>
       </Style>
     </ResourceDictionary>
   </UserControl.Resources>

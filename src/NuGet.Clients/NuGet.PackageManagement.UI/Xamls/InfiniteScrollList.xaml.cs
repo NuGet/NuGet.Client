@@ -32,8 +32,10 @@ namespace NuGet.PackageManagement.UI
     public partial class InfiniteScrollList : UserControl
     {
         private readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
+        private readonly LoadingStatusIndicator _loadingVulnerabilitiesStatusIndicator = new LoadingStatusIndicator();
         private ScrollViewer _scrollViewer;
         private static TimeSpan PollingDelay = TimeSpan.FromMilliseconds(100);
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public event SelectionChangedEventHandler SelectionChanged;
         public event RoutedEventHandler GroupExpansionChanged;
@@ -84,14 +86,28 @@ namespace NuGet.PackageManagement.UI
 
             BindingOperations.EnableCollectionSynchronization(Items, _list.ItemsLock);
 
-            ItemsView = new CollectionViewSource() { Source = Items }.View;
-            ItemsView.Filter = item =>
+            ItemsView = new CollectionViewSource() { Source = Items };
+            ListCollectionView itemsView = ItemsView.View as ListCollectionView;
+            itemsView.IsLiveFiltering = true;
+            itemsView.IsLiveGrouping = true;
+            itemsView.LiveFilteringProperties.Add($"{nameof(PackageItemViewModel.IsPackageVulnerable)}");
+            itemsView.LiveGroupingProperties.Add($"{nameof(PackageItemViewModel.PackageLevel)}");
+            itemsView.Filter = item =>
             {
+                if (item is not null && item.Equals(_loadingVulnerabilitiesStatusIndicator))
+                {
+                    if (FilterByVulnerabilities)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+
                 PackageItemViewModel vitem = item as PackageItemViewModel;
                 return IsItemInFilter(vitem);
             };
 
-            DataContext = ItemsView;
+            DataContext = ItemsListCollection;
             CheckBoxesEnabled = false;
 
             _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
@@ -137,7 +153,14 @@ namespace NuGet.PackageManagement.UI
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
 
-        public ICollectionView ItemsView { get; private set; }
+        public CollectionViewSource ItemsView { get; private set; }
+        public ListCollectionView ItemsListCollection
+        {
+            get
+            {
+                return ItemsView?.View as ListCollectionView;
+            }
+        }
 
         /// <summary>
         /// Count of Items (excluding Loading indicator) that are currently shown after applying any UI filtering.
@@ -155,6 +178,8 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public IEnumerable<PackageItemViewModel> PackageItems => Items.OfType<PackageItemViewModel>().ToArray();
 
+        public int VulnerablePackagesCount => Items.OfType<PackageItemViewModel>().Where(i => i.IsPackageVulnerable).Count();
+
         public PackageItemViewModel SelectedPackageItem => _list.SelectedItem as PackageItemViewModel;
 
         public int SelectedIndex => _list.SelectedIndex;
@@ -165,7 +190,8 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return FilterByVulnerabilities is true ? TopLevelVulnerablePackagesCount : TopLevelAllPackagesCount;
+                var group = ItemsListCollection.Groups.Where(g => (g as CollectionViewGroup).Name.ToString().Equals("TopLevel", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                return group is not null ? (group as CollectionViewGroup).ItemCount : 0;
             }
         }
 
@@ -173,17 +199,10 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return FilterByVulnerabilities is true ? TransitiveVulnerablePackagesCount : TransitiveAllPackagesCount;
+                var group = ItemsListCollection.Groups.Where(g => (g as CollectionViewGroup).Name.ToString().Equals("Transitive", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                return group is not null ? (group as CollectionViewGroup).ItemCount : 0;
             }
         }
-
-        public int TopLevelAllPackagesCount { get; private set; }
-
-        public int TransitiveAllPackagesCount { get; private set; }
-
-        public int TopLevelVulnerablePackagesCount { get; private set; }
-
-        public int TransitiveVulnerablePackagesCount { get; private set; }
 
         // Load items using the specified loader
         internal async Task LoadItemsAsync(
@@ -214,6 +233,8 @@ namespace NuGet.PackageManagement.UI
             _logger = logger;
             _initialSearchResultTask = searchResultTask;
             _loadingStatusIndicator.Reset(loadingMessage);
+            _loadingVulnerabilitiesStatusIndicator.Reset("Loading Vulnerabilities Data...");
+            _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.Loading;
             _loadingStatusBar.Visibility = Visibility.Hidden;
             _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
 
@@ -270,6 +291,7 @@ namespace NuGet.PackageManagement.UI
                 if (!Items.Contains(_loadingStatusIndicator))
                 {
                     Items.Add(_loadingStatusIndicator);
+                    Items.Add(_loadingVulnerabilitiesStatusIndicator);
                     addedLoadingIndicator = true;
                 }
 
@@ -332,9 +354,14 @@ namespace NuGet.PackageManagement.UI
                     {
                         _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
                     }
+                    else if (VulnerablePackagesCount == 0)
+                    {
+                        _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                    }
                     else
                     {
                         Items.Remove(_loadingStatusIndicator);
+                        Items.Remove(_loadingVulnerabilitiesStatusIndicator);
                     }
                 }
             }
@@ -538,12 +565,6 @@ namespace NuGet.PackageManagement.UI
                         Items.Add(package);
                         _selectedCount = package.IsSelected ? _selectedCount + 1 : _selectedCount;
                     }
-
-                    // update the top-level and transitive package counts
-                    TopLevelAllPackagesCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.TopLevel);
-                    TransitiveAllPackagesCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.Transitive);
-                    TopLevelVulnerablePackagesCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.TopLevel && p.IsPackageVulnerable == true);
-                    TransitiveVulnerablePackagesCount = PackageItems.Count(p => p.PackageLevel == PackageLevel.Transitive && p.IsPackageVulnerable == true);
 
                     if (removed)
                     {
@@ -780,35 +801,63 @@ namespace NuGet.PackageManagement.UI
 
         internal void ClearPackageLevelGrouping()
         {
-            ItemsView.GroupDescriptions.Clear();
+            ItemsListCollection.GroupDescriptions.Clear();
         }
 
         internal void AddVulnerabilitiesFiltering()
         {
             FilterByVulnerabilities = true;
-            ItemsView.Refresh();
+            ItemsListCollection.Refresh();
         }
 
         internal void RemoveVulnerabilitiesFiltering()
         {
             FilterByVulnerabilities = false;
-            ItemsView.Refresh();
+            ItemsListCollection.Refresh();
+        }
+
+        internal void RemoveVulnerabilitiesIndicator()
+        {
+            Items.Remove(_loadingVulnerabilitiesStatusIndicator);
+        }
+
+        internal void UpdateNoVulnerabilitiesFoundIndicator()
+        {
+            _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.NoItemsFound;
         }
 
         internal void AddPackageLevelGrouping()
         {
-            ItemsView.Refresh();
-            if (ItemsView
+            if (ItemsListCollection.GroupDescriptions.Count > 0)
+            {
+                return;
+            }
+
+            ItemsListCollection.Refresh();
+            if (Items
                     .OfType<PackageItemViewModel>()
                     .Any(p => p.PackageLevel == PackageLevel.Transitive))
             {
-                ItemsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PackageItemViewModel.PackageLevel)));
+                ItemsListCollection.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PackageItemViewModel.PackageLevel)));
+            }
+            else
+            {
+                ItemsListCollection.GroupDescriptions.Add(new PropertyGroupDescription(nameof(LoadingStatusIndicator)));
             }
         }
 
         private void Expander_ExpansionStateToggled(object sender, RoutedEventArgs e)
         {
             GroupExpansionChanged?.Invoke(sender, e);
+        }
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
+                PropertyChanged(this, e);
+            }
         }
     }
 }

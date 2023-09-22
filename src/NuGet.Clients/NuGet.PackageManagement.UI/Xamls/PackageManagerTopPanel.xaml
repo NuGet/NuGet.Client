@@ -245,7 +245,6 @@
           Checked="_checkboxVulnerabilities_Checked"
           Unchecked="_checkboxVulnerabilities_Unchecked"
           Visibility="Visible"
-          IsEnabled="False"
           IsChecked="False">
           <TextBlock Text="{x:Static nuget:Resources.Checkbox_Show_Vulnerable_Only}" />
         </CheckBox>

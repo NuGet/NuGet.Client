@@ -897,8 +897,6 @@ namespace NuGet.PackageManagement.UI
 
                 // Reset the vulnerabilities checkbox controls until we have vulnerabilities data available.
                 _topPanel.CheckBoxVulnerabilities.Visibility = ActiveFilter == ItemFilter.Installed ? Visibility.Visible : Visibility.Collapsed;
-                _topPanel.CheckBoxVulnerabilities.IsChecked = false;
-                _topPanel.CheckBoxVulnerabilities.IsEnabled = false;
 
                 bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
                 var loader = await PackageItemLoader.CreateAsync(
@@ -941,12 +939,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     await RefreshInstalledAndUpdatesTabsAsync();
                 }
-                else
-                {
-                    // If warning icon is still visible, show the vulnerabilities filter.
-                    _topPanel.CheckBoxVulnerabilities.IsEnabled = _topPanel._warningIcon.IsVisible ? true : false;
-                }
-
             }
             catch (OperationCanceledException)
             {
@@ -994,7 +986,6 @@ namespace NuGet.PackageManagement.UI
             // Update installed tab warning icon
             (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, SelectedSource.PackageSources, refreshCts.Token);
             _topPanel.UpdateWarningStatusOnInstalledTab(vulnerablePackages, deprecatedPackages);
-            _topPanel.CheckBoxVulnerabilities.IsEnabled = vulnerablePackages > 0 ? true : false;
 
             // Update updates tab count
             Model.CachedUpdates = new PackageSearchMetadataCache
@@ -1294,10 +1285,6 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private async ValueTask RefreshAsync()
         {
-            // Reset the vulnerabilities checkbox on every installation/update until we have vulnerabilities information
-            _topPanel.CheckBoxVulnerabilities.IsChecked = false;
-            _topPanel.CheckBoxVulnerabilities.IsEnabled = false;
-
             if (_topPanel.Filter != ItemFilter.All)
             {
                 // refresh the whole package list
