@@ -36,7 +36,6 @@ namespace NuGet.PackageManagement.UI
         private readonly LoadingStatusIndicator _loadingVulnerabilitiesStatusIndicator = new LoadingStatusIndicator();
         private ScrollViewer _scrollViewer;
         private static TimeSpan PollingDelay = TimeSpan.FromMilliseconds(100);
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public event SelectionChangedEventHandler SelectionChanged;
         public event RoutedEventHandler GroupExpansionChanged;
