@@ -90,19 +90,14 @@ namespace NuGet.PackageManagement.UI
             ListCollectionView itemsView = ItemsView.View as ListCollectionView;
             itemsView.IsLiveFiltering = true;
             itemsView.IsLiveGrouping = true;
-            itemsView.LiveFilteringProperties.Add($"{nameof(PackageItemViewModel.IsPackageVulnerable)}");
-            itemsView.LiveGroupingProperties.Add($"{nameof(PackageItemViewModel.PackageLevel)}");
+            itemsView.LiveFilteringProperties.Add(nameof(PackageItemViewModel.IsPackageVulnerable));
+            itemsView.LiveGroupingProperties.Add(nameof(PackageItemViewModel.PackageLevel));
             itemsView.Filter = item =>
             {
                 if (item is not null && item.Equals(_loadingVulnerabilitiesStatusIndicator))
                 {
-                    if (FilterByVulnerabilities)
-                    {
-                        return true;
-                    }
-                    return false;
+                    return FilterByVulnerabilities && !(_loadingVulnerabilitiesStatusIndicator.Status == LoadingStatus.NoItemsFound && VulnerablePackagesCount > 0);
                 }
-
                 PackageItemViewModel vitem = item as PackageItemViewModel;
                 return IsItemInFilter(vitem);
             };
@@ -190,7 +185,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                var group = ItemsListCollection.Groups.Where(g => (g as CollectionViewGroup).Name.ToString().Equals("TopLevel", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                var group = ItemsListCollection.Groups.Where(g => (g as CollectionViewGroup).Name.ToString().Equals(PackageLevel.TopLevel.ToString(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 return group is not null ? (group as CollectionViewGroup).ItemCount : 0;
             }
         }
@@ -199,7 +194,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                var group = ItemsListCollection.Groups.Where(g => (g as CollectionViewGroup).Name.ToString().Equals("Transitive", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                var group = ItemsListCollection.Groups.Where(g => (g as CollectionViewGroup).Name.ToString().Equals(PackageLevel.Transitive.ToString(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 return group is not null ? (group as CollectionViewGroup).ItemCount : 0;
             }
         }
@@ -291,8 +286,12 @@ namespace NuGet.PackageManagement.UI
                 if (!Items.Contains(_loadingStatusIndicator))
                 {
                     Items.Add(_loadingStatusIndicator);
-                    Items.Add(_loadingVulnerabilitiesStatusIndicator);
                     addedLoadingIndicator = true;
+                }
+
+                if (!Items.Contains(_loadingVulnerabilitiesStatusIndicator))
+                {
+                    Items.Add(_loadingVulnerabilitiesStatusIndicator);
                 }
 
                 await LoadItemsCoreAsync(currentLoader, loadCts.Token);
@@ -343,6 +342,15 @@ namespace NuGet.PackageManagement.UI
             }
             finally
             {
+                if (VulnerablePackagesCount == 0)
+                {
+                    _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                }
+                else
+                {
+                    Items.Remove(_loadingVulnerabilitiesStatusIndicator);
+                }
+
                 if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
                     && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
                 {
@@ -354,14 +362,9 @@ namespace NuGet.PackageManagement.UI
                     {
                         _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
                     }
-                    else if (VulnerablePackagesCount == 0)
-                    {
-                        _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.NoItemsFound;
-                    }
                     else
                     {
                         Items.Remove(_loadingStatusIndicator);
-                        Items.Remove(_loadingVulnerabilitiesStatusIndicator);
                     }
                 }
             }

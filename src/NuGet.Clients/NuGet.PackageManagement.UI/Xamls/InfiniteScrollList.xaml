@@ -23,8 +23,8 @@
       <nuget:PackageLevelToGroupNameConverter
       x:Key="PackageLevelToGroupNameConverter" />
 
-      <nuget:GroupTypeToExpanderConverter
-       x:Key="GroupTypeToExpanderConverter" />
+      <nuget:PackageLevelGroupToBooleanConverter
+       x:Key="PackageLevelGroupToBooleanConverter" />
 
       <DataTemplate
       DataType="{x:Type nuget:PackageDependencyMetadata}">
@@ -321,7 +321,9 @@
         <Setter Property="Template" Value="{StaticResource GroupedListItemControlTemplate}" />
         <Setter Property="AutomationProperties.Name" Value="{StaticResource GroupHeaderMultiBinding}" />
         <Style.Triggers>
-          <DataTrigger Binding="{Binding Converter={StaticResource GroupTypeToExpanderConverter}}" Value="False">
+          <!--This data trigger is when a new group is added, if the group is not of type PackageLevel
+            it won't add a expander header and show it flat in the list -->
+          <DataTrigger Binding="{Binding Converter={StaticResource PackageLevelGroupToBooleanConverter}}" Value="False">
             <Setter Property="Template" Value="{StaticResource GroupedListItemNoExpanderControlTemplate}" />
           </DataTrigger>
         </Style.Triggers>

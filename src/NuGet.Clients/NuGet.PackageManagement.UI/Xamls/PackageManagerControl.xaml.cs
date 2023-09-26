@@ -895,9 +895,6 @@ namespace NuGet.PackageManagement.UI
             {
                 _packageList.ClearPackageLevelGrouping();
 
-                // Hide vulnerabilities checkbox if not in the isntalled tab
-                _topPanel.CheckBoxVulnerabilities.Visibility = ActiveFilter == ItemFilter.Installed ? Visibility.Visible : Visibility.Collapsed;
-
                 bool useRecommender = GetUseRecommendedPackages(loadContext, searchText);
                 var loader = await PackageItemLoader.CreateAsync(
                     Model.Context.ServiceBroker,
@@ -1248,17 +1245,6 @@ namespace NuGet.PackageManagement.UI
                 // Collapse the Update controls when the current tab is not "Updates".
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
                 _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
-
-                // Collapse and reset the vulnerabilities controls when not in "Installed"
-                if (ActiveFilter is not ItemFilter.Installed)
-                {
-                    _topPanel.CheckBoxVulnerabilities.Visibility = Visibility.Collapsed;
-                    _topPanel.CheckBoxVulnerabilities.IsChecked = false;
-                }
-                else
-                {
-                    _topPanel.CheckBoxVulnerabilities.Visibility = Visibility.Visible;
-                }
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
