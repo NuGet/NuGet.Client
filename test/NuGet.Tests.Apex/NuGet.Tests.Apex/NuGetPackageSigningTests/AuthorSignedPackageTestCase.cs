@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -29,14 +30,14 @@ namespace NuGet.Tests.Apex
             Fixture = new SignedPackagesTestsApexFixture();
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task InstallFromPMCForPC_SucceedAsync()
+        public async Task InstallFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.ClassLibrary;
             var signedPackage = Fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
@@ -51,14 +52,14 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task UninstallFromPMCForPC_SucceedAsync()
+        public async Task UninstallFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.ClassLibrary;
             var signedPackage = Fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
@@ -74,14 +75,14 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task UpdateUnsignedToSignedVersionFromPMCForPC_SucceedAsync()
+        public async Task UpdateUnsignedToSignedVersionFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.ClassLibrary;
             var packageVersion09 = "0.9.0";
             var signedPackage = Fixture.AuthorSignedTestPackage;
 
@@ -99,9 +100,10 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task DowngradeSignedToUnsignedVersionFromPMCForPC_SucceedAsync()
+        public async Task DowngradeSignedToUnsignedVersionFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
@@ -110,7 +112,6 @@ namespace NuGet.Tests.Apex
             // A package that is already installed as signed should be specailly treated and a user should not be
             // able to downgrade to an unsigned version. This test needs to be updated once this behavior gets
             // corrected in the product.
-            ProjectTemplate projectTemplate = ProjectTemplate.ClassLibrary;
             var packageVersion09 = "0.9.0";
             var signedPackage = Fixture.AuthorSignedTestPackage;
 
@@ -128,14 +129,14 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task WithExpiredCertificate_InstallFromPMCForPC_WarnAsync()
+        public async Task WithExpiredCertificate_InstallFromPMCForPC_WarnAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.ClassLibrary;
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
             using (var trustedExpiringTestCert = SigningUtility.GenerateTrustedTestCertificateThatWillExpireSoon())
             {
@@ -160,14 +161,14 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
         [Timeout(Timeout)]
-        public async Task Tampered_InstallFromPMCForPC_FailAsync()
+        public async Task Tampered_InstallFromPMCForPC_FailAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
 
-            ProjectTemplate projectTemplate = ProjectTemplate.ClassLibrary;
             var signedPackage = Fixture.AuthorSignedTestPackage;
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
@@ -182,6 +183,16 @@ namespace NuGet.Tests.Apex
 
                 CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, signedPackage.Id, signedPackage.Version, Logger);
             }
+        }
+
+        public static IEnumerable<object[]> GetPackagesConfigTemplates()
+        {
+            yield return new object[] { ProjectTemplate.ClassLibrary };
+        }
+
+        public static IEnumerable<object[]> GetPackageReferenceTemplates()
+        {
+            yield return new object[] { ProjectTemplate.NetStandardClassLib };
         }
     }
 }
