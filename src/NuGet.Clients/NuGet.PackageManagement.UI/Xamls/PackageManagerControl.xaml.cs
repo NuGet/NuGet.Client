@@ -528,7 +528,6 @@ namespace NuGet.PackageManagement.UI
             _detailModel.Options.RemoveDependencies = settings.RemoveDependencies;
             _detailModel.Options.ForceRemove = settings.ForceRemove;
             _topPanel.CheckboxPrerelease.IsChecked = settings.IncludePrerelease;
-            _topPanel.CheckBoxVulnerabilities.IsChecked = false;
             _packageDetail._optionsControl.IsExpanded = settings.OptionsExpanded;
             _packageDetail._solutionView.RestoreUserSettings(settings);
 

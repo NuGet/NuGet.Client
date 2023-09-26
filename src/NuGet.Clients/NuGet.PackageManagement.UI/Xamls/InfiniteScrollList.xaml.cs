@@ -94,17 +94,9 @@ namespace NuGet.PackageManagement.UI
             itemsView.LiveGroupingProperties.Add(nameof(PackageItemViewModel.PackageLevel));
             ItemsView.Filter = item =>
             {
-                if (item is LoadingStatusIndicator loadingIndicator)
-                {
-                    return IsLoadingIndicatorAccepted(loadingIndicator);
-                }
-
-                if (item is PackageItemViewModel vm)
-                {
-                    return IsVulnerablePackageAccepted(vm);
-                }
-
-                return false;
+                return FilterLoadingIndicator(item)
+                    && FilterVulnerabilitiesIndicator(item)
+                    && FilterVulnerablePackage(item);
             };
 
             DataContext = itemsView;
@@ -113,32 +105,31 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
         }
 
-        private bool IsLoadingIndicatorAccepted(LoadingStatusIndicator loadingIndicator)
+        private bool FilterVulnerabilitiesIndicator(object item)
         {
-            if (loadingIndicator.Equals(_loadingStatusIndicator))
-            {
-                return !_filterByVulnerabilities;
-            }
-
-            if (loadingIndicator.Equals(_loadingVulnerabilitiesStatusIndicator))
+            if (item.Equals(_loadingVulnerabilitiesStatusIndicator))
             {
                 return _filterByVulnerabilities && !(_loadingVulnerabilitiesStatusIndicator.Status == LoadingStatus.NoItemsFound && VulnerablePackagesCount > 0);
             }
 
-            return false;
+            return true;
         }
 
-        private bool IsVulnerablePackageAccepted(PackageItemViewModel item)
+        private bool FilterLoadingIndicator(object item)
         {
-            return !_filterByVulnerabilities
-                || (_filterByVulnerabilities && item.IsPackageVulnerable);
-        }
-
-        internal bool IsItemInFilter(PackageItemViewModel item)
-        {
-            if (_filterByVulnerabilities)
+            if (item.Equals(_loadingStatusIndicator))
             {
-                return item is not null && item.IsPackageVulnerable;
+                return !_filterByVulnerabilities;
+            }
+
+            return true;
+        }
+
+        private bool FilterVulnerablePackage(object item)
+        {
+            if (_filterByVulnerabilities && item is PackageItemViewModel vm && !vm.IsPackageVulnerable)
+            {
+                return false;
             }
 
             return true;
@@ -192,7 +183,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public IEnumerable<PackageItemViewModel> PackageItems => Items.OfType<PackageItemViewModel>().ToArray();
 
-        public int VulnerablePackagesCount => Items.OfType<PackageItemViewModel>().Where(i => i.IsPackageVulnerable).Count();
+        private int VulnerablePackagesCount => Items.OfType<PackageItemViewModel>().Where(i => i.IsPackageVulnerable).Count();
 
         public PackageItemViewModel SelectedPackageItem => _list.SelectedItem as PackageItemViewModel;
 
@@ -838,33 +829,14 @@ namespace NuGet.PackageManagement.UI
             ItemsView.Refresh();
         }
 
-        internal void RemoveVulnerabilitiesIndicator()
-        {
-            Items.Remove(_loadingVulnerabilitiesStatusIndicator);
-        }
-
-        internal void UpdateNoVulnerabilitiesFoundIndicator()
-        {
-            _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.NoItemsFound;
-        }
-
         internal void AddPackageLevelGrouping()
         {
-            if (ItemsView.GroupDescriptions.Count > 0)
-            {
-                return;
-            }
-
             ItemsView.Refresh();
             if (Items
                     .OfType<PackageItemViewModel>()
                     .Any(p => p.PackageLevel == PackageLevel.Transitive))
             {
                 ItemsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PackageItemViewModel.PackageLevel)));
-            }
-            else
-            {
-                ItemsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(LoadingStatusIndicator)));
             }
         }
 
