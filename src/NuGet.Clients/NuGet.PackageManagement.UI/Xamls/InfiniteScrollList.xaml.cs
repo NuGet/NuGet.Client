@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.UI
             itemsView.LiveGroupingProperties.Add(nameof(PackageItemViewModel.PackageLevel));
             ItemsView.Filter = item =>
             {
-                return IsItemAcecpted(item);
+                return IsItemAccepted(item);
             };
 
             DataContext = itemsView;
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.UI
         }
 
 
-        private bool IsItemAcecpted(object item)
+        private bool IsItemAccepted(object item)
         {
             if (item is LoadingStatusIndicator)
             {
