@@ -94,7 +94,17 @@ namespace NuGet.PackageManagement.UI
             itemsView.LiveGroupingProperties.Add(nameof(PackageItemViewModel.PackageLevel));
             ItemsView.Filter = item =>
             {
-                return IsItemAccepted(item);
+                if (item is LoadingStatusIndicator loadingIndicator)
+                {
+                    return IsLoadingIndicatorAccepted(loadingIndicator);
+                }
+
+                if (item is PackageItemViewModel vm)
+                {
+                    return IsVulnerablePackageAccepted(vm);
+                }
+
+                return false;
             };
 
             DataContext = itemsView;
@@ -103,30 +113,14 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
         }
 
-
-        private bool IsItemAccepted(object item)
+        private bool IsLoadingIndicatorAccepted(LoadingStatusIndicator loadingIndicator)
         {
-            if (item is LoadingStatusIndicator)
-            {
-                return IsLoadingIndicatorAccepted(item);
-            }
-
-            if (item is PackageItemViewModel vm)
-            {
-                return IsVulnerablePackageAccepted(vm);
-            }
-
-            return false;
-        }
-
-        private bool IsLoadingIndicatorAccepted(object item)
-        {
-            if (item is not null && item.Equals(_loadingStatusIndicator))
+            if (loadingIndicator.Equals(_loadingStatusIndicator))
             {
                 return !_filterByVulnerabilities;
             }
 
-            if (item is not null && item.Equals(_loadingVulnerabilitiesStatusIndicator))
+            if (loadingIndicator.Equals(_loadingVulnerabilitiesStatusIndicator))
             {
                 return _filterByVulnerabilities && !(_loadingVulnerabilitiesStatusIndicator.Status == LoadingStatus.NoItemsFound && VulnerablePackagesCount > 0);
             }
@@ -137,7 +131,7 @@ namespace NuGet.PackageManagement.UI
         private bool IsVulnerablePackageAccepted(PackageItemViewModel item)
         {
             return !_filterByVulnerabilities
-                || (_filterByVulnerabilities && item is PackageItemViewModel vm && vm.IsPackageVulnerable);
+                || (_filterByVulnerabilities && item.IsPackageVulnerable);
         }
 
         internal bool IsItemInFilter(PackageItemViewModel item)

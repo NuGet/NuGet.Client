@@ -217,7 +217,7 @@ namespace NuGet.PackageManagement.UI
 
         public INuGetExperimentationService NuGetExperimentationService { get; private set; }
 
-        public bool IsVulnerableFilteringApplied => _topPanel.CheckBoxVulnerabilities.IsChecked == true;
+        public bool IsVulnerableFilteringApplied => _topPanel?.CheckBoxVulnerabilities?.IsChecked == true;
 
         private void OnProjectUpdated(object sender, IProjectContextInfo project)
         {
