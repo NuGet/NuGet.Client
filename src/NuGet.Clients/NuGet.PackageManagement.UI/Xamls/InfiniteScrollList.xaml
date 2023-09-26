@@ -322,7 +322,7 @@
         <Setter Property="AutomationProperties.Name" Value="{StaticResource GroupHeaderMultiBinding}" />
         <Style.Triggers>
           <!--This data trigger is when a new group is added, if the group is not of type PackageLevel
-            it won't add a expander header and show it flat in the list -->
+            it won't add a expander header and will instead show it flat in the list -->
           <DataTrigger Binding="{Binding Converter={StaticResource PackageLevelGroupToBooleanConverter}}" Value="False">
             <Setter Property="Template" Value="{StaticResource GroupedListItemNoExpanderControlTemplate}" />
           </DataTrigger>
