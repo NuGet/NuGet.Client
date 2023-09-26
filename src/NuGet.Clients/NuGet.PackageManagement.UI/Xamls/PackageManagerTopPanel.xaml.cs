@@ -311,7 +311,7 @@ namespace NuGet.PackageManagement.UI
 
             //Store the tag for calculating the ItemFilter without having to access the UI Thread.
             Filter = GetItemFilter(selectedTabItem);
-            if(CheckBoxVulnerabilities is not null) // UI Element can be null 
+            if (CheckBoxVulnerabilities is not null) // UI Element can be null 
             {
                 if (Filter == ItemFilter.Installed)
                 {
