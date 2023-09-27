@@ -395,7 +395,7 @@ Condition=" ('%(Extension)' == '.dll' OR '%(Filename)' == 'NuGet.CommandLine.XPl
   </Target>
 
   <Target Name="GetAllTargetFrameworks">
-      <PropertyGroup>
+  <PropertyGroup>
       <EffectiveFramework Condition=" '$(TargetFrameworks)' != '' ">$(TargetFrameworks)</EffectiveFramework>
       <EffectiveFramework Condition=" '$(EffectiveFramework)' == '' ">$(TargetFramework)</EffectiveFramework>
     </PropertyGroup>
