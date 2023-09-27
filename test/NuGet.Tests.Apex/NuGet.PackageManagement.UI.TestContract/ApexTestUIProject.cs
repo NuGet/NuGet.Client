@@ -95,6 +95,12 @@ namespace NuGet.PackageManagement.UI.TestContract
             return result?.IsPackageDeprecated == true;
         }
 
+        public bool VerifyTransitivePackageOnTopOfInstalledTab()
+        {
+            var result = UIInvoke(() => _packageManagerControl.PackageList.PackageItems.FirstOrDefault().PackageLevel);
+            return result == PackageLevel.Transitive;
+        }
+
         public void InstallPackage(string packageId, string version)
         {
             UIInvoke(() => _packageManagerControl.InstallPackage(packageId, NuGetVersion.Parse(version), null));

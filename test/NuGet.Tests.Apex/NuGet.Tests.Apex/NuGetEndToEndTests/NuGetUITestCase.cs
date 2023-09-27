@@ -714,5 +714,91 @@ namespace NuGet.Tests.Apex
             // Assert
             CommonUtility.AssertUninstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, XunitLogger);
         }
+
+        [StaFact]
+        public void InstallTopLevelPackageHavingTransitiveFromUI()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreClassLib, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var nugetTestService = GetNuGetTestService();
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI("Moq", "4.20.69");
+            solutionService.Build();
+
+            // Assert
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, "Moq", "4.20.69", XunitLogger);
+            uiwindow.AssertPackageNotTransitive();
+
+            // Act (Search the transitive package since it will not show at the top of package list by default)
+            uiwindow.SearchPackageFromUI("Castle.Core");
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            uiwindow.AssertPackageTransitive();
+        }
+
+        [StaFact]
+        public void InstallTransitivePackageFromUI()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+            var dte = VisualStudio.Dte;
+            var transitivePackage = "Microsoft.NETCore.Platforms";
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreConsoleApp, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var nugetTestService = GetNuGetTestService();
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI("log4net", "2.0.15");
+            uiwindow.InstallPackageFromUI(transitivePackage, "2.0.0");
+            uiwindow.SearchPackageFromUI(transitivePackage);
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            uiwindow.AssertPackageNotTransitive();         
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, transitivePackage, "2.0.0", XunitLogger);
+        }
+
+        [StaFact]
+        public void UninstallTransitivePackageFromUI()
+        {
+            // Arrange
+            EnsureVisualStudioHost(); 
+            var transitivePackage = "Microsoft.NETCore.Platforms";
+            var dte = VisualStudio.Dte;
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreClassLib, "Testproject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            var nugetTestService = GetNuGetTestService();
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI("log4net", "2.0.15");                  
+            uiwindow.InstallPackageFromUI(transitivePackage, "2.0.0");           
+            uiwindow.UninstallPackageFromUI(transitivePackage);
+            uiwindow.SearchPackageFromUI(transitivePackage);
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            uiwindow.AssertPackageTransitive();
+            CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, transitivePackage, XunitLogger);
+        }
     }
 }
