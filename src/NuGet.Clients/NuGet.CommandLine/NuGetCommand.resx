@@ -254,7 +254,7 @@ nuget list -verbose -allversions</value>
     <value>Displays a detailed list of information for each package.</value>
   </data>
   <data name="Log_RestoreNoCacheInformation" xml:space="preserve">
-    <value>NoCache is deprecated in favor of the appropriately named NoHttpCache.</value>
+    <value>NoCache is deprecated and has been renamed to NoHttpCache. Please use NoHttpCache instead.</value>
     <comment>Do not translate NoCache and NoHttpCache</comment>
   </data>
   <data name="Option_NonInteractive" xml:space="preserve">
