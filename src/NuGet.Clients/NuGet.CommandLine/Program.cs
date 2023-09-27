@@ -131,8 +131,7 @@ namespace NuGet.CommandLine
                 command.CurrentDirectory = workingDirectory;
                 if (command is DownloadCommandBase downloadCommandBase && downloadCommandBase.NoCache)
                 {
-                    //Inform users that NoCache option is just for disabling HttpCache and
-                    //suggest them to use NoHttpCache instead, which does the same thing.
+                    // NoCache option is deprecated. Users should use NoHttpCache instead.
                     console.LogInformation(NuGetCommand.Log_RestoreNoCacheInformation);
                 }
 
