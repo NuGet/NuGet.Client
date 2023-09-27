@@ -24,7 +24,6 @@ $topDownloadedPackageIds = (
     'Modernizr',
     'Microsoft.Bcl.Build', # .Targets files
     'Microsoft.Bcl',
-    'Moq',
     'Antlr', # No target framework specific folders
     'Microsoft.Owin',
     'bootstrap',
