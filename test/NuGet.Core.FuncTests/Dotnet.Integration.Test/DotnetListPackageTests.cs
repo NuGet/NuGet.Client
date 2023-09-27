@@ -548,7 +548,7 @@ namespace Dotnet.Integration.Test
             // Arrange
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net7.0");
+                var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net472");
                 var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", packageVersion: currentVersion);
                 var packageY = XPlatTestUtils.CreatePackage(packageId: "packageY", packageVersion: "1.0.0");
                 var packageY2 = XPlatTestUtils.CreatePackage(packageId: "packageY", packageVersion: "1.0.1");
