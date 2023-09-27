@@ -188,7 +188,7 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NoCache is deprecated in favor of the appropriately named NoHttpCache..
+        ///   Looks up a localized string similar to RestoreNoCache is deprecated in favor of the appropriately named RestoreNoHttpCache..
         /// </summary>
         public static string Log_RestoreNoCacheInformation {
             get {

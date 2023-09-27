@@ -201,7 +201,7 @@
 1 - The command-line arguments</comment>
   </data>
   <data name="Log_RestoreNoCacheInformation" xml:space="preserve">
-    <value>NoCache is deprecated in favor of the appropriately named NoHttpCache.</value>
+    <value>RestoreNoCache is deprecated in favor of the appropriately named RestoreNoHttpCache.</value>
     <comment>Do not translate RestoreNoCache and RestoreNoHttpCache</comment>
   </data>
 </root>
