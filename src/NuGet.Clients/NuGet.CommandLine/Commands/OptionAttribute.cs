@@ -43,14 +43,14 @@ namespace NuGet
             DescriptionResourceName = descriptionResourceName;
             IsHidden = false;
         }
-        public OptionAttribute(string description, bool isHidden) :
-            this(description)
+        public OptionAttribute(string description, bool isHidden)
+            : this(description)
         {
             IsHidden = isHidden;
         }
 
-        public OptionAttribute(Type resourceType, string descriptionResourceName, bool isHidden) :
-            this(resourceType, descriptionResourceName)
+        public OptionAttribute(Type resourceType, string descriptionResourceName, bool isHidden)
+            : this(resourceType, descriptionResourceName)
         {
             IsHidden = isHidden;
         }
