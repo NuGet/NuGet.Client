@@ -540,18 +540,18 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("1.1.0", "")]
+        [InlineData("1.1.0-beta", "")]
         [InlineData("2.0.0-beta", "--highest-patch")]
         [InlineData("2.0.0-beta", "--highest-minor")]
-        public async Task DotnetListPackage_MultipleInstalledPackages_OutdatedWithNoVersionsFound_Succeeds(string currentVersion, string args)
+        public async Task DotnetListPackage_OutdatedWithNoAvailableVersion_Succeeds(string currentVersion, string args)
         {
             // Arrange
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net7.0");
-                var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", packageVersion: "1.0.0");
+                var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", packageVersion: currentVersion);
                 var packageY = XPlatTestUtils.CreatePackage(packageId: "packageY", packageVersion: "1.0.0");
-                var packageY2 = XPlatTestUtils.CreatePackage(packageId: "packageY", packageVersion: "2.0.0");
+                var packageY2 = XPlatTestUtils.CreatePackage(packageId: "packageY", packageVersion: "1.0.1");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                         pathContext.PackageSource,
@@ -575,6 +575,7 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 string[] lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                Assert.True(lines.Any(l => l.Contains("packageY") && l.Contains("1.0.1")), "Line containing 'packageY' and '1.0.1' not found: " + listResult.AllOutput);
                 Assert.True(lines.Any(l => l.Contains("packageX") && l.Contains("Not found at the sources")), "Line containing 'packageX' and 'Not found at the sources' not found: " + listResult.AllOutput);
             }
         }
