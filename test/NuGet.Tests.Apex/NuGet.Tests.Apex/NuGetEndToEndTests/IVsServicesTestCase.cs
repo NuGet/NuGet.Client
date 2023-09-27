@@ -169,7 +169,7 @@ namespace NuGet.Tests.Apex
 
             string uniqueContentFile = Path.Combine(_pathContext.PackagesV2, TestPackageName + '.' + TestPackageVersionV1, "lib", "net45", "Thisisfromprivaterepo1.txt");
 
-            // Make sure name squatting package not restored from  opensource repository.
+            // Make sure name squatting package not restored from secondary repository.
             Assert.IsTrue(File.Exists(uniqueContentFile), $"'{uniqueContentFile}' should exist");
         }
 
@@ -202,7 +202,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, projExt, TestPackageName, Logger);
             string uniqueContentFile = Path.Combine(_pathContext.PackagesV2, TestPackageName + '.' + TestPackageVersionV2, "lib", "net45", "Thisisfromprivaterepo2.txt");
 
-            // Make sure name squatting package not restored from  opensource repository.
+            // Make sure name squatting package not restored from secondary repository.
             Assert.IsTrue(File.Exists(uniqueContentFile), $"'{uniqueContentFile}' should exist");
         }
 
