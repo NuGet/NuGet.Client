@@ -731,15 +731,15 @@ namespace NuGet.Tests.Apex
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            uiwindow.InstallPackageFromUI("Moq", "4.20.69");
+            uiwindow.InstallPackageFromUI("log4net", "2.0.15");
             solutionService.Build();
 
             // Assert
-            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, "Moq", "4.20.69", XunitLogger);
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, "log4net", "2.0.15", XunitLogger);
             uiwindow.AssertPackageNotTransitive();
 
             // Act (Search the transitive package since it will not show at the top of package list by default)
-            uiwindow.SearchPackageFromUI("Castle.Core");
+            uiwindow.SearchPackageFromUI("Microsoft.NETCore.Platforms");
 
             // Assert
             VisualStudio.AssertNoErrors();
