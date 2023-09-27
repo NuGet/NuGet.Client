@@ -473,6 +473,7 @@ namespace Dotnet.Integration.Test
         [InlineData("1.0.0", "--highest-minor", "1.9.0")]
         [InlineData("1.0.0", "--highest-patch --include-prerelease", "1.0.10-beta")]
         [InlineData("1.0.0", "--highest-minor --include-prerelease", "1.10.0-beta")]
+        [InlineData("2.2.0-beta", "--highest-minor", "no updates")]
         public async Task DotnetListPackage_Outdated_Succeed(string currentVersion, string args, string expectedVersion)
         {
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
@@ -504,13 +505,15 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public async Task DotnetListPackage_OutdatedWithNoVersionsFound_Succeeds()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("2.0.0-beta", "--highest-patch")]
+        [InlineData("2.0.0-beta", "--highest-minor")]
+        public async Task DotnetListPackage_OutdatedWithNoVersionsFound_Succeeds(string currentVersion, string args)
         {
             // Arrange
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net7.0");
                 var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", packageVersion: "1.0.0");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -519,7 +522,7 @@ namespace Dotnet.Integration.Test
                         packageX);
 
                 _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"add {projectA.ProjectPath} package packageX --version 1.0.0 --no-restore");
+                    $"add {projectA.ProjectPath} package packageX --version {currentVersion} --no-restore");
 
                 _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"restore {projectA.ProjectName}.csproj");
@@ -531,7 +534,49 @@ namespace Dotnet.Integration.Test
 
                 // Act
                 CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
-                    $"list {projectA.ProjectPath} package --outdated");
+                    $"list {projectA.ProjectPath} package --outdated {args}");
+
+                // Assert
+                string[] lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                Assert.True(lines.Any(l => l.Contains("packageX") && l.Contains("Not found at the sources")), "Line containing 'packageX' and 'Not found at the sources' not found: " + listResult.AllOutput);
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("2.0.0-beta", "--highest-patch")]
+        [InlineData("2.0.0-beta", "--highest-minor")]
+        public async Task DotnetListPackage_MultipleInstalledPackages_OutdatedWithNoVersionsFound_Succeeds(string currentVersion, string args)
+        {
+            // Arrange
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net7.0");
+                var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", packageVersion: "1.0.0");
+                var packageY = XPlatTestUtils.CreatePackage(packageId: "packageY", packageVersion: "1.0.0");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageX,
+                        packageY);
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} package packageX --version {currentVersion} --no-restore");
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} package packageY --version 1.0.0 --no-restore");
+
+                _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"restore {projectA.ProjectName}.csproj");
+
+                foreach (var nupkg in Directory.EnumerateDirectories(pathContext.PackageSource))
+                {
+                    Directory.Delete(nupkg, recursive: true);
+                }
+
+                // Act
+                CommandRunnerResult listResult = _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package --outdated {args}");
 
                 // Assert
                 string[] lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);

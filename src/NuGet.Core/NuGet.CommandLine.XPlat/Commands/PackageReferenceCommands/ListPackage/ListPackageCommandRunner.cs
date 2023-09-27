@@ -414,15 +414,23 @@ namespace NuGet.CommandLine.XPlat
             {
                 foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
                 {
-                    var matchingPackage = packageMetadata.Where(p => p.Key.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).First();
+                    var matchingPackage = packageMetadata.Where(p => p.Key.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
                     // Get latest metadata *only* if this is a report requiring "outdated" metadata
                     if (listPackageArgs.ReportType == ReportType.Outdated && matchingPackage.Value.Count > 0)
                     {
                         var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, topLevelPackage, listPackageArgs)).Max(i => i.Identity.Version);
 
-                        topLevelPackage.LatestPackageMetadata = matchingPackage.Value.First(p => p.Identity.Version == latestVersion);
-                        topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedPackageMetadata.Identity.Version, topLevelPackage.LatestPackageMetadata.Identity.Version);
+                        if (latestVersion is not null)
+                        {
+                            topLevelPackage.LatestPackageMetadata = matchingPackage.Value.First(p => p.Identity.Version == latestVersion);
+                            topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedPackageMetadata.Identity.Version, topLevelPackage.LatestPackageMetadata.Identity.Version);
+                        }
+                        else // no latest version available with the given constraints
+                        {
+                            topLevelPackage.LatestPackageMetadata = null;
+                            topLevelPackage.UpdateLevel = UpdateLevel.NoUpdate;
+                        }
                     }
 
                     var matchingPackagesWithDeprecationMetadata = await Task.WhenAll(
