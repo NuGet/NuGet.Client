@@ -8,7 +8,7 @@ namespace NuGet
     {
         private string _description;
 
-        public bool Hidden { get; set; }
+        public bool IsHidden { get; set; }
         public string AltName { get; set; }
         public string DescriptionResourceName { get; private set; }
 
@@ -34,25 +34,25 @@ namespace NuGet
         public OptionAttribute(string description)
         {
             Description = description;
-            Hidden = false;
+            IsHidden = false;
         }
 
         public OptionAttribute(Type resourceType, string descriptionResourceName)
         {
             ResourceType = resourceType;
             DescriptionResourceName = descriptionResourceName;
-            Hidden = false;
+            IsHidden = false;
         }
-        public OptionAttribute(string description, bool hidden) :
+        public OptionAttribute(string description, bool isHidden) :
             this(description)
         {
-            Hidden = hidden;
+            IsHidden = isHidden;
         }
 
-        public OptionAttribute(Type resourceType, string descriptionResourceName, bool hidden) :
+        public OptionAttribute(Type resourceType, string descriptionResourceName, bool isHidden) :
             this(resourceType, descriptionResourceName)
         {
-            Hidden = hidden;
+            IsHidden = isHidden;
         }
     }
 }

@@ -144,7 +144,7 @@ namespace NuGet.CommandLine
 
                 foreach (KeyValuePair<OptionAttribute, PropertyInfo> o in options)
                 {
-                    if (o.Key.Hidden)
+                    if (o.Key.IsHidden)
                     {
                         // If the option is supposed to be hidden, skip it
                         continue;
