@@ -35,7 +35,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandFallbackSourceDescription")]
         public ICollection<string> FallbackSource { get; } = new List<string>();
 
-        [Option(typeof(NuGetCommand), "CommandNoCache")]
+        [Option(typeof(NuGetCommand), "CommandNoCache", hidden: true)]
         public bool NoCache { get; set; }
 
         [Option(typeof(NuGetCommand), "CommandNoHttpCache")]
