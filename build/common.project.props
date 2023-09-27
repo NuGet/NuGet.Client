@@ -20,8 +20,8 @@
     <TargetFrameworksExeForSigning>$(TargetFrameworksExe);netcoreapp5.0</TargetFrameworksExeForSigning>
     <TargetFrameworksExeForSigning Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework);netcoreapp5.0</TargetFrameworksExeForSigning>
     <TargetFrameworksExeForSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworksExe)</TargetFrameworksExeForSigning>
-    <MinimalTargetFrameworksExeSigning>$(NETFXTargetFramework);netcoreapp5.0</MinimalTargetFrameworksExeSigning>
-    <MinimalTargetFrameworksExeSigning Condition=" '$(IsXPlat)' == 'true' ">netcoreapp5.0</MinimalTargetFrameworksExeSigning>
+    <MinimalTargetFrameworksExeSigning>$(NETFXTargetFramework);net7.0</MinimalTargetFrameworksExeSigning>
+    <MinimalTargetFrameworksExeSigning Condition=" '$(IsXPlat)' == 'true' ">net7.0</MinimalTargetFrameworksExeSigning>
     <MinimalTargetFrameworksExeSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(NETCoreTargetFramework)</MinimalTargetFrameworksExeSigning>
     <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
     <TargetFrameworksLibrary Condition="'$(DotNetBuildFromSource)' == 'true'">$(NETCoreTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
