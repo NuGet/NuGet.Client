@@ -50,7 +50,7 @@ namespace NuGet.CommandLine
             return matchedCommand;
         }
 
-        public virtual IDictionary<OptionAttribute, PropertyInfo> GetCommandOptions(ICommand command)
+        public IDictionary<OptionAttribute, PropertyInfo> GetCommandOptions(ICommand command)
         {
             var result = new Dictionary<OptionAttribute, PropertyInfo>();
 

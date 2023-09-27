@@ -12,7 +12,7 @@ namespace NuGet.CommandLine.Test
 {
     public class CommandLineParserTests
     {
-        private Mock<CommandManager> _mockCommandManager = new Mock<CommandManager>();
+        private Mock<ICommandManager> _mockCommandManager = new Mock<ICommandManager>();
 
         private Dictionary<OptionAttribute, PropertyInfo> _expectedRestoreOptions = new Dictionary<OptionAttribute, PropertyInfo>
             {
