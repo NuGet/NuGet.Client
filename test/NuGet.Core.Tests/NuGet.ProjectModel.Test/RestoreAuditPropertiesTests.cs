@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using FluentAssertions;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -16,26 +17,26 @@ namespace NuGet.ProjectModel.Test
             var properties = new RestoreAuditProperties();
 
             // Act & Assert
-            Assert.False(properties.Equals((RestoreAuditProperties?)null));
-            Assert.False(properties.Equals((object?)null));
-            Assert.False(properties == null);
-            Assert.False(null == properties);
-            Assert.True(properties != null);
-            Assert.True(null != properties);
+            properties.Equals((RestoreAuditProperties?)null).Should().BeFalse();
+            properties!.Equals((object?)null).Should().BeFalse();
+            (properties == null).Should().BeFalse();
+            (null == properties).Should().BeFalse();
+            (properties != null).Should().BeTrue();
+            (null != properties).Should().BeTrue();
         }
 
         [Fact]
-        public void Euqals_WithSameInstance_ReturnsTrue()
+        public void Equals_WithSameInstance_ReturnsTrue()
         {
             // Arrange
             var properties = new RestoreAuditProperties();
 
             // Act & Assert
-            Assert.True(properties.Equals(properties));
-            Assert.True(properties.Equals((object)properties));
+            properties.Equals(properties).Should().BeTrue();
+            properties.Equals((object)properties).Should().BeTrue();
 #pragma warning disable CS1718 // Comparison made to same variable
-            Assert.True(properties == properties);
-            Assert.False(properties != properties);
+            (properties == properties).Should().BeTrue();
+            (properties != properties).Should().BeFalse();
 #pragma warning restore CS1718 // Comparison made to same variable
         }
 
@@ -53,10 +54,10 @@ namespace NuGet.ProjectModel.Test
             };
 
             // Act & Assert
-            Assert.True(properties1.Equals(properties2));
-            Assert.True(properties1.Equals((object)properties2));
-            Assert.True(properties1 == properties2);
-            Assert.False(properties1 != properties2);
+            properties1.Equals(properties2).Should().BeTrue();
+            properties1.Equals((object)properties2).Should().BeTrue();
+            (properties1 == properties2).Should().BeTrue();
+            (properties1 != properties2).Should().BeFalse();
         }
 
         [Fact]
@@ -73,10 +74,10 @@ namespace NuGet.ProjectModel.Test
             };
 
             // Act & Assert
-            Assert.False(properties1.Equals(properties2));
-            Assert.False(properties1.Equals((object)properties2));
-            Assert.False(properties1 == properties2);
-            Assert.True(properties1 != properties2);
+            properties1.Equals(properties2).Should().BeFalse();
+            properties1.Equals((object)properties2).Should().BeFalse(); ;
+            (properties1 == properties2).Should().BeFalse();
+            (properties1 != properties2).Should().BeTrue();
         }
 
         [Fact]
@@ -101,8 +102,8 @@ namespace NuGet.ProjectModel.Test
             var clone = property1.Clone();
 
             // Assert
-            Assert.NotSame(property1, clone);
-            Assert.Equal(property1, clone);
+            clone.Should().NotBeSameAs(property1);
+            clone.Should().Be(property1);
         }
     }
 }
