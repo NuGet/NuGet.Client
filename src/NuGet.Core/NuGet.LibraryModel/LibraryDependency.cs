@@ -34,7 +34,7 @@ namespace NuGet.LibraryModel
         public bool VersionCentrallyManaged { get; set; }
 
         /// <summary>
-        /// Information regarding if the dependency is direct or transitive.  
+        /// Information regarding if the dependency is direct or transitive.
         /// </summary>
         public LibraryDependencyReferenceType ReferenceType { get; set; } = LibraryDependencyReferenceType.Direct;
 
@@ -47,11 +47,16 @@ namespace NuGet.LibraryModel
         /// </summary>
         public VersionRange? VersionOverride { get; set; }
 
+        /// <summary>Initializes a new instance of the LibraryDependency class.</summary>
+        /// <remarks>Required properties must be set when using this constructor.</remarks>
         public LibraryDependency()
         {
             NoWarn = new List<NuGetLogCode>();
         }
 
+        /// <summary>Initializes a new instance of the LibraryDependency class.</summary>
+        /// <param name="libraryRange">The <see cref="NuGet.LibraryModel.LibraryRange"/> to use with the new instance.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="libraryRange"/> is <see langword="null"/></exception>
         [SetsRequiredMembers]
         public LibraryDependency(LibraryRange libraryRange) : this()
         {
