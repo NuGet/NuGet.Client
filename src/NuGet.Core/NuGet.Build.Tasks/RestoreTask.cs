@@ -42,6 +42,11 @@ namespace NuGet.Build.Tasks
         public bool RestoreNoCache { get; set; }
 
         /// <summary>
+        /// Disable the web cache
+        /// </summary>
+        public bool RestoreNoHttpCache { get; set; }
+
+        /// <summary>
         /// Ignore errors from package sources
         /// </summary>
         public bool RestoreIgnoreFailedSources { get; set; }
@@ -100,7 +105,7 @@ namespace NuGet.Build.Tasks
             // Log inputs
             log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");
             log.LogDebug($"(in) RestoreDisableParallel '{RestoreDisableParallel}'");
-            log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache}'");
+            log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache || RestoreNoHttpCache}'");
             log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
             log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
             log.LogDebug($"(in) RestoreForce '{RestoreForce}'");
@@ -140,11 +145,18 @@ namespace NuGet.Build.Tasks
 
             EmbedInBinlog = GetFilesToEmbedInBinlog(dgFile);
 
+            if (RestoreNoCache)
+            {
+                //Inform users that NoCache option is just for disabling HttpCache and
+                //suggest them to use NoHttpCache instead, which does the same thing.
+                log.LogInformation(Strings.Log_RestoreNoCacheInformation);
+            }
+
             return await BuildTasksUtility.RestoreAsync(
                 dependencyGraphSpec: dgFile,
                 interactive: Interactive,
                 recursive: RestoreRecursive,
-                noCache: RestoreNoCache,
+                noCache: RestoreNoCache || RestoreNoHttpCache,
                 ignoreFailedSources: RestoreIgnoreFailedSources,
                 disableParallel: RestoreDisableParallel,
                 force: RestoreForce,
