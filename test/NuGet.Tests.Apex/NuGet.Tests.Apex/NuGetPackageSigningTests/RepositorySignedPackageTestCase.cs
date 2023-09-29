@@ -16,14 +16,7 @@ namespace NuGet.Tests.Apex
     [TestClass]
     public class RepositorySignedPackageTestCase : SharedVisualStudioHostTestClass
     {
-        private const int Timeout = 5 * 60 * 1000; // 5 minutes
-
         private static SignedPackagesTestsApexFixture Fixture;
-
-        public RepositorySignedPackageTestCase()
-            : base()
-        {
-        }
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
@@ -33,7 +26,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -55,7 +48,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UninstallFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -78,7 +71,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdateUnsignedToSignedVersionFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -103,7 +96,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task WithExpiredCertificate_InstallFromPMCForPC_WarnAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -134,7 +127,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task Tampered_InstallFromPMCForPC_FailAsync(ProjectTemplate projectTemplate)
         {
             // Arrange

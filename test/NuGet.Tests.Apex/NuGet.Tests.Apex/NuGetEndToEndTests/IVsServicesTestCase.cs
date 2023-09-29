@@ -21,15 +21,8 @@ namespace NuGet.Tests.Apex
 
         private readonly SimpleTestPathContext _pathContext = new SimpleTestPathContext();
 
-        private const int Timeout = 5 * 60 * 1000; // 5 minutes
-
-        public IVsServicesTestCase()
-            : base()
-        {
-        }
-
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void SimpleInstallFromIVsInstaller()
         {
             // Arrange
@@ -48,7 +41,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void SimpleUninstallFromIVsInstaller()
         {
             // Arrange
@@ -69,7 +62,7 @@ namespace NuGet.Tests.Apex
 
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void IVSPathContextProvider2_WithEmptySolution_WhenTryCreateUserWideContextIsCalled_SolutionWideConfigurationIsNotIncluded()
         {
             // Arrange
@@ -87,7 +80,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task SimpleInstallFromIVsInstaller_PackageSourceMapping_WithSingleFeed()
         {
             // Arrange
@@ -110,7 +103,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task SimpleUpdateFromIVsInstaller_PackageSourceMapping_WithSingleFeed()
         {
             // Arrange
@@ -140,7 +133,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task SimpleInstallFromIVsInstaller_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage()
         {
             // Arrange
@@ -174,7 +167,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task SimpleUpdateFromIVsInstaller_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage()
         {
             // Arrange

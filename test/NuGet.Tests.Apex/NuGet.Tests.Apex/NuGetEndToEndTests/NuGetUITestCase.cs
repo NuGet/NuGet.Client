@@ -21,15 +21,13 @@ namespace NuGet.Tests.Apex
 
         private readonly SimpleTestPathContext _pathContext = new SimpleTestPathContext();
 
-        private const int Timeout = 5 * 60 * 1000; // 5 minutes
-
         public NuGetUITestCase()
             : base()
         {
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task SearchPackageFromUI()
         {
             // Arrange
@@ -55,7 +53,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageFromUI()
         {
             // Arrange
@@ -80,7 +78,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageToProjectsFromUI()
         {
             // Arrange
@@ -113,7 +111,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UninstallPackageFromUI()
         {
             // Arrange
@@ -146,7 +144,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdatePackageFromUI()
         {
             // Arrange
@@ -176,7 +174,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
@@ -204,7 +202,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageToProjectsFromUI_PC_PackageSourceMapping_WithSingleFeed_Match_Succeeds()
         {
             // Arrange
@@ -238,7 +236,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
@@ -274,7 +272,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Fails()
         {
             // Arrange
@@ -307,7 +305,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdatePackageFromUI_PC_PackageSourceMapping_WithSingleFeed_Succeeds()
         {
             // Arrange
@@ -340,7 +338,7 @@ namespace NuGet.Tests.Apex
 
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdatePackageFromUI_PC_PackageSourceMapping_WithMultiFeed_Succeed()
         {
             // Arrange
@@ -393,7 +391,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void InstallPackageToWebSiteProjectFromUI()
         {
             // Arrange
@@ -416,7 +414,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void UpdateWebSitePackageFromUI()
         {
             // Arrange
@@ -441,7 +439,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void UninstallWebSitePackageFromUI()
         {
             // Arrange
@@ -466,7 +464,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task SearchPackageInBrowseTabFromUI()
         {
             // Arrange
@@ -494,7 +492,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task SearchPackageInInstalledTabFromUI()
         {
             // Arrange
@@ -526,7 +524,7 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task SearchPackageInUpdatesTabFromUI()
         {
             //Arrange
@@ -558,7 +556,7 @@ namespace NuGet.Tests.Apex
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, "Newtonsoft.Json", "12.0.2")]
         [DataRow(ProjectTemplate.NetCoreClassLib, "Newtonsoft.Json", "12.0.2")]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void InstallVulnerablePackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange
@@ -584,7 +582,7 @@ namespace NuGet.Tests.Apex
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, "Newtonsoft.Json", "12.0.2", "13.0.1")]
         [DataRow(ProjectTemplate.NetCoreClassLib, "Newtonsoft.Json", "12.0.2", "13.0.2")]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void UpdateVulnerablePackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion1, string packageVersion2)
         {
             // Arrange
@@ -617,7 +615,7 @@ namespace NuGet.Tests.Apex
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, "Newtonsoft.Json", "12.0.3")]
         [DataRow(ProjectTemplate.NetCoreClassLib, "Newtonsoft.Json", "12.0.3")]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void UninstallVulnerablePackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange
@@ -650,7 +648,7 @@ namespace NuGet.Tests.Apex
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, "jquery", "3.5.0")]
         [DataRow(ProjectTemplate.NetCoreClassLib, "jquery", "3.5.0")]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void InstallDeprecatedPackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange
@@ -676,7 +674,7 @@ namespace NuGet.Tests.Apex
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, "jQuery", "3.5.0", "3.6.0")]
         [DataRow(ProjectTemplate.NetCoreClassLib, "jQuery", "3.5.0", "3.6.3")]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void UpdateDeprecatedPackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion1, string packageVersion2)
         {
             // Arrange
@@ -709,7 +707,7 @@ namespace NuGet.Tests.Apex
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, "jQuery", "3.5.0")]
         [DataRow(ProjectTemplate.NetCoreClassLib, "jQuery", "3.5.0")]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void UninstallDeprecatedPackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange

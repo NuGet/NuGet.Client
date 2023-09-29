@@ -6,6 +6,7 @@ using System.Threading;
 using Microsoft.Test.Apex.Services;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
+using NuGet.Common;
 using NuGet.Test.Utility;
 
 namespace NuGet.Tests.Apex
@@ -65,7 +66,9 @@ namespace NuGet.Tests.Apex
                 {
                     _logger.WriteMessage($"Failed to close VS on dispose. Attempt #{attempt}");
                     Thread.Sleep(TimeSpan.FromSeconds(3));
-                    _logger.WriteMessage($"{ex.Message}");
+                    // Unwrap aggregate exceptions.
+                    var unwrappedException = ExceptionUtilities.Unwrap(ex);
+                    _logger.WriteWarning($"{unwrappedException.Message}");
                 }
             }
             _pathContext.Dispose();

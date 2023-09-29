@@ -9,17 +9,10 @@ namespace NuGet.Tests.Apex
     [TestClass]
     public class NetCoreProjectTestCase : SharedVisualStudioHostTestClass
     {
-        private const int Timeout = 5 * 60 * 1000; // 5 minutes
-
-        public NetCoreProjectTestCase()
-            : base()
-        {
-        }
-
         // basic create for .net core template
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void CreateNetCoreProject_RestoresNewProject(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -34,7 +27,7 @@ namespace NuGet.Tests.Apex
         // basic create for .net core template
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void CreateNetCoreProject_AddProjectReference(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -58,7 +51,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task WithSourceMappingEnabled_InstallPackageFromPMUIFromExpectedSource_Succeeds(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -121,10 +114,10 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore] //https://github.com/NuGet/Home/issues/12898
+        [Ignore("https://github.com/NuGet/Home/issues/12898")]
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task WithSourceMappingEnabled_InstallAndUpdatePackageFromPMUIFromExpectedSource_Succeeds(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -194,7 +187,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task WithSourceMappingEnabled_InstallPackageFromPMUIAndNoSourcesFound_Fails(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -254,7 +247,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageToNetCoreProjectFromUI(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
@@ -282,7 +275,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdatePackageToNetCoreProjectFromUI(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
@@ -319,7 +312,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UninstallPackageFromNetCoreProjectFromUI(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();

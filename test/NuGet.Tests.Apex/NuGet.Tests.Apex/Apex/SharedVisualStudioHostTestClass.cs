@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -13,10 +12,12 @@ namespace NuGet.Tests.Apex
     [TestClass]
     public abstract class SharedVisualStudioHostTestClass : ApexBaseTestClass
     {
-        private static IVisualStudioHostFixtureFactory _contextFixtureFactory = new VisualStudioHostFixtureFactory();
+        private static readonly IVisualStudioHostFixtureFactory _contextFixtureFactory = new VisualStudioHostFixtureFactory();
         private readonly Lazy<VisualStudioHostFixture> _hostFixture;
         private NuGetConsoleTestExtension _console;
         private string _packageManagerOutputWindowText;
+
+        internal const int DefaultTimeout = 5 * 60 * 1000; // 5 minutes
 
         protected SharedVisualStudioHostTestClass()
         {

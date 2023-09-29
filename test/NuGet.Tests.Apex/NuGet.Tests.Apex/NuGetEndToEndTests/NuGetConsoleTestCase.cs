@@ -15,16 +15,9 @@ namespace NuGet.Tests.Apex
     [TestClass]
     public class NuGetConsoleTestCase : SharedVisualStudioHostTestClass
     {
-        private const int Timeout = 5 * 60 * 1000; // 5 minutes
-
-        public NuGetConsoleTestCase()
-            : base()
-        {
-        }
-
         [DataTestMethod]
         [DynamicData(nameof(GetPackageReferenceTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageFromPMCWithNoAutoRestoreVerifyAssetsFileAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -46,7 +39,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageFromPMCVerifyInstallForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -68,7 +61,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UninstallPackageFromPMCForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -91,7 +84,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdatePackageFromPMCForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -116,7 +109,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallMultiplePackagesFromPMCForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -144,7 +137,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UninstallMultiplePackagesFromPMCForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -184,7 +177,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task DowngradePackageFromPMCForPCAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -209,7 +202,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task NetCoreTransitivePackageReferenceLimitAsync(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -255,7 +248,7 @@ namespace NuGet.Tests.Apex
         [DataRow(ProjectTemplate.ClassLibrary, false)]
         [DataRow(ProjectTemplate.NetCoreConsoleApp, true)]
         [DataRow(ProjectTemplate.NetStandardClassLib, true)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallAndUpdatePackageWithSourceParameterWarnsAsync(ProjectTemplate projectTemplate, bool warns)
         {
             EnsureVisualStudioHost();
@@ -305,7 +298,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageForPC_PackageSourceMapping_WithSingleFeed(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -351,7 +344,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdatePackageForPC_PackageSourceMapping_WithSingleFeed(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -400,7 +393,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageForPC_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -464,7 +457,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdatePackageForPC_PackageSourceMapping_WithMultipleFeedsWithIdenticalPackages_UpdatesCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -527,11 +520,11 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore] //https://github.com/NuGet/Home/issues/12899
+        [Ignore("https://github.com/NuGet/Home/issues/12899")]
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, false)]
         [DataRow(ProjectTemplate.NetStandardClassLib, true)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdateAllReinstall_WithPackageReferenceProject_WarnsAsync(ProjectTemplate projectTemplate, bool warns)
         {
             EnsureVisualStudioHost();
@@ -570,7 +563,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackageReferenceTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageForPR_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -629,7 +622,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackageReferenceTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdatePackageForPR_PackageNamespace_WithMultipleFeedsWithIdenticalPackages_InstallsCorrectPackage(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -702,7 +695,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task VerifyCacheFileInsideObjFolder(ProjectTemplate projectTemplate)
         {
             // Arrange
@@ -735,7 +728,7 @@ namespace NuGet.Tests.Apex
         [DataTestMethod]
         [DataRow(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")]
         [DataRow(ProjectTemplate.NetStandardClassLib, "PackageC", "1.0.0", "2.0.0", "PackageD", "1.1.0", "2.2.0")]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdateAllPackagesInPMC(ProjectTemplate projectTemplate, string packageName1, string packageVersion1, string packageVersion2, string packageName2, string packageVersion3, string packageVersion4)
         {
             EnsureVisualStudioHost();
@@ -781,7 +774,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
@@ -815,7 +808,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UpdatePackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
@@ -856,7 +849,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public async Task UninstallPackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
@@ -897,7 +890,7 @@ namespace NuGet.Tests.Apex
         [DataTestMethod]
         [DataRow(ProjectTemplate.WCFServiceApplication)]
         [DataRow(ProjectTemplate.NetStandardClassLib)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
 
         public async Task InstallLatestPackageInPMC(ProjectTemplate projectTemplate)
         {
@@ -938,7 +931,7 @@ namespace NuGet.Tests.Apex
 
         [DataTestMethod]
         [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
-        [Timeout(Timeout)]
+        [Timeout(DefaultTimeout)]
         public void VerifyInitScriptsExecution(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
