@@ -9,9 +9,9 @@ using NuGet.Frameworks;
 
 namespace NuGet.Test.Utility
 {
-    public static class AssemblyReader
+    internal static class AssemblyReader
     {
-        public static NuGetFramework GetTargetFramework(string assemblyPath)
+        internal static NuGetFramework GetTargetFramework(string assemblyPath)
         {
             using (var fileStream = File.OpenRead(assemblyPath))
             using (var peReader = new PEReader(fileStream))
