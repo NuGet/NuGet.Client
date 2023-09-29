@@ -208,7 +208,6 @@
     <value>RestoreNoCache is deprecated and has been renamed to RestoreNoHttpCache. Please use RestoreNoHttpCache instead.</value>
     <comment>Do not translate RestoreNoCache and RestoreNoHttpCache</comment>
   </data>
-</root>
   <data name="Error_StaticGraphRestoreArgumentParsingFailedInvalidNumberOfArguments" xml:space="preserve">
     <value>An error occurred parsing command-line arguments in static graph-based restore as there was an unexpected number of arguments, {0}. Please file an issue at https://github.com/NuGet/Home</value>
     <comment>0 - The number of arguments</comment>
