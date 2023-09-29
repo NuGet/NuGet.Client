@@ -82,6 +82,26 @@ namespace NuGet.Build.Tasks.Console.Test
             VerifyTryDeserializeGlobalPropertiesErrorStartsWith(stream, Strings.Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream, exception.Message, string.Empty);
         }
 
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(5)]
+        [InlineData(10)]
+        public void TryParseArguments_WhenArgumentCountIncorrect_LogsError(int argumentCount)
+        {
+            var errors = new StringBuilder();
+
+            using var errorWriter = new StringWriter(errors);
+
+            string[] args = new string[argumentCount];
+
+            bool result = Program.TryParseArguments(args, () => null, errorWriter, out (Dictionary<string, string> Options, FileInfo MSBuildExeFilePath, string EntryProjectFilePath, Dictionary<string, string> MSBuildGlobalProperties) arguments);
+
+            result.Should().BeFalse();
+
+            errors.ToString().Trim().Should().Be(string.Format(CultureInfo.CurrentCulture, Strings.Error_StaticGraphRestoreArgumentParsingFailedInvalidNumberOfArguments, argumentCount));
+        }
+
         private static Stream GetStreamWithBytes(params byte[] bytes)
         {
             MemoryStream stream = new MemoryStream();

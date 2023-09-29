@@ -165,11 +165,11 @@ namespace NuGet.Build.Tasks
 
                                 WriteGlobalProperties(writer, globalProperties);
                             }
-
-                            process.StandardInput.Close();
                         }
                         finally
                         {
+                            process.StandardInput.Close();
+
                             Console.InputEncoding = previousConsoleInputEncoding;
                         }
 

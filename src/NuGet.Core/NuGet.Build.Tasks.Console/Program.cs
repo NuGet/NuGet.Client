@@ -151,19 +151,21 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="errorWriter">A <see cref="TextWriter" /> to write errors to.</param>
         /// <param name="arguments">A <see cref="T:Tuple&lt;Dictionary&lt;string, string&gt;, FileInfo, string, Dictionary&lt;string, string&gt;&gt;" /> that receives the parsed command-line arguments.</param>
         /// <returns><code>true</code> if the arguments were successfully parsed, otherwise <code>false</code>.</returns>
-        private static bool TryParseArguments(string[] args, Func<Stream> getStream, TextWriter errorWriter, out (Dictionary<string, string> Options, FileInfo MSBuildExeFilePath, string EntryProjectFilePath, Dictionary<string, string> MSBuildGlobalProperties) arguments)
+        internal static bool TryParseArguments(string[] args, Func<Stream> getStream, TextWriter errorWriter, out (Dictionary<string, string> Options, FileInfo MSBuildExeFilePath, string EntryProjectFilePath, Dictionary<string, string> MSBuildGlobalProperties) arguments)
         {
             arguments = (null, null, null, null);
 
-            // This application recieves 3 or 4 arguments:
+            // This application receives 3 or 4 arguments:
             // 1. A semicolon delimited list of key value pairs that are the options to the program
             // 2. The full path to MSBuild.exe
             // 3. The full path to the entry project file
             // 4. (optional) A semicolon delimited list of key value pairs that are the global properties to pass to MSBuild
-            if (args.Length != 3 && args.Length != 4)
+            if (args.Length < 3 || args.Length > 4)
             {
                 // An error occurred parsing command-line arguments in static graph-based restore as there was an unexpected number of arguments, {0}. Please file an issue at https://github.com/NuGet/Home. {0}
-                return LogError(System.Console.Error, Strings.Error_StaticGraphRestoreArgumentParsingFailedInvalidNumberOfArguments, args.Length);
+                LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentParsingFailedInvalidNumberOfArguments, args.Length);
+
+                return false;
             }
 
             try
@@ -222,11 +224,9 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="format">The formatted string of the error.</param>
         /// <param name="args">An object array of zero or more objects to format with the error message.</param>
         /// <returns><see langword="false" /></returns>
-        private static bool LogError(TextWriter errorWriter, string format, params object[] args)
+        private static void LogError(TextWriter errorWriter, string format, params object[] args)
         {
             errorWriter.WriteLine(format, args);
-
-            return false;
         }
 
         /// <summary>
@@ -250,14 +250,18 @@ namespace NuGet.Build.Tasks.Console
             }
             catch (Exception e)
             {
-                return LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream, e.Message, e.ToString());
+                LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream, e.Message, e.ToString());
+
+                return false;
             }
 
             // If the integer is negative or greater than or equal to int.MaxValue, then the integer is invalid.  This should never happen unless the bytes in the stream contain completely unexpected values
             if (count < 0 || count >= int.MaxValue)
             {
                 // An error occurred parsing command-line arguments in static graph-based restore as the first integer read, {0}, was is greater than the allowable value. Please file an issue at https://github.com/NuGet/Home
-                return LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedUnexpectedIntegerValue, count);
+                LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedUnexpectedIntegerValue, count);
+
+                return false;
             }
 
             globalProperties = new Dictionary<string, string>(capacity: count, StringComparer.OrdinalIgnoreCase);
@@ -273,7 +277,9 @@ namespace NuGet.Build.Tasks.Console
                     globalProperties = null;
 
                     // An error occurred parsing command-line arguments in static graph-based restore as an exception occurred reading the standard input stream, {0}. Please file an issue at https://github.com/NuGet/Home
-                    return LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream, e.Message, e.ToString());
+                    LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream, e.Message, e.ToString());
+
+                    return false;
                 }
             }
 
