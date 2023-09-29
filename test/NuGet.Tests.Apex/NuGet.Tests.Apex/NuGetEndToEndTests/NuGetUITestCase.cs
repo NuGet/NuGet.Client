@@ -4,9 +4,8 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Test.Apex.VisualStudio.Solution;
-using NuGet.StaFact;
-using NuGet.Test.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NuGet.Test.Utility;
 
 namespace NuGet.Tests.Apex
 {

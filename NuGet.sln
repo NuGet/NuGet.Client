@@ -205,8 +205,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Packaging.FuncTest", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.MSSigning.Extensions", "src\NuGet.Clients\NuGet.MSSigning.Extensions\NuGet.MSSigning.Extensions.csproj", "{32D8179F-2E22-441C-9DEE-6EB4AB8A5800}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.StaFact", "test\TestExtensions\NuGet.StaFact\NuGet.StaFact.csproj", "{5704AFAE-94ED-4AC9-979F-28A6DF8DF4DF}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Shared.Tests", "test\NuGet.Core.Tests\NuGet.Shared.Tests\NuGet.Shared.Tests.csproj", "{21522CF8-12F2-4A30-94D5-6C794D4B043F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.MSSigning.Extensions.FuncTest", "test\NuGet.Clients.FuncTests\NuGet.MSSigning.Extensions.FuncTest\NuGet.MSSigning.Extensions.FuncTest.csproj", "{BA7F681E-FDC7-42B6-8BF1-74DA6421BA1A}"
