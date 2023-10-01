@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
@@ -737,6 +739,11 @@ namespace NuGet.Protocol.Tests
                 var resource = await repo.GetResourceAsync<PackageUpdateResource>();
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
 
+#if NETFRAMEWORK
+                // Get exception messages in English
+                Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+#endif
+
                 // Act
                 var ex = await Assert.ThrowsAsync<HttpRequestException>(
                     async () => await resource.Push(
@@ -752,8 +759,7 @@ namespace NuGet.Protocol.Tests
                         log: NullLogger.Instance));
 
                 // Assert
-                Assert.True(ex.Message.Contains("Response status code does not indicate success: 500 (Internal Server Error)"));
-
+                Assert.Contains("Response status code does not indicate success: 500 (Internal Server Error)", ex.Message);
             }
         }
 

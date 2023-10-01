@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +29,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public void Constructor_WhenServiceBrokerIsNull_Throws()
         {
+            // Get exception messages in English
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
             Exception exception = Assert.ThrowsAny<Exception>(
                 () => new NuGetPackageFileService(
                     default(ServiceActivationOptions),
@@ -41,6 +45,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public void Constructor_WhenAuthorizationServiceClientIsNull_Throws()
         {
+            // Get exception messages in English
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
             Exception exception = Assert.ThrowsAny<Exception>(
                 () => new NuGetPackageFileService(
                     default(ServiceActivationOptions),

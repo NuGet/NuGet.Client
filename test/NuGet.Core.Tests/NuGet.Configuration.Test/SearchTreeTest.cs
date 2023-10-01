@@ -5,7 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using FluentAssertions;
 using Test.Utility;
 using Xunit;
@@ -206,6 +208,11 @@ namespace NuGet.Configuration.Test
         [InlineData(" nuget.org , nuget", " ")]
         public void SearchTree_InvalidSearchInput_Throws(string packagePatterns, string term)
         {
+#if NETFRAMEWORK
+            // Get exception messages in English
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+#endif
+
             // Arrange
             var configuration = PackageSourceMappingUtility.GetPackageSourceMapping(packagePatterns);
 

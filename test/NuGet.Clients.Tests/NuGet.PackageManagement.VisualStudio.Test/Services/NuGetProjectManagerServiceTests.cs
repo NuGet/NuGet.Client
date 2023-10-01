@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -43,6 +44,7 @@ using Xunit.Abstractions;
 using static NuGet.PackageManagement.VisualStudio.Test.ProjectFactories;
 using PackageReference = NuGet.Packaging.PackageReference;
 using Task = System.Threading.Tasks.Task;
+using Thread = System.Threading.Thread;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
@@ -90,6 +92,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetInstallActionsAsync_WhenProjectNotFound_Throws()
         {
             Initialize();
+
+            // Get exception messages in English
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             await PerformOperationAsync(async (projectManager) =>
             {

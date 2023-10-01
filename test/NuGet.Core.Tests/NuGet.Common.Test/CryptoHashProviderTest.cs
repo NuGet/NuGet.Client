@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -49,12 +51,16 @@ namespace NuGet.Common.Test
         [InlineData("SHA2561")]
         public void CryptoHashProviderThrowsIfHashAlgorithmIsNotSHA512orSHA256(string hashAlgorithm)
         {
+#if NETFRAMEWORK
+            // Get exception messages in English
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+#endif
             // Act and Assert
             var ex = Record.Exception(() => new CryptoHashProvider(hashAlgorithm));
             Assert.NotNull(ex);
             var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
             Assert.Equal("hashAlgorithm", tex.ParamName);
-            var expectedMessage = String.Format("Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.", hashAlgorithm);
+            var expectedMessage = string.Format("Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.", hashAlgorithm);
             Assert.Contains(expectedMessage, ex.Message);
             //Remove the expected message from the exception message, the rest part should have param info.
             //Background of this change: System.ArgumentException(string message, string paramName) used to generate two lines of message before, but changed to generate one line
