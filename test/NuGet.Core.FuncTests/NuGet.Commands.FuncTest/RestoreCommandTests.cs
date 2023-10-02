@@ -3238,8 +3238,8 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 result = await newCommand.ExecuteAsync();
-                // Assert
 
+                // Assert
                 await result.CommitAsync(logger, CancellationToken.None);
                 result.Success.Should().BeTrue(because: logger.ShowMessages());
                 result.Should().BeAssignableTo<NoOpRestoreResult>(because: "This should be a no-op restore.");
