@@ -2736,6 +2736,7 @@ function Test-InstallPackageWithoutDependencyVersion
 # Install-Package works.
 function Test-InstallPackagesConfigOnline
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/12249')]
     param($context)
 
     # Arrange
