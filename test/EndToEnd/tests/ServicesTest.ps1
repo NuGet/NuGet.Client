@@ -651,7 +651,7 @@ function Test-InstallPackageAPIInstalledLowerVersionPackage
     param($context)
 
     # Arrange
-    $p = New-ClassLibrary472
+    $p = New-ClassLibraryNET72
 
     # Act
     [API.Test.InternalAPITestHook]::InstallPackageApi("nuget.librarymodel","6.2.0")
@@ -667,7 +667,7 @@ function Test-InstallPackageAPIInstalledHigherVersionPackage
     param($context)
 
     # Arrange
-    $p = New-ClassLibrary472
+    $p = New-ClassLibraryNET72
 
     # Act
     [API.Test.InternalAPITestHook]::InstallPackageApi("nuget.librarymodel","6.3.0")
