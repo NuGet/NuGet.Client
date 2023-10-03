@@ -3196,14 +3196,12 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             // Arrange
             using var context = new SourceCacheContext();
             using var pathContext = new SimpleTestPathContext();
-            // Add nuget.org for the extra package.
-            pathContext.Settings.AddSource("nuget.org", "https://api.nuget.org/v3/index.json");
 
             var mainProject = "main";
             var mainProjectPath = Path.Combine(pathContext.SolutionRoot, mainProject);
 
-            var childProject = "System.Numerics.Vectors";
-            var childProjectPath = Path.Combine(pathContext.SolutionRoot, childProject);
+            var systemNumericsVectorName = "System.Numerics.Vectors";
+            var childProjectPath = Path.Combine(pathContext.SolutionRoot, systemNumericsVectorName);
 
             var mainProjectJson = @"
             {
@@ -3229,7 +3227,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 }
               }
             }";
-            PackageSpec systemNumericsVectorPackageSpec = ProjectTestHelpers.GetPackageSpec(childProject, pathContext.SolutionRoot, "net8.0");
+            PackageSpec systemNumericsVectorPackageSpec = ProjectTestHelpers.GetPackageSpec(systemNumericsVectorName, pathContext.SolutionRoot, "net8.0");
             PackageSpec mainPackageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(mainProject, pathContext.SolutionRoot, mainProjectJson);
             var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             mainPackageSpec.RestoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
@@ -3244,6 +3242,18 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ProjectPath = systemNumericsVectorPackageSpec.RestoreMetadata.ProjectPath,
             });
 
+            // create packages
+            var ns203 = new SimpleTestPackageContext("NETStandard.Library", "2.0.3");
+            var systemMemory = new SimpleTestPackageContext("System.Memory", "4.5.5");
+            var systemNumericsVector = new SimpleTestPackageContext(systemNumericsVectorName, "4.4.0");
+            systemMemory.Dependencies.Add(systemNumericsVector);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
+                ns203,
+                systemMemory,
+                systemNumericsVector);
+
+
             var logger = new TestLogger();
             var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, mainPackageSpec, systemNumericsVectorPackageSpec);
 
@@ -3255,10 +3265,10 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var net80Target = result.LockFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net8.0")));
             var netstandard20 = result.LockFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("netstandard2.0")));
             net80Target.Libraries.Should().HaveCount(1);
-            var net80Vectors = net80Target.Libraries.Single(e => e.Name.Equals("System.Numerics.Vectors"));
+            var net80Vectors = net80Target.Libraries.Single(e => e.Name.Equals(systemNumericsVectorName));
             net80Vectors.Version.Should().Be(new NuGetVersion(1, 0, 0));
-            netstandard20.Libraries.Should().HaveCount(6);
-            var ns20Target = netstandard20.Libraries.Single(e => e.Name.Equals("System.Numerics.Vectors"));
+            netstandard20.Libraries.Should().HaveCount(3);
+            var ns20Target = netstandard20.Libraries.Single(e => e.Name.Equals(systemNumericsVectorName));
             ns20Target.Version.Should().Be(new NuGetVersion(4, 4, 0));
         }
 
