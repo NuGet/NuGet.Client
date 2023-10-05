@@ -351,6 +351,15 @@ function New-ClassLibraryNET46 {
     New-Project ClassLibrary46 $ProjectName $SolutionFolderName
 }
 
+function New-ClassLibraryNET72 {
+    param(
+        [string]$ProjectName,
+        [string]$SolutionFolderName
+    )
+
+    New-Project ClassLibrary472 $ProjectName $SolutionFolderName
+}
+
 
 function New-PortableLibrary
 {

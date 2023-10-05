@@ -449,12 +449,12 @@ function Test-UninstallPackageAPI
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0")
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","4.2.2")
     [API.Test.InternalAPITestHook]::UninstallPackageApi("microsoft.owin","true")
 
     # Assert
     Assert-NoPackage $p owin 1.0.0
-    Assert-NoPackage $p microsoft.owin 3.0.0
+    Assert-NoPackage $p microsoft.owin 4.2.2
 }
 
 function Test-UninstallPackageAPINoDep
@@ -465,12 +465,12 @@ function Test-UninstallPackageAPINoDep
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0")
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","4.2.2")
     [API.Test.InternalAPITestHook]::UninstallPackageApi("microsoft.owin",0)
 
     # Assert
     Assert-Package $p owin 1.0.0
-    Assert-NoPackage $p microsoft.owin 3.0.0
+    Assert-NoPackage $p microsoft.owin 4.2.2
 }
 
 function Test-UninstallPackageAPINoForce
@@ -481,8 +481,8 @@ function Test-UninstallPackageAPINoForce
     $p = New-ClassLibrary
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0")
-    Assert-Throws { [API.Test.InternalAPITestHook]::UninstallPackageApi("owin","true") } "Exception calling `"UninstallPackageApi`" with `"2`" argument(s): `"Unable to uninstall 'Owin.1.0.0' because 'Microsoft.Owin.3.0.0' depends on it.`""
+    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","4.2.2")
+    Assert-Throws { [API.Test.InternalAPITestHook]::UninstallPackageApi("owin","true") } "Exception calling `"UninstallPackageApi`" with `"2`" argument(s): `"Unable to uninstall 'Owin.1.0.0' because 'Microsoft.Owin.4.2.2' depends on it.`""
 }
 
 function Test-GetSourceAPI
@@ -651,15 +651,15 @@ function Test-InstallPackageAPIInstalledLowerVersionPackage
     param($context)
 
     # Arrange
-    $p = New-ClassLibrary
+    $p = New-ClassLibraryNET72
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","2.0.0")
-    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0")
+    [API.Test.InternalAPITestHook]::InstallPackageApi("nuget.librarymodel","6.2.0")
+    [API.Test.InternalAPITestHook]::InstallPackageApi("nuget.librarymodel","6.3.0")
 
     # Assert
-    Assert-Package $p microsoft.owin 3.0.0
-    Assert-NoPackage $p microsoft.owin 2.0.0
+    Assert-Package $p nuget.librarymodel 6.3.0
+    Assert-NoPackage $p nuget.librarymodel 6.2.0
 }
 
 function Test-InstallPackageAPIInstalledHigherVersionPackage
@@ -667,15 +667,15 @@ function Test-InstallPackageAPIInstalledHigherVersionPackage
     param($context)
 
     # Arrange
-    $p = New-ClassLibrary
+    $p = New-ClassLibraryNET72
 
     # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","3.0.0")
-    [API.Test.InternalAPITestHook]::InstallPackageApi("microsoft.owin","2.0.0")
+    [API.Test.InternalAPITestHook]::InstallPackageApi("nuget.librarymodel","6.3.0")
+    [API.Test.InternalAPITestHook]::InstallPackageApi("nuget.librarymodel","6.2.0")
 
     # Assert
-    Assert-Package $p microsoft.owin 2.0.0
-    Assert-NoPackage $p microsoft.owin 3.0.0
+    Assert-Package $p nuget.librarymodel 6.2.0
+    Assert-NoPackage $p nuget.librarymodel 6.3.0
 }
 
 function Test-UninstallPackageAPIPackageNotExist
