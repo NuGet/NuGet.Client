@@ -48,8 +48,10 @@ namespace Microsoft.Build.NuGetSdkResolver
         public event EventHandler<string> FileRead;
 
         /// <inheritdoc cref="IGlobalJsonReader.GetMSBuildSdkVersions(SdkResolverContext, string)" />
-        public Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, string fileName = GlobalJsonFileName)
+        public Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, out string globalJsonFullPath, string fileName = GlobalJsonFileName)
         {
+            globalJsonFullPath = null;
+
             // Prefer looking next to the solution file as its more likely to be closer to global.json
             string startingPath = GetStartingPath(context);
 
@@ -95,6 +97,8 @@ namespace Microsoft.Build.NuGetSdkResolver
                 });
 
             Dictionary<string, string> sdkVersions = cacheEntry.Lazy.Value;
+
+            globalJsonFullPath = globalJsonPath.FullName;
 
             return sdkVersions;
         }

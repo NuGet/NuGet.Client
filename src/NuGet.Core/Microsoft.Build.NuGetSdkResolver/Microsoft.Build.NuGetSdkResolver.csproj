@@ -8,6 +8,7 @@
     <Description>MSBuild SDK resolver for NuGet packages.</Description>
     <XPLATProject>true</XPLATProject>
     <NoWarn>$(NoWarn);RS0041</NoWarn>
+    <SkipShared>true</SkipShared>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">

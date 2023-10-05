@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.Build.NuGetSdkResolver.SdkResolver
+Microsoft.Build.NuGetSdkResolver.SdkResolver.SdkResolver() -> void
+override Microsoft.Build.NuGetSdkResolver.SdkResolver.Priority.get -> int
+~override Microsoft.Build.NuGetSdkResolver.SdkResolver.Name.get -> string
+~override Microsoft.Build.NuGetSdkResolver.SdkResolver.Resolve(Microsoft.Build.Framework.SdkReference sdkReference, Microsoft.Build.Framework.SdkResolverContext resolverContext, Microsoft.Build.Framework.SdkResultFactory resultFactory) -> Microsoft.Build.Framework.SdkResult

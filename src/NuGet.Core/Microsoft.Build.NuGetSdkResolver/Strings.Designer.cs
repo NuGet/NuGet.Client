@@ -70,6 +70,15 @@ namespace Microsoft.Build.NuGetSdkResolver {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Downloading MSBuild project SDK package &quot;{0}&quot; version &quot;{1}&quot;....
+        /// </summary>
+        internal static string DownloadingPackage {
+            get {
+                return ResourceManager.GetString("DownloadingPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The NuGetSdkResolver did not resolve this SDK because it was disabled by the MSBUILDDISABLENUGETSDKRESOLVER environment variable..
         /// </summary>
         internal static string Error_DisabledSdkResolver {
@@ -93,6 +102,33 @@ namespace Microsoft.Build.NuGetSdkResolver {
         internal static string Error_NoSdkVersion {
             get {
                 return ResourceManager.GetString("Error_NoSdkVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The NuGet-based MSBuild project SDK resolver did not resolve the SDK &quot;{0}&quot; because there was no version specified in the project or global.json..
+        /// </summary>
+        internal static string Error_NoSdkVersionSpecified {
+            get {
+                return ResourceManager.GetString("Error_NoSdkVersionSpecified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The NuGet-based MSBuild project SDK resolver did not resolve the SDK &quot;{0}&quot; because there was no version specified the file &quot;{1}&quot;..
+        /// </summary>
+        internal static string Error_NoSdkVersionSpecifiedInGlobalJson {
+            get {
+                return ResourceManager.GetString("Error_NoSdkVersionSpecifiedInGlobalJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unhandled exception in NuGet-based MSBuild project SDK resolver..
+        /// </summary>
+        internal static string Error_UnhandledException {
+            get {
+                return ResourceManager.GetString("Error_UnhandledException", resourceCulture);
             }
         }
         
@@ -124,11 +160,38 @@ namespace Microsoft.Build.NuGetSdkResolver {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Locating MSBuild project SDK &quot;{0}&quot; version &quot;{1}&quot;....
+        /// </summary>
+        internal static string LocatingSdk {
+            get {
+                return ResourceManager.GetString("LocatingSdk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to resolve SDK &apos;{0}&apos;. Package restore was successful but a package with the ID of &quot;{1}&quot; was not installed..
         /// </summary>
         internal static string PackageWasNotInstalled {
             get {
                 return ResourceManager.GetString("PackageWasNotInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully downloaded MSBuild project SDK package &quot;{0}&quot; version &quot;{1}&quot; to &quot;{2}&quot;..
+        /// </summary>
+        internal static string SuccessfullyDownloadedPackage {
+            get {
+                return ResourceManager.GetString("SuccessfullyDownloadedPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The NuGet-based MSBuild project SDK resolver did not resolve SDK &quot;{0}&quot; because the version specified &quot;{1}&quot; is not a valid NuGet version..
+        /// </summary>
+        internal static string Warning_SdkVersionIsNotValidNuGetVersion {
+            get {
+                return ResourceManager.GetString("Warning_SdkVersionIsNotValidNuGetVersion", resourceCulture);
             }
         }
     }

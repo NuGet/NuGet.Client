@@ -147,4 +147,31 @@
     <value>Failed to load NuGet settings. {0}</value>
     <comment>{0} is exception message.</comment>
   </data>
+  <data name="DownloadingPackage" xml:space="preserve">
+    <value>Downloading MSBuild project SDK package "{0}" version "{1}"...</value>
+    <comment>{0} is the name of the SDK, {1} is the version</comment>
+  </data>
+  <data name="Error_NoSdkVersionSpecified" xml:space="preserve">
+    <value>The NuGet-based MSBuild project SDK resolver did not resolve the SDK "{0}" because there was no version specified in the project or global.json.</value>
+    <comment>{0} is the user specified SDK name.</comment>
+  </data>
+  <data name="Error_NoSdkVersionSpecifiedInGlobalJson" xml:space="preserve">
+    <value>The NuGet-based MSBuild project SDK resolver did not resolve the SDK "{0}" because there was no version specified the file "{1}".</value>
+    <comment>{0} is the user specified SDK name and {1} is the full path to a global.json file.</comment>
+  </data>
+  <data name="Error_UnhandledException" xml:space="preserve">
+    <value>Unhandled exception in NuGet-based MSBuild project SDK resolver.</value>
+  </data>
+  <data name="LocatingSdk" xml:space="preserve">
+    <value>Locating MSBuild project SDK "{0}" version "{1}"...</value>
+    <comment>{0} is the nae of the SDK, {1} is the version</comment>
+  </data>
+  <data name="SuccessfullyDownloadedPackage" xml:space="preserve">
+    <value>Successfully downloaded MSBuild project SDK package "{0}" version "{1}" to "{2}".</value>
+    <comment>{0} is the name of the MSBuild project SDK, {1} is the version, and {2} is the path to where the package was downloaded to.</comment>
+  </data>
+  <data name="Warning_SdkVersionIsNotValidNuGetVersion" xml:space="preserve">
+    <value>The NuGet-based MSBuild project SDK resolver did not resolve SDK "{0}" because the version specified "{1}" is not a valid NuGet version.</value>
+    <comment>{0} is the user specified SDK name and {1} is the full path to a global.json file.</comment>
+  </data>
 </root>

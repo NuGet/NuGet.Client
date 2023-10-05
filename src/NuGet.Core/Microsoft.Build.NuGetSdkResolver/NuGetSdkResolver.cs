@@ -21,6 +21,8 @@ using NuGet.Packaging.Signing;
 #endif
 using NuGet.Versioning;
 
+using SdkResolverBase = Microsoft.Build.Framework.SdkResolver;
+
 namespace Microsoft.Build.NuGetSdkResolver
 {
     /// <summary>
@@ -29,7 +31,7 @@ namespace Microsoft.Build.NuGetSdkResolver
     /// Newtonsoft.Json if a global.json is found and it contains the msbuild-sdks section and a few NuGet assemblies to parse
     /// a version.  The remaining NuGet assemblies are then loaded to do a restore.
     /// </summary>
-    public sealed class NuGetSdkResolver : SdkResolver
+    public sealed class NuGetSdkResolver : SdkResolverBase
     {
         private static readonly Lazy<bool> DisableNuGetSdkResolver = new Lazy<bool>(() => Environment.GetEnvironmentVariable("MSBUILDDISABLENUGETSDKRESOLVER") == "1");
 
@@ -129,7 +131,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 return false;
             }
 
-            Dictionary<string, string> msbuildSdkVersions = _globalJsonReader.GetMSBuildSdkVersions(context);
+            Dictionary<string, string> msbuildSdkVersions = _globalJsonReader.GetMSBuildSdkVersions(context, out _);
 
             // Check if global.json specified a version for this SDK and make sure its a version compatible with NuGet
             if (msbuildSdkVersions != null && msbuildSdkVersions.TryGetValue(id, out var globalJsonVersion) &&
@@ -313,7 +315,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
         }
 
-        private static class TraceEvents
+        internal static class TraceEvents
         {
             private const string EventNameGetResult = "SdkResolver/GetResult";
             private const string EventNameLoadSettings = "SdkResolver/LoadSettings";
