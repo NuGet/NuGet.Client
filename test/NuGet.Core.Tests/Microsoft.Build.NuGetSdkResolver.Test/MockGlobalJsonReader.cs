@@ -18,8 +18,10 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             _sdkVersions = sdkVersions;
         }
 
-        public Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, string fileName = "global.json")
+        public Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, out string globalJsonFullPath, string fileName = "global.json")
         {
+            globalJsonFullPath = null;
+
             return _sdkVersions;
         }
     }
