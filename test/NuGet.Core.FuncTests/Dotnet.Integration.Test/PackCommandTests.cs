@@ -5228,11 +5228,6 @@ namespace ClassLibrary
                         new Dictionary<string, string>(),
                         new Dictionary<string, string>());
 
-                    ProjectFileUtils.AddProperty(
-                        xml,
-                        ProjectBuildProperties.ManagePackageVersionsCentrally,
-                        "true");
-
                     if (CentralPackageTransitivePinningEnabled != null)
                     {
                         ProjectFileUtils.AddProperty(
@@ -5246,15 +5241,12 @@ namespace ClassLibrary
 
                 // The test depends on the presence of these packages and their versions.
                 // Change to Directory.Packages.props when new cli that supports NuGet.props will be downloaded
-                var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Build.props");
+                var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Packages.props");
                 var directoryPackagesPropsContent = @"<Project>
                         <ItemGroup>
-                            <PackageVersion Include = ""Moq"" Version = ""4.10.0""/>
-                            <PackageVersion Include = ""Castle.Core"" Version = ""4.4.0""/>
+                            <PackageVersion Include=""Moq"" Version=""4.10.0""/>
+                            <PackageVersion Include=""Castle.Core"" Version=""4.4.0""/>
                         </ItemGroup>
-                        <PropertyGroup>
-	                        <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
-                        </PropertyGroup>
                     </Project>";
                 File.WriteAllText(directoryPackagesPropsName, directoryPackagesPropsContent);
 

@@ -9184,7 +9184,6 @@ namespace NuGet.CommandLine.Test
                    "a",
                    pathContext.SolutionRoot,
                    NuGetFramework.Parse("net46"));
-                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
 
@@ -9269,7 +9268,6 @@ namespace NuGet.CommandLine.Test
                    "a",
                    pathContext.SolutionRoot,
                    NuGetFramework.Parse("net46"));
-                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
 
@@ -9352,7 +9350,6 @@ namespace NuGet.CommandLine.Test
                    "a",
                    pathContext.SolutionRoot,
                    NuGetFramework.Parse("net46"));
-                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
 
@@ -9426,7 +9423,6 @@ namespace NuGet.CommandLine.Test
                    "a",
                    pathContext.SolutionRoot,
                    NuGetFramework.Parse("net46"));
-                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
 
@@ -9500,7 +9496,6 @@ namespace NuGet.CommandLine.Test
                    "a",
                    pathContext.SolutionRoot,
                    NuGetFramework.Parse("net46"));
-                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
 
@@ -9573,7 +9568,6 @@ namespace NuGet.CommandLine.Test
                    "a",
                    pathContext.SolutionRoot,
                    NuGetFramework.Parse("net46"));
-                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
 
@@ -9676,19 +9670,16 @@ namespace NuGet.CommandLine.Test
                     "a",
                     pathContext.SolutionRoot,
                     netcoreapp2);
-                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
 
                 var projectB = SimpleTestProjectContext.CreateNETCore(
                     "b",
                     pathContext.SolutionRoot,
                     netcoreapp2);
-                projectB.Properties.Add("ManagePackageVersionsCentrally", "true");
 
                 var projectC = SimpleTestProjectContext.CreateNETCore(
                     "c",
                     pathContext.SolutionRoot,
                     netcoreapp2);
-                projectC.Properties.Add("ManagePackageVersionsCentrally", "true");
 
                 var packageX100 = new SimpleTestPackageContext()
                 {
@@ -9821,8 +9812,7 @@ namespace NuGet.CommandLine.Test
                    "projectA",
                    pathContext.SolutionRoot,
                    NuGetFramework.Parse("netcoreapp2.0"));
-                projectA.Properties.Add(ProjectBuildProperties.ManagePackageVersionsCentrally, "true");
-                projectA.Properties.Add(ProjectBuildProperties.CentralPackageTransitivePinningEnabled, "true");
+                projectA.Properties.Add(ProjectBuildProperties.CentralPackageTransitivePinningEnabled, bool.TrueString);
 
                 // the package references defined in the project should not have version
                 var packageBNoVersion = createTestPackage("B", null, packagesForProject);
@@ -10072,7 +10062,6 @@ namespace NuGet.CommandLine.Test
                    "projectA",
                    pathContext.SolutionRoot,
                    framework);
-                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
 
                 // the package references defined in the project should not have version
                 var packageBNoVersion = createTestPackage("B", null, packagesForProject);
@@ -10248,8 +10237,6 @@ namespace NuGet.CommandLine.Test
 
                 var projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, framework);
 
-                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
-
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                    pathContext.PackageSource,
                    new[]
@@ -10329,7 +10316,6 @@ namespace NuGet.CommandLine.Test
 
                 var projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, framework);
 
-                projectA.Properties.Add(ProjectBuildProperties.ManagePackageVersionsCentrally, bool.TrueString);
                 projectA.Properties.Add(ProjectBuildProperties.CentralPackageVersionOverrideEnabled, bool.FalseString);
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -11330,11 +11316,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 var xml = projectA.GetXML();
 
-                ProjectFileUtils.AddProperty(
-                    xml,
-                    "ManagePackageVersionsCentrally",
-                    "true");
-
                 ProjectFileUtils.AddItem(
                                     xml,
                                     "PackageReference",
@@ -11494,7 +11475,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     pathContext.SolutionRoot,
                     "net472");
 
-                projectContext.Properties.Add("ManagePackageVersionsCentrally", "true");
                 projectContext.Properties.Add("CentralPackageTransitivePinningEnabled", centralPackageTransitivePinningEnabled.ToString());
 
                 if (referencedProject != null)
