@@ -9938,13 +9938,13 @@ namespace NuGet.CommandLine.Test
                 var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
                 Assert.Equal(expectedLibraries, libraries);
 
-                var centralfileDependencyGroups = assetsFile
+                var centralFileDependencyGroups = assetsFile
                     .CentralTransitiveDependencyGroups
                     .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
 
-                var expectedCentralfileDependencyGroups = new List<string>() { $"{framework.DotNetFrameworkName}_P.[3.0.0, )", $"{framework.DotNetFrameworkName}_S.[3.0.0, )" };
+                var expectedCentralFileDependencyGroups = new List<string>() { $"{framework.DotNetFrameworkName}_P.[3.0.0, )", $"{framework.DotNetFrameworkName}_S.[3.0.0, )" };
 
-                Assert.Equal(expectedCentralfileDependencyGroups, centralfileDependencyGroups);
+                Assert.Equal(expectedCentralFileDependencyGroups, centralFileDependencyGroups);
             }
         }
 
@@ -10099,11 +10099,70 @@ namespace NuGet.CommandLine.Test
                 var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
                 Assert.Equal(expectedLibraries, libraries);
 
-                var centralfileDependencyGroups = assetsFile
+                var centralFileDependencyGroups = assetsFile
                     .CentralTransitiveDependencyGroups
                     .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
 
-                Assert.Equal(0, centralfileDependencyGroups.Count);
+                Assert.Equal(0, centralFileDependencyGroups.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        [InlineData(null)]
+        public async Task RestoreNetCore_CPVMProject_ManagePackageVersionsCentrally_CanBeDisabled(bool? managePackageVersionsCentrally)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+            var packageA = new SimpleTestPackageContext("A", "1.0.0");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+
+            var projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, "net472");
+
+            if (managePackageVersionsCentrally is null || managePackageVersionsCentrally == true)
+            {
+                packageA.Version = null;
+            }
+
+            projectA.AddPackageToAllFrameworks(packageA);
+
+            solution.CentralPackageVersionsManagementFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot, managePackageVersionsCentrally)
+                .SetPackageVersion("A", "1.0.0");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            // Act
+            var result = Util.RestoreSolution(pathContext);
+
+            // Assert
+            result.Success.Should().BeTrue();
+
+            var assetFileReader = new LockFileFormat();
+            var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
+
+            assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").Should().BeEquivalentTo(new string[] { "A.1.0.0" });
+
+            var targetFramework = assetsFile.PackageSpec.TargetFrameworks.Should().ContainSingle();
+
+            if (managePackageVersionsCentrally is null || managePackageVersionsCentrally == true)
+            {
+                targetFramework.Subject.Dependencies.Should().ContainSingle()
+                    .Which.VersionCentrallyManaged.Should().BeTrue();
+
+                targetFramework.Subject.CentralPackageVersions.Should().ContainSingle()
+                    .Which.Value.Should().Be(new CentralPackageVersion("A", VersionRange.Parse("1.0.0")));
+            }
+            else
+            {
+                targetFramework.Subject.Dependencies.Should().ContainSingle()
+                    .Which.VersionCentrallyManaged.Should().BeFalse();
+                targetFramework.Subject.CentralPackageVersions.Should().BeEmpty();
             }
         }
 
@@ -10295,11 +10354,11 @@ namespace NuGet.CommandLine.Test
                 var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
                 Assert.Equal(expectedLibraries, libraries);
 
-                var centralfileDependencyGroups = assetsFile
+                var centralFileDependencyGroups = assetsFile
                     .CentralTransitiveDependencyGroups
                     .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
 
-                Assert.Equal(0, centralfileDependencyGroups.Count);
+                Assert.Equal(0, centralFileDependencyGroups.Count);
             }
         }
 
