@@ -3191,7 +3191,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Fact]
-        public async Task ExecuteAsync_WithConditionalProjectAndPackageReferences()
+        public async Task ExecuteAsync_WithConditionalProjectAndPackageReferences_SelectsPackageWhereProjectIsNotAppropriate()
         {
             // Arrange
             using var context = new SourceCacheContext();
@@ -3252,7 +3252,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ns203,
                 systemMemory,
                 systemNumericsVector);
-
 
             var logger = new TestLogger();
             var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, mainPackageSpec, systemNumericsVectorPackageSpec);
