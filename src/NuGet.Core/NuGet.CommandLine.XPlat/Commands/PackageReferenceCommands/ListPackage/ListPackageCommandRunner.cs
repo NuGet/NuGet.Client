@@ -405,7 +405,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="frameworks"> List of <see cref="FrameworkPackages"/>.</param>
         /// <param name="packageMetadata">Package metadata from package sources</param>
         /// <param name="listPackageArgs">Arguments for list package to get the right latest version</param>
-        private async Task UpdatePackagesWithSourceMetadata(
+        internal async Task UpdatePackagesWithSourceMetadata(
             List<FrameworkPackages> frameworks,
             Dictionary<string, List<IPackageSearchMetadata>> packageMetadata,
             ListPackageArgs listPackageArgs)
