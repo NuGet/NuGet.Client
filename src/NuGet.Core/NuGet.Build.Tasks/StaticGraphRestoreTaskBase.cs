@@ -155,23 +155,29 @@ namespace NuGet.Build.Tasks
                         try
                         {
                             process.Start();
+                        }
+                        catch (Exception e)
+                        {
+                            Log.LogErrorFromResources(nameof(Strings.Error_StaticGraphRestoreFailedToStart), e.Message);
 
-                            process.BeginOutputReadLine();
-                            process.BeginErrorReadLine();
-
-                            if (SerializeGlobalProperties)
-                            {
-                                using var writer = new BinaryWriter(process.StandardInput.BaseStream, Encoding.UTF8, leaveOpen: true);
-
-                                WriteGlobalProperties(writer, globalProperties);
-                            }
+                            return false;
                         }
                         finally
                         {
-                            process.StandardInput.Close();
-
                             Console.InputEncoding = previousConsoleInputEncoding;
                         }
+
+                        process.BeginOutputReadLine();
+                        process.BeginErrorReadLine();
+
+                        if (SerializeGlobalProperties)
+                        {
+                            using var writer = new BinaryWriter(process.StandardInput.BaseStream, Encoding.UTF8, leaveOpen: true);
+
+                            WriteGlobalProperties(writer, globalProperties);
+                        }
+
+                        process.StandardInput.Close();
 
                         semaphore.Wait(_cancellationTokenSource.Token);
 
@@ -224,23 +230,7 @@ namespace NuGet.Build.Tasks
         internal string GetCommandLineArguments(Dictionary<string, string> globalProperties)
         {
             // First get the command-line arguments including the global properties
-            string commandLineArguments = CreateArgumentString(EnumerateCommandLineArguments(SerializeGlobalProperties ? null : globalProperties));
-
-            if (SerializeGlobalProperties)
-            {
-                return commandLineArguments;
-            }
-
-            // If the command-line arguments exceed the supported length, set the flag to serialize the global properties to the standard input stream get the
-            // arguments again without the global properties.
-            if (commandLineArguments.Length > 8000)
-            {
-                SerializeGlobalProperties = true;
-
-                commandLineArguments = CreateArgumentString(EnumerateCommandLineArguments(globalProperties: null));
-            }
-
-            return commandLineArguments;
+            return CreateArgumentString(EnumerateCommandLineArguments(SerializeGlobalProperties ? null : globalProperties));
 
             IEnumerable<string> EnumerateCommandLineArguments(Dictionary<string, string> globalProperties)
             {

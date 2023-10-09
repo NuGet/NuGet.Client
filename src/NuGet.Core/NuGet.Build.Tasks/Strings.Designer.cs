@@ -188,6 +188,15 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred starting static graph-based restore. {0}. Please file an issue at https://github.com/NuGet/Home.
+        /// </summary>
+        public static string Error_StaticGraphRestoreFailedToStart {
+            get {
+                return ResourceManager.GetString("Error_StaticGraphRestoreFailedToStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Static graph-based restore encountered an unhandled exception. Please file an issue at https://github.com/NuGet/Home.  The exception was:
         ///{0}.
         /// </summary>

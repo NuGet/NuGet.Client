@@ -225,4 +225,8 @@
     <value>An error occurred parsing command-line arguments in static graph-based restore as the first integer read, {0}, is not an allowable value. Please file an issue at https://github.com/NuGet/Home</value>
     <comment>0 - The value of the first integer read from the stream</comment>
   </data>
+  <data name="Error_StaticGraphRestoreFailedToStart" xml:space="preserve">
+    <value>An error occurred starting static graph-based restore. {0}. Please file an issue at https://github.com/NuGet/Home</value>
+    <comment>0 - The exception message</comment>
+  </data>
 </root>
