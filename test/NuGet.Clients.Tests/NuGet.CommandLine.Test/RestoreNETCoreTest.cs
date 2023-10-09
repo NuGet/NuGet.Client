@@ -9484,7 +9484,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_CPVMProject_MoveTransitiveDependnecyToCentralFile_FailsRestore()
+        public async Task RestoreNetCore_CPVMProject_MoveTransitiveDependencyToCentralFile_FailsRestore()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -10083,6 +10083,80 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+
+                var assetFileReader = new LockFileFormat();
+                var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
+
+                var expectedLibraries = new List<string>() { "B.1.0.0", "C.1.0.0" };
+                var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
+                Assert.Equal(expectedLibraries, libraries);
+
+                var centralfileDependencyGroups = assetsFile
+                    .CentralTransitiveDependencyGroups
+                    .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
+
+                Assert.Equal(0, centralfileDependencyGroups.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        [InlineData(null)]
+        public async Task RestoreNetCore_CPVMProject_ManagePackageVersionsCentrally_CanBeDisabled(bool? managePackageVersionsCentrally)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var packagesForSource = new List<SimpleTestPackageContext>();
+                var packagesForProject = new List<SimpleTestPackageContext>();
+                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp20;
+
+                SimpleTestPackageContext createTestPackage(string name, string version, List<SimpleTestPackageContext> source)
+                {
+                    var result = new SimpleTestPackageContext()
+                    {
+                        Id = name,
+                        Version = version
+                    };
+                    result.Files.Clear();
+                    source.Add(result);
+                    return result;
+                };
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "projectA",
+                   pathContext.SolutionRoot,
+                   framework);
+
+                // the package references defined in the project should not have version unless CPM is disabled
+                var packageBNoVersion = createTestPackage("B", managePackageVersionsCentrally is null || managePackageVersionsCentrally == true ? null : "1.0.0", packagesForProject);
+                var packageB100 = createTestPackage("B", "1.0.0", packagesForSource);
+                var packageC100 = createTestPackage("C", "1.0.0", packagesForSource);
+                var packageC200 = createTestPackage("C", "2.0.0", packagesForSource);
+
+                packageB100.Dependencies.Add(packageC100);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packagesForSource.ToArray());
+
+                projectA.AddPackageToAllFrameworks(packagesForProject.ToArray());
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot, managePackageVersionsCentrally)
+                    .SetPackageVersion("B", "1.0.0")
+                    .SetPackageVersion("C", "2.0.0");
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
