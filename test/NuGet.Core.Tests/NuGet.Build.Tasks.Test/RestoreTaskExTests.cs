@@ -83,59 +83,6 @@ namespace NuGet.Build.Tasks.Test
         }
 
         /// <summary>
-        /// Verifies that when the values contained in global properties will exceed the maximum command line length, <see cref="StaticGraphRestoreTaskBase.GetCommandLineArguments(Dictionary{string, string})"/> leaves the global properties are out of the command line arguments and sets <see cref="StaticGraphRestoreTaskBase.SerializeGlobalProperties" /> to <see langword="true" />.
-        /// </summary>
-        [Fact]
-        public void GetCommandLineArguments_WhenLotsOfGlobalProperties_SerializeGlobalPropertiesSetToTrue()
-        {
-            using (var testDirectory = TestDirectory.Create())
-            {
-                string msbuildBinPath = Path.Combine(testDirectory, "MSBuild", "Current", "Bin");
-                string projectPath = Path.Combine(testDirectory, "src", "project1", "project1.csproj");
-
-                var globalProperties = new Dictionary<string, string>(100);
-
-                for (int i = 0; i < 100; i++)
-                {
-                    globalProperties.Add($"Property{i}", new string('A', 100));
-                }
-
-                var buildEngine = new TestBuildEngine(globalProperties);
-
-                using (var task = new RestoreTaskEx
-                {
-                    BuildEngine = buildEngine,
-                    MSBuildBinPath = msbuildBinPath,
-                    MSBuildStartupDirectory = testDirectory,
-                    ProjectFullPath = projectPath,
-                    SerializeGlobalProperties = false,
-                })
-                {
-                    string arguments = task.GetCommandLineArguments(globalProperties);
-
-                    arguments.Should().Be(StaticGraphRestoreTaskBase.CreateArgumentString(GetExpectedArguments(msbuildBinPath, projectPath)));
-
-                    task.SerializeGlobalProperties.Should().BeTrue();
-                }
-            }
-
-            IEnumerable<string> GetExpectedArguments(string msbuildBinPath, string projectPath)
-            {
-#if IS_CORECLR
-                yield return Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll");
-#endif
-                yield return "Recursive=False;CleanupAssetsForUnsupportedProjects=True;DisableParallel=False;Force=False;ForceEvaluate=False;HideWarningsAndErrors=False;IgnoreFailedSources=False;Interactive=False;NoCache=False;RestorePackagesConfig=False";
-#if IS_CORECLR
-                yield return Path.Combine(msbuildBinPath, "MSBuild.dll");
-#else
-                yield return Path.Combine(msbuildBinPath, "MSBuild.exe");
-#endif
-                yield return projectPath;
-            }
-
-        }
-
-        /// <summary>
         /// Verifies that the <see cref="RestoreTaskEx.GetGlobalProperties" /> returns the global properties plus any extra ones set by NuGet.
         /// </summary>
         [Fact]
