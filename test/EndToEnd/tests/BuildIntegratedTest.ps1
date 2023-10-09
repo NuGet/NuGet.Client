@@ -405,6 +405,8 @@ function Test-BuildIntegratedParentProjectIsRestoredAfterInstallWithClassLibInTr
 }
 
 function Test-BuildIntegratedCleanDeleteCacheFile {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/2517')]
+    param()
     # Arrange
     $project = New-BuildIntegratedProj UAPApp
 
@@ -464,6 +466,8 @@ function Remove-PackageReference {
 }
 
 function Test-BuildIntegratedLegacyCleanDeleteCacheFile {
+    [SkipTest('https://github.com/NuGet/Client.Engineering/issues/2517')]
+    param()
     # Arrange
     $project = New-Project PackageReferenceClassLibrary
     $project | Install-Package Newtonsoft.Json -Version 13.0.1
