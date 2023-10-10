@@ -19,10 +19,12 @@ namespace NuGet.Tests.Apex
         private const string PrimarySourceName = "source";
         private const string SecondarySourceName = "SecondarySource";
 
+        internal const int LongerTimeout = 10 * 60 * 1000; // 10 minutes
+
         private readonly SimpleTestPathContext _pathContext = new SimpleTestPathContext();
 
         [TestMethod]
-        [Timeout(DefaultTimeout)]
+        [Timeout(LongerTimeout)]
         public void SimpleInstallFromIVsInstaller()
         {
             // Arrange

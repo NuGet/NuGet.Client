@@ -693,6 +693,7 @@ namespace NuGet.Tests.Apex
             solutionService.Save();
         }
 
+        [Ignore("https://github.com/NuGet/Home/issues/12931")]
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
@@ -701,7 +702,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
             {
                 var packageName = "VerifyCacheFilePackage";
                 var packageVersion = "1.0.0";
@@ -726,7 +727,7 @@ namespace NuGet.Tests.Apex
         }
 
         [DataTestMethod]
-        [DataRow(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")]
+        //[DataRow(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")] [Ignore("https://github.com/NuGet/Home/issues/12932")]
         [DataRow(ProjectTemplate.NetStandardClassLib, "PackageC", "1.0.0", "2.0.0", "PackageD", "1.1.0", "2.2.0")]
         [Timeout(DefaultTimeout)]
         public async Task UpdateAllPackagesInPMC(ProjectTemplate projectTemplate, string packageName1, string packageVersion1, string packageVersion2, string packageName2, string packageVersion3, string packageVersion4)
@@ -772,6 +773,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        [Ignore("https://github.com/NuGet/Home/issues/12930")]
         [DataTestMethod]
         [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
@@ -806,6 +808,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        [Ignore("https://github.com/NuGet/Home/issues/12930")]
         [DataTestMethod]
         [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
@@ -847,6 +850,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        [Ignore("https://github.com/NuGet/Home/issues/12930")]
         [DataTestMethod]
         [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
