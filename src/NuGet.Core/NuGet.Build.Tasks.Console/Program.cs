@@ -188,7 +188,7 @@ namespace NuGet.Build.Tasks.Console
                     else
                     {
 #endif
-                        using var reader = new BinaryReader(getStream(), Encoding.UTF8, leaveOpen: true);
+                        using var reader = new BinaryReader(getStream(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true), leaveOpen: true);
 
                         if (!TryDeserializeGlobalProperties(errorWriter, reader, out globalProperties))
                         {

@@ -105,6 +105,8 @@ namespace NuGet.Build.Tasks
 
                 Dictionary<string, string> globalProperties = GetGlobalProperties();
 
+                Encoding utf8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
                 using (var semaphore = new SemaphoreSlim(initialCount: 0, maxCount: 1))
                 using (var loggingQueue = new TaskLoggingQueue(Log))
                 using (var process = new Process())
@@ -121,7 +123,7 @@ namespace NuGet.Build.Tasks
                         RedirectStandardInput = true,
                         RedirectStandardOutput = true,
 #if !NETFRAMEWORK
-                        StandardInputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                        StandardInputEncoding = utf8Encoding,
 #endif
                         UseShellExecute = false,
                         WorkingDirectory = Environment.CurrentDirectory,
@@ -150,7 +152,7 @@ namespace NuGet.Build.Tasks
                         Encoding previousConsoleInputEncoding = Console.InputEncoding;
 
                         // Set the input encoding to UTF8 without a byte order mark, the spawned process will use this encoding on .NET Framework
-                        Console.InputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+                        Console.InputEncoding = utf8Encoding;
 
                         try
                         {
@@ -172,7 +174,7 @@ namespace NuGet.Build.Tasks
 
                         if (SerializeGlobalProperties)
                         {
-                            using var writer = new BinaryWriter(process.StandardInput.BaseStream, Encoding.UTF8, leaveOpen: true);
+                            using var writer = new BinaryWriter(process.StandardInput.BaseStream, utf8Encoding, leaveOpen: true);
 
                             WriteGlobalProperties(writer, globalProperties);
                         }
