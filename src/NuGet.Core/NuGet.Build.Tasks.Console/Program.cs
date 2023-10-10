@@ -223,7 +223,6 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="errorWriter">The <see cref="TextWriter" /> to write the error to.</param>
         /// <param name="format">The formatted string of the error.</param>
         /// <param name="args">An object array of zero or more objects to format with the error message.</param>
-        /// <returns><see langword="false" /></returns>
         private static void LogError(TextWriter errorWriter, string format, params object[] args)
         {
             errorWriter.WriteLine(format, args);
@@ -255,8 +254,8 @@ namespace NuGet.Build.Tasks.Console
                 return false;
             }
 
-            // If the integer is negative or greater than or equal to int.MaxValue, then the integer is invalid.  This should never happen unless the bytes in the stream contain completely unexpected values
-            if (count < 0 || count >= int.MaxValue)
+            // If the integer is negative then the value is invalid.  This should never happen unless the bytes in the stream contain completely unexpected values.
+            if (count < 0)
             {
                 // An error occurred parsing command-line arguments in static graph-based restore as the first integer read, {0}, was is greater than the allowable value. Please file an issue at https://github.com/NuGet/Home
                 LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedUnexpectedIntegerValue, count);

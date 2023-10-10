@@ -40,6 +40,8 @@ namespace NuGet.Build.Tasks.Console.Test
 
             bool result = Program.TryDeserializeGlobalProperties(errorWriter, reader, out Dictionary<string, string> actualGlobalProperties);
 
+            result.Should().BeTrue();
+
             actualGlobalProperties.Should().BeEquivalentTo(expectedGlobalProperties);
         }
 
