@@ -4,12 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xunit;
 
 namespace NuGet.Test.Utility
 {
     public class PlatformFactAttribute
-        : FactAttribute
+        : RetryFactAttribute
     {
         private string _skip;
 

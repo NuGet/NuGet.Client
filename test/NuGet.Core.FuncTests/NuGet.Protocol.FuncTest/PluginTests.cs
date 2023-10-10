@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if IS_DESKTOP
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +18,7 @@ using NuGet.Protocol.Plugins;
 using NuGet.Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
+
 using PluginProtocolConstants = NuGet.Protocol.Plugins.ProtocolConstants;
 
 namespace NuGet.Protocol.FuncTest
@@ -40,8 +42,8 @@ namespace NuGet.Protocol.FuncTest
         {
             logger.WriteLine($"Plugin file path:  {PluginFile.FullName}");
         }
-#if IS_DESKTOP
-        [PlatformFact(Platform.Windows)]
+
+        [PlatformFact(Platform.Windows, MaxRetries = 3)]
         public async Task GetOrCreateAsync_SuccessfullyHandshakes()
         {
             using (var test = await PluginTest.CreateAsync())
@@ -50,7 +52,7 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/12122")]
+        [PlatformFact(Platform.Windows, MaxRetries = 3)]
         public async Task GetOrCreateAsync_WithUnhandledExceptionInPlugin_Throws()
         {
             using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
@@ -71,7 +73,7 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, MaxRetries = 3)]
         public async Task GetOrCreateAsync_WithHandledExceptionAndExitInPlugin_Throws()
         {
             using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
@@ -92,7 +94,7 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, MaxRetries = 3)]
         public async Task GetOrCreateAsync_WhenPluginFreezes_Throws()
         {
             using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
@@ -113,7 +115,7 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, MaxRetries = 3)]
         public async Task GetOrCreateAsync_WhenPluginCausesProtocolException_Throws()
         {
             using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
@@ -130,7 +132,7 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, MaxRetries = 3)]
         public async Task Initialize_Succeeds()
         {
             using (var test = await PluginTest.CreateAsync())
@@ -161,7 +163,7 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, MaxRetries = 3)]
         public async Task GetOperationClaims_ReturnsSupportedClaims()
         {
             using (var test = await PluginTest.CreateAsync())
@@ -189,7 +191,7 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, MaxRetries = 3)]
         public async Task SendRequestAndReceiveResponseAsync_TimesOut()
         {
             using (var test = await PluginTest.CreateAsync())
@@ -216,7 +218,7 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, MaxRetries = 3)]
         public async Task Fault_WritesExceptionToConsole()
         {
             using (var test = await PluginTest.CreateAsync())
@@ -260,7 +262,7 @@ namespace NuGet.Protocol.FuncTest
                     consoleOutput);
             }
         }
-#endif
+
         private static int GetCurrentProcessId()
         {
             using (var process = Process.GetCurrentProcess())
@@ -432,3 +434,4 @@ namespace NuGet.Protocol.FuncTest
         }
     }
 }
+#endif

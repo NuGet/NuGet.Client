@@ -12,6 +12,7 @@
     <Description>A collection of test utilities, such as generating packages, mocking servers, stub implementations of interfaces, etc.</Description>
     <SkipAnalyzers>true</SkipAnalyzers>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -68,6 +69,7 @@
     <None Remove="compiler\resources\Test.RepoCountersigned.1.0.0.nupkg" />
     <None Remove="compiler\resources\Test.Reposigned.1.0.0.nupkg" />
     <None Remove="compiler\resources\TestPackage.AuthorSigned.1.0.0.nupkg" />
+    <ProjectCapability Remove="TestContainer" />
   </ItemGroup>
 
  <ItemGroup>
