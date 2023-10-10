@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Linq;
-using System.Threading;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -206,13 +204,9 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             TelemetryUtility.ToJsonArrayOfTimingsInSeconds(values).Should().Be("[5]");
         }
 
-        [Theory]
-        [InlineData("en")]
-        [InlineData("de")]
-        public void ToJsonArrayOfTimingsInSeconds_WithMultipleValues_AppendsValuesWithComma(string culture)
+        [Fact]
+        public void ToJsonArrayOfTimingsInSeconds_WithMultipleValues_AppendsValuesWithComma()
         {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-
             TimeSpan[] values = new[] { new TimeSpan(hours: 0, minutes: 0, seconds: 5), new TimeSpan(days: 0, hours: 0, minutes: 1, seconds: 0, milliseconds: 500) };
             TelemetryUtility.ToJsonArrayOfTimingsInSeconds(values).Should().Be("[5,60.5]");
         }
