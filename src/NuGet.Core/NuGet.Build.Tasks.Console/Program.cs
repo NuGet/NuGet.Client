@@ -254,8 +254,9 @@ namespace NuGet.Build.Tasks.Console
                 return false;
             }
 
-            // If the integer is negative then the value is invalid.  This should never happen unless the bytes in the stream contain completely unexpected values.
-            if (count < 0)
+            // If the integer is negative or larger than a short then the value is considered invalid.  No user should have anywhere near 32,000+ global properties
+            // and this should only happen if the bytes in the stream contain completely unexpected values.
+            if (count < 0 || count > short.MaxValue)
             {
                 // An error occurred parsing command-line arguments in static graph-based restore as the first integer read, {0}, was is greater than the allowable value. Please file an issue at https://github.com/NuGet/Home
                 LogError(errorWriter, Strings.Error_StaticGraphRestoreArgumentsParsingFailedUnexpectedIntegerValue, count);

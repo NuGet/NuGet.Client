@@ -48,12 +48,14 @@ namespace NuGet.Build.Tasks.Console.Test
         /// <summary>
         /// Verifies that <see cref="Program.TryDeserializeGlobalProperties(TextWriter, BinaryReader, out Dictionary{string, string})" /> returns <see langword="false" /> and logs an error if the stream contains an unsupported integer.
         /// </summary>
-        /// <param name="bytes">An array of bytes to use as the stream.</param>
+        /// <param name="count">The number of dictionary items to attempt to deserialize.</param>
         [Theory]
-        [InlineData(new byte[] { 0x00, 0x00, 0x00, 0xFF })] // 4 byte integer that is negative
-        [InlineData(new byte[] { 0xFF, 0xFF, 0xFF, 0x7F })] // 4 byte integer that is too big
-        public void TryDeserializeGlobalProperties_WhenInvalidDictionaryLength_ReturnsFalse(byte[] bytes)
+        [InlineData(-100 )] // An integer that is negative
+        [InlineData(int.MaxValue)] // An integer that is too big
+        public void TryDeserializeGlobalProperties_WhenInvalidDictionaryLength_ReturnsFalse(int count)
         {
+            byte[] bytes = BitConverter.GetBytes(count);
+
             using var stream = GetStreamWithBytes(bytes);
 
             int expectedLength = BitConverter.ToInt32(bytes, bytes.Length - 4);
