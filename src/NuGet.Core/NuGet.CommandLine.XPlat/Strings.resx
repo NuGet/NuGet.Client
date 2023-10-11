@@ -818,4 +818,28 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="SourcesCommandValidProtocolVersion" xml:space="preserve">
     <value>The protocol version specified is invalid. Provide a valid protocol version.</value>
   </data>
+  <data name="pkgSearch_Description" xml:space="preserve">
+    <value>Searches a given source using the query string provided. If no sources are specified, all sources defined in NuGet.config are used.</value>
+  </data>
+  <data name="pkgSearch_ExactMatchDescription" xml:space="preserve">
+    <value>Return an exact match only as a search result.</value>
+  </data>
+  <data name="pkgSearch_InteractiveDescription" xml:space="preserve">
+    <value>Allows the command to stop and wait for user input or action (for example to complete authentication).</value>
+  </data>
+  <data name="pkgSearch_PrereleaseDescription" xml:space="preserve">
+    <value>Allow prerelease packages to be shown.</value>
+  </data>
+  <data name="pkgSearch_SkipDescription" xml:space="preserve">
+    <value>The number of results to skip, for pagination.</value>
+  </data>
+  <data name="pkgSearch_SourceDescription" xml:space="preserve">
+    <value>The package source to search. You can pass multiple --source options to search multiple package sources.</value>
+  </data>
+  <data name="pkgSearch_TakeDescription" xml:space="preserve">
+    <value>The number of results to return. The default value is 20.</value>
+  </data>
+  <data name="pkgSearch_termDescription" xml:space="preserve">
+    <value>A search term.</value>
+  </data>
 </root>
