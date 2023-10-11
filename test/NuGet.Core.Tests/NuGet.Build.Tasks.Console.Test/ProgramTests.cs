@@ -50,7 +50,7 @@ namespace NuGet.Build.Tasks.Console.Test
         /// </summary>
         /// <param name="count">The number of dictionary items to attempt to deserialize.</param>
         [Theory]
-        [InlineData(-100 )] // An integer that is negative
+        [InlineData(-100)] // An integer that is negative
         [InlineData(int.MaxValue)] // An integer that is too big
         public void TryDeserializeGlobalProperties_WhenInvalidDictionaryLength_ReturnsFalse(int count)
         {
