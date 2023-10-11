@@ -736,7 +736,8 @@ namespace NuGet.Tests.Apex
             CommonUtility.AssertUninstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, Logger);
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
         public void InstallTopLevelPackageHavingTransitiveFromUI()
         {
             // Arrange
@@ -749,14 +750,14 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("log4net", "2.0.15");
             solutionService.Build();
 
             // Assert
-            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, "log4net", "2.0.15", XunitLogger);
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, "log4net", "2.0.15", Logger);
             uiwindow.AssertPackageNotTransitive();
 
             // Act (Search the transitive package since it will not show at the top of package list by default)
@@ -767,7 +768,8 @@ namespace NuGet.Tests.Apex
             uiwindow.AssertPackageTransitive();
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
         public void InstallTransitivePackageFromUI()
         {
             // Arrange
@@ -781,7 +783,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("log4net", "2.0.15");
@@ -791,10 +793,11 @@ namespace NuGet.Tests.Apex
             // Assert
             VisualStudio.AssertNoErrors();
             uiwindow.AssertPackageNotTransitive();
-            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, transitivePackage, "2.0.0", XunitLogger);
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, transitivePackage, "2.0.0", Logger);
         }
 
-        [StaFact]
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
         public void UninstallTransitivePackageFromUI()
         {
             // Arrange
@@ -808,7 +811,7 @@ namespace NuGet.Tests.Apex
             solutionService.SaveAll();
 
             // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, XunitLogger);
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("log4net", "2.0.15");
@@ -819,7 +822,7 @@ namespace NuGet.Tests.Apex
             // Assert
             VisualStudio.AssertNoErrors();
             uiwindow.AssertPackageTransitive();
-            CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, transitivePackage, XunitLogger);
+            CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, transitivePackage, Logger);
         }
     }
 }
