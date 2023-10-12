@@ -100,6 +100,24 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
         }
+        private static void PrintResult(IEnumerable<IPackageSearchMetadata> results, bool exactMatch, string searchTerm)
+        {
+            if (exactMatch && results?.Any() == true &&
+                results.First().Identity.Id.Equals(searchTerm, StringComparison.OrdinalIgnoreCase))
+            {
+                // we are doing exact match and if the result from the API are sorted, the first result should be the package we are searching
+                IPackageSearchMetadata result = results.First();
+                Console.WriteLine($"{result.Identity.Id} | {result.Identity.Version} | Downloads: {(result.DownloadCount.HasValue ? result.DownloadCount.ToString() : "N/A")}");
+                return;
+            }
+            else
+            {
+                foreach (IPackageSearchMetadata result in results)
+                {
+                    Console.WriteLine($"{result.Identity.Id} | {result.Identity.Version} | Downloads: {(result.DownloadCount.HasValue ? result.DownloadCount.ToString() : "N/A")}");
+                }
+            }
+        }
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
         {
             app.Command("search", pkgSearch =>
@@ -153,7 +171,7 @@ namespace NuGet.CommandLine.XPlat
                     foreach (PackageSource source in listEndpoints)
                     {
                         SourceRepository repository = Repository.Factory.GetCoreV3(source);
-                        PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>();
+                        PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>(cancellationToken);
 
                         if (resource is null)
                         {
@@ -192,6 +210,7 @@ namespace NuGet.CommandLine.XPlat
 
                         if (results.Any())
                         {
+                            PrintResult(results, exactMatch.HasValue(), searchTern.Value);
                             Console.WriteLine(packageSeparator);
                         }
                         else
