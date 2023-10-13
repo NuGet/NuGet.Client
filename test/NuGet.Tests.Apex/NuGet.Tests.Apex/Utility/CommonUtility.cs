@@ -172,9 +172,7 @@ namespace NuGet.Tests.Apex
             }
 
             return package;
-
         }
-
 
         public static void AssertPackageReferenceExists(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, string packageVersion, ITestLogger logger)
         {
