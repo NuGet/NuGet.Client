@@ -738,30 +738,31 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public void InstallTopLevelPackageHavingTransitiveFromUI()
+        public async Task InstallTopLevelPackageHavingTransitiveFromUI()
         {
             // Arrange
-            EnsureVisualStudioHost();
-            var dte = VisualStudio.Dte;
+            var transitivePackageName = "Contoso.B";
+            await CommonUtility.CreateDependenciesPackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1, transitivePackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
             var solutionService = VisualStudio.Get<SolutionService>();
-            solutionService.CreateEmptySolution();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreClassLib, "TestProject");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
             // Act
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
-            var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            uiwindow.InstallPackageFromUI("log4net", "2.0.15");
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             solutionService.Build();
 
             // Assert
-            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, "log4net", "2.0.15", Logger);
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
             uiwindow.AssertPackageNotTransitive();
 
             // Act (Search the transitive package since it will not show at the top of package list by default)
-            uiwindow.SearchPackageFromUI("Microsoft.NETCore.Platforms");
+            uiwindow.SearchPackageFromUI(transitivePackageName);
 
             // Assert
             VisualStudio.AssertNoErrors();
@@ -770,61 +771,62 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public void InstallTransitivePackageFromUI()
+        public async Task InstallTransitivePackageFromUI()
         {
             // Arrange
-            EnsureVisualStudioHost();
-            var dte = VisualStudio.Dte;
-            var transitivePackage = "Microsoft.NETCore.Platforms";
+            var transitivePackageName = "Contoso.B";
+            await CommonUtility.CreateDependenciesPackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1, transitivePackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
             var solutionService = VisualStudio.Get<SolutionService>();
-            solutionService.CreateEmptySolution();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreConsoleApp, "TestProject");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
             // Act
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
-            var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            uiwindow.InstallPackageFromUI("log4net", "2.0.15");
-            uiwindow.InstallPackageFromUI(transitivePackage, "2.0.0");
-            uiwindow.SearchPackageFromUI(transitivePackage);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            uiwindow.InstallPackageFromUI(transitivePackageName, TestPackageVersionV1);
+            uiwindow.SearchPackageFromUI(transitivePackageName);
             solutionService.Build();
 
             // Assert
             VisualStudio.AssertNoErrors();
             uiwindow.AssertPackageNotTransitive();
-            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, transitivePackage, "2.0.0", Logger);
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, transitivePackageName, TestPackageVersionV1, Logger);
         }
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public void UninstallTransitivePackageFromUI()
+        public async Task UninstallTransitivePackageFromUI()
         {
             // Arrange
-            EnsureVisualStudioHost();
-            var transitivePackage = "Microsoft.NETCore.Platforms";
-            var dte = VisualStudio.Dte;
+            var transitivePackageName = "Contoso.B";
+            await CommonUtility.CreateDependenciesPackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1, transitivePackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
             var solutionService = VisualStudio.Get<SolutionService>();
-            solutionService.CreateEmptySolution();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreClassLib, "Testproject");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
             // Act
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
-            var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            uiwindow.InstallPackageFromUI("log4net", "2.0.15");
-            uiwindow.InstallPackageFromUI(transitivePackage, "2.0.0");
-            uiwindow.UninstallPackageFromUI(transitivePackage);
-            uiwindow.SearchPackageFromUI(transitivePackage);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            uiwindow.InstallPackageFromUI(transitivePackageName, TestPackageVersionV1);
+            uiwindow.UninstallPackageFromUI(transitivePackageName);
+            uiwindow.SearchPackageFromUI(transitivePackageName);
             solutionService.Build();
 
             // Assert
             VisualStudio.AssertNoErrors();
             uiwindow.AssertPackageTransitive();
-            CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, transitivePackage, Logger);
+            CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, transitivePackageName, Logger);
         }
     }
 }
