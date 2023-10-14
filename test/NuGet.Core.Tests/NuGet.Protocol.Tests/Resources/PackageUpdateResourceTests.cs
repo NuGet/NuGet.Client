@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
@@ -18,6 +16,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [UseCulture("en-US")] // We are asserting exception messages in English
     public class PackageUpdateResourceTests
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
@@ -738,11 +737,6 @@ namespace NuGet.Protocol.Tests
                 var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
                 var resource = await repo.GetResourceAsync<PackageUpdateResource>();
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder("test client"));
-
-#if NETFRAMEWORK
-                // Get exception messages in English
-                Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-#endif
 
                 // Act
                 var ex = await Assert.ThrowsAsync<HttpRequestException>(

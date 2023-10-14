@@ -3,23 +3,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
 {
+    [UseCulture("")] // Fix tests failing on systems with non-English locales
     public class JsonTextReaderExtensionsTests
     {
-        public JsonTextReaderExtensionsTests()
-        {
-            // This fixes some of the tests failing on systems with non-English locales
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-        }
-
         [Fact]
         public void ReadDelimitedString_WhenReaderIsNull_Throws()
         {

@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -45,16 +43,13 @@ namespace NuGet.Common.Test
         }
 
         [Theory]
+        [UseCulture("en-US")] // We are asserting exception messages in English
         [InlineData("md5")]
         [InlineData("MD5")]
         [InlineData("SHA1")]
         [InlineData("SHA2561")]
         public void CryptoHashProviderThrowsIfHashAlgorithmIsNotSHA512orSHA256(string hashAlgorithm)
         {
-#if NETFRAMEWORK
-            // Get exception messages in English
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-#endif
             // Act and Assert
             var ex = Record.Exception(() => new CryptoHashProvider(hashAlgorithm));
             Assert.NotNull(ex);

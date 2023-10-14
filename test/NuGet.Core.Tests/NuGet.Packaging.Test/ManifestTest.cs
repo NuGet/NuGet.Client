@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Globalization;
-using System.Threading;
 using System.Xml.Linq;
 
 using NuGet.Frameworks;
@@ -17,6 +15,7 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
+    [UseCulture("en-US")] // We are asserting exception messages in English
     public class ManifestTest
     {
         [Fact]
@@ -447,11 +446,6 @@ namespace NuGet.Packaging.Test
   </metadata>
 </package>";
             // Act & Assert
-#if NETFRAMEWORK
-            // Get exception messages in English
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-#endif
-
 #if !IS_CORECLR
             var exception = Assert.Throws<InvalidOperationException>(
                 () => Manifest.ReadFrom(content.AsStream(), validateSchema: true));

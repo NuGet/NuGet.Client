@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
-using System.Threading;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.DependencyResolver.Core.Tests
 {
+    [UseCulture("en-US")] // We are asserting exception messages in English
     public class GraphNodeTests
     {
         [Theory]
@@ -39,11 +38,6 @@ namespace NuGet.DependencyResolver.Core.Tests
                 //The ParentNodes should be pointing to the static EmptyList.
                 Assert.True(nodeA.ParentNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeA.ParentNodes should point to the static EmptyList");
                 Assert.True(nodeB.ParentNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeB.ParentNodes should point to the static EmptyList");
-
-#if NETFRAMEWORK
-                // Get exception messages in English
-                Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-#endif
 
                 //EmptyList is immutable.
                 var exception = Assert.ThrowsAny<NotSupportedException>(
@@ -84,11 +78,6 @@ namespace NuGet.DependencyResolver.Core.Tests
                 //The InnerNodes should be pointing to the static EmptyList.
                 Assert.True(nodeA.InnerNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeA.InnerNodes should point to the static EmptyList");
                 Assert.True(nodeB.InnerNodes == Array.Empty<GraphNode<RemoteResolveResult>>(), "nodeB.InnerNodes should point to the static EmptyList");
-
-#if NETFRAMEWORK
-                // Get exception messages in English
-                Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-#endif
 
                 //EmptyList is immutable.
                 var exception = Assert.ThrowsAny<NotSupportedException>(

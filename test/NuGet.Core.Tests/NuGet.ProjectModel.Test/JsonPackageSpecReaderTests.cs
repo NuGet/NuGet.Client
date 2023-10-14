@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NuGet.Common;
@@ -21,14 +19,9 @@ using Xunit;
 
 namespace NuGet.ProjectModel.Test
 {
+    [UseCulture("")] // Fix tests failing on systems with non-English locales
     public class JsonPackageSpecReaderTests
     {
-        public JsonPackageSpecReaderTests()
-        {
-            // This fixes some of the tests failing on systems with non-English locales
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-        }
-
         [Fact]
         public void PackageSpecReader_PackageMissingVersion()
         {
@@ -1761,11 +1754,6 @@ namespace NuGet.ProjectModel.Test
         public void GetPackageSpec_WhenFrameworksDependenciesDependencyValueIsArray_Throws(string propertyName)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"dependencies\":{{\"b\":{{\"{propertyName}\":[\"c\"]}}}}}}}}}}";
-
-#if NETFRAMEWORK
-            // Get exception messages in English
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-#endif
 
             // The exception messages will not be the same because the innermost exception in the baseline
             // is a Newtonsoft.Json exception, while it's a .NET exception in the improved.

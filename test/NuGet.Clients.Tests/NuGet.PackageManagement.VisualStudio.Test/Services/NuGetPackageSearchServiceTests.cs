@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Threading;
@@ -335,9 +334,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task ContinueSearchAsync_WhenSearchIsContinuable_Continues()
         {
-            // Get exception messages in English
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-
             var telemetryService = new Mock<INuGetTelemetryService>();
             var eventsQueue = new ConcurrentQueue<TelemetryEvent>();
             telemetryService

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -2289,11 +2288,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        [UseCulture("en-US")] // We are asserting exception messages in English
         public async Task TestPackageManager_CancellationTokenPassed()
         {
-            // Get exception messages in English
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-
             using (var testDirectory = TestDirectory.Create())
             using (var testSolutionManager = new TestSolutionManager())
             {

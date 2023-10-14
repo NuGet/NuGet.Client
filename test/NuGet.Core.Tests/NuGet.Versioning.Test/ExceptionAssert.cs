@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
-using System.Threading;
 using Xunit;
 
 namespace NuGet.Versioning.Test
@@ -35,11 +33,6 @@ namespace NuGet.Versioning.Test
 
         public static void ThrowsArgNullOrEmpty(Action act, string paramName)
         {
-#if NETFRAMEWORK
-            // Get exception messages in English
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-#endif
-
             ThrowsArgumentException<ArgumentException>(act, paramName, "Value cannot be null or an empty string.");
         }
 
@@ -81,11 +74,6 @@ namespace NuGet.Versioning.Test
 
         public static void ThrowsArgumentException<TArgException>(Action act, string paramName, string message) where TArgException : ArgumentException
         {
-#if NETFRAMEWORK
-            // Get exception messages in English
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-#endif
-
             Throws<TArgException>(act, ex =>
             {
                 Assert.Equal(paramName, ex.ParamName);
