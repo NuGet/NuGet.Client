@@ -819,6 +819,7 @@ namespace NuGet.Tests.Apex
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             uiwindow.InstallPackageFromUI(transitivePackageName, TestPackageVersionV1);
+            solutionService.Build();
             uiwindow.UninstallPackageFromUI(transitivePackageName);
             uiwindow.SearchPackageFromUI(transitivePackageName);
             solutionService.Build();
