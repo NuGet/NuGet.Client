@@ -67,7 +67,7 @@ namespace NuGet.CommandLine.XPlat
                     PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
 
                     await PackageSearchRunner.RunAsync(
-                        sourceProvider, sources.Values, searchTern.Value, skip: skipValue, take: takeValue, prerelease: prerelease.HasValue(), exactMatch: exactMatch.HasValue(), 0, logger: logger);
+                        sourceProvider, sources.Values, searchTern.Value, skip: skipValue, take: takeValue, prerelease: prerelease.HasValue(), exactMatch: exactMatch.HasValue(), logger: logger);
                     return 0;
                 });
 

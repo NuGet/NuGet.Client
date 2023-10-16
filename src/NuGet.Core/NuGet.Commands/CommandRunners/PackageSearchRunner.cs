@@ -5,27 +5,20 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol;
+using NuGet.Commands.Internal;
 
 namespace NuGet.Commands.CommandRunners
 {
-    enum Verbosity
-    {
-        Normal,
-        Quiet,
-        Detailed
-    }
     public static class PackageSearchRunner
     {
-        const int LineSeparatorLength = 20;
+        const int LineSeparatorLength = 40;
         static readonly string SourceSeparator = new string('=', LineSeparatorLength);
-        static readonly string PackageSeparator = new string('-', LineSeparatorLength);
 
         /// <summary>
         /// Runs the search operation asynchronously using the provided parameters.
@@ -37,24 +30,29 @@ namespace NuGet.Commands.CommandRunners
         /// <param name="take">The number of results to retrieve.</param>
         /// <param name="prerelease">A flag indicating whether to include prerelease packages in the search.</param>
         /// <param name="exactMatch">A flag indicating whether to perform an exact match search.</param>
-        /// <param name="verbosity">The verbosity level for logging.</param>
         /// <param name="logger">The logger instance to use for logging.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public static async Task RunAsync(IPackageSourceProvider sourceProvider, List<string> sources, string searchTerm, int skip, int take, bool prerelease, bool exactMatch, int verbosity, ILogger logger)
+        public static async Task RunAsync(
+            IPackageSourceProvider sourceProvider,
+            List<string> sources, string searchTerm,
+            int skip,
+            int take,
+            bool prerelease,
+            bool exactMatch,
+            ILogger logger)
         {
             CancellationToken cancellationToken = CancellationToken.None;
 
             var listEndpoints = GetEndpointsAsync(sources, sourceProvider);
             WarnForHTTPSources(listEndpoints, logger);
-
             if (exactMatch)
             {
-                await GetExactMatch(listEndpoints, searchTerm, prerelease, LineSeparatorLength, (Verbosity)verbosity, logger);
+                await GetExactMatch(listEndpoints, searchTerm, prerelease, logger);
                 return;
             }
 
             var taskList = BuildTaskListForSearch(listEndpoints, searchTerm, prerelease, skip, take, logger, cancellationToken);
-            await ProcessTaskList(await taskList, (Verbosity)verbosity, logger);
+            await ProcessTaskList(await taskList, logger, searchTerm);
         }
 
         /// <summary>
@@ -63,14 +61,12 @@ namespace NuGet.Commands.CommandRunners
         /// <param name="listEndpoints">The list of package sources/endpoints.</param>
         /// <param name="searchTerm">The term to search for within the package sources.</param>
         /// <param name="prerelease">A flag indicating whether to include prerelease packages in the search.</param>
-        /// <param name="lineSeparatorLength">The length of the line separator (used for formatting).</param>
-        /// <param name="verbosity">The verbosity level for logging.</param>
         /// <param name="logger">The logger instance to use for logging.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        private static async Task GetExactMatch(IList<PackageSource> listEndpoints, string searchTerm, bool prerelease, int lineSeparatorLength, Verbosity verbosity, ILogger logger)
+        private static async Task GetExactMatch(IList<PackageSource> listEndpoints, string searchTerm, bool prerelease, ILogger logger)
         {
             var taskList = BuildTaskListForExactMatch(listEndpoints, searchTerm, prerelease, logger);
-            await ProcessTaskList(await taskList, verbosity, logger);
+            await ProcessTaskList(await taskList, logger, searchTerm, true);
         }
 
         /// <summary>
@@ -84,7 +80,14 @@ namespace NuGet.Commands.CommandRunners
         /// <param name="logger">The logger instance to use for logging.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A list of tasks that perform package search operations.</returns>
-        private static async Task<List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>> BuildTaskListForSearch(IList<PackageSource> listEndpoints, string searchTerm, bool prerelease, int skip, int take, ILogger logger, CancellationToken cancellationToken)
+        private static async Task<List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>> BuildTaskListForSearch(
+            IList<PackageSource> listEndpoints,
+            string searchTerm,
+            bool prerelease,
+            int skip,
+            int take,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
 
@@ -110,7 +113,11 @@ namespace NuGet.Commands.CommandRunners
         /// <param name="prerelease">A flag indicating whether to include prerelease packages in the search.</param>
         /// <param name="logger">The logger instance to use for logging.</param>
         /// <returns>A list of tasks that perform exact match package search operations.</returns>
-        private static async Task<List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>> BuildTaskListForExactMatch(IList<PackageSource> listEndpoints, string searchTerm, bool prerelease, ILogger logger)
+        private static async Task<List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>> BuildTaskListForExactMatch(
+            IList<PackageSource> listEndpoints,
+            string searchTerm,
+            bool prerelease,
+            ILogger logger)
         {
             var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
 
@@ -131,46 +138,70 @@ namespace NuGet.Commands.CommandRunners
         }
 
         /// <summary>
-        /// Processes the given task list by awaiting each task and logging the results.
+        /// Processes a list of tasks that fetch package metadata and displays the results in a tabulated format.
         /// </summary>
-        /// <param name="taskList">The list of tasks to process.</param>
-        /// <param name="verbosity">The verbosity level for logging.</param>
-        /// <param name="logger">The logger instance to use for logging.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        private static async Task ProcessTaskList(List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)> taskList, Verbosity verbosity, ILogger logger)
+        /// <param name="taskList">A list of tasks paired with their package sources. Each task is expected to return an IEnumerable of IPackageSearchMetadata.</param>
+        /// <param name="logger">The logger used for logging messages during the process.</param>
+        /// <param name="isExactMatch">A boolean flag to indicate if the processing is for an exact match. If set to true, only the first result from the list will be displayed. Default value is false.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        /// </remarks>
+        private static async Task ProcessTaskList(List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)> taskList, ILogger logger, string searchTerm, bool isExactMatch = false)
         {
             foreach (var (task, source) in taskList)
             {
                 if (task == null)
                 {
+
                     logger.LogMinimal(SourceSeparator);
-                    System.Console.WriteLine($"Source: {source.Name}");
-                    System.Console.WriteLine(PackageSeparator);
-                    System.Console.WriteLine("Failed to obtain a search resource.");
-                    logger.LogMinimal(PackageSeparator);
-                    System.Console.WriteLine();
+                    logger.LogMinimal($"Source: {source.Name}");
                     continue;
                 }
 
                 var results = await task;
 
                 logger.LogMinimal(SourceSeparator);
-                System.Console.WriteLine($"Source: {source.Name}"); // System.Console is used so that output is not suppressed by Verbosity.Quiet
-                if (results.Any())
+                logger.LogMinimal($"Source: {source.Name}");
+                var table = new PackageSearchResultTable("Package ID", "Latest Version", "Authors", "Downloads");
+
+                if (isExactMatch)
                 {
-                    if (verbosity == Verbosity.Quiet)
+                    var firstResult = results.FirstOrDefault();
+                    if (firstResult != null)
                     {
-                        System.Console.WriteLine(PackageSeparator);
+                        PopulateTableWithResults(new[] { firstResult }, table);
                     }
-                    PrintResults(results, verbosity, logger);
                 }
                 else
                 {
-                    System.Console.WriteLine(PackageSeparator);
-                    System.Console.WriteLine("No results found.");
-                    logger.LogMinimal(PackageSeparator);
-                    System.Console.WriteLine();
+                    PopulateTableWithResults(results, table);
                 }
+
+                table.PrintResult(searchTerm: searchTerm);
+            }
+        }
+
+        /// <summary>
+        /// Populates the given table with package metadata results.
+        /// </summary>
+        /// <param name="results">An enumerable of package search metadata to be processed and added to the table.</param>
+        /// <param name="table">The table where the results will be added as rows.</param>
+        private static void PopulateTableWithResults(IEnumerable<IPackageSearchMetadata> results, PackageSearchResultTable table)
+        {
+            CultureInfo culture = CultureInfo.CurrentCulture;
+
+            foreach (IPackageSearchMetadata result in results)
+            {
+                string packageId = result.Identity.Id;
+                string version = result.Identity.Version.ToNormalizedString();
+                string authors = result.Authors;
+                string downloads = "N/A";
+
+                if (result.DownloadCount != null)
+                {
+                    downloads = string.Format(culture, "{0:N}", result.DownloadCount);
+                }
+
+                table.AddRow(packageId, version, authors, downloads);
             }
         }
 
@@ -240,57 +271,5 @@ namespace NuGet.Commands.CommandRunners
                 }
             }
         }
-
-        /// <summary>
-        /// Prints the search results to the console based on the verbosity level.
-        /// </summary>
-        /// <param name="results">The package search results to print.</param>
-        /// <param name="verbosity">The verbosity level for logging.</param>
-        /// <param name="logger">The logger instance to use for logging.</param>
-        private static void PrintResults(IEnumerable<IPackageSearchMetadata> results, Verbosity verbosity, ILogger logger)
-        {
-            string packageSeparator = new string('-', LineSeparatorLength);
-
-            foreach (IPackageSearchMetadata result in results)
-            {
-                logger.LogMinimal(packageSeparator);
-
-                CultureInfo culture = CultureInfo.CurrentCulture;
-
-                StringBuilder content = new StringBuilder();
-                content.Append($"> {result.Identity.Id} | {result.Identity.Version.ToNormalizedString()}"); // Basic info (Name | Version)
-
-                if (verbosity != Verbosity.Quiet)
-                {
-                    if (result.DownloadCount != null)
-                    {
-                        string downloads = string.Format(culture, "{0:N}", result.DownloadCount);
-                        content.Append($" | Downloads: {downloads.Substring(0, downloads.Length - 3)}");
-                    }
-                    else
-                    {
-                        content.Append(" | Downloads: N/A");
-                    }
-                }
-
-                Console.WriteLine(content.ToString());
-
-                if (verbosity != Verbosity.Quiet && result.Description != null)
-                {
-                    string description = result.Description;
-
-                    if (verbosity == Verbosity.Normal && description.Length > 100)
-                    {
-                        description = description.Substring(0, 100) + "...";
-                    }
-
-                    logger.LogVerbose(description);
-                }
-            }
-
-            logger.LogMinimal(packageSeparator);
-            Console.WriteLine();
-        }
-
     }
 }
