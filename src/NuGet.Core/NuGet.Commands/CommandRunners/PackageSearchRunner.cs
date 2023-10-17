@@ -42,9 +42,9 @@ namespace NuGet.Commands.CommandRunners
             ILogger logger)
         {
             CancellationToken cancellationToken = CancellationToken.None;
-
             var listEndpoints = GetEndpointsAsync(sources, sourceProvider);
             WarnForHTTPSources(listEndpoints, logger);
+
             if (exactMatch)
             {
                 await GetExactMatch(listEndpoints, searchTerm, prerelease, logger);
@@ -95,7 +95,6 @@ namespace NuGet.Commands.CommandRunners
             {
                 var repository = Repository.Factory.GetCoreV3(source);
                 var resource = await repository.GetResourceAsync<PackageSearchResource>(cancellationToken);
-
                 taskList.Add(
                     resource == null ? (null, source) :
                     (Task.Run(() => resource.SearchAsync(searchTerm, new SearchFilter(includePrerelease: prerelease), skip, take, logger, cancellationToken)), source)
@@ -127,7 +126,6 @@ namespace NuGet.Commands.CommandRunners
                 using var cache = new SourceCacheContext();
                 var repository = Repository.Factory.GetCoreV3(endpoint);
                 var resource = await repository.GetResourceAsync<PackageMetadataResource>();
-
                 taskList.Add(
                     resource == null ? (null, endpoint) :
                     (Task.Run(() => resource.GetMetadataAsync(searchTerm, includePrerelease: prerelease, includeUnlisted: false, cache, logger, cancellationToken)), endpoint)
@@ -151,14 +149,12 @@ namespace NuGet.Commands.CommandRunners
             {
                 if (task == null)
                 {
-
                     logger.LogMinimal(SourceSeparator);
                     logger.LogMinimal($"Source: {source.Name}");
                     continue;
                 }
 
                 var results = await task;
-
                 logger.LogMinimal(SourceSeparator);
                 logger.LogMinimal($"Source: {source.Name}");
                 var table = new PackageSearchResultTable("Package ID", "Latest Version", "Authors", "Downloads");
@@ -216,7 +212,6 @@ namespace NuGet.Commands.CommandRunners
             List<PackageSource> configurationSources = sourceProvider.LoadPackageSources()
                 .Where(p => p.IsEnabled)
                 .ToList();
-
             IList<PackageSource> packageSources;
             if (sources.Count > 0)
             {
@@ -228,6 +223,7 @@ namespace NuGet.Commands.CommandRunners
             {
                 packageSources = configurationSources;
             }
+
             return packageSources;
         }
 

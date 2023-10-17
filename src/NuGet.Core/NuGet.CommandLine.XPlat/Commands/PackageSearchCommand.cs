@@ -57,6 +57,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     skipValue = skipVal;
                 }
+
                 pkgSearch.OnExecute(async () =>
                 {
                     ILogger logger = getLogger();
@@ -65,7 +66,6 @@ namespace NuGet.CommandLine.XPlat
                     configFileName: null,
                     machineWideSettings: new XPlatMachineWideSetting());
                     PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-
                     await PackageSearchRunner.RunAsync(
                         sourceProvider, sources.Values, searchTern.Value, skip: skipValue, take: takeValue, prerelease: prerelease.HasValue(), exactMatch: exactMatch.HasValue(), logger: logger);
                     return 0;

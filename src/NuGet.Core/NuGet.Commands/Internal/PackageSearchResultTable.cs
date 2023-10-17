@@ -15,10 +15,12 @@ namespace NuGet.Commands.Internal
         public PackageSearchResultTable(params string[] headers)
         {
             _columnWidths = new int[headers.Length];
+
             for (int i = 0; i < headers.Length; i++)
             {
                 _columnWidths[i] = headers[i].Length;
             }
+
             _rows.Add(headers);
         }
 
@@ -39,8 +41,9 @@ namespace NuGet.Commands.Internal
 
         public void PrintResult(string searchTerm = null)
         {
-            Console.ForegroundColor = ConsoleColor.White;
-            // If only headers are present (i.e., no data rows)
+            ConsoleColor highlighterColor = GetHighlighterColor();
+
+            // If only headers are present (i.e., no package rows)
             if (_rows.Count <= 1)
             {
                 Console.WriteLine("No results found.");
@@ -56,7 +59,7 @@ namespace NuGet.Commands.Internal
                     if (!string.IsNullOrEmpty(searchTerm) && paddedValue.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         Console.Write("| ");
-                        PrintWithHighlight(paddedValue, searchTerm);
+                        PrintWithHighlight(paddedValue, searchTerm, highlighterColor);
                         Console.Write(" ");
                     }
                     else
@@ -64,6 +67,7 @@ namespace NuGet.Commands.Internal
                         Console.Write("| " + paddedValue + " ");
                     }
                 }
+
                 Console.WriteLine("|");
 
                 if (row == _rows.First())
@@ -73,26 +77,40 @@ namespace NuGet.Commands.Internal
                     {
                         Console.Write("|" + new string('-', width + 2));
                     }
+
                     Console.WriteLine("|");
                 }
             }
         }
 
-        private static void PrintWithHighlight(string value, string searchTerm)
+        private static void PrintWithHighlight(string value, string searchTerm, ConsoleColor highlighterColor)
         {
             int index = value.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase);
+            ConsoleColor originalColor = Console.ForegroundColor;
+
             while (index != -1)
             {
                 Console.Write(value.Substring(0, index));
-                Console.ForegroundColor = ConsoleColor.Red;
+                Console.ForegroundColor = highlighterColor;
                 Console.Write(value.Substring(index, searchTerm.Length));
-                Console.ForegroundColor = ConsoleColor.White;
-
+                Console.ForegroundColor = originalColor;
                 value = value.Substring(index + searchTerm.Length);
                 index = value.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase);
             }
+
             Console.Write(value);
         }
+
+        private static ConsoleColor GetHighlighterColor()
+        {
+            if (Console.ForegroundColor == ConsoleColor.Red || Console.BackgroundColor == ConsoleColor.Red)
+            {
+                return ConsoleColor.Blue;
+            }
+
+            return ConsoleColor.Red;
+        }
+
 
 
     }
