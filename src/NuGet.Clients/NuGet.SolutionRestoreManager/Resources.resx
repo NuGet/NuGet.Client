@@ -132,7 +132,7 @@
     <comment>0 - The package that does not have an exact version. Do not translate 'PackageDownload'.</comment>
   </data>
   <data name="InfoBar_HyperlinkMessage" xml:space="preserve">
-    <value>Manage NuGet Packages</value>
+    <value>Manage</value>
   </data>
   <data name="InfoBar_TextMessage" xml:space="preserve">
     <value>This solution contains packages with vulnerabilities.</value>
