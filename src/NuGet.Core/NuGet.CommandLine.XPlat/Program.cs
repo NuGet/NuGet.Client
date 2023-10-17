@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.XPlat
         {
 #if DEBUG
             // Uncomment the following when debugging. Also uncomment the PackageReference for Microsoft.Build.Locator.
-            /*try
+            try
             {
                 // .NET JIT compiles one method at a time. If this method calls `MSBuildLocator` directly, the
                 // try block is never entered if Microsoft.Build.Locator.dll can't be found. So, run it in a
@@ -47,7 +47,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 // MSBuildLocator is used only to enable Visual Studio debugging.
                 // It's not needed when using a patched dotnet sdk, so it doesn't matter if it fails.
-            }*/
+            }
 
             var debugNuGetXPlat = Environment.GetEnvironmentVariable("DEBUG_NUGET_XPLAT");
 
@@ -128,8 +128,30 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
+                try
+                {
+                    exitCode = command.InvokeAsync(args).Result;
+                }
+                catch (Exception e)
+                {
+                    bool handled = HandleCommandLineHelp(args, log);
+                    if (!handled)
+                    {
+                        LogException(e, log);
+                        ShowBestHelp(app, args);
+                    }
+
+                    exitCode = 1;
+                }
+                finally
+                {
+                    // Limit the exit code range to 0-255 to support POSIX
+                    if (exitCode < 0 || exitCode > 255)
+                    {
+                        exitCode = 1;
+                    }
+                }
                 // Run with System.CommandLine
-                exitCode = command.Invoke(args);
             }
 
             return exitCode;
@@ -209,6 +231,15 @@ namespace NuGet.CommandLine.XPlat
                 return 1;
             });
 
+            VerifyCommandSystemCommandLine.Register(app, getLogger: GenerateLoggerHidePrefix(log), getCommandRunner: e =>
+            {
+                LogException(e, log);
+                return 1;
+            });
+
+            Func<ILogger> getHidePrefixLogger = GenerateLoggerHidePrefix(log);
+            Action<LogLevel> setLogLevel = (logLevel) => log.VerbosityLevel = logLevel;
+            VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
             return app;
         }
 

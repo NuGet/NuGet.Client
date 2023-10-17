@@ -8,9 +8,7 @@ using System.CommandLine.Binding;
 using System.CommandLine.Parsing;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
@@ -18,7 +16,7 @@ using static NuGet.Commands.VerifyArgs;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal static class VerifyCommand
+    internal static class VerifyCommandSystemCommandLine
     {
         internal static Func<Exception, int> CommandExceptionHandler;
         internal static Func<ILogger> GetLoggerFunction;
@@ -131,77 +129,6 @@ namespace NuGet.CommandLine.XPlat
                 };
 
                 return returnValue;
-            }
-        }
-
-        internal static void Register(CommandLineApplication app,
-                              Func<ILogger> getLogger,
-                              Action<LogLevel> setLogLevel,
-                              Func<IVerifyCommandRunner> getCommandRunner)
-        {
-            app.Command("verify", verifyCmd =>
-            {
-                CommandArgument packagePaths = verifyCmd.Argument(
-                    "<package-paths>",
-                    Strings.VerifyCommandPackagePathDescription,
-                    multipleValues: true);
-
-                CommandOption all = verifyCmd.Option(
-                    "--all",
-                    Strings.VerifyCommandAllDescription,
-                    CommandOptionType.NoValue);
-
-                CommandOption fingerPrint = verifyCmd.Option(
-                    "--certificate-fingerprint",
-                    Strings.VerifyCommandCertificateFingerprintDescription,
-                    CommandOptionType.MultipleValue);
-
-                CommandOption configFile = verifyCmd.Option(
-                    "--configfile",
-                    Strings.Option_ConfigFile,
-                    CommandOptionType.SingleValue);
-
-                CommandOption verbosity = verifyCmd.Option(
-                    "-v|--verbosity",
-                    Strings.Verbosity_Description,
-                    CommandOptionType.SingleValue);
-
-                verifyCmd.HelpOption(XPlatUtility.HelpOption);
-                verifyCmd.Description = Strings.VerifyCommandDescription;
-
-                verifyCmd.OnExecute(async () =>
-                {
-                    ValidatePackagePaths(packagePaths);
-
-                    VerifyArgs args = new VerifyArgs();
-                    args.PackagePaths = packagePaths.Values;
-                    args.Verifications = all.HasValue() ?
-                        new List<Verification>() { Verification.All } :
-                        new List<Verification>() { Verification.Signatures };
-                    args.CertificateFingerprint = fingerPrint.Values;
-                    args.Logger = getLogger();
-                    args.Settings = XPlatUtility.ProcessConfigFile(configFile.Value());
-                    setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
-
-                    X509TrustStore.InitializeForDotNetSdk(args.Logger);
-
-                    var runner = getCommandRunner();
-                    var verifyTask = runner.ExecuteCommandAsync(args);
-                    await verifyTask;
-
-                    return verifyTask.Result;
-                });
-            });
-        }
-
-        private static void ValidatePackagePaths(CommandArgument argument)
-        {
-            if (argument.Values.Count == 0 ||
-                argument.Values.Any<string>(packagePath => string.IsNullOrEmpty(packagePath)))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PkgMissingArgument,
-                    "verify",
-                    argument.Name));
             }
         }
 
