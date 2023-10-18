@@ -194,7 +194,9 @@ namespace NuGet.Commands.CommandRunners
 
                 if (result.DownloadCount != null)
                 {
-                    downloads = string.Format(culture, "{0:N}", result.DownloadCount);
+                    NumberFormatInfo nfi = (NumberFormatInfo)culture.NumberFormat.Clone();
+                    nfi.NumberDecimalDigits = 0;
+                    downloads = string.Format(nfi, "{0:N}", result.DownloadCount);
                 }
 
                 table.AddRow(packageId, version, authors, downloads);

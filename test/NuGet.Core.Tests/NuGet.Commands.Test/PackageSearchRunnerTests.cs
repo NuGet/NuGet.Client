@@ -65,9 +65,9 @@ namespace NuGet.Commands.Test
                 }}";
 
         readonly string _onePackageExpectedOutput =
-                "| Package ID           | Latest Version | Authors           | Downloads      |\r\n"
-                + "|----------------------|----------------|-------------------|----------------|\r\n"
-                + "| Fake.Newtonsoft.Json | 12.0.3         | James Newton-King | 531,607,259.00 |\r\n";
+                "| Package ID           | Latest Version | Authors           | Downloads   |\r\n"
+                + "|----------------------|----------------|-------------------|-------------|\r\n"
+                + "| Fake.Newtonsoft.Json | 12.0.3         | James Newton-King | 531,607,259 |\r\n";
 
         private string NormalizeNewlines(string input)
         {
