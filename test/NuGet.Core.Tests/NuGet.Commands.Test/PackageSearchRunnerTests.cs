@@ -63,6 +63,7 @@ namespace NuGet.Commands.Test
                     }}
                     ]
                 }}";
+
         readonly string _onePackageExpectedOutput =
                 "| Package ID           | Latest Version | Authors           | Downloads      |\r\n"
                 + "|----------------------|----------------|-------------------|----------------|\r\n"
@@ -84,7 +85,7 @@ namespace NuGet.Commands.Test
 
                     ""resources"": [
                     {{
-                        ""@id"": ""{mockServer.Uri + "search/query"}"",
+                        ""@id"": ""{ mockServer.Uri + "search/query" }"",
                         ""@type"": ""SearchQueryService/Versioned"",
                         ""comment"": ""Query endpoint of NuGet Search service (primary)""
                     }}
@@ -107,13 +108,21 @@ namespace NuGet.Commands.Test
             Console.SetOut(consoleOutput);
 
             // Act
-            await PackageSearchRunner.RunAsync(sourceProvider, new List<string> { $"{mockServer.Uri}v3/index.json" }, "json", 0, 20, false, false, Common.NullLogger.Instance);
-
-            // Assert
-            Assert.Equal(_onePackageExpectedOutput, consoleOutput.ToString());
+            await PackageSearchRunner.RunAsync(
+                sourceProvider,
+                new List<string> { $"{ mockServer.Uri }v3/index.json" },
+                "json",
+                0,
+                20,
+                false,
+                false,
+                Common.NullLogger.Instance);
 
             //stop mock server
             mockServer.Stop();
+
+            // Assert
+            Assert.Equal(_onePackageExpectedOutput, consoleOutput.ToString());
         }
 
         [Theory]
@@ -141,7 +150,7 @@ namespace NuGet.Commands.Test
 
                     ""resources"": [
                     {{
-                        ""@id"": ""{mockServer.Uri + "search/query"}"",
+                        ""@id"": ""{ mockServer.Uri + "search/query" }"",
                         ""@type"": ""SearchQueryService/Versioned"",
                         ""comment"": ""Query endpoint of NuGet Search service (primary)""
                     }}
@@ -156,7 +165,7 @@ namespace NuGet.Commands.Test
 
             mockServer.Get.Add("/v3/index.json", r => index);
             string prereleaseValue =  prerelease ? "true" : "false";
-            mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease={prereleaseValue}&semVerLevel=2.0.0", r => _onePackageQueryResult);
+            mockServer.Get.Add($"/search/query?q=json&skip={ skip }&take={ take }&prerelease={ prereleaseValue }&semVerLevel=2.0.0", r => _onePackageQueryResult);
             mockServer.Start();
 
             // Redirect console output
@@ -164,13 +173,21 @@ namespace NuGet.Commands.Test
             Console.SetOut(consoleOutput);
 
             // Act
-            await PackageSearchRunner.RunAsync(sourceProvider, new List<string> { $"{mockServer.Uri}v3/index.json" }, "json", skip, take, prerelease, false, Common.NullLogger.Instance);
-
-            // Assert
-            Assert.Equal(_onePackageExpectedOutput, consoleOutput.ToString());
+            await PackageSearchRunner.RunAsync(
+                sourceProvider,
+                new List<string> { $"{ mockServer.Uri }v3/index.json" },
+                "json",
+                skip,
+                take,
+                prerelease,
+                false,
+                Common.NullLogger.Instance);
 
             //stop mock server
             mockServer.Stop();
+
+            // Assert
+            Assert.Equal(_onePackageExpectedOutput, consoleOutput.ToString());
         }
 
         [Fact]
@@ -189,19 +206,9 @@ namespace NuGet.Commands.Test
 
                     ""resources"": [
                     {{
-                        ""@id"": ""{mockServer.Uri + "search/query"}"",
-                        ""@type"": ""SearchQueryService/Versioned"",
-                        ""comment"": ""Query endpoint of NuGet Search service (primary)""
-                    }},
-                    {{
-                        ""@id"": ""{mockServer.Uri + "v3/registration5-semver1/"}"",
+                        ""@id"": ""{ mockServer.Uri + "v3/registration5-semver1/" }"",
                         ""@type"": ""RegistrationsBaseUrl/3.0.0-rc"",
                         ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored used by RC clients. This base URL does not include SemVer 2.0.0 packages.""
-                    }},
-                    {{
-                        ""@id"": ""{mockServer.Uri + "v3/registration5-semver1/{id-lower}/index.json"}"",
-                        ""@type"": ""PackageDisplayMetadataUriTemplate/3.0.0-rc"",
-                        ""comment"": ""URI template used by NuGet Client to construct display metadata for Packages using ID""
                     }}
                     ],
 
@@ -212,54 +219,27 @@ namespace NuGet.Commands.Test
                     }}
                 }}";
 
-            string json = @"{
-                            ""@id"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/index.json"",
+            const string exactMatchGetMetadataResult = @"{
                             ""@type"": ""Package"",
-                            ""commitId"": ""632756fb-f739-4424-952e-ad8acf8b784d"",
-                            ""commitTimeStamp"": ""2023-08-24T17:47:35.2174425+00:00"",
-                            ""count"": 2,
+                            ""count"": 1,
                             ""items"": [
                                 {
-                                    ""@id"": ""https://api.nuget.org/v3/registration5-semver1/nuget.commandline/index.json#page/1.0.11220.26/4.5.0"",
                                     ""@type"": ""catalog:CatalogPage"",
                                     ""count"": 1,
                                     ""items"": [
                                         {
-                                            ""@id"": ""https://api.nuget.org/v3/registration5-semver1/nuget.commandline/1.0.11220.26.json"",
                                             ""@type"": ""Package"",
-                                            ""commitId"": ""d96df90a-009c-4e5b-84ed-5a3feb38c0c6"",
-                                            ""commitTimeStamp"": ""2020-02-07T22:41:07.0034916+00:00"",
                                             ""catalogEntry"": {
-                                                ""@id"": ""https://api.nuget.org/v3/catalog0/data/2018.10.05.02.27.33/nuget.commandline.1.0.11220.26.json"",
                                                 ""@type"": ""PackageDetails"",
                                                 ""authors"": ""James Newton-King"",
-                                                ""description"": ""NuGet command line tool used to create and push packages."",
-                                                ""iconUrl"": """",
                                                 ""id"": ""Fake.Newtonsoft.Json"",
-                                                ""language"": ""en-US"",
-                                                ""licenseExpression"": """",
-                                                ""licenseUrl"": """",
-                                                ""listed"": true,
-                                                ""minClientVersion"": """",
-                                                ""packageContent"": ""https://api.nuget.org/v3-flatcontainer/nuget.commandline/1.0.11220.26/nuget.commandline.1.0.11220.26.nupkg"",
-                                                ""projectUrl"": ""http://nuget.codeplex.com"",
-                                                ""published"": ""2011-01-16T02:09:54.94+00:00"",
-                                                ""requireLicenseAcceptance"": false,
-                                                ""summary"": ""NuGet command line tool used to create and push packages."",
-                                                ""tags"": [
-                                                    ""nuget""
-                                                ],
-                                                ""title"": """",
                                                 ""version"": ""12.0.3"",
                                                 ""totalDownloads"": 531607259
                                             },
-                                            ""packageContent"": ""https://api.nuget.org/v3-flatcontainer/nuget.commandline/1.0.11220.26/nuget.commandline.1.0.11220.26.nupkg"",
-                                            ""registration"": ""https://api.nuget.org/v3/registration5-semver1/nuget.commandline/index.json""
                                         }
                                     ],
-                                    ""parent"": ""https://api.nuget.org/v3/registration5-semver1/nuget.commandline/index.json"",
-                                    ""lower"": ""4.5.1"",
-                                    ""upper"": ""6.7.0""
+                                    ""lower"": ""1.0.0"",
+                                    ""upper"": ""13.0.0""
                                 }
                             ],
                             ""@context"": {
@@ -268,9 +248,8 @@ namespace NuGet.Commands.Test
                             }
                         }";
 
-
             mockServer.Get.Add("/v3/index.json", r => index);
-            mockServer.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => json);
+            mockServer.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => exactMatchGetMetadataResult);
             mockServer.Start();
 
             // Redirect console output
@@ -280,7 +259,7 @@ namespace NuGet.Commands.Test
             // Act
             await PackageSearchRunner.RunAsync(
                 sourceProvider,
-                new List<string> { $"{mockServer.Uri}v3/index.json" },
+                new List<string> { $"{ mockServer.Uri }v3/index.json" },
                 "Fake.Newtonsoft.Json",
                 0,
                 20,
@@ -288,13 +267,11 @@ namespace NuGet.Commands.Test
                 true,
                 Common.NullLogger.Instance);
 
-            // Assert
-            Assert.Equal(_onePackageExpectedOutput, consoleOutput.ToString());
-
             //stop mock server
             mockServer.Stop();
+
+            // Assert
+            Assert.Equal(_onePackageExpectedOutput, consoleOutput.ToString());
         }
-
-
     }
 }
