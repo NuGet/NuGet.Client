@@ -62,16 +62,22 @@ namespace NuGet.Tests.Apex
             DeprecatedPackageResult.Should().BeFalse();
         }
 
-        public void AssertPackageTransitive()
+        public void AssertPackageTransitive(string testPackageName, string transitivePackageName)
         {
-            var transitivePackageResult = _uiproject.VerifyTransitivePackageOnTopOfInstalledTab();
+            var transitivePackageResult = _uiproject.VerifyTopLevelAndTransitivePackageOnInstalledTab(testPackageName, transitivePackageName);
             transitivePackageResult.Should().BeTrue();
         }
 
-        public void AssertPackageNotTransitive()
+        public void AssertPackageNotTransitive(string testPackageName, string transitivePackageName)
         {
-            var transitivePackageResult = _uiproject.VerifyTransitivePackageOnTopOfInstalledTab();
+            var transitivePackageResult = _uiproject.VerifyTopLevelAndTransitivePackageOnInstalledTab(testPackageName, transitivePackageName);
             transitivePackageResult.Should().BeFalse();
+        }
+
+        public void AssertSearchedPackageTransitive()
+        {
+            var transitivePackageResult = _uiproject.VerifySearchedTransitivePackageOnTopOfInstalledTab();
+            transitivePackageResult.Should().BeTrue();
         }
 
         public bool InstallPackageFromUI(string packageId, string version)
