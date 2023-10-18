@@ -85,7 +85,7 @@ namespace NuGet.Commands.Test
 
                     ""resources"": [
                     {{
-                        ""@id"": ""{ mockServer.Uri + "search/query" }"",
+                        ""@id"": ""{mockServer.Uri + "search/query"}"",
                         ""@type"": ""SearchQueryService/Versioned"",
                         ""comment"": ""Query endpoint of NuGet Search service (primary)""
                     }}
@@ -110,7 +110,7 @@ namespace NuGet.Commands.Test
             // Act
             await PackageSearchRunner.RunAsync(
                 sourceProvider,
-                new List<string> { $"{ mockServer.Uri }v3/index.json" },
+                new List<string> { $"{mockServer.Uri}v3/index.json" },
                 "json",
                 0,
                 20,
@@ -150,7 +150,7 @@ namespace NuGet.Commands.Test
 
                     ""resources"": [
                     {{
-                        ""@id"": ""{ mockServer.Uri + "search/query" }"",
+                        ""@id"": ""{mockServer.Uri + "search/query"}"",
                         ""@type"": ""SearchQueryService/Versioned"",
                         ""comment"": ""Query endpoint of NuGet Search service (primary)""
                     }}
@@ -164,8 +164,8 @@ namespace NuGet.Commands.Test
                 }}";
 
             mockServer.Get.Add("/v3/index.json", r => index);
-            string prereleaseValue =  prerelease ? "true" : "false";
-            mockServer.Get.Add($"/search/query?q=json&skip={ skip }&take={ take }&prerelease={ prereleaseValue }&semVerLevel=2.0.0", r => _onePackageQueryResult);
+            string prereleaseValue = prerelease ? "true" : "false";
+            mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease={prereleaseValue}&semVerLevel=2.0.0", r => _onePackageQueryResult);
             mockServer.Start();
 
             // Redirect console output
@@ -175,7 +175,7 @@ namespace NuGet.Commands.Test
             // Act
             await PackageSearchRunner.RunAsync(
                 sourceProvider,
-                new List<string> { $"{ mockServer.Uri }v3/index.json" },
+                new List<string> { $"{mockServer.Uri}v3/index.json" },
                 "json",
                 skip,
                 take,
@@ -206,7 +206,7 @@ namespace NuGet.Commands.Test
 
                     ""resources"": [
                     {{
-                        ""@id"": ""{ mockServer.Uri + "v3/registration5-semver1/" }"",
+                        ""@id"": ""{mockServer.Uri + "v3/registration5-semver1/"}"",
                         ""@type"": ""RegistrationsBaseUrl/3.0.0-rc"",
                         ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored used by RC clients. This base URL does not include SemVer 2.0.0 packages.""
                     }}
@@ -259,7 +259,7 @@ namespace NuGet.Commands.Test
             // Act
             await PackageSearchRunner.RunAsync(
                 sourceProvider,
-                new List<string> { $"{ mockServer.Uri }v3/index.json" },
+                new List<string> { $"{mockServer.Uri}v3/index.json" },
                 "Fake.Newtonsoft.Json",
                 0,
                 20,
