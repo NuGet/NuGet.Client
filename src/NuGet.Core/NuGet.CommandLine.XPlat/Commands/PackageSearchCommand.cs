@@ -18,8 +18,7 @@ namespace NuGet.CommandLine.XPlat
                 int takeValue = 20;
                 int skipValue = 0;
                 pkgSearch.Description = Strings.pkgSearch_Description;
-                pkgSearch.HelpOption(XPlatUtility.HelpOption);
-
+                CommandOption help = pkgSearch.HelpOption(XPlatUtility.HelpOption);
                 CommandArgument searchTern = pkgSearch.Argument(
                     "<Search Term>",
                     Strings.pkgSearch_termDescription);
@@ -60,6 +59,11 @@ namespace NuGet.CommandLine.XPlat
 
                 pkgSearch.OnExecute(async () =>
                 {
+                    if (help.HasValue())
+                    {
+                        app.ShowHelp("search");
+                        return 0;
+                    }
                     ILogger logger = getLogger();
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, !interactive.HasValue());
                     ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
