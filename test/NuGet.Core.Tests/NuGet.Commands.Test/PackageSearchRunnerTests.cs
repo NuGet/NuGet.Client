@@ -69,6 +69,11 @@ namespace NuGet.Commands.Test
                 + "|----------------------|----------------|-------------------|----------------|\r\n"
                 + "| Fake.Newtonsoft.Json | 12.0.3         | James Newton-King | 531,607,259.00 |\r\n";
 
+        private string NormalizeNewlines(string input)
+        {
+            return input.Replace("\r\n", "\n").Replace("\r", "\n");
+        }
+
         [Fact]
         public async Task PackageSearchRunner_SearchAPIReturnsOnePackage_OnePackageTableOutputted()
         {
@@ -122,7 +127,7 @@ namespace NuGet.Commands.Test
             mockServer.Stop();
 
             // Assert
-            Assert.Equal(_onePackageExpectedOutput, consoleOutput.ToString());
+            Assert.Equal(NormalizeNewlines(_onePackageExpectedOutput), NormalizeNewlines(consoleOutput.ToString()));
         }
 
         [Theory]
@@ -187,7 +192,7 @@ namespace NuGet.Commands.Test
             mockServer.Stop();
 
             // Assert
-            Assert.Equal(_onePackageExpectedOutput, consoleOutput.ToString());
+            Assert.Equal(NormalizeNewlines(_onePackageExpectedOutput), NormalizeNewlines(consoleOutput.ToString()));
         }
 
         [Fact]
@@ -271,7 +276,7 @@ namespace NuGet.Commands.Test
             mockServer.Stop();
 
             // Assert
-            Assert.Equal(_onePackageExpectedOutput, consoleOutput.ToString());
+            Assert.Equal(NormalizeNewlines(_onePackageExpectedOutput), NormalizeNewlines(consoleOutput.ToString()));
         }
     }
 }
