@@ -106,7 +106,11 @@ namespace NuGet.Commands
 
             if (packageSource == null)
             {
-                packageSource = new PackageSource(source);
+                // Since SymbolPackageUpdateResourceV3 will be requested this should be a v3 PackageSource
+                packageSource = new PackageSource(source)
+                {
+                    ProtocolVersion = 3
+                };
             }
 
             var sourceRepositoryProvider = new CachingSourceProvider(sourceProvider);
