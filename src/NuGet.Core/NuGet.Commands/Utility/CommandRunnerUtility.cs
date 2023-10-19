@@ -106,11 +106,13 @@ namespace NuGet.Commands
 
             if (packageSource == null)
             {
-                // Since SymbolPackageUpdateResourceV3 will be requested this should be a v3 PackageSource
-                packageSource = new PackageSource(source)
+                packageSource = new PackageSource(source);
+                
+                // If it ends with "index.json" then treat it as a V3 Protocol PackageSource
+                if (packageSource.Source.EndsWith("index.json", StringComparison.OrdinalIgnoreCase)
                 {
-                    ProtocolVersion = 3
-                };
+                    packageSource.ProtocolVersion = 3;
+                }
             }
 
             var sourceRepositoryProvider = new CachingSourceProvider(sourceProvider);
