@@ -1319,7 +1319,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The number of results to skip, for pagination..
+        ///   Looks up a localized string similar to The number of results to skip, for pagination. The default is 0..
         /// </summary>
         internal static string pkgSearch_SkipDescription {
             get {
@@ -1346,7 +1346,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A search term..
+        ///   Looks up a localized string similar to Specifies the search term to filter results. Use this argument to search for packages matching the provided query. Example: dotnet package search json..
         /// </summary>
         internal static string pkgSearch_termDescription {
             get {

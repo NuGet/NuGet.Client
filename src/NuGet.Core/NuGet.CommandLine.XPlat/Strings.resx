@@ -831,7 +831,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Allow prerelease packages to be shown.</value>
   </data>
   <data name="pkgSearch_SkipDescription" xml:space="preserve">
-    <value>The number of results to skip, for pagination.</value>
+    <value>The number of results to skip, for pagination. The default is 0.</value>
   </data>
   <data name="pkgSearch_SourceDescription" xml:space="preserve">
     <value>The package source to search. You can pass multiple --source options to search multiple package sources.</value>
@@ -840,6 +840,6 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>The number of results to return. The default value is 20.</value>
   </data>
   <data name="pkgSearch_termDescription" xml:space="preserve">
-    <value>A search term.</value>
+    <value>Specifies the search term to filter results. Use this argument to search for packages matching the provided query. Example: dotnet package search json.</value>
   </data>
 </root>
