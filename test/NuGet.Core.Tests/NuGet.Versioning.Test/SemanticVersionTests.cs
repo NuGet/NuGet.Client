@@ -117,7 +117,7 @@ namespace NuGet.Versioning.Test
 
             // Act
             // should not result in a compiler warning CS8602: Dereference of a possibly null reference.
-            string result = target.HasMetadata ? target.Metadata[0..1] : "no-metadata";
+            string result = target.HasMetadata ? target.Metadata.Substring(1) : "no-metadata";
 
             // Assert
             Assert.Equal("no-metadata", result);
