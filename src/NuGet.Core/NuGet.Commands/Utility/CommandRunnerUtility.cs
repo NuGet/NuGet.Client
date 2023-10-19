@@ -109,7 +109,7 @@ namespace NuGet.Commands
                 packageSource = new PackageSource(source);
                 
                 // If it ends with "index.json" then treat it as a V3 Protocol PackageSource
-                if (packageSource.Source.EndsWith("index.json", StringComparison.OrdinalIgnoreCase)
+                if (packageSource.Source.EndsWith("index.json", StringComparison.OrdinalIgnoreCase))
                 {
                     packageSource.ProtocolVersion = 3;
                 }
