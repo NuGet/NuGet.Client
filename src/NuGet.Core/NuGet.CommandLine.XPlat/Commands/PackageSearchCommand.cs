@@ -47,22 +47,16 @@ namespace NuGet.CommandLine.XPlat
                     Strings.pkgSearch_SkipDescription,
                     CommandOptionType.SingleValue);
 
-                if (take.HasValue() && int.TryParse(take.Value(), out int takeVal))
-                {
-                    takeValue = takeVal;
-                }
-
-                if (skip.HasValue() && int.TryParse(skip.Value(), out int skipVal))
-                {
-                    skipValue = skipVal;
-                }
-
                 pkgSearch.OnExecute(async () =>
                 {
-                    if (help.HasValue())
+                    if (take.HasValue() && int.TryParse(take.Value(), out int takeVal))
                     {
-                        app.ShowHelp("search");
-                        return 0;
+                        takeValue = takeVal;
+                    }
+
+                    if (skip.HasValue() && int.TryParse(skip.Value(), out int skipVal))
+                    {
+                        skipValue = skipVal;
                     }
                     ILogger logger = getLogger();
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, !interactive.HasValue());

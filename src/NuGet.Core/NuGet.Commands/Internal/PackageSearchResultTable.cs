@@ -59,7 +59,8 @@ namespace NuGet.Commands.Internal
                     if (!string.IsNullOrEmpty(searchTerm) && paddedValue.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         Console.Write("| ");
-                        PrintWithHighlight(paddedValue, searchTerm, highlighterColor);
+                        if (i == 0) PrintWithHighlight(paddedValue, searchTerm, highlighterColor);
+                        else Console.Write(paddedValue);
                         Console.Write(" ");
                     }
                     else
