@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -173,7 +174,8 @@ namespace NuGet.PackageManagement.UI
             List<AccessiblePackageIdentity> added,
             PackageSourceMapping packageSourceMapping,
             IReadOnlyList<SourceRepository>? globalPackageFolders,
-            IReadOnlyList<SourceRepository> enabledSourceRepositories)
+            IReadOnlyList<SourceRepository> enabledSourceRepositories,
+            INuGetUILogger logger)
         {
             if (selectedSourceName is null || added.Count == 0 || packageSourceMapping is null)
             {
@@ -182,6 +184,7 @@ namespace NuGet.PackageManagement.UI
 
             string? globalPackageFolderName = globalPackageFolders?.Where(folder => folder.PackageSource.IsLocal).FirstOrDefault()?.PackageSource.Name;
             VersionFolderPathResolver? resolver = globalPackageFolderName != null ? new(globalPackageFolderName) : null;
+            LogMessage? firstLogError = null;
 
             foreach (AccessiblePackageIdentity addedPackage in added)
             {
@@ -220,13 +223,25 @@ namespace NuGet.PackageManagement.UI
                                 Resources.Error_SourceMapping_GPF_NotEnabled,
                                 addedPackage.Id,
                                 sourceFoundInGlobalPackagesFolder);
-                            throw new ApplicationException(formattedError);
+                            LogMessage logError = new LogMessage(LogLevel.Error, formattedError, NuGetLogCode.NU1110);
+
+                            if (firstLogError == null)
+                            {
+                                firstLogError = logError;
+                            }
+
+                            logger.Log(logError);
                         }
                     }
                     else // The transitive dependency doesn't exist in GPF, so attempt to map to the selected source from the UI.
                     {
                         sourceNameToMap = selectedSourceName;
                     }
+                }
+
+                if (firstLogError != null)
+                {
+                    continue;
                 }
 
                 // Default to the selected source from the UI if not found in the GPF.
@@ -250,6 +265,11 @@ namespace NuGet.PackageManagement.UI
                 {
                     newSourceMappings.Add(sourceNameToMap, new SortedSet<string>(new List<string>(capacity: added.Count) { addedPackage.Id }));
                 }
+            }
+
+            if (firstLogError != null)
+            {
+                throw new ApplicationException(firstLogError.Message);
             }
         }
     }

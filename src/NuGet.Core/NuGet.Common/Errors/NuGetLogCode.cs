@@ -178,6 +178,11 @@ namespace NuGet.Common
         NU1109 = 1109,
 
         /// <summary>
+        /// 
+        /// </summary>
+        NU1110 = 1110,
+
+        /// <summary>
         /// Dependency project has an incompatible framework.
         /// </summary>
         NU1201 = 1201,

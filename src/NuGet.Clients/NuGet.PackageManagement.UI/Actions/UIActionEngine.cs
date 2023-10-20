@@ -380,7 +380,16 @@ namespace NuGet.PackageManagement.UI
                     TelemetryServiceUtility.StartOrResumeTimer();
 
                     IReadOnlyList<ProjectAction> actions = await resolveActionsAsync(projectManagerService);
-                    IReadOnlyList<PreviewResult> results = await GetPreviewResultsAsync(projectManagerService, actions, userAction, uiService, cancellationToken);
+                    IReadOnlyList<PreviewResult> results;
+                    try
+                    {
+                        results = await GetPreviewResultsAsync(projectManagerService, actions, userAction, uiService, cancellationToken);
+                    }
+                    catch
+                    {
+                        status = NuGetOperationStatus.Failed;
+                        return;
+                    }
 
                     if (operationType == NuGetProjectActionType.Uninstall)
                     {
@@ -1029,7 +1038,8 @@ namespace NuGet.PackageManagement.UI
                         added,
                         uiService.UIContext.PackageSourceMapping,
                         globalPackageFolders,
-                        enabledSourceRepositories);
+                        enabledSourceRepositories,
+                        uiService.UILogger);
                 }
 
                 IProjectMetadataContextInfo projectMetadata = await projectManagerService.GetMetadataAsync(actions.Key, cancellationToken);
