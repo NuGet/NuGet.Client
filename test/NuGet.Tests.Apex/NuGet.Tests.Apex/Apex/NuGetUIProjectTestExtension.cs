@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using FluentAssertions;
 using Microsoft.Test.Apex.Services;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.TestContract;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 
 namespace NuGet.Tests.Apex
 {
@@ -62,22 +64,32 @@ namespace NuGet.Tests.Apex
             DeprecatedPackageResult.Should().BeFalse();
         }
 
-        public void AssertPackageTransitive(string testPackageName, string transitivePackageName)
+        public void AssertTopLevelPackageExistsInInstalledTab(string packageName)
         {
-            var transitivePackageResult = _uiproject.VerifyTopLevelAndTransitivePackageOnInstalledTab(testPackageName, transitivePackageName);
-            transitivePackageResult.Should().BeTrue();
+            var topPackage = _uiproject.PackageItemOnInstalledTab().FirstOrDefault();
+            bool topPackageResult = topPackage.PackageLevel.Equals(PackageLevel.TopLevel) && topPackage.Id.Equals(packageName);
+            topPackageResult.Should().BeTrue();
         }
 
-        public void AssertPackageNotTransitive(string testPackageName, string transitivePackageName)
+        public void AssertTransitivePackageExistsInInstalledTab(string transitivePackageName)
         {
-            var transitivePackageResult = _uiproject.VerifyTopLevelAndTransitivePackageOnInstalledTab(testPackageName, transitivePackageName);
-            transitivePackageResult.Should().BeFalse();
+            var bottomPackage = _uiproject.PackageItemOnInstalledTab().Last();
+            bool bottomPackageResult = bottomPackage.PackageLevel.Equals(PackageLevel.Transitive) && bottomPackage.Id.Equals(transitivePackageName);
+            bottomPackageResult.Should().BeTrue();
         }
 
-        public void AssertSearchedPackageTransitive()
+        public void AssertTransitivePackageNotExistsInInstalledTab(string transitivePackageName)
         {
-            var transitivePackageResult = _uiproject.VerifySearchedTransitivePackageOnTopOfInstalledTab();
-            transitivePackageResult.Should().BeTrue();
+            var bottomPackage = _uiproject.PackageItemOnInstalledTab().Last();
+            bool bottomPackageResult = bottomPackage.PackageLevel.Equals(PackageLevel.Transitive) && bottomPackage.Id.Equals(transitivePackageName);
+            bottomPackageResult.Should().BeFalse();
+        }
+
+        public void AssertSearchedTransitivePackageExistsInInstalledTab(string transitivePackageName)
+        {
+            var searchedPackage = _uiproject.PackageItemOnInstalledTab().FirstOrDefault();
+            bool searchedPackageResult = searchedPackage.PackageLevel.Equals(PackageLevel.Transitive) && searchedPackage.Id.Equals(transitivePackageName);
+            searchedPackageResult.Should().BeTrue();
         }
 
         public bool InstallPackageFromUI(string packageId, string version)

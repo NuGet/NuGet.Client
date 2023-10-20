@@ -95,23 +95,10 @@ namespace NuGet.PackageManagement.UI.TestContract
             return result?.IsPackageDeprecated == true;
         }
 
-        public bool VerifyTopLevelAndTransitivePackageOnInstalledTab(string testPackageName, string transitivePackageName)
+        public List<PackageItemViewModel> PackageItemOnInstalledTab()
         {
-            var topPackage = UIInvoke(() => _packageManagerControl.PackageList.PackageItems.FirstOrDefault());
-            var bottomPackage = UIInvoke(() => _packageManagerControl.PackageList.PackageItems.Last());
-
-            if (topPackage.PackageLevel.Equals(PackageLevel.TopLevel) && topPackage.Id.Equals(testPackageName))
-            {
-                return bottomPackage.PackageLevel.Equals(PackageLevel.Transitive) && bottomPackage.Id.Equals(transitivePackageName);
-            }
-
-            return false;
-        }
-
-        public bool VerifySearchedTransitivePackageOnTopOfInstalledTab()
-        {
-            var result = UIInvoke(() => _packageManagerControl.PackageList.PackageItems.FirstOrDefault().PackageLevel);
-            return result == PackageLevel.Transitive;
+            List<PackageItemViewModel> packageListItem =  _packageManagerControl.PackageList.PackageItems.ToList();
+            return packageListItem;
         }
 
         public void InstallPackage(string packageId, string version)
