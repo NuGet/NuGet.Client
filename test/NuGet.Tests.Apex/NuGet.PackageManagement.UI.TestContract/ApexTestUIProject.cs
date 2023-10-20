@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement.UI.TestContract
 
         public List<PackageItemViewModel> PackageItemOnInstalledTab()
         {
-            List<PackageItemViewModel> packageListItem =  _packageManagerControl.PackageList.PackageItems.ToList();
+            List<PackageItemViewModel> packageListItem = _packageManagerControl.PackageList.PackageItems.ToList();
             return packageListItem;
         }
 
