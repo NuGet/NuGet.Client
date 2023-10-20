@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.XPlat
         {
 #if DEBUG
             // Uncomment the following when debugging. Also uncomment the PackageReference for Microsoft.Build.Locator.
-            /*try
+            try
             {
                 // .NET JIT compiles one method at a time. If this method calls `MSBuildLocator` directly, the
                 // try block is never entered if Microsoft.Build.Locator.dll can't be found. So, run it in a
@@ -47,7 +47,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 // MSBuildLocator is used only to enable Visual Studio debugging.
                 // It's not needed when using a patched dotnet sdk, so it doesn't matter if it fails.
-            }*/
+            }
 
             var debugNuGetXPlat = Environment.GetEnvironmentVariable("DEBUG_NUGET_XPLAT");
 
@@ -99,39 +99,7 @@ namespace NuGet.CommandLine.XPlat
 
             int exitCode = 0;
             ParseResult result = command.Parse(args);
-            if (result.Errors.Any())
-            {
-                // Fallback to old way for now: CommandLineUtils
-                try
-                {
-                    exitCode = app.Execute(args);
-                }
-                catch (Exception e)
-                {
-                    bool handled = HandleCommandLineHelp(args, log);
-                    if (!handled)
-                    {
-                        LogException(e, log);
-                        ShowBestHelp(app, args);
-                    }
-
-                    exitCode = 1;
-                }
-                finally
-                {
-                    // Limit the exit code range to 0-255 to support POSIX
-                    if (exitCode < 0 || exitCode > 255)
-                    {
-                        exitCode = 1;
-                    }
-                }
-            }
-            else
-            {
-                // Run with System.CommandLine
-                exitCode = command.Invoke(args);
-            }
-
+            exitCode = command.Invoke(args);
             return exitCode;
         }
 
@@ -209,6 +177,12 @@ namespace NuGet.CommandLine.XPlat
                 return 1;
             });
 
+            ConfigCommand.Register(app, getLogger: GenerateLoggerHidePrefix(log), commandExceptionHandler: e =>
+            {
+                LogException(e, log);
+                return 1;
+            });
+
             return app;
         }
 
@@ -241,7 +215,6 @@ namespace NuGet.CommandLine.XPlat
                 VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
                 TrustedSignersCommand.Register(app, getHidePrefixLogger, setLogLevel);
                 SignCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new SignCommandRunner());
-                ConfigCommand.Register(app, getHidePrefixLogger);
             }
 
             app.FullName = Strings.App_FullName;

@@ -26,7 +26,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config paths {testInfo.WorkingPath}",
+                $"{XplatDll} config paths --working-directory {testInfo.WorkingPath}",
                 waitForExit: true);
 
             // Assert
@@ -75,7 +75,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get http_proxy {testInfo.WorkingPath}",
+                $"{XplatDll} config get http_proxy --working-directory {testInfo.WorkingPath}",
                 waitForExit: true);
 
             // Assert
@@ -91,7 +91,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get http_proxy {testInfo.WorkingPath} --show-path",
+                $"{XplatDll} config get http_proxy --working-directory {testInfo.WorkingPath} --show-path",
                 waitForExit: true);
 
             // Assert
@@ -124,7 +124,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get all {Path.Combine(testInfo.WorkingPath, "subfolder")}",
+                $"{XplatDll} config get all --working-directory {Path.Combine(testInfo.WorkingPath, "subfolder")}",
                 waitForExit: true);
 
             // Assert
@@ -141,7 +141,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get all {Path.Combine(testInfo.WorkingPath, "subfolder")} --show-path",
+                $"{XplatDll} config get all --working-directory {Path.Combine(testInfo.WorkingPath, "subfolder")} --show-path",
                 waitForExit: true);
 
             // Assert
@@ -462,7 +462,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config paths {nonExistingDirectory}",
+                $"{XplatDll} config paths --working-directory {nonExistingDirectory}",
                 waitForExit: true);
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
 
@@ -480,7 +480,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get all {nonExistingDirectory}",
+                $"{XplatDll} config get all --working-directory {nonExistingDirectory}",
                 waitForExit: true);
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
 
@@ -498,7 +498,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get {invalidKey} {testInfo.WorkingPath}",
+                $"{XplatDll} config get {invalidKey} --working-directory {testInfo.WorkingPath}",
                 waitForExit: true);
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, invalidKey);
 
