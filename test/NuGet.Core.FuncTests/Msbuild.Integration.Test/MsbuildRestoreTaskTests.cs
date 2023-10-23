@@ -881,7 +881,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 var projectBFrameworkContext = new SimpleTestProjectFrameworkContext(net472, new[] { projectC1 });
                 projectB.Frameworks.Add(projectBFrameworkContext);
                 
-                var projectBFrameworkContext_6 = new SimpleTestProjectFrameworkContext(net60, new[] { projectC1 });
+                var projectBFrameworkContext_6 = new SimpleTestProjectFrameworkContext(net60, new[] { projectC2 });
                 projectB.Frameworks.Add(projectBFrameworkContext_6);
                 solution.Projects.Add(projectB);
 
