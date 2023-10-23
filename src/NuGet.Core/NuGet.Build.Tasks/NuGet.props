@@ -38,4 +38,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
   </PropertyGroup>
 
+  <!--
+    Setup default NuGet property values.
+    Visual Studio's project property page requires defaults to be set to inform customers what the default values are.
+  -->
+  <PropertyGroup>
+    <NuGetAudit Condition=" '$(NuGetAudit)' == '' ">true</NuGetAudit>
+    <NuGetAuditLevel Condition=" '$(NuGetAuditLevel)' == '' ">low</NuGetAuditLevel>
+    <NuGetAuditMode Condition=" '$(NuGetAuditMode)' == '' ">direct</NuGetAuditMode>
+  </PropertyGroup>
+
 </Project>
