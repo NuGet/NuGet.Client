@@ -854,6 +854,63 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void MsbuildRestore_StaticGraphEvaluation_Compare()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net472 = NuGetFramework.Parse("net472");
+                var net60 = NuGetFramework.Parse("net6.0");
+
+                var projectA = new SimpleTestProjectContext("a", ProjectStyle.PackageReference, pathContext.SolutionRoot);
+
+                var projectB = new SimpleTestProjectContext("b", ProjectStyle.PackageReference, pathContext.SolutionRoot);
+                
+                var projectC1 = new SimpleTestProjectContext("c1", ProjectStyle.Standalone, pathContext.SolutionRoot);
+
+                var projectC2 = new SimpleTestProjectContext("c2", ProjectStyle.Standalone, pathContext.SolutionRoot);
+
+                var projectAFrameworkContext = new SimpleTestProjectFrameworkContext(net472, new[] { projectB });
+                projectA.Frameworks.Add(projectAFrameworkContext);
+                solution.Projects.Add(projectA);
+
+                var projectBFrameworkContext = new SimpleTestProjectFrameworkContext(net472, new[] { projectC1 });
+                projectB.Frameworks.Add(projectBFrameworkContext);
+                
+                var projectBFrameworkContext_6 = new SimpleTestProjectFrameworkContext(net60, new[] { projectC1 });
+                projectB.Frameworks.Add(projectBFrameworkContext_6);
+                solution.Projects.Add(projectB);
+
+                var projectC1FrameworkContext = new SimpleTestProjectFrameworkContext(net472);
+                projectC1.Frameworks.Add(projectC1FrameworkContext);
+                solution.Projects.Add(projectC1);
+
+                var projectC2FrameworkContext = new SimpleTestProjectFrameworkContext(net60);
+                projectC2.Frameworks.Add(projectC2FrameworkContext);
+                solution.Projects.Add(projectC2);
+
+                solution.Create(pathContext.SolutionRoot);
+
+                var standardDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "standard.dgspec.json");
+
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{standardDgSpecFile}\" {projectA.ProjectPath}", ignoreExitCode: true);
+                Assert.True(result.ExitCode == 0, result.AllOutput);
+
+                var staticGraphDgSpecFile = Path.Combine(pathContext.WorkingDirectory, "staticGraph.dgspec.json");
+                result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:GenerateRestoreGraphFile /p:RestoreGraphOutputPath=\"{staticGraphDgSpecFile}\" /p:RestoreUseStaticGraphEvaluation=true {projectA.ProjectPath}", ignoreExitCode: true);
+                Assert.True(result.ExitCode == 0, result.AllOutput);
+
+                var regularDgSpec = File.ReadAllText(standardDgSpecFile);
+                var staticGraphDgSpec = File.ReadAllText(staticGraphDgSpecFile);
+
+                regularDgSpec.Should().BeEquivalentTo(staticGraphDgSpec);
+            }
+        }
+
         [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
         [InlineData(false)]
