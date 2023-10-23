@@ -11,9 +11,11 @@ namespace NuGet.Commands.Internal
     {
         private readonly List<string[]> _rows = new List<string[]>();
         private int[] _columnWidths;
+        private int[] _columnsToHighlight;
 
-        public PackageSearchResultTable(params string[] headers)
+        public PackageSearchResultTable(int[] columnsToHighlight, params string[] headers)
         {
+            _columnsToHighlight = columnsToHighlight;
             _columnWidths = new int[headers.Length];
 
             for (int i = 0; i < headers.Length; i++)
@@ -59,7 +61,7 @@ namespace NuGet.Commands.Internal
                     if (!string.IsNullOrEmpty(searchTerm) && paddedValue.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         Console.Write("| ");
-                        if (i == 0) PrintWithHighlight(paddedValue, searchTerm, highlighterColor);
+                        if (_columnsToHighlight.Contains(i)) PrintWithHighlight(paddedValue, searchTerm, highlighterColor);
                         else Console.Write(paddedValue);
                         Console.Write(" ");
                     }

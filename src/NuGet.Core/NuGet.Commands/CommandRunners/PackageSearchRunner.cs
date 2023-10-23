@@ -17,9 +17,6 @@ namespace NuGet.Commands.CommandRunners
 {
     public static class PackageSearchRunner
     {
-        const int LineSeparatorLength = 40;
-        static readonly string SourceSeparator = new string('=', LineSeparatorLength);
-
         /// <summary>
         /// Runs the search operation asynchronously using the provided parameters.
         /// </summary>
@@ -45,28 +42,23 @@ namespace NuGet.Commands.CommandRunners
             var listEndpoints = GetEndpointsAsync(sources, sourceProvider);
             WarnForHTTPSources(listEndpoints, logger);
 
+            List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)> taskList;
             if (exactMatch)
             {
-                await GetExactMatch(listEndpoints, searchTerm, prerelease, logger);
-                return;
+                taskList = await BuildTaskListForExactMatch(listEndpoints, searchTerm, prerelease, logger);
+            }
+            else
+            {
+                taskList = await BuildTaskListForSearch(listEndpoints, searchTerm, prerelease, skip, take, logger, cancellationToken);
+
             }
 
-            var taskList = BuildTaskListForSearch(listEndpoints, searchTerm, prerelease, skip, take, logger, cancellationToken);
-            await ProcessTaskList(await taskList, logger, searchTerm);
-        }
-
-        /// <summary>
-        /// Searches for an exact match of the specified search term within the provided package sources.
-        /// </summary>
-        /// <param name="listEndpoints">The list of package sources/endpoints.</param>
-        /// <param name="searchTerm">The term to search for within the package sources.</param>
-        /// <param name="prerelease">A flag indicating whether to include prerelease packages in the search.</param>
-        /// <param name="logger">The logger instance to use for logging.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        private static async Task GetExactMatch(IList<PackageSource> listEndpoints, string searchTerm, bool prerelease, ILogger logger)
-        {
-            var taskList = BuildTaskListForExactMatch(listEndpoints, searchTerm, prerelease, logger);
-            await ProcessTaskList(await taskList, logger, searchTerm, true);
+            var result = new PackageSearchResult(
+                taskList,
+                logger,
+                searchTerm,
+                exactMatch);
+            await result.PrintResultTablesAsync();
         }
 
         /// <summary>
@@ -97,7 +89,7 @@ namespace NuGet.Commands.CommandRunners
                 var resource = await repository.GetResourceAsync<PackageSearchResource>(cancellationToken);
                 taskList.Add(
                     resource == null ? (null, source) :
-                    (Task.Run(() => resource.SearchAsync(searchTerm, new SearchFilter(includePrerelease: prerelease), skip, take, logger, cancellationToken)), source)
+                    (resource.SearchAsync(searchTerm, new SearchFilter(includePrerelease: prerelease), skip, take, logger, cancellationToken), source)
                 );
             }
 
@@ -128,79 +120,11 @@ namespace NuGet.Commands.CommandRunners
                 var resource = await repository.GetResourceAsync<PackageMetadataResource>();
                 taskList.Add(
                     resource == null ? (null, endpoint) :
-                    (Task.Run(() => resource.GetMetadataAsync(searchTerm, includePrerelease: prerelease, includeUnlisted: false, cache, logger, cancellationToken)), endpoint)
+                    (resource.GetMetadataAsync(searchTerm, includePrerelease: prerelease, includeUnlisted: false, cache, logger, cancellationToken), endpoint)
                 );
             }
 
             return taskList;
-        }
-
-        /// <summary>
-        /// Processes a list of tasks that fetch package metadata and displays the results in a tabulated format.
-        /// </summary>
-        /// <param name="taskList">A list of tasks paired with their package sources. Each task is expected to return an IEnumerable of IPackageSearchMetadata.</param>
-        /// <param name="logger">The logger used for logging messages during the process.</param>
-        /// <param name="isExactMatch">A boolean flag to indicate if the processing is for an exact match. If set to true, only the first result from the list will be displayed. Default value is false.</param>
-        /// <returns>A Task representing the asynchronous operation.</returns>
-        /// </remarks>
-        private static async Task ProcessTaskList(List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)> taskList, ILogger logger, string searchTerm, bool isExactMatch = false)
-        {
-            foreach (var (task, source) in taskList)
-            {
-                if (task == null)
-                {
-                    logger.LogMinimal(SourceSeparator);
-                    logger.LogMinimal($"Source: {source.Name}");
-                    continue;
-                }
-
-                var results = await task;
-                logger.LogMinimal(SourceSeparator);
-                logger.LogMinimal($"Source: {source.Name}");
-                var table = new PackageSearchResultTable("Package ID", "Latest Version", "Authors", "Downloads");
-
-                if (isExactMatch)
-                {
-                    var firstResult = results.FirstOrDefault();
-                    if (firstResult != null)
-                    {
-                        PopulateTableWithResults(new[] { firstResult }, table);
-                    }
-                }
-                else
-                {
-                    PopulateTableWithResults(results, table);
-                }
-
-                table.PrintResult(searchTerm: searchTerm);
-            }
-        }
-
-        /// <summary>
-        /// Populates the given table with package metadata results.
-        /// </summary>
-        /// <param name="results">An enumerable of package search metadata to be processed and added to the table.</param>
-        /// <param name="table">The table where the results will be added as rows.</param>
-        private static void PopulateTableWithResults(IEnumerable<IPackageSearchMetadata> results, PackageSearchResultTable table)
-        {
-            CultureInfo culture = CultureInfo.CurrentCulture;
-
-            foreach (IPackageSearchMetadata result in results)
-            {
-                string packageId = result.Identity.Id;
-                string version = result.Identity.Version.ToNormalizedString();
-                string authors = result.Authors;
-                string downloads = "N/A";
-
-                if (result.DownloadCount != null)
-                {
-                    NumberFormatInfo nfi = (NumberFormatInfo)culture.NumberFormat.Clone();
-                    nfi.NumberDecimalDigits = 0;
-                    downloads = string.Format(nfi, "{0:N}", result.DownloadCount);
-                }
-
-                table.AddRow(packageId, version, authors, downloads);
-            }
         }
 
         /// <summary>
