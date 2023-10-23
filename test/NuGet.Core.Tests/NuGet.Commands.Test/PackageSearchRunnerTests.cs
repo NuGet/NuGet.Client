@@ -121,7 +121,8 @@ namespace NuGet.Commands.Test
                 20,
                 false,
                 false,
-                Common.NullLogger.Instance);
+                Common.NullLogger.Instance,
+                System.Threading.CancellationToken.None);
 
             //stop mock server
             mockServer.Stop();
@@ -186,7 +187,8 @@ namespace NuGet.Commands.Test
                 take,
                 prerelease,
                 false,
-                Common.NullLogger.Instance);
+                Common.NullLogger.Instance,
+                System.Threading.CancellationToken.None);
 
             //stop mock server
             mockServer.Stop();
@@ -270,7 +272,8 @@ namespace NuGet.Commands.Test
                 20,
                 false,
                 true,
-                Common.NullLogger.Instance);
+                Common.NullLogger.Instance,
+                System.Threading.CancellationToken.None);
 
             //stop mock server
             mockServer.Stop();
