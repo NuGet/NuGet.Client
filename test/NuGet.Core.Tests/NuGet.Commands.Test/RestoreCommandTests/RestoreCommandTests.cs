@@ -2851,7 +2851,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["HttpSourcesCount"] = value => value.Should().Be(0),
                 ["LocalSourcesCount"] = value => value.Should().Be(1),
                 ["FallbackFoldersCount"] = value => value.Should().Be(0),
-                ["Audit.Enabled"] = value => value.Should().Be("ExplicitOptIn"),
+                ["Audit.Enabled"] = value => value.Should().Be("enabled"),
                 ["Audit.Level"] = value => value.Should().Be(0),
                 ["Audit.Mode"] = value => value.Should().Be("Unknown"),
                 ["Audit.Vulnerability.Direct.Count"] = value => value.Should().Be(0),
