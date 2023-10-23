@@ -36,16 +36,16 @@ namespace NuGet.Commands.CommandRunners
             int take,
             bool prerelease,
             bool exactMatch,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            CancellationToken cancellationToken = CancellationToken.None;
             var listEndpoints = GetEndpointsAsync(sources, sourceProvider);
             WarnForHTTPSources(listEndpoints, logger);
 
             List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)> taskList;
             if (exactMatch)
             {
-                taskList = await BuildTaskListForExactMatch(listEndpoints, searchTerm, prerelease, logger);
+                taskList = await BuildTaskListForExactMatch(listEndpoints, searchTerm, prerelease, logger, cancellationToken);
             }
             else
             {
@@ -103,18 +103,19 @@ namespace NuGet.Commands.CommandRunners
         /// <param name="searchTerm">The term to search for within the package sources.</param>
         /// <param name="prerelease">A flag indicating whether to include prerelease packages in the search.</param>
         /// <param name="logger">The logger instance to use for logging.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A list of tasks that perform exact match package search operations.</returns>
         private static async Task<List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>> BuildTaskListForExactMatch(
             IList<PackageSource> listEndpoints,
             string searchTerm,
             bool prerelease,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
 
             foreach (var endpoint in listEndpoints)
             {
-                var cancellationToken = CancellationToken.None;
                 using var cache = new SourceCacheContext();
                 var repository = Repository.Factory.GetCoreV3(endpoint);
                 var resource = await repository.GetResourceAsync<PackageMetadataResource>();

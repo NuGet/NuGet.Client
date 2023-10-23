@@ -17,8 +17,8 @@ namespace NuGet.Commands.Internal
         private readonly ILogger _logger;
         private readonly string _searchTerm;
         private readonly bool _isExactMatch;
-        const int LineSeparatorLength = 40;
-        static readonly string SourceSeparator = new string('=', LineSeparatorLength);
+        private static readonly int LineSeparatorLength = 40;
+        private static readonly string SourceSeparator = new('=', LineSeparatorLength);
 
         public PackageSearchResult(List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)> taskList, ILogger logger, string searchTerm, bool isExactMatch = false)
         {

@@ -15,8 +15,6 @@ namespace NuGet.CommandLine.XPlat
         {
             app.Command("search", pkgSearch =>
             {
-                int takeValue = 20;
-                int skipValue = 0;
                 pkgSearch.Description = Strings.pkgSearch_Description;
                 CommandOption help = pkgSearch.HelpOption(XPlatUtility.HelpOption);
                 CommandArgument searchTern = pkgSearch.Argument(
@@ -49,6 +47,10 @@ namespace NuGet.CommandLine.XPlat
 
                 pkgSearch.OnExecute(async () =>
                 {
+                    // default values
+                    int takeValue = 20;
+                    int skipValue = 0;
+
                     if (take.HasValue() && int.TryParse(take.Value(), out int takeVal))
                     {
                         takeValue = takeVal;
@@ -58,6 +60,7 @@ namespace NuGet.CommandLine.XPlat
                     {
                         skipValue = skipVal;
                     }
+
                     ILogger logger = getLogger();
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, !interactive.HasValue());
                     ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
@@ -65,7 +68,7 @@ namespace NuGet.CommandLine.XPlat
                     machineWideSettings: new XPlatMachineWideSetting());
                     PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
                     await PackageSearchRunner.RunAsync(
-                        sourceProvider, sources.Values, searchTern.Value, skip: skipValue, take: takeValue, prerelease: prerelease.HasValue(), exactMatch: exactMatch.HasValue(), logger: logger);
+                        sourceProvider, sources.Values, searchTern.Value, skipValue, takeValue, prerelease.HasValue(), exactMatch.HasValue(), logger, System.Threading.CancellationToken.None);
                     return 0;
                 });
 
