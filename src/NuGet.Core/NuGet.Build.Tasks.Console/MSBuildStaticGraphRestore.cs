@@ -808,7 +808,7 @@ namespace NuGet.Build.Tasks.Console
 
             ProjectStyle? projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
 
-            (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled) = GetCentralPackageManagementSettings(project, projectStyleOrNull);
+            (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled) = MSBuildRestoreUtility.GetCentralPackageManagementSettings(project, projectStyleOrNull);
 
             RestoreAuditProperties auditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(project);
 
@@ -1024,22 +1024,6 @@ namespace NuGet.Build.Tasks.Console
 
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Determines the current settings for central package management for the specified project.
-        /// </summary>
-        /// <param name="project">The <see cref="IMSBuildProject" /> to get the central package management settings for.</param>
-        /// <param name="projectStyle">The <see cref="ProjectStyle?" /> of the specified project.  Specify <see langword="null" /> when the project does not define a restore style.</param>
-        /// <returns>A <see cref="Tuple{T1, T2, T3, T4}" /> containing values indicating whether or not central package management is enabled, if the ability to override a package version is disabled, if the ability to transitively pin a package version is enabled, and if floating versions are enabled.</returns>
-        internal static (bool IsEnabled, bool IsVersionOverrideDisabled, bool IsCentralPackageTransitivePinningEnabled, bool IsFloatingVersionsEnabled) GetCentralPackageManagementSettings(IMSBuildProject project, ProjectStyle? projectStyle)
-        {
-            if (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
-            {
-                return (project.IsPropertyTrue("_CentralPackageVersionsEnabled"), project.IsPropertyFalse("CentralPackageVersionOverrideEnabled"), project.IsPropertyTrue("CentralPackageTransitivePinningEnabled"), project.IsPropertyTrue("CentralPackageFloatingVersionsEnabled"));
-            }
-
-            return (false, false, false, false);
         }
 
         /// <summary>

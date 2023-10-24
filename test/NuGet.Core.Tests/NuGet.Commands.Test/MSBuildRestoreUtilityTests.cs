@@ -3725,11 +3725,9 @@ namespace NuGet.Commands.Test
         [Theory]
         [InlineData(null, false)]
         [InlineData("", false)]
-        [InlineData("                     ", false)]
         [InlineData("true", false)]
         [InlineData("invalid", false)]
         [InlineData("false", true)]
-        [InlineData("           false    ", true)]
         public void MSBuildRestoreUtility_GetPackageSpec_CPVM_VersionOverrideCanBeDisabled(string isCentralPackageVersionOverrideEnabled, bool disabled)
         {
             var projectName = "alegacycpvm";
@@ -3831,12 +3829,10 @@ namespace NuGet.Commands.Test
 
         [Theory]
         [InlineData(null, false)]
-        [InlineData("", false)]
         [InlineData("                     ", false)]
         [InlineData("false", false)]
         [InlineData("invalid", false)]
         [InlineData("true", true)]
-        [InlineData("           true    ", true)]
         public void MSBuildRestoreUtility_GetPackageSpec_CPVM_FloatingVersionsCanBeEnabled(string isCentralPackageFloatingVersionsEnabled, bool enabled)
         {
             var projectName = "alegacycpvm";
@@ -4699,6 +4695,47 @@ namespace NuGet.Commands.Test
                 net60Framework.FrameworkName.Profile.Should().Be(profile);
                 net60Framework.FrameworkName.HasPlatform.Should().BeFalse();
             }
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("                     ", false)]
+        [InlineData("false", false)]
+        [InlineData("invalid", false)]
+        [InlineData("true", true)]
+        [InlineData("           true    ", true)]
+        public void IsPropertyTrue_ReturnsExpectedValue(string value, bool expected)
+        {
+            const string propertyName = "Property1";
+
+            MSBuildItem item = new("Item1", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [propertyName] = value
+            });
+
+            MSBuildRestoreUtility.IsPropertyTrue(item, propertyName).Should().Be(expected);
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("                     ", false)]
+        [InlineData("false", true)]
+        [InlineData("   false     ", true)]
+        [InlineData("invalid", false)]
+        [InlineData("true", false)]
+        [InlineData("           true    ", false)]
+        public void IsPropertyFalse_ReturnsExpectedValue(string value, bool expected)
+        {
+            const string propertyName = "Property1";
+
+            MSBuildItem item = new("Item1", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [propertyName] = value
+            });
+
+            MSBuildRestoreUtility.IsPropertyFalse(item, propertyName).Should().Be(expected);
         }
 
         private static IDictionary<string, string> CreateProject(string root, string uniqueName)

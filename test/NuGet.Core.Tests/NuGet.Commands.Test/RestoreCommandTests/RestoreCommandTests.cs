@@ -2045,14 +2045,13 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
                 var result = await restoreCommand.ExecuteAsync();
 
+                // Assert
                 if (enabled)
                 {
-                    // Assert
                     Assert.True(result.Success);
                 }
                 else
                 {
-                    // Assert
                     Assert.False(result.Success);
                     Assert.Equal(1, logger.ErrorMessages.Count);
                     logger.ErrorMessages.TryDequeue(out var errorMessage);
