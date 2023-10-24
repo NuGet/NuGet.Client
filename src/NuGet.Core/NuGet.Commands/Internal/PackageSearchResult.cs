@@ -13,16 +13,18 @@ namespace NuGet.Commands.Internal
 {
     internal class PackageSearchResult
     {
-        private readonly List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)> _taskList;
+        private readonly Task<IEnumerable<IPackageSearchMetadata>> _completedSearchTask;
+        private readonly PackageSource _source;
         private readonly ILogger _logger;
         private readonly string _searchTerm;
         private readonly bool _isExactMatch;
         private const int LineSeparatorLength = 40;
         private static readonly string SourceSeparator = new('=', LineSeparatorLength);
 
-        public PackageSearchResult(List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)> taskList, ILogger logger, string searchTerm, bool isExactMatch = false)
+        public PackageSearchResult(Task<IEnumerable<IPackageSearchMetadata>> completedSearchTask, PackageSource source, ILogger logger, string searchTerm, bool isExactMatch = false)
         {
-            _taskList = taskList;
+            _completedSearchTask = completedSearchTask;
+            _source = source;
             _logger = logger;
             _searchTerm = searchTerm;
             _isExactMatch = isExactMatch;
@@ -30,41 +32,32 @@ namespace NuGet.Commands.Internal
 
         public async Task PrintResultTablesAsync()
         {
-            while (_taskList.Count > 0)
+            _logger.LogMinimal(SourceSeparator);
+            if (_completedSearchTask == null)
             {
-                var completedSearchTask = await Task.WhenAny(_taskList.Select(t => t.Item1));
-                int taskIndex = _taskList.FindIndex(t => t.Item1 == completedSearchTask);
-                PackageSource source = _taskList[taskIndex].Item2;
-
-                // search task at taskIndex is done
-                if (completedSearchTask == null)
-                {
-                    _logger.LogMinimal(SourceSeparator);
-                    _logger.LogMinimal($"Source: {source.Name}");
-                    continue;
-                }
-
-                _logger.LogMinimal(SourceSeparator);
-                _logger.LogMinimal($"Source: {source.Name}");
-                IEnumerable<IPackageSearchMetadata> searchResult = completedSearchTask.Result;
-                var table = new PackageSearchResultTable(new[] { 0, 2 }, "Package ID", "Latest Version", "Authors", "Downloads");
-
-                if (_isExactMatch)
-                {
-                    var firstResult = searchResult.FirstOrDefault();
-                    if (firstResult != null)
-                    {
-                        PopulateTableWithResults(new[] { firstResult }, table);
-                    }
-                }
-                else
-                {
-                    PopulateTableWithResults(searchResult, table);
-                }
-
-                table.PrintResult(_searchTerm);
-                _taskList.RemoveAt(taskIndex);
+                _logger.LogMinimal($"Source: {_source.Name}");
+                _logger.LogMinimal("Failed to obtain a search resource.");
+                return;
             }
+
+            _logger.LogMinimal($"Source: {_source.Name}");
+            IEnumerable<IPackageSearchMetadata> searchResult = await _completedSearchTask;
+            var table = new PackageSearchResultTable(new[] { 0, 2 }, "Package ID", "Latest Version", "Authors", "Downloads");
+
+            if (_isExactMatch)
+            {
+                var firstResult = searchResult.FirstOrDefault();
+                if (firstResult != null)
+                {
+                    PopulateTableWithResults(new[] { firstResult }, table);
+                }
+            }
+            else
+            {
+                PopulateTableWithResults(searchResult, table);
+            }
+
+            table.PrintResult(_searchTerm);
         }
 
         /// <summary>
