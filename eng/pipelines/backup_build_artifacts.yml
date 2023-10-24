@@ -47,7 +47,7 @@ jobs:
           targetPath: $(Build.ArtifactStagingDirectory)/backup/VS15-RTM
 
       - task: DownloadPipelineArtifact@2
-        displayName: 'Download nupkgs'
+        displayName: 'Download nupkgs NonRTM'
         continueOnError: true # in case build didn't publish this artifact
         inputs:
           buildType: specific
