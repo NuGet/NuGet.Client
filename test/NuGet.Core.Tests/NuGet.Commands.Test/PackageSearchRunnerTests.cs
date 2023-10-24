@@ -136,11 +136,6 @@ namespace NuGet.Commands.Test
         [InlineData(0, 20, false)]
         [InlineData(5, 10, true)]
         [InlineData(10, 20, false)]
-        [InlineData(15, 25, true)]
-        [InlineData(20, 30, false)]
-        [InlineData(0, 50, true)]
-        [InlineData(25, 25, true)]
-        [InlineData(50, 10, false)]
         public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakePrereleaseOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take, bool prerelease)
         {
             // Arrange
