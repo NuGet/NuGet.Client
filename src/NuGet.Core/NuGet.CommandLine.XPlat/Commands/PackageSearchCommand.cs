@@ -1,23 +1,42 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands.CommandRunners;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
+
 namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchCommand
     {
+        internal delegate Task SetupSettingsAndRunSearchAsyncDelegate(
+        List<string> sources,
+        string searchTerm,
+        int skip,
+        int take,
+        bool prerelease,
+        bool exactMatch,
+        bool interactive,
+        ILogger logger
+        );
+
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        {
+            Register(app, getLogger, SetupSettingsAndRunSearchAsync);
+        }
+
+        public static void Register(CommandLineApplication app, Func<ILogger> getLogger, SetupSettingsAndRunSearchAsyncDelegate setupSettingsAndRunSearchAsync)
         {
             app.Command("search", pkgSearch =>
             {
                 pkgSearch.Description = Strings.pkgSearch_Description;
                 CommandOption help = pkgSearch.HelpOption(XPlatUtility.HelpOption);
-                CommandArgument searchTern = pkgSearch.Argument(
+                CommandArgument searchTerm = pkgSearch.Argument(
                     "<Search Term>",
                     Strings.pkgSearch_termDescription);
                 CommandOption sources = pkgSearch.Option(
@@ -61,18 +80,50 @@ namespace NuGet.CommandLine.XPlat
                         skipValue = skipVal;
                     }
 
-                    ILogger logger = getLogger();
-                    DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, !interactive.HasValue());
-                    ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
-                    configFileName: null,
-                    machineWideSettings: new XPlatMachineWideSetting());
-                    PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-                    await PackageSearchRunner.RunAsync(
-                        sourceProvider, sources.Values, searchTern.Value, skipValue, takeValue, prerelease.HasValue(), exactMatch.HasValue(), logger, System.Threading.CancellationToken.None);
+                    await setupSettingsAndRunSearchAsync(
+                        sources.Values,
+                        searchTerm.Value,
+                        skipValue,
+                        takeValue,
+                        prerelease.HasValue(),
+                        exactMatch.HasValue(),
+                        interactive.HasValue(),
+                        getLogger());
+
                     return 0;
                 });
 
             });
+        }
+
+        public static async Task SetupSettingsAndRunSearchAsync(
+            List<string> sources,
+            string searchTerm,
+            int skip,
+            int take,
+            bool prerelease,
+            bool exactMatch,
+            bool interactive,
+            ILogger logger)
+        {
+            DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, !interactive);
+
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+
+            await PackageSearchRunner.RunAsync(
+                sourceProvider,
+                sources,
+                searchTerm,
+                skip,
+                take,
+                prerelease,
+                exactMatch,
+                logger,
+                System.Threading.CancellationToken.None);
         }
     }
 }

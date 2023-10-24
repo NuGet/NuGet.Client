@@ -50,7 +50,6 @@ namespace NuGet.Commands.CommandRunners
             else
             {
                 taskList = await BuildTaskListForSearch(listEndpoints, searchTerm, prerelease, skip, take, logger, cancellationToken);
-
             }
 
             var result = new PackageSearchResult(
