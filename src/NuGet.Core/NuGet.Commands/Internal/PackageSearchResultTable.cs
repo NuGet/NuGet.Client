@@ -113,9 +113,5 @@ namespace NuGet.Commands.Internal
 
             return ConsoleColor.Red;
         }
-
-
-
     }
-
 }

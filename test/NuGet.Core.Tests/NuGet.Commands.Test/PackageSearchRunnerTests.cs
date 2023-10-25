@@ -107,22 +107,21 @@ namespace NuGet.Commands.Test
             mockServer.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
             mockServer.Start();
 
-
             // Redirect console output
             using var consoleOutput = new StringWriter();
             Console.SetOut(consoleOutput);
 
             // Act
             await PackageSearchRunner.RunAsync(
-                sourceProvider,
-                new List<string> { $"{mockServer.Uri}v3/index.json" },
-                "json",
-                0,
-                20,
-                false,
-                false,
-                Common.NullLogger.Instance,
-                System.Threading.CancellationToken.None);
+                sourceProvider: sourceProvider,
+                sources: new List<string> { $"{mockServer.Uri}v3/index.json" },
+                searchTerm: "json",
+                skip: 0,
+                take: 20,
+                prerelease: false,
+                exactMatch: false,
+                logger: Common.NullLogger.Instance,
+                cancellationToken: System.Threading.CancellationToken.None);
 
             //stop mock server
             mockServer.Stop();
@@ -175,15 +174,15 @@ namespace NuGet.Commands.Test
 
             // Act
             await PackageSearchRunner.RunAsync(
-                sourceProvider,
-                new List<string> { $"{mockServer.Uri}v3/index.json" },
-                "json",
-                skip,
-                take,
-                prerelease,
-                false,
-                Common.NullLogger.Instance,
-                System.Threading.CancellationToken.None);
+                sourceProvider: sourceProvider,
+                sources: new List<string> { $"{mockServer.Uri}v3/index.json" },
+                searchTerm: "json",
+                skip: skip,
+                take: take,
+                prerelease: prerelease,
+                exactMatch: false,
+                logger: Common.NullLogger.Instance,
+                cancellationToken: System.Threading.CancellationToken.None);
 
             //stop mock server
             mockServer.Stop();
@@ -260,15 +259,15 @@ namespace NuGet.Commands.Test
 
             // Act
             await PackageSearchRunner.RunAsync(
-                sourceProvider,
-                new List<string> { $"{mockServer.Uri}v3/index.json" },
-                "Fake.Newtonsoft.Json",
-                0,
-                20,
-                false,
-                true,
-                Common.NullLogger.Instance,
-                System.Threading.CancellationToken.None);
+                sourceProvider: sourceProvider,
+                sources: new List<string> { $"{mockServer.Uri}v3/index.json" },
+                searchTerm: "Fake.Newtonsoft.Json",
+                skip: 0,
+                take: 20,
+                prerelease: false,
+                exactMatch: true,
+                logger: Common.NullLogger.Instance,
+                cancellationToken: System.Threading.CancellationToken.None);
 
             //stop mock server
             mockServer.Stop();

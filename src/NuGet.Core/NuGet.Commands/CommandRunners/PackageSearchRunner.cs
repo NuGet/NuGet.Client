@@ -51,7 +51,7 @@ namespace NuGet.Commands.CommandRunners
 
             foreach (var packageSource in listEndpoints)
             {
-                var searchTask = searchPackageSourceAsync(packageSource);
+                Task<IEnumerable<IPackageSearchMetadata>> searchTask = searchPackageSourceAsync(packageSource);
                 searchRequests.Add((searchTask, packageSource));
             }
 
@@ -69,7 +69,7 @@ namespace NuGet.Commands.CommandRunners
         }
 
         /// <summary>
-        /// Builds a task that perform package search operation.
+        /// Builds a task that performs package search operation.
         /// </summary>
         /// <param name="source">A package source/endpoint.</param>
         /// <param name="searchTerm">The term to search for within the package sources.</param>
