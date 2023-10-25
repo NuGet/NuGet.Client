@@ -19,7 +19,7 @@ namespace NuGet.Commands.Internal
         private readonly string _searchTerm;
         private readonly bool _isExactMatch;
         private const int LineSeparatorLength = 40;
-        private static readonly string SourceSeparator = new('=', LineSeparatorLength);
+        private static readonly string SourceSeparator = new('*', LineSeparatorLength);
 
         public PackageSearchResult(Task<IEnumerable<IPackageSearchMetadata>> completedSearchTask, PackageSource source, ILogger logger, string searchTerm, bool isExactMatch = false)
         {
