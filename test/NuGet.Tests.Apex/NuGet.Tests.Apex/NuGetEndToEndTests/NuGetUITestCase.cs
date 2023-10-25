@@ -759,15 +759,15 @@ namespace NuGet.Tests.Apex
             solutionService.Build();
 
             CommonUtility.AssertPackageReferenceExists(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
-            uiwindow.AssertTopLevelPackageExistsInInstalledTab(TestPackageName);
-            uiwindow.AssertTransitivePackageExistsInInstalledTab(transitivePackageName);
+            uiwindow.AssertPackageNameAndType(TestPackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
+            uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.Transitive);
 
             // Act
             uiwindow.SearchPackageFromUI(transitivePackageName);
 
             // Assert
             VisualStudio.AssertNoErrors();
-            uiwindow.AssertSearchedTransitivePackageExistsInInstalledTab(transitivePackageName);
+            uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.Transitive);
         }
 
         [TestMethod]
@@ -792,8 +792,8 @@ namespace NuGet.Tests.Apex
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             solutionService.Build();
 
-            uiwindow.AssertTopLevelPackageExistsInInstalledTab(TestPackageName);
-            uiwindow.AssertTransitivePackageExistsInInstalledTab(transitivePackageName);
+            uiwindow.AssertPackageNameAndType(TestPackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
+            uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.Transitive);
 
             // Act
             uiwindow.InstallPackageFromUI(transitivePackageName, TestPackageVersionV1);
@@ -802,12 +802,12 @@ namespace NuGet.Tests.Apex
             // Assert
             VisualStudio.AssertNoErrors();
             CommonUtility.AssertPackageReferenceExists(VisualStudio, project, transitivePackageName, TestPackageVersionV1, Logger);
-            uiwindow.AssertTransitivePackageNotExistsInInstalledTab(transitivePackageName);
+            uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
         }
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task UninstallTopLevelToTransitivePackageFromUI()
+        public async Task Uninstall_WithMultiplePackagesThatDependOnEachOther_PackageGoesFromDirectToTransitive()
         {
             // Arrange
             var transitivePackageName = "Contoso.B";
@@ -827,13 +827,14 @@ namespace NuGet.Tests.Apex
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             solutionService.Build();
 
-            uiwindow.AssertTopLevelPackageExistsInInstalledTab(TestPackageName);
-            uiwindow.AssertTransitivePackageExistsInInstalledTab(transitivePackageName);
+            uiwindow.AssertPackageNameAndType(TestPackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
+            uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.Transitive);
 
             uiwindow.InstallPackageFromUI(transitivePackageName, TestPackageVersionV1);
             solutionService.Build();
 
-            uiwindow.AssertTransitivePackageNotExistsInInstalledTab(transitivePackageName);
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, transitivePackageName, TestPackageVersionV1, Logger);
+            uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
 
             // Act
             uiwindow.UninstallPackageFromUI(transitivePackageName);
@@ -842,8 +843,8 @@ namespace NuGet.Tests.Apex
             // Assert
             VisualStudio.AssertNoErrors();
             CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, transitivePackageName, Logger);
-            uiwindow.AssertTopLevelPackageExistsInInstalledTab(TestPackageName);
-            uiwindow.AssertTransitivePackageExistsInInstalledTab(transitivePackageName);
+            uiwindow.AssertPackageNameAndType(TestPackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
+            uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.Transitive);
         }
     }
 }

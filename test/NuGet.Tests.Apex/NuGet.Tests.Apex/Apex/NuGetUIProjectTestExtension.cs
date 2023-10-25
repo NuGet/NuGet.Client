@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using FluentAssertions;
 using Microsoft.Test.Apex.Services;
 using NuGet.PackageManagement.UI;
@@ -64,32 +63,11 @@ namespace NuGet.Tests.Apex
             DeprecatedPackageResult.Should().BeFalse();
         }
 
-        public void AssertTopLevelPackageExistsInInstalledTab(string packageName)
+        public void AssertPackageNameAndType(string packageId, PackageLevel packageLevel)
         {
-            var topPackage = _uiproject.PackageItemOnInstalledTab().FirstOrDefault();
-            bool topPackageResult = topPackage.PackageLevel.Equals(PackageLevel.TopLevel) && topPackage.Id.Equals(packageName);
-            topPackageResult.Should().BeTrue();
-        }
-
-        public void AssertTransitivePackageExistsInInstalledTab(string transitivePackageName)
-        {
-            var bottomPackage = _uiproject.PackageItemOnInstalledTab().Last();
-            bool bottomPackageResult = bottomPackage.PackageLevel.Equals(PackageLevel.Transitive) && bottomPackage.Id.Equals(transitivePackageName);
-            bottomPackageResult.Should().BeTrue();
-        }
-
-        public void AssertTransitivePackageNotExistsInInstalledTab(string transitivePackageName)
-        {
-            var bottomPackage = _uiproject.PackageItemOnInstalledTab().Last();
-            bool bottomPackageResult = bottomPackage.PackageLevel.Equals(PackageLevel.Transitive) && bottomPackage.Id.Equals(transitivePackageName);
-            bottomPackageResult.Should().BeFalse();
-        }
-
-        public void AssertSearchedTransitivePackageExistsInInstalledTab(string transitivePackageName)
-        {
-            var searchedPackage = _uiproject.PackageItemOnInstalledTab().FirstOrDefault();
-            bool searchedPackageResult = searchedPackage.PackageLevel.Equals(PackageLevel.Transitive) && searchedPackage.Id.Equals(transitivePackageName);
-            searchedPackageResult.Should().BeTrue();
+            var package = _uiproject.GetPackageItemOnInstalledTabById(packageId);
+            package.PackageLevel.Should().Be(packageLevel);
+            package.Id.Should().Be(packageId);
         }
 
         public bool InstallPackageFromUI(string packageId, string version)
