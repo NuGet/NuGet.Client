@@ -122,12 +122,13 @@ namespace NuGet.Commands.Test
                 exactMatch: false,
                 logger: Common.NullLogger.Instance,
                 cancellationToken: System.Threading.CancellationToken.None);
+            string consoleOutputNormalized = NormalizeNewlines(consoleOutput.ToString());
 
             //stop mock server
             mockServer.Stop();
 
             // Assert
-            Assert.Equal(NormalizeNewlines(_onePackageExpectedOutput), NormalizeNewlines(consoleOutput.ToString()));
+            Assert.Equal(_onePackageExpectedOutput, consoleOutputNormalized);
         }
 
         [Theory]
@@ -183,12 +184,13 @@ namespace NuGet.Commands.Test
                 exactMatch: false,
                 logger: Common.NullLogger.Instance,
                 cancellationToken: System.Threading.CancellationToken.None);
+            string consoleOutputNormalized = NormalizeNewlines(consoleOutput.ToString());
 
             //stop mock server
             mockServer.Stop();
 
             // Assert
-            Assert.Equal(NormalizeNewlines(_onePackageExpectedOutput), NormalizeNewlines(consoleOutput.ToString()));
+            Assert.Equal(_onePackageExpectedOutput, consoleOutputNormalized);
         }
 
         [Fact]
@@ -268,12 +270,13 @@ namespace NuGet.Commands.Test
                 exactMatch: true,
                 logger: Common.NullLogger.Instance,
                 cancellationToken: System.Threading.CancellationToken.None);
+            string consoleOutputNormalized = NormalizeNewlines(consoleOutput.ToString());
 
             //stop mock server
             mockServer.Stop();
 
             // Assert
-            Assert.Equal(NormalizeNewlines(_onePackageExpectedOutput), NormalizeNewlines(consoleOutput.ToString()));
+            Assert.Equal(_onePackageExpectedOutput, consoleOutputNormalized);
         }
     }
 }
