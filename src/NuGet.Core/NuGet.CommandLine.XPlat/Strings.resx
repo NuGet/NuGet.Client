@@ -819,7 +819,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>The protocol version specified is invalid. Provide a valid protocol version.</value>
   </data>
   <data name="pkgSearch_Description" xml:space="preserve">
-    <value>Searches a given source using the query string provided. If no sources are specified, all sources defined in NuGet.config are used.</value>
+    <value>Searches a given source using the query string provided. If no sources are specified, all sources defined in the NuGet.Config are used.</value>
   </data>
   <data name="pkgSearch_ExactMatchDescription" xml:space="preserve">
     <value>Return an exact match only as a search result.</value>
