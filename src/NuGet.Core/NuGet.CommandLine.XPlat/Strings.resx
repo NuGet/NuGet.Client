@@ -834,7 +834,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>The number of results to skip, for pagination. The default is 0.</value>
   </data>
   <data name="pkgSearch_SourceDescription" xml:space="preserve">
-    <value>The package source to search. You can pass multiple --source options to search multiple package sources.</value>
+    <value>The package source to search. You can pass multiple `--source` options to search multiple package sources.</value>
   </data>
   <data name="pkgSearch_TakeDescription" xml:space="preserve">
     <value>The number of results to return. The default value is 20.</value>
