@@ -1283,7 +1283,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Searches a given source using the query string provided. If no sources are specified, all sources defined in NuGet.config are used..
+        ///   Looks up a localized string similar to Searches a given source using the query string provided. If no sources are specified, all sources defined in the NuGet.Config are used..
         /// </summary>
         internal static string pkgSearch_Description {
             get {
@@ -1328,7 +1328,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package source to search. You can pass multiple --source options to search multiple package sources..
+        ///   Looks up a localized string similar to The package source to search. You can pass multiple `--source` options to search multiple package sources..
         /// </summary>
         internal static string pkgSearch_SourceDescription {
             get {
@@ -1346,7 +1346,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the search term to filter results. Use this argument to search for packages matching the provided query. Example: dotnet package search json..
+        ///   Looks up a localized string similar to Specifies the search term to filter results. Use this argument to search for packages matching the provided query. Example: `dotnet package search json`..
         /// </summary>
         internal static string pkgSearch_termDescription {
             get {
