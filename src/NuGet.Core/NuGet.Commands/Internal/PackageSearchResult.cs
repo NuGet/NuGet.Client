@@ -33,6 +33,7 @@ namespace NuGet.Commands.Internal
         public async Task PrintResultTablesAsync()
         {
             _logger.LogMinimal(SourceSeparator);
+
             if (_completedSearchTask == null)
             {
                 _logger.LogMinimal($"Source: {_source.Name}");

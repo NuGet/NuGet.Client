@@ -92,7 +92,12 @@ namespace NuGet.Commands.CommandRunners
             {
                 var repository = Repository.Factory.GetCoreV3(source);
                 var resource = await repository.GetResourceAsync<PackageSearchResource>(cancellationToken);
-                if (resource == null) return null;
+
+                if (resource == null)
+                {
+                    return null;
+                }
+
                 return await resource.SearchAsync(searchTerm, new SearchFilter(includePrerelease: prerelease), skip, take, logger, cancellationToken);
             });
         }
@@ -119,7 +124,10 @@ namespace NuGet.Commands.CommandRunners
                 var repository = Repository.Factory.GetCoreV3(source);
                 var resource = await repository.GetResourceAsync<PackageMetadataResource>();
 
-                if (resource == null) return null;
+                if (resource == null)
+                {
+                    return null;
+                }
 
                 return await resource.GetMetadataAsync(searchTerm, includePrerelease: prerelease, includeUnlisted: false, cache, logger, cancellationToken);
             });
@@ -137,6 +145,7 @@ namespace NuGet.Commands.CommandRunners
                 .Where(p => p.IsEnabled)
                 .ToList();
             IList<PackageSource> packageSources;
+
             if (sources.Count > 0)
             {
                 packageSources = sources
@@ -159,6 +168,7 @@ namespace NuGet.Commands.CommandRunners
         private static void WarnForHTTPSources(IList<PackageSource> packageSources, ILogger logger)
         {
             List<PackageSource> httpPackageSources = null;
+
             foreach (PackageSource packageSource in packageSources)
             {
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
@@ -176,18 +186,20 @@ namespace NuGet.Commands.CommandRunners
                 if (httpPackageSources.Count == 1)
                 {
                     logger.LogWarning(
-                        string.Format(CultureInfo.CurrentCulture,
-                        Strings.Warning_HttpServerUsage,
-                        "search",
-                        httpPackageSources[0]));
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Warning_HttpServerUsage,
+                            "search",
+                            httpPackageSources[0]));
                 }
                 else
                 {
                     logger.LogWarning(
-                        string.Format(CultureInfo.CurrentCulture,
-                        Strings.Warning_HttpServerUsage_MultipleSources,
-                        "search",
-                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Warning_HttpServerUsage_MultipleSources,
+                            "search",
+                            Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
                 }
             }
         }
