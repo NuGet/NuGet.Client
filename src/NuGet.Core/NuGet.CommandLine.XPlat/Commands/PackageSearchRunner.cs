@@ -11,11 +11,11 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol;
-using NuGet.Commands.Internal;
+using NuGet.Commands;
 
-namespace NuGet.Commands.CommandRunners
+namespace NuGet.CommandLine.XPlat
 {
-    public static class PackageSearchRunner
+    internal static class PackageSearchRunner
     {
         /// <summary>
         /// Runs the search operation asynchronously using the provided parameters.

@@ -9,7 +9,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Commands.Internal
+namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchResult
     {

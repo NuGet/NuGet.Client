@@ -8,6 +8,7 @@ using Test.Utility;
 using Xunit;
 using System.IO;
 using NuGet.Configuration;
+using NuGet.CommandLine.XPlat;
 
 namespace NuGet.Commands.Test
 {

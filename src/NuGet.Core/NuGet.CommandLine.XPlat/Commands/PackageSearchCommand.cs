@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.Commands.CommandRunners;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;

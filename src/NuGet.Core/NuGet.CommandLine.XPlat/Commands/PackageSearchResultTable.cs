@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NuGet.Commands.Internal
+namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchResultTable
     {
