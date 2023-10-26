@@ -5,47 +5,37 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class PackageSearchResult
+    internal class PackageSearchResultTableRenderer : IPackageSearchResultRenderer
     {
-        private readonly Task<IEnumerable<IPackageSearchMetadata>> _completedSearchTask;
-        private readonly PackageSource _source;
-        private readonly ILogger _logger;
-        private readonly string _searchTerm;
-        private readonly bool _isExactMatch;
+        private PackageSearchArgs _args;
         private const int LineSeparatorLength = 40;
         private static readonly string SourceSeparator = new('*', LineSeparatorLength);
 
-        public PackageSearchResult(Task<IEnumerable<IPackageSearchMetadata>> completedSearchTask, PackageSource source, ILogger logger, string searchTerm, bool isExactMatch = false)
+        public PackageSearchResultTableRenderer(PackageSearchArgs packageSearchArgs)
         {
-            _completedSearchTask = completedSearchTask;
-            _source = source;
-            _logger = logger;
-            _searchTerm = searchTerm;
-            _isExactMatch = isExactMatch;
+            _args = packageSearchArgs;
         }
-
-        public async Task PrintResultTablesAsync()
+        public async Task Add(PackageSource source, Task<IEnumerable<IPackageSearchMetadata>> completedSearchTask)
         {
-            _logger.LogMinimal(SourceSeparator);
+            _args.Logger.LogMinimal(SourceSeparator);
 
-            if (_completedSearchTask == null)
+            if (completedSearchTask == null)
             {
-                _logger.LogMinimal($"Source: {_source.Name}");
-                _logger.LogMinimal("Failed to obtain a search resource.");
+                _args.Logger.LogMinimal($"Source: {source.Name}");
+                _args.Logger.LogMinimal("Failed to obtain a search resource.");
                 return;
             }
 
-            _logger.LogMinimal($"Source: {_source.Name}");
-            IEnumerable<IPackageSearchMetadata> searchResult = await _completedSearchTask;
-            var table = new PackageSearchResultTable(new[] { 0, 2 }, "Package ID", "Latest Version", "Authors", "Downloads");
+            _args.Logger.LogMinimal($"Source: {source.Name}");
+            IEnumerable<IPackageSearchMetadata> searchResult = await completedSearchTask;
+            var table = new Table(new[] { 0, 2 }, "Package ID", "Latest Version", "Authors", "Downloads");
 
-            if (_isExactMatch)
+            if (_args.ExactMatch)
             {
                 var firstResult = searchResult.FirstOrDefault();
                 if (firstResult != null)
@@ -58,7 +48,17 @@ namespace NuGet.CommandLine.XPlat
                 PopulateTableWithResults(searchResult, table);
             }
 
-            table.PrintResult(_searchTerm);
+            table.PrintResult(_args.SearchTerm);
+        }
+
+        public void Finish()
+        {
+            // We don' need to write anything at the end of the rendering for a tabular format
+        }
+
+        public void Start()
+        {
+            // We don' need to write anything at the begining of the rendering for a tabular format
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="results">An enumerable of package search metadata to be processed and added to the table.</param>
         /// <param name="table">The table where the results will be added as rows.</param>
-        private static void PopulateTableWithResults(IEnumerable<IPackageSearchMetadata> results, PackageSearchResultTable table)
+        private static void PopulateTableWithResults(IEnumerable<IPackageSearchMetadata> results, Table table)
         {
             CultureInfo culture = CultureInfo.CurrentCulture;
 
@@ -87,6 +87,5 @@ namespace NuGet.CommandLine.XPlat
                 table.AddRow(packageId, version, authors, downloads);
             }
         }
-
     }
 }

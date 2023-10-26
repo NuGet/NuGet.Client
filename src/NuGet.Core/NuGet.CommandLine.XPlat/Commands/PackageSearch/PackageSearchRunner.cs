@@ -44,17 +44,24 @@ namespace NuGet.CommandLine.XPlat
                 searchRequests.Add((searchTask, packageSource));
             }
 
+            IPackageSearchResultRenderer packageSearchResult;
+
+            packageSearchResult = new PackageSearchResultTableRenderer(packageSearchArgs);
+
+            packageSearchResult.Start();
+
             while (searchRequests.Count > 0)
             {
                 Task<IEnumerable<IPackageSearchMetadata>> completedTask = await Task.WhenAny(searchRequests.Select(t => t.Item1));
                 int completedTaskIndex = searchRequests.FindIndex(t => t.Item1 == completedTask); ;
                 PackageSource source = searchRequests[completedTaskIndex].Item2;
-                PackageSearchResult searchResult = new PackageSearchResult(completedTask, source, packageSearchArgs.Logger, packageSearchArgs.SearchTerm, packageSearchArgs.ExactMatch);
 
-                await searchResult.PrintResultTablesAsync();
+                await packageSearchResult.Add(source, completedTask);
 
                 searchRequests.RemoveAt(completedTaskIndex);
             }
+
+            packageSearchResult.Finish();
         }
 
         /// <summary>

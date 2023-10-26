@@ -7,13 +7,13 @@ using System.Linq;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class PackageSearchResultTable
+    internal class Table
     {
         private readonly List<string[]> _rows = new List<string[]>();
         private int[] _columnWidths;
         private int[] _columnsToHighlight;
 
-        public PackageSearchResultTable(int[] columnsToHighlight, params string[] headers)
+        public Table(int[] columnsToHighlight, params string[] headers)
         {
             _columnsToHighlight = columnsToHighlight;
             _columnWidths = new int[headers.Length];
