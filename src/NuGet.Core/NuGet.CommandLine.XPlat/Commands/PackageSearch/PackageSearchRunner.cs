@@ -21,13 +21,7 @@ namespace NuGet.CommandLine.XPlat
         /// Runs the search operation asynchronously using the provided parameters.
         /// </summary>
         /// <param name="sourceProvider">The provider for package sources.</param>
-        /// <param name="sources">The list of package sources.</param>
-        /// <param name="searchTerm">The term to search for within the package sources.</param>
-        /// <param name="skip">The number of results to skip.</param>
-        /// <param name="take">The number of results to retrieve.</param>
-        /// <param name="prerelease">A flag indicating whether to include prerelease packages in the search.</param>
-        /// <param name="exactMatch">A flag indicating whether to perform an exact match search.</param>
-        /// <param name="logger">The logger instance to use for logging.</param>
+        /// <param name="packageSearchArgs">Package search arguments</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         public static async Task RunAsync(
             IPackageSourceProvider sourceProvider,
@@ -67,11 +61,7 @@ namespace NuGet.CommandLine.XPlat
         /// Builds a task that performs package search operation.
         /// </summary>
         /// <param name="source">A package source/endpoint.</param>
-        /// <param name="searchTerm">The term to search for within the package sources.</param>
-        /// <param name="prerelease">A flag indicating whether to include prerelease packages in the search.</param>
-        /// <param name="skip">The number of results to skip.</param>
-        /// <param name="take">The number of results to retrieve.</param>
-        /// <param name="logger">The logger instance to use for logging.</param>
+        /// <param name="packageSearchArgs">Package search arguments</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A list of tasks that perform package search operations.</returns>
         private static Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(
@@ -103,9 +93,7 @@ namespace NuGet.CommandLine.XPlat
         /// Builds a task that perform exact match package search operation.
         /// </summary>
         /// <param name="source">A package source.</param>
-        /// <param name="searchTerm">The term to search for within the package sources.</param>
-        /// <param name="prerelease">A flag indicating whether to include prerelease packages in the search.</param>
-        /// <param name="logger">The logger instance to use for logging.</param>
+        /// <param name="packageSearchArgs">Package search arguments</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A list of tasks that perform exact match package search operations.</returns>
         private static Task<IEnumerable<IPackageSearchMetadata>> GetPackageAsync(
