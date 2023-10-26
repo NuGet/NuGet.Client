@@ -31,21 +31,16 @@ namespace NuGet.CommandLine.XPlat
         /// <returns>A task that represents the asynchronous operation.</returns>
         public static async Task RunAsync(
             IPackageSourceProvider sourceProvider,
-            List<string> sources, string searchTerm,
-            int skip,
-            int take,
-            bool prerelease,
-            bool exactMatch,
-            ILogger logger,
+            PackageSearchArgs packageSearchArgs,
             CancellationToken cancellationToken)
         {
-            var listEndpoints = GetPackageSourcesAsync(sources, sourceProvider);
-            WarnForHTTPSources(listEndpoints, logger);
+            var listEndpoints = GetPackageSourcesAsync(packageSearchArgs.Sources, sourceProvider);
+            WarnForHTTPSources(listEndpoints, packageSearchArgs.Logger);
 
             Func<PackageSource, Task<IEnumerable<IPackageSearchMetadata>>> searchPackageSourceAsync =
-                exactMatch
-                ? packageSource => GetPackageAsync(packageSource, searchTerm, prerelease, logger, cancellationToken)
-                : packageSource => SearchAsync(packageSource, searchTerm, prerelease, skip, take, logger, cancellationToken);
+                packageSearchArgs.ExactMatch
+                ? packageSource => GetPackageAsync(packageSource, packageSearchArgs, cancellationToken)
+                : packageSource => SearchAsync(packageSource, packageSearchArgs, cancellationToken);
 
             List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)> searchRequests = new(listEndpoints.Count);
 
@@ -60,7 +55,7 @@ namespace NuGet.CommandLine.XPlat
                 Task<IEnumerable<IPackageSearchMetadata>> completedTask = await Task.WhenAny(searchRequests.Select(t => t.Item1));
                 int completedTaskIndex = searchRequests.FindIndex(t => t.Item1 == completedTask); ;
                 PackageSource source = searchRequests[completedTaskIndex].Item2;
-                PackageSearchResult searchResult = new PackageSearchResult(completedTask, source, logger, searchTerm, exactMatch);
+                PackageSearchResult searchResult = new PackageSearchResult(completedTask, source, packageSearchArgs.Logger, packageSearchArgs.SearchTerm, packageSearchArgs.ExactMatch);
 
                 await searchResult.PrintResultTablesAsync();
 
@@ -81,11 +76,7 @@ namespace NuGet.CommandLine.XPlat
         /// <returns>A list of tasks that perform package search operations.</returns>
         private static Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(
             PackageSource source,
-            string searchTerm,
-            bool prerelease,
-            int skip,
-            int take,
-            ILogger logger,
+            PackageSearchArgs packageSearchArgs,
             CancellationToken cancellationToken)
         {
             return Task.Run(async () =>
@@ -98,7 +89,13 @@ namespace NuGet.CommandLine.XPlat
                     return null;
                 }
 
-                return await resource.SearchAsync(searchTerm, new SearchFilter(includePrerelease: prerelease), skip, take, logger, cancellationToken);
+                return await resource.SearchAsync(
+                    packageSearchArgs.SearchTerm,
+                    new SearchFilter(includePrerelease: packageSearchArgs.Prerelease),
+                    packageSearchArgs.Skip,
+                    packageSearchArgs.Take,
+                    packageSearchArgs.Logger,
+                    cancellationToken);
             });
         }
 
@@ -113,9 +110,7 @@ namespace NuGet.CommandLine.XPlat
         /// <returns>A list of tasks that perform exact match package search operations.</returns>
         private static Task<IEnumerable<IPackageSearchMetadata>> GetPackageAsync(
             PackageSource source,
-            string searchTerm,
-            bool prerelease,
-            ILogger logger,
+            PackageSearchArgs packageSearchArgs,
             CancellationToken cancellationToken)
         {
             return Task.Run(async () =>
@@ -129,7 +124,13 @@ namespace NuGet.CommandLine.XPlat
                     return null;
                 }
 
-                return await resource.GetMetadataAsync(searchTerm, includePrerelease: prerelease, includeUnlisted: false, cache, logger, cancellationToken);
+                return await resource.GetMetadataAsync(
+                    packageSearchArgs.SearchTerm,
+                    includePrerelease: packageSearchArgs.Prerelease,
+                    includeUnlisted: false,
+                    cache,
+                    packageSearchArgs.Logger,
+                    cancellationToken);
             });
         }
 

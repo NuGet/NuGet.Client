@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
@@ -14,16 +13,7 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchCommand
     {
-        internal delegate Task SetupSettingsAndRunSearchAsyncDelegate(
-        List<string> sources,
-        string searchTerm,
-        int skip,
-        int take,
-        bool prerelease,
-        bool exactMatch,
-        bool interactive,
-        ILogger logger
-        );
+        internal delegate Task SetupSettingsAndRunSearchAsyncDelegate(PackageSearchArgs packageSearchArgs);
 
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
         {
@@ -67,28 +57,17 @@ namespace NuGet.CommandLine.XPlat
                 pkgSearch.OnExecute(async () =>
                 {
                     // default values
-                    int takeValue = 20;
-                    int skipValue = 0;
-
-                    if (take.HasValue() && int.TryParse(take.Value(), out int takeVal))
+                    PackageSearchArgs packageSearchArgs = new PackageSearchArgs(skip.Value(), take.Value())
                     {
-                        takeValue = takeVal;
-                    }
+                        Sources = sources.Values,
+                        SearchTerm = searchTerm.Value,
+                        ExactMatch = exactMatch.HasValue(),
+                        Interactive = interactive.HasValue(),
+                        Prerelease = prerelease.HasValue(),
+                        Logger = getLogger(),
+                    };
 
-                    if (skip.HasValue() && int.TryParse(skip.Value(), out int skipVal))
-                    {
-                        skipValue = skipVal;
-                    }
-
-                    await setupSettingsAndRunSearchAsync(
-                        sources.Values,
-                        searchTerm.Value,
-                        skipValue,
-                        takeValue,
-                        prerelease.HasValue(),
-                        exactMatch.HasValue(),
-                        interactive.HasValue(),
-                        getLogger());
+                    await setupSettingsAndRunSearchAsync(packageSearchArgs);
 
                     return 0;
                 });
@@ -96,17 +75,9 @@ namespace NuGet.CommandLine.XPlat
             });
         }
 
-        public static async Task SetupSettingsAndRunSearchAsync(
-            List<string> sources,
-            string searchTerm,
-            int skip,
-            int take,
-            bool prerelease,
-            bool exactMatch,
-            bool interactive,
-            ILogger logger)
+        public static async Task SetupSettingsAndRunSearchAsync(PackageSearchArgs packageSearchArgs)
         {
-            DefaultCredentialServiceUtility.SetupDefaultCredentialService(logger, !interactive);
+            DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageSearchArgs.Logger, !packageSearchArgs.Interactive);
 
             ISettings settings = Settings.LoadDefaultSettings(
                 Directory.GetCurrentDirectory(),
@@ -116,13 +87,7 @@ namespace NuGet.CommandLine.XPlat
 
             await PackageSearchRunner.RunAsync(
                 sourceProvider,
-                sources,
-                searchTerm,
-                skip,
-                take,
-                prerelease,
-                exactMatch,
-                logger,
+                packageSearchArgs,
                 System.Threading.CancellationToken.None);
         }
     }

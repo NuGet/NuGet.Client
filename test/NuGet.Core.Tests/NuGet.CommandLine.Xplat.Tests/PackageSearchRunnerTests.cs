@@ -110,17 +110,21 @@ namespace NuGet.Commands.Test
             // Redirect console output
             using var consoleOutput = new StringWriter();
             Console.SetOut(consoleOutput);
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = 0,
+                Take = 20,
+                Prerelease = false,
+                ExactMatch = false,
+                Logger = Common.NullLogger.Instance,
+                SearchTerm = "json",
+                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
+            };
 
             // Act
             await PackageSearchRunner.RunAsync(
                 sourceProvider: sourceProvider,
-                sources: new List<string> { $"{mockServer.Uri}v3/index.json" },
-                searchTerm: "json",
-                skip: 0,
-                take: 20,
-                prerelease: false,
-                exactMatch: false,
-                logger: Common.NullLogger.Instance,
+                packageSearchArgs,
                 cancellationToken: System.Threading.CancellationToken.None);
             string consoleOutputNormalized = NormalizeNewlines(consoleOutput.ToString());
 
@@ -172,17 +176,21 @@ namespace NuGet.Commands.Test
             // Redirect console output
             using var consoleOutput = new StringWriter();
             Console.SetOut(consoleOutput);
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = skip,
+                Take = take,
+                Prerelease = prerelease,
+                ExactMatch = false,
+                Logger = Common.NullLogger.Instance,
+                SearchTerm = "json",
+                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
+            };
 
             // Act
             await PackageSearchRunner.RunAsync(
                 sourceProvider: sourceProvider,
-                sources: new List<string> { $"{mockServer.Uri}v3/index.json" },
-                searchTerm: "json",
-                skip: skip,
-                take: take,
-                prerelease: prerelease,
-                exactMatch: false,
-                logger: Common.NullLogger.Instance,
+                packageSearchArgs,
                 cancellationToken: System.Threading.CancellationToken.None);
             string consoleOutputNormalized = NormalizeNewlines(consoleOutput.ToString());
 
@@ -258,17 +266,21 @@ namespace NuGet.Commands.Test
             // Redirect console output
             using var consoleOutput = new StringWriter();
             Console.SetOut(consoleOutput);
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = 0,
+                Take = 20,
+                Prerelease = false,
+                ExactMatch = true,
+                Logger = Common.NullLogger.Instance,
+                SearchTerm = "Fake.Newtonsoft.Json",
+                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
+            };
 
             // Act
             await PackageSearchRunner.RunAsync(
                 sourceProvider: sourceProvider,
-                sources: new List<string> { $"{mockServer.Uri}v3/index.json" },
-                searchTerm: "Fake.Newtonsoft.Json",
-                skip: 0,
-                take: 20,
-                prerelease: false,
-                exactMatch: true,
-                logger: Common.NullLogger.Instance,
+                packageSearchArgs,
                 cancellationToken: System.Threading.CancellationToken.None);
             string consoleOutputNormalized = NormalizeNewlines(consoleOutput.ToString());
 
