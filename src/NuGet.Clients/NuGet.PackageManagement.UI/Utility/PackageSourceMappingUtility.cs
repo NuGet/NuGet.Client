@@ -177,6 +177,11 @@ namespace NuGet.PackageManagement.UI
             IReadOnlyList<SourceRepository> enabledSourceRepositories,
             INuGetUILogger logger)
         {
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             if (selectedSourceName is null || added.Count == 0 || packageSourceMapping is null)
             {
                 return;
