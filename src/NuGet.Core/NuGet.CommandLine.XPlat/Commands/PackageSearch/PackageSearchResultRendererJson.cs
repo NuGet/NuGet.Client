@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -60,7 +61,7 @@ namespace NuGet.CommandLine.XPlat
 
         public void Finish()
         {
-            var json = JsonSerializer.Serialize(_packageSearchResults);
+            var json = JsonConvert.SerializeObject(_packageSearchResults, Formatting.Indented);
             _args.Logger.LogMinimal(json);
         }
 

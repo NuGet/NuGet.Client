@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
@@ -13,7 +14,10 @@ namespace NuGet.CommandLine.XPlat
     /// </summary>
     internal class PackageSearchResult
     {
+        [JsonProperty("sourceName")]
         public string SourceName { get; set; }
+
+        [JsonProperty("packages")]
         public List<Package> Packages { get; set; }
 
         public PackageSearchResult(string source)
@@ -33,13 +37,28 @@ namespace NuGet.CommandLine.XPlat
     /// </summary>
     internal class Package
     {
+        [JsonProperty("authors")]
         public string Authors { get; set; }
+
+        [JsonProperty("deprecation")]
         public string Deprecation { get; set; }
+
+        [JsonProperty("description")]
         public string Description { get; set; }
+
+        [JsonProperty("downloads")]
         public long? Downloads { get; set; }
+
+        [JsonProperty("latestVersion")]
         public string LatestVersion { get; set; }
+
+        [JsonProperty("packageId")]
         public string PackageId { get; set; }
-        public Uri ProjectUri { get; set; }
+
+        [JsonProperty("projectUrl")]
+        public Uri ProjectUrl { get; set; }
+
+        [JsonProperty("vulnerabilities")]
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
 
         public Package(IPackageSearchMetadata searchMetadata, string deprecation)
@@ -50,7 +69,7 @@ namespace NuGet.CommandLine.XPlat
             Downloads = searchMetadata.DownloadCount;
             LatestVersion = searchMetadata.Identity.Version.ToString();
             PackageId = searchMetadata.Identity.Id;
-            ProjectUri = searchMetadata.ProjectUrl;
+            ProjectUrl = searchMetadata.ProjectUrl;
             Vulnerabilities = searchMetadata.Vulnerabilities;
         }
     }
