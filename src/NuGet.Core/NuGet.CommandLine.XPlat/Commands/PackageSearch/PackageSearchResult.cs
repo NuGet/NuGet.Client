@@ -61,6 +61,7 @@ namespace NuGet.CommandLine.XPlat
         [JsonProperty("vulnerabilities")]
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
 
+        public Package() { }
         public Package(IPackageSearchMetadata searchMetadata, string deprecation)
         {
             Authors = searchMetadata.Authors;

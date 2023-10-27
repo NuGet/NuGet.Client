@@ -49,7 +49,10 @@ namespace NuGet.CommandLine.XPlat
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidPackageSearchFormat, format));
         }
 
-        public PackageSearchArgs() { }
+        public PackageSearchArgs(string format)
+        {
+            Format = VerifyFormat(format);
+        }
 
         public int VerifyInt(string number, int defaultValue)
         {

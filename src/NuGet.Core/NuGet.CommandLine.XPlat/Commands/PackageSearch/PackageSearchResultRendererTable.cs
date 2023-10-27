@@ -48,7 +48,7 @@ namespace NuGet.CommandLine.XPlat
                 PopulateTableWithResults(searchResult, table);
             }
 
-            table.PrintResult(_args.SearchTerm);
+            table.PrintResult(_args.SearchTerm, _args.Logger);
         }
 
         public void Finish()
