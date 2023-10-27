@@ -53,11 +53,15 @@ namespace NuGet.CommandLine.XPlat
                     "--skip",
                     Strings.pkgSearch_SkipDescription,
                     CommandOptionType.SingleValue);
+                CommandOption format = pkgSearch.Option(
+                    "--format",
+                    Strings.pkgSearch_FormatDescription,
+                    CommandOptionType.SingleValue);
 
                 pkgSearch.OnExecute(async () =>
                 {
                     // default values
-                    PackageSearchArgs packageSearchArgs = new PackageSearchArgs(skip.Value(), take.Value())
+                    PackageSearchArgs packageSearchArgs = new PackageSearchArgs(skip.Value(), take.Value(), format.Value())
                     {
                         Sources = sources.Values,
                         SearchTerm = searchTerm.Value,

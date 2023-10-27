@@ -118,6 +118,7 @@ namespace NuGet.Commands.Test
                 ExactMatch = false,
                 Logger = Common.NullLogger.Instance,
                 SearchTerm = "json",
+                Format = PackageSearchCommandFormat.Table,
                 Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
             };
 
@@ -184,6 +185,7 @@ namespace NuGet.Commands.Test
                 ExactMatch = false,
                 Logger = Common.NullLogger.Instance,
                 SearchTerm = "json",
+                Format = PackageSearchCommandFormat.Table,
                 Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
             };
 
@@ -274,6 +276,7 @@ namespace NuGet.Commands.Test
                 ExactMatch = true,
                 Logger = Common.NullLogger.Instance,
                 SearchTerm = "Fake.Newtonsoft.Json",
+                Format = PackageSearchCommandFormat.Table,
                 Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
             };
 

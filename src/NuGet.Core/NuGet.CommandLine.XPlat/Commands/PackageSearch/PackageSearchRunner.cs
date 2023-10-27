@@ -46,7 +46,18 @@ namespace NuGet.CommandLine.XPlat
 
             IPackageSearchResultRenderer packageSearchResult;
 
-            packageSearchResult = new PackageSearchResultTableRenderer(packageSearchArgs);
+            if (packageSearchArgs.Format == PackageSearchCommandFormat.Json)
+            {
+                packageSearchResult = new PackageSearchResultRendererJson(packageSearchArgs);
+            }
+            else if (packageSearchArgs.Format == PackageSearchCommandFormat.List)
+            {
+                packageSearchResult = new PackageSearchResultRendererList(packageSearchArgs);
+            }
+            else
+            {
+                packageSearchResult = new PackageSearchResultRendererTable(packageSearchArgs);
+            }
 
             packageSearchResult.Start();
 

@@ -20,11 +20,33 @@ namespace NuGet.CommandLine.XPlat
         public bool Interactive { get; set; }
         public ILogger Logger { get; set; }
         public string SearchTerm { get; set; }
+        public PackageSearchCommandFormat Format { get; set; }
 
-        public PackageSearchArgs(string skip, string take)
+        public PackageSearchArgs(string skip, string take, string format)
         {
             Skip = VerifyInt(skip, _defaultSkip);
             Take = VerifyInt(take, _defaultTake);
+            Format = VerifyFormat(format);
+        }
+
+        private PackageSearchCommandFormat VerifyFormat(string format)
+        {
+            if (string.IsNullOrEmpty(format) || string.Equals(format, nameof(PackageSearchCommandFormat.Table), StringComparison.CurrentCultureIgnoreCase))
+            {
+                return PackageSearchCommandFormat.Table;
+            }
+
+            if (string.Equals(format, nameof(PackageSearchCommandFormat.Json), StringComparison.CurrentCultureIgnoreCase))
+            {
+                return PackageSearchCommandFormat.Json;
+            }
+
+            if (string.Equals(format, nameof(PackageSearchCommandFormat.List), StringComparison.CurrentCultureIgnoreCase))
+            {
+                return PackageSearchCommandFormat.List;
+            }
+
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidPackageSearchFormat, format));
         }
 
         public PackageSearchArgs() { }

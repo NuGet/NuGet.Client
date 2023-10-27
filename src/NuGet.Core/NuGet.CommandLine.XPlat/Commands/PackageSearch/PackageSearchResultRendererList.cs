@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -10,16 +11,17 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class PackageSearchResultRendererTable : IPackageSearchResultRenderer
+    internal class PackageSearchResultRendererList : IPackageSearchResultRenderer
     {
-        private PackageSearchArgs _args;
         private const int LineSeparatorLength = 40;
         private static readonly string SourceSeparator = new('*', LineSeparatorLength);
+        private PackageSearchArgs _args;
 
-        public PackageSearchResultRendererTable(PackageSearchArgs packageSearchArgs)
+        public PackageSearchResultRendererList(PackageSearchArgs args)
         {
-            _args = packageSearchArgs;
+            _args = args;
         }
+
         public async Task Add(PackageSource source, Task<IEnumerable<IPackageSearchMetadata>> completedSearchTask)
         {
             _args.Logger.LogMinimal(SourceSeparator);
@@ -33,22 +35,46 @@ namespace NuGet.CommandLine.XPlat
 
             _args.Logger.LogMinimal($"Source: {source.Name}");
             IEnumerable<IPackageSearchMetadata> searchResult = await completedSearchTask;
-            var table = new Table(new[] { 0, 2 }, "Package ID", "Latest Version", "Authors", "Downloads");
 
             if (_args.ExactMatch)
             {
                 var firstResult = searchResult.FirstOrDefault();
                 if (firstResult != null)
                 {
-                    PopulateTableWithResults(new[] { firstResult }, table);
+                    PrintPackages(new[] { firstResult });
                 }
             }
             else
             {
-                PopulateTableWithResults(searchResult, table);
+                PrintPackages(searchResult);
+            }
+        }
+
+        private void PrintPackages(IEnumerable<IPackageSearchMetadata> packages)
+        {
+            CultureInfo culture = CultureInfo.CurrentCulture;
+
+            if (packages == null || !packages.Any())
+            {
+                Console.WriteLine("No results found.");
+                return;
             }
 
-            table.PrintResult(_args.SearchTerm);
+            foreach (var result in packages)
+            {
+                string packageId = result.Identity.Id;
+                string version = result.Identity.Version.ToNormalizedString();
+                string downloads = "N/A";
+
+                if (result.DownloadCount != null)
+                {
+                    NumberFormatInfo nfi = (NumberFormatInfo)culture.NumberFormat.Clone();
+                    nfi.NumberDecimalDigits = 0;
+                    downloads = string.Format(nfi, "{0:N}", result.DownloadCount);
+                }
+
+                _args.Logger.LogMinimal($">{packageId} | Latest Version: {version} | Downloads: {downloads}");
+            }
         }
 
         public void Finish()
@@ -59,33 +85,6 @@ namespace NuGet.CommandLine.XPlat
         public void Start()
         {
             // We don' need to write anything at the beginning of the rendering for a tabular format
-        }
-
-        /// <summary>
-        /// Populates the given table with package metadata results.
-        /// </summary>
-        /// <param name="results">An enumerable of package search metadata to be processed and added to the table.</param>
-        /// <param name="table">The table where the results will be added as rows.</param>
-        private static void PopulateTableWithResults(IEnumerable<IPackageSearchMetadata> results, Table table)
-        {
-            CultureInfo culture = CultureInfo.CurrentCulture;
-
-            foreach (IPackageSearchMetadata result in results)
-            {
-                string packageId = result.Identity.Id;
-                string version = result.Identity.Version.ToNormalizedString();
-                string authors = result.Authors;
-                string downloads = "N/A";
-
-                if (result.DownloadCount != null)
-                {
-                    NumberFormatInfo nfi = (NumberFormatInfo)culture.NumberFormat.Clone();
-                    nfi.NumberDecimalDigits = 0;
-                    downloads = string.Format(nfi, "{0:N}", result.DownloadCount);
-                }
-
-                table.AddRow(packageId, version, authors, downloads);
-            }
         }
     }
 }

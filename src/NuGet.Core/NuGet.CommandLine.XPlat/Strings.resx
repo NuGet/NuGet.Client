@@ -846,4 +846,12 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>{0} is not a valid integer.</value>
     <comment>0 - The invalud number.</comment>
   </data>
+  <data name="pkgSearch_FormatDescription" xml:space="preserve">
+    <value>Format the output accordingly. Either Table, List, or Json. The default value is Table.</value>
+    <comment>Please do not translate Table, List, and Json</comment>
+  </data>
+  <data name="Error_InvalidPackageSearchFormat" xml:space="preserve">
+    <value>Invalid `--format` value: '{0}'. Please use 'Table', 'List', or 'Json'.</value>
+    <comment>0 - The invalid format value they entered.  Please do not translate --format, Table, List and Json</comment>
+  </data>
 </root>
