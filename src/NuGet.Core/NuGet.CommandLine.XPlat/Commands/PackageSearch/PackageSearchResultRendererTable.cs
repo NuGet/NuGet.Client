@@ -20,6 +20,7 @@ namespace NuGet.CommandLine.XPlat
         {
             _args = packageSearchArgs;
         }
+
         public async Task Add(PackageSource source, Task<IEnumerable<IPackageSearchMetadata>> completedSearchTask)
         {
             _args.Logger.LogMinimal(SourceSeparator);
@@ -38,6 +39,7 @@ namespace NuGet.CommandLine.XPlat
             if (_args.ExactMatch)
             {
                 var firstResult = searchResult.FirstOrDefault();
+                
                 if (firstResult != null)
                 {
                     PopulateTableWithResults(new[] { firstResult }, table);

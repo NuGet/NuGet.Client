@@ -39,6 +39,7 @@ namespace NuGet.CommandLine.XPlat
             if (_args.ExactMatch)
             {
                 var firstResult = searchResult.FirstOrDefault();
+                
                 if (firstResult != null)
                 {
                     PrintPackages(new[] { firstResult });

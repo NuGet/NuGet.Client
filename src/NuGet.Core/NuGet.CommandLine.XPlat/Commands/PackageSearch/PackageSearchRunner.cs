@@ -44,22 +44,22 @@ namespace NuGet.CommandLine.XPlat
                 searchRequests.Add((searchTask, packageSource));
             }
 
-            IPackageSearchResultRenderer packageSearchResult;
+            IPackageSearchResultRenderer packageSearchResultRenderer;
 
             if (packageSearchArgs.Format == PackageSearchCommandFormat.Json)
             {
-                packageSearchResult = new PackageSearchResultRendererJson(packageSearchArgs);
+                packageSearchResultRenderer = new PackageSearchResultRendererJson(packageSearchArgs);
             }
             else if (packageSearchArgs.Format == PackageSearchCommandFormat.List)
             {
-                packageSearchResult = new PackageSearchResultRendererList(packageSearchArgs);
+                packageSearchResultRenderer = new PackageSearchResultRendererList(packageSearchArgs);
             }
             else
             {
-                packageSearchResult = new PackageSearchResultRendererTable(packageSearchArgs);
+                packageSearchResultRenderer = new PackageSearchResultRendererTable(packageSearchArgs);
             }
 
-            packageSearchResult.Start();
+            packageSearchResultRenderer.Start();
 
             while (searchRequests.Count > 0)
             {
@@ -67,12 +67,12 @@ namespace NuGet.CommandLine.XPlat
                 int completedTaskIndex = searchRequests.FindIndex(t => t.Item1 == completedTask); ;
                 PackageSource source = searchRequests[completedTaskIndex].Item2;
 
-                await packageSearchResult.Add(source, completedTask);
+                await packageSearchResultRenderer.Add(source, completedTask);
 
                 searchRequests.RemoveAt(completedTaskIndex);
             }
 
-            packageSearchResult.Finish();
+            packageSearchResultRenderer.Finish();
         }
 
         /// <summary>

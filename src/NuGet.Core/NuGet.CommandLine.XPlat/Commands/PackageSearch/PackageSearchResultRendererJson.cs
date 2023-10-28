@@ -21,6 +21,7 @@ namespace NuGet.CommandLine.XPlat
         {
             _args = packageSearchArgs;
         }
+
         public async Task Add(PackageSource source, Task<IEnumerable<IPackageSearchMetadata>> completedSearchTask)
         {
             if (completedSearchTask == null)
@@ -46,7 +47,6 @@ namespace NuGet.CommandLine.XPlat
             }
 
             _packageSearchResults.Add(packageSearchResult);
-
         }
 
         private async Task PopulateSearchResultWithPackages(PackageSearchResult packageSearchResult, IEnumerable<IPackageSearchMetadata> searchResults)

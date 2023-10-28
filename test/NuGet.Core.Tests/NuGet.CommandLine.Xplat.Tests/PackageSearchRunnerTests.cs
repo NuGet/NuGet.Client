@@ -144,9 +144,6 @@ namespace NuGet.Commands.Test
             mockServer.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
             mockServer.Start();
 
-            // Redirect console output
-            using var consoleOutput = new StringWriter();
-            Console.SetOut(consoleOutput);
             PackageSearchArgs packageSearchArgs = new(format)
             {
                 Skip = 0,
@@ -222,9 +219,6 @@ namespace NuGet.Commands.Test
             mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease={prereleaseValue}&semVerLevel=2.0.0", r => _onePackageQueryResult);
             mockServer.Start();
 
-            // Redirect console output
-            using var consoleOutput = new StringWriter();
-            Console.SetOut(consoleOutput);
             PackageSearchArgs packageSearchArgs = new(format)
             {
                 Skip = skip,
@@ -318,9 +312,6 @@ namespace NuGet.Commands.Test
             mockServer.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => exactMatchGetMetadataResult);
             mockServer.Start();
 
-            // Redirect console output
-            using var consoleOutput = new StringWriter();
-            Console.SetOut(consoleOutput);
             PackageSearchArgs packageSearchArgs = new(format)
             {
                 Skip = 0,
