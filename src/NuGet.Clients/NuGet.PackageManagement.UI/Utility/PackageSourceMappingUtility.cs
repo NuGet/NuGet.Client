@@ -167,7 +167,11 @@ namespace NuGet.PackageManagement.UI
             return sourceMappingSourceName;
         }
 
-        internal static void AddNewSourceMappingsFromAddedPackages(
+        /// <summary>
+        /// Builds a dictionary of source mappings to be created based on the <paramref name="added"/> packages.
+        /// </summary>
+        /// <returns>True if successful; false if any error occurred.</returns>
+        internal static bool AddNewSourceMappingsFromAddedPackages(
             ref Dictionary<string, SortedSet<string>>? newSourceMappings,
             string selectedSourceName,
             string topLevelPackageId,
@@ -184,12 +188,12 @@ namespace NuGet.PackageManagement.UI
 
             if (selectedSourceName is null || added.Count == 0 || packageSourceMapping is null)
             {
-                return;
+                return true;
             }
 
+            bool isSuccessful = true;
             string? globalPackageFolderName = globalPackageFolders?.Where(folder => folder.PackageSource.IsLocal).FirstOrDefault()?.PackageSource.Name;
             VersionFolderPathResolver? resolver = globalPackageFolderName != null ? new(globalPackageFolderName) : null;
-            LogMessage? firstLogError = null;
 
             foreach (AccessiblePackageIdentity addedPackage in added)
             {
@@ -224,16 +228,13 @@ namespace NuGet.PackageManagement.UI
                         }
                         else // GPF source is not enabled for this solution, so this is an error.
                         {
+                            isSuccessful = false;
+
                             string formattedError = string.Format(CultureInfo.CurrentCulture,
                                 Resources.Error_SourceMapping_GPF_NotEnabled,
                                 addedPackage.Id,
                                 sourceFoundInGlobalPackagesFolder);
                             LogMessage logError = new LogMessage(LogLevel.Error, formattedError, NuGetLogCode.NU1110);
-
-                            if (firstLogError == null)
-                            {
-                                firstLogError = logError;
-                            }
 
                             logger.Log(logError);
                         }
@@ -242,11 +243,6 @@ namespace NuGet.PackageManagement.UI
                     {
                         sourceNameToMap = selectedSourceName;
                     }
-                }
-
-                if (firstLogError != null)
-                {
-                    continue;
                 }
 
                 // Default to the selected source from the UI if not found in the GPF.
@@ -272,10 +268,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            if (firstLogError != null)
-            {
-                throw new ApplicationException(firstLogError.Message);
-            }
+            return isSuccessful;
         }
     }
 }

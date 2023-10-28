@@ -380,15 +380,11 @@ namespace NuGet.PackageManagement.UI
                     TelemetryServiceUtility.StartOrResumeTimer();
 
                     IReadOnlyList<ProjectAction> actions = await resolveActionsAsync(projectManagerService);
-                    IReadOnlyList<PreviewResult> results;
-                    try
-                    {
-                        results = await GetPreviewResultsAsync(projectManagerService, actions, userAction, uiService, cancellationToken);
-                    }
-                    catch
+                    IReadOnlyList<PreviewResult> results = await GetPreviewResultsAsync(projectManagerService, actions, userAction, uiService, cancellationToken);
+
+                    if (results.Any(previewResult => previewResult.NuGetOperationStatus != NuGetOperationStatus.Succeeded))
                     {
                         status = NuGetOperationStatus.Failed;
-                        return;
                     }
 
                     if (operationType == NuGetProjectActionType.Uninstall)
@@ -428,6 +424,11 @@ namespace NuGet.PackageManagement.UI
                             // set operation type to update when there are packages being updated
                             operationType = NuGetProjectActionType.Update;
                         }
+                    }
+
+                    if (status == NuGetOperationStatus.Failed)
+                    {
+                        return;
                     }
 
                     TelemetryServiceUtility.StopTimer();
@@ -970,6 +971,7 @@ namespace NuGet.PackageManagement.UI
             var actionsByProject = expandedActions.GroupBy(action => action.ProjectId);
 
             Dictionary<string, SortedSet<string>>? newSourceMappings = null;
+            bool isNewSourceMappingPreviewResultSuccessful = false;
 
             // Group actions by operation
             foreach (IGrouping<string, ProjectAction> actions in actionsByProject)
@@ -1031,7 +1033,7 @@ namespace NuGet.PackageManagement.UI
                         .AsReadOnly();
 
                     // Everything added which didn't already have a source mapping will be mentioned in the Preview Window.
-                    PackageSourceMappingUtility.AddNewSourceMappingsFromAddedPackages(
+                    isNewSourceMappingPreviewResultSuccessful |= PackageSourceMappingUtility.AddNewSourceMappingsFromAddedPackages(
                         ref newSourceMappings,
                         userAction.SelectedSourceName,
                         userAction.PackageId,
@@ -1063,7 +1065,8 @@ namespace NuGet.PackageManagement.UI
 
             if (newSourceMappings?.Count > 0)
             {
-                var solutionSourceMappingResult = new PreviewResult(newSourceMappings);
+                var nuGetOperationStatus = isNewSourceMappingPreviewResultSuccessful ? NuGetOperationStatus.Succeeded : NuGetOperationStatus.Failed;
+                var solutionSourceMappingResult = new PreviewResult(newSourceMappings, nuGetOperationStatus);
                 results.Add(solutionSourceMappingResult);
             }
 

@@ -240,7 +240,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         /// Added packages are: `a`, `b`, `c`, `d`, `e`, `f`.
         /// Source mappings exist for: `a`, `b`, `d`.
         /// Transitive dependency `c`, `e`, `f` exist in the GPF, but the indicated package source `sourceC` is not enabled so
-        /// we log NU1110 for each and an exception is thrown for the first error.
+        /// we log NU1110 for each.
         /// </summary>
         [Fact]
         public async Task AddNewSourceMappingsFromAddedPackages_TransitiveExistsInGPFToNotEnabledSource_LogsAndThrowsNU1110()
@@ -321,16 +321,15 @@ namespace NuGet.PackageManagement.UI.Test.Utility
                 loggedMessages.Clear();
 
                 // Act
-                var exception = Assert.Throws<ApplicationException>(
-                    () => PackageSourceMappingUtility.AddNewSourceMappingsFromAddedPackages(
-                        ref newSourceMappings,
-                        selectedSourceName,
-                        topLevelPackageId,
-                        added,
-                        mockPackageSourceMapping.Object,
-                        globalPackageFolders,
-                        enabledSourceRepositories,
-                        logger));
+                bool isSuccessful = PackageSourceMappingUtility.AddNewSourceMappingsFromAddedPackages(
+                    ref newSourceMappings,
+                    selectedSourceName,
+                    topLevelPackageId,
+                    added,
+                    mockPackageSourceMapping.Object,
+                    globalPackageFolders,
+                    enabledSourceRepositories,
+                    logger);
 
                 // Assert
                 int expectedErrorCount = 3;
@@ -343,9 +342,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
                 expectedExceptionMessages[2] = $"The package `{contextPackageF.Id}` is available in the Global packages folder," +
                     $" but the source it came from `{sourceC.PackageSource.Source}` is not one of this solution's configured sources.";
 
-                // The exception message will encapsulate the first package that caused the error.
-                Assert.Equal(expectedExceptionMessages[0], exception.Message);
-
+                Assert.False(isSuccessful);
                 Assert.Equal(expectedErrorCount, loggedMessages.Count);
 
                 for (int j = 0; j < expectedErrorCount; j++)
