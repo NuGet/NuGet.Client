@@ -457,15 +457,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid `--format` value: &apos;{0}&apos;. Please use &apos;Table&apos;, &apos;List&apos;, or &apos;Json&apos;..
-        /// </summary>
-        internal static string Error_InvalidPackageSearchFormat {
-            get {
-                return ResourceManager.GetString("Error_InvalidPackageSearchFormat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to MsBuild was unable to open Project &apos;{0}&apos;..
         /// </summary>
         internal static string Error_MsBuildUnableToOpenProject {
@@ -1315,15 +1306,6 @@ namespace NuGet.CommandLine.XPlat {
         internal static string pkgSearch_ExactMatchDescription {
             get {
                 return ResourceManager.GetString("pkgSearch_ExactMatchDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Format the output accordingly. Either Table, List, or Json. The default value is Table..
-        /// </summary>
-        internal static string pkgSearch_FormatDescription {
-            get {
-                return ResourceManager.GetString("pkgSearch_FormatDescription", resourceCulture);
             }
         }
         

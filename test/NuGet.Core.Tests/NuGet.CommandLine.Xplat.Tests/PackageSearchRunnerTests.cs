@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Test.Utility;
@@ -10,7 +9,6 @@ using System.IO;
 using NuGet.Configuration;
 using NuGet.CommandLine.XPlat;
 using NuGet.Test.Utility;
-using Newtonsoft.Json;
 
 namespace NuGet.Commands.Test
 {
@@ -69,48 +67,14 @@ namespace NuGet.Commands.Test
                 + "|----------------------|----------------|-------------------|-------------|\n"
                 + "| Fake.Newtonsoft.Json | 12.0.3         | James Newton-King | 531,607,259 |";
 
-        readonly string _onePackageExpectedOutputList = ">Fake.Newtonsoft.Json | Latest Version: 12.0.3 | Downloads: 531,607,259";
-
-        private PackageSearchResult _expectedResult;
-        readonly Package _package = new Package
-        {
-            Authors = "James Newton-King",
-            Deprecation = null,
-            Description = null,
-            Downloads = 531607259,
-            LatestVersion = "12.0.3",
-            PackageId = "Fake.Newtonsoft.Json",
-            ProjectUrl = null,
-            Vulnerabilities = null
-        };
 
         private string NormalizeNewlines(string input)
         {
             return input.Replace("\r\n", "\n").Replace("\r", "\n");
         }
 
-        private string FormatExpectedOutput(string format)
-        {
-            if (string.Equals(format, nameof(PackageSearchCommandFormat.Table), StringComparison.CurrentCultureIgnoreCase))
-            {
-                return _onePackageExpectedOutputTable;
-            }
-            else if (string.Equals(format, nameof(PackageSearchCommandFormat.List), StringComparison.CurrentCultureIgnoreCase))
-            {
-                return _onePackageExpectedOutputList;
-            }
-            else
-            {
-                _expectedResult.AddPackage(_package);
-                return JsonConvert.SerializeObject(new[] { _expectedResult }, Formatting.Indented);
-            }
-        }
-
-        [Theory]
-        [InlineData("json")]
-        [InlineData("list")]
-        [InlineData("table")]
-        public async Task PackageSearchRunner_SearchAPIReturnsOnePackage_OnePackageTableOutputted(string format)
+        [Fact]
+        public async Task PackageSearchRunner_SearchAPIReturnsOnePackage_OnePackageTableOutputted()
         {
             // Arrange
             ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
@@ -119,7 +83,6 @@ namespace NuGet.Commands.Test
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var logger = new TestLogger();
             var mockServer = new MockServer();
-            _expectedResult = new PackageSearchResult($"{mockServer.Uri}v3/index.json");
 
             string index = $@"
                 {{
@@ -144,7 +107,7 @@ namespace NuGet.Commands.Test
             mockServer.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
             mockServer.Start();
 
-            PackageSearchArgs packageSearchArgs = new(format)
+            PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = 0,
                 Take = 20,
@@ -154,7 +117,7 @@ namespace NuGet.Commands.Test
                 SearchTerm = "json",
                 Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
             };
-            string expectedOutput = NormalizeNewlines(FormatExpectedOutput(format));
+            string expectedOutput = NormalizeNewlines(_onePackageExpectedOutputTable);
 
             // Act
             await PackageSearchRunner.RunAsync(
@@ -171,19 +134,11 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData(0, 10, true, "json")]
-        [InlineData(0, 20, false, "json")]
-        [InlineData(5, 10, true, "json")]
-        [InlineData(10, 20, false, "json")]
-        [InlineData(0, 10, true, "table")]
-        [InlineData(0, 20, false, "table")]
-        [InlineData(5, 10, true, "table")]
-        [InlineData(10, 20, false, "table")]
-        [InlineData(0, 10, true, "list")]
-        [InlineData(0, 20, false, "list")]
-        [InlineData(5, 10, true, "list")]
-        [InlineData(10, 20, false, "list")]
-        public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakePrereleaseOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take, bool prerelease, string format)
+        [InlineData(0, 10, true)]
+        [InlineData(0, 20, false)]
+        [InlineData(5, 10, true)]
+        [InlineData(10, 20, false)]
+        public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakePrereleaseOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take, bool prerelease)
         {
             // Arrange
             ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
@@ -191,9 +146,8 @@ namespace NuGet.Commands.Test
                     machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var mockServer = new MockServer();
-            _expectedResult = new PackageSearchResult($"{mockServer.Uri}v3/index.json");
             var logger = new TestLogger();
-            string expectedOutput = NormalizeNewlines(FormatExpectedOutput(format));
+            string expectedOutput = NormalizeNewlines(_onePackageExpectedOutputTable);
 
             string index = $@"
                 {{
@@ -219,7 +173,7 @@ namespace NuGet.Commands.Test
             mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease={prereleaseValue}&semVerLevel=2.0.0", r => _onePackageQueryResult);
             mockServer.Start();
 
-            PackageSearchArgs packageSearchArgs = new(format)
+            PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = skip,
                 Take = take,
@@ -244,11 +198,8 @@ namespace NuGet.Commands.Test
             Assert.Contains(expectedOutput, consoleOutputNormalized);
         }
 
-        [Theory]
-        [InlineData("json")]
-        [InlineData("list")]
-        [InlineData("table")]
-        public async Task PackageSearchRunner_GetMetadataAPIRequestReturnsOnePackage_OnePackageTableOutputted(string format)
+        [Fact]
+        public async Task PackageSearchRunner_GetMetadataAPIRequestReturnsOnePackage_OnePackageTableOutputted()
         {
             // Arrange
             ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
@@ -256,8 +207,7 @@ namespace NuGet.Commands.Test
                     machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var mockServer = new MockServer();
-            _expectedResult = new PackageSearchResult($"{mockServer.Uri}v3/index.json");
-            string expectedOutput = NormalizeNewlines(FormatExpectedOutput(format));
+            string expectedOutput = NormalizeNewlines(_onePackageExpectedOutputTable);
             var logger = new TestLogger();
 
             string index = $@"
@@ -312,7 +262,7 @@ namespace NuGet.Commands.Test
             mockServer.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => exactMatchGetMetadataResult);
             mockServer.Start();
 
-            PackageSearchArgs packageSearchArgs = new(format)
+            PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = 0,
                 Take = 20,

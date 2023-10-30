@@ -20,7 +20,6 @@ namespace NuGet.CommandLine.XPlat
 #endif
         private const string DotnetNuGetAppName = "dotnet nuget";
         private const string DotnetPackageAppName = "NuGet.CommandLine.XPlat.dll package";
-        private const string DotnetPackageSearchAppName = "dotnet package";
 
         public static int Main(string[] args)
         {
@@ -189,10 +188,6 @@ namespace NuGet.CommandLine.XPlat
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
                 ListPackageCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new ListPackageCommandRunner());
-            }
-            else if (args.Any() && args[0] == "search")
-            {
-                app.Name = DotnetPackageSearchAppName;
                 PackageSearchCommand.Register(app, getHidePrefixLogger);
             }
             else
