@@ -438,6 +438,82 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void ProjectRestoreMetadataCloneChangeCentralPackageVersionsEnabledTest()
+        {
+            // Set up
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.CentralPackageVersionsEnabled = !originalProjectRestoreMetadata.CentralPackageVersionsEnabled;
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(originalProjectRestoreMetadata.CentralPackageVersionsEnabled, !happyClone.CentralPackageVersionsEnabled);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeCentralPackageFloatingVersionsEnabledTest()
+        {
+            // Set up
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.CentralPackageFloatingVersionsEnabled = !originalProjectRestoreMetadata.CentralPackageFloatingVersionsEnabled;
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(originalProjectRestoreMetadata.CentralPackageFloatingVersionsEnabled, !happyClone.CentralPackageFloatingVersionsEnabled);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeCentralPackageVersionOverrideDisabledTest()
+        {
+            // Set up
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.CentralPackageVersionOverrideDisabled = !originalProjectRestoreMetadata.CentralPackageVersionOverrideDisabled;
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(originalProjectRestoreMetadata.CentralPackageVersionOverrideDisabled, !happyClone.CentralPackageVersionOverrideDisabled);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeCentralPackageTransitivePinningEnabledTest()
+        {
+            // Set up
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.CentralPackageTransitivePinningEnabled = !originalProjectRestoreMetadata.CentralPackageTransitivePinningEnabled;
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(originalProjectRestoreMetadata.CentralPackageVersionOverrideDisabled, !happyClone.CentralPackageVersionOverrideDisabled);
+        }
+
+        [Fact]
         public void ProjectRestoreMetadataCloneChangeFallbackFoldersTest()
         {
             // Set up
@@ -525,7 +601,7 @@ namespace NuGet.ProjectModel.Test
             Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
 
             // Act
-            originalProjectRestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors = false; ;
+            originalProjectRestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors = false;
 
             // Assert
             Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
