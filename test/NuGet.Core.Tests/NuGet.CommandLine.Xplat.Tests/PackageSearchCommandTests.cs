@@ -48,7 +48,6 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             //Assert
             Assert.Equal(searchTerm, _capturedArgs.SearchTerm);
-
         }
 
         [Fact]
@@ -224,7 +223,5 @@ namespace NuGet.CommandLine.Xplat.Tests
             Assert.Equal(expectedTake, _capturedArgs.Take);
             Assert.Equal(expectedSkip, _capturedArgs.Skip);
         }
-
-
     }
 }

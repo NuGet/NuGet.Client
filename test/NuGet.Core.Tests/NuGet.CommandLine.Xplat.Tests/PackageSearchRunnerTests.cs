@@ -67,7 +67,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                 + "|----------------------|----------------|-------------------|-------------|\n"
                 + "| Fake.Newtonsoft.Json | 12.0.3         | James Newton-King | 531,607,259 |";
 
-
         private string NormalizeNewlines(string input)
         {
             return input.Replace("\r\n", "\n").Replace("\r", "\n");
@@ -117,6 +116,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 SearchTerm = "json",
                 Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
             };
+
             string expectedOutput = NormalizeNewlines(_onePackageExpectedOutputTable);
 
             // Act
