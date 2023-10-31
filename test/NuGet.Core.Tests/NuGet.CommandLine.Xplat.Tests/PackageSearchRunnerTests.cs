@@ -10,7 +10,7 @@ using NuGet.Configuration;
 using NuGet.CommandLine.XPlat;
 using NuGet.Test.Utility;
 
-namespace NuGet.Commands.Test
+namespace NuGet.CommandLine.Xplat.Tests
 {
     public class PackageSearchRunnerTests
     {
