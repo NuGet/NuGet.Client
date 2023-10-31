@@ -510,7 +510,7 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
-            Assert.Equal(originalProjectRestoreMetadata.CentralPackageVersionOverrideDisabled, !happyClone.CentralPackageVersionOverrideDisabled);
+            Assert.Equal(originalProjectRestoreMetadata.CentralPackageTransitivePinningEnabled, !happyClone.CentralPackageTransitivePinningEnabled);
         }
 
         [Fact]
