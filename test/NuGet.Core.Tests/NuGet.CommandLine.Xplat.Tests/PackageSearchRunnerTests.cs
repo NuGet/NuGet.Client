@@ -94,7 +94,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     "| James Newton-King ",
                     "| 531,607,259 ",
                 };
-            
+
             PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = 0,
