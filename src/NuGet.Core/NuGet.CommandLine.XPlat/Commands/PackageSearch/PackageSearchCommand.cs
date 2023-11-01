@@ -12,7 +12,7 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchCommand
     {
-        internal delegate Task SetupSettingsAndRunSearchAsyncDelegate(PackageSearchArgs packageSearchArgs);
+        internal delegate Task<int> SetupSettingsAndRunSearchAsyncDelegate(PackageSearchArgs packageSearchArgs);
 
         public static void Register(CommandLineApplication app, Func<ILoggerWithColor> getLogger)
         {
@@ -55,26 +55,32 @@ namespace NuGet.CommandLine.XPlat
 
                 pkgSearch.OnExecute(async () =>
                 {
-                    // default values
-                    PackageSearchArgs packageSearchArgs = new PackageSearchArgs(skip.Value(), take.Value())
+                    PackageSearchArgs packageSearchArgs;
+                    try
                     {
-                        Sources = sources.Values,
-                        SearchTerm = searchTerm.Value,
-                        ExactMatch = exactMatch.HasValue(),
-                        Interactive = interactive.HasValue(),
-                        Prerelease = prerelease.HasValue(),
-                        Logger = getLogger(),
-                    };
+                        packageSearchArgs = new PackageSearchArgs(skip.Value(), take.Value())
+                        {
+                            Sources = sources.Values,
+                            SearchTerm = searchTerm.Value,
+                            ExactMatch = exactMatch.HasValue(),
+                            Interactive = interactive.HasValue(),
+                            Prerelease = prerelease.HasValue(),
+                            Logger = getLogger(),
+                        };
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        getLogger().LogError(ex.Message);
+                        return 1;
+                    }
 
-                    await setupSettingsAndRunSearchAsync(packageSearchArgs);
-
-                    return 0;
+                    return await setupSettingsAndRunSearchAsync(packageSearchArgs);
                 });
 
             });
         }
 
-        public static async Task SetupSettingsAndRunSearchAsync(PackageSearchArgs packageSearchArgs)
+        public static async Task<int> SetupSettingsAndRunSearchAsync(PackageSearchArgs packageSearchArgs)
         {
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageSearchArgs.Logger, !packageSearchArgs.Interactive);
 
@@ -84,7 +90,7 @@ namespace NuGet.CommandLine.XPlat
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
 
-            await PackageSearchRunner.RunAsync(
+            return await PackageSearchRunner.RunAsync(
                 sourceProvider,
                 packageSearchArgs,
                 System.Threading.CancellationToken.None);

@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
@@ -19,16 +18,26 @@ namespace NuGet.CommandLine.Xplat.Tests
         private Func<ILoggerWithColor> _getLogger;
         private PackageSearchArgs _capturedArgs;
         private SetupSettingsAndRunSearchAsyncDelegate _setupSettingsAndRunSearchAsyncDelegate;
+        private string _storedErrorMessage;
 
         public void SetUp()
         {
+            _storedErrorMessage = string.Empty;
             _app = new CommandLineApplication();
-            _getLogger = () => Mock.Of<ILoggerWithColor>();
+            var loggerWithColorMock = new Mock<ILoggerWithColor>();
+            loggerWithColorMock
+            .Setup(x => x.LogError(It.IsAny<string>()))
+            .Callback<string>((message) => {
+                _storedErrorMessage += message;
+            });
+
+            _getLogger = () => loggerWithColorMock.Object;
             _capturedArgs = null;
-            async Task SetupSettingsAndRunSearchAsync(PackageSearchArgs args)
+            async Task<int> SetupSettingsAndRunSearchAsync(PackageSearchArgs args)
             {
                 _capturedArgs = args;
                 await Task.CompletedTask;
+                return 0;
             }
 
             _setupSettingsAndRunSearchAsyncDelegate = SetupSettingsAndRunSearchAsync;
@@ -171,13 +180,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, take);
 
             // Act
-            var ex = Assert.Throws<AggregateException>(() =>
-                _app.Execute(new[] { "search", searchTerm, "--take", take }));
+            var exitCode = _app.Execute(new[] { "search", searchTerm, "--take", take });
 
             // Assert
-            var innerEx = ex.InnerExceptions.OfType<ArgumentException>().FirstOrDefault();
-            Assert.NotNull(innerEx);
-            Assert.Contains(expectedError, innerEx.Message);
+            Assert.Equal(1, exitCode);
+            Assert.Contains(expectedError, _storedErrorMessage);
         }
 
         [Fact]
@@ -191,13 +198,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, skip);
 
             // Act
-            var ex = Assert.Throws<AggregateException>(() =>
-                _app.Execute(new[] { "search", searchTerm, "--skip", skip }));
+            var exitCode = _app.Execute(new[] { "search", searchTerm, "--skip", skip });
 
             // Assert
-            var innerEx = ex.InnerExceptions.OfType<ArgumentException>().FirstOrDefault();
-            Assert.NotNull(innerEx);
-            Assert.Contains(expectedError, innerEx.Message);
+            Assert.Equal(1, exitCode);
+            Assert.Contains(expectedError, _storedErrorMessage);
         }
 
         [Theory]

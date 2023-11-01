@@ -10,6 +10,7 @@ using NuGet.Configuration;
 using NuGet.CommandLine.XPlat;
 using System;
 using System.Linq;
+using System.Globalization;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
@@ -348,6 +349,39 @@ namespace NuGet.CommandLine.Xplat.Tests
             }
 
             Assert.Contains(Tuple.Create("Fake.Newtonsoft.Json", ConsoleColor.Red), loggerMessagesWithColorList);
+        }
+
+        [Fact]
+        public async Task PackageSearchRunner_WhenSourceIsInvalid_ReturnsExitCodeOne()
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
+                    configFileName: null,
+                    machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            var logger = new TestLoggerWithColor();
+            string source = "invalid-source";
+            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidSource, source);
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = 0,
+                Take = 10,
+                Prerelease = true,
+                ExactMatch = false,
+                Logger = logger,
+                SearchTerm = "json",
+                Sources = new List<string> { source }
+            };
+
+            // Act
+            int exitCode = await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
+
+            // Assert
+            Assert.Equal(1, exitCode);
+            Assert.Contains(expectedError, logger.ErrorMessages);
         }
     }
 }

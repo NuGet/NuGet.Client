@@ -23,12 +23,23 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="sourceProvider">The provider for package sources.</param>
         /// <param name="packageSearchArgs">Package search arguments</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public static async Task RunAsync(
+        public static async Task<int> RunAsync(
             IPackageSourceProvider sourceProvider,
             PackageSearchArgs packageSearchArgs,
             CancellationToken cancellationToken)
         {
-            var listEndpoints = GetPackageSourcesAsync(packageSearchArgs.Sources, sourceProvider);
+            IList<PackageSource> listEndpoints;
+
+            try
+            {
+                listEndpoints = GetPackageSources(packageSearchArgs.Sources, sourceProvider);
+            }
+            catch (ArgumentException ex)
+            {
+                packageSearchArgs.Logger.LogError(ex.Message);
+                return 1;
+            }
+
             WarnForHTTPSources(listEndpoints, packageSearchArgs.Logger);
 
             Func<PackageSource, Task<IEnumerable<IPackageSearchMetadata>>> searchPackageSourceAsync =
@@ -59,6 +70,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             packageSearchResultRenderer.Finish();
+            return 0;
         }
 
         /// <summary>
@@ -132,7 +144,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="sources">The list of package sources provided.</param>
         /// <param name="sourceProvider">The provider for package sources.</param>
         /// <returns>A list of package sources.</returns>
-        private static IList<PackageSource> GetPackageSourcesAsync(List<string> sources, IPackageSourceProvider sourceProvider)
+        private static IList<PackageSource> GetPackageSources(List<string> sources, IPackageSourceProvider sourceProvider)
         {
             List<PackageSource> configurationSources = sourceProvider.LoadPackageSources()
                 .Where(p => p.IsEnabled)
