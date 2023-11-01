@@ -336,11 +336,11 @@ namespace NuGet.PackageManagement.UI.Test.Utility
 
                 var expectedExceptionMessages = new string[expectedErrorCount];
                 expectedExceptionMessages[0] = $"The package `{contextPackageC.Id}` is available in the Global packages folder," +
-                    $" but the source it came from `{sourceC.PackageSource.Source}` is not one of this solution's configured sources.";
+                    $" but the source it came from `{sourceC.PackageSource.Source}` is not one of the configured sources.";
                 expectedExceptionMessages[1] = $"The package `{contextPackageE.Id}` is available in the Global packages folder," +
-                    $" but the source it came from `{sourceC.PackageSource.Source}` is not one of this solution's configured sources.";
+                    $" but the source it came from `{sourceC.PackageSource.Source}` is not one of the configured sources.";
                 expectedExceptionMessages[2] = $"The package `{contextPackageF.Id}` is available in the Global packages folder," +
-                    $" but the source it came from `{sourceC.PackageSource.Source}` is not one of this solution's configured sources.";
+                    $" but the source it came from `{sourceC.PackageSource.Source}` is not one of the configured sources.";
 
                 Assert.False(isSuccessful);
                 Assert.Equal(expectedErrorCount, loggedMessages.Count);
