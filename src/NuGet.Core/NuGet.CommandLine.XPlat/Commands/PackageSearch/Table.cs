@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -42,8 +41,12 @@ namespace NuGet.CommandLine.XPlat
             _rows.Add(row);
         }
 
-        public void PrintResult(string searchTerm, ILogger logger)
+        public void PrintResult(string searchTerm, ILoggerWithColor logger)
         {
+            ConsoleColor consoleColor = Console.ForegroundColor;
+            ConsoleColor highlighterColor = GetHighlighterColor();
+
+            // If only headers are present (i.e., no package rows)
             if (_rows.Count <= 1)
             {
                 logger.LogMinimal("No results found.");
@@ -52,30 +55,68 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (var row in _rows)
             {
-                string line = "";
-
                 for (int i = 0; i < row.Length; i++)
                 {
                     var paddedValue = (row[i] ?? string.Empty).PadRight(_columnWidths[i]);
-                    line += "| " + paddedValue + " ";
+
+                    if (!string.IsNullOrEmpty(searchTerm) && paddedValue.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        logger.LogMinimalWithColor("| ", consoleColor);
+                        if (_columnsToHighlight.Contains(i))
+                        {
+                            PrintWithHighlight(paddedValue, searchTerm, highlighterColor, logger);
+                        }
+                        else
+                        {
+                            logger.LogMinimalWithColor(paddedValue, consoleColor);
+                        }
+                        logger.LogMinimalWithColor(" ", consoleColor);
+                    }
+                    else
+                    {
+                        logger.LogMinimalWithColor("| " + paddedValue + " ", consoleColor);
+                    }
                 }
 
-                line += "|";
-                logger.LogMinimal(line);
+                logger.LogMinimal("|");
 
                 if (row == _rows.First())
                 {
-                    line = "";
-
+                    // Add the separator after the header.
                     foreach (var width in _columnWidths)
                     {
-                        line += "|" + new string('-', width + 2);
+                        logger.LogMinimalWithColor("|" + new string('-', width + 2), consoleColor);
                     }
 
-                    line += "|";
-                    logger.LogMinimal(line);
+                    logger.LogMinimal("|");
                 }
             }
+        }
+
+        private static void PrintWithHighlight(string value, string searchTerm, ConsoleColor highlighterColor, ILoggerWithColor logger)
+        {
+            int index = value.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase);
+            ConsoleColor originalColor = Console.ForegroundColor;
+
+            while (index != -1)
+            {
+                logger.LogMinimalWithColor(value.Substring(0, index), originalColor);
+                logger.LogMinimalWithColor(value.Substring(index, searchTerm.Length), highlighterColor);
+                value = value.Substring(index + searchTerm.Length);
+                index = value.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase);
+            }
+
+            logger.LogMinimalWithColor(value, originalColor);
+        }
+
+        private static ConsoleColor GetHighlighterColor()
+        {
+            if (Console.ForegroundColor == ConsoleColor.Red || Console.BackgroundColor == ConsoleColor.Red)
+            {
+                return ConsoleColor.Blue;
+            }
+
+            return ConsoleColor.Red;
         }
     }
 }

@@ -10,21 +10,20 @@ using Moq;
 using NuGet.CommandLine.XPlat;
 using Xunit;
 using static NuGet.CommandLine.XPlat.PackageSearchCommand;
-using ILogger = NuGet.Common.ILogger;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
     public class PackageSearchCommandTests
     {
         private CommandLineApplication _app;
-        private Func<ILogger> _getLogger;
+        private Func<ILoggerWithColor> _getLogger;
         private PackageSearchArgs _capturedArgs;
         private SetupSettingsAndRunSearchAsyncDelegate _setupSettingsAndRunSearchAsyncDelegate;
 
         public void SetUp()
         {
             _app = new CommandLineApplication();
-            _getLogger = () => Mock.Of<ILogger>();
+            _getLogger = () => Mock.Of<ILoggerWithColor>();
             _capturedArgs = null;
             async Task SetupSettingsAndRunSearchAsync(PackageSearchArgs args)
             {

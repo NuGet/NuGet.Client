@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
 
@@ -15,12 +14,12 @@ namespace NuGet.CommandLine.XPlat
     {
         internal delegate Task SetupSettingsAndRunSearchAsyncDelegate(PackageSearchArgs packageSearchArgs);
 
-        public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        public static void Register(CommandLineApplication app, Func<ILoggerWithColor> getLogger)
         {
             Register(app, getLogger, SetupSettingsAndRunSearchAsync);
         }
 
-        public static void Register(CommandLineApplication app, Func<ILogger> getLogger, SetupSettingsAndRunSearchAsyncDelegate setupSettingsAndRunSearchAsync)
+        public static void Register(CommandLineApplication app, Func<ILoggerWithColor> getLogger, SetupSettingsAndRunSearchAsyncDelegate setupSettingsAndRunSearchAsync)
         {
             app.Command("search", pkgSearch =>
             {

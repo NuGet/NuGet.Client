@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -18,7 +17,7 @@ namespace NuGet.CommandLine.XPlat
         public bool Prerelease { get; set; }
         public bool ExactMatch { get; set; }
         public bool Interactive { get; set; }
-        public ILogger Logger { get; set; }
+        public ILoggerWithColor Logger { get; set; }
         public string SearchTerm { get; set; }
 
         public PackageSearchArgs(string skip, string take)

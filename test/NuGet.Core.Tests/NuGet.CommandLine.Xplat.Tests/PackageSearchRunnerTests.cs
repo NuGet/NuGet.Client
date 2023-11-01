@@ -8,7 +8,8 @@ using Xunit;
 using System.IO;
 using NuGet.Configuration;
 using NuGet.CommandLine.XPlat;
-using NuGet.Test.Utility;
+using System;
+using System.Linq;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
@@ -62,16 +63,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                     ]
                 }}";
 
-        readonly string _onePackageExpectedOutputTable =
-                "| Package ID           | Latest Version | Authors           | Downloads   |\n"
-                + "|----------------------|----------------|-------------------|-------------|\n"
-                + "| Fake.Newtonsoft.Json | 12.0.3         | James Newton-King | 531,607,259 |";
-
-        private string NormalizeNewlines(string input)
-        {
-            return input.Replace("\r\n", "\n").Replace("\r", "\n");
-        }
-
         [Fact]
         public async Task PackageSearchRunner_SearchAPIReturnsOnePackage_OnePackageTableOutputted()
         {
@@ -80,8 +71,39 @@ namespace NuGet.CommandLine.Xplat.Tests
                     configFileName: null,
                     machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var logger = new TestLogger();
+            var logger = new TestLoggerWithColor();
             var mockServer = new MockServer();
+            var expectedValues = new List<Tuple<string, ConsoleColor>>
+                {
+                    Tuple.Create("| Package ID           ", ConsoleColor.Gray),
+                    Tuple.Create("| Latest Version ", ConsoleColor.Gray),
+                    Tuple.Create("| Authors           ", ConsoleColor.Gray),
+                    Tuple.Create("| Downloads   ", ConsoleColor.Gray),
+                    Tuple.Create("|----------------------", ConsoleColor.Gray),
+                    Tuple.Create("|----------------", ConsoleColor.Gray),
+                    Tuple.Create("|-------------------", ConsoleColor.Gray),
+                    Tuple.Create("|-------------", ConsoleColor.Gray),
+                    Tuple.Create("| ", ConsoleColor.Gray),
+                    Tuple.Create("", ConsoleColor.Gray),
+                    Tuple.Create("Fake.Newtonsoft.", ConsoleColor.Gray),
+                    Tuple.Create("Json", ConsoleColor.Red),
+                    Tuple.Create("", ConsoleColor.Gray),
+                    Tuple.Create(" ", ConsoleColor.Gray),
+                    Tuple.Create("| 12.0.3         ", ConsoleColor.Gray),
+                    Tuple.Create("| James Newton-King ", ConsoleColor.Gray),
+                    Tuple.Create("| 531,607,259 ", ConsoleColor.Gray),
+                };
+
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = 0,
+                Take = 20,
+                Prerelease = false,
+                ExactMatch = false,
+                Logger = logger,
+                SearchTerm = "json",
+                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
+            };
 
             string index = $@"
                 {{
@@ -106,31 +128,22 @@ namespace NuGet.CommandLine.Xplat.Tests
             mockServer.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
             mockServer.Start();
 
-            PackageSearchArgs packageSearchArgs = new()
-            {
-                Skip = 0,
-                Take = 20,
-                Prerelease = false,
-                ExactMatch = false,
-                Logger = logger,
-                SearchTerm = "json",
-                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
-            };
-
-            string expectedOutput = NormalizeNewlines(_onePackageExpectedOutputTable);
-
             // Act
             await PackageSearchRunner.RunAsync(
                 sourceProvider: sourceProvider,
                 packageSearchArgs,
                 cancellationToken: System.Threading.CancellationToken.None);
-            string consoleOutputNormalized = NormalizeNewlines(logger.ShowMessages());
 
             //stop mock server
             mockServer.Stop();
 
             // Assert
-            Assert.Contains(expectedOutput, consoleOutputNormalized);
+            var loggerMessagesWithColorList = logger.MessagesWithColor.ToList();
+
+            foreach (var expected in expectedValues)
+            {
+                Assert.Contains(expected, loggerMessagesWithColorList);
+            }
         }
 
         [Theory]
@@ -146,8 +159,38 @@ namespace NuGet.CommandLine.Xplat.Tests
                     machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var mockServer = new MockServer();
-            var logger = new TestLogger();
-            string expectedOutput = NormalizeNewlines(_onePackageExpectedOutputTable);
+            var logger = new TestLoggerWithColor();
+            var expectedValues = new List<Tuple<string, ConsoleColor>>
+                {
+                    Tuple.Create("| Package ID           ", ConsoleColor.Gray),
+                    Tuple.Create("| Latest Version ", ConsoleColor.Gray),
+                    Tuple.Create("| Authors           ", ConsoleColor.Gray),
+                    Tuple.Create("| Downloads   ", ConsoleColor.Gray),
+                    Tuple.Create("|----------------------", ConsoleColor.Gray),
+                    Tuple.Create("|----------------", ConsoleColor.Gray),
+                    Tuple.Create("|-------------------", ConsoleColor.Gray),
+                    Tuple.Create("|-------------", ConsoleColor.Gray),
+                    Tuple.Create("| ", ConsoleColor.Gray),
+                    Tuple.Create("", ConsoleColor.Gray),
+                    Tuple.Create("Fake.Newtonsoft.", ConsoleColor.Gray),
+                    Tuple.Create("Json", ConsoleColor.Red),
+                    Tuple.Create("", ConsoleColor.Gray),
+                    Tuple.Create(" ", ConsoleColor.Gray),
+                    Tuple.Create("| 12.0.3         ", ConsoleColor.Gray),
+                    Tuple.Create("| James Newton-King ", ConsoleColor.Gray),
+                    Tuple.Create("| 531,607,259 ", ConsoleColor.Gray),
+                };
+
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = skip,
+                Take = take,
+                Prerelease = prerelease,
+                ExactMatch = false,
+                Logger = logger,
+                SearchTerm = "json",
+                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
+            };
 
             string index = $@"
                 {{
@@ -173,29 +216,22 @@ namespace NuGet.CommandLine.Xplat.Tests
             mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease={prereleaseValue}&semVerLevel=2.0.0", r => _onePackageQueryResult);
             mockServer.Start();
 
-            PackageSearchArgs packageSearchArgs = new()
-            {
-                Skip = skip,
-                Take = take,
-                Prerelease = prerelease,
-                ExactMatch = false,
-                Logger = logger,
-                SearchTerm = "json",
-                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
-            };
-
             // Act
             await PackageSearchRunner.RunAsync(
                 sourceProvider: sourceProvider,
                 packageSearchArgs,
                 cancellationToken: System.Threading.CancellationToken.None);
-            string consoleOutputNormalized = NormalizeNewlines(logger.ShowMessages());
 
             //stop mock server
             mockServer.Stop();
 
             // Assert
-            Assert.Contains(expectedOutput, consoleOutputNormalized);
+            var loggerMessagesWithColorList = logger.MessagesWithColor.ToList();
+
+            foreach (var expected in expectedValues)
+            {
+                Assert.Contains(expected, loggerMessagesWithColorList);
+            }
         }
 
         [Fact]
@@ -207,8 +243,37 @@ namespace NuGet.CommandLine.Xplat.Tests
                     machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var mockServer = new MockServer();
-            string expectedOutput = NormalizeNewlines(_onePackageExpectedOutputTable);
-            var logger = new TestLogger();
+            var logger = new TestLoggerWithColor();
+            var expectedValues = new List<Tuple<string, ConsoleColor>>
+                {
+                    Tuple.Create("| Package ID           ", ConsoleColor.Gray),
+                    Tuple.Create("| Latest Version ", ConsoleColor.Gray),
+                    Tuple.Create("| Authors           ", ConsoleColor.Gray),
+                    Tuple.Create("| Downloads   ", ConsoleColor.Gray),
+                    Tuple.Create("|----------------------", ConsoleColor.Gray),
+                    Tuple.Create("|----------------", ConsoleColor.Gray),
+                    Tuple.Create("|-------------------", ConsoleColor.Gray),
+                    Tuple.Create("|-------------", ConsoleColor.Gray),
+                    Tuple.Create("| ", ConsoleColor.Gray),
+                    Tuple.Create("", ConsoleColor.Gray),
+                    Tuple.Create("Fake.Newtonsoft.Json", ConsoleColor.Red),
+                    Tuple.Create("", ConsoleColor.Gray),
+                    Tuple.Create(" ", ConsoleColor.Gray),
+                    Tuple.Create("| 12.0.3         ", ConsoleColor.Gray),
+                    Tuple.Create("| James Newton-King ", ConsoleColor.Gray),
+                    Tuple.Create("| 531,607,259 ", ConsoleColor.Gray),
+                };
+
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = 0,
+                Take = 20,
+                Prerelease = false,
+                ExactMatch = true,
+                Logger = logger,
+                SearchTerm = "Fake.Newtonsoft.Json",
+                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
+            };
 
             string index = $@"
                 {{
@@ -262,29 +327,22 @@ namespace NuGet.CommandLine.Xplat.Tests
             mockServer.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => exactMatchGetMetadataResult);
             mockServer.Start();
 
-            PackageSearchArgs packageSearchArgs = new()
-            {
-                Skip = 0,
-                Take = 20,
-                Prerelease = false,
-                ExactMatch = true,
-                Logger = logger,
-                SearchTerm = "Fake.Newtonsoft.Json",
-                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
-            };
-
             // Act
             await PackageSearchRunner.RunAsync(
                 sourceProvider: sourceProvider,
                 packageSearchArgs,
                 cancellationToken: System.Threading.CancellationToken.None);
-            string consoleOutputNormalized = NormalizeNewlines(logger.ShowMessages());
 
-            //stop mock server
+            // Stop mock server
             mockServer.Stop();
 
             // Assert
-            Assert.Contains(expectedOutput, consoleOutputNormalized);
+            var loggerMessagesWithColorList = logger.MessagesWithColor.ToList();
+
+            foreach (var expected in expectedValues)
+            {
+                Assert.Contains(expected, loggerMessagesWithColorList);
+            }
         }
     }
 }
