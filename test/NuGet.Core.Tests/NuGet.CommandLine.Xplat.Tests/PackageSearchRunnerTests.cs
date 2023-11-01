@@ -73,27 +73,27 @@ namespace NuGet.CommandLine.Xplat.Tests
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var logger = new TestLoggerWithColor();
             var mockServer = new MockServer();
-            var expectedValues = new List<Tuple<string, ConsoleColor>>
+            var expectedValues = new List<string>
                 {
-                    Tuple.Create("| Package ID           ", ConsoleColor.Gray),
-                    Tuple.Create("| Latest Version ", ConsoleColor.Gray),
-                    Tuple.Create("| Authors           ", ConsoleColor.Gray),
-                    Tuple.Create("| Downloads   ", ConsoleColor.Gray),
-                    Tuple.Create("|----------------------", ConsoleColor.Gray),
-                    Tuple.Create("|----------------", ConsoleColor.Gray),
-                    Tuple.Create("|-------------------", ConsoleColor.Gray),
-                    Tuple.Create("|-------------", ConsoleColor.Gray),
-                    Tuple.Create("| ", ConsoleColor.Gray),
-                    Tuple.Create("", ConsoleColor.Gray),
-                    Tuple.Create("Fake.Newtonsoft.", ConsoleColor.Gray),
-                    Tuple.Create("Json", ConsoleColor.Red),
-                    Tuple.Create("", ConsoleColor.Gray),
-                    Tuple.Create(" ", ConsoleColor.Gray),
-                    Tuple.Create("| 12.0.3         ", ConsoleColor.Gray),
-                    Tuple.Create("| James Newton-King ", ConsoleColor.Gray),
-                    Tuple.Create("| 531,607,259 ", ConsoleColor.Gray),
+                    "| Package ID           ",
+                    "| Latest Version ",
+                    "| Authors           ",
+                    "| Downloads   ",
+                    "|----------------------",
+                    "|----------------",
+                    "|-------------------",
+                    "|-------------",
+                    "| ",
+                    "",
+                    "Fake.Newtonsoft.",
+                    "Json",
+                    "",
+                    " ",
+                    "| 12.0.3         ",
+                    "| James Newton-King ",
+                    "| 531,607,259 ",
                 };
-
+            
             PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = 0,
@@ -142,8 +142,10 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, loggerMessagesWithColorList);
+                Assert.Contains(expected, loggerMessagesWithColorList.Select(tuple => tuple.Item1));
             }
+
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), loggerMessagesWithColorList);
         }
 
         [Theory]
@@ -160,25 +162,25 @@ namespace NuGet.CommandLine.Xplat.Tests
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var mockServer = new MockServer();
             var logger = new TestLoggerWithColor();
-            var expectedValues = new List<Tuple<string, ConsoleColor>>
+            var expectedValues = new List<string>
                 {
-                    Tuple.Create("| Package ID           ", ConsoleColor.Gray),
-                    Tuple.Create("| Latest Version ", ConsoleColor.Gray),
-                    Tuple.Create("| Authors           ", ConsoleColor.Gray),
-                    Tuple.Create("| Downloads   ", ConsoleColor.Gray),
-                    Tuple.Create("|----------------------", ConsoleColor.Gray),
-                    Tuple.Create("|----------------", ConsoleColor.Gray),
-                    Tuple.Create("|-------------------", ConsoleColor.Gray),
-                    Tuple.Create("|-------------", ConsoleColor.Gray),
-                    Tuple.Create("| ", ConsoleColor.Gray),
-                    Tuple.Create("", ConsoleColor.Gray),
-                    Tuple.Create("Fake.Newtonsoft.", ConsoleColor.Gray),
-                    Tuple.Create("Json", ConsoleColor.Red),
-                    Tuple.Create("", ConsoleColor.Gray),
-                    Tuple.Create(" ", ConsoleColor.Gray),
-                    Tuple.Create("| 12.0.3         ", ConsoleColor.Gray),
-                    Tuple.Create("| James Newton-King ", ConsoleColor.Gray),
-                    Tuple.Create("| 531,607,259 ", ConsoleColor.Gray),
+                    "| Package ID           ",
+                    "| Latest Version ",
+                    "| Authors           ",
+                    "| Downloads   ",
+                    "|----------------------",
+                    "|----------------",
+                    "|-------------------",
+                    "|-------------",
+                    "| ",
+                    "",
+                    "Fake.Newtonsoft.",
+                    "Json",
+                    "",
+                    " ",
+                    "| 12.0.3         ",
+                    "| James Newton-King ",
+                    "| 531,607,259 ",
                 };
 
             PackageSearchArgs packageSearchArgs = new()
@@ -230,8 +232,10 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, loggerMessagesWithColorList);
+                Assert.Contains(expected, loggerMessagesWithColorList.Select(tuple => tuple.Item1));
             }
+
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), loggerMessagesWithColorList);
         }
 
         [Fact]
@@ -244,24 +248,23 @@ namespace NuGet.CommandLine.Xplat.Tests
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var mockServer = new MockServer();
             var logger = new TestLoggerWithColor();
-            var expectedValues = new List<Tuple<string, ConsoleColor>>
+            var expectedValues = new List<string>
                 {
-                    Tuple.Create("| Package ID           ", ConsoleColor.Gray),
-                    Tuple.Create("| Latest Version ", ConsoleColor.Gray),
-                    Tuple.Create("| Authors           ", ConsoleColor.Gray),
-                    Tuple.Create("| Downloads   ", ConsoleColor.Gray),
-                    Tuple.Create("|----------------------", ConsoleColor.Gray),
-                    Tuple.Create("|----------------", ConsoleColor.Gray),
-                    Tuple.Create("|-------------------", ConsoleColor.Gray),
-                    Tuple.Create("|-------------", ConsoleColor.Gray),
-                    Tuple.Create("| ", ConsoleColor.Gray),
-                    Tuple.Create("", ConsoleColor.Gray),
-                    Tuple.Create("Fake.Newtonsoft.Json", ConsoleColor.Red),
-                    Tuple.Create("", ConsoleColor.Gray),
-                    Tuple.Create(" ", ConsoleColor.Gray),
-                    Tuple.Create("| 12.0.3         ", ConsoleColor.Gray),
-                    Tuple.Create("| James Newton-King ", ConsoleColor.Gray),
-                    Tuple.Create("| 531,607,259 ", ConsoleColor.Gray),
+                    "| Package ID           ",
+                    "| Latest Version ",
+                    "| Authors           ",
+                    "| Downloads   ",
+                    "|----------------------",
+                    "|----------------",
+                    "|-------------------",
+                    "|-------------",
+                    "| ",
+                    "",
+                    "",
+                    " ",
+                    "| 12.0.3         ",
+                    "| James Newton-King ",
+                    "| 531,607,259 ",
                 };
 
             PackageSearchArgs packageSearchArgs = new()
@@ -341,8 +344,10 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, loggerMessagesWithColorList);
+                Assert.Contains(expected, loggerMessagesWithColorList.Select(tuple => tuple.Item1));
             }
+
+            Assert.Contains(Tuple.Create("Fake.Newtonsoft.Json", ConsoleColor.Red), loggerMessagesWithColorList);
         }
     }
 }

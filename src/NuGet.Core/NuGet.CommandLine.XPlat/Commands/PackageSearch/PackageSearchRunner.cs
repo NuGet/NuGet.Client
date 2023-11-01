@@ -36,12 +36,12 @@ namespace NuGet.CommandLine.XPlat
                 ? packageSource => GetPackageAsync(packageSource, packageSearchArgs, cancellationToken)
                 : packageSource => SearchAsync(packageSource, packageSearchArgs, cancellationToken);
 
-            List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)> searchRequests = new(listEndpoints.Count);
+            Dictionary<Task<IEnumerable<IPackageSearchMetadata>>, PackageSource> searchRequests = new();
 
             foreach (var packageSource in listEndpoints)
             {
                 Task<IEnumerable<IPackageSearchMetadata>> searchTask = searchPackageSourceAsync(packageSource);
-                searchRequests.Add((searchTask, packageSource));
+                searchRequests.Add(searchTask, packageSource);
             }
 
             IPackageSearchResultRenderer packageSearchResultRenderer;
@@ -50,13 +50,12 @@ namespace NuGet.CommandLine.XPlat
 
             while (searchRequests.Count > 0)
             {
-                Task<IEnumerable<IPackageSearchMetadata>> completedTask = await Task.WhenAny(searchRequests.Select(t => t.Item1));
-                int completedTaskIndex = searchRequests.FindIndex(t => t.Item1 == completedTask); ;
-                PackageSource source = searchRequests[completedTaskIndex].Item2;
+                Task<IEnumerable<IPackageSearchMetadata>> completedTask = await Task.WhenAny(searchRequests.Keys);
+                PackageSource source = searchRequests[completedTask];
 
                 await packageSearchResultRenderer.Add(source, completedTask);
 
-                searchRequests.RemoveAt(completedTaskIndex);
+                searchRequests.Remove(completedTask);
             }
 
             packageSearchResultRenderer.Finish();
