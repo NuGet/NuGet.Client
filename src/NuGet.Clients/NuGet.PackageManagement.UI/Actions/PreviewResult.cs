@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI
 
         public string Name { get; }
 
-        public NuGetOperationStatus NuGetOperationStatus { get; } = NuGetOperationStatus.Succeeded;
+        public NuGetOperationStatus NuGetOperationStatus { get; }
 
         public PreviewResult(
             string projectName,
@@ -34,6 +34,7 @@ namespace NuGet.PackageManagement.UI
             Added = added;
             Deleted = deleted;
             Updated = updated;
+            NuGetOperationStatus = NuGetOperationStatus.Succeeded;
         }
 
         public PreviewResult(Dictionary<string, SortedSet<string>>? newSourceMappings, NuGetOperationStatus nuGetOperationStatus)
