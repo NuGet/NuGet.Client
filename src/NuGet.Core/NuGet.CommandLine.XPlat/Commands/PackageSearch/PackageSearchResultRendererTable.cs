@@ -27,12 +27,12 @@ namespace NuGet.CommandLine.XPlat
 
             if (completedSearchTask == null)
             {
-                _args.Logger.LogMinimal($"Source: {source.Name}");
+                _args.Logger.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
                 _args.Logger.LogMinimal("Failed to obtain a search resource.");
                 return;
             }
 
-            _args.Logger.LogMinimal($"Source: {source.Name}");
+            _args.Logger.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
             IEnumerable<IPackageSearchMetadata> searchResult = await completedSearchTask;
             var table = new Table(new[] { 0, 2 }, "Package ID", "Latest Version", "Authors", "Downloads");
 
