@@ -1987,7 +1987,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task RestoreCommand_CentralVersion_ErrorWhenFloatingCentralVersionsAreDisabled(bool enabled)
+        public async Task RestoreCommand_CentralVersion_ErrorWhenFloatingCentralVersions(bool enabled)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
