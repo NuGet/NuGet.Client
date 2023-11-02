@@ -54,12 +54,12 @@ namespace NuGet.CommandLine.XPlat
 
         public void Finish()
         {
-            // We don' need to write anything at the end of the rendering for a tabular format
+            // We don't need to write anything at the end of the rendering for a tabular format
         }
 
         public void Start()
         {
-            // We don' need to write anything at the beginning of the rendering for a tabular format
+            // We don't need to write anything at the beginning of the rendering for a tabular format
         }
 
         /// <summary>
@@ -70,6 +70,8 @@ namespace NuGet.CommandLine.XPlat
         private static void PopulateTableWithResults(IEnumerable<IPackageSearchMetadata> results, Table table)
         {
             CultureInfo culture = CultureInfo.CurrentCulture;
+            NumberFormatInfo nfi = (NumberFormatInfo)culture.NumberFormat.Clone();
+            nfi.NumberDecimalDigits = 0;
 
             foreach (IPackageSearchMetadata result in results)
             {
@@ -80,8 +82,6 @@ namespace NuGet.CommandLine.XPlat
 
                 if (result.DownloadCount != null)
                 {
-                    NumberFormatInfo nfi = (NumberFormatInfo)culture.NumberFormat.Clone();
-                    nfi.NumberDecimalDigits = 0;
                     downloads = string.Format(nfi, "{0:N}", result.DownloadCount);
                 }
 

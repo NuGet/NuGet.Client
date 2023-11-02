@@ -1301,7 +1301,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Searches a given source using the query string provided. If no sources are specified, all sources defined in the NuGet.Config are used..
+        ///   Looks up a localized string similar to Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used..
         /// </summary>
         internal static string pkgSearch_Description {
             get {
@@ -1319,7 +1319,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allows the command to stop and wait for user input or action (for example to complete authentication)..
+        ///   Looks up a localized string similar to Stop and wait for user input or action (for example to complete authentication)..
         /// </summary>
         internal static string pkgSearch_InteractiveDescription {
             get {
@@ -1328,7 +1328,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allow prerelease packages to be shown..
+        ///   Looks up a localized string similar to Include prerelease packages..
         /// </summary>
         internal static string pkgSearch_PrereleaseDescription {
             get {
@@ -1337,7 +1337,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The number of results to skip, for pagination. The default is 0..
+        ///   Looks up a localized string similar to Number of results to skip, to allow pagination. Default 0..
         /// </summary>
         internal static string pkgSearch_SkipDescription {
             get {
@@ -1346,7 +1346,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package source to search. You can pass multiple `--source` options to search multiple package sources..
+        ///   Looks up a localized string similar to The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`..
         /// </summary>
         internal static string pkgSearch_SourceDescription {
             get {
@@ -1355,7 +1355,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The number of results to return. The default value is 20..
+        ///   Looks up a localized string similar to Number of results to return. Default 20..
         /// </summary>
         internal static string pkgSearch_TakeDescription {
             get {

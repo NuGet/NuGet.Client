@@ -25,12 +25,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             _storedErrorMessage = string.Empty;
             _app = new CommandLineApplication();
             var loggerWithColorMock = new Mock<ILoggerWithColor>();
-            loggerWithColorMock
-            .Setup(x => x.LogError(It.IsAny<string>()))
-            .Callback<string>((message) => {
-                _storedErrorMessage += message;
-            });
-
+            loggerWithColorMock.Setup(x => x.LogError(It.IsAny<string>())).Callback<string>((message) => _storedErrorMessage += message);
             _getLogger = () => loggerWithColorMock.Object;
             _capturedArgs = null;
             async Task<int> SetupSettingsAndRunSearchAsync(PackageSearchArgs args)
