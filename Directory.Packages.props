@@ -87,7 +87,7 @@
     <PackageVersion Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageVersion Include="SharpZipLib" Version="1.4.2" />
     <PackageVersion Include="System.Collections" Version="$(SystemPackagesVersion)" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.23307.1" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionPackageVersion)" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="4.4.0" />
     <PackageVersion Include="System.Diagnostics.Debug" Version="$(SystemPackagesVersion)" />
