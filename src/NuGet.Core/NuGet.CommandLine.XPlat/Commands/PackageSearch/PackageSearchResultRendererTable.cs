@@ -28,7 +28,7 @@ namespace NuGet.CommandLine.XPlat
             if (completedSearchTask == null)
             {
                 _args.Logger.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
-                _args.Logger.LogMinimal("Failed to obtain a search resource.");
+                _args.Logger.LogMinimal(Strings.Error_CannotObtainSearchSource);
                 return;
             }
 
@@ -38,10 +38,10 @@ namespace NuGet.CommandLine.XPlat
 
             if (_args.ExactMatch)
             {
-                var firstResult = searchResult.FirstOrDefault();
-                if (firstResult != null)
+                var lastResult = searchResult.LastOrDefault();
+                if (lastResult != null)
                 {
-                    PopulateTableWithResults(new[] { firstResult }, table);
+                    PopulateTableWithResults(new[] { lastResult }, table);
                 }
             }
             else

@@ -12,7 +12,7 @@ using static NuGet.CommandLine.XPlat.PackageSearchCommand;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
-    public class PackageSearchCommandTests
+    public class PackageSearchCommandTests : IDisposable
     {
         private CommandLineApplication _app;
         private Func<ILoggerWithColor> _getLogger;
@@ -20,11 +20,11 @@ namespace NuGet.CommandLine.Xplat.Tests
         private SetupSettingsAndRunSearchAsyncDelegate _setupSettingsAndRunSearchAsyncDelegate;
         private string _storedErrorMessage;
 
-        public void SetUp()
+        public PackageSearchCommandTests()
         {
             _storedErrorMessage = string.Empty;
             _app = new CommandLineApplication();
-            var loggerWithColorMock = new Mock<ILoggerWithColor>();
+            Mock<ILoggerWithColor> loggerWithColorMock = new Mock<ILoggerWithColor>();
             loggerWithColorMock.Setup(x => x.LogError(It.IsAny<string>())).Callback<string>((message) => _storedErrorMessage += message);
             _getLogger = () => loggerWithColorMock.Object;
             _capturedArgs = null;
@@ -38,11 +38,16 @@ namespace NuGet.CommandLine.Xplat.Tests
             _setupSettingsAndRunSearchAsyncDelegate = SetupSettingsAndRunSearchAsync;
         }
 
+        public void Dispose()
+        {
+            _storedErrorMessage = string.Empty;
+            _app = new CommandLineApplication();
+        }
+
         [Fact]
         public void Register_withSearchTermOnly_SetsSearchTerm()
         {
             // Arrange
-            SetUp();
             Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
 
@@ -57,7 +62,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withSingleSourceOption_SetsSources()
         {
             // Arrange
-            SetUp();
             Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string source = "testSource";
@@ -73,7 +77,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withMultipleSourceOptions_SetsSources()
         {
             // Arrange
-            SetUp();
             Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string source1 = "testSource1";
@@ -91,7 +94,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withExactMatchOption_SetsExactMatch()
         {
             // Arrange
-            SetUp();
             Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
 
@@ -106,7 +108,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withPrereleaseOption_SetsPrerelease()
         {
             // Arrange
-            SetUp();
             Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
 
@@ -121,7 +122,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withInteractiveOption_SetsInteractive()
         {
             // Arrange
-            SetUp();
             Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
 
@@ -136,7 +136,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withTakeOption_SetsTake()
         {
             // Arrange
-            SetUp();
             Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string take = "5";
@@ -152,7 +151,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withSkipOption_SetsSkip()
         {
             // Arrange
-            SetUp();
             Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string skip = "3";
@@ -168,7 +166,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withInvalidTakeOption_ShowsErrorMessage()
         {
             // Arrange
-            SetUp();
             Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string take = "invalid";
@@ -186,7 +183,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withInvalidSkipOption_ShowsErrorMessage()
         {
             // Arrange
-            SetUp();
             Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string skip = "invalid";
@@ -209,7 +205,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_WithOptions_SetsExpectedValues(string[] args, bool expectedExactMatch, bool expectedPrerelease, bool expectedInteractive, int expectedTake = 20, int expectedSkip = 0)
         {
             // Arrange
-            SetUp();
             Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
 
             // Act

@@ -850,4 +850,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>The specified source '{0}' is invalid. Provide a valid source.</value>
     <comment>0 - The invalid source.</comment>
   </data>
+  <data name="Error_CannotObtainSearchSource" xml:space="preserve">
+    <value>Failed to obtain a search resource.</value>
+  </data>
 </root>

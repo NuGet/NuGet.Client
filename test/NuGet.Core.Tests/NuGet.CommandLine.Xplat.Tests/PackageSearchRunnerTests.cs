@@ -11,11 +11,15 @@ using NuGet.CommandLine.XPlat;
 using System;
 using System.Linq;
 using System.Globalization;
+using Moq;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
-    public class PackageSearchRunnerTests
+    public class PackageSearchRunnerTests : IDisposable
     {
+        private ILoggerWithColor _mockLogger;
+        private List<Tuple<string, ConsoleColor>> _coloredMessage;
+        private List<string> _errorMessages;
         readonly string _onePackageQueryResult = $@"
                 {{
                     ""@context"":
@@ -64,6 +68,27 @@ namespace NuGet.CommandLine.Xplat.Tests
                     ]
                 }}";
 
+        public PackageSearchRunnerTests()
+        {
+            Mock<ILoggerWithColor> loggerWithColorMock = new Mock<ILoggerWithColor>();
+            _coloredMessage = new List<Tuple<string, ConsoleColor>>();
+            _errorMessages = new List<string>();
+
+            loggerWithColorMock.Setup(x => x.LogMinimalWithColor(It.IsAny<string>(), It.IsAny<ConsoleColor>()))
+                .Callback<string, ConsoleColor>((message, color) => { _coloredMessage.Add(Tuple.Create(message, color)); });
+
+            loggerWithColorMock.Setup(x => x.LogError(It.IsAny<string>()))
+                .Callback<string>(_errorMessages.Add);
+
+            _mockLogger = loggerWithColorMock.Object;
+        }
+
+        public void Dispose()
+        {
+            _coloredMessage.Clear();
+            _errorMessages.Clear();
+        }
+
         [Fact]
         public async Task PackageSearchRunner_SearchAPIReturnsOnePackage_OnePackageTableOutputted()
         {
@@ -72,7 +97,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                     configFileName: null,
                     machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var logger = new TestLoggerWithColor();
             var mockServer = new MockServer();
             var expectedValues = new List<string>
                 {
@@ -101,7 +125,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 20,
                 Prerelease = false,
                 ExactMatch = false,
-                Logger = logger,
+                Logger = _mockLogger,
                 SearchTerm = "json",
                 Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
             };
@@ -139,14 +163,12 @@ namespace NuGet.CommandLine.Xplat.Tests
             mockServer.Stop();
 
             // Assert
-            var loggerMessagesWithColorList = logger.MessagesWithColor.ToList();
-
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, loggerMessagesWithColorList.Select(tuple => tuple.Item1));
+                Assert.Contains(expected, _coloredMessage.Select(tuple => tuple.Item1));
             }
 
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), loggerMessagesWithColorList);
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), _coloredMessage);
         }
 
         [Theory]
@@ -162,7 +184,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                     machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var mockServer = new MockServer();
-            var logger = new TestLoggerWithColor();
             var expectedValues = new List<string>
                 {
                     "| Package ID           ",
@@ -190,7 +211,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = take,
                 Prerelease = prerelease,
                 ExactMatch = false,
-                Logger = logger,
+                Logger = _mockLogger,
                 SearchTerm = "json",
                 Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
             };
@@ -229,14 +250,12 @@ namespace NuGet.CommandLine.Xplat.Tests
             mockServer.Stop();
 
             // Assert
-            var loggerMessagesWithColorList = logger.MessagesWithColor.ToList();
-
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, loggerMessagesWithColorList.Select(tuple => tuple.Item1));
+                Assert.Contains(expected, _coloredMessage.Select(tuple => tuple.Item1));
             }
 
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), loggerMessagesWithColorList);
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), _coloredMessage);
         }
 
         [Fact]
@@ -248,7 +267,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                     machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var mockServer = new MockServer();
-            var logger = new TestLoggerWithColor();
             var expectedValues = new List<string>
                 {
                     "| Package ID           ",
@@ -274,7 +292,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 20,
                 Prerelease = false,
                 ExactMatch = true,
-                Logger = logger,
+                Logger = _mockLogger,
                 SearchTerm = "Fake.Newtonsoft.Json",
                 Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
             };
@@ -341,14 +359,12 @@ namespace NuGet.CommandLine.Xplat.Tests
             mockServer.Stop();
 
             // Assert
-            var loggerMessagesWithColorList = logger.MessagesWithColor.ToList();
-
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, loggerMessagesWithColorList.Select(tuple => tuple.Item1));
+                Assert.Contains(expected, _coloredMessage.Select(tuple => tuple.Item1));
             }
 
-            Assert.Contains(Tuple.Create("Fake.Newtonsoft.Json", ConsoleColor.Red), loggerMessagesWithColorList);
+            Assert.Contains(Tuple.Create("Fake.Newtonsoft.Json", ConsoleColor.Red), _coloredMessage);
         }
 
         [Fact]
@@ -359,7 +375,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                     configFileName: null,
                     machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var logger = new TestLoggerWithColor();
             string source = "invalid-source";
             string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidSource, source);
             PackageSearchArgs packageSearchArgs = new()
@@ -368,7 +383,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 10,
                 Prerelease = true,
                 ExactMatch = false,
-                Logger = logger,
+                Logger = _mockLogger,
                 SearchTerm = "json",
                 Sources = new List<string> { source }
             };
@@ -381,7 +396,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(1, exitCode);
-            Assert.Contains(expectedError, logger.ErrorMessages);
+            Assert.Contains(expectedError, _errorMessages);
         }
     }
 }

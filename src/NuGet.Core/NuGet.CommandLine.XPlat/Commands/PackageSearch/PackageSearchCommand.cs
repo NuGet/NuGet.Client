@@ -76,7 +76,6 @@ namespace NuGet.CommandLine.XPlat
 
                     return await setupSettingsAndRunSearchAsync(packageSearchArgs);
                 });
-
             });
         }
 
