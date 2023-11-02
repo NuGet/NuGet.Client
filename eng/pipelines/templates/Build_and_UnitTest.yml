@@ -85,13 +85,6 @@ steps:
       }
   condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: NuGetCommand@2
-  displayName: "Add Apex Feed Source"
-  inputs:
-    command: "custom"
-    arguments: "sources add -Name ApexFeed -Source $(ApexPackageFeedUrl) -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
-  condition: " and(succeeded(), eq(variables['AddApexFeedSource'], 'true'))"
-
 - task: MSBuild@1
   displayName: "Restore for VS2019"
   inputs:
@@ -99,6 +92,9 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /p:IncludeApex=true"
     maximumCpuCount: true
+
+- task: ComponentGovernanceComponentDetection@0
+  displayName: 'Component Detection'
 
 - task: MSBuild@1
   displayName: "Build for VS2019"
@@ -265,10 +261,6 @@ steps:
     WhiteListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
     WhiteListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
   condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-
-- task: ComponentGovernanceComponentDetection@0
-  displayName: 'Component Detection'
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
 - task: PublishPipelineArtifact@1
   displayName: "Publish nupkgs"
