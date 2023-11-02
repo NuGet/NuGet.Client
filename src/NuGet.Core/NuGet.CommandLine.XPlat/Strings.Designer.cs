@@ -1310,7 +1310,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Return an exact match only as a search result..
+        ///   Looks up a localized string similar to Require that the search term exactly match the name of the package. Ignores --take and --skip options..
         /// </summary>
         internal static string pkgSearch_ExactMatchDescription {
             get {
@@ -1364,7 +1364,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the search term to filter results. Use this argument to search for packages matching the provided query. Example: `dotnet package search json`..
+        ///   Looks up a localized string similar to Search term to filter package names, descriptions, and tags. Used as a literal value. Example: dotnet package search some.package. See also --exact-match..
         /// </summary>
         internal static string pkgSearch_termDescription {
             get {
