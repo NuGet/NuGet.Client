@@ -2053,6 +2053,111 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void LockFileFormat_ReadsLockFully()
+        {
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    ""net6.0"": {
+      ""Microsoft.AspNetCore.JsonPatch/6.0.4"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Microsoft.CSharp"": ""4.7.0"",
+          ""Newtonsoft.Json"": ""13.0.1""
+        },
+        ""frameworkAssemblies"": [
+          ""System.Configuration""
+        ],
+        ""compile"": {
+          ""lib/net6.0/Microsoft.AspNetCore.JsonPatch.dll"": {}
+        },
+        ""runtime"": {
+          ""lib/net6.0/Microsoft.AspNetCore.JsonPatch.dll"": {}
+        },
+        ""resource"": {
+          ""lib/net45/cs/FSharp.Core.resources.dll"": {
+            ""locale"": ""cs""
+          }
+        },
+        ""contentFiles"": {
+          ""baz"": {
+            ""copyToOutput"": false
+          },
+          ""foo"": {
+            ""copyToOutput"": true,
+            ""outputPath"": ""bar""
+          }
+        }
+      },
+      ""Project10/1.0.0"": {
+        ""type"": ""project"",
+        ""framework"": "".NETCoreApp,Version=v6.0""
+      },
+      ""Microsoft.Extensions.ApiDescription.Server/3.0.0"": {
+        ""type"": ""package"",
+         ""build"": {
+          ""build/Microsoft.Extensions.ApiDescription.Server.props"": {},
+          ""build/Microsoft.Extensions.ApiDescription.Server.targets"": {}
+        },
+        ""buildMultiTargeting"": {
+          ""buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.props"": {},
+          ""buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.targets"": {}
+        }        
+      },
+       ""runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0"": {
+        ""type"": ""package"",
+        ""runtimeTargets"": {
+          ""runtimes/debian.8-x64/native/System.Security.Cryptography.Native.OpenSsl.so"": {
+            ""assetType"": ""native"",
+            ""rid"": ""debian.8-x64""
+          }
+        }
+      }
+    }
+  },
+  ""libraries"": {},
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  }
+}";
+            var lockFileFormat = new LockFileFormat();
+            var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
+
+            Assert.Equal(1, lockFile.Version);
+
+            var target = lockFile.Targets.Single();
+            Assert.Equal(NuGetFramework.Parse("dotnet"), target.TargetFramework);
+
+            var runtimeTargetLibrary = target.Libraries.Single();
+            Assert.Equal("GlobalTool", runtimeTargetLibrary.Name);
+            Assert.Equal(NuGetVersion.Parse("1.0.0"), runtimeTargetLibrary.Version);
+            Assert.Equal(0, runtimeTargetLibrary.NativeLibraries.Count);
+            Assert.Equal(0, runtimeTargetLibrary.ResourceAssemblies.Count);
+            Assert.Equal(0, runtimeTargetLibrary.FrameworkAssemblies.Count);
+            Assert.Equal(0, runtimeTargetLibrary.RuntimeAssemblies.Count);
+            Assert.Equal(1, runtimeTargetLibrary.ToolsAssemblies.Count);
+            Assert.Equal("tools/dotnet/any/test.dll", runtimeTargetLibrary.ToolsAssemblies.Single().Path);
+            Assert.Equal(0, runtimeTargetLibrary.Dependencies.Count());
+
+            var runtimeLibrary = lockFile.Libraries.Single();
+            Assert.Equal("GlobalTool", runtimeLibrary.Name);
+            Assert.Equal(NuGetVersion.Parse("1.0.0"), runtimeLibrary.Version);
+            Assert.False(string.IsNullOrEmpty(runtimeLibrary.Sha512));
+            Assert.Equal(LibraryType.Package, runtimeLibrary.Type);
+            Assert.Equal(5, runtimeLibrary.Files.Count);
+
+            var emptyDepGroup = lockFile.ProjectFileDependencyGroups.First();
+            Assert.True(string.IsNullOrEmpty(emptyDepGroup.FrameworkName));
+            Assert.Equal("GlobalTool [1.0.0, )", emptyDepGroup.Dependencies.Single());
+            var netPlatDepGroup = lockFile.ProjectFileDependencyGroups.Last();
+            Assert.Equal(NuGetFramework.Parse("dotnet").DotNetFrameworkName, netPlatDepGroup.FrameworkName);
+            Assert.Empty(netPlatDepGroup.Dependencies);
+        }
+
+        [Fact]
         public void LockFileFormat_ReadsLockFileWithEmbedAssemblies()
         {
             var lockFileContent = @"{

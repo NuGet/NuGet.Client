@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
@@ -24,6 +25,31 @@ namespace NuGet.ProjectModel
             CommentHandling = CommentHandling.Ignore
         };
 
+        private static System.Text.Json.JsonSerializerOptions CreateJsonSerializerOptions()
+        {
+            var options = new System.Text.Json.JsonSerializerOptions()
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+            options.Converters.Add(new PackageSpecConverter());
+            options.Converters.Add(new LockFileLibraryConverter());
+            options.Converters.Add(new LockFileTargetConverter());
+            options.Converters.Add(new LockFileTargetLibraryConverter());
+            options.Converters.Add(new ProjectFileDependencyGroupConverter());
+            options.Converters.Add(new LockFileItemConverter<LockFileItem>());
+            options.Converters.Add(new LockFileItemConverter<LockFileContentFile>());
+            options.Converters.Add(new LockFileItemConverter<LockFileRuntimeTarget>());
+            options.Converters.Add(new ListObjectConvertor<LockFileLibrary>());
+            options.Converters.Add(new ListObjectConvertor<LockFileTarget>());
+            options.Converters.Add(new ListObjectConvertor<LockFileTargetLibrary>());
+            options.Converters.Add(new ListObjectConvertor<LockFileItem>());
+            options.Converters.Add(new ListObjectConvertor<LockFileContentFile>());
+            options.Converters.Add(new ListObjectConvertor<LockFileRuntimeTarget>());
+            options.Converters.Add(new ListObjectConvertor<ProjectFileDependencyGroup>());
+
+            return options;
+        }
+
         /// <summary>
         /// Load json from a file to a JObject using the default load settings.
         /// </summary>
@@ -41,6 +67,11 @@ namespace NuGet.ProjectModel
 
                 return JObject.Load(jsonReader, DefaultLoadSettings);
             }
+        }
+
+        internal static async Task<T> LoadJsonAsync<T>(Stream stream)
+        {
+            return await System.Text.Json.JsonSerializer.DeserializeAsync<T>(stream, CreateJsonSerializerOptions());
         }
 
         internal static PackageDependency ReadPackageDependency(string property, JToken json)
