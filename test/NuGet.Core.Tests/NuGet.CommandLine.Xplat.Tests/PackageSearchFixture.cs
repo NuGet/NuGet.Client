@@ -18,7 +18,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         internal PackageSearchArgs CapturedArgs { get; set; }
         internal SetupSettingsAndRunSearchAsyncDelegate SetupSettingsAndRunSearchAsyncDelegate { get; set; }
         internal string StoredErrorMessage { get; set; }
-        internal List<Tuple<string, ConsoleColor>> ColoredMessage { get; set;}
+        internal List<Tuple<string, ConsoleColor>> ColoredMessage { get; set; }
 
         public PackageSearchFixture()
         {
