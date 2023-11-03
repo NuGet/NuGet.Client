@@ -383,16 +383,6 @@ steps:
     artifactName: "localizationArtifacts"
   condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: NuGetCommand@2
-  displayName: Publish public Nuget packages to nuget-build
-  inputs:
-    command: push
-    packagesToPush: 'artifacts\nupkgs\*.nupkg;!artifacts\nupkgs\*.symbols.nupkg'
-    nuGetFeedType: external
-    allowPackageConflicts: true
-    publishFeedCredentials : nuget-build-dnceng-public-feed
-  condition: " and(succeeded(),eq(variables['PublishArtifactsToMyGet'], 'true'), eq(variables['BuildRTM'], 'false')) "
-
 - task: MSBuild@1
   displayName: "Collect Build Symbols"
   inputs:
