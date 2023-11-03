@@ -91,6 +91,9 @@ steps:
     msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /p:IncludeApex=true"
     maximumCpuCount: true
 
+- task: ComponentGovernanceComponentDetection@0
+  displayName: 'Component Detection'
+
 - task: MSBuild@1
   displayName: "Build for VS2019"
   inputs:
@@ -249,10 +252,6 @@ steps:
     TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
     ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
     ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-
-- task: ComponentGovernanceComponentDetection@0
-  displayName: 'Component Detection'
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
 - task: PublishPipelineArtifact@1
   displayName: "Publish nupkgs"
