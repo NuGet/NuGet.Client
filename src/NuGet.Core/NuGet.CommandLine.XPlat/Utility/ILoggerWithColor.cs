@@ -8,6 +8,6 @@ namespace NuGet.CommandLine.XPlat
 {
     internal interface ILoggerWithColor : ILogger
     {
-        void LogMinimalWithColor(string data, ConsoleColor color);
+        void LogMinimal(string data, ConsoleColor color);
     }
 }

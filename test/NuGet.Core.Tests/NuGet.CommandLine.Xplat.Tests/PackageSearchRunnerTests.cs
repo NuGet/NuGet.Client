@@ -11,15 +11,13 @@ using NuGet.CommandLine.XPlat;
 using System;
 using System.Linq;
 using System.Globalization;
-using Moq;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
-    public class PackageSearchRunnerTests : IDisposable
+    public class PackageSearchRunnerTests : IClassFixture<PackageSearchFixture>, IDisposable
     {
-        private ILoggerWithColor _mockLogger;
-        private List<Tuple<string, ConsoleColor>> _coloredMessage;
-        private List<string> _errorMessages;
+        private PackageSearchFixture _fixture;
+
         readonly string _onePackageQueryResult = $@"
                 {{
                     ""@context"":
@@ -68,25 +66,14 @@ namespace NuGet.CommandLine.Xplat.Tests
                     ]
                 }}";
 
-        public PackageSearchRunnerTests()
+        public PackageSearchRunnerTests(PackageSearchFixture fixture)
         {
-            Mock<ILoggerWithColor> loggerWithColorMock = new Mock<ILoggerWithColor>();
-            _coloredMessage = new List<Tuple<string, ConsoleColor>>();
-            _errorMessages = new List<string>();
-
-            loggerWithColorMock.Setup(x => x.LogMinimalWithColor(It.IsAny<string>(), It.IsAny<ConsoleColor>()))
-                .Callback<string, ConsoleColor>((message, color) => { _coloredMessage.Add(Tuple.Create(message, color)); });
-
-            loggerWithColorMock.Setup(x => x.LogError(It.IsAny<string>()))
-                .Callback<string>(_errorMessages.Add);
-
-            _mockLogger = loggerWithColorMock.Object;
+            _fixture = fixture;
         }
 
         public void Dispose()
         {
-            _coloredMessage.Clear();
-            _errorMessages.Clear();
+            _fixture.Dispose();
         }
 
         [Fact]
@@ -125,7 +112,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 20,
                 Prerelease = false,
                 ExactMatch = false,
-                Logger = _mockLogger,
+                Logger = _fixture.GetLogger(),
                 SearchTerm = "json",
                 Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
             };
@@ -165,10 +152,10 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Assert
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, _coloredMessage.Select(tuple => tuple.Item1));
+                Assert.Contains(expected, _fixture.ColoredMessage.Select(tuple => tuple.Item1));
             }
 
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), _coloredMessage);
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), _fixture.ColoredMessage);
         }
 
         [Theory]
@@ -211,7 +198,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = take,
                 Prerelease = prerelease,
                 ExactMatch = false,
-                Logger = _mockLogger,
+                Logger = _fixture.GetLogger(),
                 SearchTerm = "json",
                 Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
             };
@@ -252,10 +239,10 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Assert
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, _coloredMessage.Select(tuple => tuple.Item1));
+                Assert.Contains(expected, _fixture.ColoredMessage.Select(tuple => tuple.Item1));
             }
 
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), _coloredMessage);
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), _fixture.ColoredMessage);
         }
 
         [Fact]
@@ -292,7 +279,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 20,
                 Prerelease = false,
                 ExactMatch = true,
-                Logger = _mockLogger,
+                Logger = _fixture.GetLogger(),
                 SearchTerm = "Fake.Newtonsoft.Json",
                 Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
             };
@@ -361,10 +348,10 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Assert
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, _coloredMessage.Select(tuple => tuple.Item1));
+                Assert.Contains(expected, _fixture.ColoredMessage.Select(tuple => tuple.Item1));
             }
 
-            Assert.Contains(Tuple.Create("Fake.Newtonsoft.Json", ConsoleColor.Red), _coloredMessage);
+            Assert.Contains(Tuple.Create("Fake.Newtonsoft.Json", ConsoleColor.Red), _fixture.ColoredMessage);
         }
 
         [Fact]
@@ -383,7 +370,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 10,
                 Prerelease = true,
                 ExactMatch = false,
-                Logger = _mockLogger,
+                Logger = _fixture.GetLogger(),
                 SearchTerm = "json",
                 Sources = new List<string> { source }
             };
@@ -396,7 +383,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(1, exitCode);
-            Assert.Contains(expectedError, _errorMessages);
+            Assert.Contains(expectedError, _fixture.StoredErrorMessage);
         }
     }
 }

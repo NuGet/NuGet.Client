@@ -3,197 +3,171 @@
 
 using System;
 using System.Globalization;
-using System.Threading.Tasks;
-using Microsoft.Extensions.CommandLineUtils;
-using Moq;
 using NuGet.CommandLine.XPlat;
 using Xunit;
 using static NuGet.CommandLine.XPlat.PackageSearchCommand;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
-    public class PackageSearchCommandTests : IDisposable
+    public class PackageSearchCommandTests : IClassFixture<PackageSearchFixture>, IDisposable
     {
-        private CommandLineApplication _app;
-        private Func<ILoggerWithColor> _getLogger;
-        private PackageSearchArgs _capturedArgs;
-        private SetupSettingsAndRunSearchAsyncDelegate _setupSettingsAndRunSearchAsyncDelegate;
-        private string _storedErrorMessage;
+        private PackageSearchFixture _fixture;
 
-        public PackageSearchCommandTests()
+        public PackageSearchCommandTests(PackageSearchFixture fixture)
         {
-            _storedErrorMessage = string.Empty;
-            _app = new CommandLineApplication();
-            Mock<ILoggerWithColor> loggerWithColorMock = new Mock<ILoggerWithColor>();
-            loggerWithColorMock.Setup(x => x.LogError(It.IsAny<string>())).Callback<string>((message) => _storedErrorMessage += message);
-            _getLogger = () => loggerWithColorMock.Object;
-            _capturedArgs = null;
-            async Task<int> SetupSettingsAndRunSearchAsync(PackageSearchArgs args)
-            {
-                _capturedArgs = args;
-                await Task.CompletedTask;
-                return 0;
-            }
-
-            _setupSettingsAndRunSearchAsyncDelegate = SetupSettingsAndRunSearchAsync;
-        }
-
-        public void Dispose()
-        {
-            _storedErrorMessage = string.Empty;
-            _app = new CommandLineApplication();
+            _fixture = fixture;
         }
 
         [Fact]
         public void Register_withSearchTermOnly_SetsSearchTerm()
         {
             // Arrange
-            Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
+            Register(_fixture.App, _fixture.GetLogger, _fixture.SetupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
 
             // Act
-            _app.Execute(new[] { "search", searchTerm });
+            _fixture.App.Execute(new[] { "search", searchTerm });
 
             //Assert
-            Assert.Equal(searchTerm, _capturedArgs.SearchTerm);
+            Assert.Equal(searchTerm, _fixture.CapturedArgs.SearchTerm);
         }
 
         [Fact]
         public void Register_withSingleSourceOption_SetsSources()
         {
             // Arrange
-            Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
+            Register(_fixture.App, _fixture.GetLogger, _fixture.SetupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string source = "testSource";
 
             // Act
-            _app.Execute(new[] { "search", searchTerm, "--source", source });
+            _fixture.App.Execute(new[] { "search", searchTerm, "--source", source });
 
             //Assert
-            Assert.Contains(source, _capturedArgs.Sources);
+            Assert.Contains(source, _fixture.CapturedArgs.Sources);
         }
 
         [Fact]
         public void Register_withMultipleSourceOptions_SetsSources()
         {
             // Arrange
-            Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
+            Register(_fixture.App, _fixture.GetLogger, _fixture.SetupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string source1 = "testSource1";
             string source2 = "testSource2";
 
             // Act
-            _app.Execute(new[] { "search", searchTerm, "--source", source1, "--source", source2 });
+            _fixture.App.Execute(new[] { "search", searchTerm, "--source", source1, "--source", source2 });
 
             //Assert
-            Assert.Contains(source1, _capturedArgs.Sources);
-            Assert.Contains(source2, _capturedArgs.Sources);
+            Assert.Contains(source1, _fixture.CapturedArgs.Sources);
+            Assert.Contains(source2, _fixture.CapturedArgs.Sources);
         }
 
         [Fact]
         public void Register_withExactMatchOption_SetsExactMatch()
         {
             // Arrange
-            Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
+            Register(_fixture.App, _fixture.GetLogger, _fixture.SetupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
 
             // Act
-            _app.Execute(new[] { "search", searchTerm, "--exact-match" });
+            _fixture.App.Execute(new[] { "search", searchTerm, "--exact-match" });
 
             //Assert
-            Assert.True(_capturedArgs.ExactMatch);
+            Assert.True(_fixture.CapturedArgs.ExactMatch);
         }
 
         [Fact]
         public void Register_withPrereleaseOption_SetsPrerelease()
         {
             // Arrange
-            Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
+            Register(_fixture.App, _fixture.GetLogger, _fixture.SetupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
 
             // Act
-            _app.Execute(new[] { "search", searchTerm, "--prerelease" });
+            _fixture.App.Execute(new[] { "search", searchTerm, "--prerelease" });
 
             //Assert
-            Assert.True(_capturedArgs.Prerelease);
+            Assert.True(_fixture.CapturedArgs.Prerelease);
         }
 
         [Fact]
         public void Register_withInteractiveOption_SetsInteractive()
         {
             // Arrange
-            Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
+            Register(_fixture.App, _fixture.GetLogger, _fixture.SetupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
 
             // Act
-            _app.Execute(new[] { "search", searchTerm, "--interactive" });
+            _fixture.App.Execute(new[] { "search", searchTerm, "--interactive" });
 
             //Assert
-            Assert.True(_capturedArgs.Interactive);
+            Assert.True(_fixture.CapturedArgs.Interactive);
         }
 
         [Fact]
         public void Register_withTakeOption_SetsTake()
         {
             // Arrange
-            Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
+            Register(_fixture.App, _fixture.GetLogger, _fixture.SetupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string take = "5";
 
             // Act
-            _app.Execute(new[] { "search", searchTerm, "--take", take });
+            _fixture.App.Execute(new[] { "search", searchTerm, "--take", take });
 
             //Assert
-            Assert.Equal(int.Parse(take), _capturedArgs.Take);
+            Assert.Equal(int.Parse(take), _fixture.CapturedArgs.Take);
         }
 
         [Fact]
         public void Register_withSkipOption_SetsSkip()
         {
             // Arrange
-            Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
+            Register(_fixture.App, _fixture.GetLogger, _fixture.SetupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string skip = "3";
 
             // Act
-            _app.Execute(new[] { "search", searchTerm, "--skip", skip });
+            _fixture.App.Execute(new[] { "search", searchTerm, "--skip", skip });
 
             //Assert
-            Assert.Equal(int.Parse(skip), _capturedArgs.Skip);
+            Assert.Equal(int.Parse(skip), _fixture.CapturedArgs.Skip);
         }
 
         [Fact]
         public void Register_withInvalidTakeOption_ShowsErrorMessage()
         {
             // Arrange
-            Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
+            Register(_fixture.App, _fixture.GetLogger, _fixture.SetupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string take = "invalid";
             string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, take);
 
             // Act
-            var exitCode = _app.Execute(new[] { "search", searchTerm, "--take", take });
+            var exitCode = _fixture.App.Execute(new[] { "search", searchTerm, "--take", take });
 
             // Assert
             Assert.Equal(1, exitCode);
-            Assert.Contains(expectedError, _storedErrorMessage);
+            Assert.Contains(expectedError, _fixture.StoredErrorMessage);
         }
 
         [Fact]
         public void Register_withInvalidSkipOption_ShowsErrorMessage()
         {
             // Arrange
-            Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
+            Register(_fixture.App, _fixture.GetLogger, _fixture.SetupSettingsAndRunSearchAsyncDelegate);
             string searchTerm = "nuget";
             string skip = "invalid";
             string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, skip);
 
             // Act
-            var exitCode = _app.Execute(new[] { "search", searchTerm, "--skip", skip });
+            var exitCode = _fixture.App.Execute(new[] { "search", searchTerm, "--skip", skip });
 
             // Assert
             Assert.Equal(1, exitCode);
-            Assert.Contains(expectedError, _storedErrorMessage);
+            Assert.Contains(expectedError, _fixture.StoredErrorMessage);
         }
 
         [Theory]
@@ -205,17 +179,22 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_WithOptions_SetsExpectedValues(string[] args, bool expectedExactMatch, bool expectedPrerelease, bool expectedInteractive, int expectedTake = 20, int expectedSkip = 0)
         {
             // Arrange
-            Register(_app, _getLogger, _setupSettingsAndRunSearchAsyncDelegate);
+            Register(_fixture.App, _fixture.GetLogger, _fixture.SetupSettingsAndRunSearchAsyncDelegate);
 
             // Act
-            _app.Execute(args);
+            _fixture.App.Execute(args);
 
             // Assert
-            Assert.Equal(expectedExactMatch, _capturedArgs.ExactMatch);
-            Assert.Equal(expectedPrerelease, _capturedArgs.Prerelease);
-            Assert.Equal(expectedInteractive, _capturedArgs.Interactive);
-            Assert.Equal(expectedTake, _capturedArgs.Take);
-            Assert.Equal(expectedSkip, _capturedArgs.Skip);
+            Assert.Equal(expectedExactMatch, _fixture.CapturedArgs.ExactMatch);
+            Assert.Equal(expectedPrerelease, _fixture.CapturedArgs.Prerelease);
+            Assert.Equal(expectedInteractive, _fixture.CapturedArgs.Interactive);
+            Assert.Equal(expectedTake, _fixture.CapturedArgs.Take);
+            Assert.Equal(expectedSkip, _fixture.CapturedArgs.Skip);
+        }
+
+        public void Dispose()
+        {
+            _fixture.Dispose();
         }
     }
 }

@@ -61,20 +61,20 @@ namespace NuGet.CommandLine.XPlat
 
                     if (!string.IsNullOrEmpty(searchTerm) && paddedValue.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        logger.LogMinimalWithColor("| ", consoleColor);
+                        logger.LogMinimal("| ", consoleColor);
                         if (_columnsToHighlight.Contains(i))
                         {
                             PrintWithHighlight(paddedValue, searchTerm, highlighterColor, logger);
                         }
                         else
                         {
-                            logger.LogMinimalWithColor(paddedValue, consoleColor);
+                            logger.LogMinimal(paddedValue, consoleColor);
                         }
-                        logger.LogMinimalWithColor(" ", consoleColor);
+                        logger.LogMinimal(" ", consoleColor);
                     }
                     else
                     {
-                        logger.LogMinimalWithColor("| " + paddedValue + " ", consoleColor);
+                        logger.LogMinimal("| " + paddedValue + " ", consoleColor);
                     }
                 }
 
@@ -85,7 +85,7 @@ namespace NuGet.CommandLine.XPlat
                     // Add the separator after the header.
                     foreach (var width in _columnWidths)
                     {
-                        logger.LogMinimalWithColor("|" + new string('-', width + 2), consoleColor);
+                        logger.LogMinimal("|" + new string('-', width + 2), consoleColor);
                     }
 
                     logger.LogMinimal("|");
@@ -100,13 +100,13 @@ namespace NuGet.CommandLine.XPlat
 
             while (index != -1)
             {
-                logger.LogMinimalWithColor(value.Substring(0, index), originalColor);
-                logger.LogMinimalWithColor(value.Substring(index, searchTerm.Length), highlighterColor);
+                logger.LogMinimal(value.Substring(0, index), originalColor);
+                logger.LogMinimal(value.Substring(index, searchTerm.Length), highlighterColor);
                 value = value.Substring(index + searchTerm.Length);
                 index = value.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase);
             }
 
-            logger.LogMinimalWithColor(value, originalColor);
+            logger.LogMinimal(value, originalColor);
         }
 
         private static ConsoleColor GetHighlighterColor()

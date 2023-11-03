@@ -1319,7 +1319,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Require that the search term exactly match the name of the package. Ignores --take and --skip options..
+        ///   Looks up a localized string similar to Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored..
         /// </summary>
         internal static string pkgSearch_ExactMatchDescription {
             get {
@@ -1355,7 +1355,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`..
+        ///   Looks up a localized string similar to Package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`..
         /// </summary>
         internal static string pkgSearch_SourceDescription {
             get {
@@ -1373,7 +1373,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search term to filter package names, descriptions, and tags. Used as a literal value. Example: dotnet package search some.package. See also --exact-match..
+        ///   Looks up a localized string similar to Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`..
         /// </summary>
         internal static string pkgSearch_termDescription {
             get {
