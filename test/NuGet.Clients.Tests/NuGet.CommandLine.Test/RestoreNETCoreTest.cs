@@ -9938,13 +9938,13 @@ namespace NuGet.CommandLine.Test
                 var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
                 Assert.Equal(expectedLibraries, libraries);
 
-                var centralfileDependencyGroups = assetsFile
+                var centralFileDependencyGroups = assetsFile
                     .CentralTransitiveDependencyGroups
                     .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
 
-                var expectedCentralfileDependencyGroups = new List<string>() { $"{framework.DotNetFrameworkName}_P.[3.0.0, )", $"{framework.DotNetFrameworkName}_S.[3.0.0, )" };
+                var expectedcentralFileDependencyGroups = new List<string>() { $"{framework.DotNetFrameworkName}_P.[3.0.0, )", $"{framework.DotNetFrameworkName}_S.[3.0.0, )" };
 
-                Assert.Equal(expectedCentralfileDependencyGroups, centralfileDependencyGroups);
+                Assert.Equal(expectedcentralFileDependencyGroups, centralFileDependencyGroups);
             }
         }
 
@@ -10099,11 +10099,11 @@ namespace NuGet.CommandLine.Test
                 var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
                 Assert.Equal(expectedLibraries, libraries);
 
-                var centralfileDependencyGroups = assetsFile
+                var centralFileDependencyGroups = assetsFile
                     .CentralTransitiveDependencyGroups
                     .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
 
-                Assert.Equal(0, centralfileDependencyGroups.Count);
+                Assert.Equal(0, centralFileDependencyGroups.Count);
             }
         }
 
@@ -10134,16 +10134,12 @@ namespace NuGet.CommandLine.Test
                     return result;
                 };
 
-                var projectA = SimpleTestProjectContext.CreateNETCore(
-                   "projectA",
-                   pathContext.SolutionRoot,
-                   framework);
+                var projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, framework);
 
                 // the package references defined in the project should not have version unless CPM is disabled
-                var packageBNoVersion = createTestPackage("B", managePackageVersionsCentrally is null || managePackageVersionsCentrally == true ? null : "1.0.0", packagesForProject);
                 var packageB100 = createTestPackage("B", "1.0.0", packagesForSource);
                 var packageC100 = createTestPackage("C", "1.0.0", packagesForSource);
-                var packageC200 = createTestPackage("C", "2.0.0", packagesForSource);
+                createTestPackage("C", "2.0.0", packagesForSource);
 
                 packageB100.Dependencies.Add(packageC100);
 
@@ -10160,10 +10156,10 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext);
+                var result = Util.RestoreSolution(pathContext);
 
                 // Assert
-                r.Success.Should().BeTrue();
+                result.Success.Should().BeTrue();
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
 
                 var assetFileReader = new LockFileFormat();
@@ -10173,11 +10169,11 @@ namespace NuGet.CommandLine.Test
                 var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
                 Assert.Equal(expectedLibraries, libraries);
 
-                var centralfileDependencyGroups = assetsFile
+                var centralFileDependencyGroups = assetsFile
                     .CentralTransitiveDependencyGroups
                     .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
 
-                Assert.Equal(0, centralfileDependencyGroups.Count);
+                Assert.Equal(0, centralFileDependencyGroups.Count);
             }
         }
 
@@ -10369,11 +10365,11 @@ namespace NuGet.CommandLine.Test
                 var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
                 Assert.Equal(expectedLibraries, libraries);
 
-                var centralfileDependencyGroups = assetsFile
+                var centralFileDependencyGroups = assetsFile
                     .CentralTransitiveDependencyGroups
                     .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
 
-                Assert.Equal(0, centralfileDependencyGroups.Count);
+                Assert.Equal(0, centralFileDependencyGroups.Count);
             }
         }
 
