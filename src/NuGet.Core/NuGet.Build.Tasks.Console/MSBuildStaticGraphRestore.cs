@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -131,7 +131,7 @@ namespace NuGet.Build.Tasks.Console
                     log: MSBuildLogger,
                 cancellationToken: CancellationToken.None);
 
-                LogFilesToEmbedInBinlog(dependencyGraphSpec);
+                LogFilesToEmbedInBinlog(dependencyGraphSpec, options);
 
                 return result;
             }
@@ -1096,10 +1096,11 @@ namespace NuGet.Build.Tasks.Console
         /// Logs the list of files to embed in the MSBuild binary log.
         /// </summary>
         /// <param name="dependencyGraphSpec"></param>
-        private void LogFilesToEmbedInBinlog(DependencyGraphSpec dependencyGraphSpec)
+        private void LogFilesToEmbedInBinlog(DependencyGraphSpec dependencyGraphSpec, IReadOnlyDictionary<string, string> options)
         {
             // If the MSBuildBinaryLoggerEnabled environment variable is not set, don't log the paths to the files.
-            if (!string.Equals(Environment.GetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(Environment.GetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED"), bool.TrueString, StringComparison.OrdinalIgnoreCase)
+                || !IsOptionTrue(nameof(RestoreTaskEx.EmbedRestoreFilesInBinlog), options))
             {
                 return;
             }
@@ -1111,7 +1112,11 @@ namespace NuGet.Build.Tasks.Console
                 if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
                 {
                     LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(Path.Combine(project.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName)));
-                    LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(Path.Combine(project.RestoreMetadata.OutputPath, DependencyGraphSpec.GetDGSpecFileName(Path.GetFileName(project.RestoreMetadata.ProjectPath)))));
+                    if (IsOptionTrue(nameof(RestoreTaskEx.EmbedDGSpecInBinlog), options))
+                    {
+                        LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(Path.Combine(project.RestoreMetadata.OutputPath, DependencyGraphSpec.GetDGSpecFileName(Path.GetFileName(project.RestoreMetadata.ProjectPath)))));
+                    }
+
                     LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(project, BuildAssetsUtils.PropsExtension)));
                     LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(project, BuildAssetsUtils.TargetsExtension)));
                 }

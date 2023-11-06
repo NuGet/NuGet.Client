@@ -88,6 +88,18 @@ namespace NuGet.Build.Tasks
         [Output]
         public ITaskItem[] EmbedInBinlog { get; set; }
 
+        /// <summary>
+        /// Controls whether to embed files produced by the Restore task in the binlog.
+        /// Defaults to true.
+        /// </summary>
+        public bool EmbedRestoreFilesInBinlog { get; set; } = true;
+
+        /// <summary>
+        /// Controls whether to embed .nuget.dgspec.json files in the binlog.
+        /// Defaults to true.
+        /// </summary>
+        public bool EmbedDGSpecInBinlog { get; set; } = true;
+
         public override bool Execute()
         {
 #if DEBUG
@@ -188,7 +200,8 @@ namespace NuGet.Build.Tasks
         /// <returns>If the MSBuildBinaryLoggerEnabled environment variable is set, returns the paths to NuGet files to embed in the binlog, otherwise returns <see cref="Array.Empty{T}" />.</returns>
         private ITaskItem[] GetFilesToEmbedInBinlog(DependencyGraphSpec dependencyGraphSpec)
         {
-            if (!string.Equals(Environment.GetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(Environment.GetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED"), bool.TrueString, StringComparison.OrdinalIgnoreCase)
+                || !EmbedRestoreFilesInBinlog)
             {
                 return Array.Empty<ITaskItem>();
             }
@@ -202,7 +215,11 @@ namespace NuGet.Build.Tasks
                 if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
                 {
                     restoredProjectOutputPaths.Add(new TaskItem(Path.Combine(project.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName)));
-                    restoredProjectOutputPaths.Add(new TaskItem(Path.Combine(project.RestoreMetadata.OutputPath, DependencyGraphSpec.GetDGSpecFileName(Path.GetFileName(project.RestoreMetadata.ProjectPath)))));
+                    if (EmbedDGSpecInBinlog)
+                    {
+                        restoredProjectOutputPaths.Add(new TaskItem(Path.Combine(project.RestoreMetadata.OutputPath, DependencyGraphSpec.GetDGSpecFileName(Path.GetFileName(project.RestoreMetadata.ProjectPath)))));
+                    }
+
                     restoredProjectOutputPaths.Add(new TaskItem(BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(project, BuildAssetsUtils.PropsExtension)));
                     restoredProjectOutputPaths.Add(new TaskItem(BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(project, BuildAssetsUtils.TargetsExtension)));
                 }
