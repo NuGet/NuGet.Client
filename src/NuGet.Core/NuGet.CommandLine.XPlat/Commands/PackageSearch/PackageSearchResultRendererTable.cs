@@ -34,6 +34,13 @@ namespace NuGet.CommandLine.XPlat
 
             _args.Logger.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
             IEnumerable<IPackageSearchMetadata> searchResult = await completedSearchTask;
+
+            if (searchResult == null)
+            {
+                _args.Logger.LogMinimal(Strings.Error_NoResource);
+                return;
+            }
+
             var table = new Table(new[] { 0, 2 }, "Package ID", "Latest Version", "Authors", "Downloads");
 
             if (_args.ExactMatch)

@@ -853,4 +853,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="Error_CannotObtainSearchSource" xml:space="preserve">
     <value>Failed to obtain a search resource.</value>
   </data>
+  <data name="Error_NoResource" xml:space="preserve">
+    <value>Resource not found.</value>
+  </data>
 </root>

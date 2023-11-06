@@ -14,10 +14,8 @@ using System.Globalization;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
-    public class PackageSearchRunnerTests : IClassFixture<PackageSearchFixture>, IDisposable
+    public class PackageSearchRunnerTests : PackageSearchTestInitializer
     {
-        private PackageSearchFixture _fixture;
-
         readonly string _onePackageQueryResult = $@"
                 {{
                     ""@context"":
@@ -66,25 +64,15 @@ namespace NuGet.CommandLine.Xplat.Tests
                     ]
                 }}";
 
-        public PackageSearchRunnerTests(PackageSearchFixture fixture)
-        {
-            _fixture = fixture;
-        }
-
-        public void Dispose()
-        {
-            _fixture.Dispose();
-        }
-
         [Fact]
         public async Task PackageSearchRunner_SearchAPIReturnsOnePackage_OnePackageTableOutputted()
         {
             // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
-                    configFileName: null,
-                    machineWideSettings: new XPlatMachineWideSetting());
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var mockServer = new MockServer();
             var expectedValues = new List<string>
                 {
                     "| Package ID           ",
@@ -106,18 +94,20 @@ namespace NuGet.CommandLine.Xplat.Tests
                     "| 531,607,259 ",
                 };
 
-            PackageSearchArgs packageSearchArgs = new()
+            using (var mockServer = new MockServer())
             {
-                Skip = 0,
-                Take = 20,
-                Prerelease = false,
-                ExactMatch = false,
-                Logger = _fixture.GetLogger(),
-                SearchTerm = "json",
-                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
-            };
+                PackageSearchArgs packageSearchArgs = new()
+                {
+                    Skip = 0,
+                    Take = 20,
+                    Prerelease = false,
+                    ExactMatch = false,
+                    Logger = GetLogger(),
+                    SearchTerm = "json",
+                    Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
+                };
 
-            string index = $@"
+                string index = $@"
                 {{
                     ""version"": ""3.0.0"",
 
@@ -136,26 +126,24 @@ namespace NuGet.CommandLine.Xplat.Tests
                     }}
                 }}";
 
-            mockServer.Get.Add("/v3/index.json", r => index);
-            mockServer.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
-            mockServer.Start();
+                mockServer.Get.Add("/v3/index.json", r => index);
+                mockServer.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
+                mockServer.Start();
 
-            // Act
-            await PackageSearchRunner.RunAsync(
-                sourceProvider: sourceProvider,
-                packageSearchArgs,
-                cancellationToken: System.Threading.CancellationToken.None);
-
-            //stop mock server
-            mockServer.Stop();
+                // Act
+                await PackageSearchRunner.RunAsync(
+                    sourceProvider: sourceProvider,
+                    packageSearchArgs,
+                    cancellationToken: System.Threading.CancellationToken.None);
+            }
 
             // Assert
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, _fixture.ColoredMessage.Select(tuple => tuple.Item1));
+                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
             }
 
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), _fixture.ColoredMessage);
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
         }
 
         [Theory]
@@ -166,11 +154,11 @@ namespace NuGet.CommandLine.Xplat.Tests
         public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakePrereleaseOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take, bool prerelease)
         {
             // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
-                    configFileName: null,
-                    machineWideSettings: new XPlatMachineWideSetting());
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var mockServer = new MockServer();
             var expectedValues = new List<string>
                 {
                     "| Package ID           ",
@@ -192,18 +180,20 @@ namespace NuGet.CommandLine.Xplat.Tests
                     "| 531,607,259 ",
                 };
 
-            PackageSearchArgs packageSearchArgs = new()
+            using (var mockServer = new MockServer())
             {
-                Skip = skip,
-                Take = take,
-                Prerelease = prerelease,
-                ExactMatch = false,
-                Logger = _fixture.GetLogger(),
-                SearchTerm = "json",
-                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
-            };
+                PackageSearchArgs packageSearchArgs = new()
+                {
+                    Skip = skip,
+                    Take = take,
+                    Prerelease = prerelease,
+                    ExactMatch = false,
+                    Logger = GetLogger(),
+                    SearchTerm = "json",
+                    Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
+                };
 
-            string index = $@"
+                string index = $@"
                 {{
                     ""version"": ""3.0.0"",
 
@@ -222,39 +212,37 @@ namespace NuGet.CommandLine.Xplat.Tests
                     }}
                 }}";
 
-            mockServer.Get.Add("/v3/index.json", r => index);
-            string prereleaseValue = prerelease ? "true" : "false";
-            mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease={prereleaseValue}&semVerLevel=2.0.0", r => _onePackageQueryResult);
-            mockServer.Start();
+                mockServer.Get.Add("/v3/index.json", r => index);
+                string prereleaseValue = prerelease ? "true" : "false";
+                mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease={prereleaseValue}&semVerLevel=2.0.0", r => _onePackageQueryResult);
+                mockServer.Start();
 
-            // Act
-            await PackageSearchRunner.RunAsync(
-                sourceProvider: sourceProvider,
-                packageSearchArgs,
-                cancellationToken: System.Threading.CancellationToken.None);
-
-            //stop mock server
-            mockServer.Stop();
+                // Act
+                await PackageSearchRunner.RunAsync(
+                    sourceProvider: sourceProvider,
+                    packageSearchArgs,
+                    cancellationToken: System.Threading.CancellationToken.None);
+            }
 
             // Assert
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, _fixture.ColoredMessage.Select(tuple => tuple.Item1));
+                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
             }
 
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), _fixture.ColoredMessage);
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
         }
 
         [Fact]
         public async Task PackageSearchRunner_GetMetadataAPIRequestReturnsOnePackage_OnePackageTableOutputted()
         {
             // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
-                    configFileName: null,
-                    machineWideSettings: new XPlatMachineWideSetting());
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var mockServer = new MockServer();
-            var expectedValues = new List<string>
+                var expectedValues = new List<string>
                 {
                     "| Package ID           ",
                     "| Latest Version ",
@@ -273,18 +261,20 @@ namespace NuGet.CommandLine.Xplat.Tests
                     "| 531,607,259 ",
                 };
 
-            PackageSearchArgs packageSearchArgs = new()
+            using (var mockServer = new MockServer())
             {
-                Skip = 0,
-                Take = 20,
-                Prerelease = false,
-                ExactMatch = true,
-                Logger = _fixture.GetLogger(),
-                SearchTerm = "Fake.Newtonsoft.Json",
-                Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
-            };
+                PackageSearchArgs packageSearchArgs = new()
+                {
+                    Skip = 0,
+                    Take = 20,
+                    Prerelease = false,
+                    ExactMatch = true,
+                    Logger = GetLogger(),
+                    SearchTerm = "Fake.Newtonsoft.Json",
+                    Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
+                };
 
-            string index = $@"
+                string index = $@"
                 {{
                     ""version"": ""3.0.0"",
 
@@ -303,7 +293,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     }}
                 }}";
 
-            const string exactMatchGetMetadataResult = @"{
+                const string exactMatchGetMetadataResult = @"{
                             ""@type"": ""Package"",
                             ""count"": 1,
                             ""items"": [
@@ -332,35 +322,34 @@ namespace NuGet.CommandLine.Xplat.Tests
                             }
                         }";
 
-            mockServer.Get.Add("/v3/index.json", r => index);
-            mockServer.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => exactMatchGetMetadataResult);
-            mockServer.Start();
+                mockServer.Get.Add("/v3/index.json", r => index);
+                mockServer.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => exactMatchGetMetadataResult);
+                mockServer.Start();
 
-            // Act
-            await PackageSearchRunner.RunAsync(
-                sourceProvider: sourceProvider,
-                packageSearchArgs,
-                cancellationToken: System.Threading.CancellationToken.None);
-
-            // Stop mock server
-            mockServer.Stop();
+                // Act
+                await PackageSearchRunner.RunAsync(
+                    sourceProvider: sourceProvider,
+                    packageSearchArgs,
+                    cancellationToken: System.Threading.CancellationToken.None);
+            }
 
             // Assert
             foreach (var expected in expectedValues)
             {
-                Assert.Contains(expected, _fixture.ColoredMessage.Select(tuple => tuple.Item1));
+                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
             }
 
-            Assert.Contains(Tuple.Create("Fake.Newtonsoft.Json", ConsoleColor.Red), _fixture.ColoredMessage);
+            Assert.Contains(Tuple.Create("Fake.Newtonsoft.Json", ConsoleColor.Red), ColoredMessage);
         }
 
         [Fact]
         public async Task PackageSearchRunner_WhenSourceIsInvalid_ReturnsExitCodeOne()
         {
             // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
-                    configFileName: null,
-                    machineWideSettings: new XPlatMachineWideSetting());
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             string source = "invalid-source";
             string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidSource, source);
@@ -370,7 +359,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Take = 10,
                 Prerelease = true,
                 ExactMatch = false,
-                Logger = _fixture.GetLogger(),
+                Logger = GetLogger(),
                 SearchTerm = "json",
                 Sources = new List<string> { source }
             };
@@ -383,7 +372,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(1, exitCode);
-            Assert.Contains(expectedError, _fixture.StoredErrorMessage);
+            Assert.Contains(expectedError, StoredErrorMessage);
         }
     }
 }

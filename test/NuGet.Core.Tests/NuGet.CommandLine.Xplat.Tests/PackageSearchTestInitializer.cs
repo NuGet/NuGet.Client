@@ -11,7 +11,7 @@ using static NuGet.CommandLine.XPlat.PackageSearchCommand;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
-    public class PackageSearchFixture : IDisposable
+    public class PackageSearchTestInitializer
     {
         internal CommandLineApplication App { get; set; }
         internal Func<ILoggerWithColor> GetLogger { get; set; }
@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         internal string StoredErrorMessage { get; set; }
         internal List<Tuple<string, ConsoleColor>> ColoredMessage { get; set; }
 
-        public PackageSearchFixture()
+        public PackageSearchTestInitializer()
         {
             StoredErrorMessage = string.Empty;
             ColoredMessage = new List<Tuple<string, ConsoleColor>>();
@@ -41,13 +41,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                 await Task.CompletedTask;
                 return 0;
             };
-        }
-
-        public void Dispose()
-        {
-            App = new CommandLineApplication();
-            StoredErrorMessage = string.Empty;
-            ColoredMessage.Clear();
         }
     }
 }

@@ -121,7 +121,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 using var cache = new SourceCacheContext();
                 var repository = Repository.Factory.GetCoreV3(source);
-                var resource = await repository.GetResourceAsync<PackageMetadataResource>();
+                var resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
                 if (resource == null)
                 {
