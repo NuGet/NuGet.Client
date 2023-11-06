@@ -31,7 +31,7 @@ namespace NuGet.ProjectModel
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
-            options.Converters.Add(new PackageSpecConverter());
+            options.Converters.Add(new LockFileConverter());
             options.Converters.Add(new LockFileLibraryConverter());
             options.Converters.Add(new LockFileTargetConverter());
             options.Converters.Add(new LockFileTargetLibraryConverter());

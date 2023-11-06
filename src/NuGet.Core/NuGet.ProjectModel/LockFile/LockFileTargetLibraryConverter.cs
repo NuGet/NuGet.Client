@@ -220,12 +220,13 @@ namespace NuGet.ProjectModel
                         }
                         break;
                     case JsonTokenType.EndObject:
+                        lockFileTargetLibrary.Freeze();
                         return lockFileTargetLibrary;
                     default:
                         throw new JsonException("Unexpected token " + reader.TokenType);
                 }
             }
-
+            lockFileTargetLibrary.Freeze();
             return lockFileTargetLibrary;
         }
 

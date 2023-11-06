@@ -6,13 +6,16 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.LibraryModel;
 
 namespace NuGet.ProjectModel
 {
     /// <summary>
     /// A <see cref="JsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="LockFile"/>
     /// </summary>
-    internal class PackageSpecConverter : JsonConverter<LockFile>
+    internal class LockFileConverter : JsonConverter<LockFile>
     {
         private static readonly byte[] Utf8Version = Encoding.UTF8.GetBytes("version");
         private static readonly byte[] Utf8Libraries = Encoding.UTF8.GetBytes("libraries");
@@ -21,7 +24,7 @@ namespace NuGet.ProjectModel
         private static readonly byte[] Utf8PackageFolders = Encoding.UTF8.GetBytes("packageFolders");
         private static readonly byte[] Utf8Project = Encoding.UTF8.GetBytes("project");
         private static readonly byte[] Utf8CentralTransitiveDependencyGroups = Encoding.UTF8.GetBytes("centralTransitiveDependencyGroups");
-        //private static readonly byte[] Utf8 = Encoding.UTF8.GetBytes("");
+        private static readonly byte[] Utf8Logs = Encoding.UTF8.GetBytes("logs");
 
         public override LockFile Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -57,41 +60,150 @@ namespace NuGet.ProjectModel
                             {
                                 lockFile.Version = int.MinValue;
                             }
-                            break;
                         }
-                        if (reader.ValueTextEquals(Utf8Libraries))
+                        else if (reader.ValueTextEquals(Utf8Libraries))
                         {
                             reader.Read();
                             lockFile.Libraries = lockFileLibraryConverter.Read(ref reader, typeof(IList<LockFileLibrary>), options);
-                            break;
                         }
-                        if (reader.ValueTextEquals(Utf8Targets))
+                        else if (reader.ValueTextEquals(Utf8Targets))
                         {
                             reader.Read();
                             lockFile.Targets = lockFileTargetConverter.Read(ref reader, typeof(IList<LockFileTarget>), options);
-                            break;
                         }
-                        if (reader.ValueTextEquals(Utf8ProjectFileDependencyGroups))
+                        else if (reader.ValueTextEquals(Utf8ProjectFileDependencyGroups))
                         {
                             reader.Read();
                             lockFile.ProjectFileDependencyGroups = projectFileDependencyGroupConverter.Read(ref reader, typeof(IList<ProjectFileDependencyGroup>), options);
-                            break;
                         }
-                        if (reader.ValueTextEquals(Utf8PackageFolders))
+                        else if (reader.ValueTextEquals(Utf8PackageFolders))
                         {
                             reader.Read();
                             lockFile.PackageFolders = lockFileItemListConverter.Read(ref reader, typeof(IList<LockFileItem>), options);
-                            break;
                         }
-                        if (reader.ValueTextEquals(Utf8Project))
+                        else if (reader.ValueTextEquals(Utf8Project))
                         {
-                            reader.Skip();
-                            break;
+                            JsonPackageSpecReader.GetPackageSpec(
+                                ref reader,
+                                options,
+                                name: null,
+                                packageSpecPath: null,
+                                snapshotValue: null);
                         }
-                        if (reader.ValueTextEquals(Utf8CentralTransitiveDependencyGroups))
+                        else if (reader.ValueTextEquals(Utf8CentralTransitiveDependencyGroups))
                         {
-                            reader.Skip();
-                            break;
+                            var results = new List<CentralTransitiveDependencyGroup>();
+                            if (reader.ReadNextToken() && reader.TokenType == JsonTokenType.StartObject)
+                            {
+                                while (reader.ReadNextToken() && reader.TokenType == JsonTokenType.PropertyName)
+                                {
+                                    var frameworkPropertyName = reader.GetString();
+                                    NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
+                                    var dependencies = new List<LibraryDependency>();
+
+                                    JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                                        jsonReader: ref reader,
+                                        results: dependencies,
+                                        packageSpecPath: string.Empty);
+                                    results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
+                                }
+                            }
+                            lockFile.CentralTransitiveDependencyGroups = results;
+                        }
+                        else if (reader.ValueTextEquals(Utf8Logs))
+                        {
+                            if (reader.ReadNextToken() && reader.TokenType == JsonTokenType.StartArray)
+                            {
+                                while (reader.ReadNextToken() && reader.TokenType != JsonTokenType.EndArray)
+                                {
+                                    if (reader.ReadNextToken() && reader.TokenType == JsonTokenType.StartObject)
+                                    {
+                                        var isValid = true;
+                                        LogLevel level = default;
+                                        NuGetLogCode code = default;
+                                        //matching default warning level when AssetLogMessage object is created
+                                        WarningLevel warningLevel = WarningLevel.Severe;
+                                        string message = default;
+                                        string filePath = default;
+                                        int startLineNumber = default;
+                                        int startColNumber = default;
+                                        int endLineNumber = default;
+                                        int endColNumber = default;
+                                        string libraryId = default;
+                                        IReadOnlyList<string> targetGraphs = default;
+
+                                        while (reader.ReadNextToken() && reader.TokenType == JsonTokenType.PropertyName && isValid)
+                                        {
+                                            if (reader.ValueTextEquals(LogMessageProperties.LEVEL))
+                                            {
+                                                var levelString = reader.ReadNextTokenAsString();
+                                                isValid &= Enum.TryParse(levelString, out level);
+                                            }
+                                            else if (reader.ValueTextEquals(LogMessageProperties.CODE))
+                                            {
+                                                var codeString = reader.ReadNextTokenAsString();
+                                                isValid &= Enum.TryParse(codeString, out code);
+                                            }
+                                            else if (reader.ValueTextEquals(LogMessageProperties.WARNING_LEVEL))
+                                            {
+                                                reader.ReadNextToken();
+                                                warningLevel = (WarningLevel)Enum.ToObject(typeof(WarningLevel), reader.GetInt32());
+                                            }
+                                            else if (reader.ValueTextEquals(LogMessageProperties.FILE_PATH))
+                                            {
+                                                filePath = reader.ReadNextTokenAsString();
+                                            }
+                                            else if (reader.ValueTextEquals(LogMessageProperties.START_LINE_NUMBER))
+                                            {
+                                                startLineNumber = reader.GetInt32();
+                                            }
+                                            else if (reader.ValueTextEquals(LogMessageProperties.START_COLUMN_NUMBER))
+                                            {
+                                                startColNumber = reader.GetInt32();
+                                            }
+                                            else if (reader.ValueTextEquals(LogMessageProperties.END_LINE_NUMBER))
+                                            {
+                                                endLineNumber = reader.GetInt32();
+                                            }
+                                            else if (reader.ValueTextEquals(LogMessageProperties.END_COLUMN_NUMBER))
+                                            {
+                                                endColNumber = reader.GetInt32();
+                                            }
+                                            else if (reader.ValueTextEquals(LogMessageProperties.MESSAGE))
+                                            {
+                                                message = reader.GetString();
+                                            }
+                                            else if (reader.ValueTextEquals(LogMessageProperties.LIBRARY_ID))
+                                            {
+                                                libraryId = reader.GetString();
+                                            }
+                                            else if (reader.ValueTextEquals(LogMessageProperties.TARGET_GRAPHS))
+                                            {
+                                                targetGraphs = reader.ReadStringArrayAsList();
+                                            }
+                                            else
+                                            {
+                                                reader.Skip();
+                                            }
+                                        }
+                                        if (isValid)
+                                        {
+                                            var assetLogMessage = new AssetsLogMessage(level, code, message)
+                                            {
+                                                TargetGraphs = targetGraphs,
+                                                FilePath = filePath,
+                                                EndColumnNumber = endColNumber,
+                                                EndLineNumber = endLineNumber,
+                                                LibraryId = libraryId,
+                                                StartColumnNumber = startColNumber,
+                                                StartLineNumber = startLineNumber,
+                                                WarningLevel = warningLevel
+                                            };
+                                            lockFile.LogMessages.Add(assetLogMessage);
+                                        }
+                                    }
+                                }
+                            }
                         }
                         break;
                     case JsonTokenType.EndObject:
@@ -100,32 +212,7 @@ namespace NuGet.ProjectModel
                         throw new JsonException("Unexpected token " + reader.TokenType);
                 }
             }
-
             return lockFile;
-        }
-
-        private IList<T> ReadJsonObjectAsArray<T>(Utf8JsonReader reader, JsonConverter<T> jsonConverter, JsonSerializerOptions options)
-        {
-            reader.Read();
-            if (reader.TokenType == JsonTokenType.StartObject)
-            {
-                var listObjects = new List<T>();
-                do
-                {
-                    //We use JsonObjects for the arrays so we advance to the first property in the object which is the name/ver of the first library
-                    reader.Read();
-                    listObjects.Add(jsonConverter.Read(ref reader, typeof(T), options));
-                    //At this point we're looking at the EndObject token for the object, need to advance.
-                    reader.Read();
-                }
-                while (reader.TokenType != JsonTokenType.EndObject);
-                return listObjects;
-            }
-            else
-            {
-                //If the first token isn't the start of an object then this must be empty or something
-                return new List<T>(0);
-            }
         }
 
         public override void Write(Utf8JsonWriter writer, LockFile value, JsonSerializerOptions options)
