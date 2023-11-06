@@ -70,7 +70,7 @@ namespace NuGet.Build.Tasks.Test
 #if IS_CORECLR
                 yield return Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll");
 #endif
-                yield return "Recursive=True;CleanupAssetsForUnsupportedProjects=True;DisableParallel=True;Force=True;ForceEvaluate=True;HideWarningsAndErrors=True;IgnoreFailedSources=True;Interactive=True;NoCache=True;NoHttpCache=True;RestorePackagesConfig=True";
+                yield return "Recursive=True;CleanupAssetsForUnsupportedProjects=True;DisableParallel=True;Force=True;ForceEvaluate=True;HideWarningsAndErrors=True;IgnoreFailedSources=True;Interactive=True;NoCache=True;NoHttpCache=True;RestorePackagesConfig=True;EmbedRestoreFilesInBinlog=True;EmbedDGSpecInBinlog=True";
 #if IS_CORECLR
                 yield return Path.Combine(msbuildBinPath, "MSBuild.dll");
 #else
