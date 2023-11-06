@@ -242,7 +242,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-                var expectedValues = new List<string>
+            var expectedValues = new List<string>
                 {
                     "| Package ID           ",
                     "| Latest Version ",
