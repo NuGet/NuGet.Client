@@ -155,8 +155,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         [InlineData(10, 20, false)]
         public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakePrereleaseOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take, bool prerelease)
         {
-            Task noop = Task.CompletedTask;
-            await noop;
             // Arrange
             ISettings settings = Settings.LoadDefaultSettings(
                 Directory.GetCurrentDirectory(),
@@ -216,27 +214,29 @@ namespace NuGet.CommandLine.Xplat.Tests
                     }}
                 }}";
 
+                System.Threading.CancellationTokenSource cancellationToken = new System.Threading.CancellationTokenSource();
+                cancellationToken.CancelAfter(10000);
                 mockServer.Get.Add("/v3/index.json", r => index);
                 string prereleaseValue = prerelease ? "true" : "false";
                 mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease={prereleaseValue}&semVerLevel=2.0.0", r => _onePackageQueryResult);
                 mockServer.Start();
 
                 // Act
-                /*await PackageSearchRunner.RunAsync(
+                await PackageSearchRunner.RunAsync(
                     sourceProvider: sourceProvider,
                     packageSearchArgs,
-                    cancellationToken: System.Threading.CancellationToken.None);*/
+                    cancellationToken: cancellationToken.Token);
 
                 mockServer.Stop();
             }
 
             // Assert
-            /*foreach (var expected in expectedValues)
+            foreach (var expected in expectedValues)
             {
                 Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
             }
 
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);*/
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
         }
 
         [Fact]
