@@ -135,6 +135,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                     sourceProvider: sourceProvider,
                     packageSearchArgs,
                     cancellationToken: System.Threading.CancellationToken.None);
+
+                mockServer.Stop();
             }
 
             // Assert
@@ -153,13 +155,15 @@ namespace NuGet.CommandLine.Xplat.Tests
         [InlineData(10, 20, false)]
         public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakePrereleaseOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take, bool prerelease)
         {
-            // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
-                configFileName: null,
-                machineWideSettings: new XPlatMachineWideSetting());
-            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var expectedValues = new List<string>
+            try
+            {
+                // Arrange
+                ISettings settings = Settings.LoadDefaultSettings(
+                    Directory.GetCurrentDirectory(),
+                    configFileName: null,
+                    machineWideSettings: new XPlatMachineWideSetting());
+                PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+                var expectedValues = new List<string>
                 {
                     "| Package ID           ",
                     "| Latest Version ",
@@ -180,20 +184,20 @@ namespace NuGet.CommandLine.Xplat.Tests
                     "| 531,607,259 ",
                 };
 
-            using (var mockServer = new MockServer())
-            {
-                PackageSearchArgs packageSearchArgs = new()
+                using (var mockServer = new MockServer())
                 {
-                    Skip = skip,
-                    Take = take,
-                    Prerelease = prerelease,
-                    ExactMatch = false,
-                    Logger = GetLogger(),
-                    SearchTerm = "json",
-                    Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
-                };
+                    PackageSearchArgs packageSearchArgs = new()
+                    {
+                        Skip = skip,
+                        Take = take,
+                        Prerelease = prerelease,
+                        ExactMatch = false,
+                        Logger = GetLogger(),
+                        SearchTerm = "json",
+                        Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
+                    };
 
-                string index = $@"
+                    string index = $@"
                 {{
                     ""version"": ""3.0.0"",
 
@@ -212,25 +216,32 @@ namespace NuGet.CommandLine.Xplat.Tests
                     }}
                 }}";
 
-                mockServer.Get.Add("/v3/index.json", r => index);
-                string prereleaseValue = prerelease ? "true" : "false";
-                mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease={prereleaseValue}&semVerLevel=2.0.0", r => _onePackageQueryResult);
-                mockServer.Start();
+                    mockServer.Get.Add("/v3/index.json", r => index);
+                    string prereleaseValue = prerelease ? "true" : "false";
+                    mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease={prereleaseValue}&semVerLevel=2.0.0", r => _onePackageQueryResult);
+                    mockServer.Start();
 
-                // Act
-                await PackageSearchRunner.RunAsync(
-                    sourceProvider: sourceProvider,
-                    packageSearchArgs,
-                    cancellationToken: System.Threading.CancellationToken.None);
+                    // Act
+                    await PackageSearchRunner.RunAsync(
+                        sourceProvider: sourceProvider,
+                        packageSearchArgs,
+                        cancellationToken: System.Threading.CancellationToken.None);
+
+                    mockServer.Stop();
+                }
+
+                // Assert
+                foreach (var expected in expectedValues)
+                {
+                    Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
+                }
+
+                Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
             }
-
-            // Assert
-            foreach (var expected in expectedValues)
+            catch(Exception ex)
             {
-                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
+                Assert.Equal(ex.Message, "");
             }
-
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
         }
 
         [Fact]
@@ -331,6 +342,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                     sourceProvider: sourceProvider,
                     packageSearchArgs,
                     cancellationToken: System.Threading.CancellationToken.None);
+
+                mockServer.Stop();
             }
 
             // Assert
