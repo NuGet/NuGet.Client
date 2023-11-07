@@ -30,6 +30,9 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
 
+- task: ComponentGovernanceComponentDetection@0
+  displayName: 'Component Detection'
+
 - task: MSBuild@1
   displayName: "Run Functional Tests (continue on error)"
   continueOnError: "true"
