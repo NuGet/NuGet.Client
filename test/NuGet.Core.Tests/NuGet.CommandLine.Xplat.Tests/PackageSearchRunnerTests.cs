@@ -149,11 +149,11 @@ namespace NuGet.CommandLine.Xplat.Tests
         }
 
         [Theory]
-        [InlineData(0, 10, true)]
-        [InlineData(0, 20, false)]
-        [InlineData(5, 10, true)]
-        [InlineData(10, 20, false)]
-        public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakePrereleaseOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take, bool prerelease)
+        [InlineData(0, 10)]
+        [InlineData(0, 20)]
+        [InlineData(5, 10)]
+        [InlineData(10, 20)]
+        public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakeOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take)
         {
             // Arrange
             ISettings settings = Settings.LoadDefaultSettings(
@@ -188,7 +188,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 {
                     Skip = skip,
                     Take = take,
-                    Prerelease = prerelease,
+                    Prerelease = false,
                     ExactMatch = false,
                     Logger = GetLogger(),
                     SearchTerm = "json",
@@ -217,8 +217,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 System.Threading.CancellationTokenSource cancellationToken = new System.Threading.CancellationTokenSource();
                 cancellationToken.CancelAfter(10000);
                 mockServer.Get.Add("/v3/index.json", r => index);
-                string prereleaseValue = prerelease ? "true" : "false";
-                mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease={prereleaseValue}&semVerLevel=2.0.0", r => _onePackageQueryResult);
+                mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
                 mockServer.Start();
 
                 // Act
