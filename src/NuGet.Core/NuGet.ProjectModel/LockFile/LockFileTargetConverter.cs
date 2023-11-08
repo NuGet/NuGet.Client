@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NuGet.Frameworks;
@@ -36,10 +35,8 @@ namespace NuGet.ProjectModel
                 lockFileTarget.RuntimeIdentifier = parts[1];
             }
 
-            var listLockFileTargetLibraryConverter = (JsonConverter<IList<LockFileTargetLibrary>>)options.GetConverter(typeof(IList<LockFileTargetLibrary>));
-            reader.Read();
-
-            lockFileTarget.Libraries = listLockFileTargetLibraryConverter.Read(ref reader, typeof(IList<LockFileTargetLibrary>), options);
+            reader.ReadNextToken();
+            lockFileTarget.Libraries = reader.ReadObjectAsList<LockFileTargetLibrary>(options);
 
             return lockFileTarget;
         }

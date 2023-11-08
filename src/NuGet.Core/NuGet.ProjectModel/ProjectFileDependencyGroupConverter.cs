@@ -28,7 +28,7 @@ namespace NuGet.ProjectModel
             var stringListDefaultConverter = (JsonConverter<IList<string>>)options.GetConverter(typeof(IList<string>));
 
             var frameworkName = reader.GetString();
-            reader.Read();
+            reader.ReadNextToken();
             var dependencies = stringListDefaultConverter.Read(ref reader, typeof(IList<string>), options);
 
             return new ProjectFileDependencyGroup(frameworkName, dependencies);

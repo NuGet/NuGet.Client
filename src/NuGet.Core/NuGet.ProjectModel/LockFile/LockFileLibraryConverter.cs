@@ -46,64 +46,48 @@ namespace NuGet.ProjectModel
             }
 
             var StringListDefaultConverter = (JsonConverter<IList<string>>)options.GetConverter(typeof(IList<string>));
-            reader.Read();
+            reader.ReadNextToken();
             if (reader.TokenType != JsonTokenType.StartObject)
             {
                 throw new JsonException("Expected StartObject, found " + reader.TokenType);
             }
 
-            while (reader.Read())
+            while (reader.ReadNextToken() && reader.TokenType == JsonTokenType.PropertyName)
             {
-                switch (reader.TokenType)
+                if (reader.ValueTextEquals(Utf8Type))
                 {
-                    case JsonTokenType.PropertyName:
-                        if (reader.ValueTextEquals(Utf8Type))
-                        {
-                            reader.Read();
-                            lockFileLibrary.Type = reader.GetString();
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Path))
-                        {
-                            reader.Read();
-                            lockFileLibrary.Path = reader.GetString();
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8MsbuildProject))
-                        {
-                            reader.Read();
-                            lockFileLibrary.MSBuildProject = reader.GetString();
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Sha512))
-                        {
-                            reader.Read();
-                            lockFileLibrary.Sha512 = reader.GetString();
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Servicable))
-                        {
-                            reader.Read();
-                            lockFileLibrary.IsServiceable = reader.GetBoolean();
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8HasTools))
-                        {
-                            reader.Read();
-                            lockFileLibrary.HasTools = reader.GetBoolean();
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Files))
-                        {
-                            reader.Read();
-                            lockFileLibrary.Files = StringListDefaultConverter.Read(ref reader, typeof(IList<string>), options);
-                            break;
-                        }
-                        break;
-                    case JsonTokenType.EndObject:
-                        return lockFileLibrary;
-                    default:
-                        throw new JsonException("Unexpected token " + reader.TokenType);
+                    lockFileLibrary.Type = reader.ReadNextTokenAsString();
+                }
+                else if (reader.ValueTextEquals(Utf8Path))
+                {
+                    lockFileLibrary.Path = reader.ReadNextTokenAsString();
+                }
+                else if (reader.ValueTextEquals(Utf8MsbuildProject))
+                {
+                    lockFileLibrary.MSBuildProject = reader.ReadNextTokenAsString();
+                }
+                else if (reader.ValueTextEquals(Utf8Sha512))
+                {
+                    lockFileLibrary.Sha512 = reader.ReadNextTokenAsString();
+                }
+                else if (reader.ValueTextEquals(Utf8Servicable))
+                {
+                    reader.Read();
+                    lockFileLibrary.IsServiceable = reader.GetBoolean();
+                }
+                else if (reader.ValueTextEquals(Utf8HasTools))
+                {
+                    reader.Read();
+                    lockFileLibrary.HasTools = reader.GetBoolean();
+                }
+                else if (reader.ValueTextEquals(Utf8Files))
+                {
+                    reader.Read();
+                    lockFileLibrary.Files = StringListDefaultConverter.Read(ref reader, typeof(IList<string>), options);
+                }
+                else
+                {
+                    reader.Skip();
                 }
             }
             return lockFileLibrary;
@@ -111,14 +95,7 @@ namespace NuGet.ProjectModel
 
         public override void Write(Utf8JsonWriter writer, LockFileLibrary value, JsonSerializerOptions options)
         {
-            if (value is null)
-            {
-                writer.WriteNullValue();
-            }
-            else
-            {
-                writer.WriteStringValue("hi");
-            }
+            throw new NotImplementedException();
         }
     }
 }

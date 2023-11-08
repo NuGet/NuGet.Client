@@ -60,7 +60,7 @@ namespace NuGet.ProjectModel
 
             }
             //We use JsonObjects for the arrays so we advance to the first property in the object which is the name/ver of the first library
-            reader.Read();
+            reader.ReadNextToken();
 
             if (reader.TokenType == JsonTokenType.EndObject)
             {
@@ -73,7 +73,7 @@ namespace NuGet.ProjectModel
             {
                 listObjects.Add(objectConverter.Read(ref reader, typeof(T), options));
                 //At this point we're looking at the EndObject token for the object, need to advance.
-                reader.Read();
+                reader.ReadNextToken();
             }
             while (reader.TokenType != JsonTokenType.EndObject);
             return listObjects;
@@ -96,6 +96,30 @@ namespace NuGet.ProjectModel
             }
 
             return strings;
+        }
+
+        internal static void ReadArrayOfObjects<T1, T2>(this ref Utf8JsonReader reader, JsonSerializerOptions options, IList<T2> objectList) where T1 : T2
+        {
+            if (objectList is null)
+            {
+                return;
+            }
+
+            var type = typeof(T1);
+            var objectConverter = (JsonConverter<T1>)options.GetConverter(type);
+
+            if (ReadNextToken(ref reader) && reader.TokenType == JsonTokenType.StartArray)
+            {
+                while (ReadNextToken(ref reader) && reader.TokenType != JsonTokenType.EndArray)
+                {
+                    var convertedObject = objectConverter.Read(ref reader, type, options);
+                    if (convertedObject != null)
+                    {
+                        objectList.Add(convertedObject);
+                    }
+                }
+            }
+
         }
 
         internal static IReadOnlyList<string> ReadStringOrArrayOfStringsAsReadOnlyList(this ref Utf8JsonReader reader)

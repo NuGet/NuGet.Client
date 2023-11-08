@@ -14,7 +14,8 @@ namespace NuGet.ProjectModel
     {
         public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (typeToConvert != typeof(T))
+            var genericType = typeof(T);
+            if (typeToConvert != genericType)
             {
                 throw new InvalidOperationException();
             }
@@ -26,39 +27,27 @@ namespace NuGet.ProjectModel
 
             //We want to read the property name right away
             var lockItemPath = reader.GetString();
-            LockFileItem lockFileItem = typeof(T) == typeof(LockFileContentFile) ?
-                new LockFileContentFile(lockItemPath) :
-                typeof(T) == typeof(LockFileRuntimeTarget) ?
-                new LockFileRuntimeTarget(lockItemPath) :
-                new LockFileItem(lockItemPath);
+            LockFileItem lockFileItem;
+            if (genericType == typeof(LockFileContentFile))
+            {
+                lockFileItem = new LockFileContentFile(lockItemPath);
+            }
+            else if (genericType == typeof(LockFileRuntimeTarget))
+            {
+                lockFileItem = new LockFileRuntimeTarget(lockItemPath);
+            }
+            else
+            {
+                lockFileItem = new LockFileItem(lockItemPath);
+            }
 
-            reader.Read();
+            reader.ReadNextToken();
             if (reader.TokenType == JsonTokenType.StartObject)
             {
-                reader.Read();
-                while (reader.TokenType != JsonTokenType.EndObject)
+                while (reader.ReadNextToken() && reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (reader.TokenType == JsonTokenType.PropertyName)
-                    {
-                        var propertyName = reader.GetString();
-                        reader.Read();
-                        switch (reader.TokenType)
-                        {
-                            case JsonTokenType.String:
-                                lockFileItem.Properties[propertyName] = reader.GetString();
-                                break;
-                            case JsonTokenType.Number:
-                                lockFileItem.Properties[propertyName] = reader.GetInt32().ToString();
-                                break;
-                            case JsonTokenType.True:
-                            case JsonTokenType.False:
-                                lockFileItem.Properties[propertyName] = reader.GetBoolean().ToString();
-                                break;
-                            default:
-                                throw new JsonException("Expected String, Number, True, or False, found " + reader.TokenType);
-                        }
-                    }
-                    reader.Read();
+                    var propertyName = reader.GetString();
+                    lockFileItem.Properties[propertyName] = reader.ReadNextTokenAsString();
                 }
             }
 

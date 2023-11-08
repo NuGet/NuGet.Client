@@ -62,153 +62,128 @@ namespace NuGet.ProjectModel
             }
 
             var stringListDefaultConverter = (JsonConverter<IList<string>>)options.GetConverter(typeof(IList<string>));
-            var lockFileItemListConverter = (JsonConverter<IList<LockFileItem>>)options.GetConverter(typeof(IList<LockFileItem>));
-            var lockFileItemContentFileListConverter = (JsonConverter<IList<LockFileContentFile>>)options.GetConverter(typeof(IList<LockFileContentFile>));
             var lockFileRuntimeTargetConverter = (JsonConverter<IList<LockFileRuntimeTarget>>)options.GetConverter(typeof(IList<LockFileRuntimeTarget>));
 
-            reader.Read();
+            reader.ReadNextToken();
             if (reader.TokenType != JsonTokenType.StartObject)
             {
                 throw new JsonException("Expected StartObject, found " + reader.TokenType);
             }
 
-            while (reader.Read())
+            while (reader.ReadNextToken() && reader.TokenType == JsonTokenType.PropertyName)
             {
-                switch (reader.TokenType)
+                if (reader.ValueTextEquals(Utf8Type))
                 {
-                    case JsonTokenType.PropertyName:
-                        if (reader.ValueTextEquals(Utf8Type))
-                        {
-                            reader.Read();
-                            lockFileTargetLibrary.Type = reader.GetString();
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Framework))
-                        {
-                            reader.Read();
-                            lockFileTargetLibrary.Framework = reader.GetString();
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Dependencies))
-                        {
-                            reader.Read();
-                            if (ReadPackageDependencyList(ref reader) is { Count: not 0 } packageDependencies)
-                            {
-                                lockFileTargetLibrary.Dependencies = packageDependencies;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8FrameworkAssemblies))
-                        {
-                            reader.Read();
-                            lockFileTargetLibrary.FrameworkAssemblies = stringListDefaultConverter.Read(ref reader, typeof(IList<string>), options);
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Runtime))
-                        {
-                            reader.Read();
-                            if (lockFileItemListConverter.Read(ref reader, typeof(IList<LockFileItem>), options) is { Count: not 0 } runtimeAssemblies)
-                            {
-                                lockFileTargetLibrary.RuntimeAssemblies = runtimeAssemblies;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Compile))
-                        {
-                            reader.Read();
-                            if (lockFileItemListConverter.Read(ref reader, typeof(IList<LockFileItem>), options) is { Count: not 0 } compileTimeAssemblies)
-                            {
-                                lockFileTargetLibrary.CompileTimeAssemblies = compileTimeAssemblies;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Resource))
-                        {
-                            reader.Read();
-                            if (lockFileItemListConverter.Read(ref reader, typeof(IList<LockFileItem>), options) is { Count: not 0 } resourceAssemblies)
-                            {
-                                lockFileTargetLibrary.ResourceAssemblies = resourceAssemblies;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Native))
-                        {
-                            reader.Read();
-                            if (lockFileItemListConverter.Read(ref reader, typeof(IList<LockFileItem>), options) is { Count: not 0 } nativeLibraries)
-                            {
-                                lockFileTargetLibrary.NativeLibraries = nativeLibraries;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Build))
-                        {
-                            reader.Read();
-                            if (lockFileItemListConverter.Read(ref reader, typeof(IList<LockFileItem>), options) is { Count: not 0 } build)
-                            {
-                                lockFileTargetLibrary.Build = build;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8BuildMultiTargeting))
-                        {
-                            reader.Read();
-                            if (lockFileItemListConverter.Read(ref reader, typeof(IList<LockFileItem>), options) is { Count: not 0 } buildMultiTargeting)
-                            {
-                                lockFileTargetLibrary.BuildMultiTargeting = buildMultiTargeting;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8ContentFiles))
-                        {
-                            reader.Read();
-                            if (lockFileItemContentFileListConverter.Read(ref reader, typeof(IList<LockFileContentFile>), options) is { Count: not 0 } contentFiles)
-                            {
-                                lockFileTargetLibrary.ContentFiles = contentFiles;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8RuntimeTargets))
-                        {
-                            reader.Read();
-                            if (lockFileRuntimeTargetConverter.Read(ref reader, typeof(IList<LockFileRuntimeTarget>), options) is { Count: not 0 } runtimeTargets)
-                            {
-                                lockFileTargetLibrary.RuntimeTargets = runtimeTargets;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Tools))
-                        {
-                            reader.Read();
-                            if (lockFileItemListConverter.Read(ref reader, typeof(IList<LockFileItem>), options) is { Count: not 0 } toolsAssemblies)
-                            {
-                                lockFileTargetLibrary.ToolsAssemblies = toolsAssemblies;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8Embed))
-                        {
-                            reader.Read();
-                            if (lockFileItemListConverter.Read(ref reader, typeof(IList<LockFileItem>), options) is { Count: not 0 } embedAssemblies)
-                            {
-                                lockFileTargetLibrary.EmbedAssemblies = embedAssemblies;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8FrameworkReferences))
-                        {
-                            reader.Read();
-                            if (stringListDefaultConverter.Read(ref reader, typeof(IList<string>), options) is { Count: not 0 } frameworkReferences)
-                            {
-                                lockFileTargetLibrary.FrameworkReferences = frameworkReferences;
-                            }
-                            break;
-                        }
-                        break;
-                    case JsonTokenType.EndObject:
-                        lockFileTargetLibrary.Freeze();
-                        return lockFileTargetLibrary;
-                    default:
-                        throw new JsonException("Unexpected token " + reader.TokenType);
+                    lockFileTargetLibrary.Type = reader.ReadNextTokenAsString();
+                }
+                else if (reader.ValueTextEquals(Utf8Framework))
+                {
+                    lockFileTargetLibrary.Framework = reader.ReadNextTokenAsString();
+                }
+                else if (reader.ValueTextEquals(Utf8Dependencies))
+                {
+                    reader.ReadNextToken();
+                    if (ReadPackageDependencyList(ref reader) is { Count: not 0 } packageDependencies)
+                    {
+                        lockFileTargetLibrary.Dependencies = packageDependencies;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8FrameworkAssemblies))
+                {
+                    reader.ReadNextToken();
+                    lockFileTargetLibrary.FrameworkAssemblies = stringListDefaultConverter.Read(ref reader, typeof(IList<string>), options);
+                }
+                else if (reader.ValueTextEquals(Utf8Runtime))
+                {
+                    reader.ReadNextToken();
+                    if (reader.ReadObjectAsList<LockFileItem>(options) is { Count: not 0 } runtimeAssemblies)
+                    {
+                        lockFileTargetLibrary.RuntimeAssemblies = runtimeAssemblies;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8Compile))
+                {
+                    reader.ReadNextToken();
+                    if (reader.ReadObjectAsList<LockFileItem>(options) is { Count: not 0 } compileTimeAssemblies)
+                    {
+                        lockFileTargetLibrary.CompileTimeAssemblies = compileTimeAssemblies;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8Resource))
+                {
+                    reader.ReadNextToken();
+                    if (reader.ReadObjectAsList<LockFileItem>(options) is { Count: not 0 } resourceAssemblies)
+                    {
+                        lockFileTargetLibrary.ResourceAssemblies = resourceAssemblies;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8Native))
+                {
+                    reader.ReadNextToken();
+                    if (reader.ReadObjectAsList<LockFileItem>(options) is { Count: not 0 } nativeLibraries)
+                    {
+                        lockFileTargetLibrary.NativeLibraries = nativeLibraries;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8Build))
+                {
+                    reader.ReadNextToken();
+                    if (reader.ReadObjectAsList<LockFileItem>(options) is { Count: not 0 } build)
+                    {
+                        lockFileTargetLibrary.Build = build;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8BuildMultiTargeting))
+                {
+                    reader.ReadNextToken();
+                    if (reader.ReadObjectAsList<LockFileItem>(options) is { Count: not 0 } buildMultiTargeting)
+                    {
+                        lockFileTargetLibrary.BuildMultiTargeting = buildMultiTargeting;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8ContentFiles))
+                {
+                    reader.ReadNextToken();
+                    if (reader.ReadObjectAsList<LockFileContentFile>(options) is { Count: not 0 } contentFiles)
+                    {
+                        lockFileTargetLibrary.ContentFiles = contentFiles;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8RuntimeTargets))
+                {
+                    reader.ReadNextToken();
+                    if (reader.ReadObjectAsList<LockFileRuntimeTarget>(options) is { Count: not 0 } runtimeTargets)
+                    {
+                        lockFileTargetLibrary.RuntimeTargets = runtimeTargets;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8Tools))
+                {
+                    reader.ReadNextToken();
+                    if (reader.ReadObjectAsList<LockFileItem>(options) is { Count: not 0 } toolsAssemblies)
+                    {
+                        lockFileTargetLibrary.ToolsAssemblies = toolsAssemblies;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8Embed))
+                {
+                    reader.ReadNextToken();
+                    if (reader.ReadObjectAsList<LockFileItem>(options) is { Count: not 0 } embedAssemblies)
+                    {
+                        lockFileTargetLibrary.EmbedAssemblies = embedAssemblies;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8FrameworkReferences))
+                {
+                    reader.ReadNextToken();
+                    if (stringListDefaultConverter.Read(ref reader, typeof(IList<string>), options) is { Count: not 0 } frameworkReferences)
+                    {
+                        lockFileTargetLibrary.FrameworkReferences = frameworkReferences;
+                    }
+                }
+                else
+                {
+                    reader.Skip();
                 }
             }
             lockFileTargetLibrary.Freeze();
@@ -222,35 +197,22 @@ namespace NuGet.ProjectModel
                 return new List<PackageDependency>(0);
             }
 
-            reader.Read();
             var packageDependencies = new List<PackageDependency>();
-            while (reader.TokenType != JsonTokenType.EndObject)
+            while (reader.ReadNextToken() && reader.TokenType == JsonTokenType.PropertyName)
             {
-                if (reader.TokenType == JsonTokenType.PropertyName)
-                {
-                    string propertyName = reader.GetString();
-                    reader.Read();
-                    string versionString = reader.GetString();
+                string propertyName = reader.GetString();
+                string versionString = reader.ReadNextTokenAsString();
 
-                    packageDependencies.Add(new PackageDependency(
-                        propertyName,
-                        versionString == null ? null : VersionRange.Parse(versionString)));
-                }
-                reader.Read();
+                packageDependencies.Add(new PackageDependency(
+                    propertyName,
+                    versionString == null ? null : VersionRange.Parse(versionString)));
             }
             return packageDependencies;
         }
 
         public override void Write(Utf8JsonWriter writer, LockFileTargetLibrary value, JsonSerializerOptions options)
         {
-            if (value is null)
-            {
-                writer.WriteNullValue();
-            }
-            else
-            {
-                writer.WriteStringValue("hi");
-            }
+            throw new NotImplementedException();
         }
     }
 }

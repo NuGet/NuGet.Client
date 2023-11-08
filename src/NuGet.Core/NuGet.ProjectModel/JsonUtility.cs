@@ -32,21 +32,22 @@ namespace NuGet.ProjectModel
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
                 AllowTrailingCommas = true,
             };
+
             options.Converters.Add(new LockFileConverter());
+            options.Converters.Add(new AssetsLogMessageConverter());
             options.Converters.Add(new LockFileLibraryConverter());
             options.Converters.Add(new LockFileTargetConverter());
-            options.Converters.Add(new LockFileTargetLibraryConverter());
-            options.Converters.Add(new ProjectFileDependencyGroupConverter());
             options.Converters.Add(new LockFileItemConverter<LockFileItem>());
             options.Converters.Add(new LockFileItemConverter<LockFileContentFile>());
             options.Converters.Add(new LockFileItemConverter<LockFileRuntimeTarget>());
-            options.Converters.Add(new ListObjectConvertor<LockFileLibrary>());
-            options.Converters.Add(new ListObjectConvertor<LockFileTarget>());
-            options.Converters.Add(new ListObjectConvertor<LockFileTargetLibrary>());
-            options.Converters.Add(new ListObjectConvertor<LockFileItem>());
+            options.Converters.Add(new LockFileTargetLibraryConverter());
+            options.Converters.Add(new ProjectFileDependencyGroupConverter());
+
             options.Converters.Add(new ListObjectConvertor<LockFileContentFile>());
             options.Converters.Add(new ListObjectConvertor<LockFileRuntimeTarget>());
-            options.Converters.Add(new ListObjectConvertor<ProjectFileDependencyGroup>());
+
+            options.Converters.Add(new ListObjectConvertor<LockFileItem>());
+
 
             return options;
         }
