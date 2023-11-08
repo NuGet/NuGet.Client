@@ -128,11 +128,15 @@ namespace NuGet.CommandLine.Xplat.Tests
             _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=5&take=10&prerelease=true&semVerLevel=2.0.0", r => _onePackageQueryResult);
             _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=10&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
             _mockServerWithMultipleEndPoints.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => _exactMatchGetMetadataResult);
-
+            _mockServerWithMultipleEndPoints.Start();
         }
 
-        [Fact]
-        public async Task PackageSearchRunner_SearchAPIWithSkip0Take10PrereleaseTrueOptionsValuesReturnsOnePackage_OnePackageTableOutputted()
+        [Theory]
+        [InlineData(0, 10, true)]
+        [InlineData(0, 20, false)]
+        [InlineData(5, 10, true)]
+        [InlineData(10, 20, false)]
+        public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakePrereleaseOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take, bool prerelease)
         {
             // Arrange
             ISettings settings = Settings.LoadDefaultSettings(
@@ -161,218 +165,22 @@ namespace NuGet.CommandLine.Xplat.Tests
                     "| 531,607,259 ",
                 };
 
-            using (_mockServerWithMultipleEndPoints)
-            {
                 PackageSearchArgs packageSearchArgs = new()
                 {
-                    Skip = 0,
-                    Take = 10,
-                    Prerelease = true,
+                    Skip = skip,
+                    Take = take,
+                    Prerelease = prerelease,
                     ExactMatch = false,
                     Logger = GetLogger(),
                     SearchTerm = "json",
                     Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
                 };
 
-                _mockServerWithMultipleEndPoints.Start();
-
                 // Act
                 await PackageSearchRunner.RunAsync(
                     sourceProvider: sourceProvider,
                     packageSearchArgs,
                     cancellationToken: System.Threading.CancellationToken.None);
-
-                _mockServerWithMultipleEndPoints.Stop();
-            }
-
-            // Assert
-            foreach (var expected in expectedValues)
-            {
-                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
-            }
-
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
-        }
-
-        [Fact]
-        public async Task PackageSearchRunner_SearchAPIWithSkip0Take20PrereleaseFalseOptionsValuesReturnsOnePackage_OnePackageTableOutputted()
-        {
-            // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
-                configFileName: null,
-                machineWideSettings: new XPlatMachineWideSetting());
-            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var expectedValues = new List<string>
-                {
-                    "| Package ID           ",
-                    "| Latest Version ",
-                    "| Authors           ",
-                    "| Downloads   ",
-                    "|----------------------",
-                    "|----------------",
-                    "|-------------------",
-                    "|-------------",
-                    "| ",
-                    "",
-                    "Fake.Newtonsoft.",
-                    "Json",
-                    "",
-                    " ",
-                    "| 12.0.3         ",
-                    "| James Newton-King ",
-                    "| 531,607,259 ",
-                };
-
-            using (_mockServerWithMultipleEndPoints)
-            {
-                PackageSearchArgs packageSearchArgs = new()
-                {
-                    Skip = 0,
-                    Take = 20,
-                    Prerelease = false,
-                    ExactMatch = false,
-                    Logger = GetLogger(),
-                    SearchTerm = "json",
-                    Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
-                };
-
-                _mockServerWithMultipleEndPoints.Start();
-
-                // Act
-                await PackageSearchRunner.RunAsync(
-                    sourceProvider: sourceProvider,
-                    packageSearchArgs,
-                    cancellationToken: System.Threading.CancellationToken.None);
-
-                _mockServerWithMultipleEndPoints.Stop();
-            }
-
-            // Assert
-            foreach (var expected in expectedValues)
-            {
-                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
-            }
-
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
-        }
-
-        [Fact]
-        public async Task PackageSearchRunner_SearchAPIWithSkip5Take10PrereleaseTrueOptionsValuesReturnsOnePackage_OnePackageTableOutputted()
-        {
-            // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
-                configFileName: null,
-                machineWideSettings: new XPlatMachineWideSetting());
-            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var expectedValues = new List<string>
-                {
-                    "| Package ID           ",
-                    "| Latest Version ",
-                    "| Authors           ",
-                    "| Downloads   ",
-                    "|----------------------",
-                    "|----------------",
-                    "|-------------------",
-                    "|-------------",
-                    "| ",
-                    "",
-                    "Fake.Newtonsoft.",
-                    "Json",
-                    "",
-                    " ",
-                    "| 12.0.3         ",
-                    "| James Newton-King ",
-                    "| 531,607,259 ",
-                };
-
-            using (_mockServerWithMultipleEndPoints)
-            {
-                PackageSearchArgs packageSearchArgs = new()
-                {
-                    Skip = 5,
-                    Take = 10,
-                    Prerelease = true,
-                    ExactMatch = false,
-                    Logger = GetLogger(),
-                    SearchTerm = "json",
-                    Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
-                };
-
-                _mockServerWithMultipleEndPoints.Start();
-
-                // Act
-                await PackageSearchRunner.RunAsync(
-                    sourceProvider: sourceProvider,
-                    packageSearchArgs,
-                    cancellationToken: System.Threading.CancellationToken.None);
-
-                _mockServerWithMultipleEndPoints.Stop();
-            }
-
-            // Assert
-            foreach (var expected in expectedValues)
-            {
-                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
-            }
-
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
-        }
-
-        [Fact]
-        public async Task PackageSearchRunner_SearchAPIWithSkip10Take20PrereleaseFalseOptionsValuesReturnsOnePackage_OnePackageTableOutputted()
-        {
-            // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
-                configFileName: null,
-                machineWideSettings: new XPlatMachineWideSetting());
-            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var expectedValues = new List<string>
-                {
-                    "| Package ID           ",
-                    "| Latest Version ",
-                    "| Authors           ",
-                    "| Downloads   ",
-                    "|----------------------",
-                    "|----------------",
-                    "|-------------------",
-                    "|-------------",
-                    "| ",
-                    "",
-                    "Fake.Newtonsoft.",
-                    "Json",
-                    "",
-                    " ",
-                    "| 12.0.3         ",
-                    "| James Newton-King ",
-                    "| 531,607,259 ",
-                };
-
-            using (_mockServerWithMultipleEndPoints)
-            {
-                PackageSearchArgs packageSearchArgs = new()
-                {
-                    Skip = 10,
-                    Take = 20,
-                    Prerelease = false,
-                    ExactMatch = false,
-                    Logger = GetLogger(),
-                    SearchTerm = "json",
-                    Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
-                };
-
-                _mockServerWithMultipleEndPoints.Start();
-
-                // Act
-                await PackageSearchRunner.RunAsync(
-                    sourceProvider: sourceProvider,
-                    packageSearchArgs,
-                    cancellationToken: System.Threading.CancellationToken.None);
-
-                _mockServerWithMultipleEndPoints.Stop();
-            }
 
             // Assert
             foreach (var expected in expectedValues)
@@ -411,8 +219,6 @@ namespace NuGet.CommandLine.Xplat.Tests
                     "| 531,607,259 ",
                 };
 
-            using (_mockServerWithMultipleEndPoints)
-            {
                 PackageSearchArgs packageSearchArgs = new()
                 {
                     Skip = 0,
@@ -424,16 +230,11 @@ namespace NuGet.CommandLine.Xplat.Tests
                     Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
                 };
 
-                _mockServerWithMultipleEndPoints.Start();
-
                 // Act
                 await PackageSearchRunner.RunAsync(
                     sourceProvider: sourceProvider,
                     packageSearchArgs,
                     cancellationToken: System.Threading.CancellationToken.None);
-
-                _mockServerWithMultipleEndPoints.Stop();
-            }
 
             // Assert
             foreach (var expected in expectedValues)
