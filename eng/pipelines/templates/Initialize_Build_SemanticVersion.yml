@@ -1,9 +1,12 @@
 steps:
-- task: PublishPipelineArtifact@1
-  displayName: "Save build YAML"
+- task: PowerShell@1
+  displayName: "Initialize Git Commit Status on GitHub"
   inputs:
-    artifactName: yaml
-    targetPath: "$(Build.Repository.LocalPath)\\eng\\pipelines"
+    scriptType: "inlineScript"
+    inlineScript: |
+      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+      InitializeAllTestsToPending -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion)
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
 
 - task: PowerShell@1
   displayName: "Set Semantic Version"
