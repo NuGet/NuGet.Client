@@ -22,6 +22,33 @@ namespace NuGet.ProjectModel
 {
     public static class JsonPackageSpecReader
     {
+        private static System.Text.Json.JsonSerializerOptions CreateJsonSerializerOptions()
+        {
+            var options = new System.Text.Json.JsonSerializerOptions()
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                AllowTrailingCommas = true,
+            };
+            options.Converters.Add(new LockFileConverter());
+            options.Converters.Add(new LockFileLibraryConverter());
+            options.Converters.Add(new LockFileTargetConverter());
+            options.Converters.Add(new LockFileTargetLibraryConverter());
+            options.Converters.Add(new ProjectFileDependencyGroupConverter());
+            options.Converters.Add(new LockFileItemConverter<LockFileItem>());
+            options.Converters.Add(new LockFileItemConverter<LockFileContentFile>());
+            options.Converters.Add(new LockFileItemConverter<LockFileRuntimeTarget>());
+            options.Converters.Add(new ListObjectConvertor<LockFileLibrary>());
+            options.Converters.Add(new ListObjectConvertor<LockFileTarget>());
+            options.Converters.Add(new ListObjectConvertor<LockFileTargetLibrary>());
+            options.Converters.Add(new ListObjectConvertor<LockFileItem>());
+            options.Converters.Add(new ListObjectConvertor<LockFileContentFile>());
+            options.Converters.Add(new ListObjectConvertor<LockFileRuntimeTarget>());
+            options.Converters.Add(new ListObjectConvertor<ProjectFileDependencyGroup>());
+
+            return options;
+        }
+
+
         private static readonly char[] DelimitedStringSeparators = { ' ', ',' };
         private static readonly char[] VersionSeparators = new[] { ';' };
 
@@ -34,7 +61,6 @@ namespace NuGet.ProjectModel
 
         private static readonly byte[] Utf8Authors = Encoding.UTF8.GetBytes("authors");
         private static readonly byte[] BuildOptionsUtf8 = Encoding.UTF8.GetBytes("buildOptions");
-        private static readonly byte[] Utf8OutputName = Encoding.UTF8.GetBytes("outputName");
         private static readonly byte[] Utf8ContentFiles = Encoding.UTF8.GetBytes("contentFiles");
         private static readonly byte[] Utf8Copyright = Encoding.UTF8.GetBytes("copyright");
         private static readonly byte[] Utf8Dependencies = Encoding.UTF8.GetBytes("dependencies");
@@ -53,10 +79,11 @@ namespace NuGet.ProjectModel
 
         public static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath)
         {
-            using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(json)))
-            {
-                return GetPackageSpec(ms, name, packageSpecPath, null);
-            }
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json), new JsonReaderOptions { AllowTrailingCommas = true });
+            //using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            //{
+            return GetPackageSpec(ref reader, CreateJsonSerializerOptions(), name, packageSpecPath, null);
+            //}
         }
 
         [Obsolete("This method is obsolete and will be removed in a future release.")]
@@ -154,11 +181,7 @@ namespace NuGet.ProjectModel
                     {
                         ReadScripts(ref jsonReader, packageSpec);
                     }
-#pragma warning restore CS0612 // Type or member is obsolete
-                    else if (jsonReader.ValueTextEquals(""))
-                    {
-                        jsonReader.Skip();
-                    }
+#pragma warning restore CS0612 // Type or member is 
                     else if (jsonReader.ValueTextEquals(Utf8Dependencies))
                     {
                         ReadDependencies(
@@ -603,186 +626,183 @@ namespace NuGet.ProjectModel
             {
                 while (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (jsonReader.TokenType == JsonTokenType.PropertyName)
+                    var propertyName = jsonReader.GetString();
+                    if (string.IsNullOrEmpty(propertyName))
                     {
-                        var propertyName = jsonReader.GetString();
-                        if (string.IsNullOrEmpty(propertyName))
+                        // Advance the reader's position to be able to report the line and column for the property value.
+                        jsonReader.ReadNextToken();
+
+                        throw FileFormatException.Create(
+                            "Unable to resolve dependency ''.",
+                            -1,
+                            -1,
+                            packageSpecPath);
+                    }
+                    // Support
+                    // "dependencies" : {
+                    //    "Name" : "1.0"
+                    // }
+
+                    if (jsonReader.ReadNextToken())
+                    {
+                        var dependencyIncludeFlagsValue = LibraryIncludeFlags.All;
+                        var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
+                        var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
+                        List<NuGetLogCode> noWarn = null;
+
+                        // This method handles both the dependencies and framework assembly sections.
+                        // Framework references should be limited to references.
+                        // Dependencies should allow everything but framework references.
+                        LibraryDependencyTarget targetFlagsValue = isGacOrFrameworkReference
+                            ? LibraryDependencyTarget.Reference
+                            : LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference;
+
+                        var autoReferenced = false;
+                        var generatePathProperty = false;
+                        var versionCentrallyManaged = false;
+                        string aliases = null;
+                        string dependencyVersionValue = null;
+                        VersionRange versionOverride = null;
+
+                        if (jsonReader.TokenType == JsonTokenType.String)
                         {
-                            // Advance the reader's position to be able to report the line and column for the property value.
-                            jsonReader.ReadNextToken();
-
-                            throw FileFormatException.Create(
-                                "Unable to resolve dependency ''.",
-                                -1,
-                                -1,
-                                packageSpecPath);
+                            dependencyVersionValue = jsonReader.GetString();
                         }
-                        // Support
-                        // "dependencies" : {
-                        //    "Name" : "1.0"
-                        // }
-
-                        if (jsonReader.ReadNextToken())
+                        else if (jsonReader.TokenType == JsonTokenType.StartObject)
                         {
-                            var dependencyIncludeFlagsValue = LibraryIncludeFlags.All;
-                            var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
-                            var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
-                            List<NuGetLogCode> noWarn = null;
-
-                            // This method handles both the dependencies and framework assembly sections.
-                            // Framework references should be limited to references.
-                            // Dependencies should allow everything but framework references.
-                            LibraryDependencyTarget targetFlagsValue = isGacOrFrameworkReference
-                                ? LibraryDependencyTarget.Reference
-                                : LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference;
-
-                            var autoReferenced = false;
-                            var generatePathProperty = false;
-                            var versionCentrallyManaged = false;
-                            string aliases = null;
-                            string dependencyVersionValue = null;
-                            VersionRange versionOverride = null;
-
-                            if (jsonReader.TokenType == JsonTokenType.String)
+                            while (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonTokenType.PropertyName)
                             {
-                                dependencyVersionValue = jsonReader.GetString();
-                            }
-                            else if (jsonReader.TokenType == JsonTokenType.StartObject)
-                            {
-                                while (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                                var dependenciesPropertyName = jsonReader.GetString();
+                                IEnumerable<string> values = null;
+                                switch (dependenciesPropertyName)
                                 {
-                                    var dependenciesPropertyName = jsonReader.GetString();
-                                    IEnumerable<string> values = null;
-                                    switch (dependenciesPropertyName)
-                                    {
-                                        case "autoReferenced":
-                                            autoReferenced = ReadNextTokenAsBoolOrFalse(ref jsonReader, packageSpecPath);
-                                            break;
-                                        case "exclude":
-                                            values = jsonReader.ReadDelimitedString();
-                                            dependencyExcludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
-                                            break;
-                                        case "generatePathProperty":
-                                            generatePathProperty = ReadNextTokenAsBoolOrFalse(ref jsonReader, packageSpecPath);
-                                            break;
-                                        case "include":
-                                            values = jsonReader.ReadDelimitedString();
-                                            dependencyIncludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
-                                            break;
-                                        case "noWarn":
-                                            noWarn = ReadNuGetLogCodesList(ref jsonReader);
-                                            break;
-                                        case "suppressParent":
-                                            values = jsonReader.ReadDelimitedString();
-                                            suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
-                                            break;
-                                        case "target":
-                                            targetFlagsValue = ReadTarget(ref jsonReader, packageSpecPath, targetFlagsValue);
-                                            break;
-                                        case "version":
-                                            if (jsonReader.ReadNextToken())
+                                    case "autoReferenced":
+                                        autoReferenced = ReadNextTokenAsBoolOrFalse(ref jsonReader, packageSpecPath);
+                                        break;
+                                    case "exclude":
+                                        values = jsonReader.ReadDelimitedString();
+                                        dependencyExcludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
+                                        break;
+                                    case "generatePathProperty":
+                                        generatePathProperty = ReadNextTokenAsBoolOrFalse(ref jsonReader, packageSpecPath);
+                                        break;
+                                    case "include":
+                                        values = jsonReader.ReadDelimitedString();
+                                        dependencyIncludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
+                                        break;
+                                    case "noWarn":
+                                        noWarn = ReadNuGetLogCodesList(ref jsonReader);
+                                        break;
+                                    case "suppressParent":
+                                        values = jsonReader.ReadDelimitedString();
+                                        suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
+                                        break;
+                                    case "target":
+                                        targetFlagsValue = ReadTarget(ref jsonReader, packageSpecPath, targetFlagsValue);
+                                        break;
+                                    case "version":
+                                        if (jsonReader.ReadNextToken())
+                                        {
+                                            //versionLine = jsonReader.LineNumber;
+                                            //versionColumn = jsonReader.LinePosition;
+
+                                            dependencyVersionValue = jsonReader.GetString();
+                                        }
+                                        break;
+                                    case "versionOverride":
+                                        if (jsonReader.ReadNextToken())
+                                        {
+                                            try
                                             {
-                                                //versionLine = jsonReader.LineNumber;
-                                                //versionColumn = jsonReader.LinePosition;
-
-                                                dependencyVersionValue = jsonReader.GetString();
+                                                versionOverride = VersionRange.Parse(jsonReader.GetString());
                                             }
-                                            break;
-                                        case "versionOverride":
-                                            if (jsonReader.ReadNextToken())
+                                            catch (Exception ex)
                                             {
-                                                try
-                                                {
-                                                    versionOverride = VersionRange.Parse(jsonReader.GetString());
-                                                }
-                                                catch (Exception ex)
-                                                {
-                                                    throw FileFormatException.Create(
-                                                        ex,
-                                                        -1,
-                                                        -1,
-                                                        packageSpecPath);
-                                                }
+                                                throw FileFormatException.Create(
+                                                    ex,
+                                                    -1,
+                                                    -1,
+                                                    packageSpecPath);
                                             }
-                                            break;
-                                        case "versionCentrallyManaged":
-                                            versionCentrallyManaged = ReadNextTokenAsBoolOrFalse(ref jsonReader, packageSpecPath);
-                                            break;
-                                        case "aliases":
-                                            aliases = jsonReader.GetString();
-                                            break;
-                                        default:
-                                            jsonReader.Skip();
-                                            break;
-                                    }
+                                        }
+                                        break;
+                                    case "versionCentrallyManaged":
+                                        versionCentrallyManaged = ReadNextTokenAsBoolOrFalse(ref jsonReader, packageSpecPath);
+                                        break;
+                                    case "aliases":
+                                        aliases = jsonReader.ReadNextTokenAsString();
+                                        break;
+                                    default:
+                                        jsonReader.Skip();
+                                        break;
                                 }
                             }
-
-                            VersionRange dependencyVersionRange = null;
-
-                            if (!string.IsNullOrEmpty(dependencyVersionValue))
-                            {
-                                try
-                                {
-                                    dependencyVersionRange = VersionRange.Parse(dependencyVersionValue);
-                                }
-                                catch (Exception ex)
-                                {
-                                    throw FileFormatException.Create(
-                                        ex,
-                                        -1,
-                                        -1,
-                                        packageSpecPath);
-                                }
-                            }
-
-                            // Projects and References may have empty version ranges, Packages may not
-                            if (dependencyVersionRange == null)
-                            {
-                                if ((targetFlagsValue & LibraryDependencyTarget.Package) == LibraryDependencyTarget.Package)
-                                {
-                                    throw FileFormatException.Create(
-                                        new ArgumentException(Strings.MissingVersionOnDependency),
-                                        -1,
-                                        -1,
-                                        packageSpecPath);
-                                }
-                                else
-                                {
-                                    // Projects and references with no version property allow all versions
-                                    dependencyVersionRange = VersionRange.All;
-                                }
-                            }
-
-                            // the dependency flags are: Include flags - Exclude flags
-                            var includeFlags = dependencyIncludeFlagsValue & ~dependencyExcludeFlagsValue;
-                            var libraryDependency = new LibraryDependency()
-                            {
-                                LibraryRange = new LibraryRange()
-                                {
-                                    Name = propertyName,
-                                    TypeConstraint = targetFlagsValue,
-                                    VersionRange = dependencyVersionRange
-                                },
-                                IncludeType = includeFlags,
-                                SuppressParent = suppressParentFlagsValue,
-                                AutoReferenced = autoReferenced,
-                                GeneratePathProperty = generatePathProperty,
-                                VersionCentrallyManaged = versionCentrallyManaged,
-                                Aliases = aliases,
-                                // The ReferenceType is not persisted to the assets file
-                                // Default to LibraryDependencyReferenceType.Direct on Read
-                                ReferenceType = LibraryDependencyReferenceType.Direct,
-                                VersionOverride = versionOverride
-                            };
-
-                            if (noWarn != null)
-                            {
-                                libraryDependency.NoWarn = noWarn;
-                            }
-
-                            results.Add(libraryDependency);
                         }
+
+                        VersionRange dependencyVersionRange = null;
+
+                        if (!string.IsNullOrEmpty(dependencyVersionValue))
+                        {
+                            try
+                            {
+                                dependencyVersionRange = VersionRange.Parse(dependencyVersionValue);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw FileFormatException.Create(
+                                    ex,
+                                    -1,
+                                    -1,
+                                    packageSpecPath);
+                            }
+                        }
+
+                        // Projects and References may have empty version ranges, Packages may not
+                        if (dependencyVersionRange == null)
+                        {
+                            if ((targetFlagsValue & LibraryDependencyTarget.Package) == LibraryDependencyTarget.Package)
+                            {
+                                throw FileFormatException.Create(
+                                    new ArgumentException(Strings.MissingVersionOnDependency),
+                                    -1,
+                                    -1,
+                                    packageSpecPath);
+                            }
+                            else
+                            {
+                                // Projects and references with no version property allow all versions
+                                dependencyVersionRange = VersionRange.All;
+                            }
+                        }
+
+                        // the dependency flags are: Include flags - Exclude flags
+                        var includeFlags = dependencyIncludeFlagsValue & ~dependencyExcludeFlagsValue;
+                        var libraryDependency = new LibraryDependency()
+                        {
+                            LibraryRange = new LibraryRange()
+                            {
+                                Name = propertyName,
+                                TypeConstraint = targetFlagsValue,
+                                VersionRange = dependencyVersionRange
+                            },
+                            IncludeType = includeFlags,
+                            SuppressParent = suppressParentFlagsValue,
+                            AutoReferenced = autoReferenced,
+                            GeneratePathProperty = generatePathProperty,
+                            VersionCentrallyManaged = versionCentrallyManaged,
+                            Aliases = aliases,
+                            // The ReferenceType is not persisted to the assets file
+                            // Default to LibraryDependencyReferenceType.Direct on Read
+                            ReferenceType = LibraryDependencyReferenceType.Direct,
+                            VersionOverride = versionOverride
+                        };
+
+                        if (noWarn != null)
+                        {
+                            libraryDependency.NoWarn = noWarn;
+                        }
+
+                        results.Add(libraryDependency);
                     }
                 }
             }
@@ -2175,7 +2195,7 @@ namespace NuGet.ProjectModel
                             string projectStyleString = jsonReader.ReadNextTokenAsString();
 
                             if (!string.IsNullOrEmpty(projectStyleString)
-                                && Enum.TryParse<ProjectStyle>(projectStyleString, ignoreCase: true, result: out ProjectStyle projectStyleValue))
+                                && Enum.TryParse(projectStyleString, ignoreCase: true, result: out ProjectStyle projectStyleValue))
                             {
                                 projectStyle = projectStyleValue;
                             }
@@ -2492,7 +2512,7 @@ namespace NuGet.ProjectModel
             {
                 while (jsonReader.ReadNextToken() && jsonReader.TokenType != JsonTokenType.EndArray)
                 {
-                    if (jsonReader.TokenType == JsonTokenType.String && Enum.TryParse((string)jsonReader.GetString(), out NuGetLogCode code))
+                    if (jsonReader.TokenType == JsonTokenType.String && Enum.TryParse(jsonReader.GetString(), out NuGetLogCode code))
                     {
                         items = items ?? new List<NuGetLogCode>();
 
@@ -2767,6 +2787,7 @@ namespace NuGet.ProjectModel
                             packageSpec.LicenseUrl = jsonReader.ReadNextTokenAsString();
                             break;
                         case "owners":
+                            jsonReader.ReadNextToken();
                             string[] owners = stringArrayConverter.Read(ref jsonReader, typeof(string[]), options);
                             if (owners != null)
                             {
@@ -2789,6 +2810,7 @@ namespace NuGet.ProjectModel
                             packageSpec.Summary = jsonReader.ReadNextTokenAsString();
                             break;
                         case "tags":
+                            jsonReader.ReadNextToken();
                             string[] tags = stringArrayConverter.Read(ref jsonReader, typeof(string[]), options);
 
                             if (tags != null)
@@ -3502,77 +3524,74 @@ namespace NuGet.ProjectModel
             {
                 while (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (jsonReader.TokenType == JsonTokenType.PropertyName)
+                    if (jsonReader.ValueTextEquals("assetTargetFallback"))
                     {
-                        if (jsonReader.ValueTextEquals("assetTargetFallback"))
+                        targetFrameworkInformation.AssetTargetFallback = ReadNextTokenAsBoolOrFalse(ref jsonReader, packageSpecPath);
+                    }
+                    else if (jsonReader.ValueTextEquals("secondaryFramework"))
+                    {
+                        var secondaryFrameworkString = jsonReader.ReadNextTokenAsString();
+                        if (!string.IsNullOrEmpty(secondaryFrameworkString))
                         {
-                            targetFrameworkInformation.AssetTargetFallback = ReadNextTokenAsBoolOrFalse(ref jsonReader, packageSpecPath);
+                            secondaryFramework = NuGetFramework.Parse(secondaryFrameworkString);
                         }
-                        else if (jsonReader.ValueTextEquals("secondaryFramework"))
-                        {
-                            var secondaryFrameworkString = jsonReader.ReadNextTokenAsString();
-                            if (!string.IsNullOrEmpty(secondaryFrameworkString))
-                            {
-                                secondaryFramework = NuGetFramework.Parse(secondaryFrameworkString);
-                            }
-                        }
-                        else if (jsonReader.ValueTextEquals("centralPackageVersions"))
-                        {
-                            ReadCentralPackageVersions(
-                                ref jsonReader,
-                                targetFrameworkInformation.CentralPackageVersions,
-                                packageSpecPath);
-                        }
-                        else if (jsonReader.ValueTextEquals("dependencies"))
-                        {
-                            ReadDependencies(
-                                ref jsonReader,
-                                targetFrameworkInformation.Dependencies,
-                                packageSpecPath,
-                                isGacOrFrameworkReference: false);
-                        }
-                        else if (jsonReader.ValueTextEquals("downloadDependencies"))
-                        {
-                            ReadDownloadDependencies(
-                                ref jsonReader,
-                                targetFrameworkInformation.DownloadDependencies,
-                                packageSpecPath);
-                        }
-                        else if (jsonReader.ValueTextEquals("frameworkAssemblies"))
-                        {
-                            ReadDependencies(
-                                ref jsonReader,
-                                targetFrameworkInformation.Dependencies,
-                                packageSpecPath,
-                                isGacOrFrameworkReference: true);
-                        }
-                        else if (jsonReader.ValueTextEquals("frameworkReferences"))
-                        {
-                            ReadFrameworkReferences(
-                                ref jsonReader,
-                                targetFrameworkInformation.FrameworkReferences,
-                                packageSpecPath);
-                        }
-                        else if (jsonReader.ValueTextEquals("imports"))
-                        {
-                            ReadImports(packageSpec, ref jsonReader, targetFrameworkInformation);
-                        }
-                        else if (jsonReader.ValueTextEquals("runtimeIdentifierGraphPath"))
-                        {
-                            targetFrameworkInformation.RuntimeIdentifierGraphPath = jsonReader.ReadNextTokenAsString();
-                        }
-                        else if (jsonReader.ValueTextEquals("targetAlias"))
-                        {
-                            targetFrameworkInformation.TargetAlias = jsonReader.ReadNextTokenAsString();
-                        }
-                        else if (jsonReader.ValueTextEquals("warn"))
-                        {
-                            targetFrameworkInformation.Warn = ReadNextTokenAsBoolOrFalse(ref jsonReader, packageSpec.FilePath);
-                        }
-                        else
-                        {
-                            jsonReader.Skip();
-                        }
+                    }
+                    else if (jsonReader.ValueTextEquals("centralPackageVersions"))
+                    {
+                        ReadCentralPackageVersions(
+                            ref jsonReader,
+                            targetFrameworkInformation.CentralPackageVersions,
+                            packageSpecPath);
+                    }
+                    else if (jsonReader.ValueTextEquals("dependencies"))
+                    {
+                        ReadDependencies(
+                            ref jsonReader,
+                            targetFrameworkInformation.Dependencies,
+                            packageSpecPath,
+                            isGacOrFrameworkReference: false);
+                    }
+                    else if (jsonReader.ValueTextEquals("downloadDependencies"))
+                    {
+                        ReadDownloadDependencies(
+                            ref jsonReader,
+                            targetFrameworkInformation.DownloadDependencies,
+                            packageSpecPath);
+                    }
+                    else if (jsonReader.ValueTextEquals("frameworkAssemblies"))
+                    {
+                        ReadDependencies(
+                            ref jsonReader,
+                            targetFrameworkInformation.Dependencies,
+                            packageSpecPath,
+                            isGacOrFrameworkReference: true);
+                    }
+                    else if (jsonReader.ValueTextEquals("frameworkReferences"))
+                    {
+                        ReadFrameworkReferences(
+                            ref jsonReader,
+                            targetFrameworkInformation.FrameworkReferences,
+                            packageSpecPath);
+                    }
+                    else if (jsonReader.ValueTextEquals("imports"))
+                    {
+                        ReadImports(packageSpec, ref jsonReader, targetFrameworkInformation);
+                    }
+                    else if (jsonReader.ValueTextEquals("runtimeIdentifierGraphPath"))
+                    {
+                        targetFrameworkInformation.RuntimeIdentifierGraphPath = jsonReader.ReadNextTokenAsString();
+                    }
+                    else if (jsonReader.ValueTextEquals("targetAlias"))
+                    {
+                        targetFrameworkInformation.TargetAlias = jsonReader.ReadNextTokenAsString();
+                    }
+                    else if (jsonReader.ValueTextEquals("warn"))
+                    {
+                        targetFrameworkInformation.Warn = ReadNextTokenAsBoolOrFalse(ref jsonReader, packageSpec.FilePath);
+                    }
+                    else
+                    {
+                        jsonReader.Skip();
                     }
                 }
             }

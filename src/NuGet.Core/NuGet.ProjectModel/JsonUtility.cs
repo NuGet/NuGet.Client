@@ -29,7 +29,8 @@ namespace NuGet.ProjectModel
         {
             var options = new System.Text.Json.JsonSerializerOptions()
             {
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                AllowTrailingCommas = true,
             };
             options.Converters.Add(new LockFileConverter());
             options.Converters.Add(new LockFileLibraryConverter());

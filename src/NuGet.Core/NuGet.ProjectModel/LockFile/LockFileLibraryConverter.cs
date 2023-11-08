@@ -106,7 +106,6 @@ namespace NuGet.ProjectModel
                         throw new JsonException("Unexpected token " + reader.TokenType);
                 }
             }
-
             return lockFileLibrary;
         }
 

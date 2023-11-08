@@ -32,12 +32,6 @@ namespace NuGet.ProjectModel
         private static readonly byte[] Utf8Embed = Encoding.UTF8.GetBytes("embed");
         private static readonly byte[] Utf8FrameworkReferences = Encoding.UTF8.GetBytes("frameworkReferences");
 
-        //private static readonly byte[] Utf8 = Encoding.UTF8.GetBytes("");
-        //private static readonly byte[] Utf8MsbuildProject = Encoding.UTF8.GetBytes("msbuildProject");
-        //private static readonly byte[] Utf8Servicable = Encoding.UTF8.GetBytes("servicable");
-        //private static readonly byte[] Utf8HasTools = Encoding.UTF8.GetBytes("hasTools");
-        //private static readonly byte[] Utf8Files = Encoding.UTF8.GetBytes("files");
-
         public override LockFileTargetLibrary Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (typeToConvert != typeof(LockFileTargetLibrary))
@@ -152,15 +146,6 @@ namespace NuGet.ProjectModel
                             if (lockFileItemListConverter.Read(ref reader, typeof(IList<LockFileItem>), options) is { Count: not 0 } build)
                             {
                                 lockFileTargetLibrary.Build = build;
-                            }
-                            break;
-                        }
-                        if (reader.ValueTextEquals(Utf8BuildMultiTargeting))
-                        {
-                            reader.Read();
-                            if (lockFileItemListConverter.Read(ref reader, typeof(IList<LockFileItem>), options) is { Count: not 0 } buildMultiTargeting)
-                            {
-                                lockFileTargetLibrary.BuildMultiTargeting = buildMultiTargeting;
                             }
                             break;
                         }

@@ -1,1 +1,2 @@
 #nullable enable
+~static NuGet.ProjectModel.JsonPackageSpecReader.GetPackageSpec(ref System.Text.Json.Utf8JsonReader jsonReader, System.Text.Json.JsonSerializerOptions options, string name, string packageSpecPath, string snapshotValue) -> NuGet.ProjectModel.PackageSpec
