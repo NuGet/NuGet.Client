@@ -107,6 +107,8 @@ namespace NuGet.Packaging.Test
             // Assert
             Assert.Equal(1, logger.Messages.Count);
             Assert.Contains(path, exception.Message);
+            Assert.NotNull(exception.InnerException);
+            Assert.IsType<InvalidDataException>(exception.InnerException);
         }
 
         [Fact]
@@ -126,6 +128,8 @@ namespace NuGet.Packaging.Test
             // Assert
             Assert.Equal(1, logger.Messages.Count);
             Assert.Contains(path, exception.Message);
+            Assert.NotNull(exception.InnerException);
+            Assert.IsType<InvalidDataException>(exception.InnerException);
         }
 
         [Fact]
