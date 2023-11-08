@@ -145,42 +145,42 @@ namespace NuGet.CommandLine.Xplat.Tests
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var expectedValues = new List<string>
-                {
-                    "| Package ID           ",
-                    "| Latest Version ",
-                    "| Authors           ",
-                    "| Downloads   ",
-                    "|----------------------",
-                    "|----------------",
-                    "|-------------------",
-                    "|-------------",
-                    "| ",
-                    "",
-                    "Fake.Newtonsoft.",
-                    "Json",
-                    "",
-                    " ",
-                    "| 12.0.3         ",
-                    "| James Newton-King ",
-                    "| 531,607,259 ",
-                };
+            {
+                "| Package ID           ",
+                "| Latest Version ",
+                "| Authors           ",
+                "| Downloads   ",
+                "|----------------------",
+                "|----------------",
+                "|-------------------",
+                "|-------------",
+                "| ",
+                "",
+                "Fake.Newtonsoft.",
+                "Json",
+                "",
+                " ",
+                "| 12.0.3         ",
+                "| James Newton-King ",
+                "| 531,607,259 ",
+            };
 
-                PackageSearchArgs packageSearchArgs = new()
-                {
-                    Skip = skip,
-                    Take = take,
-                    Prerelease = prerelease,
-                    ExactMatch = false,
-                    Logger = GetLogger(),
-                    SearchTerm = "json",
-                    Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
-                };
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = skip,
+                Take = take,
+                Prerelease = prerelease,
+                ExactMatch = false,
+                Logger = GetLogger(),
+                SearchTerm = "json",
+                Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
+            };
 
-                // Act
-                await PackageSearchRunner.RunAsync(
-                    sourceProvider: sourceProvider,
-                    packageSearchArgs,
-                    cancellationToken: System.Threading.CancellationToken.None);
+            // Act
+            await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
 
             // Assert
             foreach (var expected in expectedValues)
@@ -201,40 +201,40 @@ namespace NuGet.CommandLine.Xplat.Tests
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var expectedValues = new List<string>
-                {
-                    "| Package ID           ",
-                    "| Latest Version ",
-                    "| Authors           ",
-                    "| Downloads   ",
-                    "|----------------------",
-                    "|----------------",
-                    "|-------------------",
-                    "|-------------",
-                    "| ",
-                    "",
-                    "",
-                    " ",
-                    "| 12.0.3         ",
-                    "| James Newton-King ",
-                    "| 531,607,259 ",
-                };
+            {
+                "| Package ID           ",
+                "| Latest Version ",
+                "| Authors           ",
+                "| Downloads   ",
+                "|----------------------",
+                "|----------------",
+                "|-------------------",
+                "|-------------",
+                "| ",
+                "",
+                "",
+                " ",
+                "| 12.0.3         ",
+                "| James Newton-King ",
+                "| 531,607,259 ",
+            };
 
-                PackageSearchArgs packageSearchArgs = new()
-                {
-                    Skip = 0,
-                    Take = 20,
-                    Prerelease = false,
-                    ExactMatch = true,
-                    Logger = GetLogger(),
-                    SearchTerm = "Fake.Newtonsoft.Json",
-                    Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
-                };
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = 0,
+                Take = 20,
+                Prerelease = false,
+                ExactMatch = true,
+                Logger = GetLogger(),
+                SearchTerm = "Fake.Newtonsoft.Json",
+                Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
+            };
 
-                // Act
-                await PackageSearchRunner.RunAsync(
-                    sourceProvider: sourceProvider,
-                    packageSearchArgs,
-                    cancellationToken: System.Threading.CancellationToken.None);
+            // Act
+            await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
 
             // Assert
             foreach (var expected in expectedValues)
