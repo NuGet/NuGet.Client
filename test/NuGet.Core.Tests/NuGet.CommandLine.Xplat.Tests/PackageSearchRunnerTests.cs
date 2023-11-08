@@ -64,241 +64,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     ]
                 }}";
 
-        [Fact]
-        public async Task PackageSearchRunner_SearchAPIReturnsOnePackage_OnePackageTableOutputted()
-        {
-            // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
-                configFileName: null,
-                machineWideSettings: new XPlatMachineWideSetting());
-            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var expectedValues = new List<string>
-                {
-                    "| Package ID           ",
-                    "| Latest Version ",
-                    "| Authors           ",
-                    "| Downloads   ",
-                    "|----------------------",
-                    "|----------------",
-                    "|-------------------",
-                    "|-------------",
-                    "| ",
-                    "",
-                    "Fake.Newtonsoft.",
-                    "Json",
-                    "",
-                    " ",
-                    "| 12.0.3         ",
-                    "| James Newton-King ",
-                    "| 531,607,259 ",
-                };
-
-            using (var mockServer = new MockServer())
-            {
-                PackageSearchArgs packageSearchArgs = new()
-                {
-                    Skip = 0,
-                    Take = 20,
-                    Prerelease = false,
-                    ExactMatch = false,
-                    Logger = GetLogger(),
-                    SearchTerm = "json",
-                    Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
-                };
-
-                string index = $@"
-                {{
-                    ""version"": ""3.0.0"",
-
-                    ""resources"": [
-                    {{
-                        ""@id"": ""{mockServer.Uri + "search/query"}"",
-                        ""@type"": ""SearchQueryService/Versioned"",
-                        ""comment"": ""Query endpoint of NuGet Search service (primary)""
-                    }}
-                    ],
-
-                    ""@context"":
-                    {{
-                        ""@vocab"": ""http://schema.nuget.org/services#"",
-                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
-                    }}
-                }}";
-
-                mockServer.Get.Add("/v3/index.json", r => index);
-                mockServer.Get.Add("/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
-                mockServer.Start();
-
-                // Act
-                await PackageSearchRunner.RunAsync(
-                    sourceProvider: sourceProvider,
-                    packageSearchArgs,
-                    cancellationToken: System.Threading.CancellationToken.None);
-
-                mockServer.Stop();
-            }
-
-            // Assert
-            foreach (var expected in expectedValues)
-            {
-                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
-            }
-
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
-        }
-
-        [Theory]
-        [InlineData(0, 10)]
-        [InlineData(0, 20)]
-        [InlineData(5, 10)]
-        [InlineData(10, 20)]
-        public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakeOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take)
-        {
-            // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
-                configFileName: null,
-                machineWideSettings: new XPlatMachineWideSetting());
-            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var expectedValues = new List<string>
-                {
-                    "| Package ID           ",
-                    "| Latest Version ",
-                    "| Authors           ",
-                    "| Downloads   ",
-                    "|----------------------",
-                    "|----------------",
-                    "|-------------------",
-                    "|-------------",
-                    "| ",
-                    "",
-                    "Fake.Newtonsoft.",
-                    "Json",
-                    "",
-                    " ",
-                    "| 12.0.3         ",
-                    "| James Newton-King ",
-                    "| 531,607,259 ",
-                };
-
-            using (var mockServer = new MockServer())
-            {
-                PackageSearchArgs packageSearchArgs = new()
-                {
-                    Skip = skip,
-                    Take = take,
-                    Prerelease = false,
-                    ExactMatch = false,
-                    Logger = GetLogger(),
-                    SearchTerm = "json",
-                    Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
-                };
-
-                string index = $@"
-                {{
-                    ""version"": ""3.0.0"",
-
-                    ""resources"": [
-                    {{
-                        ""@id"": ""{mockServer.Uri + "search/query"}"",
-                        ""@type"": ""SearchQueryService/Versioned"",
-                        ""comment"": ""Query endpoint of NuGet Search service (primary)""
-                    }}
-                    ],
-
-                    ""@context"":
-                    {{
-                        ""@vocab"": ""http://schema.nuget.org/services#"",
-                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
-                    }}
-                }}";
-
-                System.Threading.CancellationTokenSource cancellationToken = new System.Threading.CancellationTokenSource();
-                cancellationToken.CancelAfter(10000);
-                mockServer.Get.Add("/v3/index.json", r => index);
-                mockServer.Get.Add($"/search/query?q=json&skip={skip}&take={take}&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
-                mockServer.Start();
-
-                // Act
-                await PackageSearchRunner.RunAsync(
-                    sourceProvider: sourceProvider,
-                    packageSearchArgs,
-                    cancellationToken: cancellationToken.Token);
-
-                mockServer.Stop();
-            }
-
-            // Assert
-            foreach (var expected in expectedValues)
-            {
-                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
-            }
-
-            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
-        }
-
-        [Fact]
-        public async Task PackageSearchRunner_GetMetadataAPIRequestReturnsOnePackage_OnePackageTableOutputted()
-        {
-            // Arrange
-            ISettings settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
-                configFileName: null,
-                machineWideSettings: new XPlatMachineWideSetting());
-            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            var expectedValues = new List<string>
-                {
-                    "| Package ID           ",
-                    "| Latest Version ",
-                    "| Authors           ",
-                    "| Downloads   ",
-                    "|----------------------",
-                    "|----------------",
-                    "|-------------------",
-                    "|-------------",
-                    "| ",
-                    "",
-                    "",
-                    " ",
-                    "| 12.0.3         ",
-                    "| James Newton-King ",
-                    "| 531,607,259 ",
-                };
-
-            using (var mockServer = new MockServer())
-            {
-                PackageSearchArgs packageSearchArgs = new()
-                {
-                    Skip = 0,
-                    Take = 20,
-                    Prerelease = false,
-                    ExactMatch = true,
-                    Logger = GetLogger(),
-                    SearchTerm = "Fake.Newtonsoft.Json",
-                    Sources = new List<string> { $"{mockServer.Uri}v3/index.json" }
-                };
-
-                string index = $@"
-                {{
-                    ""version"": ""3.0.0"",
-
-                    ""resources"": [
-                    {{
-                        ""@id"": ""{mockServer.Uri + "v3/registration5-semver1/"}"",
-                        ""@type"": ""RegistrationsBaseUrl/3.0.0-rc"",
-                        ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored used by RC clients. This base URL does not include SemVer 2.0.0 packages.""
-                    }}
-                    ],
-
-                    ""@context"":
-                    {{
-                        ""@vocab"": ""http://schema.nuget.org/services#"",
-                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
-                    }}
-                }}";
-
-                const string exactMatchGetMetadataResult = @"{
+        private string _exactMatchGetMetadataResult = @"{
                             ""@type"": ""Package"",
                             ""count"": 1,
                             ""items"": [
@@ -327,9 +93,92 @@ namespace NuGet.CommandLine.Xplat.Tests
                             }
                         }";
 
-                mockServer.Get.Add("/v3/index.json", r => index);
-                mockServer.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => exactMatchGetMetadataResult);
-                mockServer.Start();
+        private MockServer _mockServerWithMultipleEndPoints;
+
+        public PackageSearchRunnerTests()
+        {
+            _mockServerWithMultipleEndPoints = new MockServer();
+            string index = $@"
+                {{
+                    ""version"": ""3.0.0"",
+
+                    ""resources"": [
+                    {{
+                        ""@id"": ""{_mockServerWithMultipleEndPoints.Uri + "search/query"}"",
+                        ""@type"": ""SearchQueryService/Versioned"",
+                        ""comment"": ""Query endpoint of NuGet Search service (primary)""
+                    }},
+                    {{
+                        ""@id"": ""{_mockServerWithMultipleEndPoints.Uri + "v3/registration5-semver1/"}"",
+                        ""@type"": ""RegistrationsBaseUrl/3.0.0-rc"",
+                        ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored used by RC clients. This base URL does not include SemVer 2.0.0 packages.""
+                    }}
+                    ],
+
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/services#"",
+                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
+                    }}
+                }}";
+
+            _mockServerWithMultipleEndPoints.Get.Add("/v3/index.json", r => index);
+            _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=0&take=10&prerelease=true&semVerLevel=2.0.0", r => _onePackageQueryResult);
+            _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
+            _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=5&take=10&prerelease=true&semVerLevel=2.0.0", r => _onePackageQueryResult);
+            _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=10&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
+            _mockServerWithMultipleEndPoints.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => _exactMatchGetMetadataResult);
+
+        }
+
+        [Theory]
+        [InlineData(0, 10, true)]
+        [InlineData(0, 20, false)]
+        [InlineData(5, 10, true)]
+        [InlineData(10, 20, false)]
+        public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakePrereleaseOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take, bool prerelease)
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            var expectedValues = new List<string>
+                {
+                    "| Package ID           ",
+                    "| Latest Version ",
+                    "| Authors           ",
+                    "| Downloads   ",
+                    "|----------------------",
+                    "|----------------",
+                    "|-------------------",
+                    "|-------------",
+                    "| ",
+                    "",
+                    "Fake.Newtonsoft.",
+                    "Json",
+                    "",
+                    " ",
+                    "| 12.0.3         ",
+                    "| James Newton-King ",
+                    "| 531,607,259 ",
+                };
+
+            using (_mockServerWithMultipleEndPoints)
+            {
+                PackageSearchArgs packageSearchArgs = new()
+                {
+                    Skip = skip,
+                    Take = take,
+                    Prerelease = prerelease,
+                    ExactMatch = false,
+                    Logger = GetLogger(),
+                    SearchTerm = "json",
+                    Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
+                };
+
+                _mockServerWithMultipleEndPoints.Start();
 
                 // Act
                 await PackageSearchRunner.RunAsync(
@@ -337,7 +186,68 @@ namespace NuGet.CommandLine.Xplat.Tests
                     packageSearchArgs,
                     cancellationToken: System.Threading.CancellationToken.None);
 
-                mockServer.Stop();
+                _mockServerWithMultipleEndPoints.Stop();
+            }
+
+            // Assert
+            foreach (var expected in expectedValues)
+            {
+                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
+            }
+
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
+        }
+
+        [Fact]
+        public async Task PackageSearchRunner_ExactMatchOptionEnabled_OnePackageTableOutputted()
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            var expectedValues = new List<string>
+                {
+                    "| Package ID           ",
+                    "| Latest Version ",
+                    "| Authors           ",
+                    "| Downloads   ",
+                    "|----------------------",
+                    "|----------------",
+                    "|-------------------",
+                    "|-------------",
+                    "| ",
+                    "",
+                    "",
+                    " ",
+                    "| 12.0.3         ",
+                    "| James Newton-King ",
+                    "| 531,607,259 ",
+                };
+
+            using (_mockServerWithMultipleEndPoints)
+            {
+                PackageSearchArgs packageSearchArgs = new()
+                {
+                    Skip = 0,
+                    Take = 20,
+                    Prerelease = false,
+                    ExactMatch = true,
+                    Logger = GetLogger(),
+                    SearchTerm = "Fake.Newtonsoft.Json",
+                    Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
+                };
+
+                _mockServerWithMultipleEndPoints.Start();
+
+                // Act
+                await PackageSearchRunner.RunAsync(
+                    sourceProvider: sourceProvider,
+                    packageSearchArgs,
+                    cancellationToken: System.Threading.CancellationToken.None);
+
+                _mockServerWithMultipleEndPoints.Stop();
             }
 
             // Assert
