@@ -57,6 +57,11 @@ namespace NuGet.Packaging
                     Strings.Error_LoadingHashFile,
                     path, ex.Message));
 
+                if (!string.IsNullOrEmpty(path) && ex is InvalidDataException)
+                {
+                    throw new InvalidDataException(message: path, innerException: ex);
+                }
+
                 throw;
             }
         }

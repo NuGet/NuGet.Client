@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -93,16 +94,38 @@ namespace NuGet.Packaging.Test
         public void Read_ContentsNotAnObject_ThrowsException(string contents)
         {
             // Arrange
+            var path = "from memory";
             var logger = new TestLogger();
+            InvalidDataException exception;
 
             // Act
             using (var stringReader = new StringReader(contents))
             {
-                Assert.Throws<InvalidDataException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
+                exception = Assert.Throws<InvalidDataException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, path));
             }
 
             // Assert
             Assert.Equal(1, logger.Messages.Count);
+            Assert.Contains(path, exception.Message);
+        }
+
+        [Fact]
+        public void Read_ContentsMissing_ThrowsInvalidDataExceptionWithFilePath()
+        {
+            // Arrange
+            var path = "from memory";
+            var logger = new TestLogger();
+            InvalidDataException exception;
+
+            // Act
+            using (var stringReader = new StringReader(string.Empty))
+            {
+                exception = Assert.Throws<InvalidDataException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, path));
+            }
+
+            // Assert
+            Assert.Equal(1, logger.Messages.Count);
+            Assert.Contains(path, exception.Message);
         }
 
         [Fact]
