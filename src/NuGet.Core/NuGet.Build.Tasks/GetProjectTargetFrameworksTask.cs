@@ -59,13 +59,8 @@ namespace NuGet.Build.Tasks
         public override bool Execute()
         {
             var log = new MSBuildLogger(Log);
-            log.LogDebug($"(in) ProjectPath '{ProjectPath}'");
-            log.LogDebug($"(in) TargetFrameworkMoniker '{TargetFrameworkMoniker}'");
-            log.LogDebug($"(in) TargetPlatformIdentifier '{TargetPlatformIdentifier}'");
-            log.LogDebug($"(in) TargetPlatformVersion '{TargetPlatformVersion}'");
-            log.LogDebug($"(in) TargetPlatformMinVersion '{TargetPlatformMinVersion}'");
-            log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
-            log.LogDebug($"(in) TargetFramework '{TargetFramework}'");
+
+            LogInputs(log);
 
             // If no framework can be found this will return Unsupported.
             var frameworks = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
@@ -79,9 +74,35 @@ namespace NuGet.Build.Tasks
 
             ProjectTargetFrameworks = string.Join(";", frameworks);
 
-            log.LogDebug($"(out) ProjectTargetFrameworks '{ProjectTargetFrameworks}'");
+            LogOutputs(log);
 
             return true;
+        }
+
+        private void LogInputs(MSBuildLogger log)
+        {
+            if (log.IsTaskInputLoggingEnabled)
+            {
+                return;
+            }
+
+            log.LogDebug($"(in) ProjectPath '{ProjectPath}'");
+            log.LogDebug($"(in) TargetFrameworkMoniker '{TargetFrameworkMoniker}'");
+            log.LogDebug($"(in) TargetPlatformIdentifier '{TargetPlatformIdentifier}'");
+            log.LogDebug($"(in) TargetPlatformVersion '{TargetPlatformVersion}'");
+            log.LogDebug($"(in) TargetPlatformMinVersion '{TargetPlatformMinVersion}'");
+            log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
+            log.LogDebug($"(in) TargetFramework '{TargetFramework}'");
+        }
+
+        private void LogOutputs(MSBuildLogger log)
+        {
+            if (log.IsTaskInputLoggingEnabled)
+            {
+                return;
+            }
+
+            log.LogDebug($"(out) ProjectTargetFrameworks '{ProjectTargetFrameworks}'");
         }
     }
 }

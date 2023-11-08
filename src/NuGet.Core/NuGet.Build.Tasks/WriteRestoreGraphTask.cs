@@ -49,9 +49,7 @@ namespace NuGet.Build.Tasks
 
             var log = new MSBuildLogger(Log);
 
-            log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");
-            log.LogDebug($"(in) RestoreGraphOutputPath '{RestoreGraphOutputPath}'");
-            log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
+            LogInputs(log);
 
             // Convert to the internal wrapper
             var wrappedItems = RestoreGraphItems.Select(GetMSBuildItem);
@@ -74,6 +72,18 @@ namespace NuGet.Build.Tasks
             dgFile.Save(fileInfo.FullName);
 
             return true;
+        }
+
+        private void LogInputs(MSBuildLogger log)
+        {
+            if (log.IsTaskInputLoggingEnabled)
+            {
+                return;
+            }
+
+            log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");
+            log.LogDebug($"(in) RestoreGraphOutputPath '{RestoreGraphOutputPath}'");
+            log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
         }
 
         /// <summary>

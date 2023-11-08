@@ -37,10 +37,9 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            // Log inputs
             var log = new MSBuildLogger(Log);
-            log.LogDebug($"(in) ProjectReferences '{string.Join(";", ProjectReferences.Select(p => p.ItemSpec))}'");
-            log.LogDebug($"(in) SolutionFilePath '{SolutionFilePath}'");
+
+            LogInputs(log);
 
             var entries = new List<ITaskItem>();
             var parentDirectory = Path.GetDirectoryName(SolutionFilePath);
@@ -71,6 +70,17 @@ namespace NuGet.Build.Tasks
             OutputProjectReferences = entries.ToArray();
 
             return true;
+        }
+
+        private void LogInputs(MSBuildLogger log)
+        {
+            if (log.IsTaskInputLoggingEnabled)
+            {
+                return;
+            }
+
+            log.LogDebug($"(in) ProjectReferences '{string.Join(";", ProjectReferences.Select(p => p.ItemSpec))}'");
+            log.LogDebug($"(in) SolutionFilePath '{SolutionFilePath}'");
         }
     }
 }

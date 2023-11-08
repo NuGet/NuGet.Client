@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using NuGet.ProjectModel;
 
 namespace NuGet.Build.Tasks
@@ -52,23 +53,41 @@ namespace NuGet.Build.Tasks
         {
             var log = new MSBuildLogger(Log);
 
-            // Log Inputs
-            BuildTasksUtility.LogInputParam(log, nameof(HasPackageReferenceItems), HasPackageReferenceItems.ToString(CultureInfo.CurrentCulture));
-            BuildTasksUtility.LogInputParam(log, nameof(MSBuildProjectDirectory), MSBuildProjectDirectory);
-            BuildTasksUtility.LogInputParam(log, nameof(MSBuildProjectName), MSBuildProjectName);
-            BuildTasksUtility.LogInputParam(log, nameof(ProjectJsonPath), ProjectJsonPath);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreProjectStyle), RestoreProjectStyle);
+            LogInputs(log);
 
             var result = BuildTasksUtility.GetProjectRestoreStyle(RestoreProjectStyle, HasPackageReferenceItems, ProjectJsonPath, MSBuildProjectDirectory, MSBuildProjectName, log);
 
             IsPackageReferenceCompatibleProjectStyle = result.IsPackageReferenceCompatibleProjectStyle;
             ProjectStyle = result.ProjectStyle;
 
-            // Log Outputs
-            BuildTasksUtility.LogOutputParam(log, nameof(IsPackageReferenceCompatibleProjectStyle), IsPackageReferenceCompatibleProjectStyle.ToString(CultureInfo.CurrentCulture));
-            BuildTasksUtility.LogOutputParam(log, nameof(ProjectStyle), ProjectStyle.ToString());
+            LogOutputs(log);
 
             return !Log.HasLoggedErrors;
+        }
+
+        private void LogInputs(MSBuildLogger log)
+        {
+            if (log.IsTaskInputLoggingEnabled)
+            {
+                return;
+            }
+
+            BuildTasksUtility.LogInputParam(log, nameof(HasPackageReferenceItems), HasPackageReferenceItems.ToString(CultureInfo.CurrentCulture));
+            BuildTasksUtility.LogInputParam(log, nameof(MSBuildProjectDirectory), MSBuildProjectDirectory);
+            BuildTasksUtility.LogInputParam(log, nameof(MSBuildProjectName), MSBuildProjectName);
+            BuildTasksUtility.LogInputParam(log, nameof(ProjectJsonPath), ProjectJsonPath);
+            BuildTasksUtility.LogInputParam(log, nameof(RestoreProjectStyle), RestoreProjectStyle);
+        }
+
+        private void LogOutputs(MSBuildLogger log)
+        {
+            if (log.IsTaskInputLoggingEnabled)
+            {
+                return;
+            }
+
+            BuildTasksUtility.LogOutputParam(log, nameof(IsPackageReferenceCompatibleProjectStyle), IsPackageReferenceCompatibleProjectStyle.ToString(CultureInfo.CurrentCulture));
+            BuildTasksUtility.LogOutputParam(log, nameof(ProjectStyle), ProjectStyle.ToString());
         }
     }
 }

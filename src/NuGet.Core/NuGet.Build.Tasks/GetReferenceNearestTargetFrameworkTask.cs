@@ -54,22 +54,9 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-
             var logger = new MSBuildLogger(Log);
 
-            BuildTasksUtility.LogInputParam(logger, nameof(CurrentProjectTargetFramework), CurrentProjectTargetFramework);
-
-            BuildTasksUtility.LogInputParam(logger, nameof(CurrentProjectTargetPlatform), CurrentProjectTargetPlatform);
-
-            BuildTasksUtility.LogInputParam(logger, nameof(FallbackTargetFrameworks),
-                FallbackTargetFrameworks == null
-                    ? ""
-                    : string.Join(";", FallbackTargetFrameworks.Select(p => p)));
-
-            BuildTasksUtility.LogInputParam(logger, nameof(AnnotatedProjectReferences),
-                AnnotatedProjectReferences == null
-                    ? ""
-                    : string.Join(";", AnnotatedProjectReferences.Select(p => p.ItemSpec)));
+            LogInputs(logger);
 
             if (AnnotatedProjectReferences == null)
             {
@@ -109,9 +96,41 @@ namespace NuGet.Build.Tasks
                 AssignedProjects[index] = AssignNearestFrameworkForSingleReference(AnnotatedProjectReferences[index], projectNuGetFramework, fallbackNuGetFrameworks, logger);
             }
 
-            BuildTasksUtility.LogOutputParam(logger, nameof(AssignedProjects), string.Join(";", AssignedProjects.Select(p => p.ItemSpec)));
+            LogOutputs(logger);
 
             return !Log.HasLoggedErrors;
+        }
+
+        private void LogInputs(MSBuildLogger logger)
+        {
+            if (logger.IsTaskInputLoggingEnabled)
+            {
+                return;
+            }
+
+            BuildTasksUtility.LogInputParam(logger, nameof(CurrentProjectTargetFramework), CurrentProjectTargetFramework);
+
+            BuildTasksUtility.LogInputParam(logger, nameof(CurrentProjectTargetPlatform), CurrentProjectTargetPlatform);
+
+            BuildTasksUtility.LogInputParam(logger, nameof(FallbackTargetFrameworks),
+                FallbackTargetFrameworks == null
+                    ? ""
+                    : string.Join(";", FallbackTargetFrameworks.Select(p => p)));
+
+            BuildTasksUtility.LogInputParam(logger, nameof(AnnotatedProjectReferences),
+                AnnotatedProjectReferences == null
+                    ? ""
+                    : string.Join(";", AnnotatedProjectReferences.Select(p => p.ItemSpec)));
+        }
+
+        private void LogOutputs(MSBuildLogger logger)
+        {
+            if (logger.IsTaskInputLoggingEnabled)
+            {
+                return;
+            }
+
+            BuildTasksUtility.LogOutputParam(logger, nameof(AssignedProjects), string.Join(";", AssignedProjects.Select(p => p.ItemSpec)));
         }
 
         private ITaskItem AssignNearestFrameworkForSingleReference(

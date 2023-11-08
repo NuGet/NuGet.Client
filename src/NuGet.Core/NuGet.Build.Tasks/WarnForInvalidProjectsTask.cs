@@ -32,9 +32,7 @@ namespace NuGet.Build.Tasks
             var all = AllProjects?.Select(e => e.ItemSpec).ToArray() ?? Array.Empty<string>();
             var valid = ValidProjects?.Select(e => e.ItemSpec).ToArray() ?? Array.Empty<string>();
 
-            // log inputs
-            BuildTasksUtility.LogInputParam(log, nameof(AllProjects), all);
-            BuildTasksUtility.LogInputParam(log, nameof(ValidProjects), valid);
+            LogInputs(log, all, valid);
 
             // Log warnings for invalid projects
             foreach (var path in all.Except(valid, PathUtility.GetStringComparerBasedOnOS()))
@@ -44,6 +42,17 @@ namespace NuGet.Build.Tasks
             }
 
             return true;
+        }
+
+        private static void LogInputs(MSBuildLogger log, string[] all, string[] valid)
+        {
+            if (log.IsTaskInputLoggingEnabled)
+            {
+                return;
+            }
+
+            BuildTasksUtility.LogInputParam(log, nameof(AllProjects), all);
+            BuildTasksUtility.LogInputParam(log, nameof(ValidProjects), valid);
         }
     }
 }

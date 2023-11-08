@@ -48,7 +48,14 @@ namespace NuGet.Build
         public MSBuildLogger(TaskLoggingHelper taskLogging)
         {
             _taskLogging = taskLogging ?? throw new ArgumentNullException(nameof(taskLogging));
+
+            // Starting with MSBuild 17.5 taskLogging.IsTaskInputLoggingEnabled is available,
+            // but we're still referencing Microsoft.Build.Utilities.v4.0.dll for net472
+            // so it's not available. Instead of using reflection, just read the environment.
+            IsTaskInputLoggingEnabled = string.Equals(Environment.GetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED"), bool.TrueString, StringComparison.OrdinalIgnoreCase);
         }
+
+        public bool IsTaskInputLoggingEnabled { get; set; }
 
         public override void Log(ILogMessage message)
         {

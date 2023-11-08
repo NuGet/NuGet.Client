@@ -41,12 +41,9 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            // Log inputs
             var log = new MSBuildLogger(Log);
-            log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
-            log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
-            log.LogDebug($"(in) ProjectReferences '{string.Join(";", ProjectReferences.Select(p => p.ItemSpec))}'");
-            log.LogDebug($"(in) ParentProjectPath '{ParentProjectPath}'");
+
+            LogInputs(log);
 
             var entries = new List<ITaskItem>();
 
@@ -96,6 +93,19 @@ namespace NuGet.Build.Tasks
             RestoreGraphItems = entries.ToArray();
 
             return true;
+        }
+
+        private void LogInputs(MSBuildLogger log)
+        {
+            if (log.IsTaskInputLoggingEnabled)
+            {
+                return;
+            }
+
+            log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
+            log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
+            log.LogDebug($"(in) ProjectReferences '{string.Join(";", ProjectReferences.Select(p => p.ItemSpec))}'");
+            log.LogDebug($"(in) ParentProjectPath '{ParentProjectPath}'");
         }
     }
 }
