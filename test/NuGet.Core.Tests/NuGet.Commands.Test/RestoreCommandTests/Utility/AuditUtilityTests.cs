@@ -46,21 +46,14 @@ public class AuditUtilityTests
     {
         // Arrange
         string projectPath = "my.csproj";
-        TestLogger? logger = expectLog ? new TestLogger() : null;
+        TestLogger logger = new TestLogger();
 
         // Act
-        bool actual = AuditUtility.ParseEnableValue(input, projectPath, logger ?? NullLogger.Instance);
+        bool actual = AuditUtility.ParseEnableValue(input, projectPath, logger);
 
         // Assert
         actual.Should().Be(expected);
-
-        if (expectLog)
-        {
-            logger!.Errors.Should().Be(1);
-            RestoreLogMessage message = logger.LogMessages.Cast<RestoreLogMessage>().Single();
-            message.Code.Should().Be(NuGetLogCode.NU1014);
-            message.Level.Should().Be(LogLevel.Error);
-        }
+        logger.LogMessages.Cast<RestoreLogMessage>().Count(m => m.Code == NuGetLogCode.NU1014).Should().Be(expectLog ? 1 : 0);
     }
 
     [Fact]
