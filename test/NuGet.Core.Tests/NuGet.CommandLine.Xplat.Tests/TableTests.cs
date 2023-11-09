@@ -83,7 +83,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             Mock<ILoggerWithColor> mockLoggerWithColor = new Mock<ILoggerWithColor>();
             Table table = new Table(new int[] { 0, 1, 2, 3 }, new string[] { "column1", "column2", "column3", "column4" });
 
-            for (int i = 0;  i < rows; i++)
+            for (int i = 0; i < rows; i++)
             {
                 table.AddRow(new string[] { "column1", searchTerm, "column3", "column4" });
             }
