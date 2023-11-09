@@ -47,4 +47,4 @@ The [Accessibility Insights FastPass](https://accessibilityinsights.io/docs/wind
 
 ## Responsive Testing
 
-When developing new UI we need to make sure that it's resposinve for all resolutions and window sizes, we can test that by changing the Display resolution and Scale of our display. Please add proof of this in your pull-requests.
+When developing new UI we need to make sure that it's responsive for all resolutions and window sizes. We can test that by changing the Display resolution and Scale of our display. Please add proof of this in your pull-requests.
