@@ -10149,7 +10149,7 @@ namespace NuGet.CommandLine.Test
             assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").Should().BeEquivalentTo(new string[] { "A.1.0.0" });
 
             var targetFramework = assetsFile.PackageSpec.TargetFrameworks.Should().ContainSingle();
-            
+
             if (managePackageVersionsCentrally is null || managePackageVersionsCentrally == true)
             {
                 targetFramework.Subject.Dependencies.Should().ContainSingle()
