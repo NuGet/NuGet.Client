@@ -43,7 +43,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 searchResult = await completedSearchTask;
             }
-            catch(FatalProtocolException ex)
+            catch (FatalProtocolException ex)
             {
                 // search
                 // Throws FatalProtocolException for JSON parsing errors as fatal metadata issues.
