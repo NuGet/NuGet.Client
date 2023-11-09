@@ -146,9 +146,8 @@ namespace NuGet.CommandLine.XPlat
         /// <returns>A list of package sources.</returns>
         private static IList<PackageSource> GetPackageSources(List<string> sources, IPackageSourceProvider sourceProvider)
         {
-            List<PackageSource> configurationSources = sourceProvider.LoadPackageSources()
-                .Where(p => p.IsEnabled)
-                .ToList();
+            IEnumerable<PackageSource> configurationSources = sourceProvider.LoadPackageSources()
+                .Where(p => p.IsEnabled);
             IEnumerable<PackageSource> packageSources;
 
             if (sources.Count > 0)
