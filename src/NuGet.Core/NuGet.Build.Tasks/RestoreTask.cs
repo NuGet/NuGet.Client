@@ -101,8 +101,6 @@ namespace NuGet.Build.Tasks
 
             NuGet.Common.Migrations.MigrationRunner.Run();
 
-            LogInputs(log);
-
             try
             {
                 return ExecuteAsync(log).Result;
@@ -118,24 +116,6 @@ namespace NuGet.Build.Tasks
                 ExceptionUtilities.LogException(e, log);
                 return false;
             }
-        }
-
-        private void LogInputs(MSBuildLogger log)
-        {
-            if (log.IsTaskInputLoggingEnabled)
-            {
-                return;
-            }
-
-            log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");
-            log.LogDebug($"(in) RestoreDisableParallel '{RestoreDisableParallel}'");
-            log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache || RestoreNoHttpCache}'");
-            log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
-            log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
-            log.LogDebug($"(in) RestoreForce '{RestoreForce}'");
-            log.LogDebug($"(in) HideWarningsAndErrors '{HideWarningsAndErrors}'");
-            log.LogDebug($"(in) RestoreForceEvaluate '{RestoreForceEvaluate}'");
-            log.LogDebug($"(in) RestorePackagesConfig '{RestorePackagesConfig}'");
         }
 
         private async Task<bool> ExecuteAsync(Common.ILogger log)

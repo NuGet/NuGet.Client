@@ -41,10 +41,6 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            var log = new MSBuildLogger(Log);
-
-            LogInputs(log);
-
             var entries = new List<ITaskItem>();
 
             // Filter obvious duplicates without considering OS case sensitivity.
@@ -93,19 +89,6 @@ namespace NuGet.Build.Tasks
             RestoreGraphItems = entries.ToArray();
 
             return true;
-        }
-
-        private void LogInputs(MSBuildLogger log)
-        {
-            if (log.IsTaskInputLoggingEnabled)
-            {
-                return;
-            }
-
-            log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
-            log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
-            log.LogDebug($"(in) ProjectReferences '{string.Join(";", ProjectReferences.Select(p => p.ItemSpec))}'");
-            log.LogDebug($"(in) ParentProjectPath '{ParentProjectPath}'");
         }
     }
 }

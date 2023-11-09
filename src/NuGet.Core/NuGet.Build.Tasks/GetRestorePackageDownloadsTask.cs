@@ -34,10 +34,6 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            var log = new MSBuildLogger(Log);
-
-            LogInputs(log);
-
             var entries = new List<ITaskItem>();
             var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -68,18 +64,6 @@ namespace NuGet.Build.Tasks
             RestoreGraphItems = entries.ToArray();
 
             return true;
-        }
-
-        private void LogInputs(MSBuildLogger log)
-        {
-            if (log.IsTaskInputLoggingEnabled)
-            {
-                return;
-            }
-
-            log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
-            log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
-            log.LogDebug($"(in) PackageDownloads '{string.Join(";", PackageDownloads.Select(p => p.ItemSpec))}'");
         }
     }
 }
