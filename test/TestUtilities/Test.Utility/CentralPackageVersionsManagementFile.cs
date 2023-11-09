@@ -59,6 +59,11 @@ namespace NuGet.Test.Utility
         /// <returns>The current <see cref="CentralPackageVersionsManagementFile" />.</returns>
         public CentralPackageVersionsManagementFile RemovePackageVersion(string packageId)
         {
+            if (_managePackageVersionsCentrally == false)
+            {
+                return this;
+            }
+
             _packageVersions.Remove(packageId);
 
             IsDirty = true;
@@ -94,6 +99,11 @@ namespace NuGet.Test.Utility
         /// <returns>The current <see cref="CentralPackageVersionsManagementFile" />.</returns>
         public CentralPackageVersionsManagementFile SetPackageVersion(string packageId, string packageVersion)
         {
+            if (_managePackageVersionsCentrally == false)
+            {
+                return this;
+            }
+
             _packageVersions[packageId] = packageVersion;
 
             IsDirty = true;
@@ -103,6 +113,11 @@ namespace NuGet.Test.Utility
 
         public CentralPackageVersionsManagementFile SetGlobalPackageReference(string packageId, string packageVersion)
         {
+            if (_managePackageVersionsCentrally == false)
+            {
+                return this;
+            }
+
             _globalPackageReferences[packageId] = packageVersion;
 
             IsDirty = true;

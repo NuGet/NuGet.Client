@@ -9484,7 +9484,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_CPVMProject_MoveTransitiveDependencyToCentralFile_FailsRestore()
+        public async Task RestoreNetCore_CPVMProject_MoveTransitiveDependnecyToCentralFile_FailsRestore()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -9942,9 +9942,9 @@ namespace NuGet.CommandLine.Test
                     .CentralTransitiveDependencyGroups
                     .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
 
-                var expectedcentralFileDependencyGroups = new List<string>() { $"{framework.DotNetFrameworkName}_P.[3.0.0, )", $"{framework.DotNetFrameworkName}_S.[3.0.0, )" };
+                var expectedCentralFileDependencyGroups = new List<string>() { $"{framework.DotNetFrameworkName}_P.[3.0.0, )", $"{framework.DotNetFrameworkName}_S.[3.0.0, )" };
 
-                Assert.Equal(expectedcentralFileDependencyGroups, centralFileDependencyGroups);
+                Assert.Equal(expectedCentralFileDependencyGroups, centralFileDependencyGroups);
             }
         }
 
@@ -10114,66 +10114,55 @@ namespace NuGet.CommandLine.Test
         public async Task RestoreNetCore_CPVMProject_ManagePackageVersionsCentrally_CanBeDisabled(bool? managePackageVersionsCentrally)
         {
             // Arrange
-            using (var pathContext = new SimpleTestPathContext())
+            using var pathContext = new SimpleTestPathContext();
+
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+            var packageA = new SimpleTestPackageContext("A", "1.0.0");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+
+            var projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, "net472");
+
+            if (managePackageVersionsCentrally is null || managePackageVersionsCentrally == true)
             {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-                var packagesForSource = new List<SimpleTestPackageContext>();
-                var packagesForProject = new List<SimpleTestPackageContext>();
-                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp20;
+                packageA.Version = null;
+            }
 
-                SimpleTestPackageContext createTestPackage(string name, string version, List<SimpleTestPackageContext> source)
-                {
-                    var result = new SimpleTestPackageContext()
-                    {
-                        Id = name,
-                        Version = version
-                    };
-                    result.Files.Clear();
-                    source.Add(result);
-                    return result;
-                };
+            projectA.AddPackageToAllFrameworks(packageA);
 
-                var projectA = SimpleTestProjectContext.CreateNETCore("projectA", pathContext.SolutionRoot, framework);
+            solution.CentralPackageVersionsManagementFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot, managePackageVersionsCentrally)
+                .SetPackageVersion("A", "1.0.0");
 
-                // the package references defined in the project should not have version unless CPM is disabled
-                var packageB100 = createTestPackage("B", "1.0.0", packagesForSource);
-                var packageC100 = createTestPackage("C", "1.0.0", packagesForSource);
-                createTestPackage("C", "2.0.0", packagesForSource);
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
 
-                packageB100.Dependencies.Add(packageC100);
+            // Act
+            var result = Util.RestoreSolution(pathContext);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                   pathContext.PackageSource,
-                   packagesForSource.ToArray());
+            // Assert
+            result.Success.Should().BeTrue();
 
-                projectA.AddPackageToAllFrameworks(packagesForProject.ToArray());
+            var assetFileReader = new LockFileFormat();
+            var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
 
-                solution.Projects.Add(projectA);
-                solution.CentralPackageVersionsManagementFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot, managePackageVersionsCentrally)
-                    .SetPackageVersion("B", "1.0.0")
-                    .SetPackageVersion("C", "2.0.0");
-                solution.Create(pathContext.SolutionRoot);
+            assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").Should().BeEquivalentTo(new string[] { "A.1.0.0" });
 
-                // Act
-                var result = Util.RestoreSolution(pathContext);
+            var targetFramework = assetsFile.PackageSpec.TargetFrameworks.Should().ContainSingle();
+            
+            if (managePackageVersionsCentrally is null || managePackageVersionsCentrally == true)
+            {
+                targetFramework.Subject.Dependencies.Should().ContainSingle()
+                    .Which.VersionCentrallyManaged.Should().BeTrue();
 
-                // Assert
-                result.Success.Should().BeTrue();
-                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
-
-                var assetFileReader = new LockFileFormat();
-                var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
-
-                var expectedLibraries = new List<string>() { "B.1.0.0", "C.1.0.0" };
-                var libraries = assetsFile.Libraries.Select(l => $"{l.Name}.{l.Version}").OrderBy(n => n).ToList();
-                Assert.Equal(expectedLibraries, libraries);
-
-                var centralFileDependencyGroups = assetsFile
-                    .CentralTransitiveDependencyGroups
-                    .SelectMany(g => g.TransitiveDependencies.Select(t => $"{g.FrameworkName}_{t.LibraryRange.Name}.{t.LibraryRange.VersionRange.OriginalString}")).ToList();
-
-                Assert.Equal(0, centralFileDependencyGroups.Count);
+                targetFramework.Subject.CentralPackageVersions.Should().ContainSingle()
+                    .Which.Value.Should().Be(new CentralPackageVersion("A", VersionRange.Parse("1.0.0")));
+            }
+            else
+            {
+                targetFramework.Subject.Dependencies.Should().ContainSingle()
+                    .Which.VersionCentrallyManaged.Should().BeFalse();
+                targetFramework.Subject.CentralPackageVersions.Should().BeEmpty();
             }
         }
 
