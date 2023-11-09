@@ -78,7 +78,7 @@ namespace NuGet.ProjectModel
                 }
                 else if (reader.ValueTextEquals(Utf8Project))
                 {
-                    lockFile.PackageSpec = JsonPackageSpecReader.GetPackageSpec(
+                    lockFile.PackageSpec = StjPackageSpecReader.GetPackageSpec(
                         ref reader,
                         options,
                         name: null,
@@ -96,7 +96,7 @@ namespace NuGet.ProjectModel
                             NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
                             var dependencies = new List<LibraryDependency>();
 
-                            JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                            StjPackageSpecReader.ReadCentralTransitiveDependencyGroup(
                                 jsonReader: ref reader,
                                 results: dependencies,
                                 packageSpecPath: string.Empty);

@@ -45,7 +45,6 @@ namespace NuGet.ProjectModel
 
             options.Converters.Add(new ListObjectConvertor<LockFileContentFile>());
             options.Converters.Add(new ListObjectConvertor<LockFileRuntimeTarget>());
-
             options.Converters.Add(new ListObjectConvertor<LockFileItem>());
 
 
