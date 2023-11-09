@@ -12,14 +12,12 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchCommand
     {
-        internal delegate Task<int> SetupSettingsAndRunSearchAsyncDelegate(PackageSearchArgs packageSearchArgs);
-
         public static void Register(CommandLineApplication app, Func<ILoggerWithColor> getLogger)
         {
             Register(app, getLogger, SetupSettingsAndRunSearchAsync);
         }
 
-        public static void Register(CommandLineApplication app, Func<ILoggerWithColor> getLogger, SetupSettingsAndRunSearchAsyncDelegate setupSettingsAndRunSearchAsync)
+        public static void Register(CommandLineApplication app, Func<ILoggerWithColor> getLogger, Func<PackageSearchArgs, Task<int>> setupSettingsAndRunSearchAsync)
         {
             app.Command("search", pkgSearch =>
             {

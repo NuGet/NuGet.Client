@@ -9,7 +9,7 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class Table
     {
-        private readonly List<string[]> _rows = new List<string[]>();
+        internal List<string[]> _rows = new List<string[]>();
         private int[] _columnWidths;
         private int[] _columnsToHighlight;
 

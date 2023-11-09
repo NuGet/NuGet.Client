@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withSearchTermOnly_SetsSearchTerm()
         {
             // Arrange
-            Register(App, GetLogger, SetupSettingsAndRunSearchAsyncDelegate);
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
 
             // Act
@@ -28,7 +28,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withSingleSourceOption_SetsSources()
         {
             // Arrange
-            Register(App, GetLogger, SetupSettingsAndRunSearchAsyncDelegate);
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string source = "testSource";
 
@@ -43,7 +43,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withMultipleSourceOptions_SetsSources()
         {
             // Arrange
-            Register(App, GetLogger, SetupSettingsAndRunSearchAsyncDelegate);
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string source1 = "testSource1";
             string source2 = "testSource2";
@@ -60,7 +60,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withExactMatchOption_SetsExactMatch()
         {
             // Arrange
-            Register(App, GetLogger, SetupSettingsAndRunSearchAsyncDelegate);
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
 
             // Act
@@ -74,7 +74,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withPrereleaseOption_SetsPrerelease()
         {
             // Arrange
-            Register(App, GetLogger, SetupSettingsAndRunSearchAsyncDelegate);
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
 
             // Act
@@ -88,7 +88,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withInteractiveOption_SetsInteractive()
         {
             // Arrange
-            Register(App, GetLogger, SetupSettingsAndRunSearchAsyncDelegate);
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
 
             // Act
@@ -102,7 +102,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withTakeOption_SetsTake()
         {
             // Arrange
-            Register(App, GetLogger, SetupSettingsAndRunSearchAsyncDelegate);
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string take = "5";
 
@@ -117,7 +117,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withSkipOption_SetsSkip()
         {
             // Arrange
-            Register(App, GetLogger, SetupSettingsAndRunSearchAsyncDelegate);
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string skip = "3";
 
@@ -132,7 +132,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withInvalidTakeOption_ShowsErrorMessage()
         {
             // Arrange
-            Register(App, GetLogger, SetupSettingsAndRunSearchAsyncDelegate);
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string take = "invalid";
             string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, take);
@@ -149,7 +149,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_withInvalidSkipOption_ShowsErrorMessage()
         {
             // Arrange
-            Register(App, GetLogger, SetupSettingsAndRunSearchAsyncDelegate);
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string skip = "invalid";
             string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, skip);
@@ -171,7 +171,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void Register_WithOptions_SetsExpectedValues(string[] args, bool expectedExactMatch, bool expectedPrerelease, bool expectedInteractive, int expectedTake = 20, int expectedSkip = 0)
         {
             // Arrange
-            Register(App, GetLogger, SetupSettingsAndRunSearchAsyncDelegate);
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
 
             // Act
             App.Execute(args);

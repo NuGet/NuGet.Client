@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
-using static NuGet.CommandLine.XPlat.PackageSearchCommand;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
@@ -16,7 +15,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         internal CommandLineApplication App { get; set; }
         internal Func<ILoggerWithColor> GetLogger { get; set; }
         internal PackageSearchArgs CapturedArgs { get; set; }
-        internal SetupSettingsAndRunSearchAsyncDelegate SetupSettingsAndRunSearchAsyncDelegate { get; set; }
+        internal Func<PackageSearchArgs, Task<int>> SetupSettingsAndRunSearchAsync { get; set; }
         internal string StoredErrorMessage { get; set; }
         internal List<Tuple<string, ConsoleColor>> ColoredMessage { get; set; }
 
@@ -35,7 +34,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             CapturedArgs = null;
 
-            SetupSettingsAndRunSearchAsyncDelegate = async (PackageSearchArgs args) =>
+            SetupSettingsAndRunSearchAsync = async (PackageSearchArgs args) =>
             {
                 CapturedArgs = args;
                 await Task.CompletedTask;

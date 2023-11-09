@@ -56,7 +56,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             IPackageSearchResultRenderer packageSearchResultRenderer;
-            packageSearchResultRenderer = new PackageSearchResultRendererTable(packageSearchArgs);
+            packageSearchResultRenderer = new PackageSearchResultTableRenderer(packageSearchArgs.SearchTerm, packageSearchArgs.Logger, packageSearchArgs.ExactMatch);
             packageSearchResultRenderer.Start();
 
             while (searchRequests.Count > 0)
@@ -149,20 +149,19 @@ namespace NuGet.CommandLine.XPlat
             List<PackageSource> configurationSources = sourceProvider.LoadPackageSources()
                 .Where(p => p.IsEnabled)
                 .ToList();
-            IList<PackageSource> packageSources;
+            IEnumerable<PackageSource> packageSources;
 
             if (sources.Count > 0)
             {
                 packageSources = sources
-                    .Select(s => PackageSourceProviderExtensions.ResolveSource(configurationSources, s))
-                    .ToList();
+                    .Select(s => PackageSourceProviderExtensions.ResolveSource(configurationSources, s));
             }
             else
             {
                 packageSources = configurationSources;
             }
 
-            return packageSources;
+            return packageSources.ToList();
         }
 
         /// <summary>

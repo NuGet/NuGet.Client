@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -10,40 +11,67 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class PackageSearchResultRendererTable : IPackageSearchResultRenderer
+    internal class PackageSearchResultTableRenderer : IPackageSearchResultRenderer
     {
-        private PackageSearchArgs _args;
+        private string _searchTerm;
+        private ILoggerWithColor _loggerWithColor;
+        private bool _exactMatch;
         private const int LineSeparatorLength = 40;
         private static readonly string SourceSeparator = new('*', LineSeparatorLength);
 
-        public PackageSearchResultRendererTable(PackageSearchArgs packageSearchArgs)
+        public PackageSearchResultTableRenderer(string searchTerm, ILoggerWithColor loggerWithColor, bool exactMatch)
         {
-            _args = packageSearchArgs;
+            _searchTerm = searchTerm;
+            _loggerWithColor = loggerWithColor;
+            _exactMatch = exactMatch;
         }
 
         public async Task Add(PackageSource source, Task<IEnumerable<IPackageSearchMetadata>> completedSearchTask)
         {
-            _args.Logger.LogMinimal(SourceSeparator);
+            IEnumerable<IPackageSearchMetadata> searchResult;
+
+            _loggerWithColor.LogMinimal(SourceSeparator);
+            _loggerWithColor.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
 
             if (completedSearchTask == null)
             {
-                _args.Logger.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
-                _args.Logger.LogMinimal(Strings.Error_CannotObtainSearchSource);
+                _loggerWithColor.LogMinimal(Strings.Error_CannotObtainSearchSource);
                 return;
             }
 
-            _args.Logger.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
-            IEnumerable<IPackageSearchMetadata> searchResult = await completedSearchTask;
+            try
+            {
+                searchResult = await completedSearchTask;
+            }
+            catch(FatalProtocolException ex)
+            {
+                // search
+                // Throws FatalProtocolException for JSON parsing errors as fatal metadata issues.
+                // Throws FatalProtocolException for HTTP request issues indicating critical source(v2/v3) problems.
+                _loggerWithColor.LogError(ex.Message);
+                return;
+            }
+            catch (OperationCanceledException ex)
+            {
+                _loggerWithColor.LogError(ex.Message);
+                return;
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Thrown for a local package with an invalid source destination.
+                _loggerWithColor.LogError(ex.Message);
+                return;
+            }
 
             if (searchResult == null)
             {
-                _args.Logger.LogMinimal(Strings.Error_NoResource);
+                _loggerWithColor.LogMinimal(Strings.Error_NoResource);
                 return;
             }
 
             var table = new Table(new[] { 0, 2 }, "Package ID", "Latest Version", "Authors", "Downloads");
 
-            if (_args.ExactMatch)
+            if (_exactMatch)
             {
                 var lastResult = searchResult.LastOrDefault();
                 if (lastResult != null)
@@ -56,7 +84,7 @@ namespace NuGet.CommandLine.XPlat
                 PopulateTableWithResults(searchResult, table);
             }
 
-            table.PrintResult(_args.SearchTerm, _args.Logger);
+            table.PrintResult(_searchTerm, _loggerWithColor);
         }
 
         public void Finish()
