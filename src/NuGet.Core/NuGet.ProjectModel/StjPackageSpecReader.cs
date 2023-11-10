@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -103,7 +104,7 @@ namespace NuGet.ProjectModel
             var isMappingsNull = false;
             string filePath = name == null ? null : Path.GetFullPath(packageSpecPath);
 
-            var stringArrayConverter = (System.Text.Json.Serialization.JsonConverter<string[]>)options.GetConverter(typeof(string[]));
+            var stringArrayConverter = (JsonConverter<string[]>)options.GetConverter(typeof(string[]));
 
             if (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
@@ -132,11 +133,7 @@ namespace NuGet.ProjectModel
                     }
                     else if (jsonReader.ValueTextEquals(Utf8ContentFiles))
                     {
-                        List<string> contentFiles = jsonReader.ReadStringArrayAsList();
-                        if (contentFiles != null)
-                        {
-                            packageSpec.ContentFiles = contentFiles;
-                        }
+                        jsonReader.ReadStringArrayAsIList(packageSpec.ContentFiles);
                     }
                     else if (jsonReader.ValueTextEquals(Utf8Copyright))
                     {
@@ -1431,7 +1428,7 @@ namespace NuGet.ProjectModel
         {
             var wasMappingsRead = false;
             bool isPackOptionsValueAnObject = false;
-            var stringArrayConverter = (System.Text.Json.Serialization.JsonConverter<string[]>)options.GetConverter(typeof(string[]));
+            var stringArrayConverter = (JsonConverter<string[]>)options.GetConverter(typeof(string[]));
 
             if (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonTokenType.StartObject)
             {

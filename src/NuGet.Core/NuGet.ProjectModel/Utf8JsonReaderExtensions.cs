@@ -79,10 +79,25 @@ namespace NuGet.ProjectModel
             return listObjects;
         }
 
-        internal static List<string> ReadStringArrayAsList(this ref Utf8JsonReader reader)
+        internal static List<string> ReadStringArrayAsList(this ref Utf8JsonReader reader, List<string> strings = null)
         {
-            List<string> strings = null;
+            if (ReadNextToken(ref reader) && reader.TokenType == JsonTokenType.StartArray)
+            {
+                while (ReadNextToken(ref reader) && reader.TokenType != JsonTokenType.EndArray)
+                {
+                    string value = ReadTokenAsString(ref reader);
 
+                    strings = strings ?? new List<string>();
+
+                    strings.Add(value);
+                }
+            }
+
+            return strings;
+        }
+
+        internal static IList<string> ReadStringArrayAsIList(this ref Utf8JsonReader reader, IList<string> strings = null)
+        {
             if (ReadNextToken(ref reader) && reader.TokenType == JsonTokenType.StartArray)
             {
                 while (ReadNextToken(ref reader) && reader.TokenType != JsonTokenType.EndArray)

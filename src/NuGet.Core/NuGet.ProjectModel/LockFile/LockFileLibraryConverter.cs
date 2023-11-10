@@ -22,6 +22,7 @@ namespace NuGet.ProjectModel
         private static readonly byte[] Utf8Servicable = Encoding.UTF8.GetBytes("servicable");
         private static readonly byte[] Utf8HasTools = Encoding.UTF8.GetBytes("hasTools");
         private static readonly byte[] Utf8Files = Encoding.UTF8.GetBytes("files");
+        private static readonly char[] Separators = new[] { '/' };
 
         public override LockFileLibrary Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -38,7 +39,7 @@ namespace NuGet.ProjectModel
             var lockFileLibrary = new LockFileLibrary();
             //We want to read the property name right away
             var propertyName = reader.GetString();
-            var parts = propertyName.Split(new[] { '/' }, 2);
+            var parts = propertyName.Split(Separators, 2);
             lockFileLibrary.Name = parts[0];
             if (parts.Length == 2)
             {
@@ -72,17 +73,17 @@ namespace NuGet.ProjectModel
                 }
                 else if (reader.ValueTextEquals(Utf8Servicable))
                 {
-                    reader.Read();
+                    reader.ReadNextToken();
                     lockFileLibrary.IsServiceable = reader.GetBoolean();
                 }
                 else if (reader.ValueTextEquals(Utf8HasTools))
                 {
-                    reader.Read();
+                    reader.ReadNextToken();
                     lockFileLibrary.HasTools = reader.GetBoolean();
                 }
                 else if (reader.ValueTextEquals(Utf8Files))
                 {
-                    reader.Read();
+                    reader.ReadNextToken();
                     lockFileLibrary.Files = StringListDefaultConverter.Read(ref reader, typeof(IList<string>), options);
                 }
                 else
