@@ -1912,7 +1912,9 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
                 var lockFileFormat = new LockFileFormat();
+#pragma warning disable CS0612 // Type or member is obsolete
                 var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
+#pragma warning restore CS0612 // Type or member is obsolete
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec, sources, packagesDir, logger)

@@ -54,11 +54,13 @@ namespace NuGet.ProjectModel
         private const string FrameworkReferencesProperty = "frameworkReferences";
         private const string CentralTransitiveDependencyGroupsProperty = "centralTransitiveDependencyGroups";
 
+        [Obsolete]
         public LockFile Parse(string lockFileContent, string path)
         {
             return Parse(lockFileContent, NullLogger.Instance, path);
         }
 
+        [Obsolete]
         public LockFile Parse(string lockFileContent, ILogger log, string path)
         {
             byte[] byteArray = Encoding.UTF8.GetBytes(lockFileContent);

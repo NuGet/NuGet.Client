@@ -149,9 +149,11 @@ namespace NuGet.ProjectModel.Test
             var lockFileFormat = new LockFileFormat();
 
             // Act
+#pragma warning disable CS0612 // Type or member is obsolete
             var lockFileTrue = lockFileFormat.Parse(lockFileContentTrue, "In Memory");
             var lockFileFalse = lockFileFormat.Parse(lockFileContentFalse, "In Memory");
             var lockFileMissing = lockFileFormat.Parse(lockFileContentMissing, "In Memory");
+#pragma warning restore CS0612 // Type or member is obsolete
 
             var lockFileTrueString = lockFileFormat.Render(lockFileTrue);
             var lockFileFalseString = lockFileFormat.Render(lockFileFalse);
@@ -208,7 +210,9 @@ namespace NuGet.ProjectModel.Test
   }
 }";
             var lockFileFormat = new LockFileFormat();
+#pragma warning disable CS0612 // Type or member is obsolete
             var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
+#pragma warning restore CS0612 // Type or member is obsolete
 
             Assert.Equal(1, lockFile.Version);
 
@@ -2020,7 +2024,9 @@ namespace NuGet.ProjectModel.Test
               }
             }";
             var lockFileFormat = new LockFileFormat();
+#pragma warning disable CS0612 // Type or member is obsolete
             var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
+#pragma warning restore CS0612 // Type or member is obsolete
 
             Assert.Equal(1, lockFile.Version);
 
@@ -2392,13 +2398,9 @@ namespace NuGet.ProjectModel.Test
 }";
             var lockFileFormat = new LockFileFormat();
 
-
-            //#pragma warning disable CS0618 // Type or member is obsolete
-            //            var lockFile = lockFileFormat.Read(textreader, "In Memory");
-            //#pragma warning restore CS0618 // Type or member is obsolete
-
-
+#pragma warning disable CS0612 // Type or member is obsolete
             var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
+#pragma warning restore CS0612 // Type or member is obsolete
 
             Assert.Equal(3, lockFile.Version);
 
@@ -2646,7 +2648,9 @@ namespace NuGet.ProjectModel.Test
             }";
 
             var lockFileFormat = new LockFileFormat();
+#pragma warning disable CS0612 // Type or member is obsolete
             var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
+#pragma warning restore CS0612 // Type or member is obsolete
 
             Assert.Equal(1, lockFile.Version);
 

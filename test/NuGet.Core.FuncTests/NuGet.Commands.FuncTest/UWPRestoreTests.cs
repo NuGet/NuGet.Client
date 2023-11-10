@@ -35,7 +35,9 @@ namespace NuGet.Commands.FuncTest
                 var format = new LockFileFormat();
 
                 // Act
+#pragma warning disable CS0612 // Type or member is obsolete
                 lockFile = format.Parse(reader.ReadToEnd(), "c:\\project.lock.json");
+#pragma warning restore CS0612 // Type or member is obsolete
             }
 
             // Assert
@@ -61,7 +63,9 @@ namespace NuGet.Commands.FuncTest
                 var path = Path.Combine(workingDir, "project.lock.json");
 
                 // Act
+#pragma warning disable CS0612 // Type or member is obsolete
                 var lockFile = format.Parse(json.ToString(), path);
+#pragma warning restore CS0612 // Type or member is obsolete
 
                 format.Write(path, lockFile);
                 var jsonOutput = JObject.Parse(File.ReadAllText(path));

@@ -59,7 +59,9 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
 
             var lockFilePath = """C:\repo\obj\project.assets.json""";
 
+#pragma warning disable CS0612 // Type or member is obsolete
             var lockFile = new LockFileFormat().Parse(lockFileContent, lockFilePath);
+#pragma warning restore CS0612 // Type or member is obsolete
 
             var dependencies = AssetsFileDependenciesSnapshot.ParseLibraries(lockFile, lockFile.Targets.First(), ImmutableArray<AssetsFileLogMessage>.Empty);
 
@@ -98,7 +100,9 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
 
             var lockFilePath = """C:\repo\obj\project.assets.json""";
 
+#pragma warning disable CS0612 // Type or member is obsolete
             var lockFile = new LockFileFormat().Parse(lockFileContent, lockFilePath);
+#pragma warning restore CS0612 // Type or member is obsolete
 
             var logMessages = ImmutableArray.Create(new AssetsFileLogMessage(lockFilePath, lockFile.LogMessages.Single()));
 
@@ -148,7 +152,9 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
 
             var lockFilePath = """C:\repo\obj\project.assets.json""";
 
+#pragma warning disable CS0612 // Type or member is obsolete
             var lockFile = new LockFileFormat().Parse(lockFileContent, lockFilePath);
+#pragma warning restore CS0612 // Type or member is obsolete
 
             var logMessages = ImmutableArray.Create(new AssetsFileLogMessage(lockFilePath, lockFile.LogMessages.Single()));
 

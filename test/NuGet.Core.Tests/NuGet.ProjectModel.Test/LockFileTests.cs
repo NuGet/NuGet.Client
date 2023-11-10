@@ -859,7 +859,9 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange
             var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.sample.assets.json", typeof(LockFileTests));
+#pragma warning disable CS0612 // Type or member is obsolete
             var lockFile = new LockFileFormat().Parse(expectedJson, Path.GetTempPath());
+#pragma warning restore CS0612 // Type or member is obsolete
             NuGetFramework nuGetFramework = NuGetFramework.ParseComponents(".NETCoreApp,Version=v5.0", "Windows,Version=7.0");
 
             // Act
@@ -874,7 +876,9 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange
             var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.sample.assets.json", typeof(LockFileTests));
+#pragma warning disable CS0612 // Type or member is obsolete
             var lockFile = new LockFileFormat().Parse(expectedJson, Path.GetTempPath());
+#pragma warning restore CS0612 // Type or member is obsolete
             NuGetFramework nuGetFramework = NuGetFramework.ParseComponents(".NETCoreApp,Version=v5.0", "Windows,Version=7.0");
 
             // Act
