@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
@@ -15,76 +12,29 @@ namespace NuGet.CommandLine.XPlat
     {
         private string _searchTerm;
         private ILoggerWithColor _loggerWithColor;
-        private bool _exactMatch;
         private const int LineSeparatorLength = 40;
         private static readonly string SourceSeparator = new('*', LineSeparatorLength);
 
-        public PackageSearchResultTableRenderer(string searchTerm, ILoggerWithColor loggerWithColor, bool exactMatch)
+        public PackageSearchResultTableRenderer(string searchTerm, ILoggerWithColor loggerWithColor)
         {
             _searchTerm = searchTerm;
             _loggerWithColor = loggerWithColor;
-            _exactMatch = exactMatch;
         }
 
-        public async Task Add(PackageSource source, Task<IEnumerable<IPackageSearchMetadata>> completedSearchTask)
+        public void Add(PackageSource source, IEnumerable<IPackageSearchMetadata> completedSearch)
         {
-            IEnumerable<IPackageSearchMetadata> searchResult;
-
             _loggerWithColor.LogMinimal(SourceSeparator);
             _loggerWithColor.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
-
-            if (completedSearchTask == null)
-            {
-                _loggerWithColor.LogMinimal(Strings.Error_CannotObtainSearchSource);
-                return;
-            }
-
-            try
-            {
-                searchResult = await completedSearchTask;
-            }
-            catch (FatalProtocolException ex)
-            {
-                // search
-                // Throws FatalProtocolException for JSON parsing errors as fatal metadata issues.
-                // Throws FatalProtocolException for HTTP request issues indicating critical source(v2/v3) problems.
-                _loggerWithColor.LogError(ex.Message);
-                return;
-            }
-            catch (OperationCanceledException ex)
-            {
-                _loggerWithColor.LogError(ex.Message);
-                return;
-            }
-            catch (InvalidOperationException ex)
-            {
-                // Thrown for a local package with an invalid source destination.
-                _loggerWithColor.LogError(ex.Message);
-                return;
-            }
-
-            if (searchResult == null)
-            {
-                _loggerWithColor.LogMinimal(Strings.Error_NoResource);
-                return;
-            }
-
             var table = new Table(new[] { 0, 2 }, "Package ID", "Latest Version", "Authors", "Downloads");
-
-            if (_exactMatch)
-            {
-                var lastResult = searchResult.LastOrDefault();
-                if (lastResult != null)
-                {
-                    PopulateTableWithResults(new[] { lastResult }, table);
-                }
-            }
-            else
-            {
-                PopulateTableWithResults(searchResult, table);
-            }
-
+            PopulateTableWithResults(completedSearch, table);
             table.PrintResult(_searchTerm, _loggerWithColor);
+        }
+
+        public void Add(PackageSource source, string error)
+        {
+            _loggerWithColor.LogMinimal(SourceSeparator);
+            _loggerWithColor.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
+            _loggerWithColor.LogError(error);
         }
 
         public void Finish()

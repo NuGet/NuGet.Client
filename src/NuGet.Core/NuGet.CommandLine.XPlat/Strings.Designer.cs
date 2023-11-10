@@ -493,15 +493,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Resource not found..
-        /// </summary>
-        internal static string Error_NoResource {
-            get {
-                return ResourceManager.GetString("Error_NoResource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects..
         /// </summary>
         internal static string Error_NotPRProject {

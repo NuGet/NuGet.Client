@@ -11,6 +11,7 @@ using NuGet.CommandLine.XPlat;
 using System;
 using System.Linq;
 using System.Globalization;
+using System.Threading;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
@@ -122,7 +123,27 @@ namespace NuGet.CommandLine.Xplat.Tests
                     }}
                 }}";
 
+            string indexWithNoSearchResource = $@"
+                {{
+                    ""version"": ""3.0.0"",
+
+                    ""resources"": [
+                    {{
+                        ""@id"": ""{_mockServerWithMultipleEndPoints.Uri + "v3/registration5-semver1/"}"",
+                        ""@type"": ""RegistrationsBaseUrl/3.0.0-rc"",
+                        ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored used by RC clients. This base URL does not include SemVer 2.0.0 packages.""
+                    }}
+                    ],
+
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/services#"",
+                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
+                    }}
+                }}";
+
             _mockServerWithMultipleEndPoints.Get.Add("/v3/index.json", r => index);
+            _mockServerWithMultipleEndPoints.Get.Add("/v3/indexWithNoSearchResource.json", r => indexWithNoSearchResource);
             _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=0&take=10&prerelease=true&semVerLevel=2.0.0", r => _onePackageQueryResult);
             _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
             _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=5&take=10&prerelease=true&semVerLevel=2.0.0", r => _onePackageQueryResult);
@@ -275,6 +296,76 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(1, exitCode);
+            Assert.Contains(expectedError, StoredErrorMessage);
+        }
+
+        [Fact]
+        public async Task PackageSearchRunner_WhenSourceHasNoSearchResource_LogsSearchServiceMissingError()
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            string source = $"{_mockServerWithMultipleEndPoints.Uri}v3/indexWithNoSearchResource.json";
+            string expectedError = Protocol.Strings.Protocol_MissingSearchService;
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = 0,
+                Take = 10,
+                Prerelease = true,
+                ExactMatch = false,
+                Logger = GetLogger(),
+                SearchTerm = "json",
+                Sources = new List<string> { source }
+            };
+
+            // Act
+            int exitCode = await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
+
+            // Assert
+            Assert.Equal(0, exitCode);
+            Assert.Contains(expectedError, StoredErrorMessage);
+        }
+
+        [Fact]
+        public async Task PackageSearchRunner_HandlesOperationCanceledException_WhenCancellationIsRequested()
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            var expectedError = "A task was canceled.";
+            var cts = new CancellationTokenSource();
+            string source = $"{_mockServerWithMultipleEndPoints.Uri}v3/indexWithNoSearchResource.json";
+            PackageSearchArgs packageSearchArgs = new PackageSearchArgs
+            {
+                Skip = 0,
+                Take = 10,
+                Prerelease = true,
+                ExactMatch = false,
+                Logger = GetLogger(),
+                SearchTerm = "json",
+                Sources = new List<string> { source }
+            };
+
+            // Immediately request cancellation
+            cts.Cancel();
+
+            // Act
+            var exitCode = await PackageSearchRunner.RunAsync(
+                    sourceProvider: sourceProvider,
+                    packageSearchArgs,
+                    cancellationToken: cts.Token);
+
+            // Assert
+            Assert.Equal(0, exitCode);
             Assert.Contains(expectedError, StoredErrorMessage);
         }
     }

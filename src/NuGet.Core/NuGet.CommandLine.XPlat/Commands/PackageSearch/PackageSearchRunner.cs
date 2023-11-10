@@ -56,7 +56,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             IPackageSearchResultRenderer packageSearchResultRenderer;
-            packageSearchResultRenderer = new PackageSearchResultTableRenderer(packageSearchArgs.SearchTerm, packageSearchArgs.Logger, packageSearchArgs.ExactMatch);
+            packageSearchResultRenderer = new PackageSearchResultTableRenderer(packageSearchArgs.SearchTerm, packageSearchArgs.Logger);
             packageSearchResultRenderer.Start();
 
             while (searchRequests.Count > 0)
@@ -64,7 +64,54 @@ namespace NuGet.CommandLine.XPlat
                 Task<IEnumerable<IPackageSearchMetadata>> completedTask = await Task.WhenAny(searchRequests.Keys);
                 PackageSource source = searchRequests[completedTask];
 
-                await packageSearchResultRenderer.Add(source, completedTask);
+                IEnumerable<IPackageSearchMetadata> searchResult = null;
+
+                try
+                {
+                    searchResult = await completedTask;
+                }
+                catch (FatalProtocolException ex)
+                {
+                    // search
+                    // Throws FatalProtocolException for JSON parsing errors as fatal metadata issues.
+                    // Throws FatalProtocolException for HTTP request issues indicating critical source(v2/v3) problems.
+                    packageSearchResultRenderer.Add(source, ex.Message);
+                    searchRequests.Remove(completedTask);
+                    continue;
+                }
+                catch (OperationCanceledException ex)
+                {
+                    packageSearchResultRenderer.Add(source, ex.Message);
+                    searchRequests.Remove(completedTask);
+                    continue;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // Thrown for a local package with an invalid source destination.
+                    packageSearchResultRenderer.Add(source, ex.Message);
+                    searchRequests.Remove(completedTask);
+                    continue;
+                }
+
+                if (searchResult == null)
+                {
+                    packageSearchResultRenderer.Add(source, Strings.Error_CannotObtainSearchSource);
+                }
+                else
+                {
+                    if (packageSearchArgs.ExactMatch)
+                    {
+                        var lastResult = searchResult.LastOrDefault();
+                        if (lastResult != null)
+                        {
+                            packageSearchResultRenderer.Add(source, new[] { lastResult });
+                        }
+                    }
+                    else
+                    {
+                        packageSearchResultRenderer.Add(source, searchResult);
+                    }
+                }
 
                 searchRequests.Remove(completedTask);
             }

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Configuration;
@@ -87,10 +88,13 @@ namespace NuGet.CommandLine.XPlat
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
 
+            // If a search lasts more than 15 minutes it is canceled.
+            var cts = new CancellationTokenSource(TimeSpan.FromMinutes(15));
+
             return await PackageSearchRunner.RunAsync(
                 sourceProvider,
                 packageSearchArgs,
-                System.Threading.CancellationToken.None);
+                cts.Token);
         }
     }
 }
