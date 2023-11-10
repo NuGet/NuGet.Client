@@ -304,14 +304,14 @@ namespace NuGet.Commands
                     });
                 }
 
-                AuditUtility.EnabledValue enableAudit = AuditUtility.ParseEnableValue(
+                bool auditEnabled = AuditUtility.ParseEnableValue(
                     _request.Project.RestoreMetadata?.RestoreAuditProperties?.EnableAudit,
                     _request.Project.FilePath,
                     _logger);
-                telemetry.TelemetryEvent[AuditEnabled] = AuditUtility.GetString(enableAudit);
-                if (enableAudit != AuditUtility.EnabledValue.ExplicitOptOut)
+                telemetry.TelemetryEvent[AuditEnabled] = auditEnabled ? "enabled" : "disabled";
+                if (auditEnabled)
                 {
-                    await PerformAuditAsync(enableAudit, graphs, telemetry, token);
+                    await PerformAuditAsync(graphs, telemetry, token);
                 }
 
                 telemetry.StartIntervalMeasure();
@@ -477,11 +477,10 @@ namespace NuGet.Commands
             }
         }
 
-        private async Task PerformAuditAsync(AuditUtility.EnabledValue enableAudit, IEnumerable<RestoreTargetGraph> graphs, TelemetryActivity telemetry, CancellationToken token)
+        private async Task PerformAuditAsync(IEnumerable<RestoreTargetGraph> graphs, TelemetryActivity telemetry, CancellationToken token)
         {
             telemetry.StartIntervalMeasure();
             var audit = new AuditUtility(
-                enableAudit,
                 _request.Project.RestoreMetadata.RestoreAuditProperties,
                 _request.Project.FilePath,
                 graphs,
