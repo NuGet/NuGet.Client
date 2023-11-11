@@ -99,7 +99,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return _owner != null ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByOwner, _owner) : null;
+                return !string.IsNullOrWhiteSpace(_owner) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByOwner, _owner) : null;
             }
         }
 
@@ -107,7 +107,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return _author != null ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _author) : null;
+                return !string.IsNullOrWhiteSpace(_author) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _author) : null;
             }
         }
 
