@@ -64,6 +64,22 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease { get; set; }
 
+        private string _owner;
+
+        public string Owner
+        {
+            get
+            {
+                return _owner;
+            }
+            set
+            {
+                _owner = value;
+                OnPropertyChanged(nameof(Owner));
+                OnPropertyChanged(nameof(ByOwner));
+            }
+        }
+
         private string _author;
         public string Author
         {
@@ -76,6 +92,14 @@ namespace NuGet.PackageManagement.UI
                 _author = value;
                 OnPropertyChanged(nameof(Author));
                 OnPropertyChanged(nameof(ByAuthor));
+            }
+        }
+
+        public string ByOwner
+        {
+            get
+            {
+                return _owner != null ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByOwner, _owner) : null;
             }
         }
 

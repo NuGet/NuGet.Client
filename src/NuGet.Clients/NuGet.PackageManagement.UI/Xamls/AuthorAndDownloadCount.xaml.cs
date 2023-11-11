@@ -18,6 +18,13 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class AuthorAndDownloadCount : UserControl, INotifyPropertyChanged
     {
+        public static readonly DependencyProperty OwnerProperty =
+            DependencyProperty.Register(
+                nameof(Owner),
+                typeof(string),
+                typeof(AuthorAndDownloadCount),
+                new PropertyMetadata(OnPropertyChanged));
+
         public static readonly DependencyProperty AuthorProperty =
             DependencyProperty.Register(
                 nameof(Author),
@@ -32,9 +39,36 @@ namespace NuGet.PackageManagement.UI
                 typeof(AuthorAndDownloadCount),
                 new PropertyMetadata(OnPropertyChanged));
 
+
         public AuthorAndDownloadCount()
         {
             InitializeComponent();
+        }
+
+        public string Owner
+        {
+            get
+            {
+                return GetValue(OwnerProperty) as string;
+            }
+            set
+            {
+                SetValue(OwnerProperty, value);
+                UpdateControl();
+            }
+        }
+
+        public string Author
+        {
+            get
+            {
+                return GetValue(AuthorProperty) as string;
+            }
+            set
+            {
+                SetValue(AuthorProperty, value);
+                UpdateControl();
+            }
         }
 
         public long? DownloadCount
@@ -58,19 +92,6 @@ namespace NuGet.PackageManagement.UI
             control?.UpdateControl();
         }
 
-        public string Author
-        {
-            get
-            {
-                return GetValue(AuthorProperty) as string;
-            }
-            set
-            {
-                SetValue(AuthorProperty, value);
-                UpdateControl();
-            }
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnPropertyChanged(string propertyName)
@@ -83,14 +104,25 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateControl()
         {
-            if (!string.IsNullOrEmpty(Author))
+            if (!string.IsNullOrEmpty(Owner))
             {
-                _textBlockAuthor.Text = Author;
-                _textBlockAuthor.Visibility = Visibility.Visible;
+                _textBlockOwner.Text = Owner;
+                _textBlockOwner.Visibility = Visibility.Visible;
+                _textBlockAuthor.Visibility = Visibility.Collapsed;
             }
             else
             {
-                _textBlockAuthor.Visibility = Visibility.Collapsed;
+                _textBlockOwner.Visibility = Visibility.Collapsed;
+
+                if (!string.IsNullOrEmpty(Author))
+                {
+                    _textBlockAuthor.Text = Author;
+                    _textBlockAuthor.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    _textBlockAuthor.Visibility = Visibility.Collapsed;
+                }
             }
 
             // Generate the textbox for download count.
@@ -129,9 +161,9 @@ namespace NuGet.PackageManagement.UI
                 _textBlockDownloadCount.Visibility = Visibility.Collapsed;
             }
 
-            // set the visiblity of the separator.
-            if (_textBlockAuthor.Visibility == Visibility.Visible &&
-                _textBlockDownloadCount.Visibility == Visibility.Visible)
+            // set the visibility of the separator.
+            if ((_textBlockOwner.Visibility == Visibility.Visible || _textBlockAuthor.Visibility == Visibility.Visible)
+                && _textBlockDownloadCount.Visibility == Visibility.Visible)
             {
                 _separator.Visibility = Visibility.Visible;
             }
@@ -141,7 +173,8 @@ namespace NuGet.PackageManagement.UI
             }
 
             // set the visibility of the control itself.
-            if (_textBlockAuthor.Visibility == Visibility.Collapsed &&
+            if (_textBlockOwner.Visibility == Visibility.Collapsed &&
+                _textBlockAuthor.Visibility == Visibility.Collapsed &&
                 _textBlockDownloadCount.Visibility == Visibility.Collapsed)
             {
                 _self.Visibility = Visibility.Collapsed;

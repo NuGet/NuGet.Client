@@ -1854,11 +1854,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to by {0}.
+        ///   Looks up a localized string similar to contributors: {0}.
         /// </summary>
         public static string Text_ByAuthor {
             get {
                 return ResourceManager.GetString("Text_ByAuthor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to by: {0}.
+        /// </summary>
+        public static string Text_ByOwner {
+            get {
+                return ResourceManager.GetString("Text_ByOwner", resourceCulture);
             }
         }
         

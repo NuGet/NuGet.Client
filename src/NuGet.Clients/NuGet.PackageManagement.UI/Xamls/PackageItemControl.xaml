@@ -183,6 +183,7 @@
           <!-- author and download count -->
           <nuget:AuthorAndDownloadCount
                         Margin="5,4,0,0"
+                        Owner="{Binding ByOwner, Mode=OneTime}"
                         Author="{Binding ByAuthor, Mode=OneTime}"
                         DownloadCount="{Binding DownloadCount}" />
         </StackPanel>
@@ -213,7 +214,7 @@
                         Style="{StaticResource TooltipStyle}">
                         <Run
                           Text="{Binding Id}"
-                          FontWeight="Bold" /> <Run Text="{Binding ByAuthor, Mode=OneTime}"/>
+                          FontWeight="Bold" /> <Run Text="{Binding ByOwner, Mode=OneTime}"/> <Run Text="{Binding ByAuthor, Mode=OneTime}"/>
                         <LineBreak />
                         <Run FontWeight="Bold">
                           <Run.Style>
