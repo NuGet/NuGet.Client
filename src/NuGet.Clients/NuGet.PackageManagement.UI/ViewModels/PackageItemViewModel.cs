@@ -79,11 +79,19 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public string ByOwner
+        {
+            get
+            {
+                return !string.IsNullOrWhiteSpace(_owner) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByOwner, _owner) : null;
+            }
+        }
+
         public string ByAuthor
         {
             get
             {
-                return _author != null ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _author) : null;
+                return !string.IsNullOrWhiteSpace(_author) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _author) : null;
             }
         }
 
