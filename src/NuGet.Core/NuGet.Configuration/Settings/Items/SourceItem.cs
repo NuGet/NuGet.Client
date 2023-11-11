@@ -60,7 +60,7 @@ namespace NuGet.Configuration
         }
 
         public SourceItem(string key, string value, string protocolVersion, string allowInsecureConnections)
-            : this(key, value, protocolVersion, allowInsecureConnections: "", disableTLSCertificateValidation: "")
+            : this(key, value, protocolVersion, allowInsecureConnections, disableTLSCertificateValidation: "")
         {
         }
 

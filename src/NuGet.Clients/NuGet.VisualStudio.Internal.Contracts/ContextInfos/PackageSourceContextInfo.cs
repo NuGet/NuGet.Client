@@ -33,7 +33,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         }
 
         public PackageSourceContextInfo(string source, string name, bool isEnabled, int protocolVersion, bool allowInsecureConnections)
-            : this(name, source, isEnabled, protocolVersion, allowInsecureConnections, disableTLSCertificateValidation: false)
+            : this(source, name, isEnabled, protocolVersion, allowInsecureConnections, disableTLSCertificateValidation: false)
         {
         }
 
