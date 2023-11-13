@@ -1,2 +1,4 @@
 #nullable enable
+NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageFloatingVersionsEnabled.get -> bool
+NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageFloatingVersionsEnabled.set -> void
 ~NuGet.ProjectModel.FileFormatException.ElementPath.get -> string
