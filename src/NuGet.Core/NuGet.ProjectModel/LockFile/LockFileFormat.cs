@@ -951,7 +951,7 @@ namespace NuGet.ProjectModel
                     NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
                     var dependencies = new List<LibraryDependency>();
 
-                    JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                    NjPackageSpecReader.ReadCentralTransitiveDependencyGroup(
                         jsonReader: jsonReader,
                         results: dependencies,
                         packageSpecPath: path);

@@ -12,6 +12,13 @@ namespace NuGet.ProjectModel
 {
     public static class JsonPackageSpecReader
     {
+        public static readonly string RestoreOptions = "restore";
+        public static readonly string RestoreSettings = "restoreSettings";
+        public static readonly string HideWarningsAndErrors = "hideWarningsAndErrors";
+        public static readonly string PackOptions = "packOptions";
+        public static readonly string PackageType = "packageType";
+        public static readonly string Files = "files";
+
         /// <summary>
         /// Load and parse a project.json file
         /// </summary>

@@ -22,13 +22,6 @@ namespace NuGet.ProjectModel
         private static readonly char[] DelimitedStringSeparators = { ' ', ',' };
         private static readonly char[] VersionSeparators = new[] { ';' };
 
-        public static readonly string RestoreOptions = "restore";
-        public static readonly string RestoreSettings = "restoreSettings";
-        public static readonly string HideWarningsAndErrors = "hideWarningsAndErrors";
-        public static readonly string PackOptions = "packOptions";
-        public static readonly string PackageType = "packageType";
-        public static readonly string Files = "files";
-
         internal static PackageSpec GetPackageSpec(JsonTextReader jsonReader, string packageSpecPath)
         {
             return GetPackageSpec(jsonReader, name: null, packageSpecPath, snapshotValue: null);

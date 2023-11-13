@@ -1,5 +1,2 @@
 #nullable enable
-NuGet.ProjectModel.StjPackageSpecReader
-~static NuGet.ProjectModel.StjPackageSpecReader.GetPackageSpec(string json, string name, string packageSpecPath) -> NuGet.ProjectModel.PackageSpec
-~static NuGet.ProjectModel.StjPackageSpecReader.GetPackageSpec(string name, string packageSpecPath) -> NuGet.ProjectModel.PackageSpec
-~static NuGet.ProjectModel.StjPackageSpecReader.GetPackageSpec(System.IO.Stream stream, string name, string packageSpecPath, string snapshotValue) -> NuGet.ProjectModel.PackageSpec
+~NuGet.ProjectModel.FileFormatException.ElementPath.get -> string

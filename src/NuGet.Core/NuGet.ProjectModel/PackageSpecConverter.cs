@@ -13,7 +13,7 @@ namespace NuGet.ProjectModel
     {
         public override PackageSpec Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return StjPackageSpecReader.GetPackageSpec(ref reader, options, name: string.Empty, packageSpecPath: string.Empty, snapshotValue: string.Empty);
+            return StjPackageSpecReader.GetPackageSpec(ref reader, options, name: null, packageSpecPath: null, snapshotValue: null);
         }
 
         public override void Write(Utf8JsonWriter writer, PackageSpec value, JsonSerializerOptions options)

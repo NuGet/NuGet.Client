@@ -24,7 +24,8 @@ namespace NuGet.ProjectModel
                         return value.Split(DelimitedStringDelimiters, StringSplitOptions.RemoveEmptyEntries);
 
                     default:
-                        throw new InvalidCastException();
+                        var invalidCastException = new InvalidCastException();
+                        throw new JsonException(invalidCastException.Message, invalidCastException);
                 }
             }
 
@@ -42,6 +43,14 @@ namespace NuGet.ProjectModel
             return wasRead;
         }
 
+        internal static bool ReadNextTokenAsBoolOrFalse(this ref Utf8JsonReader reader)
+        {
+            if (reader.ReadNextToken() && (reader.TokenType == JsonTokenType.False || reader.TokenType == JsonTokenType.True))
+            {
+                return reader.GetBoolean();
+            }
+            return false;
+        }
         internal static string ReadNextTokenAsString(this ref Utf8JsonReader reader)
         {
             if (ReadNextToken(ref reader))
@@ -51,7 +60,6 @@ namespace NuGet.ProjectModel
 
             return null;
         }
-
         internal static IList<T> ReadObjectAsList<T>(this ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
@@ -79,9 +87,15 @@ namespace NuGet.ProjectModel
             return listObjects;
         }
 
+        internal static List<string> ReadNextStringArrayAsList(this ref Utf8JsonReader reader, List<string> strings = null)
+        {
+            ReadNextToken(ref reader);
+            return ReadStringArrayAsList(ref reader, strings);
+        }
+
         internal static List<string> ReadStringArrayAsList(this ref Utf8JsonReader reader, List<string> strings = null)
         {
-            if (ReadNextToken(ref reader) && reader.TokenType == JsonTokenType.StartArray)
+            if (reader.TokenType == JsonTokenType.StartArray)
             {
                 while (ReadNextToken(ref reader) && reader.TokenType != JsonTokenType.EndArray)
                 {
@@ -148,6 +162,10 @@ namespace NuGet.ProjectModel
 
                     case JsonTokenType.StartArray:
                         return ReadStringArrayAsReadOnlyListFromArrayStart(ref reader);
+
+                    case JsonTokenType.StartObject:
+                        reader.Skip();
+                        return null;
                 }
             }
 

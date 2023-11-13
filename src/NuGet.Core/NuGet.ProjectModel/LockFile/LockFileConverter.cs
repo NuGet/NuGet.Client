@@ -78,6 +78,7 @@ namespace NuGet.ProjectModel
                 }
                 else if (reader.ValueTextEquals(Utf8Project))
                 {
+                    reader.ReadNextToken();
                     lockFile.PackageSpec = StjPackageSpecReader.GetPackageSpec(
                         ref reader,
                         options,

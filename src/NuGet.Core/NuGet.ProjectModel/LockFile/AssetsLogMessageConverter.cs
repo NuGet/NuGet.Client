@@ -108,7 +108,7 @@ namespace NuGet.ProjectModel
                 }
                 else if (reader.ValueTextEquals(Utf8TargetGraphs))
                 {
-                    targetGraphs = reader.ReadStringArrayAsList();
+                    targetGraphs = reader.ReadNextStringArrayAsList();
                 }
                 else
                 {

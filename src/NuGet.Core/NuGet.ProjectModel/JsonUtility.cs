@@ -31,6 +31,7 @@ namespace NuGet.ProjectModel
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
                 AllowTrailingCommas = true,
+                ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
             };
 
             options.Converters.Add(new LockFileConverter());
@@ -42,6 +43,8 @@ namespace NuGet.ProjectModel
             options.Converters.Add(new LockFileItemConverter<LockFileRuntimeTarget>());
             options.Converters.Add(new LockFileTargetLibraryConverter());
             options.Converters.Add(new ProjectFileDependencyGroupConverter());
+            options.Converters.Add(new PackageSpecConverter());
+
 
             options.Converters.Add(new ListObjectConvertor<LockFileContentFile>());
             options.Converters.Add(new ListObjectConvertor<LockFileRuntimeTarget>());
