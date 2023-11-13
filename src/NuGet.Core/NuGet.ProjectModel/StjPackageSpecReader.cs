@@ -55,6 +55,7 @@ namespace NuGet.ProjectModel
         private static readonly byte[] Utf8ExcludeFiles = Encoding.UTF8.GetBytes("excludeFiles");
         private static readonly byte[] Utf8IncludeFiles = Encoding.UTF8.GetBytes("includeFiles");
         private static readonly byte[] Utf8CentralPackageVersionsManagementEnabled = Encoding.UTF8.GetBytes("centralPackageVersionsManagementEnabled");
+        private static readonly byte[] Utf8CentralPackageFloatingVersionsEnabled = Encoding.UTF8.GetBytes("centralPackageFloatingVersionsEnabled");
         private static readonly byte[] Utf8CentralPackageVersionOverrideDisabled = Encoding.UTF8.GetBytes("centralPackageVersionOverrideDisabled");
         private static readonly byte[] Utf8CentralPackageTransitivePinningEnabled = Encoding.UTF8.GetBytes("CentralPackageTransitivePinningEnabled");
         private static readonly byte[] Utf8ConfigFilePaths = Encoding.UTF8.GetBytes("configFilePaths");
@@ -925,6 +926,7 @@ namespace NuGet.ProjectModel
         private static void ReadMSBuildMetadata(ref Utf8JsonReader jsonReader, PackageSpec packageSpec)
         {
             var centralPackageVersionsManagementEnabled = false;
+            var centralPackageFloatingVersionsEnabled = false;
             var centralPackageVersionOverrideDisabled = false;
             var CentralPackageTransitivePinningEnabled = false;
             List<string> configFilePaths = null;
@@ -957,6 +959,10 @@ namespace NuGet.ProjectModel
                     if (jsonReader.ValueTextEquals(Utf8CentralPackageVersionsManagementEnabled))
                     {
                         centralPackageVersionsManagementEnabled = jsonReader.ReadNextTokenAsBoolOrFalse();
+                    }
+                    else if (jsonReader.ValueTextEquals(Utf8CentralPackageFloatingVersionsEnabled))
+                    {
+                        centralPackageFloatingVersionsEnabled = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
                     else if (jsonReader.ValueTextEquals(Utf8CentralPackageVersionOverrideDisabled))
                     {
@@ -1181,6 +1187,7 @@ namespace NuGet.ProjectModel
             }
 
             msbuildMetadata.CentralPackageVersionsEnabled = centralPackageVersionsManagementEnabled;
+            msbuildMetadata.CentralPackageFloatingVersionsEnabled = centralPackageFloatingVersionsEnabled;
             msbuildMetadata.CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled;
             msbuildMetadata.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
             msbuildMetadata.RestoreAuditProperties = auditProperties;

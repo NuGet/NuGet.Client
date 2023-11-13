@@ -268,16 +268,6 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static IEnumerable<FrameworkRuntimePair> ReadCompatibilitySets(IReadOnlyList<string> values, string compatibilitySetName)
-        {
-            NuGetFramework framework = NuGetFramework.Parse(compatibilitySetName);
-
-            foreach (string value in values)
-            {
-                yield return new FrameworkRuntimePair(framework, value);
-            }
-        }
-
         internal static void ReadDependencies(
             JsonTextReader jsonReader,
             IList<LibraryDependency> results,
@@ -860,6 +850,7 @@ namespace NuGet.ProjectModel
         private static void ReadMSBuildMetadata(JsonTextReader jsonReader, PackageSpec packageSpec)
         {
             var centralPackageVersionsManagementEnabled = false;
+            var centralPackageFloatingVersionsEnabled = false;
             var centralPackageVersionOverrideDisabled = false;
             var CentralPackageTransitivePinningEnabled = false;
             List<string> configFilePaths = null;
@@ -891,6 +882,10 @@ namespace NuGet.ProjectModel
                 {
                     case "centralPackageVersionsManagementEnabled":
                         centralPackageVersionsManagementEnabled = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "centralPackageFloatingVersionsEnabled":
+                        centralPackageFloatingVersionsEnabled = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
                         break;
 
                     case "centralPackageVersionOverrideDisabled":
@@ -1089,6 +1084,7 @@ namespace NuGet.ProjectModel
             }
 
             msbuildMetadata.CentralPackageVersionsEnabled = centralPackageVersionsManagementEnabled;
+            msbuildMetadata.CentralPackageFloatingVersionsEnabled = centralPackageFloatingVersionsEnabled;
             msbuildMetadata.CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled;
             msbuildMetadata.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
             msbuildMetadata.RestoreAuditProperties = auditProperties;
