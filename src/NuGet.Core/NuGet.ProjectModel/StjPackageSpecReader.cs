@@ -764,7 +764,7 @@ namespace NuGet.ProjectModel
                         }
                         catch (Exception ex)
                         {
-                            throw new JsonException(null, ex);
+                            throw new JsonException(ex.Message, ex);
                         }
                     }
                 } while (jsonReader.TokenType == JsonTokenType.EndObject);

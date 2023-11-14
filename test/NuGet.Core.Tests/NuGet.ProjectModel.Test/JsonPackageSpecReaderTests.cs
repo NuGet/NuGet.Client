@@ -1902,8 +1902,9 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal($"Error reading '' at line 0 column {column} : Specified cast is not valid.", exception.Message);
             Assert.Equal(0, exception.Line);
             Assert.Equal(column, exception.Column);
-            Assert.IsType<InvalidCastException>(exception.InnerException);
-            Assert.Null(exception.InnerException.InnerException);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
+            Assert.IsType<InvalidCastException>(exception.InnerException.InnerException);
+            Assert.Null(exception.InnerException.InnerException.InnerException);
         }
 
         //[Theory]
@@ -2287,12 +2288,10 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            int expectedColumn = json.IndexOf($"\"{version}\"") + version.Length + 2;
-
-            Assert.Equal($"Error reading '' at line 0 column {column} : Error reading '' at line 1 column {expectedColumn} : '{version}' is not a valid version string.", exception.Message);
+            Assert.Equal($"Error reading '' at line 0 column {column} : '{version}' is not a valid version string.", exception.Message);
             Assert.Equal(0, exception.Line);
             Assert.Equal(column, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
         }
