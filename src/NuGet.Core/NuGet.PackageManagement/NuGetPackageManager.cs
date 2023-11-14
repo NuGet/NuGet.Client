@@ -3115,8 +3115,8 @@ namespace NuGet.PackageManagement
                 if (nuGetProjectActions.Length == 1 &&
                     firstAction.NuGetProjectActionType == NuGetProjectActionType.Install &&
                     !restoreResult.Result.Success &&
-                    successfulFrameworks.Any() &&
-                    unsuccessfulFrameworks.Any() &&
+                    successfulFrameworks.Count > 0 &&
+                    unsuccessfulFrameworks.Count > 0 &&
                     !PackageSpecOperations.HasPackage(originalPackageSpec, firstAction.PackageIdentity.Id))
                 {
                     updatedPackageSpec = originalPackageSpec.Clone();

@@ -14,6 +14,7 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public void CreateInstallationContextForPackageId_WithCompleteOperation_ReturnsCorrectValue()
         {
+            // Arrange
             string referenceSpec = @"
                 {
                     ""frameworks"": {
@@ -38,7 +39,10 @@ namespace NuGet.PackageManagement.Test
 
             var originalPackageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project", @"C:\", referenceSpec);
 
+            // Act
             var buildIntegrationInstallationContext = NuGetPackageManager.CreateInstallationContextForPackageId(packageIdentityId: "a", originalPackageSpec, unsuccessfulFrameworks: new(), originalFrameworks);
+
+            // Assert
             buildIntegrationInstallationContext.OriginalFrameworks.Should().Equal(originalFrameworks);
             buildIntegrationInstallationContext.SuccessfulFrameworks.Should().HaveCount(2);
             buildIntegrationInstallationContext.UnsuccessfulFrameworks.Should().HaveCount(0);
@@ -49,6 +53,7 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public void CreateInstallationContextForPackageId_WithConditionalOperation_ReturnsCorrectValue()
         {
+            // Arrange
             string referenceSpec = @"
                 {
                     ""frameworks"": {
@@ -73,7 +78,10 @@ namespace NuGet.PackageManagement.Test
 
             var originalPackageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project", @"C:\", referenceSpec);
 
+            // Act
             var buildIntegrationInstallationContext = NuGetPackageManager.CreateInstallationContextForPackageId(packageIdentityId: "a", originalPackageSpec, unsuccessfulFrameworks: new(), originalFrameworks);
+
+            // Assert
             buildIntegrationInstallationContext.OriginalFrameworks.Should().Equal(originalFrameworks);
             buildIntegrationInstallationContext.SuccessfulFrameworks.Should().HaveCount(1);
             buildIntegrationInstallationContext.UnsuccessfulFrameworks.Should().HaveCount(1);
@@ -84,6 +92,7 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public void CreateInstallationContextForPackageId_WithFailedConditionalOperation_ReturnsCorrectValue()
         {
+            // Arrange
             string referenceSpec = @"
                 {
                     ""frameworks"": {
@@ -107,7 +116,10 @@ namespace NuGet.PackageManagement.Test
 
             var originalPackageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project", @"C:\", referenceSpec);
 
+            // Act
             var buildIntegrationInstallationContext = NuGetPackageManager.CreateInstallationContextForPackageId(packageIdentityId: "a", originalPackageSpec, unsuccessfulFrameworks: new() { FrameworkConstants.CommonFrameworks.Net472 }, originalFrameworks);
+
+            // Assert
             buildIntegrationInstallationContext.OriginalFrameworks.Should().Equal(originalFrameworks);
             buildIntegrationInstallationContext.SuccessfulFrameworks.Should().HaveCount(0);
             buildIntegrationInstallationContext.UnsuccessfulFrameworks.Should().HaveCount(2);
@@ -118,6 +130,7 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public void CreateInstallationContextForPackageId_WithFailedCompleteOperation_ReturnsCorrectValue()
         {
+            // Arrange
             string referenceSpec = @"
                 {
                     ""frameworks"": {
@@ -142,7 +155,10 @@ namespace NuGet.PackageManagement.Test
 
             var originalPackageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project", @"C:\", referenceSpec);
 
+            // Act
             var buildIntegrationInstallationContext = NuGetPackageManager.CreateInstallationContextForPackageId(packageIdentityId: "a", originalPackageSpec, unsuccessfulFrameworks: new() { FrameworkConstants.CommonFrameworks.Net50 }, originalFrameworks);
+
+            // Assert
             buildIntegrationInstallationContext.OriginalFrameworks.Should().Equal(originalFrameworks);
             buildIntegrationInstallationContext.SuccessfulFrameworks.Should().HaveCount(1);
             buildIntegrationInstallationContext.UnsuccessfulFrameworks.Should().HaveCount(1);
