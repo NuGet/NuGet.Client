@@ -213,7 +213,7 @@
                         Style="{StaticResource TooltipStyle}">
                         <Run
                           Text="{Binding Id}"
-                          FontWeight="Bold" /> <Run Text="{Binding ByAuthor, Mode=OneTime}"/>
+                          FontWeight="Bold" /> <Run Text="{Binding ByOwnerOrAuthor, Mode=OneTime}"/>
                         <LineBreak />
                         <Run FontWeight="Bold">
                           <Run.Style>
