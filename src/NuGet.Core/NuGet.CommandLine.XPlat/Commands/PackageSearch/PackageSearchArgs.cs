@@ -9,8 +9,8 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchArgs
     {
-        private readonly int _defaultSkip = 0;
-        private readonly int _defaultTake = 20;
+        private const int DefaultSkip = 0;
+        private const int DefaultTake = 20;
         public List<string> Sources { get; set; }
         public int Skip { get; set; }
         public int Take { get; set; }
@@ -22,8 +22,8 @@ namespace NuGet.CommandLine.XPlat
 
         public PackageSearchArgs(string skip, string take)
         {
-            Skip = VerifyInt(skip, _defaultSkip);
-            Take = VerifyInt(take, _defaultTake);
+            Skip = VerifyInt(skip, DefaultSkip);
+            Take = VerifyInt(take, DefaultTake);
         }
 
         public PackageSearchArgs() { }

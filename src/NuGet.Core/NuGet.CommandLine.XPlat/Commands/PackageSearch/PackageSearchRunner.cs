@@ -225,7 +225,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     if (httpPackageSources == null)
                     {
-                        httpPackageSources = new();
+                        httpPackageSources = new(capacity: packageSources.Count);
                     }
                     httpPackageSources.Add(packageSource);
                 }

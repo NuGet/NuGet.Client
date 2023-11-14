@@ -55,6 +55,7 @@ namespace NuGet.CommandLine.XPlat
                 pkgSearch.OnExecute(async () =>
                 {
                     PackageSearchArgs packageSearchArgs;
+                    ILoggerWithColor logger = getLogger();
                     try
                     {
                         packageSearchArgs = new PackageSearchArgs(skip.Value(), take.Value())
@@ -64,12 +65,12 @@ namespace NuGet.CommandLine.XPlat
                             ExactMatch = exactMatch.HasValue(),
                             Interactive = interactive.HasValue(),
                             Prerelease = prerelease.HasValue(),
-                            Logger = getLogger(),
+                            Logger = logger,
                         };
                     }
                     catch (ArgumentException ex)
                     {
-                        getLogger().LogError(ex.Message);
+                        logger.LogError(ex.Message);
                         return 1;
                     }
 

@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Test.Utility;
 using Xunit;
 using System.IO;
 using NuGet.Configuration;
@@ -15,141 +14,13 @@ using System.Threading;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
-    public class PackageSearchRunnerTests : PackageSearchTestInitializer
+    public class PackageSearchRunnerTests : PackageSearchTestInitializer, IClassFixture<PackageSearchRunnerFixture> 
     {
-        readonly string _onePackageQueryResult = $@"
-                {{
-                    ""@context"":
-                    {{
-                        ""@vocab"": ""http://schema.nuget.org/schema#"",
-                        ""@base"": ""https://api.nuget.org/v3/registration5-semver1/""
-                    }},
-                    ""totalHits"": 396,
-                    ""data"": [
-                    {{
-                        ""@id"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/index.json"",
-                        ""@type"": ""Package"",
-                        ""registration"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/index.json"",
-                        ""id"": ""Fake.Newtonsoft.Json"",
-                        ""version"": ""12.0.3"",
-                        ""summary"": """",
-                        ""title"": ""Json.NET"",
-                        ""iconUrl"": ""https://api.nuget.org/v3-flatcontainer/newtonsoft.json/12.0.3/icon"",
-                        ""licenseUrl"": ""https://www.nuget.org/packages/Newtonsoft.Json/12.0.3/license"",
+        PackageSearchRunnerFixture _fixture;
 
-                        ""tags"": [
-                            ""json""
-                        ],
-
-                        ""authors"": [
-                        ""James Newton-King""
-                        ],
-
-                        ""totalDownloads"": 531607259,
-                        ""verified"": true,
-
-                        ""packageTypes"": [
-                        {{
-                            ""name"": ""Dependency""
-                        }}
-                        ],
-
-                        ""versions"": [
-                        {{
-                            ""version"": ""3.5.8"",
-                            ""downloads"": 461992,
-                            ""@id"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/3.5.8.json""
-                        }}
-                        ]
-                    }}
-                    ]
-                }}";
-
-        private string _exactMatchGetMetadataResult = @"{
-                            ""@type"": ""Package"",
-                            ""count"": 1,
-                            ""items"": [
-                                {
-                                    ""@type"": ""catalog:CatalogPage"",
-                                    ""count"": 1,
-                                    ""items"": [
-                                        {
-                                            ""@type"": ""Package"",
-                                            ""catalogEntry"": {
-                                                ""@type"": ""PackageDetails"",
-                                                ""authors"": ""James Newton-King"",
-                                                ""id"": ""Fake.Newtonsoft.Json"",
-                                                ""version"": ""12.0.3"",
-                                                ""totalDownloads"": 531607259
-                                            },
-                                        }
-                                    ],
-                                    ""lower"": ""1.0.0"",
-                                    ""upper"": ""13.0.0""
-                                }
-                            ],
-                            ""@context"": {
-                                ""@vocab"": ""http://schema.nuget.org/schema#"",
-                                ""catalog"": ""http://schema.nuget.org/catalog#""
-                            }
-                        }";
-
-        private MockServer _mockServerWithMultipleEndPoints;
-
-        public PackageSearchRunnerTests()
+        public PackageSearchRunnerTests(PackageSearchRunnerFixture fixture)
         {
-            _mockServerWithMultipleEndPoints = new MockServer();
-            string index = $@"
-                {{
-                    ""version"": ""3.0.0"",
-
-                    ""resources"": [
-                    {{
-                        ""@id"": ""{_mockServerWithMultipleEndPoints.Uri + "search/query"}"",
-                        ""@type"": ""SearchQueryService/Versioned"",
-                        ""comment"": ""Query endpoint of NuGet Search service (primary)""
-                    }},
-                    {{
-                        ""@id"": ""{_mockServerWithMultipleEndPoints.Uri + "v3/registration5-semver1/"}"",
-                        ""@type"": ""RegistrationsBaseUrl/3.0.0-rc"",
-                        ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored used by RC clients. This base URL does not include SemVer 2.0.0 packages.""
-                    }}
-                    ],
-
-                    ""@context"":
-                    {{
-                        ""@vocab"": ""http://schema.nuget.org/services#"",
-                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
-                    }}
-                }}";
-
-            string indexWithNoSearchResource = $@"
-                {{
-                    ""version"": ""3.0.0"",
-
-                    ""resources"": [
-                    {{
-                        ""@id"": ""{_mockServerWithMultipleEndPoints.Uri + "v3/registration5-semver1/"}"",
-                        ""@type"": ""RegistrationsBaseUrl/3.0.0-rc"",
-                        ""comment"": ""Base URL of Azure storage where NuGet package registration info is stored used by RC clients. This base URL does not include SemVer 2.0.0 packages.""
-                    }}
-                    ],
-
-                    ""@context"":
-                    {{
-                        ""@vocab"": ""http://schema.nuget.org/services#"",
-                        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
-                    }}
-                }}";
-
-            _mockServerWithMultipleEndPoints.Get.Add("/v3/index.json", r => index);
-            _mockServerWithMultipleEndPoints.Get.Add("/v3/indexWithNoSearchResource.json", r => indexWithNoSearchResource);
-            _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=0&take=10&prerelease=true&semVerLevel=2.0.0", r => _onePackageQueryResult);
-            _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
-            _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=5&take=10&prerelease=true&semVerLevel=2.0.0", r => _onePackageQueryResult);
-            _mockServerWithMultipleEndPoints.Get.Add($"/search/query?q=json&skip=10&take=20&prerelease=false&semVerLevel=2.0.0", r => _onePackageQueryResult);
-            _mockServerWithMultipleEndPoints.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => _exactMatchGetMetadataResult);
-            _mockServerWithMultipleEndPoints.Start();
+            _fixture = fixture;
         }
 
         [Theory]
@@ -194,7 +65,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = false,
                 Logger = GetLogger(),
                 SearchTerm = "json",
-                Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
+                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" }
             };
 
             // Act
@@ -248,7 +119,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = true,
                 Logger = GetLogger(),
                 SearchTerm = "Fake.Newtonsoft.Json",
-                Sources = new List<string> { $"{_mockServerWithMultipleEndPoints.Uri}v3/index.json" }
+                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" }
             };
 
             // Act
@@ -308,7 +179,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-            string source = $"{_mockServerWithMultipleEndPoints.Uri}v3/indexWithNoSearchResource.json";
+            string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/indexWithNoSearchResource.json";
             string expectedError = Protocol.Strings.Protocol_MissingSearchService;
             PackageSearchArgs packageSearchArgs = new()
             {
@@ -343,7 +214,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var expectedError = "A task was canceled.";
             var cts = new CancellationTokenSource();
-            string source = $"{_mockServerWithMultipleEndPoints.Uri}v3/indexWithNoSearchResource.json";
+            string source = $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/indexWithNoSearchResource.json";
             PackageSearchArgs packageSearchArgs = new PackageSearchArgs
             {
                 Skip = 0,
