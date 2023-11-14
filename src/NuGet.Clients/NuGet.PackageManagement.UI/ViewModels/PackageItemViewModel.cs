@@ -111,6 +111,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public string ByOwnerOrAuthor
+        {
+            get
+            {
+                return ByOwner ?? ByAuthor;
+            }
+        }
+
         /// <summary>
         /// The installed version of the package.
         /// </summary>
