@@ -14,7 +14,7 @@ using System.Threading;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
-    public class PackageSearchRunnerTests : PackageSearchTestInitializer, IClassFixture<PackageSearchRunnerFixture> 
+    public class PackageSearchRunnerTests : PackageSearchTestInitializer, IClassFixture<PackageSearchRunnerFixture>
     {
         PackageSearchRunnerFixture _fixture;
 
