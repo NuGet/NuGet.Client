@@ -112,7 +112,7 @@ namespace NuGet.ProjectModel
 
         internal static IList<string> ReadStringArrayAsIList(this ref Utf8JsonReader reader, IList<string> strings = null)
         {
-            if (ReadNextToken(ref reader) && reader.TokenType == JsonTokenType.StartArray)
+            if (reader.TokenType == JsonTokenType.StartArray)
             {
                 while (ReadNextToken(ref reader) && reader.TokenType != JsonTokenType.EndArray)
                 {

@@ -46,7 +46,6 @@ namespace NuGet.ProjectModel
                 lockFileLibrary.Version = NuGetVersion.Parse(parts[1]);
             }
 
-            var StringListDefaultConverter = (JsonConverter<IList<string>>)options.GetConverter(typeof(IList<string>));
             reader.ReadNextToken();
             if (reader.TokenType != JsonTokenType.StartObject)
             {
@@ -84,7 +83,7 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(Utf8Files))
                 {
                     reader.ReadNextToken();
-                    lockFileLibrary.Files = StringListDefaultConverter.Read(ref reader, typeof(IList<string>), options);
+                    reader.ReadStringArrayAsIList(lockFileLibrary.Files);
                 }
                 else
                 {

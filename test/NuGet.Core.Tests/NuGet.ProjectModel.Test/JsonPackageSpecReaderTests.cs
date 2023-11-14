@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NuGet.Common;
@@ -2259,7 +2260,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("Error reading '' at line 0 column 56 : The version cannot be null or empty", exception.Message);
             Assert.Equal(0, exception.Line);
             Assert.Equal(56, exception.Column);
-            Assert.IsType <System.Text.Json.JsonException>(exception.InnerException);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
 
@@ -3883,6 +3884,76 @@ namespace NuGet.ProjectModel.Test
 
         [Fact]
         public void PackageSpecReader_Read()
+        {
+            // Arrange
+            var json = @"{
+                            ""centralTransitiveDependencyGroups"": {
+                                    "".NETCoreApp,Version=v3.1"": {
+                                        ""Foo"": {
+                                            ""exclude"": ""Native"",
+                                            ""include"": ""Build"",
+                                            ""suppressParent"": ""All"",
+                                            ""version"": ""1.0.0""
+                                    }
+                                },
+                                    "".NETCoreApp,Version=v3.0"": {
+                                        ""Bar"": {
+                                            ""exclude"": ""Native"",
+                                            ""include"": ""Build"",
+                                            ""suppressParent"": ""All"",
+                                            ""version"": ""2.0.0""
+                                    }
+                                }
+                            }
+                        }";
+
+            // Act
+            var results = new List<CentralTransitiveDependencyGroup>();
+
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
+
+            if (reader.ReadNextToken() && reader.TokenType == JsonTokenType.StartObject)
+            {
+                while (reader.ReadNextToken() && reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    if (reader.ReadNextToken() && reader.TokenType == JsonTokenType.StartObject)
+                    {
+                        while (reader.ReadNextToken() && reader.TokenType == JsonTokenType.PropertyName)
+                        {
+                            var frameworkPropertyName = reader.GetString();
+                            NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
+                            var dependencies = new List<LibraryDependency>();
+
+                            StjPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                                jsonReader: ref reader,
+                                results: dependencies,
+                                packageSpecPath: "SomePath");
+                            results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
+                        }
+                    }
+                }
+            }
+
+            // Assert
+            Assert.Equal(2, results.Count);
+            Assert.Equal(".NETCoreApp,Version=v3.1", results.ElementAt(0).FrameworkName);
+            var firstGroup = results.ElementAt(0);
+            Assert.Equal(1, firstGroup.TransitiveDependencies.Count());
+            Assert.Equal("Build", firstGroup.TransitiveDependencies.First().IncludeType.ToString());
+            Assert.Equal("All", firstGroup.TransitiveDependencies.First().SuppressParent.ToString());
+            Assert.Equal("[1.0.0, )", firstGroup.TransitiveDependencies.First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.True(firstGroup.TransitiveDependencies.First().VersionCentrallyManaged);
+
+            var secondGroup = results.ElementAt(1);
+            Assert.Equal(1, secondGroup.TransitiveDependencies.Count());
+            Assert.Equal("Build", secondGroup.TransitiveDependencies.First().IncludeType.ToString());
+            Assert.Equal("All", secondGroup.TransitiveDependencies.First().SuppressParent.ToString());
+            Assert.Equal("[2.0.0, )", secondGroup.TransitiveDependencies.First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.True(secondGroup.TransitiveDependencies.First().VersionCentrallyManaged);
+        }
+
+        [Fact]
+        public void PackageSpecReader_NjRead()
         {
             // Arrange
             var json = @"{

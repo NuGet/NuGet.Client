@@ -159,10 +159,47 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.NotNull(exception);
-            Assert.Equal("Invalid dependency target value 'blah'.", exception.Message);
+            Assert.Equal("Error reading 'project.json' at line 4 column 52 : Invalid dependency target value 'blah'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
-            Assert.Equal(5, exception.Line);
+            Assert.Equal(4, exception.Line);
         }
+
+        //[Fact]
+        //public void DependencyTarget_UnknownValueFails()
+        //{
+        //    // Arrange
+        //    var json = @"{
+        //                  ""dependencies"": {
+        //                        ""packageA"": {
+        //                            ""version"": ""1.0.0"",
+        //                            ""target"": ""blah""
+        //                        }
+        //                    },
+        //                    ""frameworks"": {
+        //                        ""net46"": {}
+        //                    }
+        //                }";
+
+
+        //    // Act
+        //    FileFormatException exception = null;
+
+        //    try
+        //    {
+        //        var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+        //        var dependency = spec.Dependencies.Single();
+        //    }
+        //    catch (FileFormatException ex)
+        //    {
+        //        exception = ex;
+        //    }
+
+        //    // Assert
+        //    Assert.NotNull(exception);
+        //    Assert.Equal("Invalid dependency target value 'blah'.", exception.Message);
+        //    Assert.EndsWith("project.json", exception.Path);
+        //    Assert.Equal(5, exception.Line);
+        //}
 
         [Fact]
         public void DependencyTarget_NonWhiteListValueFails()
@@ -196,10 +233,48 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.NotNull(exception);
-            Assert.Equal("Invalid dependency target value 'winmd'.", exception.Message);
+            Assert.Equal("Error reading 'project.json' at line 4 column 53 : Invalid dependency target value 'winmd'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
-            Assert.Equal(5, exception.Line);
+            Assert.Equal(4, exception.Line);
         }
+
+
+        //[Fact]
+        //public void DependencyTarget_NonWhiteListValueFails()
+        //{
+        //    // Arrange
+        //    var json = @"{
+        //                  ""dependencies"": {
+        //                        ""packageA"": {
+        //                            ""version"": ""1.0.0"",
+        //                            ""target"": ""winmd""
+        //                        }
+        //                    },
+        //                    ""frameworks"": {
+        //                        ""net46"": {}
+        //                    }
+        //                }";
+
+
+        //    // Act
+        //    FileFormatException exception = null;
+
+        //    try
+        //    {
+        //        var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+        //        var dependency = spec.Dependencies.Single();
+        //    }
+        //    catch (FileFormatException ex)
+        //    {
+        //        exception = ex;
+        //    }
+
+        //    // Assert
+        //    Assert.NotNull(exception);
+        //    Assert.Equal("Invalid dependency target value 'winmd'.", exception.Message);
+        //    Assert.EndsWith("project.json", exception.Path);
+        //    Assert.Equal(5, exception.Line);
+        //}
 
         [Fact]
         public void DependencyTarget_MultipleValuesFail()
@@ -233,10 +308,47 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.NotNull(exception);
-            Assert.Equal("Invalid dependency target value 'package,project'.", exception.Message);
+            Assert.Equal("Error reading 'project.json' at line 4 column 63 : Invalid dependency target value 'package,project'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
-            Assert.Equal(5, exception.Line);
+            Assert.Equal(4, exception.Line);
         }
+
+        //[Fact]
+        //public void DependencyTarget_MultipleValuesFail()
+        //{
+        //    // Arrange
+        //    var json = @"{
+        //                  ""dependencies"": {
+        //                        ""packageA"": {
+        //                            ""version"": ""1.0.0"",
+        //                            ""target"": ""package,project""
+        //                        }
+        //                    },
+        //                    ""frameworks"": {
+        //                        ""net46"": {}
+        //                    }
+        //                }";
+
+
+        //    // Act
+        //    FileFormatException exception = null;
+
+        //    try
+        //    {
+        //        var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+        //        var dependency = spec.Dependencies.Single();
+        //    }
+        //    catch (FileFormatException ex)
+        //    {
+        //        exception = ex;
+        //    }
+
+        //    // Assert
+        //    Assert.NotNull(exception);
+        //    Assert.Equal("Invalid dependency target value 'package,project'.", exception.Message);
+        //    Assert.EndsWith("project.json", exception.Path);
+        //    Assert.Equal(5, exception.Line);
+        //}
 
         [Fact]
         public void DependencyTarget_AcceptsWhitespace()
