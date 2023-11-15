@@ -1854,7 +1854,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to contributors: {0}.
+        ///   Looks up a localized string similar to by {0}.
         /// </summary>
         public static string Text_ByAuthor {
             get {
@@ -1863,7 +1863,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to by: {0}.
+        ///   Looks up a localized string similar to by {0}.
         /// </summary>
         public static string Text_ByOwner {
             get {
@@ -2300,6 +2300,15 @@ namespace NuGet.PackageManagement.UI {
         public static string ToolTip_TransitiveDependencyVersion {
             get {
                 return ResourceManager.GetString("ToolTip_TransitiveDependencyVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owner according to nuget.org.
+        /// </summary>
+        public static string ToolTip_TrustedOwnerIndicator {
+            get {
+                return ResourceManager.GetString("ToolTip_TrustedOwnerIndicator", resourceCulture);
             }
         }
         

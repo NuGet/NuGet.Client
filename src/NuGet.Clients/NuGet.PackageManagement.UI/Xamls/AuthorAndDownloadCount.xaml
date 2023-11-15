@@ -3,6 +3,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"  
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
              mc:Ignorable="d"
              x:Name="_self"
              d:DesignHeight="300" d:DesignWidth="300">
@@ -10,22 +13,31 @@
 
     <!-- text "by owner" is shown here -->
     <TextBlock
-      x:Name="_textBlockOwner"
-      Visibility="Collapsed"/>
+        x:Name="_textBlockOwner"
+        Visibility="Collapsed"/>
 
     <!-- text "by author" is shown here when owner is unavailable -->
     <TextBlock 
-      x:Name="_textBlockAuthor" 
-      Visibility="Collapsed"/>
-    
+        x:Name="_textBlockAuthor" 
+        Visibility="Collapsed"/>
+
+    <imaging:CrispImage
+        x:Name="_trustedOwnerIndicator"
+        Margin="0"
+        VerticalAlignment="Top"
+        Visibility="{Binding IsTrustedOwner, Converter={StaticResource BooleanToVisibilityConverter}}"
+        ToolTip="{x:Static nuget:Resources.ToolTip_TrustedOwnerIndicator}"
+        AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_TrustedOwnerIndicator}"
+        Moniker="{x:Static catalog:KnownMonikers.NuGet}" />
+
     <TextBlock 
-      x:Name="_separator" 
-      xml:space="preserve" 
-      Visibility="Collapsed">, </TextBlock>
+        x:Name="_separator" 
+        xml:space="preserve" 
+        Visibility="Collapsed">, </TextBlock>
     
     <!-- the download count -->
     <TextBlock 
-      x:Name="_textBlockDownloadCount" 
-      Visibility="Collapsed"/>
+        x:Name="_textBlockDownloadCount" 
+        Visibility="Collapsed"/>
   </StackPanel>
 </UserControl>

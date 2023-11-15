@@ -64,6 +64,8 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease { get; set; }
 
+        public bool IsTrustedOwner { get; set; }
+
         private string _owner;
 
         public string Owner
