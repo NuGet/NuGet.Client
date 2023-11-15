@@ -8,14 +8,14 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class PackageSearchResultTableRenderer : IPackageSearchResultRenderer
+    internal class PackageSearchResultTablePrinter : IPackageSearchResultRenderer
     {
         private string _searchTerm;
         private ILoggerWithColor _loggerWithColor;
         private const int LineSeparatorLength = 40;
         private static readonly string SourceSeparator = new('*', LineSeparatorLength);
 
-        public PackageSearchResultTableRenderer(string searchTerm, ILoggerWithColor loggerWithColor)
+        public PackageSearchResultTablePrinter(string searchTerm, ILoggerWithColor loggerWithColor)
         {
             _searchTerm = searchTerm;
             _loggerWithColor = loggerWithColor;

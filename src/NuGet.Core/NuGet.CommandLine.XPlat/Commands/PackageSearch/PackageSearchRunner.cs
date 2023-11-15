@@ -56,7 +56,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             IPackageSearchResultRenderer packageSearchResultRenderer;
-            packageSearchResultRenderer = new PackageSearchResultTableRenderer(packageSearchArgs.SearchTerm, packageSearchArgs.Logger);
+            packageSearchResultRenderer = new PackageSearchResultTablePrinter(packageSearchArgs.SearchTerm, packageSearchArgs.Logger);
             packageSearchResultRenderer.Start();
 
             while (searchRequests.Count > 0)

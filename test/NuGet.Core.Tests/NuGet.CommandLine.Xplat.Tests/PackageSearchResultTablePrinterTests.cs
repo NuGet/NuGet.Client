@@ -12,7 +12,7 @@ using Xunit;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
-    public class PackageSearchResultTableRendererTests
+    public class PackageSearchResultTablePrinterTests
     {
         [Theory]
         [InlineData(0)]
@@ -24,7 +24,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Arrange
             var searchTerm = "TestPackage";
             Mock<ILoggerWithColor> mockLoggerWithColor = new Mock<ILoggerWithColor>();
-            PackageSearchResultTableRenderer renderer = new PackageSearchResultTableRenderer(searchTerm, mockLoggerWithColor.Object);
+            PackageSearchResultTablePrinter renderer = new PackageSearchResultTablePrinter(searchTerm, mockLoggerWithColor.Object);
             Mock<PackageSource> mockSource = new Mock<PackageSource>("http://mysource", "TestSource");
             var packageIdentity = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.3.0"));
             var completedSearch = new List<IPackageSearchMetadata>();
@@ -69,7 +69,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Arrange
             var searchTerm = "ErrorPackage";
             Mock<ILoggerWithColor> mockLoggerWithColor = new Mock<ILoggerWithColor>();
-            PackageSearchResultTableRenderer renderer = new PackageSearchResultTableRenderer(searchTerm, mockLoggerWithColor.Object);
+            PackageSearchResultTablePrinter renderer = new PackageSearchResultTablePrinter(searchTerm, mockLoggerWithColor.Object);
             Mock<PackageSource> mockSource = new Mock<PackageSource>("http://errorsource", "ErrorTestSource");
             string errorMessage = "Error retrieving data";
 
