@@ -300,6 +300,8 @@ namespace NuGet.PackageManagement.UI
                     Id = metadata.Identity.Id,
                     Version = metadata.Identity.Version,
                     IconUrl = metadata.IconUrl,
+                    Owner = metadata.Owners,
+                    IsTrustedOwner = !string.IsNullOrWhiteSpace(metadata.Owners),
                     Author = metadata.Authors,
                     DownloadCount = metadata.DownloadCount,
                     Summary = metadata.Summary,

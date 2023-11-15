@@ -1863,6 +1863,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to by {0}.
+        /// </summary>
+        public static string Text_ByOwner {
+            get {
+                return ResourceManager.GetString("Text_ByOwner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Visual Studio is about to make changes to this solution:.
         /// </summary>
         public static string Text_Changes {
@@ -2291,6 +2300,15 @@ namespace NuGet.PackageManagement.UI {
         public static string ToolTip_TransitiveDependencyVersion {
             get {
                 return ResourceManager.GetString("ToolTip_TransitiveDependencyVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owner according to nuget.org.
+        /// </summary>
+        public static string ToolTip_TrustedOwnerIndicator {
+            get {
+                return ResourceManager.GetString("ToolTip_TrustedOwnerIndicator", resourceCulture);
             }
         }
         
