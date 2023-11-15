@@ -170,7 +170,7 @@ namespace NuGet.CommandLine.XPlat
         private static CommandLineApplication InitializeApp(string[] args, CommandOutputLogger log)
         {
             // Many commands don't want prefixes output. Use this func instead of () => log to set the HidePrefix property first.
-            Func<ILogger> getHidePrefixLogger = () =>
+            Func<ILoggerWithColor> getHidePrefixLogger = () =>
             {
                 log.HidePrefixForInfoAndMinimal = true;
                 return log;
@@ -188,6 +188,7 @@ namespace NuGet.CommandLine.XPlat
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
                 ListPackageCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new ListPackageCommandRunner());
+                PackageSearchCommand.Register(app, getHidePrefixLogger);
             }
             else
             {
