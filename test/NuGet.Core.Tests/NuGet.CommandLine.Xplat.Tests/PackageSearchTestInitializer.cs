@@ -15,7 +15,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         internal CommandLineApplication App { get; set; }
         internal Func<ILoggerWithColor> GetLogger { get; set; }
         internal PackageSearchArgs CapturedArgs { get; set; }
-        internal Func<PackageSearchArgs, Task<int>> SetupSettingsAndRunSearchAsync { get; set; }
+        internal Func<PackageSearchArgs, string, Task<int>> SetupSettingsAndRunSearchAsync { get; set; }
         internal string StoredErrorMessage { get; set; }
         internal List<Tuple<string, ConsoleColor>> ColoredMessage { get; set; }
 
@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             CapturedArgs = null;
 
-            SetupSettingsAndRunSearchAsync = async (PackageSearchArgs args) =>
+            SetupSettingsAndRunSearchAsync = async (PackageSearchArgs args, string configFile) =>
             {
                 CapturedArgs = args;
                 await Task.CompletedTask;

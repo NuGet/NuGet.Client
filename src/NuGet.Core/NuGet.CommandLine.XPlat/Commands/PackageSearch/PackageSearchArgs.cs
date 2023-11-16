@@ -19,11 +19,15 @@ namespace NuGet.CommandLine.XPlat
         public bool Interactive { get; set; }
         public ILoggerWithColor Logger { get; set; }
         public string SearchTerm { get; set; }
+        public PackageSearchVerbosity Verbosity { get; set; } = PackageSearchVerbosity.Normal;
+        public bool JsonFormat { get; set; } = false;
 
-        public PackageSearchArgs(string skip, string take)
+        public PackageSearchArgs(string skip, string take, string format, string verbosity)
         {
             Skip = VerifyInt(skip, DefaultSkip);
             Take = VerifyInt(take, DefaultTake);
+            JsonFormat = VerifyFormat(format);
+            Verbosity = VerifyVerbosity(verbosity);
         }
 
         public PackageSearchArgs() { }
@@ -41,6 +45,31 @@ namespace NuGet.CommandLine.XPlat
             }
 
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, number));
+        }
+
+        public bool VerifyFormat(string format)
+        {
+            if (!string.IsNullOrEmpty(format))
+            {
+                return string.Equals(format, "json", StringComparison.CurrentCultureIgnoreCase);
+            }
+
+            return false;
+        }
+
+        private PackageSearchVerbosity VerifyVerbosity(string verbosity)
+        {
+            if (string.IsNullOrEmpty(verbosity) || string.Equals(verbosity, nameof(PackageSearchVerbosity.Detailed), StringComparison.CurrentCultureIgnoreCase))
+            {
+                return PackageSearchVerbosity.Detailed;
+            }
+
+            if (string.Equals(verbosity, nameof(PackageSearchVerbosity.Minimal), StringComparison.CurrentCultureIgnoreCase))
+            {
+                return PackageSearchVerbosity.Minimal;
+            }
+
+            return PackageSearchVerbosity.Normal;
         }
     }
 }

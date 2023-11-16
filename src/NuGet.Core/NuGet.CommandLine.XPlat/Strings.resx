@@ -853,4 +853,18 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="Error_CannotObtainSearchSource" xml:space="preserve">
     <value>Failed to obtain a search resource.</value>
   </data>
+  <data name="pkgSearch_FormatDescription" xml:space="preserve">
+    <value>Format the output accordingly. Either `table`, or `json`. The default value is `table`.</value>
+    <comment>Please don't translate `table`, `json`.</comment>
+  </data>
+  <data name="pkgSearch_VerbosityDescription" xml:space="preserve">
+    <value>Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`.</value>
+    <comment>Please don't translate `minimal`, `normal`, `detailed`</comment>
+  </data>
+  <data name="pkgSearch_ConfigFileDescription" xml:space="preserve">
+    <value>The path to a NuGet config file to use.</value>
+  </data>
+  <data name="Error_NoSource" xml:space="preserve">
+    <value>No package sources found.</value>
+  </data>
 </root>

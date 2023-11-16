@@ -18,7 +18,7 @@ namespace NuGet.CommandLine.XPlat
             Register(app, getLogger, SetupSettingsAndRunSearchAsync);
         }
 
-        public static void Register(CommandLineApplication app, Func<ILoggerWithColor> getLogger, Func<PackageSearchArgs, Task<int>> setupSettingsAndRunSearchAsync)
+        public static void Register(CommandLineApplication app, Func<ILoggerWithColor> getLogger, Func<PackageSearchArgs, string, Task<int>> setupSettingsAndRunSearchAsync)
         {
             app.Command("search", pkgSearch =>
             {
@@ -35,6 +35,10 @@ namespace NuGet.CommandLine.XPlat
                     "--exact-match",
                     Strings.pkgSearch_ExactMatchDescription,
                     CommandOptionType.NoValue);
+                CommandOption format = pkgSearch.Option(
+                    "--format",
+                    Strings.pkgSearch_FormatDescription,
+                    CommandOptionType.SingleValue);
                 CommandOption prerelease = pkgSearch.Option(
                     "--prerelease",
                     Strings.pkgSearch_PrereleaseDescription,
@@ -51,6 +55,14 @@ namespace NuGet.CommandLine.XPlat
                     "--skip",
                     Strings.pkgSearch_SkipDescription,
                     CommandOptionType.SingleValue);
+                CommandOption verbosity = pkgSearch.Option(
+                    "--verbosity",
+                    Strings.pkgSearch_VerbosityDescription,
+                    CommandOptionType.SingleValue);
+                CommandOption configFile = pkgSearch.Option(
+                    "--configfile",
+                    Strings.pkgSearch_ConfigFileDescription,
+                    CommandOptionType.SingleValue);
 
                 pkgSearch.OnExecute(async () =>
                 {
@@ -58,7 +70,7 @@ namespace NuGet.CommandLine.XPlat
                     ILoggerWithColor logger = getLogger();
                     try
                     {
-                        packageSearchArgs = new PackageSearchArgs(skip.Value(), take.Value())
+                        packageSearchArgs = new PackageSearchArgs(skip.Value(), take.Value(), format.Value(), verbosity.Value())
                         {
                             Sources = sources.Values,
                             SearchTerm = searchTerm.Value,
@@ -74,18 +86,18 @@ namespace NuGet.CommandLine.XPlat
                         return 1;
                     }
 
-                    return await setupSettingsAndRunSearchAsync(packageSearchArgs);
+                    return await setupSettingsAndRunSearchAsync(packageSearchArgs, configFile.Value());
                 });
             });
         }
 
-        public static async Task<int> SetupSettingsAndRunSearchAsync(PackageSearchArgs packageSearchArgs)
+        public static async Task<int> SetupSettingsAndRunSearchAsync(PackageSearchArgs packageSearchArgs, string configFile)
         {
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageSearchArgs.Logger, !packageSearchArgs.Interactive);
 
             ISettings settings = Settings.LoadDefaultSettings(
                 Directory.GetCurrentDirectory(),
-                configFileName: null,
+                configFileName: configFile,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
 

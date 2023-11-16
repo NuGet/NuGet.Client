@@ -95,18 +95,18 @@ namespace NuGet.CommandLine.Xplat.Tests
             var expectedValues = new List<string>
             {
                 "| Package ID           ",
-                "| Latest Version ",
+                "| Version ",
                 "| Authors           ",
                 "| Downloads   ",
                 "|----------------------",
-                "|----------------",
+                "|---------",
                 "|-------------------",
                 "|-------------",
                 "| ",
                 "",
                 "",
                 " ",
-                "| 12.0.3         ",
+                "| 12.0.3  ",
                 "| James Newton-King ",
                 "| 531,607,259 ",
             };
