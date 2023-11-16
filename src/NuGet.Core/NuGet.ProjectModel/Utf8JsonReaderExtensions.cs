@@ -51,6 +51,7 @@ namespace NuGet.ProjectModel
             }
             return false;
         }
+
         internal static string ReadNextTokenAsString(this ref Utf8JsonReader reader)
         {
             if (ReadNextToken(ref reader))
@@ -60,6 +61,7 @@ namespace NuGet.ProjectModel
 
             return null;
         }
+
         internal static IList<T> ReadObjectAsList<T>(this ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
@@ -188,7 +190,7 @@ namespace NuGet.ProjectModel
             return (IReadOnlyList<string>)strings ?? Array.Empty<string>();
         }
 
-        private static string ReadTokenAsString(this ref Utf8JsonReader reader)
+        public static string ReadTokenAsString(this ref Utf8JsonReader reader)
         {
             switch (reader.TokenType)
             {

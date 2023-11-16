@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -93,7 +92,7 @@ namespace NuGet.ProjectModel
         {
             try
             {
-                var lockFile = JsonUtility.LoadJsonAsync<LockFile>(stream).Result;
+                var lockFile = JsonUtility.LoadJson<LockFile>(stream);
                 lockFile.Path = path;
                 return lockFile;
             }

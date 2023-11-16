@@ -11,7 +11,7 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// A <see cref="JsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="ProjectFileDependencyGroup"/> where the list is setup as an object
     /// </summary>
-    internal class ProjectFileDependencyGroupConverter : JsonConverter<ProjectFileDependencyGroup>
+    internal class ProjectFileDependencyGroupConverter : StreamableJsonConverter<ProjectFileDependencyGroup>
     {
         public override ProjectFileDependencyGroup Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -30,6 +30,20 @@ namespace NuGet.ProjectModel
             var frameworkName = reader.GetString();
             reader.ReadNextToken();
             var dependencies = stringListDefaultConverter.Read(ref reader, typeof(IList<string>), options);
+
+            return new ProjectFileDependencyGroup(frameworkName, dependencies);
+        }
+
+        public override ProjectFileDependencyGroup ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options)
+        {
+            if (reader.TokenType != JsonTokenType.PropertyName)
+            {
+                throw new JsonException("Expected PropertyName, found " + reader.TokenType);
+            }
+
+            var frameworkName = reader.GetString();
+            reader.Read();
+            var dependencies = reader.ReadStringArrayAsIList(new List<string>());
 
             return new ProjectFileDependencyGroup(frameworkName, dependencies);
         }

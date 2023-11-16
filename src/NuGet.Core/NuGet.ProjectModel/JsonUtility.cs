@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,6 +15,8 @@ namespace NuGet.ProjectModel
 {
     internal static class JsonUtility
     {
+        private static ReadOnlySpan<byte> Utf8Bom => new byte[] { 0xEF, 0xBB, 0xBF };
+
         internal static readonly char[] PathSplitChars = new[] { LockFile.DirectorySeparatorChar };
 
         /// <summary>
@@ -25,13 +28,13 @@ namespace NuGet.ProjectModel
             CommentHandling = CommentHandling.Ignore
         };
 
-        private static System.Text.Json.JsonSerializerOptions CreateJsonSerializerOptions()
+        private static JsonSerializerOptions CreateJsonSerializerOptions()
         {
-            var options = new System.Text.Json.JsonSerializerOptions()
+            var options = new JsonSerializerOptions()
             {
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 AllowTrailingCommas = true,
-                ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+                ReadCommentHandling = JsonCommentHandling.Skip,
             };
 
             options.Converters.Add(new LockFileConverter());
@@ -44,12 +47,6 @@ namespace NuGet.ProjectModel
             options.Converters.Add(new LockFileTargetLibraryConverter());
             options.Converters.Add(new ProjectFileDependencyGroupConverter());
             options.Converters.Add(new PackageSpecConverter());
-
-
-            options.Converters.Add(new ListObjectConvertor<LockFileContentFile>());
-            options.Converters.Add(new ListObjectConvertor<LockFileRuntimeTarget>());
-            options.Converters.Add(new ListObjectConvertor<LockFileItem>());
-
 
             return options;
         }
@@ -76,6 +73,14 @@ namespace NuGet.ProjectModel
         internal static async Task<T> LoadJsonAsync<T>(Stream stream)
         {
             return await System.Text.Json.JsonSerializer.DeserializeAsync<T>(stream, CreateJsonSerializerOptions());
+        }
+
+        internal static T LoadJson<T>(Stream stream)
+        {
+            var streamingJsonReader = new StreamingUtf8JsonReader(stream);
+            var options = CreateJsonSerializerOptions();
+            var objectConverter = (StreamableJsonConverter<T>)options.GetConverter(typeof(T));
+            return objectConverter.ReadWithStream(ref streamingJsonReader, options);
         }
 
         internal static PackageDependency ReadPackageDependency(string property, JToken json)

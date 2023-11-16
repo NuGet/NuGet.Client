@@ -15,7 +15,7 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// A <see cref="JsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="LockFile"/>
     /// </summary>
-    internal class LockFileConverter : JsonConverter<LockFile>
+    internal class LockFileConverter : StreamableJsonConverter<LockFile>
     {
         private static readonly byte[] Utf8Version = Encoding.UTF8.GetBytes("version");
         private static readonly byte[] Utf8Libraries = Encoding.UTF8.GetBytes("libraries");
@@ -113,6 +113,99 @@ namespace NuGet.ProjectModel
                 else
                 {
                     reader.Skip();
+                }
+            }
+
+            if (!string.IsNullOrEmpty(lockFile.PackageSpec?.RestoreMetadata?.ProjectPath) && lockFile.LogMessages.Count > 0)
+            {
+                foreach (AssetsLogMessage message in lockFile.LogMessages.Where(x => string.IsNullOrEmpty(x.ProjectPath)))
+                {
+                    message.FilePath = lockFile.PackageSpec.RestoreMetadata.ProjectPath;
+                }
+            }
+
+            return lockFile;
+        }
+
+        public override LockFile ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options)
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonException("Expected StartObject, found " + reader.TokenType);
+            }
+
+            var lockFile = new LockFile();
+
+            while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+            {
+                if (reader.ValueTextEquals(Utf8Version))
+                {
+                    reader.Read();
+                    if (reader.TryGetInt32(out int version))
+                    {
+                        lockFile.Version = version;
+                    }
+                    else
+                    {
+                        lockFile.Version = int.MinValue;
+                    }
+                }
+                else if (reader.ValueTextEquals(Utf8Libraries))
+                {
+                    reader.Read();
+                    lockFile.Libraries = reader.ReadObjectAsList<LockFileLibrary>(options);
+                }
+                else if (reader.ValueTextEquals(Utf8Targets))
+                {
+                    reader.Read();
+                    lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(options);
+                }
+                else if (reader.ValueTextEquals(Utf8ProjectFileDependencyGroups))
+                {
+                    reader.Read();
+                    lockFile.ProjectFileDependencyGroups = reader.ReadObjectAsList<ProjectFileDependencyGroup>(options);
+                }
+                else if (reader.ValueTextEquals(Utf8PackageFolders))
+                {
+                    reader.Read();
+                    lockFile.PackageFolders = reader.ReadObjectAsList<LockFileItem>(options);
+                }
+                else if (reader.ValueTextEquals(Utf8Project))
+                {
+                    reader.Read();
+                    lockFile.PackageSpec = StreamingUtf8JsonPackageSpecReader.GetPackageSpec(
+                        ref reader,
+                        name: null,
+                        packageSpecPath: null,
+                        snapshotValue: null);
+                }
+                else if (reader.ValueTextEquals(Utf8CentralTransitiveDependencyGroups))
+                {
+                    var results = new List<CentralTransitiveDependencyGroup>();
+                    if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
+                    {
+                        while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+                        {
+                            var frameworkPropertyName = reader.GetString();
+                            NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
+                            var dependencies = new List<LibraryDependency>();
+
+                            StreamingUtf8JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                                jsonReader: ref reader,
+                                results: dependencies,
+                                packageSpecPath: string.Empty);
+                            results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
+                        }
+                    }
+                    lockFile.CentralTransitiveDependencyGroups = results;
+                }
+                else if (reader.ValueTextEquals(Utf8Logs))
+                {
+                    reader.ReadArrayOfObjects<AssetsLogMessage, IAssetsLogMessage>(options, lockFile.LogMessages);
+                }
+                else
+                {
+                    reader.TrySkip();
                 }
             }
 

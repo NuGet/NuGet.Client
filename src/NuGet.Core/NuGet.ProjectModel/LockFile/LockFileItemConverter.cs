@@ -10,7 +10,7 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// A <see cref="JsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="LockFileItem"/>
     /// </summary>
-    internal class LockFileItemConverter<T> : JsonConverter<T> where T : LockFileItem
+    internal class LockFileItemConverter<T> : StreamableJsonConverter<T> where T : LockFileItem
     {
         public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -45,6 +45,44 @@ namespace NuGet.ProjectModel
             if (reader.TokenType == JsonTokenType.StartObject)
             {
                 while (reader.ReadNextToken() && reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    var propertyName = reader.GetString();
+                    lockFileItem.Properties[propertyName] = reader.ReadNextTokenAsString();
+                }
+            }
+
+            return lockFileItem as T;
+        }
+
+        public override T ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options)
+        {
+            var genericType = typeof(T);
+
+            if (reader.TokenType != JsonTokenType.PropertyName)
+            {
+                throw new JsonException("Expected PropertyName, found " + reader.TokenType);
+            }
+
+            //We want to read the property name right away
+            var lockItemPath = reader.GetString();
+            LockFileItem lockFileItem;
+            if (genericType == typeof(LockFileContentFile))
+            {
+                lockFileItem = new LockFileContentFile(lockItemPath);
+            }
+            else if (genericType == typeof(LockFileRuntimeTarget))
+            {
+                lockFileItem = new LockFileRuntimeTarget(lockItemPath);
+            }
+            else
+            {
+                lockFileItem = new LockFileItem(lockItemPath);
+            }
+
+            reader.Read();
+            if (reader.TokenType == JsonTokenType.StartObject)
+            {
+                while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
                 {
                     var propertyName = reader.GetString();
                     lockFileItem.Properties[propertyName] = reader.ReadNextTokenAsString();

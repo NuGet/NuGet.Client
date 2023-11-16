@@ -45,7 +45,7 @@ namespace NuGet.ProjectModel
 
         public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
         {
-            return StjPackageSpecReader.GetPackageSpec(stream, name, packageSpecPath, snapshotValue);
+            return StreamingUtf8JsonPackageSpecReader.GetPackageSpec(stream, name, packageSpecPath, snapshotValue);
         }
 
         [Obsolete("This method is obsolete and will be removed in a future release.")]

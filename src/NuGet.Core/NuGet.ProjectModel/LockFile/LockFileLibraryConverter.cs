@@ -2,18 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// A <see cref="JsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="LockFileLibrary"/>
+    /// A <see cref="StreamableJsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="LockFileLibrary"/>
     /// </summary>
-    internal class LockFileLibraryConverter : JsonConverter<LockFileLibrary>
+    internal class LockFileLibraryConverter : StreamableJsonConverter<LockFileLibrary>
     {
         private static readonly byte[] Utf8Sha512 = Encoding.UTF8.GetBytes("sha512");
         private static readonly byte[] Utf8Type = Encoding.UTF8.GetBytes("type");
@@ -88,6 +86,71 @@ namespace NuGet.ProjectModel
                 else
                 {
                     reader.Skip();
+                }
+            }
+            return lockFileLibrary;
+        }
+
+        public override LockFileLibrary ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options)
+        {
+
+            if (reader.TokenType != JsonTokenType.PropertyName)
+            {
+                throw new JsonException("Expected PropertyName, found " + reader.TokenType);
+            }
+
+            var lockFileLibrary = new LockFileLibrary();
+            //We want to read the property name right away
+            var propertyName = reader.GetString();
+            var parts = propertyName.Split(Separators, 2);
+            lockFileLibrary.Name = parts[0];
+            if (parts.Length == 2)
+            {
+                lockFileLibrary.Version = NuGetVersion.Parse(parts[1]);
+            }
+
+            reader.Read();
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonException("Expected StartObject, found " + reader.TokenType);
+            }
+
+            while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+            {
+                if (reader.ValueTextEquals(Utf8Type))
+                {
+                    lockFileLibrary.Type = reader.ReadNextTokenAsString();
+                }
+                else if (reader.ValueTextEquals(Utf8Path))
+                {
+                    lockFileLibrary.Path = reader.ReadNextTokenAsString();
+                }
+                else if (reader.ValueTextEquals(Utf8MsbuildProject))
+                {
+                    lockFileLibrary.MSBuildProject = reader.ReadNextTokenAsString();
+                }
+                else if (reader.ValueTextEquals(Utf8Sha512))
+                {
+                    lockFileLibrary.Sha512 = reader.ReadNextTokenAsString();
+                }
+                else if (reader.ValueTextEquals(Utf8Servicable))
+                {
+                    reader.Read();
+                    lockFileLibrary.IsServiceable = reader.GetBoolean();
+                }
+                else if (reader.ValueTextEquals(Utf8HasTools))
+                {
+                    reader.Read();
+                    lockFileLibrary.HasTools = reader.GetBoolean();
+                }
+                else if (reader.ValueTextEquals(Utf8Files))
+                {
+                    reader.Read();
+                    reader.ReadStringArrayAsIList(lockFileLibrary.Files);
+                }
+                else
+                {
+                    reader.TrySkip();
                 }
             }
             return lockFileLibrary;
