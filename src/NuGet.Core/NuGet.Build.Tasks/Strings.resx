@@ -229,4 +229,7 @@
     <value>An error occurred starting static graph-based restore. {0}. Please file an issue at https://github.com/NuGet/Home</value>
     <comment>0 - The exception message</comment>
   </data>
+  <data name="UnsupportedProject" xml:space="preserve">
+    <value>Skipping restore for project '{0}'. The project file may be invalid or missing targets required for restore.</value>
+  </data>
 </root>

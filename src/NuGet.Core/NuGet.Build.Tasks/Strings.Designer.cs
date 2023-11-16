@@ -324,6 +324,15 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Skipping restore for project &apos;{0}&apos;. The project file may be invalid or missing targets required for restore..
+        /// </summary>
+        public static string UnsupportedProject {
+            get {
+                return ResourceManager.GetString("UnsupportedProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The project target framework &apos;{0}&apos; is not a supported target framework..
         /// </summary>
         public static string UnsupportedTargetFramework {

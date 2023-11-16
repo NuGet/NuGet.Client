@@ -971,6 +971,9 @@ namespace NuGet.Build.Tasks.Console
                             // In rare cases, users can set an empty TargetFramework value in a project-to-project reference.  Static Graph will respect that
                             // but NuGet does not need to do anything with that instance of the project since the actual project is still loaded correctly
                             // with its actual TargetFramework.
+                            var text = string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedProject, projectInstance.FullPath);
+                            var message = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1503, text);
+                            MSBuildLogger.Log(message);
                             continue;
                         }
 
