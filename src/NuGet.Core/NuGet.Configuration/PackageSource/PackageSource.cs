@@ -21,6 +21,7 @@ namespace NuGet.Configuration
         public const int MaxProtocolVersion = 3;
 
         internal const bool DefaultAllowInsecureConnections = false;
+        internal const bool DefaultDisableTLSCertificateValidation = false;
 
         private int _hashCode;
         private string _source;
@@ -109,6 +110,11 @@ namespace NuGet.Configuration
         /// </summary>
         public bool AllowInsecureConnections { get; set; } = DefaultAllowInsecureConnections;
 
+        ///<summary>
+        /// Gets or sets disableTLSCertificateValidation of the source. Defaults to false.
+        ///</summary>
+        public bool DisableTLSCertificateValidation { get; set; } = DefaultDisableTLSCertificateValidation;
+
         /// <summary>
         /// Whether the source is using the HTTP protocol, including HTTPS.
         /// </summary>
@@ -162,11 +168,16 @@ namespace NuGet.Configuration
             }
 
             string? allowInsecureConnections = null;
+            string? disableTLSCertificateValidation = null;
             if (AllowInsecureConnections != DefaultAllowInsecureConnections)
             {
                 allowInsecureConnections = $"{AllowInsecureConnections}";
             }
-            return new SourceItem(Name, Source, protocolVersion, allowInsecureConnections);
+            if (DisableTLSCertificateValidation != DefaultDisableTLSCertificateValidation)
+            {
+                disableTLSCertificateValidation = $"{DisableTLSCertificateValidation}";
+            }
+            return new SourceItem(Name, Source, protocolVersion, allowInsecureConnections, disableTLSCertificateValidation);
         }
 
         public bool Equals(PackageSource? other)
@@ -204,6 +215,7 @@ namespace NuGet.Configuration
                 IsMachineWide = IsMachineWide,
                 ProtocolVersion = ProtocolVersion,
                 AllowInsecureConnections = AllowInsecureConnections,
+                DisableTLSCertificateValidation = DisableTLSCertificateValidation,
             };
         }
     }
