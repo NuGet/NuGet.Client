@@ -159,9 +159,8 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.NotNull(exception);
-            Assert.Equal("Error reading 'project.json' at line 4 column 52 : Invalid dependency target value 'blah'.", exception.Message);
+            Assert.Equal("Error reading 'project.json' : Invalid dependency target value 'blah'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
-            Assert.Equal(4, exception.Line);
         }
 
         //[Fact]
@@ -233,9 +232,8 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.NotNull(exception);
-            Assert.Equal("Error reading 'project.json' at line 4 column 53 : Invalid dependency target value 'winmd'.", exception.Message);
+            Assert.Equal("Error reading 'project.json' : Invalid dependency target value 'winmd'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
-            Assert.Equal(4, exception.Line);
         }
 
 
@@ -294,23 +292,12 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            FileFormatException exception = null;
-
-            try
-            {
-                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-                var dependency = spec.Dependencies.Single();
-            }
-            catch (FileFormatException ex)
-            {
-                exception = ex;
-            }
+            var exception = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
 
             // Assert
             Assert.NotNull(exception);
-            Assert.Equal("Error reading 'project.json' at line 4 column 63 : Invalid dependency target value 'package,project'.", exception.Message);
+            Assert.Equal("Error reading 'project.json' : Invalid dependency target value 'package,project'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
-            Assert.Equal(4, exception.Line);
         }
 
         //[Fact]
