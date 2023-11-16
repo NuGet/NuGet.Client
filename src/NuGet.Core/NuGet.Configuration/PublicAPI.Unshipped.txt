@@ -16,3 +16,9 @@ NuGet.Configuration.SettingsGroup<T>.SettingsGroup(string! name, System.Collecti
 override NuGet.Configuration.SettingsGroup<T>.ElementName.get -> string!
 static NuGet.Configuration.ConfigurationConstants.GetConfigKeys() -> System.Collections.Generic.IReadOnlyList<string!>!
 static readonly NuGet.Configuration.ConfigurationConstants.AuditSources -> string!
+NuGet.Configuration.PackageSource.DisableTLSCertificateValidation.get -> bool
+NuGet.Configuration.PackageSource.DisableTLSCertificateValidation.set -> void
+~NuGet.Configuration.SourceItem.DisableTLSCertificateValidation.get -> string
+~NuGet.Configuration.SourceItem.DisableTLSCertificateValidation.set -> void
+~NuGet.Configuration.SourceItem.SourceItem(string key, string value, string protocolVersion, string allowInsecureConnections, string disableTLSCertificateValidation) -> void
+~static readonly NuGet.Configuration.ConfigurationConstants.DisableTLSCertificateValidation -> string
