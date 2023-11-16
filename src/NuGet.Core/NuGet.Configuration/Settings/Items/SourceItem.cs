@@ -35,8 +35,22 @@ namespace NuGet.Configuration
             set => AddOrUpdateAttribute(ConfigurationConstants.AllowInsecureConnections, value);
         }
 
+        public string DisableTLSCertificateValidation
+        {
+            get
+            {
+                if (Attributes.TryGetValue(ConfigurationConstants.DisableTLSCertificateValidation, out var attribute))
+                {
+                    return Settings.ApplyEnvironmentTransform(attribute);
+                }
+
+                return null;
+            }
+            set => AddOrUpdateAttribute(ConfigurationConstants.DisableTLSCertificateValidation, value);
+        }
+
         public SourceItem(string key, string value)
-            : this(key, value, protocolVersion: "", allowInsecureConnections: "")
+            : this(key, value, protocolVersion: "", allowInsecureConnections: "", disableTLSCertificateValidation: "")
         {
         }
 
@@ -46,6 +60,17 @@ namespace NuGet.Configuration
         }
 
         public SourceItem(string key, string value, string? protocolVersion, string? allowInsecureConnections)
+        public SourceItem(string key, string value, string protocolVersion)
+            : this(key, value, protocolVersion, allowInsecureConnections: "", disableTLSCertificateValidation: "")
+        {
+        }
+
+        public SourceItem(string key, string value, string protocolVersion, string allowInsecureConnections)
+            : this(key, value, protocolVersion, allowInsecureConnections, disableTLSCertificateValidation: "")
+        {
+        }
+
+        public SourceItem(string key, string value, string protocolVersion, string allowInsecureConnections, string disableTLSCertificateValidation)
             : base(key, value)
         {
             if (!string.IsNullOrEmpty(protocolVersion))
@@ -56,6 +81,10 @@ namespace NuGet.Configuration
             {
                 AllowInsecureConnections = allowInsecureConnections;
             }
+            if (!string.IsNullOrEmpty(disableTLSCertificateValidation))
+            {
+                DisableTLSCertificateValidation = disableTLSCertificateValidation;
+            }
         }
 
         internal SourceItem(XElement element, SettingsFile origin)
@@ -65,7 +94,7 @@ namespace NuGet.Configuration
 
         public override SettingBase Clone()
         {
-            var newSetting = new SourceItem(Key, Value, ProtocolVersion, AllowInsecureConnections);
+            var newSetting = new SourceItem(Key, Value, ProtocolVersion, AllowInsecureConnections, DisableTLSCertificateValidation);
 
             if (Origin != null)
             {
