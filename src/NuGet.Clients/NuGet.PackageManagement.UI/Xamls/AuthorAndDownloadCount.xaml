@@ -9,26 +9,45 @@
              mc:Ignorable="d"
              x:Name="_self"
              d:DesignHeight="300" d:DesignWidth="300">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <nuget:SharedResources />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
   <StackPanel Orientation="Horizontal">
-
     <!-- text "by owner" is shown here -->
-    <TextBlock
-        x:Name="_textBlockOwner"
-        Visibility="Collapsed"/>
+    <ItemsControl x:Name="_panelOwners" ItemsSource="{Binding TrustedOwners}" Visibility="Collapsed">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Margin="6,0,0,0">
+            <Hyperlink
+              NavigateUri="{Binding Mode=OneWay}"
+              Style="{StaticResource HyperlinkStyle}">
+              <Run Text="{Binding Mode=OneTime}" />
+              <imaging:CrispImage
+                x:Name="_trustedOwnerIndicator"
+                Margin="0"
+                VerticalAlignment="Top"
+                ToolTip="{x:Static nuget:Resources.ToolTip_TrustedOwnerIndicator}"
+                AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_TrustedOwnerIndicator}"
+                Moniker="{x:Static catalog:KnownMonikers.NuGet}" />
+            </Hyperlink>
+          </TextBlock>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
 
     <!-- text "by author" is shown here when owner is unavailable -->
     <TextBlock 
         x:Name="_textBlockAuthor" 
         Visibility="Collapsed"/>
-
-    <imaging:CrispImage
-        x:Name="_trustedOwnerIndicator"
-        Margin="0"
-        VerticalAlignment="Top"
-        Visibility="{Binding IsTrustedOwner, Converter={StaticResource BooleanToVisibilityConverter}}"
-        ToolTip="{x:Static nuget:Resources.ToolTip_TrustedOwnerIndicator}"
-        AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_TrustedOwnerIndicator}"
-        Moniker="{x:Static catalog:KnownMonikers.NuGet}" />
 
     <TextBlock 
         x:Name="_separator" 

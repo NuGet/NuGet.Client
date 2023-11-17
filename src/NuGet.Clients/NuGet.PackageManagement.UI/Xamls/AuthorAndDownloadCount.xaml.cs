@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -18,10 +19,10 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class AuthorAndDownloadCount : UserControl, INotifyPropertyChanged
     {
-        public static readonly DependencyProperty OwnerProperty =
+        public static readonly DependencyProperty TrustedOwnersProperty =
             DependencyProperty.Register(
-                nameof(Owner),
-                typeof(string),
+                nameof(TrustedOwners),
+                typeof(ImmutableList<string>),
                 typeof(AuthorAndDownloadCount),
                 new PropertyMetadata(OnPropertyChanged));
 
@@ -45,15 +46,15 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
         }
 
-        public string Owner
+        public ImmutableList<string> TrustedOwners
         {
             get
             {
-                return GetValue(OwnerProperty) as string;
+                return GetValue(TrustedOwnersProperty) as ImmutableList<string>;
             }
             set
             {
-                SetValue(OwnerProperty, value);
+                SetValue(TrustedOwnersProperty, value);
                 UpdateControl();
             }
         }
@@ -104,15 +105,14 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateControl()
         {
-            if (!string.IsNullOrEmpty(Owner))
+            if (TrustedOwners != null && TrustedOwners.Count > 0)
             {
-                _textBlockOwner.Text = Owner;
-                _textBlockOwner.Visibility = Visibility.Visible;
+                _panelOwners.Visibility = Visibility.Visible;
                 _textBlockAuthor.Visibility = Visibility.Collapsed;
             }
             else
             {
-                _textBlockOwner.Visibility = Visibility.Collapsed;
+                _panelOwners.Visibility = Visibility.Collapsed;
 
                 if (!string.IsNullOrEmpty(Author))
                 {
@@ -162,7 +162,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // set the visibility of the separator.
-            if ((_textBlockOwner.Visibility == Visibility.Visible || _textBlockAuthor.Visibility == Visibility.Visible)
+            if ((_panelOwners.Visibility == Visibility.Visible || _textBlockAuthor.Visibility == Visibility.Visible)
                 && _textBlockDownloadCount.Visibility == Visibility.Visible)
             {
                 _separator.Visibility = Visibility.Visible;
@@ -173,7 +173,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // set the visibility of the control itself.
-            if (_textBlockOwner.Visibility == Visibility.Collapsed &&
+            if (_panelOwners.Visibility == Visibility.Collapsed &&
                 _textBlockAuthor.Visibility == Visibility.Collapsed &&
                 _textBlockDownloadCount.Visibility == Visibility.Collapsed)
             {
