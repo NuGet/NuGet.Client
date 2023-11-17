@@ -49,6 +49,7 @@ namespace NuGet.CommandLine.Xplat.Tests
     ""packages"": []
   }}
 ]";
+
             var expectedOneJson = $@"[
   {{
     ""sourceName"": ""MockSource"",

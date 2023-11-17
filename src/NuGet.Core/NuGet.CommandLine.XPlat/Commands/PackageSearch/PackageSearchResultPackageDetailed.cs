@@ -29,10 +29,12 @@ namespace NuGet.CommandLine.XPlat
         public PackageSearchResultPackageDetailed(IPackageSearchMetadata packageSearchMetadata, string deprecation) : base(packageSearchMetadata)
         {
             Description = packageSearchMetadata.Description;
+
             if (packageSearchMetadata.Vulnerabilities != null && packageSearchMetadata.Vulnerabilities.Any())
             {
                 Vulnerable = true;
             }
+
             Deprecation = deprecation;
             ProjectUrl = packageSearchMetadata.ProjectUrl;
         }

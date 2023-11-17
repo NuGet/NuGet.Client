@@ -844,7 +844,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   </data>
   <data name="Error_invalidOptionValue" xml:space="preserve">
     <value>Invalid value `{0}` for option {1}.</value>
-    <comment>0 - The invalid value. 1- the option.</comment>
+    <comment>0 - The invalid value. 1 - the option.</comment>
   </data>
   <data name="Error_InvalidSource" xml:space="preserve">
     <value>The specified source '{0}' is invalid. Provide a valid source.</value>

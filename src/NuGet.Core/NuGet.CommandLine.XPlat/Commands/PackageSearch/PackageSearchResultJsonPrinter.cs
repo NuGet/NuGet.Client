@@ -28,7 +28,6 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (IPackageSearchMetadata metadata in completedSearch)
             {
-
                 if (_verbosity == PackageSearchVerbosity.Minimal)
                 {
                     packageSearchResult.AddPackage(new PackageSearchResultPackageMinimal(metadata));
@@ -43,6 +42,7 @@ namespace NuGet.CommandLine.XPlat
                     packageSearchResult.AddPackage(new PackageSearchResultPackageNormal(metadata));
                 }
             }
+
             _packageSearchResults.Add(packageSearchResult);
         }
 
