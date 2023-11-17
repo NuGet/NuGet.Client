@@ -157,7 +157,10 @@ namespace NuGet.Protocol.Tests
             if (disableCertificateValidation)
             {
                 clientHandler.ServerCertificateCustomValidationCallback.Should().NotBeNull();
-                var callbackResult = clientHandler.ServerCertificateCustomValidationCallback.Invoke(null, null, null, SslPolicyErrors.RemoteCertificateChainErrors);
+                var callbackResult = clientHandler.ServerCertificateCustomValidationCallback.Invoke(null, null, null, SslPolicyErrors.RemoteCertificateChainErrors
+                    & SslPolicyErrors.RemoteCertificateNameMismatch
+                    & SslPolicyErrors.RemoteCertificateNotAvailable
+                    & SslPolicyErrors.None);
                 callbackResult.Should().BeTrue();
             }
             else
