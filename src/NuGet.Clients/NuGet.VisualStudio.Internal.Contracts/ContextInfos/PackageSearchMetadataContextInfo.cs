@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -22,6 +23,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public string? Tags { get; internal set; }
         public Uri? LicenseUrl { get; internal set; }
         public Uri? ReadmeUrl { get; internal set; }
+        public ImmutableList<string>? OwnerEnumerable { get; internal set; }
         public string? Owners { get; internal set; }
         public Uri? ProjectUrl { get; internal set; }
         public DateTimeOffset? Published { get; internal set; }
@@ -60,6 +62,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 LicenseMetadata = packageSearchMetadata.LicenseMetadata,
                 IsRecommended = isRecommended,
                 RecommenderVersion = recommenderVersion,
+                OwnerEnumerable = packageSearchMetadata.OwnersEnumerable?.ToImmutableList(),
                 Owners = packageSearchMetadata.Owners,
                 ProjectUrl = packageSearchMetadata.ProjectUrl,
                 Published = packageSearchMetadata.Published,

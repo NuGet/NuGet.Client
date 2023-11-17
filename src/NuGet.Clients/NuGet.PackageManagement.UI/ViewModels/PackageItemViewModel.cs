@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -64,7 +65,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease { get; set; }
 
-        public bool IsTrustedOwner { get; set; }
+        public ImmutableList<string> TrustedOwners { get; set; }
 
         private string _owner;
 

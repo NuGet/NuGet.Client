@@ -183,6 +183,7 @@
           <!-- author and download count -->
           <nuget:AuthorAndDownloadCount
                         Margin="5,4,0,0"
+                        TrustedOwners="{Binding TrustedOwners, Mode=OneTime}"
                         Author="{Binding ByAuthor, Mode=OneTime}"
                         DownloadCount="{Binding DownloadCount}" />
         </StackPanel>
