@@ -128,7 +128,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
                 if (lastSnapshot is null)
                 {
-                    lastSnapshot ??= AssetsFileDependenciesSnapshot.Empty;
+                    lastSnapshot = AssetsFileDependenciesSnapshot.Empty;
                     yield return new ProjectVersionedValue<AssetsFileDependenciesSnapshot>(lastSnapshot, update.DataSourceVersions);
                 }
             }
