@@ -448,20 +448,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is not a valid integer..
-        /// </summary>
-        internal static string Error_invalid_number {
-            get {
-                return ResourceManager.GetString("Error_invalid_number", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid culture identifier in {0} environment variable. Value read is &apos;{1}&apos;.
         /// </summary>
         internal static string Error_InvalidCultureInfo {
             get {
                 return ResourceManager.GetString("Error_InvalidCultureInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value `{0}` for option {1}..
+        /// </summary>
+        internal static string Error_invalidOptionValue {
+            get {
+                return ResourceManager.GetString("Error_invalidOptionValue", resourceCulture);
             }
         }
         

@@ -14,6 +14,8 @@ namespace NuGet.CommandLine.XPlat
         [JsonProperty("latestVersion")]
         public string LatestVersion { get; set; }
 
+        public PackageSearchResultPackageMinimal() { }
+
         public PackageSearchResultPackageMinimal(IPackageSearchMetadata packageSearchMetadata)
         {
             PackageId = packageSearchMetadata.Identity.Id;

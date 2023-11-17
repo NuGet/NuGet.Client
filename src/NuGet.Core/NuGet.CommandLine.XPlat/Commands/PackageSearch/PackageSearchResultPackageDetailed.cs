@@ -22,6 +22,10 @@ namespace NuGet.CommandLine.XPlat
         [JsonProperty("projectUrl")]
         public Uri ProjectUrl { get; set; }
 
+        public PackageSearchResultPackageDetailed() : base()
+        {
+        }
+
         public PackageSearchResultPackageDetailed(IPackageSearchMetadata packageSearchMetadata, string deprecation) : base(packageSearchMetadata)
         {
             Description = packageSearchMetadata.Description;

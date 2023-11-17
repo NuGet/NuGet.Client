@@ -24,15 +24,15 @@ namespace NuGet.CommandLine.XPlat
 
         public PackageSearchArgs(string skip, string take, string format, string verbosity)
         {
-            Skip = VerifyInt(skip, DefaultSkip);
-            Take = VerifyInt(take, DefaultTake);
+            Skip = VerifyInt(skip, DefaultSkip, "--skip");
+            Take = VerifyInt(take, DefaultTake, "--take");
             JsonFormat = VerifyFormat(format);
             Verbosity = VerifyVerbosity(verbosity);
         }
 
         public PackageSearchArgs() { }
 
-        public int VerifyInt(string number, int defaultValue)
+        public int VerifyInt(string number, int defaultValue, string option)
         {
             if (string.IsNullOrEmpty(number))
             {
@@ -44,14 +44,25 @@ namespace NuGet.CommandLine.XPlat
                 return verifiedNumber;
             }
 
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, number));
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, number, option));
         }
 
         public bool VerifyFormat(string format)
         {
             if (!string.IsNullOrEmpty(format))
             {
-                return string.Equals(format, "json", StringComparison.CurrentCultureIgnoreCase);
+                if (string.Equals(format, "json", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return true;
+                }
+                else if (string.Equals(format, "table", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return false;
+                }
+                else
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, format, "--format"));
+                }
             }
 
             return false;
@@ -59,14 +70,24 @@ namespace NuGet.CommandLine.XPlat
 
         private PackageSearchVerbosity VerifyVerbosity(string verbosity)
         {
-            if (string.IsNullOrEmpty(verbosity) || string.Equals(verbosity, nameof(PackageSearchVerbosity.Detailed), StringComparison.CurrentCultureIgnoreCase))
+            if (verbosity != null)
             {
-                return PackageSearchVerbosity.Detailed;
-            }
-
-            if (string.Equals(verbosity, nameof(PackageSearchVerbosity.Minimal), StringComparison.CurrentCultureIgnoreCase))
-            {
-                return PackageSearchVerbosity.Minimal;
+                if (string.Equals(verbosity, nameof(PackageSearchVerbosity.Detailed), StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return PackageSearchVerbosity.Detailed;
+                }
+                else if (string.Equals(verbosity, nameof(PackageSearchVerbosity.Normal), StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return PackageSearchVerbosity.Normal;
+                }
+                else if (string.Equals(verbosity, nameof(PackageSearchVerbosity.Minimal), StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return PackageSearchVerbosity.Minimal;
+                }
+                else
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, verbosity, "--verbosity"));
+                }
             }
 
             return PackageSearchVerbosity.Normal;

@@ -113,6 +113,87 @@ namespace NuGet.CommandLine.Xplat.Tests
             Assert.Equal(int.Parse(take), CapturedArgs.Take);
         }
 
+        [Theory]
+        [InlineData("table")]
+        [InlineData("json")]
+        public void Register_withFormatOption_SetsFormat(string format)
+        {
+            // Arrange
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
+
+            // Act
+            App.Execute(new[] { "search", "--format", format });
+
+            // Assert
+            if (format == "json")
+            {
+                Assert.True(CapturedArgs.JsonFormat);
+            }
+            else
+            {
+                Assert.False(CapturedArgs.JsonFormat);
+            }
+        }
+
+        [Fact]
+        public void Register_withInvalidFormattingOption_ShowsErrorMessage()
+        {
+            // Arrange
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
+            string invalidFormat = "invalid";
+            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, invalidFormat, "--format");
+
+            // Act
+            var exitCode = App.Execute(new[] { "search", "--format", invalidFormat });
+
+            // Assert
+            Assert.Equal(1, exitCode);
+            Assert.Contains(expectedError, StoredErrorMessage);
+        }
+
+        [Theory]
+        [InlineData("minimal")]
+        [InlineData("normal")]
+        [InlineData("detailed")]
+        public void Register_withVerbosityOption_SetsFormat(string verbosity)
+        {
+            // Arrange
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
+
+            // Act
+            App.Execute(new[] { "search", "--verbosity", verbosity });
+
+            // Assert
+            if (verbosity == "minimal")
+            {
+                Assert.Equal(PackageSearchVerbosity.Minimal, CapturedArgs.Verbosity);
+            }
+            else if (verbosity == "detailed")
+            {
+                Assert.Equal(PackageSearchVerbosity.Detailed, CapturedArgs.Verbosity);
+            }
+            else
+            {
+                Assert.Equal(PackageSearchVerbosity.Normal, CapturedArgs.Verbosity);
+            }
+        }
+
+        [Fact]
+        public void Register_withInvalidVerbosityOption_ShowsErrorMessage()
+        {
+            // Arrange
+            Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
+            string invalidFormat = "invalid";
+            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, invalidFormat, "--verbosity");
+
+            // Act
+            var exitCode = App.Execute(new[] { "search", "--verbosity", invalidFormat });
+
+            // Assert
+            Assert.Equal(1, exitCode);
+            Assert.Contains(expectedError, StoredErrorMessage);
+        }
+
         [Fact]
         public void Register_withSkipOption_SetsSkip()
         {
@@ -135,7 +216,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string take = "invalid";
-            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, take);
+            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, take, "--take");
 
             // Act
             var exitCode = App.Execute(new[] { "search", searchTerm, "--take", take });
@@ -152,7 +233,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             Register(App, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string skip = "invalid";
-            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, skip);
+            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, skip, "--skip");
 
             // Act
             var exitCode = App.Execute(new[] { "search", searchTerm, "--skip", skip });

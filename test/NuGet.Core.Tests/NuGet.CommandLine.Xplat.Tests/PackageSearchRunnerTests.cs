@@ -28,7 +28,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         [InlineData(0, 20, false)]
         [InlineData(5, 10, true)]
         [InlineData(10, 20, false)]
-        public async Task PackageSearchRunner_SearchAPIWithVariousSkipTakePrereleaseOptionsValuesReturnsOnePackage_OnePackageTableOutputted(int skip, int take, bool prerelease)
+        public async Task PackageSearchRunner_TableFormatNormalVerbosity_OnePackageTableOutputted(int skip, int take, bool prerelease)
         {
             // Arrange
             ISettings settings = Settings.LoadDefaultSettings(
@@ -57,6 +57,14 @@ namespace NuGet.CommandLine.Xplat.Tests
                 "| 531,607,259 ",
             };
 
+            var notExpectedValues = new List<string>
+            {
+                "| Vulnerable ",
+                "| Deprecation                      ",
+                "| Project URL   ",
+                "| Description     ",
+            };
+
             PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = skip,
@@ -65,7 +73,157 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = false,
                 Logger = GetLogger(),
                 SearchTerm = "json",
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" }
+                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Verbosity = PackageSearchVerbosity.Normal,
+                JsonFormat = false
+            };
+
+            // Act
+            await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
+
+            // Assert
+            foreach (var expected in expectedValues)
+            {
+                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
+            }
+
+            foreach (var notExpected in notExpectedValues)
+            {
+                Assert.DoesNotContain(notExpected, ColoredMessage.Select(tuple => tuple.Item1));
+            }
+
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
+        }
+
+        [Theory]
+        [InlineData(0, 10, true)]
+        [InlineData(0, 20, false)]
+        [InlineData(5, 10, true)]
+        [InlineData(10, 20, false)]
+        public async Task PackageSearchRunner_TableFormatMinimalVerbosity_OnePackageTableOutputted(int skip, int take, bool prerelease)
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            var expectedValues = new List<string>
+            {
+                "| Package ID           ",
+                "| Latest Version ",
+                "|----------------------",
+                "|----------------",
+                "| ",
+                "",
+                "Fake.Newtonsoft.",
+                "Json",
+                "",
+                " ",
+                "| 12.0.3         ",
+            };
+
+            var notExpectedValues = new List<string>
+            {
+                "| Authors           ",
+                "| Downloads   ",
+                "| Vulnerable ",
+                "| Deprecation                      ",
+                "| Project URL   ",
+                "| Description     ",
+            };
+
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = skip,
+                Take = take,
+                Prerelease = prerelease,
+                ExactMatch = false,
+                Logger = GetLogger(),
+                SearchTerm = "json",
+                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Verbosity = PackageSearchVerbosity.Minimal,
+                JsonFormat = false
+            };
+
+            // Act
+            await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
+
+            // Assert
+            foreach (var expected in expectedValues)
+            {
+                Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
+            }
+
+            foreach (var notExpected in notExpectedValues)
+            {
+                Assert.DoesNotContain(notExpected, ColoredMessage.Select(tuple => tuple.Item1));
+            }
+
+            Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
+        }
+
+        [Theory]
+        [InlineData(0, 10, true)]
+        [InlineData(0, 20, false)]
+        [InlineData(5, 10, true)]
+        [InlineData(10, 20, false)]
+        public async Task PackageSearchRunner_TableFormatDetailedVerbosity_OnePackageTableOutputted(int skip, int take, bool prerelease)
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            var expectedValues = new List<string>
+                {
+                    "| Package ID           ",
+                    "| Latest Version ",
+                    "| Authors           ",
+                    "| Downloads   ",
+                    "| Vulnerable ",
+                    "| Deprecation                      ",
+                    "| Project URL   ",
+                    "| Description     ",
+                    "|----------------------",
+                    "|----------------",
+                    "|-------------------",
+                    "|-------------",
+                    "|------------",
+                    "|----------------------------------",
+                    "|---------------",
+                    "|-----------------",
+                    " ",
+                    "Fake.Newtonsoft.",
+                    " ",
+                    " ",
+                    "| 12.0.3         ",
+                    "| James Newton-King ",
+                    "| 531,607,259 ",
+                    "| N/A        ",
+                    "| This package has been deprecated ",
+                    "| http://myuri/ ",
+                    "| My description. "
+                };
+
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = skip,
+                Take = take,
+                Prerelease = prerelease,
+                ExactMatch = false,
+                Logger = GetLogger(),
+                SearchTerm = "json",
+                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Verbosity = PackageSearchVerbosity.Detailed,
+                JsonFormat = false
             };
 
             // Act
@@ -81,6 +239,120 @@ namespace NuGet.CommandLine.Xplat.Tests
             }
 
             Assert.Contains(Tuple.Create("Json", ConsoleColor.Red), ColoredMessage);
+        }
+
+        [Theory]
+        [InlineData(0, 10, true)]
+        [InlineData(0, 20, false)]
+        [InlineData(5, 10, true)]
+        [InlineData(10, 20, false)]
+        public async Task PackageSearchRunner_JsonFormatNormalVerbosity_OnePackageJsonOutputted(int skip, int take, bool prerelease)
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = skip,
+                Take = take,
+                Prerelease = prerelease,
+                ExactMatch = false,
+                Logger = GetLogger(),
+                SearchTerm = "json",
+                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Verbosity = PackageSearchVerbosity.Normal,
+                JsonFormat = true
+            };
+
+            // Act
+            await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
+
+            // Assert
+            string message = _fixture.NormalizeNewlines(Message);
+            Assert.Contains(_fixture.ExpectedSearchResultNormal, message);
+        }
+
+        [Theory]
+        [InlineData(0, 10, true)]
+        [InlineData(0, 20, false)]
+        [InlineData(5, 10, true)]
+        [InlineData(10, 20, false)]
+        public async Task PackageSearchRunner_JsonFormatMinimalVerbosity_OnePackageJsonOutputted(int skip, int take, bool prerelease)
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = skip,
+                Take = take,
+                Prerelease = prerelease,
+                ExactMatch = false,
+                Logger = GetLogger(),
+                SearchTerm = "json",
+                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Verbosity = PackageSearchVerbosity.Minimal,
+                JsonFormat = true
+            };
+
+            // Act
+            await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
+
+            // Assert
+            string message = _fixture.NormalizeNewlines(Message);
+            Assert.Contains(_fixture.ExpectedSearchResultMinimal, message);
+        }
+
+        [Theory]
+        [InlineData(0, 10, true)]
+        [InlineData(0, 20, false)]
+        [InlineData(5, 10, true)]
+        [InlineData(10, 20, false)]
+        public async Task PackageSearchRunner_JsonFormatDetailedVerbosity_OnePackageJsonOutputted(int skip, int take, bool prerelease)
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = skip,
+                Take = take,
+                Prerelease = prerelease,
+                ExactMatch = false,
+                Logger = GetLogger(),
+                SearchTerm = "json",
+                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Verbosity = PackageSearchVerbosity.Detailed,
+                JsonFormat = true
+            };
+
+            // Act
+            await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
+
+            // Assert
+            string message = _fixture.NormalizeNewlines(Message);
+            Assert.Contains(_fixture.ExpectedSearchResultDetailed, message);
         }
 
         [Fact]

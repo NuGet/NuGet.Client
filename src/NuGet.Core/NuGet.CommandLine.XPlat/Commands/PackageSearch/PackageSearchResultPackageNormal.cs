@@ -14,6 +14,8 @@ namespace NuGet.CommandLine.XPlat
         [JsonProperty("authors")]
         public string Authors { get; set; }
 
+        public PackageSearchResultPackageNormal() : base() { }
+
         public PackageSearchResultPackageNormal(IPackageSearchMetadata packageSearchMetadata) : base(packageSearchMetadata)
         {
             Downloads = packageSearchMetadata.DownloadCount;

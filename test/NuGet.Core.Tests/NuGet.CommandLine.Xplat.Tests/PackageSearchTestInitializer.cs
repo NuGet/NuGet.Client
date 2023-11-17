@@ -18,6 +18,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         internal Func<PackageSearchArgs, string, Task<int>> SetupSettingsAndRunSearchAsync { get; set; }
         internal string StoredErrorMessage { get; set; }
         internal List<Tuple<string, ConsoleColor>> ColoredMessage { get; set; }
+        internal string Message { get; set; }
 
         public PackageSearchTestInitializer()
         {
@@ -30,6 +31,10 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             loggerWithColorMock.Setup(x => x.LogMinimal(It.IsAny<string>(), It.IsAny<ConsoleColor>()))
                 .Callback<string, ConsoleColor>((message, color) => { ColoredMessage.Add(Tuple.Create(message, color)); });
+
+            loggerWithColorMock.Setup(x => x.LogMinimal(It.IsAny<string>()))
+                .Callback<string>((message) => { Message += message + "\n"; });
+
             GetLogger = () => loggerWithColorMock.Object;
 
             CapturedArgs = null;
