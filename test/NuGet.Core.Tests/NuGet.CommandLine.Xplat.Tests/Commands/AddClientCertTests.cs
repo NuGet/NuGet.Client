@@ -30,13 +30,9 @@ namespace NuGet.CommandLine.Xplat.Tests
                 var testLoggerCurrent = new TestLogger();
                 AddVerbParser.Register(currentCli, () => testLoggerCurrent);
 
-                var newCli = new RootCommand();
+                var newCli = new CliRootCommand();
                 var testLoggerNew = new TestLogger();
-                XPlat.Commands.AddVerbParser.Register(newCli, getLogger: () => testLoggerNew, commandExceptionHandler: e =>
-                {
-                    XPlat.Program.LogException(e, testLoggerNew);
-                    return 1;
-                });
+                XPlat.Commands.AddVerbParser.Register(newCli, getLogger: () => testLoggerNew);
 
                 // Act
                 var settings = file1.LoadSettingsFromConfigFile();
@@ -53,7 +49,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
                 var settings2 = file2.LoadSettingsFromConfigFile();
                 var clientCertificateProvider2 = new ClientCertificateProvider(settings2);
-                int statusNew = newCli.Invoke(new[]
+                int statusNew = newCli.Parse(new[]
                 {
                     "add",
                     "client-cert",
@@ -61,7 +57,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     "--path", file2.CertificateAbsoluteFilePath,
                     "--password", file2.CertificatePassword,
                     "--configfile", file2.ConfigFile
-                });
+                }).Invoke();
 
                 // Assert
                 CommandTestUtils.AssertEqualCommandOutput(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);

@@ -15,14 +15,18 @@ namespace NuGet.CommandLine.XPlat.Commands
     [System.CodeDom.Compiler.GeneratedCode("Microsoft.VisualStudio.TextTemplating.VSHost.TextTemplatingService", null)]
     internal static class CommandParsers
     {
-        public static void Register(Command app, Func<ILogger> getLogger, Func<Exception, int> commandExceptionHandler)
+        public static void Register(CliCommand app, Func<ILogger> getLogger)
         {
-            AddVerbParser.Register(app, getLogger, commandExceptionHandler);
-            DisableVerbParser.Register(app, getLogger, commandExceptionHandler);
-            EnableVerbParser.Register(app, getLogger, commandExceptionHandler);
-            ListVerbParser.Register(app, getLogger, commandExceptionHandler);
-            RemoveVerbParser.Register(app, getLogger, commandExceptionHandler);
-            UpdateVerbParser.Register(app, getLogger, commandExceptionHandler);
+            AddVerbParser.Register(app, getLogger);
+
+            PushCommand.Register(app, getLogger);
+            LocalsCommand.Register(app, getLogger);
+
+            DisableVerbParser.Register(app, getLogger);
+            EnableVerbParser.Register(app, getLogger);
+            ListVerbParser.Register(app, getLogger);
+            RemoveVerbParser.Register(app, getLogger);
+            UpdateVerbParser.Register(app, getLogger);
         }
     }
 }

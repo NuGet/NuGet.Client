@@ -26,17 +26,13 @@ namespace NuGet.CommandLine.Xplat.Tests
             var testLoggerCurrent = new TestLogger();
             AddVerbParser.Register(currentCli, () => testLoggerCurrent);
 
-            var newCli = new RootCommand();
+            var newCli = new CliRootCommand();
             var testLoggerNew = new TestLogger();
-            XPlat.Commands.AddVerbParser.Register(newCli, getLogger: () => testLoggerNew, commandExceptionHandler: e =>
-            {
-                XPlat.Program.LogException(e, testLoggerNew);
-                return 1;
-            });
+            XPlat.Commands.AddVerbParser.Register(newCli, getLogger: () => testLoggerNew);
 
             // Act
             int statusCurrent = currentCli.Execute(new[] { "add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", file1 });
-            int statusNew = newCli.Invoke(new[] { "add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", file2 });
+            int statusNew = newCli.Parse(new[] { "add", "source", "https://api.nuget.org/v3/index.json", "--name", "NuGetV3", "--configfile", file2 }).Invoke();
 
             // Assert
             CommandTestUtils.AssertEqualCommandOutput(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);

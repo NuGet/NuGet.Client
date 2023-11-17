@@ -21,17 +21,13 @@ namespace NuGet.CommandLine.Xplat.Tests
             var testLoggerCurrent = new TestLogger();
             ListVerbParser.Register(currentCli, () => testLoggerCurrent);
 
-            var newCli = new RootCommand();
+            var newCli = new CliRootCommand();
             var testLoggerNew = new TestLogger();
-            XPlat.Commands.ListVerbParser.Register(newCli, getLogger: () => testLoggerNew, commandExceptionHandler: e =>
-            {
-                XPlat.Program.LogException(e, testLoggerNew);
-                return 1;
-            });
+            XPlat.Commands.ListVerbParser.Register(newCli, getLogger: () => testLoggerNew);
 
             // Act
             int statusCurrent = currentCli.Execute(cmd);
-            int statusNew = newCli.Invoke(cmd);
+            int statusNew = newCli.Parse(cmd).Invoke();
 
             // Assert
             CommandTestUtils.AssertEqualCommandOutput(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);

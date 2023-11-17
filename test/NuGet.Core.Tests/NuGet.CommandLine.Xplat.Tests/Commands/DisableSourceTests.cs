@@ -31,26 +31,18 @@ namespace NuGet.CommandLine.Xplat.Tests
             AddVerbParser.Register(currentCli, () => testLoggerCurrent); // needed for add command
             DisableVerbParser.Register(currentCli, () => testLoggerCurrent);
 
-            var newCli = new RootCommand();
+            var newCli = new CliRootCommand();
             var testLoggerNew = new TestLogger();
-            XPlat.Commands.AddVerbParser.Register(newCli, getLogger: () => testLoggerNew, commandExceptionHandler: e =>
-            {
-                XPlat.Program.LogException(e, testLoggerNew);
-                return 1;
-            });
-            XPlat.Commands.DisableVerbParser.Register(newCli, getLogger: () => testLoggerNew, commandExceptionHandler: e =>
-            {
-                XPlat.Program.LogException(e, testLoggerNew);
-                return 1;
-            });
+            XPlat.Commands.AddVerbParser.Register(newCli, getLogger: () => testLoggerNew);
+            XPlat.Commands.DisableVerbParser.Register(newCli, getLogger: () => testLoggerNew);
 
             // Arrange sources
             Assert.Equal(0, currentCli.Execute(prepareSourceCmd1));
-            Assert.Equal(0, newCli.Invoke(prepareSourceCmd2));
+            Assert.Equal(0, newCli.Parse(prepareSourceCmd2).Invoke());
 
             // Act
             int statusCurrent = currentCli.Execute(cmd1);
-            int statusNew = newCli.Invoke(cmd2);
+            int statusNew = newCli.Parse(cmd2).Invoke();
 
             // Assert
             CommandTestUtils.AssertEqualCommandOutput(statusCurrent, statusNew, testLoggerCurrent, testLoggerNew);

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -110,19 +111,19 @@ namespace NuGet.XPlat.FuncTest
                 }
 
                 var logger = new TestCommandOutputLogger();
-                var testApp = new CommandLineApplication();
+                var testApp = new CliRootCommand();
                 var mockCommandRunner = new Mock<IPackageReferenceCommandRunner>();
                 mockCommandRunner
                     .Setup(m => m.ExecuteCommand(It.IsAny<PackageReferenceArgs>(), It.IsAny<MSBuildAPIUtility>()))
                     .ReturnsAsync(0);
 
-                testApp.Name = "dotnet nuget_test";
                 AddPackageReferenceCommand.Register(testApp,
                     () => logger,
                     () => mockCommandRunner.Object);
 
                 // Act
-                var result = testApp.Execute(argList.ToArray());
+                var result = testApp.Parse(argList.ToArray());
+                var a = result.Action.Invoke(result);
 
                 XPlatTestUtils.DisposeTemporaryFile(projectPath);
 
@@ -140,7 +141,7 @@ namespace NuGet.XPlat.FuncTest
                 p.Prerelease == !string.IsNullOrEmpty(prereleaseOption)),
                 It.IsAny<MSBuildAPIUtility>()));
 
-                Assert.Equal(0, result);
+                Assert.Equal(0, a);
             }
         }
 

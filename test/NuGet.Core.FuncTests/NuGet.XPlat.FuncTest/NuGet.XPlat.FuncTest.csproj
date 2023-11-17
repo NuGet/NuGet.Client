@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MSTest.TestAdapter" />
     <PackageReference Include="Microsoft.Build.Runtime" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />

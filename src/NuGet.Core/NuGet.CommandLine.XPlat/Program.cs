@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.CommandLine;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.CommandLineUtils;
+//using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 
@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.XPlat
 #if DEBUG
         private const string DebugOption = "--debug";
 #endif
-        private const string DotnetNuGetAppName = "dotnet nuget";
+        //private const string DotnetNuGetAppName = "dotnet nuget";
         private const string DotnetPackageAppName = "NuGet.CommandLine.XPlat.dll package";
 
         public static int Main(string[] args)
@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.XPlat
         {
 #if DEBUG
             // Uncomment the following when debugging. Also uncomment the PackageReference for Microsoft.Build.Locator.
-            /*try
+            try
             {
                 // .NET JIT compiles one method at a time. If this method calls `MSBuildLocator` directly, the
                 // try block is never entered if Microsoft.Build.Locator.dll can't be found. So, run it in a
@@ -47,7 +47,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 // MSBuildLocator is used only to enable Visual Studio debugging.
                 // It's not needed when using a patched dotnet sdk, so it doesn't matter if it fails.
-            }*/
+            }
 
             var debugNuGetXPlat = Environment.GetEnvironmentVariable("DEBUG_NUGET_XPLAT");
 
@@ -71,11 +71,11 @@ namespace NuGet.CommandLine.XPlat
 
             NuGet.Common.Migrations.MigrationRunner.Run();
 
-            CommandLineApplication app = InitializeApp(args, log);
-            Command command = InitializeSystemCommandLineApp(args, log);
+            //CommandLineApplication app = InitializeApp(args, log);
+            CliCommand command = InitializeSystemCommandLineApp(args, log);
 
             // Remove the correct item in array for "package" commands. Only do this when "add package", "remove package", etc... are being run.
-            if (app.Name == DotnetPackageAppName)
+            if (command.Name == DotnetPackageAppName)
             {
                 // package add ...
                 args[0] = null;
@@ -88,52 +88,88 @@ namespace NuGet.CommandLine.XPlat
 
             XPlatUtility.SetUserAgent();
 
-            app.OnExecute(() =>
-            {
-                app.ShowHelp();
+            //app.OnExecute(() =>
+            //{
+            //    app.ShowHelp();
 
-                return 0;
-            });
+            //    return 0;
+            //});
 
-            log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.OutputNuGetVersion, app.FullName, app.LongVersionGetter()));
+            log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.OutputNuGetVersion, command.Name, ""));
 
             int exitCode = 0;
             ParseResult result = command.Parse(args);
-            if (result.Errors.Any())
-            {
-                // Fallback to old way for now: CommandLineUtils
-                try
-                {
-                    exitCode = app.Execute(args);
-                }
-                catch (Exception e)
-                {
-                    bool handled = HandleCommandLineHelp(args, log);
-                    if (!handled)
-                    {
-                        LogException(e, log);
-                        ShowBestHelp(app, args);
-                    }
+            //if (result.Errors.Any())
+            //{
+            //    // Fallback to old way for now: CommandLineUtils
+            //    try
+            //    {
+            //        exitCode = app.Execute(args);
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        bool handled = HandleCommandLineHelp(args, log);
+            //        if (!handled)
+            //        {
+            //            LogException(e, log);
+            //            ShowBestHelp(app, args);
+            //        }
 
+            //        exitCode = 1;
+            //    }
+            //    finally
+            //    {
+            //        // Limit the exit code range to 0-255 to support POSIX
+            //        if (exitCode < 0 || exitCode > 255)
+            //        {
+            //            exitCode = 1;
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            // Run with System.CommandLine
+            try
+            {
+                exitCode = result.Action.Invoke(result);
+            }
+            catch (Exception e)
+            {
+                bool handled = HandleCommandLineHelp(args, log);
+                if (!handled)
+                {
+                    LogException(e, log);
+                    var tokenList = result.Tokens.TakeWhile(token => token.Type == CliTokenType.Argument || token.Type == CliTokenType.Command || token.Type == CliTokenType.Directive).Select(t => t.Value).ToList();
+                    tokenList.Add("-h");
+                    command.Parse(tokenList).Invoke();
+                    //command.Parse("-h").Invoke();
+                    //ShowBestHelp(app, args);
+                }
+
+                exitCode = 1;
+            }
+            finally
+            {
+                // Limit the exit code range to 0-255 to support POSIX
+                if (exitCode < 0 || exitCode > 255)
+                {
                     exitCode = 1;
                 }
-                finally
-                {
-                    // Limit the exit code range to 0-255 to support POSIX
-                    if (exitCode < 0 || exitCode > 255)
-                    {
-                        exitCode = 1;
-                    }
-                }
             }
-            else
-            {
-                // Run with System.CommandLine
-                exitCode = command.Invoke(args);
-            }
+            //}
 
             return exitCode;
         }
+
+        //public static void ShowHelp(this ParseResult parseResult)
+        //{
+        //    // take from the start of the list until we hit an option/--/unparsed token
+        //    // since commands can have arguments, we must take those as well in order to get accurate help
+        //    var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == CliTokenType.Argument || token.Type == CliTokenType.Command || token.Type == CliTokenType.Directive).Select(t => t.Value).ToList();
+        //    tokenList.Add("-h");
+        //    parseResult
+        //    Instance.Parse(tokenList).Invoke();
+        //}
 
         private static bool HandleCommandLineHelp(string[] args, CommandOutputLogger log)
         {
@@ -199,20 +235,7 @@ namespace NuGet.CommandLine.XPlat
             };
         }
 
-        private static Command InitializeSystemCommandLineApp(string[] args, CommandOutputLogger log)
-        {
-            var app = new RootCommand();
-
-            Commands.CommandParsers.Register(app, getLogger: GenerateLoggerHidePrefix(log), commandExceptionHandler: e =>
-            {
-                LogException(e, log);
-                return 1;
-            });
-
-            return app;
-        }
-
-        private static CommandLineApplication InitializeApp(string[] args, CommandOutputLogger log)
+        private static CliCommand InitializeSystemCommandLineApp(string[] args, CommandOutputLogger log)
         {
             // Many commands don't want prefixes output. Use this func instead of () => log to set the HidePrefix property first.
             Func<ILogger> getHidePrefixLogger = GenerateLoggerHidePrefix(log);
@@ -220,62 +243,103 @@ namespace NuGet.CommandLine.XPlat
             // Allow commands to set the NuGet log level
             Action<LogLevel> setLogLevel = (logLevel) => log.VerbosityLevel = logLevel;
 
-            var app = new CommandLineApplication();
+            var app = new CliCommand(DotnetPackageAppName);
 
             if (args.Any() && args[0] == "package")
             {
                 // "dotnet * package" commands
-                app.Name = DotnetPackageAppName;
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
-                RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
-                ListPackageCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new ListPackageCommandRunner());
+                //RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
+                //ListPackageCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new ListPackageCommandRunner());
             }
             else
             {
                 // "dotnet nuget *" commands
-                app.Name = DotnetNuGetAppName;
-                CommandParsers.Register(app, getHidePrefixLogger);
+                Commands.CommandParsers.Register(app, getLogger: GenerateLoggerHidePrefix(log));
                 DeleteCommand.Register(app, getHidePrefixLogger);
                 PushCommand.Register(app, getHidePrefixLogger);
                 LocalsCommand.Register(app, getHidePrefixLogger);
                 VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
-                TrustedSignersCommand.Register(app, getHidePrefixLogger, setLogLevel);
-                SignCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new SignCommandRunner());
+                //TrustedSignersCommand.Register(app, getHidePrefixLogger, setLogLevel);
+                //SignCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new SignCommandRunner());
             }
 
-            app.FullName = Strings.App_FullName;
-            app.HelpOption(XPlatUtility.HelpOption);
-            app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
+            //app.FullName = Strings.App_FullName;
+            //app.HelpOption(XPlatUtility.HelpOption);
+            //app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
 
             return app;
+
+            //Commands.CommandParsers.Register(app, getLogger: GenerateLoggerHidePrefix(log));
+            //VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
+
+            //return app;
         }
 
-        private static void ShowBestHelp(CommandLineApplication app, string[] args)
-        {
-            CommandLineApplication lastCommand = null;
-            List<CommandLineApplication> commands = app.Commands;
-            // tunnel down into the args, and show the best help possible.
-            foreach (string arg in args)
-            {
-                foreach (CommandLineApplication command in commands)
-                {
-                    if (arg == command.Name)
-                    {
-                        lastCommand = command;
-                        commands = command.Commands;
-                        break;
-                    }
-                }
-            }
+        //private static CommandLineApplication InitializeApp(string[] args, CommandOutputLogger log)
+        //{
+        //    // Many commands don't want prefixes output. Use this func instead of () => log to set the HidePrefix property first.
+        //    Func<ILogger> getHidePrefixLogger = GenerateLoggerHidePrefix(log);
 
-            if (lastCommand != null)
-            {
-                lastCommand.ShowHelp();
-            }
-            else
-            {
-                app.ShowHelp();
-            }
-        }
+        //    // Allow commands to set the NuGet log level
+        //    Action<LogLevel> setLogLevel = (logLevel) => log.VerbosityLevel = logLevel;
+
+        //    var app = new CommandLineApplication();
+
+        //    if (args.Any() && args[0] == "package")
+        //    {
+        //        // "dotnet * package" commands
+        //        app.Name = DotnetPackageAppName;
+        //        AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
+        //        RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
+        //        ListPackageCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new ListPackageCommandRunner());
+        //    }
+        //    else
+        //    {
+        //        // "dotnet nuget *" commands
+        //        app.Name = DotnetNuGetAppName;
+        //        CommandParsers.Register(app, getHidePrefixLogger);
+        //        DeleteCommand.Register(app, getHidePrefixLogger);
+        //        PushCommand.Register(app, getHidePrefixLogger);
+        //        LocalsCommand.Register(app, getHidePrefixLogger);
+        //        VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
+        //        TrustedSignersCommand.Register(app, getHidePrefixLogger, setLogLevel);
+        //        SignCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new SignCommandRunner());
+        //    }
+
+        //    app.FullName = Strings.App_FullName;
+        //    app.HelpOption(XPlatUtility.HelpOption);
+        //    app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
+
+        //    return app;
+        //}
+
+        //private static void ShowBestHelp(CommandLineApplication app, string[] args)
+        //{
+        //    CommandLineApplication lastCommand = null;
+        //    List<CommandLineApplication> commands = app.Commands;
+        //    // tunnel down into the args, and show the best help possible.
+        //    foreach (string arg in args)
+        //    {
+        //        foreach (CommandLineApplication command in commands)
+        //        {
+        //            if (arg == command.Name)
+        //            {
+        //                lastCommand = command;
+        //                commands = command.Commands;
+        //                break;
+        //            }
+        //        }
+        //    }
+
+        //    if (lastCommand != null)
+        //    {
+        //        lastCommand.ShowHelp();
+        //    }
+        //    else
+        //    {
+        //        app.ShowHelp();
+        //    }
+        //}
     }
 }
