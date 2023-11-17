@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -18,6 +19,13 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class AuthorAndDownloadCount : UserControl, INotifyPropertyChanged
     {
+        public static readonly DependencyProperty TrustedOwnersProperty =
+            DependencyProperty.Register(
+                nameof(TrustedOwners),
+                typeof(ImmutableList<string>),
+                typeof(AuthorAndDownloadCount),
+                new PropertyMetadata(OnPropertyChanged));
+
         public static readonly DependencyProperty AuthorProperty =
             DependencyProperty.Register(
                 nameof(Author),
@@ -35,6 +43,32 @@ namespace NuGet.PackageManagement.UI
         public AuthorAndDownloadCount()
         {
             InitializeComponent();
+        }
+
+        public ImmutableList<string> TrustedOwners
+        {
+            get
+            {
+                return GetValue(TrustedOwnersProperty) as ImmutableList<string>;
+            }
+            set
+            {
+                SetValue(TrustedOwnersProperty, value);
+                UpdateControl();
+            }
+        }
+
+        public string Author
+        {
+            get
+            {
+                return GetValue(AuthorProperty) as string;
+            }
+            set
+            {
+                SetValue(AuthorProperty, value);
+                UpdateControl();
+            }
         }
 
         public long? DownloadCount
@@ -83,14 +117,24 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateControl()
         {
-            if (!string.IsNullOrEmpty(Author))
+            if (TrustedOwners != null && TrustedOwners.Count > 0)
             {
-                _textBlockAuthor.Text = Author;
-                _textBlockAuthor.Visibility = Visibility.Visible;
+                _panelOwners.Visibility = Visibility.Visible;
+                _textBlockAuthor.Visibility = Visibility.Collapsed;
             }
             else
             {
-                _textBlockAuthor.Visibility = Visibility.Collapsed;
+                _panelOwners.Visibility = Visibility.Collapsed;
+
+                if (!string.IsNullOrEmpty(Author))
+                {
+                    _textBlockAuthor.Text = Author;
+                    _textBlockAuthor.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    _textBlockAuthor.Visibility = Visibility.Collapsed;
+                }
             }
 
             // Generate the textbox for download count.
@@ -129,9 +173,9 @@ namespace NuGet.PackageManagement.UI
                 _textBlockDownloadCount.Visibility = Visibility.Collapsed;
             }
 
-            // set the visiblity of the separator.
-            if (_textBlockAuthor.Visibility == Visibility.Visible &&
-                _textBlockDownloadCount.Visibility == Visibility.Visible)
+            // set the visibility of the separator.
+            if ((_panelOwners.Visibility == Visibility.Visible || _textBlockAuthor.Visibility == Visibility.Visible)
+                && _textBlockDownloadCount.Visibility == Visibility.Visible)
             {
                 _separator.Visibility = Visibility.Visible;
             }
@@ -141,7 +185,8 @@ namespace NuGet.PackageManagement.UI
             }
 
             // set the visibility of the control itself.
-            if (_textBlockAuthor.Visibility == Visibility.Collapsed &&
+            if (_panelOwners.Visibility == Visibility.Collapsed &&
+                _textBlockAuthor.Visibility == Visibility.Collapsed &&
                 _textBlockDownloadCount.Visibility == Visibility.Collapsed)
             {
                 _self.Visibility = Visibility.Collapsed;
