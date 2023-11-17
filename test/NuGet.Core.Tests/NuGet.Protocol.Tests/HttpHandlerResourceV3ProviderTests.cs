@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -122,6 +123,46 @@ namespace NuGet.Protocol.Tests
                     yield return delegatingHandler;
                     delegatingHandler = delegatingHandler.InnerHandler as DelegatingHandler;
                 }
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task TryCreate_WhenCertificateValidationIsConfigured_HandlerShouldReflectConfiguration(bool disableCertificateValidation)
+        {
+            // Arrange
+            Mock<IProxyCache> proxyCache = new();
+            proxyCache.Setup(pc => pc.GetProxy(It.IsAny<Uri>())).Returns((IWebProxy)null);
+
+            PackageSource packageSource = new(_testPackageSourceURL, "source")
+            {
+                DisableTLSCertificateValidation = disableCertificateValidation
+            };
+
+            SourceRepository sourceRepository = new(packageSource, Array.Empty<INuGetResourceProvider>());
+
+            HttpHandlerResourceV3Provider target = new(proxyCache.Object);
+
+            // Act
+            var result = await target.TryCreate(sourceRepository, CancellationToken.None);
+
+            // Assert
+            result.Item1.Should().BeTrue();
+            HttpHandlerResourceV3 resource = (HttpHandlerResourceV3)result.Item2;
+            resource.Should().NotBeNull();
+
+            HttpClientHandler clientHandler = resource.ClientHandler;
+
+            if (disableCertificateValidation)
+            {
+                clientHandler.ServerCertificateCustomValidationCallback.Should().NotBeNull();
+                var callbackResult = clientHandler.ServerCertificateCustomValidationCallback.Invoke(null, null, null, SslPolicyErrors.RemoteCertificateChainErrors);
+                callbackResult.Should().BeTrue();
+            }
+            else
+            {
+                clientHandler.ServerCertificateCustomValidationCallback.Should().BeNull();
             }
         }
     }
