@@ -2009,8 +2009,9 @@ EndProject";
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include=""..\A\A.Util\A.Util.csproj"">
+    <ProjectReference Include=""..\A\A.Util\A.Util.csproj"" Version=""[X, 17.0.0)"">
       <Project>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Project>
+        <Version>""[X, 13.0.0)""</Version>
       <Name>A.Util</Name>
     </ProjectReference>
   </ItemGroup>

@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Shared;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
@@ -28,6 +26,8 @@ namespace NuGet.ProjectModel
 
         public LibraryIncludeFlags PrivateAssets { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
 
+        public string VersionRange { get; set; }
+
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();
@@ -37,6 +37,7 @@ namespace NuGet.ProjectModel
             combiner.AddStruct(IncludeAssets);
             combiner.AddStruct(ExcludeAssets);
             combiner.AddStruct(PrivateAssets);
+            combiner.AddObject(VersionRange);
 
             return combiner.CombinedHash;
         }
@@ -67,7 +68,8 @@ namespace NuGet.ProjectModel
                 && StringComparer.OrdinalIgnoreCase.Equals(ProjectUniqueName, other.ProjectUniqueName)
                 && IncludeAssets == other.IncludeAssets
                 && ExcludeAssets == other.ExcludeAssets
-                && PrivateAssets == other.PrivateAssets;
+                && PrivateAssets == other.PrivateAssets
+                && StringComparer.Ordinal.Equals(VersionRange, other.VersionRange);
         }
 
         public ProjectRestoreReference Clone()
@@ -78,6 +80,7 @@ namespace NuGet.ProjectModel
             clonedObject.ExcludeAssets = ExcludeAssets;
             clonedObject.IncludeAssets = IncludeAssets;
             clonedObject.PrivateAssets = PrivateAssets;
+            clonedObject.VersionRange = VersionRange;
             return clonedObject;
         }
     }
