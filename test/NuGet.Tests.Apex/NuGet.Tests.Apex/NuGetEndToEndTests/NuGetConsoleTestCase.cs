@@ -969,6 +969,91 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        [DataTestMethod]
+        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
+        public async Task VerifyCmdFindPackageExactMatchInPMC(ProjectTemplate projectTemplate)
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var PackageName = "TestPackage";
+                var v100 = "1.0.0";
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, v100);
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                {
+                    SolutionService solutionService = VisualStudio.Get<SolutionService>();
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    // Act
+                    nugetConsole.Execute($"find-package {PackageName} -ExactMatch");
+
+                    // Assert
+                    Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(PackageName), $"The package name {PackageName} doesn't show correctly in PMC.");
+                    Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(v100), $"The package version {v100} doesn't show correctly in PMC.");
+                }
+            }
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
+        public async Task VerifyCmdGetPackageUpdateInPMC(ProjectTemplate projectTemplate)
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageName = "TestPackage";
+                var v100 = "1.0.0";
+                var v200 = "2.0.0";
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v200);
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                {
+                    // Arrange
+                    SolutionService solutionService = VisualStudio.Get<SolutionService>();
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    nugetConsole.InstallPackageFromPMC(packageName, v100);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+                    nugetConsole.Clear();
+
+                    // Act
+                    nugetConsole.Execute("get-package -update");
+
+                    // Assert
+                    Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(v200), $"The latest package version {v200} doesn't show correctly in PMC.");
+                }
+            }
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
+        public void VerifyCmdGetProjectInPMC(ProjectTemplate projectTemplate)
+        {
+            EnsureVisualStudioHost();
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
+            {
+                // Arrange
+                SolutionService solutionService = VisualStudio.Get<SolutionService>();
+                var nugetConsole = GetConsole(testContext.Project);
+
+                //Act
+                nugetConsole.Execute("Get-Project");
+
+                // Assert
+                Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(testContext.Project.Name), "Fail to find the ProjectName in PMC");
+                Assert.IsTrue(nugetConsole.IsMessageFoundInPMC("C#"), "Fail to find the project type in PMC");
+                Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(testContext.Project.FullPath), "Fail to find the project's FullName in PMC");
+            }
+        }
+
         // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
         // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
         public static IEnumerable<object[]> GetNetCoreTemplates()
