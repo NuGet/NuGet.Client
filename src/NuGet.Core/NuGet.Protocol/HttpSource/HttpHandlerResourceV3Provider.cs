@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
@@ -55,6 +57,11 @@ namespace NuGet.Protocol
                 Proxy = proxy,
                 AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate),
             };
+
+            if (packageSource.DisableTLSCertificateValidation)
+            {
+                clientHandler.ServerCertificateCustomValidationCallback = (HttpRequestMessage message, X509Certificate2 cert, X509Chain chain, SslPolicyErrors errors) => true;
+            }
 
 #if IS_DESKTOP
             if (packageSource.MaxHttpRequestsPerSource > 0)
