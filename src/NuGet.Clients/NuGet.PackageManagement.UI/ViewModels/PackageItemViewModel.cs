@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -16,13 +15,13 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
-using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -65,62 +64,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease { get; set; }
 
-        public ImmutableList<string> TrustedOwners { get; set; }
-
-        private string _owner;
-
-        public string Owner
-        {
-            get
-            {
-                return _owner;
-            }
-            set
-            {
-                _owner = value;
-                OnPropertyChanged(nameof(Owner));
-                OnPropertyChanged(nameof(ByOwner));
-            }
-        }
-
-        private string _author;
-        public string Author
-        {
-            get
-            {
-                return _author;
-            }
-            set
-            {
-                _author = value;
-                OnPropertyChanged(nameof(Author));
-                OnPropertyChanged(nameof(ByAuthor));
-            }
-        }
-
-        public string ByOwner
-        {
-            get
-            {
-                return !string.IsNullOrWhiteSpace(_owner) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByOwner, _owner) : null;
-            }
-        }
-
-        public string ByAuthor
-        {
-            get
-            {
-                return !string.IsNullOrWhiteSpace(_author) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _author) : null;
-            }
-        }
-
-        public string ByOwnerOrAuthor
-        {
-            get
-            {
-                return ByOwner ?? ByAuthor;
-            }
-        }
+        public OwnerAuthorViewModel OwnerAuthorViewModel { get; set; }
 
         /// <summary>
         /// The installed version of the package.

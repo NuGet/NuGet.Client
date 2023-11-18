@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Immutable;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -17,90 +16,11 @@ namespace NuGet.PackageManagement.UI
     /// Interaction logic for AuthorAndDownloadCount.xaml. This control is used to display
     /// the author and download count information of a package.
     /// </summary>
-    public partial class AuthorAndDownloadCount : UserControl, INotifyPropertyChanged
+    public partial class AuthorAndDownloadCount : UserControl
     {
-        public static readonly DependencyProperty TrustedOwnersProperty =
-            DependencyProperty.Register(
-                nameof(TrustedOwners),
-                typeof(ImmutableList<string>),
-                typeof(AuthorAndDownloadCount),
-                new PropertyMetadata(OnPropertyChanged));
-
-        public static readonly DependencyProperty AuthorProperty =
-            DependencyProperty.Register(
-                nameof(Author),
-                typeof(string),
-                typeof(AuthorAndDownloadCount),
-                new PropertyMetadata(OnPropertyChanged));
-
-        public static readonly DependencyProperty DownloadCountProperty =
-            DependencyProperty.Register(
-                nameof(DownloadCount),
-                typeof(long?),
-                typeof(AuthorAndDownloadCount),
-                new PropertyMetadata(OnPropertyChanged));
-
-
         public AuthorAndDownloadCount()
         {
             InitializeComponent();
-        }
-
-        public ImmutableList<string> TrustedOwners
-        {
-            get
-            {
-                return GetValue(TrustedOwnersProperty) as ImmutableList<string>;
-            }
-            set
-            {
-                SetValue(TrustedOwnersProperty, value);
-                UpdateControl();
-            }
-        }
-
-        public string Author
-        {
-            get
-            {
-                return GetValue(AuthorProperty) as string;
-            }
-            set
-            {
-                SetValue(AuthorProperty, value);
-                UpdateControl();
-            }
-        }
-
-        public long? DownloadCount
-        {
-            get
-            {
-                return GetValue(DownloadCountProperty) as long?;
-            }
-            set
-            {
-                SetValue(DownloadCountProperty, value);
-                UpdateControl();
-            }
-        }
-
-        private static void OnPropertyChanged(
-            DependencyObject dependencyObject,
-            DependencyPropertyChangedEventArgs e)
-        {
-            var control = dependencyObject as AuthorAndDownloadCount;
-            control?.UpdateControl();
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged(string propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
         }
 
         private void UpdateControl()
