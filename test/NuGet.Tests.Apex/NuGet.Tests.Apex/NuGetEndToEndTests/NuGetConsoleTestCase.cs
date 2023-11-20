@@ -991,8 +991,9 @@ namespace NuGet.Tests.Apex
                     nugetConsole.Execute($"find-package {PackageName} -ExactMatch");
 
                     // Assert
-                    Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(PackageName), $"The package name {PackageName} doesn't show correctly in PMC.");
-                    Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(v100), $"The package version {v100} doesn't show correctly in PMC.");
+                    string PMCText = nugetConsole.GetText();
+                    PMCText.Should().Contain(PackageName);
+                    PMCText.Should().Contain(v100);
                 }
             }
         }
@@ -1027,7 +1028,8 @@ namespace NuGet.Tests.Apex
                     nugetConsole.Execute("get-package -update");
 
                     // Assert
-                    Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(v200), $"The latest package version {v200} doesn't show correctly in PMC.");
+                    string PMCText = nugetConsole.GetText();
+                    PMCText.Should().Contain(v200);
                 }
             }
         }
@@ -1048,9 +1050,10 @@ namespace NuGet.Tests.Apex
                 nugetConsole.Execute("Get-Project");
 
                 // Assert
-                Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(testContext.Project.Name), "Fail to find the ProjectName in PMC");
-                Assert.IsTrue(nugetConsole.IsMessageFoundInPMC("C#"), "Fail to find the project type in PMC");
-                Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(testContext.Project.FullPath), "Fail to find the project's FullName in PMC");
+                string PMCText = nugetConsole.GetText();
+                PMCText.Should().Contain(testContext.Project.Name);
+                PMCText.Should().Contain("C#");
+                PMCText.Should().Contain(testContext.Project.FullPath);
             }
         }
 
