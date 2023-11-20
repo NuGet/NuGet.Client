@@ -1,0 +1,30 @@
+resources:
+  pipelines:
+  - pipeline: ComponentBuildUnderTest
+    source: NuGet.Client-Official
+    trigger:
+        branches:
+          - dev-*
+
+parameters:
+- name: DartLabEnvironment
+  displayName: DartLab Environment
+  type: string
+  default: Production
+  values:
+  - Production
+  - Staging
+- name: ApexAgentCleanup
+  displayName: Delete or keep VS Apex test machine for debugging
+  type: string
+  default: delete
+  values:
+  - delete
+  - stop
+
+extends:
+  template: templates/dailytests.yml
+  parameters:
+    DartLabEnvironment: ${{parameters.DartLabEnvironment}}
+    ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
+    NuGetLocalizationType: Full

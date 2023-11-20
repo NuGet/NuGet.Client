@@ -1,0 +1,91 @@
+
+parameters:
+- name: isOfficialBuild
+  type: boolean
+  default: false
+- name: DartLabEnvironment
+  displayName: DartLab Environment
+  type: string
+  default: Production
+  values:
+  - Production
+  - Staging
+- name: ApexAgentCleanup
+  displayName: Delete or keep VS Apex test machine for debugging
+  type: string
+  default: delete
+  values:
+  - delete
+  - stop
+- name: NuGetLocalizationType
+  displayName: Whether to do production-ready localization (Full), or pseudo-localization, aka PLOC, (Pseudo) for testing.
+  type: string
+  default: Full
+  values:
+  - Full
+  - Pseudo
+
+resources:
+  pipelines:
+  - pipeline: DartLab
+    source: DartLab
+    branch: main
+  - pipeline: nugetclientprivatedev
+    source: NuGet.Client-PrivateDev
+    trigger:
+        branches:
+          - dev-nkolev92-newPipeline
+  repositories:
+  - repository: DartLabTemplates
+    type: git
+    name: DartLab.Templates
+    ref: refs/heads/main
+
+variables:
+  DOTNET_NOLOGO: 1
+  Codeql.Enabled: ${{ parameters.isOfficialBuild }}
+  Codeql.TSAEnabled: ${{ parameters.isOfficialBuild }}
+
+stages:
+- stage: Initialize
+  jobs:
+  - job: GetSemanticVersion
+    displayName: Get NuGet.Client semantic version
+    timeoutInMinutes: 10
+    pool:
+      vmImage: windows-latest
+    steps:
+    - template: Initialize_Build_SemanticVersion.yml
+    - task: DownloadPipelineArtifact@2
+      displayName: "Download symbols - NonRTM artifact"
+      inputs:
+        source: NuGet.Client-Official
+        project: "devdiv"
+        pipeline: "NuGet.Client-Official"
+        artifact: "symbols - NonRTM"
+        path: $(Pipeline.Workspace)\symbols\NonRTM
+    - task: PowerShell@1
+      displayName: "Print content in folder"
+      inputs:
+        scriptType: "inlineScript"
+        inlineScript: |
+          Get-ChildItem $(Pipeline.Workspace)\symbols\NonRTM
+
+
+# Dartlab's template defines this in its own stage
+- template: Apex_Tests_On_Windows.yml
+  parameters:
+    condition: "succeeded()"
+    dependsOn:
+      - Initialize
+    variables:
+      - name: VsBootstrapperUrl
+        value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['vsbootstrapper.bootstrapperUrl']]
+      - name: GitHubStatusName
+        value: Daily Visual Studio Tests
+    isOfficialBuild: ${{parameters.isOfficialBuild}}
+    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.EndToEnd.runsettings
+    dartLabEnvironment: ${{parameters.DartLabEnvironment}}
+    testExecutionJobTimeoutInMinutes: 150
+    bootstrapperUrl: $(VsBootstrapperUrl)
+    testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
