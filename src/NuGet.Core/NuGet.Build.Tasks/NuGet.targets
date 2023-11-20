@@ -862,6 +862,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
         <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>
         <_CentralPackageVersionsEnabled>$(_CentralPackageVersionsEnabled)</_CentralPackageVersionsEnabled>
+        <CentralPackageFloatingVersionsEnabled>$(CentralPackageFloatingVersionsEnabled)</CentralPackageFloatingVersionsEnabled>
         <CentralPackageVersionOverrideEnabled>$(CentralPackageVersionOverrideEnabled)</CentralPackageVersionOverrideEnabled>
         <CentralPackageTransitivePinningEnabled>$(CentralPackageTransitivePinningEnabled)</CentralPackageTransitivePinningEnabled>
         <NuGetAudit>$(NuGetAudit)</NuGetAudit>
