@@ -964,7 +964,7 @@ namespace NuGet.Tests.Apex
                 Assert.IsTrue(nugetConsole.IsMessageFoundInPMC("Install.ps1"), "The Install.ps1 script in TestProject was not executed when the Entityframework.sqlservercompact package was installed.");
             }
         }
-        
+
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
@@ -1052,7 +1052,7 @@ namespace NuGet.Tests.Apex
                 PMCText.Should().Contain(testContext.Project.FullPath);
             }
         }
-        
+
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
             yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
