@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.CommandLine;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Configuration;
 using NuGet.Credentials;
 
@@ -13,73 +15,113 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchCommand
     {
-        public static void Register(CommandLineApplication app, Func<ILoggerWithColor> getLogger)
+        private const int DefaultTake = 20;
+        private const int DefaultSkip = 0;
+
+        public static void Register(CliRootCommand rootCommand, Func<ILoggerWithColor> getLogger)
         {
-            Register(app, getLogger, SetupSettingsAndRunSearchAsync);
+            Register(rootCommand, getLogger, SetupSettingsAndRunSearchAsync);
         }
 
-        public static void Register(CommandLineApplication app, Func<ILoggerWithColor> getLogger, Func<PackageSearchArgs, Task<int>> setupSettingsAndRunSearchAsync)
+        public static void Register(CliRootCommand rootCommand, Func<ILoggerWithColor> getLogger, Func<PackageSearchArgs, CancellationToken, Task<int>> setupSettingsAndRunSearchAsync)
         {
-            app.Command("search", pkgSearch =>
+            var searchCommand = new CliCommand("search", Strings.pkgSearch_Description);
+
+            // Define arguments and options
+            var searchTerm = new CliArgument<string>("Search Term")
             {
-                pkgSearch.Description = Strings.pkgSearch_Description;
-                CommandOption help = pkgSearch.HelpOption(XPlatUtility.HelpOption);
-                CommandArgument searchTerm = pkgSearch.Argument(
-                    "<Search Term>",
-                    Strings.pkgSearch_termDescription);
-                CommandOption sources = pkgSearch.Option(
-                    "--source",
-                    Strings.pkgSearch_SourceDescription,
-                    CommandOptionType.MultipleValue);
-                CommandOption exactMatch = pkgSearch.Option(
-                    "--exact-match",
-                    Strings.pkgSearch_ExactMatchDescription,
-                    CommandOptionType.NoValue);
-                CommandOption prerelease = pkgSearch.Option(
-                    "--prerelease",
-                    Strings.pkgSearch_PrereleaseDescription,
-                    CommandOptionType.NoValue);
-                CommandOption interactive = pkgSearch.Option(
-                    "--interactive",
-                    Strings.pkgSearch_InteractiveDescription,
-                    CommandOptionType.NoValue);
-                CommandOption take = pkgSearch.Option(
-                    "--take",
-                    Strings.pkgSearch_TakeDescription,
-                    CommandOptionType.SingleValue);
-                CommandOption skip = pkgSearch.Option(
-                    "--skip",
-                    Strings.pkgSearch_SkipDescription,
-                    CommandOptionType.SingleValue);
-
-                pkgSearch.OnExecute(async () =>
+                Description = Strings.pkgSearch_Description,
+                Arity = ArgumentArity.ZeroOrMore,
+                CustomParser = argument =>
                 {
-                    PackageSearchArgs packageSearchArgs;
-                    ILoggerWithColor logger = getLogger();
-                    try
-                    {
-                        packageSearchArgs = new PackageSearchArgs(skip.Value(), take.Value())
-                        {
-                            Sources = sources.Values,
-                            SearchTerm = searchTerm.Value,
-                            ExactMatch = exactMatch.HasValue(),
-                            Interactive = interactive.HasValue(),
-                            Prerelease = prerelease.HasValue(),
-                            Logger = logger,
-                        };
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        logger.LogError(ex.Message);
-                        return 1;
-                    }
+                    return string.Join(" ", argument.Tokens.Select(token => token.Value));
+                }
+            };
 
-                    return await setupSettingsAndRunSearchAsync(packageSearchArgs);
-                });
+            var sources = new CliOption<List<string>>("--source")
+            {
+                Description = Strings.pkgSearch_SourceDescription,
+                Arity = ArgumentArity.ZeroOrMore
+            };
+
+            var exactMatch = new CliOption<bool>("--exact-match")
+            {
+                Description = Strings.pkgSearch_ExactMatchDescription,
+                Arity = ArgumentArity.Zero
+            };
+
+            var prerelease = new CliOption<bool>("--prerelease")
+            {
+                Description = Strings.pkgSearch_PrereleaseDescription,
+                Arity = ArgumentArity.Zero
+            };
+
+            var interactive = new CliOption<bool>("--interactive")
+            {
+                Description = Strings.pkgSearch_InteractiveDescription,
+                Arity = ArgumentArity.Zero
+            };
+
+            var take = new CliOption<int>("--take")
+            {
+                Description = Strings.pkgSearch_TakeDescription,
+                DefaultValueFactory = parseResult =>
+                {
+                    return DefaultTake;
+                },
+                Arity = ArgumentArity.ExactlyOne
+            };
+
+            var skip = new CliOption<int>("--skip")
+            {
+                Description = Strings.pkgSearch_SkipDescription,
+                DefaultValueFactory = parseResult =>
+                {
+                    return DefaultSkip;
+                },
+                Arity = ArgumentArity.ExactlyOne
+            };
+
+            // Add arguments and options to the command
+            searchCommand.Arguments.Add(searchTerm);
+            searchCommand.Options.Add(sources);
+            searchCommand.Options.Add(exactMatch);
+            searchCommand.Options.Add(prerelease);
+            searchCommand.Options.Add(interactive);
+            searchCommand.Options.Add(take);
+            searchCommand.Options.Add(skip);
+
+            searchCommand.SetAction(async (parserResult, cancelationToken) =>
+            {
+                ILoggerWithColor logger = getLogger();
+
+                try
+                {
+                    var packageSearchArgs = new PackageSearchArgs
+                    {
+                        Sources = parserResult.GetValue(sources),
+                        SearchTerm = parserResult.GetValue(searchTerm),
+                        ExactMatch = parserResult.GetValue(exactMatch),
+                        Interactive = parserResult.GetValue(interactive),
+                        Prerelease = parserResult.GetValue(prerelease),
+                        Take = parserResult.GetValue(take),
+                        Skip = parserResult.GetValue(skip),
+                        Logger = logger,
+                    };
+
+                    return await setupSettingsAndRunSearchAsync(packageSearchArgs, cancelationToken);
+                }
+                catch (ArgumentException ex)
+                {
+                    logger.LogError(ex.Message);
+                    return 1;
+                }
             });
+
+            rootCommand.Subcommands.Add(searchCommand);
         }
 
-        public static async Task<int> SetupSettingsAndRunSearchAsync(PackageSearchArgs packageSearchArgs)
+        public static async Task<int> SetupSettingsAndRunSearchAsync(PackageSearchArgs packageSearchArgs, CancellationToken cancellationToken)
         {
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageSearchArgs.Logger, !packageSearchArgs.Interactive);
 
@@ -89,13 +131,10 @@ namespace NuGet.CommandLine.XPlat
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
 
-            // If a search lasts more than 15 minutes it is canceled.
-            var cts = new CancellationTokenSource(TimeSpan.FromMinutes(15));
-
             return await PackageSearchRunner.RunAsync(
                 sourceProvider,
                 packageSearchArgs,
-                cts.Token);
+                cancellationToken);
         }
     }
 }

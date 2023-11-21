@@ -10,6 +10,8 @@ using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
+using System.CommandLine;
+using System.Threading;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -68,6 +70,34 @@ namespace NuGet.CommandLine.XPlat
             log.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Debug_CurrentUICulture, CultureInfo.DefaultThreadCurrentUICulture));
 
             NuGet.Common.Migrations.MigrationRunner.Run();
+
+            if (args.Any() && args[0] == "package" & args[1] == "search")
+            {
+                // We are executing command `dotnet package search`
+                Func<ILoggerWithColor> getHidePrefixLogger = () =>
+                {
+                    log.HidePrefixForInfoAndMinimal = true;
+                    return log;
+                };
+
+                CliRootCommand rootCommand = new CliRootCommand("package");
+                PackageSearchCommand.Register(rootCommand, getHidePrefixLogger);
+
+                args[0] = null;
+                args = args
+                    .Where(e => e != null)
+                    .ToArray();
+
+                foreach (CliCommand command in rootCommand.Subcommands)
+                {
+                    if (args.Any() && command.Name == args[0])
+                    {
+                        ParseResult parseResult = command.Parse(args);
+                        return command.Action.InvokeAsync(parseResult, CancellationToken.None).GetAwaiter().GetResult();
+                    }
+                }
+                return 0;
+            }
 
             var app = InitializeApp(args, log);
 
@@ -188,7 +218,6 @@ namespace NuGet.CommandLine.XPlat
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
                 ListPackageCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new ListPackageCommandRunner());
-                PackageSearchCommand.Register(app, getHidePrefixLogger);
             }
             else
             {
