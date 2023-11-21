@@ -22,6 +22,11 @@ namespace NuGet.ProjectModel
 
         public StreamingUtf8JsonReader(Stream stream)
         {
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
             _stream = stream;
             var firstThreeBytes = new byte[3];
             _stream.Read(firstThreeBytes, 0, 3);
@@ -41,7 +46,9 @@ namespace NuGet.ProjectModel
             _reader.Read();
         }
 
+        public bool IsFinalBlock => _reader.IsFinalBlock;
 
+        public int BufferSize => _buffer.Length;
 
         public JsonTokenType TokenType => _reader.TokenType;
 
@@ -137,10 +144,7 @@ namespace NuGet.ProjectModel
             return null;
         }
 
-        public string GetCurrentBufferAsString()
-        {
-            return Encoding.UTF8.GetString(_buffer);
-        }
+        public string GetCurrentBufferAsString() => Encoding.UTF8.GetString(_buffer);
 
         public IList<string> ReadStringArrayAsIList(IList<string> strings = null)
         {
@@ -205,7 +209,7 @@ namespace NuGet.ProjectModel
             return false;
         }
 
-        internal IReadOnlyList<string> ReadStringOrArrayOfStringsAsReadOnlyList()
+        internal IReadOnlyList<string> ReadNextStringOrArrayOfStringsAsReadOnlyList()
         {
             if (Read())
             {
@@ -218,7 +222,6 @@ namespace NuGet.ProjectModel
                         return ReadStringArrayAsReadOnlyListFromArrayStart();
 
                     case JsonTokenType.StartObject:
-                        TrySkip();
                         return null;
                 }
             }
@@ -244,7 +247,6 @@ namespace NuGet.ProjectModel
 
         private void GetMoreBytesFromStream()
         {
-            int bytesRead;
             if (_reader.BytesConsumed < _buffer.Length)
             {
                 ReadOnlySpan<byte> leftover = _buffer.AsSpan((int)_reader.BytesConsumed);
@@ -253,13 +255,13 @@ namespace NuGet.ProjectModel
                     Array.Resize(ref _buffer, _buffer.Length * 2);
                 }
                 leftover.CopyTo(_buffer);
-                bytesRead = _stream.Read(_buffer, leftover.Length, _buffer.Length - leftover.Length);
+                _stream.Read(_buffer, leftover.Length, _buffer.Length - leftover.Length);
             }
             else
             {
-                bytesRead = _stream.Read(_buffer, 0, _buffer.Length);
+                _stream.Read(_buffer, 0, _buffer.Length);
             }
-            _reader = new Utf8JsonReader(_buffer, isFinalBlock: bytesRead == 0, _reader.CurrentState);
+            _reader = new Utf8JsonReader(_buffer, isFinalBlock: _stream.Length == _stream.Position, _reader.CurrentState);
         }
     }
 }

@@ -112,6 +112,7 @@ namespace NuGet.ProjectModel
             return strings;
         }
 
+
         internal static IList<string> ReadStringArrayAsIList(this ref Utf8JsonReader reader, IList<string> strings = null)
         {
             if (reader.TokenType == JsonTokenType.StartArray)
@@ -153,7 +154,7 @@ namespace NuGet.ProjectModel
 
         }
 
-        internal static IReadOnlyList<string> ReadStringOrArrayOfStringsAsReadOnlyList(this ref Utf8JsonReader reader)
+        internal static IReadOnlyList<string> ReadNextStringOrArrayOfStringsAsReadOnlyList(this ref Utf8JsonReader reader)
         {
             if (ReadNextToken(ref reader))
             {
@@ -166,7 +167,6 @@ namespace NuGet.ProjectModel
                         return ReadStringArrayAsReadOnlyListFromArrayStart(ref reader);
 
                     case JsonTokenType.StartObject:
-                        reader.Skip();
                         return null;
                 }
             }
@@ -213,6 +213,7 @@ namespace NuGet.ProjectModel
                     return reader.GetDouble().ToString();
                 case JsonTokenType.String:
                     return reader.GetString();
+                case JsonTokenType.None:
                 case JsonTokenType.Null:
                     return null;
                 default:

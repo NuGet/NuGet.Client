@@ -387,7 +387,7 @@ namespace NuGet.ProjectModel
                     var propertyName = jsonReader.GetString();
                     sets = sets ?? new List<FrameworkRuntimePair>();
 
-                    IReadOnlyList<string> values = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList() ?? Array.Empty<string>();
+                    IReadOnlyList<string> values = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList() ?? Array.Empty<string>();
 
                     IEnumerable<FrameworkRuntimePair> profiles = ReadCompatibilitySets(values, propertyName);
 
@@ -824,7 +824,7 @@ namespace NuGet.ProjectModel
 
         private static void ReadImports(PackageSpec packageSpec, ref Utf8JsonReader jsonReader, TargetFrameworkInformation targetFrameworkInformation)
         {
-            IReadOnlyList<string> imports = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+            IReadOnlyList<string> imports = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
 
             if (imports != null && imports.Count > 0)
             {
@@ -886,19 +886,19 @@ namespace NuGet.ProjectModel
                             {
                                 if (jsonReader.ValueTextEquals(Utf8ExcludeFiles))
                                 {
-                                    excludeFiles = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                                    excludeFiles = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                                 }
                                 else if (jsonReader.ValueTextEquals(Utf8Exclude))
                                 {
-                                    exclude = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                                    exclude = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                                 }
                                 else if (jsonReader.ValueTextEquals(Utf8IncludeFiles))
                                 {
-                                    includeFiles = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                                    includeFiles = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                                 }
                                 else if (jsonReader.ValueTextEquals(Utf8Include))
                                 {
-                                    include = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                                    include = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                                 }
                                 else
                                 {
@@ -1458,19 +1458,19 @@ namespace NuGet.ProjectModel
                     var filesPropertyName = jsonReader.GetString();
                     if (jsonReader.ValueTextEquals(Utf8ExcludeFiles))
                     {
-                        excludeFiles = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                        excludeFiles = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                     }
                     else if (jsonReader.ValueTextEquals(Utf8Exclude))
                     {
-                        exclude = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                        exclude = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                     }
                     else if (jsonReader.ValueTextEquals(Utf8IncludeFiles))
                     {
-                        includeFiles = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                        includeFiles = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                     }
                     else if (jsonReader.ValueTextEquals(Utf8Include))
                     {
-                        include = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                        include = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                     }
                     else if (jsonReader.ValueTextEquals(Utf8Mappings))
                     {
