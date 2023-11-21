@@ -21,7 +21,6 @@ namespace NuGet.ProjectModel
     internal static class StreamingUtf8JsonPackageSpecReader
     {
         private static readonly char[] VersionSeparators = new[] { ';' };
-
         private static readonly byte[] Utf8Authors = Encoding.UTF8.GetBytes("authors");
         private static readonly byte[] BuildOptionsUtf8 = Encoding.UTF8.GetBytes("buildOptions");
         private static readonly byte[] Utf8ContentFiles = Encoding.UTF8.GetBytes("contentFiles");
@@ -116,12 +115,12 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <param name="name">project name</param>
         /// <param name="packageSpecPath">file path</param>
-        public static PackageSpec GetPackageSpec(string name, string packageSpecPath)
+        internal static PackageSpec GetPackageSpec(string name, string packageSpecPath)
         {
             return FileUtility.SafeRead(filePath: packageSpecPath, read: (stream, filePath) => GetPackageSpec(stream, name, filePath, null));
         }
 
-        public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
+        internal static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
         {
             var reader = new StreamingUtf8JsonReader(stream);
             PackageSpec packageSpec;
@@ -303,95 +302,7 @@ namespace NuGet.ProjectModel
             return packageSpec;
         }
 
-        private static PackageType CreatePackageType(ref StreamingUtf8JsonReader jsonReader)
-        {
-            var name = jsonReader.GetString();
-
-            return new PackageType(name, Packaging.Core.PackageType.EmptyVersion);
-        }
-
-        [Obsolete]
-        private static void ReadBuildOptions(ref StreamingUtf8JsonReader jsonReader, PackageSpec packageSpec)
-        {
-            packageSpec.BuildOptions = new BuildOptions();
-
-            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-            {
-                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                {
-                    if (jsonReader.ValueTextEquals(Utf8OutputName))
-                    {
-                        packageSpec.BuildOptions.OutputName = jsonReader.ReadNextTokenAsString();
-                    }
-                    else
-                    {
-                        jsonReader.TrySkip();
-                    }
-                }
-            }
-        }
-
-        private static void ReadCentralPackageVersions(
-            ref StreamingUtf8JsonReader jsonReader,
-            IDictionary<string, CentralPackageVersion> centralPackageVersions)
-        {
-            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-            {
-                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                {
-                    var propertyName = jsonReader.GetString();
-
-                    if (string.IsNullOrEmpty(propertyName))
-                    {
-                        var exception = new JsonException("Unable to resolve central version ''.");
-                        throw exception;
-                    }
-
-                    string version = jsonReader.ReadNextTokenAsString();
-
-                    if (string.IsNullOrEmpty(version))
-                    {
-                        var exception = new JsonException("The version cannot be null or empty.");
-                        throw exception;
-                    }
-
-                    centralPackageVersions[propertyName] = new CentralPackageVersion(propertyName, VersionRange.Parse(version));
-                }
-            }
-        }
-
-        private static CompatibilityProfile ReadCompatibilityProfile(ref StreamingUtf8JsonReader jsonReader, string profileName)
-        {
-            List<FrameworkRuntimePair> sets = null;
-
-            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-            {
-                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                {
-                    var propertyName = jsonReader.GetString();
-                    sets = sets ?? new List<FrameworkRuntimePair>();
-
-                    IReadOnlyList<string> values = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList() ?? Array.Empty<string>();
-
-                    IEnumerable<FrameworkRuntimePair> profiles = ReadCompatibilitySets(values, propertyName);
-
-                    sets.AddRange(profiles);
-                }
-            }
-            return new CompatibilityProfile(profileName, sets ?? Enumerable.Empty<FrameworkRuntimePair>());
-        }
-
-        private static IEnumerable<FrameworkRuntimePair> ReadCompatibilitySets(IReadOnlyList<string> values, string compatibilitySetName)
-        {
-            NuGetFramework framework = NuGetFramework.Parse(compatibilitySetName);
-
-            foreach (string value in values)
-            {
-                yield return new FrameworkRuntimePair(framework, value);
-            }
-        }
-
-        internal static void ReadDependencies(
+                internal static void ReadDependencies(
                     ref StreamingUtf8JsonReader jsonReader,
                     IList<LibraryDependency> results,
                     string packageSpecPath,
@@ -675,6 +586,94 @@ namespace NuGet.ProjectModel
                         results.Add(libraryDependency);
                     }
                 }
+            }
+        }
+
+        private static PackageType CreatePackageType(ref StreamingUtf8JsonReader jsonReader)
+        {
+            var name = jsonReader.GetString();
+
+            return new PackageType(name, Packaging.Core.PackageType.EmptyVersion);
+        }
+
+        [Obsolete]
+        private static void ReadBuildOptions(ref StreamingUtf8JsonReader jsonReader, PackageSpec packageSpec)
+        {
+            packageSpec.BuildOptions = new BuildOptions();
+
+            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
+            {
+                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                {
+                    if (jsonReader.ValueTextEquals(Utf8OutputName))
+                    {
+                        packageSpec.BuildOptions.OutputName = jsonReader.ReadNextTokenAsString();
+                    }
+                    else
+                    {
+                        jsonReader.TrySkip();
+                    }
+                }
+            }
+        }
+
+        private static void ReadCentralPackageVersions(
+            ref StreamingUtf8JsonReader jsonReader,
+            IDictionary<string, CentralPackageVersion> centralPackageVersions)
+        {
+            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
+            {
+                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                {
+                    var propertyName = jsonReader.GetString();
+
+                    if (string.IsNullOrEmpty(propertyName))
+                    {
+                        var exception = new JsonException("Unable to resolve central version ''.");
+                        throw exception;
+                    }
+
+                    string version = jsonReader.ReadNextTokenAsString();
+
+                    if (string.IsNullOrEmpty(version))
+                    {
+                        var exception = new JsonException("The version cannot be null or empty.");
+                        throw exception;
+                    }
+
+                    centralPackageVersions[propertyName] = new CentralPackageVersion(propertyName, VersionRange.Parse(version));
+                }
+            }
+        }
+
+        private static CompatibilityProfile ReadCompatibilityProfile(ref StreamingUtf8JsonReader jsonReader, string profileName)
+        {
+            List<FrameworkRuntimePair> sets = null;
+
+            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
+            {
+                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                {
+                    var propertyName = jsonReader.GetString();
+                    sets = sets ?? new List<FrameworkRuntimePair>();
+
+                    IReadOnlyList<string> values = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList() ?? Array.Empty<string>();
+
+                    IEnumerable<FrameworkRuntimePair> profiles = ReadCompatibilitySets(values, propertyName);
+
+                    sets.AddRange(profiles);
+                }
+            }
+            return new CompatibilityProfile(profileName, sets ?? Enumerable.Empty<FrameworkRuntimePair>());
+        }
+
+        private static IEnumerable<FrameworkRuntimePair> ReadCompatibilitySets(IReadOnlyList<string> values, string compatibilitySetName)
+        {
+            NuGetFramework framework = NuGetFramework.Parse(compatibilitySetName);
+
+            foreach (string value in values)
+            {
+                yield return new FrameworkRuntimePair(framework, value);
             }
         }
 

@@ -190,7 +190,7 @@ namespace NuGet.ProjectModel
             return (IReadOnlyList<string>)strings ?? Array.Empty<string>();
         }
 
-        public static string ReadTokenAsString(this ref Utf8JsonReader reader)
+        internal static string ReadTokenAsString(this ref Utf8JsonReader reader)
         {
             switch (reader.TokenType)
             {

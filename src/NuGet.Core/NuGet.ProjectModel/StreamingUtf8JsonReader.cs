@@ -12,6 +12,7 @@ namespace NuGet.ProjectModel
 {
 
     internal ref struct StreamingUtf8JsonReader
+
     {
         private static readonly char[] DelimitedStringDelimiters = new char[] { ' ', ',' };
 
@@ -20,7 +21,7 @@ namespace NuGet.ProjectModel
         private byte[] _buffer;
         private Stream _stream;
 
-        public StreamingUtf8JsonReader(Stream stream)
+        internal StreamingUtf8JsonReader(Stream stream)
         {
             if (stream is null)
             {
@@ -46,25 +47,25 @@ namespace NuGet.ProjectModel
             _reader.Read();
         }
 
-        public bool IsFinalBlock => _reader.IsFinalBlock;
+        internal bool IsFinalBlock => _reader.IsFinalBlock;
 
-        public int BufferSize => _buffer.Length;
+        internal int BufferSize => _buffer.Length;
 
-        public JsonTokenType TokenType => _reader.TokenType;
+        internal JsonTokenType TokenType => _reader.TokenType;
 
-        public bool ValueTextEquals(ReadOnlySpan<byte> utf8Text) => _reader.ValueTextEquals(utf8Text);
+        internal bool ValueTextEquals(ReadOnlySpan<byte> utf8Text) => _reader.ValueTextEquals(utf8Text);
 
-        public bool ValueTextEquals(string text) => _reader.ValueTextEquals(text);
+        internal bool ValueTextEquals(string text) => _reader.ValueTextEquals(text);
 
-        public bool TryGetInt32(out int value) => _reader.TryGetInt32(out value);
+        internal bool TryGetInt32(out int value) => _reader.TryGetInt32(out value);
 
-        public string GetString() => _reader.GetString();
+        internal string GetString() => _reader.GetString();
 
-        public bool GetBoolean() => _reader.GetBoolean();
+        internal bool GetBoolean() => _reader.GetBoolean();
 
-        public int GetInt32() => _reader.GetInt32();
+        internal int GetInt32() => _reader.GetInt32();
 
-        public bool Read()
+        internal bool Read()
         {
             bool wasRead;
             while (!(wasRead = _reader.Read()) && !_reader.IsFinalBlock)
@@ -74,7 +75,7 @@ namespace NuGet.ProjectModel
             return wasRead;
         }
 
-        public bool TrySkip()
+        internal bool TrySkip()
         {
             bool wasSkipped;
             while (!(wasSkipped = _reader.TrySkip()) && !_reader.IsFinalBlock)
@@ -84,7 +85,7 @@ namespace NuGet.ProjectModel
             return wasSkipped;
         }
 
-        public IList<T> ReadObjectAsList<T>(JsonSerializerOptions options)
+        internal IList<T> ReadObjectAsList<T>(JsonSerializerOptions options)
         {
             if (TokenType != JsonTokenType.StartObject)
             {
@@ -111,7 +112,7 @@ namespace NuGet.ProjectModel
             return listObjects;
         }
 
-        public void ReadArrayOfObjects<T1, T2>(JsonSerializerOptions options, IList<T2> objectList) where T1 : T2
+        internal void ReadArrayOfObjects<T1, T2>(JsonSerializerOptions options, IList<T2> objectList) where T1 : T2
         {
             if (objectList is null)
             {
@@ -134,7 +135,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public string ReadNextTokenAsString()
+        internal string ReadNextTokenAsString()
         {
             if (Read())
             {
@@ -144,9 +145,9 @@ namespace NuGet.ProjectModel
             return null;
         }
 
-        public string GetCurrentBufferAsString() => Encoding.UTF8.GetString(_buffer);
+        internal string GetCurrentBufferAsString() => Encoding.UTF8.GetString(_buffer);
 
-        public IList<string> ReadStringArrayAsIList(IList<string> strings = null)
+        internal IList<string> ReadStringArrayAsIList(IList<string> strings = null)
         {
             if (TokenType == JsonTokenType.StartArray)
             {
@@ -183,7 +184,7 @@ namespace NuGet.ProjectModel
             return null;
         }
 
-        public List<string> ReadStringArrayAsList(List<string> strings = null)
+        internal List<string> ReadStringArrayAsList(List<string> strings = null)
         {
             if (TokenType == JsonTokenType.StartArray)
             {
