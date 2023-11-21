@@ -8,6 +8,6 @@ namespace NuGet.ProjectModel
 {
     internal abstract class StreamableJsonConverter<T> : JsonConverter<T>
     {
-        public abstract T ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options);
+        public abstract T ReadWithStream(ref Utf8JsonStreamReader reader, JsonSerializerOptions options);
     }
 }

@@ -91,7 +91,7 @@ namespace NuGet.ProjectModel
             return lockFileLibrary;
         }
 
-        public override LockFileLibrary ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options)
+        public override LockFileLibrary ReadWithStream(ref Utf8JsonStreamReader reader, JsonSerializerOptions options)
         {
 
             if (reader.TokenType != JsonTokenType.PropertyName)

@@ -210,7 +210,7 @@ namespace NuGet.ProjectModel
         }
 
 
-        private IList<PackageDependency> ReadPackageDependencyList(ref StreamingUtf8JsonReader reader)
+        private IList<PackageDependency> ReadPackageDependencyList(ref Utf8JsonStreamReader reader)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
@@ -236,7 +236,7 @@ namespace NuGet.ProjectModel
             throw new NotImplementedException();
         }
 
-        public override LockFileTargetLibrary ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options)
+        public override LockFileTargetLibrary ReadWithStream(ref Utf8JsonStreamReader reader, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
             {

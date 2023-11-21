@@ -11,8 +11,7 @@ using System.Text.Json;
 namespace NuGet.ProjectModel
 {
 
-    internal ref struct StreamingUtf8JsonReader
-
+    internal ref struct Utf8JsonStreamReader
     {
         private static readonly char[] DelimitedStringDelimiters = new char[] { ' ', ',' };
 
@@ -21,7 +20,7 @@ namespace NuGet.ProjectModel
         private byte[] _buffer;
         private Stream _stream;
 
-        internal StreamingUtf8JsonReader(Stream stream)
+        internal Utf8JsonStreamReader(Stream stream)
         {
             if (stream is null)
             {

@@ -77,7 +77,7 @@ namespace NuGet.ProjectModel
 
         internal static T LoadJson<T>(Stream stream)
         {
-            var streamingJsonReader = new StreamingUtf8JsonReader(stream);
+            var streamingJsonReader = new Utf8JsonStreamReader(stream);
             var options = CreateJsonSerializerOptions();
             var objectConverter = (StreamableJsonConverter<T>)options.GetConverter(typeof(T));
             return objectConverter.ReadWithStream(ref streamingJsonReader, options);

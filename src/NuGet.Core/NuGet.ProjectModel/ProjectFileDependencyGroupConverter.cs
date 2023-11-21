@@ -34,7 +34,7 @@ namespace NuGet.ProjectModel
             return new ProjectFileDependencyGroup(frameworkName, dependencies);
         }
 
-        public override ProjectFileDependencyGroup ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options)
+        public override ProjectFileDependencyGroup ReadWithStream(ref Utf8JsonStreamReader reader, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
             {

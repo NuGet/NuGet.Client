@@ -133,7 +133,7 @@ namespace NuGet.ProjectModel
             return null;
         }
 
-        public override AssetsLogMessage ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options)
+        public override AssetsLogMessage ReadWithStream(ref Utf8JsonStreamReader reader, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {

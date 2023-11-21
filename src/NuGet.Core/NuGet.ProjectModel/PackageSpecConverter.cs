@@ -16,9 +16,9 @@ namespace NuGet.ProjectModel
             return StjPackageSpecReader.GetPackageSpec(ref reader, options, name: null, packageSpecPath: null, snapshotValue: null);
         }
 
-        public override PackageSpec ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options)
+        public override PackageSpec ReadWithStream(ref Utf8JsonStreamReader reader, JsonSerializerOptions options)
         {
-            return StreamingUtf8JsonPackageSpecReader.GetPackageSpec(ref reader, name: null, packageSpecPath: null, snapshotValue: null);
+            return Utf8JsonPackageSpecStreamReader.GetPackageSpec(ref reader, name: null, packageSpecPath: null, snapshotValue: null);
         }
 
         public override void Write(Utf8JsonWriter writer, PackageSpec value, JsonSerializerOptions options)

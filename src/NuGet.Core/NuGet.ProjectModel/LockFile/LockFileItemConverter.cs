@@ -54,7 +54,7 @@ namespace NuGet.ProjectModel
             return lockFileItem as T;
         }
 
-        public override T ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options)
+        public override T ReadWithStream(ref Utf8JsonStreamReader reader, JsonSerializerOptions options)
         {
             var genericType = typeof(T);
 

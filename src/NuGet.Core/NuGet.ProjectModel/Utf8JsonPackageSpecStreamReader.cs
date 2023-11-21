@@ -18,7 +18,7 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    internal static class StreamingUtf8JsonPackageSpecReader
+    internal static class Utf8JsonPackageSpecStreamReader
     {
         private static readonly char[] VersionSeparators = new[] { ';' };
         private static readonly byte[] Utf8Authors = Encoding.UTF8.GetBytes("authors");
@@ -122,7 +122,7 @@ namespace NuGet.ProjectModel
 
         internal static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
         {
-            var reader = new StreamingUtf8JsonReader(stream);
+            var reader = new Utf8JsonStreamReader(stream);
             PackageSpec packageSpec;
             try
             {
@@ -145,7 +145,7 @@ namespace NuGet.ProjectModel
             return packageSpec;
         }
 
-        internal static PackageSpec GetPackageSpec(ref StreamingUtf8JsonReader jsonReader, string name, string packageSpecPath, string snapshotValue)
+        internal static PackageSpec GetPackageSpec(ref Utf8JsonStreamReader jsonReader, string name, string packageSpecPath, string snapshotValue)
         {
             var packageSpec = new PackageSpec();
 
@@ -302,11 +302,11 @@ namespace NuGet.ProjectModel
             return packageSpec;
         }
 
-                internal static void ReadDependencies(
-                    ref StreamingUtf8JsonReader jsonReader,
-                    IList<LibraryDependency> results,
-                    string packageSpecPath,
-                    bool isGacOrFrameworkReference)
+        internal static void ReadDependencies(
+            ref Utf8JsonStreamReader jsonReader,
+            IList<LibraryDependency> results,
+            string packageSpecPath,
+            bool isGacOrFrameworkReference)
         {
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
@@ -485,7 +485,7 @@ namespace NuGet.ProjectModel
         }
 
         internal static void ReadCentralTransitiveDependencyGroup(
-            ref StreamingUtf8JsonReader jsonReader,
+            ref Utf8JsonStreamReader jsonReader,
             IList<LibraryDependency> results,
             string packageSpecPath)
         {
@@ -589,7 +589,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static PackageType CreatePackageType(ref StreamingUtf8JsonReader jsonReader)
+        private static PackageType CreatePackageType(ref Utf8JsonStreamReader jsonReader)
         {
             var name = jsonReader.GetString();
 
@@ -597,7 +597,7 @@ namespace NuGet.ProjectModel
         }
 
         [Obsolete]
-        private static void ReadBuildOptions(ref StreamingUtf8JsonReader jsonReader, PackageSpec packageSpec)
+        private static void ReadBuildOptions(ref Utf8JsonStreamReader jsonReader, PackageSpec packageSpec)
         {
             packageSpec.BuildOptions = new BuildOptions();
 
@@ -618,7 +618,7 @@ namespace NuGet.ProjectModel
         }
 
         private static void ReadCentralPackageVersions(
-            ref StreamingUtf8JsonReader jsonReader,
+            ref Utf8JsonStreamReader jsonReader,
             IDictionary<string, CentralPackageVersion> centralPackageVersions)
         {
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
@@ -646,7 +646,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static CompatibilityProfile ReadCompatibilityProfile(ref StreamingUtf8JsonReader jsonReader, string profileName)
+        private static CompatibilityProfile ReadCompatibilityProfile(ref Utf8JsonStreamReader jsonReader, string profileName)
         {
             List<FrameworkRuntimePair> sets = null;
 
@@ -678,7 +678,7 @@ namespace NuGet.ProjectModel
         }
 
         private static void ReadDownloadDependencies(
-            ref StreamingUtf8JsonReader jsonReader,
+            ref Utf8JsonStreamReader jsonReader,
             IList<DownloadDependency> downloadDependencies,
             string packageSpecPath)
         {
@@ -755,7 +755,7 @@ namespace NuGet.ProjectModel
         }
 
         private static void ReadFrameworkReferences(
-            ref StreamingUtf8JsonReader jsonReader,
+            ref Utf8JsonStreamReader jsonReader,
             ISet<FrameworkDependency> frameworkReferences,
             string packageSpecPath)
         {
@@ -794,7 +794,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void ReadFrameworks(ref StreamingUtf8JsonReader reader, PackageSpec packageSpec)
+        private static void ReadFrameworks(ref Utf8JsonStreamReader reader, PackageSpec packageSpec)
         {
             if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
             {
@@ -805,7 +805,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void ReadImports(PackageSpec packageSpec, ref StreamingUtf8JsonReader jsonReader, TargetFrameworkInformation targetFrameworkInformation)
+        private static void ReadImports(PackageSpec packageSpec, ref Utf8JsonStreamReader jsonReader, TargetFrameworkInformation targetFrameworkInformation)
         {
             IReadOnlyList<string> imports = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
 
@@ -830,7 +830,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void ReadMappings(ref StreamingUtf8JsonReader jsonReader, string mappingKey, IDictionary<string, IncludeExcludeFiles> mappings)
+        private static void ReadMappings(ref Utf8JsonStreamReader jsonReader, string mappingKey, IDictionary<string, IncludeExcludeFiles> mappings)
         {
             if (jsonReader.Read())
             {
@@ -907,7 +907,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void ReadMSBuildMetadata(ref StreamingUtf8JsonReader jsonReader, PackageSpec packageSpec)
+        private static void ReadMSBuildMetadata(ref Utf8JsonStreamReader jsonReader, PackageSpec packageSpec)
         {
             var centralPackageVersionsManagementEnabled = false;
             var centralPackageFloatingVersionsEnabled = false;
@@ -1243,7 +1243,7 @@ namespace NuGet.ProjectModel
             packageSpec.RestoreMetadata = msbuildMetadata;
         }
 
-        private static void ReadNuGetLogCodes(ref StreamingUtf8JsonReader jsonReader, HashSet<NuGetLogCode> hashCodes)
+        private static void ReadNuGetLogCodes(ref Utf8JsonStreamReader jsonReader, HashSet<NuGetLogCode> hashCodes)
         {
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartArray)
             {
@@ -1257,7 +1257,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static List<NuGetLogCode> ReadNuGetLogCodesList(ref StreamingUtf8JsonReader jsonReader)
+        private static List<NuGetLogCode> ReadNuGetLogCodesList(ref Utf8JsonStreamReader jsonReader)
         {
             List<NuGetLogCode> items = null;
 
@@ -1276,7 +1276,7 @@ namespace NuGet.ProjectModel
             return items;
         }
 
-        private static void ReadPackageTypes(PackageSpec packageSpec, ref StreamingUtf8JsonReader jsonReader)
+        private static void ReadPackageTypes(PackageSpec packageSpec, ref Utf8JsonStreamReader jsonReader)
         {
             IReadOnlyList<PackageType> packageTypes = null;
             PackageType packageType = null;
@@ -1342,7 +1342,7 @@ namespace NuGet.ProjectModel
         }
 
         [Obsolete]
-        private static void ReadPackInclude(ref StreamingUtf8JsonReader jsonReader, PackageSpec packageSpec)
+        private static void ReadPackInclude(ref Utf8JsonStreamReader jsonReader, PackageSpec packageSpec)
         {
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
@@ -1357,7 +1357,7 @@ namespace NuGet.ProjectModel
         }
 
         [Obsolete]
-        private static void ReadPackOptions(ref StreamingUtf8JsonReader jsonReader, PackageSpec packageSpec, ref bool isMappingsNull)
+        private static void ReadPackOptions(ref Utf8JsonStreamReader jsonReader, PackageSpec packageSpec, ref bool isMappingsNull)
         {
             var wasMappingsRead = false;
             bool isPackOptionsValueAnObject = false;
@@ -1428,7 +1428,7 @@ namespace NuGet.ProjectModel
         }
 
         [Obsolete]
-        private static bool ReadPackOptionsFiles(PackageSpec packageSpec, ref StreamingUtf8JsonReader jsonReader, bool wasMappingsRead)
+        private static bool ReadPackOptionsFiles(PackageSpec packageSpec, ref Utf8JsonStreamReader jsonReader, bool wasMappingsRead)
         {
             IReadOnlyList<string> excludeFiles = null;
             IReadOnlyList<string> exclude = null;
@@ -1489,7 +1489,7 @@ namespace NuGet.ProjectModel
             return wasMappingsRead;
         }
 
-        private static RuntimeDependencySet ReadRuntimeDependencySet(ref StreamingUtf8JsonReader jsonReader, string dependencySetName)
+        private static RuntimeDependencySet ReadRuntimeDependencySet(ref Utf8JsonStreamReader jsonReader, string dependencySetName)
         {
             List<RuntimePackageDependency> dependencies = null;
 
@@ -1511,7 +1511,7 @@ namespace NuGet.ProjectModel
                 dependencies);
         }
 
-        private static RuntimeDescription ReadRuntimeDescription(ref StreamingUtf8JsonReader jsonReader, string runtimeName)
+        private static RuntimeDescription ReadRuntimeDescription(ref Utf8JsonStreamReader jsonReader, string runtimeName)
         {
             List<string> inheritedRuntimes = null;
             List<RuntimeDependencySet> additionalDependencies = null;
@@ -1543,7 +1543,7 @@ namespace NuGet.ProjectModel
                 additionalDependencies);
         }
 
-        private static List<RuntimeDescription> ReadRuntimes(ref StreamingUtf8JsonReader jsonReader)
+        private static List<RuntimeDescription> ReadRuntimes(ref Utf8JsonStreamReader jsonReader)
         {
             var runtimeDescriptions = new List<RuntimeDescription>();
 
@@ -1561,7 +1561,7 @@ namespace NuGet.ProjectModel
         }
 
         [Obsolete]
-        private static void ReadScripts(ref StreamingUtf8JsonReader jsonReader, PackageSpec packageSpec)
+        private static void ReadScripts(ref Utf8JsonStreamReader jsonReader, PackageSpec packageSpec)
         {
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
@@ -1596,7 +1596,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static List<CompatibilityProfile> ReadSupports(ref StreamingUtf8JsonReader jsonReader)
+        private static List<CompatibilityProfile> ReadSupports(ref Utf8JsonStreamReader jsonReader)
         {
             var compatibilityProfiles = new List<CompatibilityProfile>();
 
@@ -1614,7 +1614,7 @@ namespace NuGet.ProjectModel
         }
 
         private static LibraryDependencyTarget ReadTarget(
-           ref StreamingUtf8JsonReader jsonReader,
+           ref Utf8JsonStreamReader jsonReader,
            string packageSpecPath,
            LibraryDependencyTarget targetFlagsValue)
         {
@@ -1639,7 +1639,7 @@ namespace NuGet.ProjectModel
             return targetFlagsValue;
         }
 
-        private static List<ProjectRestoreMetadataFrameworkInfo> ReadTargetFrameworks(ref StreamingUtf8JsonReader jsonReader)
+        private static List<ProjectRestoreMetadataFrameworkInfo> ReadTargetFrameworks(ref Utf8JsonStreamReader jsonReader)
         {
             var targetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>();
 
@@ -1732,7 +1732,7 @@ namespace NuGet.ProjectModel
             return targetFrameworks;
         }
 
-        private static void ReadTargetFrameworks(PackageSpec packageSpec, ref StreamingUtf8JsonReader jsonReader)
+        private static void ReadTargetFrameworks(PackageSpec packageSpec, ref Utf8JsonStreamReader jsonReader)
         {
             var frameworkName = NuGetFramework.Parse(jsonReader.GetString());
 

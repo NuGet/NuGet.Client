@@ -127,7 +127,7 @@ namespace NuGet.ProjectModel
             return lockFile;
         }
 
-        public override LockFile ReadWithStream(ref StreamingUtf8JsonReader reader, JsonSerializerOptions options)
+        public override LockFile ReadWithStream(ref Utf8JsonStreamReader reader, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
@@ -173,7 +173,7 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(Utf8Project))
                 {
                     reader.Read();
-                    lockFile.PackageSpec = StreamingUtf8JsonPackageSpecReader.GetPackageSpec(
+                    lockFile.PackageSpec = Utf8JsonPackageSpecStreamReader.GetPackageSpec(
                         ref reader,
                         name: null,
                         packageSpecPath: null,
@@ -190,7 +190,7 @@ namespace NuGet.ProjectModel
                             NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
                             var dependencies = new List<LibraryDependency>();
 
-                            StreamingUtf8JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                            Utf8JsonPackageSpecStreamReader.ReadCentralTransitiveDependencyGroup(
                                 jsonReader: ref reader,
                                 results: dependencies,
                                 packageSpecPath: string.Empty);
