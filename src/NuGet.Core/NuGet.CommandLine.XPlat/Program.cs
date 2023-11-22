@@ -23,6 +23,8 @@ namespace NuGet.CommandLine.XPlat
         private const string DotnetNuGetAppName = "dotnet nuget";
         private const string DotnetPackageAppName = "NuGet.CommandLine.XPlat.dll package";
 
+        private const int DotnetPackageSearchTimeOut = 15;
+
         public static int Main(string[] args)
         {
             var log = new CommandOutputLogger(LogLevel.Information);
@@ -96,9 +98,12 @@ namespace NuGet.CommandLine.XPlat
 
                         try
                         {
+                            CancellationTokenSource tokenSource = new CancellationTokenSource();
+                            tokenSource.CancelAfter(TimeSpan.FromMinutes(DotnetPackageSearchTimeOut));
+
                             CliConfiguration config = new(command);
                             ParseResult parseResult = command.Parse(args, config);
-                            exitCodeValue = parseResult.InvokeAsync(CancellationToken.None).GetAwaiter().GetResult();
+                            exitCodeValue = parseResult.InvokeAsync(tokenSource.Token).GetAwaiter().GetResult();
                         }
                         catch (Exception e)
                         {
