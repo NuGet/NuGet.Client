@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.XPlat
 
             var searchTerm = new CliArgument<string>("Search Term")
             {
-                Description = Strings.pkgSearch_Description,
+                Description = Strings.pkgSearch_termDescription,
                 Arity = ArgumentArity.ZeroOrOne,
             };
 
@@ -56,7 +56,6 @@ namespace NuGet.CommandLine.XPlat
 
             var help = new HelpOption("--help", "-h", "-?")
             {
-                Description = Strings.pkgSearch_InteractiveDescription,
                 Arity = ArgumentArity.Zero
             };
 
