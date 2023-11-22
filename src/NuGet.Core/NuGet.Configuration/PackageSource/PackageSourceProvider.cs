@@ -59,7 +59,7 @@ namespace NuGet.Configuration
         {
 #if !IS_CORECLR
             // Global default NuGet source doesn't make sense on Mono
-            if (RuntimeEnvironmentHelper.IsMono)
+            if (Common.RuntimeEnvironmentHelper.IsMono)
             {
                 return Array.Empty<PackageSource>();
             }
