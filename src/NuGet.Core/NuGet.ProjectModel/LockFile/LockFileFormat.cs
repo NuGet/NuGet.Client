@@ -90,24 +90,19 @@ namespace NuGet.ProjectModel
 
         public LockFile Read(Stream stream, ILogger log, string path)
         {
-            try
+            var useNj = EnvironmentVariableWrapper.Instance.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING");
+            if (string.IsNullOrEmpty(useNj) || useNj.Equals("false", StringComparison.OrdinalIgnoreCase))
             {
-                var lockFile = JsonUtility.LoadJson<LockFile>(stream, Utf8JsonReaderExtensions.LockFileConverter);
-                lockFile.Path = path;
-                return lockFile;
+                return Uf8JsonRead(stream, log, path);
             }
-            catch (Exception ex)
+            else
             {
-                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.Log_ErrorReadingLockFile,
-                    path, ex.Message));
-
-                // Ran into parsing errors, mark it as unlocked and out-of-date
-                return new LockFile
+                using (var reader = new StreamReader(stream))
                 {
-                    Version = int.MinValue,
-                    Path = path
-                };
+#pragma warning disable CS0618 // Type or member is obsolete
+                    return Read(reader, log, path);
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
             }
         }
 
@@ -179,6 +174,29 @@ namespace NuGet.ProjectModel
             {
                 Write(writer, lockFile);
                 return writer.ToString();
+            }
+        }
+
+        private LockFile Uf8JsonRead(Stream stream, ILogger log, string path)
+        {
+            try
+            {
+                var lockFile = JsonUtility.LoadJson<LockFile>(stream, Utf8JsonReaderExtensions.LockFileConverter);
+                lockFile.Path = path;
+                return lockFile;
+            }
+            catch (Exception ex)
+            {
+                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Log_ErrorReadingLockFile,
+                    path, ex.Message));
+
+                // Ran into parsing errors, mark it as unlocked and out-of-date
+                return new LockFile
+                {
+                    Version = int.MinValue,
+                    Path = path
+                };
             }
         }
 
