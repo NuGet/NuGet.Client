@@ -4,14 +4,13 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// A <see cref="JsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="LockFileTargetLibrary"/>
+    /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileTargetLibrary"/>
     /// </summary>
     internal class Utf8JsonStreamLockFileTargetLibraryConverter : Utf8JsonStreamReaderConverter<LockFileTargetLibrary>
     {

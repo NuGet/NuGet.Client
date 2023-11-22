@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using NuGet.Frameworks;
 
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// A <see cref="JsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="LockFileTarget"/>
+    /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileTarget"/>
     /// </summary>
     internal class Utf8JsonStreamLockFileTargetConverter : Utf8JsonStreamReaderConverter<LockFileTarget>
     {

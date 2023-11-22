@@ -10,7 +10,6 @@ using System.Text.Json;
 
 namespace NuGet.ProjectModel
 {
-
     internal ref struct Utf8JsonStreamReader
     {
         private static readonly char[] DelimitedStringDelimiters = new char[] { ' ', ',' };

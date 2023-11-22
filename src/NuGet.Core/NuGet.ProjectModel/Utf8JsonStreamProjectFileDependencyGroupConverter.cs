@@ -3,12 +3,11 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// A <see cref="JsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="ProjectFileDependencyGroup"/> where the list is setup as an object
+    /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="ProjectFileDependencyGroup"/>
     /// </summary>
     internal class Utf8JsonStreamProjectFileDependencyGroupConverter : Utf8JsonStreamReaderConverter<ProjectFileDependencyGroup>
     {
