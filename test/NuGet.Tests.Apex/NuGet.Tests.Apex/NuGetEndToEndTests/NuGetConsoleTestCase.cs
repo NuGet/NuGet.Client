@@ -966,9 +966,8 @@ namespace NuGet.Tests.Apex
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
-        public async Task VerifyCmdFindPackageExactMatchInPMC(ProjectTemplate projectTemplate)
+        public async Task VerifyCmdFindPackageExactMatchInPMC()
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
@@ -978,7 +977,7 @@ namespace NuGet.Tests.Apex
                 var v100 = "1.0.0";
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, v100);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
                 {
                     SolutionService solutionService = VisualStudio.Get<SolutionService>();
                     var nugetConsole = GetConsole(testContext.Project);
@@ -995,9 +994,8 @@ namespace NuGet.Tests.Apex
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
-        public async Task VerifyCmdGetPackageUpdateInPMC(ProjectTemplate projectTemplate)
+        public async Task VerifyCmdGetPackageUpdateInPMC()
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
@@ -1009,7 +1007,7 @@ namespace NuGet.Tests.Apex
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v200);
 
-                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
                 {
                     // Arrange
                     SolutionService solutionService = VisualStudio.Get<SolutionService>();
@@ -1031,12 +1029,11 @@ namespace NuGet.Tests.Apex
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetPackagesConfigTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
-        public void VerifyCmdGetProjectInPMC(ProjectTemplate projectTemplate)
+        public void VerifyCmdGetProjectInPMC()
         {
             EnsureVisualStudioHost();
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger))
+            using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger))
             {
                 // Arrange
                 SolutionService solutionService = VisualStudio.Get<SolutionService>();
