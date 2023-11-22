@@ -18,7 +18,7 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    internal static class Utf8JsonPackageSpecStreamReader
+    internal static class Utf8JsonStreamPackageSpecReader
     {
         private static readonly char[] VersionSeparators = new[] { ';' };
         private static readonly byte[] Utf8Authors = Encoding.UTF8.GetBytes("authors");
@@ -110,14 +110,13 @@ namespace NuGet.ProjectModel
         private static readonly byte[] Utf8HashTagImport = Encoding.UTF8.GetBytes("#import");
         private static readonly byte[] Utf8ProjectReferences = Encoding.UTF8.GetBytes("projectReferences");
 
-        /// <summary>
-        /// Load and parse a project.json file
-        /// </summary>
-        /// <param name="name">project name</param>
-        /// <param name="packageSpecPath">file path</param>
-        internal static PackageSpec GetPackageSpec(string name, string packageSpecPath)
+
+        internal static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath, string snapshotValue = null)
         {
-            return FileUtility.SafeRead(filePath: packageSpecPath, read: (stream, filePath) => GetPackageSpec(stream, name, filePath, null));
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            {
+                return GetPackageSpec(stream, name, packageSpecPath, snapshotValue);
+            }
         }
 
         internal static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
@@ -302,7 +301,112 @@ namespace NuGet.ProjectModel
             return packageSpec;
         }
 
-        internal static void ReadDependencies(
+        internal static void ReadCentralTransitiveDependencyGroup(
+            ref Utf8JsonStreamReader jsonReader,
+            IList<LibraryDependency> results,
+            string packageSpecPath)
+        {
+            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
+            {
+                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                {
+                    var propertyName = jsonReader.GetString();
+                    if (string.IsNullOrEmpty(propertyName))
+                    {
+                        var exception = new JsonException("Unable to resolve dependency ''.");
+                        exception.Data.Add(FileFormatException.SurfaceMessage, true);
+                        throw exception;
+                    }
+
+                    if (jsonReader.Read())
+                    {
+                        var dependencyIncludeFlagsValue = LibraryIncludeFlags.All;
+                        var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
+                        var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
+                        string dependencyVersionValue = null;
+
+                        if (jsonReader.TokenType == JsonTokenType.String)
+                        {
+                            dependencyVersionValue = jsonReader.GetString();
+                        }
+                        else if (jsonReader.TokenType == JsonTokenType.StartObject)
+                        {
+                            while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                            {
+                                IEnumerable<string> values = null;
+
+                                if (jsonReader.ValueTextEquals(Utf8Exclude))
+                                {
+                                    values = jsonReader.ReadDelimitedString();
+                                    dependencyExcludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
+                                }
+                                else if (jsonReader.ValueTextEquals(Utf8Include))
+                                {
+                                    values = jsonReader.ReadDelimitedString();
+                                    dependencyIncludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
+                                }
+                                else if (jsonReader.ValueTextEquals(Utf8SuppressParent))
+                                {
+                                    values = jsonReader.ReadDelimitedString();
+                                    suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
+                                }
+                                else if (jsonReader.ValueTextEquals(Utf8Version))
+                                {
+                                    if (jsonReader.Read())
+                                    {
+                                        dependencyVersionValue = jsonReader.GetString();
+                                    }
+                                }
+                                else
+                                {
+                                    jsonReader.TrySkip();
+                                }
+                            }
+                        }
+
+                        VersionRange dependencyVersionRange = null;
+
+                        if (!string.IsNullOrEmpty(dependencyVersionValue))
+                        {
+                            try
+                            {
+                                dependencyVersionRange = VersionRange.Parse(dependencyVersionValue);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new JsonException(null, ex);
+                            }
+                        }
+
+                        if (dependencyVersionRange == null)
+                        {
+                            throw new JsonException(Strings.MissingVersionOnDependency, new ArgumentException(Strings.MissingVersionOnDependency));
+                        }
+
+                        // the dependency flags are: Include flags - Exclude flags
+                        var includeFlags = dependencyIncludeFlagsValue & ~dependencyExcludeFlagsValue;
+                        var libraryDependency = new LibraryDependency()
+                        {
+                            LibraryRange = new LibraryRange()
+                            {
+                                Name = propertyName,
+                                TypeConstraint = LibraryDependencyTarget.Package,
+                                VersionRange = dependencyVersionRange
+                            },
+
+                            IncludeType = includeFlags,
+                            SuppressParent = suppressParentFlagsValue,
+                            VersionCentrallyManaged = true,
+                            ReferenceType = LibraryDependencyReferenceType.Transitive
+                        };
+
+                        results.Add(libraryDependency);
+                    }
+                }
+            }
+        }
+
+        private static void ReadDependencies(
             ref Utf8JsonStreamReader jsonReader,
             IList<LibraryDependency> results,
             string packageSpecPath,
@@ -477,111 +581,6 @@ namespace NuGet.ProjectModel
                         {
                             libraryDependency.NoWarn = noWarn;
                         }
-
-                        results.Add(libraryDependency);
-                    }
-                }
-            }
-        }
-
-        internal static void ReadCentralTransitiveDependencyGroup(
-            ref Utf8JsonStreamReader jsonReader,
-            IList<LibraryDependency> results,
-            string packageSpecPath)
-        {
-            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-            {
-                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                {
-                    var propertyName = jsonReader.GetString();
-                    if (string.IsNullOrEmpty(propertyName))
-                    {
-                        var exception = new JsonException("Unable to resolve dependency ''.");
-                        exception.Data.Add(FileFormatException.SurfaceMessage, true);
-                        throw exception;
-                    }
-
-                    if (jsonReader.Read())
-                    {
-                        var dependencyIncludeFlagsValue = LibraryIncludeFlags.All;
-                        var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
-                        var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
-                        string dependencyVersionValue = null;
-
-                        if (jsonReader.TokenType == JsonTokenType.String)
-                        {
-                            dependencyVersionValue = jsonReader.GetString();
-                        }
-                        else if (jsonReader.TokenType == JsonTokenType.StartObject)
-                        {
-                            while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                            {
-                                IEnumerable<string> values = null;
-
-                                if (jsonReader.ValueTextEquals(Utf8Exclude))
-                                {
-                                    values = jsonReader.ReadDelimitedString();
-                                    dependencyExcludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
-                                }
-                                else if (jsonReader.ValueTextEquals(Utf8Include))
-                                {
-                                    values = jsonReader.ReadDelimitedString();
-                                    dependencyIncludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
-                                }
-                                else if (jsonReader.ValueTextEquals(Utf8SuppressParent))
-                                {
-                                    values = jsonReader.ReadDelimitedString();
-                                    suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
-                                }
-                                else if (jsonReader.ValueTextEquals(Utf8Version))
-                                {
-                                    if (jsonReader.Read())
-                                    {
-                                        dependencyVersionValue = jsonReader.GetString();
-                                    }
-                                }
-                                else
-                                {
-                                    jsonReader.TrySkip();
-                                }
-                            }
-                        }
-
-                        VersionRange dependencyVersionRange = null;
-
-                        if (!string.IsNullOrEmpty(dependencyVersionValue))
-                        {
-                            try
-                            {
-                                dependencyVersionRange = VersionRange.Parse(dependencyVersionValue);
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new JsonException(null, ex);
-                            }
-                        }
-
-                        if (dependencyVersionRange == null)
-                        {
-                            throw new JsonException(Strings.MissingVersionOnDependency, new ArgumentException(Strings.MissingVersionOnDependency));
-                        }
-
-                        // the dependency flags are: Include flags - Exclude flags
-                        var includeFlags = dependencyIncludeFlagsValue & ~dependencyExcludeFlagsValue;
-                        var libraryDependency = new LibraryDependency()
-                        {
-                            LibraryRange = new LibraryRange()
-                            {
-                                Name = propertyName,
-                                TypeConstraint = LibraryDependencyTarget.Package,
-                                VersionRange = dependencyVersionRange
-                            },
-
-                            IncludeType = includeFlags,
-                            SuppressParent = suppressParentFlagsValue,
-                            VersionCentrallyManaged = true,
-                            ReferenceType = LibraryDependencyReferenceType.Transitive
-                        };
 
                         results.Add(libraryDependency);
                     }

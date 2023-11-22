@@ -1,0 +1,29 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace NuGet.ProjectModel
+{
+    /// <summary>
+    /// A <see cref="JsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="ProjectFileDependencyGroup"/> where the list is setup as an object
+    /// </summary>
+    internal class Utf8JsonStreamProjectFileDependencyGroupConverter : Utf8JsonStreamReaderConverter<ProjectFileDependencyGroup>
+    {
+        public override ProjectFileDependencyGroup Read(ref Utf8JsonStreamReader reader)
+        {
+            if (reader.TokenType != JsonTokenType.PropertyName)
+            {
+                throw new JsonException("Expected PropertyName, found " + reader.TokenType);
+            }
+
+            var frameworkName = reader.GetString();
+            reader.Read();
+            var dependencies = reader.ReadStringArrayAsIList(new List<string>());
+
+            return new ProjectFileDependencyGroup(frameworkName, dependencies);
+        }
+    }
+}

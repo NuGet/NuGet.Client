@@ -84,7 +84,7 @@ namespace NuGet.ProjectModel
             return wasSkipped;
         }
 
-        internal IList<T> ReadObjectAsList<T>(JsonSerializerOptions options)
+        internal IList<T> ReadObjectAsList<T>(Utf8JsonStreamReaderConverter<T> streamReaderConverter)
         {
             if (TokenType != JsonTokenType.StartObject)
             {
@@ -99,11 +99,10 @@ namespace NuGet.ProjectModel
                 return new List<T>(0);
             }
 
-            var objectConverter = (StreamableJsonConverter<T>)options.GetConverter(typeof(T));
             var listObjects = new List<T>();
             do
             {
-                listObjects.Add(objectConverter.ReadWithStream(ref this, options));
+                listObjects.Add(streamReaderConverter.Read(ref this));
                 //At this point we're looking at the EndObject token for the object, need to advance.
                 Read();
             }
@@ -111,21 +110,18 @@ namespace NuGet.ProjectModel
             return listObjects;
         }
 
-        internal void ReadArrayOfObjects<T1, T2>(JsonSerializerOptions options, IList<T2> objectList) where T1 : T2
+        internal void ReadArrayOfObjects<T1, T2>(IList<T2> objectList, Utf8JsonStreamReaderConverter<T1> streamReaderConverter) where T1 : T2
         {
             if (objectList is null)
             {
                 return;
             }
 
-            var type = typeof(T1);
-            var objectConverter = (StreamableJsonConverter<T1>)options.GetConverter(type);
-
             if (Read() && TokenType == JsonTokenType.StartArray)
             {
                 while (Read() && TokenType != JsonTokenType.EndArray)
                 {
-                    var convertedObject = objectConverter.ReadWithStream(ref this, options);
+                    var convertedObject = streamReaderConverter.Read(ref this);
                     if (convertedObject != null)
                     {
                         objectList.Add(convertedObject);

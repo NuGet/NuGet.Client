@@ -13,7 +13,7 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// A <see cref="JsonConverter{T}"/> to allow System.Text.Json to read/write <see cref="AssetsLogMessage"/> where the list is setup as an object
     /// </summary>
-    internal class AssetsLogMessageConverter : StreamableJsonConverter<AssetsLogMessage>
+    internal class Utf8JsonStreamAssetsLogMessageConverter : Utf8JsonStreamReaderConverter<AssetsLogMessage>
     {
         private static readonly byte[] Utf8Level = Encoding.UTF8.GetBytes(LogMessageProperties.LEVEL);
         private static readonly byte[] Utf8Code = Encoding.UTF8.GetBytes(LogMessageProperties.CODE);
@@ -27,113 +27,7 @@ namespace NuGet.ProjectModel
         private static readonly byte[] Utf8LibraryId = Encoding.UTF8.GetBytes(LogMessageProperties.LIBRARY_ID);
         private static readonly byte[] Utf8TargetGraphs = Encoding.UTF8.GetBytes(LogMessageProperties.TARGET_GRAPHS);
 
-        public override AssetsLogMessage Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            if (reader.TokenType != JsonTokenType.StartObject)
-            {
-                throw new JsonException("Expected StartObject, found " + reader.TokenType);
-            }
-
-            if (typeToConvert != typeof(AssetsLogMessage))
-            {
-                throw new InvalidOperationException();
-            }
-
-            var isValid = true;
-            LogLevel level = default;
-            NuGetLogCode code = default;
-            //matching default warning level when AssetLogMessage object is created
-            WarningLevel warningLevel = WarningLevel.Severe;
-            string message = default;
-            string filePath = default;
-            int startLineNumber = default;
-            int startColNumber = default;
-            int endLineNumber = default;
-            int endColNumber = default;
-            string libraryId = default;
-            IReadOnlyList<string> targetGraphs = null;
-
-            while (reader.ReadNextToken() && reader.TokenType == JsonTokenType.PropertyName)
-            {
-                if (!isValid)
-                {
-                    reader.Skip();
-                }
-                if (reader.ValueTextEquals(Utf8Level))
-                {
-                    var levelString = reader.ReadNextTokenAsString();
-                    isValid &= Enum.TryParse(levelString, out level);
-                }
-                else if (reader.ValueTextEquals(Utf8Code))
-                {
-                    var codeString = reader.ReadNextTokenAsString();
-                    isValid &= Enum.TryParse(codeString, out code);
-                }
-                else if (reader.ValueTextEquals(Utf8WarningLevel))
-                {
-                    reader.ReadNextToken();
-                    warningLevel = (WarningLevel)Enum.ToObject(typeof(WarningLevel), reader.GetInt32());
-                }
-                else if (reader.ValueTextEquals(Utf8FilePath))
-                {
-                    filePath = reader.ReadNextTokenAsString();
-                }
-                else if (reader.ValueTextEquals(Utf8StartLineNumber))
-                {
-                    reader.ReadNextToken();
-                    startLineNumber = reader.GetInt32();
-                }
-                else if (reader.ValueTextEquals(Utf8StartColumnNumber))
-                {
-                    reader.ReadNextToken();
-                    startColNumber = reader.GetInt32();
-                }
-                else if (reader.ValueTextEquals(Utf8EndLineNumber))
-                {
-                    reader.ReadNextToken();
-                    endLineNumber = reader.GetInt32();
-                }
-                else if (reader.ValueTextEquals(Utf8EndColumnNumber))
-                {
-                    reader.ReadNextToken();
-                    endColNumber = reader.GetInt32();
-                }
-                else if (reader.ValueTextEquals(Utf8Message))
-                {
-                    message = reader.ReadNextTokenAsString();
-                }
-                else if (reader.ValueTextEquals(Utf8LibraryId))
-                {
-                    libraryId = reader.ReadNextTokenAsString();
-                }
-                else if (reader.ValueTextEquals(Utf8TargetGraphs))
-                {
-                    targetGraphs = reader.ReadNextStringArrayAsList();
-                }
-                else
-                {
-                    reader.Skip();
-                }
-            }
-            if (isValid)
-            {
-                var assetLogMessage = new AssetsLogMessage(level, code, message)
-                {
-                    TargetGraphs = targetGraphs ?? new List<string>(0),
-                    FilePath = filePath,
-                    EndColumnNumber = endColNumber,
-                    EndLineNumber = endLineNumber,
-                    LibraryId = libraryId,
-                    StartColumnNumber = startColNumber,
-                    StartLineNumber = startLineNumber,
-                    WarningLevel = warningLevel
-                };
-                return assetLogMessage;
-            }
-            return null;
-        }
-
-        public override AssetsLogMessage ReadWithStream(ref Utf8JsonStreamReader reader, JsonSerializerOptions options)
+        public override AssetsLogMessage Read(ref Utf8JsonStreamReader reader)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
@@ -233,11 +127,6 @@ namespace NuGet.ProjectModel
                 return assetLogMessage;
             }
             return null;
-        }
-
-        public override void Write(Utf8JsonWriter writer, AssetsLogMessage value, JsonSerializerOptions options)
-        {
-            throw new NotImplementedException();
         }
     }
 }

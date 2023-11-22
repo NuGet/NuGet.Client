@@ -92,7 +92,7 @@ namespace NuGet.ProjectModel
         {
             try
             {
-                var lockFile = JsonUtility.LoadJson<LockFile>(stream);
+                var lockFile = JsonUtility.LoadJson<LockFile>(stream, Utf8JsonReaderExtensions.LockFileConverter);
                 lockFile.Path = path;
                 return lockFile;
             }
@@ -182,6 +182,7 @@ namespace NuGet.ProjectModel
             }
         }
 
+        [Obsolete]
         private static LockFile ReadLockFile(JObject cursor, string path)
         {
             var lockFile = new LockFile()
@@ -934,6 +935,7 @@ namespace NuGet.ProjectModel
             writer.WriteObjectEnd();
         }
 
+        [Obsolete]
         private static List<CentralTransitiveDependencyGroup> ReadProjectFileTransitiveDependencyGroup(JObject json, string path)
         {
             var results = new List<CentralTransitiveDependencyGroup>();

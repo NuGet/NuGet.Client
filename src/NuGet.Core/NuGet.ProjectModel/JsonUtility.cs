@@ -28,29 +28,6 @@ namespace NuGet.ProjectModel
             CommentHandling = CommentHandling.Ignore
         };
 
-        private static JsonSerializerOptions CreateJsonSerializerOptions()
-        {
-            var options = new JsonSerializerOptions()
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                AllowTrailingCommas = true,
-                ReadCommentHandling = JsonCommentHandling.Skip,
-            };
-
-            options.Converters.Add(new LockFileConverter());
-            options.Converters.Add(new AssetsLogMessageConverter());
-            options.Converters.Add(new LockFileLibraryConverter());
-            options.Converters.Add(new LockFileTargetConverter());
-            options.Converters.Add(new LockFileItemConverter<LockFileItem>());
-            options.Converters.Add(new LockFileItemConverter<LockFileContentFile>());
-            options.Converters.Add(new LockFileItemConverter<LockFileRuntimeTarget>());
-            options.Converters.Add(new LockFileTargetLibraryConverter());
-            options.Converters.Add(new ProjectFileDependencyGroupConverter());
-            options.Converters.Add(new PackageSpecConverter());
-
-            return options;
-        }
-
         /// <summary>
         /// Load json from a file to a JObject using the default load settings.
         /// </summary>
@@ -70,17 +47,10 @@ namespace NuGet.ProjectModel
             }
         }
 
-        internal static async Task<T> LoadJsonAsync<T>(Stream stream)
-        {
-            return await System.Text.Json.JsonSerializer.DeserializeAsync<T>(stream, CreateJsonSerializerOptions());
-        }
-
-        internal static T LoadJson<T>(Stream stream)
+        internal static T LoadJson<T>(Stream stream, Utf8JsonStreamReaderConverter<T> converter)
         {
             var streamingJsonReader = new Utf8JsonStreamReader(stream);
-            var options = CreateJsonSerializerOptions();
-            var objectConverter = (StreamableJsonConverter<T>)options.GetConverter(typeof(T));
-            return objectConverter.ReadWithStream(ref streamingJsonReader, options);
+            return converter.Read(ref streamingJsonReader);
         }
 
         internal static PackageDependency ReadPackageDependency(string property, JToken json)

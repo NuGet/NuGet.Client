@@ -11,6 +11,15 @@ namespace NuGet.ProjectModel
     internal static class Utf8JsonReaderExtensions
     {
         private static readonly char[] DelimitedStringDelimiters = new char[] { ' ', ',' };
+        internal static readonly Utf8JsonStreamLockFileConverter LockFileConverter = new Utf8JsonStreamLockFileConverter();
+        internal static readonly Utf8JsonStreamLockFileItemConverter<LockFileItem> LockFileItemConverter = new Utf8JsonStreamLockFileItemConverter<LockFileItem>();
+        internal static readonly Utf8JsonStreamLockFileItemConverter<LockFileContentFile> LockFileContentFileConverter = new Utf8JsonStreamLockFileItemConverter<LockFileContentFile>();
+        internal static readonly Utf8JsonStreamLockFileItemConverter<LockFileRuntimeTarget> LockFileRuntimeTargetConverter = new Utf8JsonStreamLockFileItemConverter<LockFileRuntimeTarget>();
+        internal static readonly Utf8JsonStreamLockFileTargetLibraryConverter LockFileTargetLibraryConverter = new Utf8JsonStreamLockFileTargetLibraryConverter();
+        internal static readonly Utf8JsonStreamLockFileLibraryConverter LockFileLibraryConverter = new Utf8JsonStreamLockFileLibraryConverter();
+        internal static readonly Utf8JsonStreamLockFileTargetConverter LockFileTargetConverter = new Utf8JsonStreamLockFileTargetConverter();
+        internal static readonly Utf8JsonStreamProjectFileDependencyGroupConverter ProjectFileDepencencyGroupConverter = new Utf8JsonStreamProjectFileDependencyGroupConverter();
+        internal static readonly Utf8JsonStreamAssetsLogMessageConverter AssetsLogMessageConverter = new Utf8JsonStreamAssetsLogMessageConverter();
 
         internal static IReadOnlyList<string> ReadDelimitedString(this ref Utf8JsonReader reader)
         {
