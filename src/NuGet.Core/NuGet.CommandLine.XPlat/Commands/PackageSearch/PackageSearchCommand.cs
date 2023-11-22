@@ -24,15 +24,10 @@ namespace NuGet.CommandLine.XPlat
         {
             var searchCommand = new CliCommand("search", Strings.pkgSearch_Description);
 
-            // Define arguments and options
             var searchTerm = new CliArgument<string>("Search Term")
             {
                 Description = Strings.pkgSearch_Description,
                 Arity = ArgumentArity.ZeroOrOne,
-                /*                CustomParser = argument =>
-                                {
-                                    return string.Join(" ", argument.Tokens.Select(token => token.Value));
-                                }*/
             };
 
             var sources = new CliOption<List<string>>("--source")
@@ -77,7 +72,6 @@ namespace NuGet.CommandLine.XPlat
                 Arity = ArgumentArity.ExactlyOne
             };
 
-            // Add arguments and options to the command
             searchCommand.Arguments.Add(searchTerm);
             searchCommand.Options.Add(sources);
             searchCommand.Options.Add(exactMatch);

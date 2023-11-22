@@ -114,6 +114,7 @@ namespace NuGet.CommandLine.XPlat
                         return exitCodeValue;
                     }
                 }
+
                 return 0;
             }
 
