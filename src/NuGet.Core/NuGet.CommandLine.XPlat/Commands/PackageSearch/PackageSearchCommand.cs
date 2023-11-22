@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
@@ -15,15 +15,12 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchCommand
     {
-        private const int DefaultTake = 20;
-        private const int DefaultSkip = 0;
-
-        public static void Register(CliRootCommand rootCommand, Func<ILoggerWithColor> getLogger)
+        public static void Register(CliCommand rootCommand, Func<ILoggerWithColor> getLogger)
         {
             Register(rootCommand, getLogger, SetupSettingsAndRunSearchAsync);
         }
 
-        public static void Register(CliRootCommand rootCommand, Func<ILoggerWithColor> getLogger, Func<PackageSearchArgs, CancellationToken, Task<int>> setupSettingsAndRunSearchAsync)
+        public static void Register(CliCommand rootCommand, Func<ILoggerWithColor> getLogger, Func<PackageSearchArgs, CancellationToken, Task<int>> setupSettingsAndRunSearchAsync)
         {
             var searchCommand = new CliCommand("search", Strings.pkgSearch_Description);
 
@@ -31,11 +28,11 @@ namespace NuGet.CommandLine.XPlat
             var searchTerm = new CliArgument<string>("Search Term")
             {
                 Description = Strings.pkgSearch_Description,
-                Arity = ArgumentArity.ZeroOrMore,
-                CustomParser = argument =>
-                {
-                    return string.Join(" ", argument.Tokens.Select(token => token.Value));
-                }
+                Arity = ArgumentArity.ZeroOrOne,
+                /*                CustomParser = argument =>
+                                {
+                                    return string.Join(" ", argument.Tokens.Select(token => token.Value));
+                                }*/
             };
 
             var sources = new CliOption<List<string>>("--source")
@@ -62,23 +59,21 @@ namespace NuGet.CommandLine.XPlat
                 Arity = ArgumentArity.Zero
             };
 
-            var take = new CliOption<int>("--take")
+            var help = new HelpOption("--help", "-h", "-?")
+            {
+                Description = Strings.pkgSearch_InteractiveDescription,
+                Arity = ArgumentArity.Zero
+            };
+
+            var take = new CliOption<string>("--take")
             {
                 Description = Strings.pkgSearch_TakeDescription,
-                DefaultValueFactory = parseResult =>
-                {
-                    return DefaultTake;
-                },
                 Arity = ArgumentArity.ExactlyOne
             };
 
-            var skip = new CliOption<int>("--skip")
+            var skip = new CliOption<string>("--skip")
             {
                 Description = Strings.pkgSearch_SkipDescription,
-                DefaultValueFactory = parseResult =>
-                {
-                    return DefaultSkip;
-                },
                 Arity = ArgumentArity.ExactlyOne
             };
 
@@ -90,6 +85,7 @@ namespace NuGet.CommandLine.XPlat
             searchCommand.Options.Add(interactive);
             searchCommand.Options.Add(take);
             searchCommand.Options.Add(skip);
+            searchCommand.Options.Add(help);
 
             searchCommand.SetAction(async (parserResult, cancelationToken) =>
             {
@@ -97,15 +93,13 @@ namespace NuGet.CommandLine.XPlat
 
                 try
                 {
-                    var packageSearchArgs = new PackageSearchArgs
+                    var packageSearchArgs = new PackageSearchArgs(parserResult.GetValue(skip), parserResult.GetValue(take))
                     {
                         Sources = parserResult.GetValue(sources),
                         SearchTerm = parserResult.GetValue(searchTerm),
                         ExactMatch = parserResult.GetValue(exactMatch),
                         Interactive = parserResult.GetValue(interactive),
                         Prerelease = parserResult.GetValue(prerelease),
-                        Take = parserResult.GetValue(take),
-                        Skip = parserResult.GetValue(skip),
                         Logger = logger,
                     };
 

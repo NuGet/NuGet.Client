@@ -80,7 +80,7 @@ namespace NuGet.CommandLine.XPlat
                     return log;
                 };
 
-                CliRootCommand rootCommand = new CliRootCommand("package");
+                CliCommand rootCommand = new CliCommand("package");
                 PackageSearchCommand.Register(rootCommand, getHidePrefixLogger);
 
                 args[0] = null;
@@ -92,8 +92,21 @@ namespace NuGet.CommandLine.XPlat
                 {
                     if (args.Any() && command.Name == args[0])
                     {
-                        ParseResult parseResult = command.Parse(args);
-                        return command.Action.InvokeAsync(parseResult, CancellationToken.None).GetAwaiter().GetResult();
+                        int exitCodeValue = 0;
+
+                        try
+                        {
+                            CliConfiguration config = new(command);
+                            ParseResult parseResult = command.Parse(args, config);
+                            exitCodeValue = parseResult.InvokeAsync(CancellationToken.None).GetAwaiter().GetResult();
+                        }
+                        catch (Exception e)
+                        {
+                            log.LogError(e.Message);
+                            exitCodeValue = 1;
+                        }
+
+                        return exitCodeValue;
                     }
                 }
                 return 0;

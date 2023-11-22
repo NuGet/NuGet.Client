@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
 
@@ -12,10 +13,10 @@ namespace NuGet.CommandLine.Xplat.Tests
 {
     public class PackageSearchTestInitializer
     {
-        internal CommandLineApplication App { get; set; }
+        internal CliRootCommand RootCommand { get; set; }
         internal Func<ILoggerWithColor> GetLogger { get; set; }
         internal PackageSearchArgs CapturedArgs { get; set; }
-        internal Func<PackageSearchArgs, Task<int>> SetupSettingsAndRunSearchAsync { get; set; }
+        internal Func<PackageSearchArgs, CancellationToken, Task<int>> SetupSettingsAndRunSearchAsync { get; set; }
         internal string StoredErrorMessage { get; set; }
         internal List<Tuple<string, ConsoleColor>> ColoredMessage { get; set; }
 
@@ -23,7 +24,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         {
             StoredErrorMessage = string.Empty;
             ColoredMessage = new List<Tuple<string, ConsoleColor>>();
-            App = new CommandLineApplication();
+            RootCommand = new CliRootCommand();
             var loggerWithColorMock = new Mock<ILoggerWithColor>();
             loggerWithColorMock.Setup(x => x.LogError(It.IsAny<string>()))
                 .Callback<string>(message => StoredErrorMessage += message);
@@ -34,7 +35,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             CapturedArgs = null;
 
-            SetupSettingsAndRunSearchAsync = async (PackageSearchArgs args) =>
+            SetupSettingsAndRunSearchAsync = async (PackageSearchArgs args, CancellationToken token) =>
             {
                 CapturedArgs = args;
                 await Task.CompletedTask;
