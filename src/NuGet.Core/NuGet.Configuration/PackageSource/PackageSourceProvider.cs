@@ -52,6 +52,10 @@ namespace NuGet.Configuration
             {
                 Settings.SettingsChanged += (_, __) => { OnPackageSourcesChanged(); };
             }
+            if (configurationDefaultSources is null)
+            {
+                throw new ArgumentNullException(nameof(configurationDefaultSources));
+            }
             _configurationDefaultSources = LoadConfigurationDefaultSources(configurationDefaultSources);
         }
 
@@ -69,7 +73,7 @@ namespace NuGet.Configuration
 
             foreach (var packageSource in configurationDefaultSources)
             {
-                packageIndex = AddOrUpdateIndexedSource(packageSourceLookup, packageIndex, packageSource);
+                AddOrUpdateIndexedSource(packageSourceLookup, packageSource, ref packageIndex);
             }
 
             List<PackageSource> defaultSources = new(packageSourceLookup.Count);
@@ -107,7 +111,7 @@ namespace NuGet.Configuration
                     var isEnabled = !disabledSources.Contains(name);
                     var packageSource = ReadPackageSource(setting, isEnabled, settings);
 
-                    packageIndex = AddOrUpdateIndexedSource(packageSourceLookup, packageIndex, packageSource);
+                    AddOrUpdateIndexedSource(packageSourceLookup, packageSource, ref packageIndex);
                 }
 
                 packageSources = new(capacity: packageSourceLookup.Count);
@@ -159,7 +163,7 @@ namespace NuGet.Configuration
         {
             var defaultPackageSourcesToBeAdded = new List<PackageSource>();
 
-            foreach (var packageSource in defaultPackageSources)
+            foreach (var packageSource in defaultPackageSources.NoAllocEnumerate())
             {
                 var sourceMatching = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.OrdinalIgnoreCase));
                 var feedNameMatching = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.OrdinalIgnoreCase));
@@ -228,10 +232,10 @@ namespace NuGet.Configuration
             return PackageSource.DefaultAllowInsecureConnections;
         }
 
-        private static int AddOrUpdateIndexedSource(
+        private static void AddOrUpdateIndexedSource(
             Dictionary<string, IndexedPackageSource> packageSourceLookup,
-            int packageIndex,
-            PackageSource packageSource)
+            PackageSource packageSource,
+            ref int packageIndex)
         {
             if (!packageSourceLookup.TryGetValue(packageSource.Name, out var previouslyAddedSource))
             {
@@ -248,8 +252,6 @@ namespace NuGet.Configuration
                 // Pick the package source with the highest supported protocol version
                 previouslyAddedSource.PackageSource = packageSource;
             }
-
-            return packageIndex;
         }
 
         private static PackageSourceCredential ReadCredential(string sourceName, ISettings settings)
@@ -853,6 +855,11 @@ namespace NuGet.Configuration
         /// <param name="source"></param>
         public void SaveActivePackageSource(PackageSource source)
         {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             try
             {
                 var activePackageSourceSection = Settings.GetSection(ConfigurationConstants.ActivePackageSourceSectionName);
