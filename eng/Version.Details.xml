@@ -34,6 +34,11 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>30ab651fcb4354552bd4891619a0bdd81e0ebdbf</Sha>
     </Dependency>
+    <Dependency Name="System.CommandLine" Version="2.0.0-beta4.23307.1">
+      <Uri>https://github.com/dotnet/command-line-api</Uri>
+      <Sha>02fe27cd6a9b001c8feb7938e6ef4b3799745759</Sha>
+      <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
+    </Dependency>
     <Dependency Name="System.Security.Cryptography.Pkcs" Version="6.0.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e37fab9fc9f7bce120a7165491ed392a73f8ab51</Sha>
