@@ -7,12 +7,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Server;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -167,6 +169,87 @@ namespace NuGet.Protocol.Tests
             {
                 clientHandler.ServerCertificateCustomValidationCallback.Should().BeNull();
             }
+        }
+
+        [Fact]
+        public async Task TryCreate_WhenCertificateValidationIsNotDisabled_ClientHandlerThrowsAnException()
+        {
+            // Arrange
+            TcpListenerServer server = new()
+            {
+                Mode = TestServerMode.InvalidTLSCertificate
+            };
+
+            Mock<IProxyCache> proxyCache = new();
+            proxyCache.Setup(pc => pc.GetProxy(It.IsAny<Uri>())).Returns((IWebProxy)null);
+
+            PackageSource packageSource = new(_testPackageSourceURL, "source");
+
+            SourceRepository sourceRepository = new(packageSource, Array.Empty<INuGetResourceProvider>());
+
+            HttpHandlerResourceV3Provider target = new(proxyCache.Object);
+
+            var result = await target.TryCreate(sourceRepository, CancellationToken.None);
+
+            HttpHandlerResourceV3 resource = (HttpHandlerResourceV3)result.Item2;
+
+            HttpClientHandler clientHandler = resource.ClientHandler;
+
+            var client = new HttpClient(clientHandler);
+
+            await server.ExecuteAsync(async uri =>
+            {
+                // Act
+                var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await client.GetAsync(uri));
+
+                // Assert
+                Assert.Contains("An error occurred while sending the request.", exception.Message);
+                Assert.IsType<WebException>(exception.InnerException);
+                Assert.Contains("The underlying connection was closed", exception.InnerException?.Message);
+                Assert.IsType<AuthenticationException>(exception.InnerException?.InnerException);
+                Assert.Contains("The remote certificate is invalid", exception.InnerException?.InnerException?.Message);
+                return 0;
+            });
+        }
+
+        [Fact]
+        public async Task TryCreate_WhenCertificateValidationIsDisabled_ClientHandlerDoesNotThrowAnException()
+        {
+            // Arrange
+            TcpListenerServer server = new()
+            {
+                Mode = TestServerMode.InvalidTLSCertificate
+            };
+
+            Mock<IProxyCache> proxyCache = new();
+            proxyCache.Setup(pc => pc.GetProxy(It.IsAny<Uri>())).Returns((IWebProxy)null);
+
+            PackageSource packageSource = new(_testPackageSourceURL, "source")
+            {
+                DisableTLSCertificateValidation = true
+            };
+
+            SourceRepository sourceRepository = new(packageSource, Array.Empty<INuGetResourceProvider>());
+
+            HttpHandlerResourceV3Provider target = new(proxyCache.Object);
+
+            var result = await target.TryCreate(sourceRepository, CancellationToken.None);
+
+            HttpHandlerResourceV3 resource = (HttpHandlerResourceV3)result.Item2;
+
+            HttpClientHandler clientHandler = resource.ClientHandler;
+
+            var client = new HttpClient(clientHandler);
+
+            await server.ExecuteAsync(async uri =>
+            {
+                // Act
+                var response = await client.GetAsync(uri);
+
+                // Assert
+                Assert.True(response.IsSuccessStatusCode);
+                return 0;
+            });
         }
     }
 }
