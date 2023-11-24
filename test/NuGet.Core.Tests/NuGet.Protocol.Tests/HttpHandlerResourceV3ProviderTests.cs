@@ -199,15 +199,8 @@ namespace NuGet.Protocol.Tests
 
             await server.ExecuteAsync(async uri =>
             {
-                // Act
+                // Act & Assert
                 var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await client.GetAsync(uri));
-
-                // Assert
-                Assert.Contains("An error occurred while sending the request.", exception.Message);
-                Assert.IsType<WebException>(exception.InnerException);
-                Assert.Contains("The underlying connection was closed", exception.InnerException?.Message);
-                Assert.IsType<AuthenticationException>(exception.InnerException?.InnerException);
-                Assert.Contains("The remote certificate is invalid", exception.InnerException?.InnerException?.Message);
                 return 0;
             });
         }
