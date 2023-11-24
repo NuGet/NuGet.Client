@@ -85,37 +85,23 @@ namespace NuGet.CommandLine.XPlat
                 CliCommand rootCommand = new CliCommand("package");
                 PackageSearchCommand.Register(rootCommand, getHidePrefixLogger);
 
-                args[0] = null;
-                args = args
-                    .Where(e => e != null)
-                    .ToArray();
+                CancellationTokenSource tokenSource = new CancellationTokenSource();
+                tokenSource.CancelAfter(TimeSpan.FromMinutes(DotnetPackageSearchTimeOut));
+                int exitCodeValue = 0;
 
-                foreach (CliCommand command in rootCommand.Subcommands)
+                try
                 {
-                    if (args.Any() && command.Name == args[0])
-                    {
-                        int exitCodeValue = 0;
-
-                        try
-                        {
-                            CancellationTokenSource tokenSource = new CancellationTokenSource();
-                            tokenSource.CancelAfter(TimeSpan.FromMinutes(DotnetPackageSearchTimeOut));
-
-                            CliConfiguration config = new(command);
-                            ParseResult parseResult = command.Parse(args, config);
-                            exitCodeValue = parseResult.InvokeAsync(tokenSource.Token).GetAwaiter().GetResult();
-                        }
-                        catch (Exception e)
-                        {
-                            log.LogError(e.Message);
-                            exitCodeValue = 1;
-                        }
-
-                        return exitCodeValue;
-                    }
+                    CliConfiguration config = new(rootCommand);
+                    ParseResult parseResult = rootCommand.Parse(args, config);
+                    exitCodeValue = parseResult.InvokeAsync(tokenSource.Token).GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    log.LogError(ex.Message);
+                    exitCodeValue = 1;
                 }
 
-                return 0;
+                return exitCodeValue;
             }
 
             var app = InitializeApp(args, log);

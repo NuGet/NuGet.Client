@@ -54,7 +54,7 @@ namespace NuGet.CommandLine.XPlat
                 Arity = ArgumentArity.Zero
             };
 
-            var help = new HelpOption("--help", "-h", "-?")
+            var help = new HelpOption()
             {
                 Arity = ArgumentArity.Zero
             };
