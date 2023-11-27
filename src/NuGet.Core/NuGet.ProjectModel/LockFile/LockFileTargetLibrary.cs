@@ -176,23 +176,23 @@ namespace NuGet.ProjectModel
                 && VersionComparer.Default.Equals(Version!, other.Version!)
                 && string.Equals(Type, other.Type, StringComparison.Ordinal)
                 && string.Equals(Framework, other.Framework, StringComparison.Ordinal)
-                && IsListOrderedEqual<PackageDependency>(DependenciesKey, static o => o.Id)
-                && IsListOrderedEqual<string>(FrameworkAssembliesKey, static o => o, sequenceComparer: StringComparer.OrdinalIgnoreCase)
-                && IsListOrderedEqual<string>(FrameworkReferencesKey, static o => o, sequenceComparer: StringComparer.OrdinalIgnoreCase)
-                && IsListOrderedEqual<LockFileItem>(RuntimeAssembliesKey, static o => o.Path)
-                && IsListOrderedEqual<LockFileItem>(ResourceAssembliesKey, static o => o.Path)
-                && IsListOrderedEqual<LockFileItem>(CompileTimeAssembliesKey, static o => o.Path)
-                && IsListOrderedEqual<LockFileItem>(NativeLibrariesKey, static o => o.Path)
-                && IsListOrderedEqual<LockFileContentFile>(ContentFilesKey, static o => o.Path)
-                && IsListOrderedEqual<LockFileRuntimeTarget>(RuntimeTargetsKey, static o => o.Path)
-                && IsListOrderedEqual<LockFileItem>(BuildKey, static o => o.Path)
-                && IsListOrderedEqual<LockFileItem>(BuildMultiTargetingKey, static o => o.Path)
-                && IsListOrderedEqual<LockFileItem>(ToolsAssembliesKey, static o => o.Path)
-                && IsListOrderedEqual<LockFileItem>(EmbedAssembliesKey, static o => o.Path);
+                && IsListOrderedEqual<PackageDependency>(DependenciesKey)
+                && IsListOrderedEqual<string>(FrameworkAssembliesKey, equalityComparer: StringComparer.OrdinalIgnoreCase)
+                && IsListOrderedEqual<string>(FrameworkReferencesKey, equalityComparer: StringComparer.OrdinalIgnoreCase)
+                && IsListOrderedEqual<LockFileItem>(RuntimeAssembliesKey)
+                && IsListOrderedEqual<LockFileItem>(ResourceAssembliesKey)
+                && IsListOrderedEqual<LockFileItem>(CompileTimeAssembliesKey)
+                && IsListOrderedEqual<LockFileItem>(NativeLibrariesKey)
+                && IsListOrderedEqual<LockFileContentFile>(ContentFilesKey)
+                && IsListOrderedEqual<LockFileRuntimeTarget>(RuntimeTargetsKey)
+                && IsListOrderedEqual<LockFileItem>(BuildKey)
+                && IsListOrderedEqual<LockFileItem>(BuildMultiTargetingKey)
+                && IsListOrderedEqual<LockFileItem>(ToolsAssembliesKey)
+                && IsListOrderedEqual<LockFileItem>(EmbedAssembliesKey);
 
             // NOTE we don't include PackageType in Equals or GetHashCode, since it's only used for compatibility checking post restore.
 
-            bool IsListOrderedEqual<T>(PropertyKey key, Func<T, string> accessor, IEqualityComparer<T>? sequenceComparer = null)
+            bool IsListOrderedEqual<T>(PropertyKey key, IEqualityComparer<T>? equalityComparer = null) where T : notnull
             {
                 _propertyValues.TryGetValue(key, out object? thisValue);
                 other._propertyValues.TryGetValue(key, out object? thatValue);
@@ -200,7 +200,7 @@ namespace NuGet.ProjectModel
                 IList<T>? thisList = thisValue is IList<T> { Count: not 0 } list1 ? list1 : null;
                 IList<T>? thatList = thatValue is IList<T> { Count: not 0 } list2 ? list2 : null;
 
-                return thisList.OrderedEquals<T, string>(thatList, accessor, orderComparer: StringComparer.OrdinalIgnoreCase, sequenceComparer: sequenceComparer);
+                return thisList.ElementsEqual<T, T>(thatList, static o => o, equalityComparer: equalityComparer);
             }
         }
 

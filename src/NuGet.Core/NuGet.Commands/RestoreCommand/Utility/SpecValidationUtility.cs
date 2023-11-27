@@ -221,7 +221,7 @@ namespace NuGet.Commands
             {
                 var aliases = spec.TargetFrameworks.Select(e => e.TargetAlias);
 
-                if (!EqualityUtility.OrderedEquals(aliases, spec.RestoreMetadata.OriginalTargetFrameworks, e => e, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase))
+                if (!EqualityUtility.ElementsEqual(aliases, spec.RestoreMetadata.OriginalTargetFrameworks, e => e, StringComparer.OrdinalIgnoreCase))
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,

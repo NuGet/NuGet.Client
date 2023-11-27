@@ -67,8 +67,8 @@ namespace NuGet.RuntimeModel
             }
 
             return string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal)
-                && InheritedRuntimes.OrderedEquals(other.InheritedRuntimes, s => s, StringComparer.Ordinal, StringComparer.Ordinal)
-                && RuntimeDependencySets.OrderedEquals(other.RuntimeDependencySets, p => p.Key, StringComparer.OrdinalIgnoreCase);
+                && InheritedRuntimes.ElementsEqual(other.InheritedRuntimes, s => s, StringComparer.Ordinal)
+                && RuntimeDependencySets.ElementsEqual(other.RuntimeDependencySets, p => p);
         }
 
         [Obsolete("This type is immutable, so there is no need or point to clone it.")]

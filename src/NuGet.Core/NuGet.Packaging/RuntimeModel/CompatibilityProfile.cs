@@ -48,7 +48,7 @@ namespace NuGet.RuntimeModel
         {
             return other != null &&
                 string.Equals(Name, other.Name, StringComparison.Ordinal) &&
-                RestoreContexts.OrderedEquals(other.RestoreContexts, r => r);
+                RestoreContexts.ElementsEqual(other.RestoreContexts, r => r);
         }
 
         public CompatibilityProfile Clone()

@@ -55,12 +55,12 @@ namespace NuGet.Packaging.Core
 
             if (result)
             {
-                result = x.Include.OrderedEquals(y.Include, s => s, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase);
+                result = x.Include.ElementsEqual(y.Include, s => s, StringComparer.OrdinalIgnoreCase);
             }
 
             if (result)
             {
-                result = x.Exclude.OrderedEquals(y.Exclude, s => s, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase);
+                result = x.Exclude.ElementsEqual(y.Exclude, s => s, StringComparer.OrdinalIgnoreCase);
             }
 
             return result;

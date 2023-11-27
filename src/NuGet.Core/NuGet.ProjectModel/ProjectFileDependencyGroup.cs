@@ -38,7 +38,7 @@ namespace NuGet.ProjectModel
                     return Dependencies == other.Dependencies;
                 }
 
-                return Dependencies.OrderedEquals(other.Dependencies, s => s, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase);
+                return Dependencies.ElementsEqual(other.Dependencies, s => s, StringComparer.OrdinalIgnoreCase);
             }
 
             return false;

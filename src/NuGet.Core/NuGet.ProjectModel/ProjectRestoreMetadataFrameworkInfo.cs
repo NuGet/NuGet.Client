@@ -68,7 +68,7 @@ namespace NuGet.ProjectModel
 
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
                    StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias) &&
-                   ProjectReferences.OrderedEquals(other.ProjectReferences, e => e.ProjectPath, PathUtility.GetStringComparerBasedOnOS());
+                   ProjectReferences.ElementsEqual(other.ProjectReferences, e => e);
         }
 
         public ProjectRestoreMetadataFrameworkInfo Clone()

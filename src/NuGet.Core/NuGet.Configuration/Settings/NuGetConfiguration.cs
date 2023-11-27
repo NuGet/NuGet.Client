@@ -159,7 +159,7 @@ namespace NuGet.Configuration
                 return true;
             }
 
-            return Sections.OrderedEquals(nugetConfiguration.Sections, s => s.Key, StringComparer.Ordinal);
+            return Sections.ElementsEqual(nugetConfiguration.Sections, s => s);
         }
 
         public override int GetHashCode() => Children.GetHashCode();

@@ -135,13 +135,13 @@ namespace NuGet.ProjectModel
             }
 
             return Version == other.Version
-                && ProjectFileDependencyGroups.OrderedEquals(other.ProjectFileDependencyGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
-                && Libraries.OrderedEquals(other.Libraries, library => library.Name, StringComparer.OrdinalIgnoreCase)
-                && Targets.OrderedEquals(other.Targets, target => target.Name, StringComparer.Ordinal)
+                && ProjectFileDependencyGroups.ElementsEqual(other.ProjectFileDependencyGroups, group => group)
+                && Libraries.ElementsEqual(other.Libraries, library => library)
+                && Targets.ElementsEqual(other.Targets, target => target)
                 && PackageFolders.SequenceEqual(other.PackageFolders)
                 && EqualityUtility.EqualsWithNullCheck(PackageSpec, other.PackageSpec)
                 && LogsEqual(other.LogMessages)
-                && CentralTransitiveDependencyGroups.OrderedEquals(other.CentralTransitiveDependencyGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase);
+                && CentralTransitiveDependencyGroups.ElementsEqual(other.CentralTransitiveDependencyGroups, group => group);
         }
 
         private bool LogsEqual(IList<IAssetsLogMessage> otherLogMessages)

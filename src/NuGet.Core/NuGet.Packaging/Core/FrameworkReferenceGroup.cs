@@ -47,7 +47,7 @@ namespace NuGet.Packaging
             }
 
             return TargetFramework.Equals(other.TargetFramework) &&
-                   FrameworkReferences.OrderedEquals(other.FrameworkReferences, dependency => dependency);
+                   FrameworkReferences.ElementsEqual(other.FrameworkReferences, dependency => dependency);
         }
 
         public override bool Equals(object obj)

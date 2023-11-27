@@ -44,7 +44,7 @@ namespace NuGet.ProjectModel
 
             if (string.Equals(FrameworkName, other.FrameworkName, StringComparison.OrdinalIgnoreCase))
             {
-                return EqualityUtility.OrderedEquals(TransitiveDependencies, other.TransitiveDependencies, dep => dep.Name, StringComparer.OrdinalIgnoreCase);
+                return TransitiveDependencies.ElementsEqual(other.TransitiveDependencies, dep => dep);
             }
 
             return false;

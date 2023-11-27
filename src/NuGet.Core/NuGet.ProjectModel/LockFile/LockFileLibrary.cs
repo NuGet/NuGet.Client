@@ -55,7 +55,7 @@ namespace NuGet.ProjectModel
                 && string.Equals(Sha512, other.Sha512, StringComparison.Ordinal)
                 && Version == other.Version)
             {
-                return Files.OrderedEquals(other.Files, s => s, StringComparer.Ordinal, StringComparer.Ordinal);
+                return Files.ElementsEqual(other.Files, s => s, StringComparer.Ordinal);
             }
 
             return false;

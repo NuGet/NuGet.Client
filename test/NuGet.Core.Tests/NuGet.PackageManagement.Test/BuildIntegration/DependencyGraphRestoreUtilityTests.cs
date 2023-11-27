@@ -189,12 +189,12 @@ namespace NuGet.PackageManagement.Test
             progressReporter.Verify(r =>
                 r.StartProjectUpdate(
                     It.Is<string>(e => e.Equals(packageSpec.FilePath)),
-                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(expectedFileList, (f) => f, pathComparer, pathComparer))),
+                    It.Is<IReadOnlyList<string>>(e => e.ElementsEqual(expectedFileList, (f) => f, pathComparer))),
                     Times.Once);
             progressReporter.Verify(r =>
                 r.EndProjectUpdate(
                     It.Is<string>(e => e.Equals(packageSpec.FilePath)),
-                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(expectedFileList, (f) => f, pathComparer, pathComparer))),
+                    It.Is<IReadOnlyList<string>>(e => e.ElementsEqual(expectedFileList, (f) => f, pathComparer))),
                     Times.Once);
         }
 
