@@ -12,12 +12,14 @@ namespace NuGet.Packaging
             string packageId,
             string packageVersion,
             string source,
-            string contentHash)
+            string contentHash,
+            string filePath)
         {
             return string.Format(CultureInfo.CurrentCulture,
                 Strings.Log_InstalledPackage,
                 packageId,
                 packageVersion,
+                filePath,
                 source,
                 contentHash);
         }
