@@ -33,7 +33,7 @@ namespace NuGet.CommandLine.XPlat
             var sources = new CliOption<List<string>>("--source")
             {
                 Description = Strings.pkgSearch_SourceDescription,
-                Arity = ArgumentArity.ZeroOrMore
+                Arity = ArgumentArity.OneOrMore
             };
 
             var exactMatch = new CliOption<bool>("--exact-match")
