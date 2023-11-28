@@ -54,11 +54,6 @@ namespace NuGet.CommandLine.XPlat
                 Arity = ArgumentArity.Zero
             };
 
-            var help = new HelpOption()
-            {
-                Arity = ArgumentArity.Zero
-            };
-
             var take = new CliOption<string>("--take")
             {
                 Description = Strings.pkgSearch_TakeDescription,
@@ -69,6 +64,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 Description = Strings.pkgSearch_SkipDescription,
                 Arity = ArgumentArity.ExactlyOne
+            };
+
+            var help = new HelpOption()
+            {
+                Arity = ArgumentArity.Zero
             };
 
             searchCommand.Arguments.Add(searchTerm);
