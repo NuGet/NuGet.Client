@@ -1,0 +1,6 @@
+<Project>
+  <!--Package versions-->
+  <PropertyGroup>
+    <SystemCommandLinePackageVersion>2.0.0-beta4.23307.1</SystemCommandLinePackageVersion>
+  </PropertyGroup>
+</Project>
