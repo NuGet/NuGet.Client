@@ -879,7 +879,14 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 result.ExitCode.Should().Be(0, result.AllOutput);
-                result.AllOutput.Should().Contain($"warning NU1503: Skipping restore for project '{project.ProjectPath}'. The project file may be invalid or missing targets required for restore.");
+                if (restoreUseStaticGraphEvaluation)
+                {
+                    result.AllOutput.Should().Contain($"Skipping restore for project '{project.ProjectPath}'. The project file may be invalid or missing targets required for restore.");
+                }
+                else
+                {
+                    result.AllOutput.Should().Contain($"warning NU1503: Skipping restore for project '{project.ProjectPath}'. The project file may be invalid or missing targets required for restore.");
+                }
             }
         }
 
