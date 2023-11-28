@@ -271,7 +271,7 @@ namespace Dotnet.Integration.Test
             var result = _fixture.RunDotnetExpectFailure(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version}");
 
             // Assert
-            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
             Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})'", result.AllOutput);
         }
 
@@ -334,8 +334,8 @@ namespace Dotnet.Integration.Test
             var result = _fixture.RunDotnetExpectSuccess(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version}");
 
             // Assert
-            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
-            Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageZ.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
         }
 
         [Fact]
@@ -399,8 +399,8 @@ namespace Dotnet.Integration.Test
             var result = _fixture.RunDotnetExpectSuccess(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version} -s {pathContext.PackageSource}");
 
             // Assert
-            Assert.Contains($"Installed {packageX} {version} from {pathContext.PackageSource}", result.AllOutput);
-            Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageZ.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
         }
 
         [Fact]
@@ -463,7 +463,7 @@ namespace Dotnet.Integration.Test
             var result = _fixture.RunDotnetExpectFailure(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version} -s {packageSource2}");
 
             // Assert
-            Assert.Contains($"Installed {packageX} {version} from {packageSource2}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2}", result.AllOutput);
             Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})' for 'net7.0'", result.AllOutput);
         }
 
@@ -531,8 +531,8 @@ namespace Dotnet.Integration.Test
             var result = _fixture.RunDotnetExpectSuccess(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version}");
 
             // Assert
-            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
-            Assert.Contains($"Installed {packageZ} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageZ.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
         }
 
         [Fact]
@@ -594,7 +594,7 @@ namespace Dotnet.Integration.Test
             var result = _fixture.RunDotnetExpectFailure(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version} -s {packageSource2}");
 
             // Assert
-            Assert.Contains($"Installed {packageX} {version} from {packageSource2}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2}", result.AllOutput);
             Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})' for 'net7.0'", result.AllOutput);
         }
 

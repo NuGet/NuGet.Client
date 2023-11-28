@@ -110,7 +110,7 @@ namespace NuGet.Tests.Apex
                 // Assert
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion, Logger);
-                StringAssert.Contains(GetPackageManagerOutputWindowPaneText(), $"Installed {packageName} {packageVersion} from {privateRepositoryPath}");
+                StringAssert.Contains(GetPackageManagerOutputWindowPaneText(), $"Installed {packageName} {packageVersion} ({Path.Combine(testContext.UserPackagesFolder, packageName.ToLower(), packageVersion, ".nupkg.metadata")}) from {privateRepositoryPath}");
             }
         }
 
@@ -181,7 +181,7 @@ namespace NuGet.Tests.Apex
                 // Assert
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
                 CommonUtility.AssertPackageReferenceExists(VisualStudio, testContext.SolutionService.Projects[0], packageName, packageVersion2, Logger);
-                StringAssert.Contains(GetPackageManagerOutputWindowPaneText(), $"Installed {packageName} {packageVersion2} from {privateRepositoryPath}");
+                StringAssert.Contains(GetPackageManagerOutputWindowPaneText(), $"Installed {packageName} {packageVersion2} ({Path.Combine(testContext.UserPackagesFolder, packageName.ToLower(), packageVersion2, ".nupkg.metadata")}) from {privateRepositoryPath}");
             }
         }
 

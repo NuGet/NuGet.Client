@@ -1905,10 +1905,10 @@ EndGlobal";
             //Act
             var result = _msbuildFixture.RunDotnetExpectSuccess(pathContext.WorkingDirectory, $"restore {projectA.ProjectPath} -v n");
 
-            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
-            Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
-            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
-            Assert.Contains($"Installed {packageK} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageZ.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageY.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageK} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageK.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
         }
 
         [Fact]
@@ -1983,8 +1983,8 @@ EndGlobal";
 
             Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})'", result.AllOutput);
             Assert.Contains($"NU1100: Unable to resolve '{packageK} (= {version})'", result.AllOutput);
-            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
-            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageY.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
         }
 
         [Fact]
@@ -2060,10 +2060,10 @@ EndGlobal";
             //Act
             var result = _msbuildFixture.RunDotnetExpectSuccess(pathContext.WorkingDirectory, $"restore {projectA.ProjectPath} --source {packageSource2.FullName};{pathContext.PackageSource} --verbosity detailed");
 
-            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
-            Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
-            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
-            Assert.Contains($"Installed {packageK} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageZ.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageY.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageK} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageK.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
             Assert.Contains($"Package source mapping matches found for package ID 'Y' are: 'source1'.", result.AllOutput);
             Assert.Contains($"Package source mapping matches found for package ID 'Z' are: 'source1'.", result.AllOutput);
             Assert.Contains($"Package source mapping matches found for package ID 'X' are: 'source2'.", result.AllOutput);
@@ -2136,7 +2136,7 @@ EndGlobal";
             Assert.Contains("Package source mapping match not found for package ID 'Y'", result.AllOutput);
             Assert.Contains($"NU1100: Unable to resolve '{packageY} (>= {version})'", result.AllOutput);
             Assert.Contains($"Package source mapping matches found for package ID 'X' are: 'source2'.", result.AllOutput);
-            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
         }
 
         [Fact]
@@ -2204,8 +2204,8 @@ EndGlobal";
             var result = _msbuildFixture.RunDotnetExpectSuccess(pathContext.WorkingDirectory, $"restore {projectA.ProjectPath} --verbosity normal");
 
             // Assert
-            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
-            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageY.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
         }
 
         [Fact]
@@ -2277,7 +2277,7 @@ EndGlobal";
             Assert.Contains("Package source mapping match not found for package ID 'X'", result.AllOutput);
             Assert.Contains($"NU1100: Unable to resolve '{packageX} (>= {version})'", result.AllOutput);
             Assert.Contains($"Package source mapping matches found for package ID 'Y' are: 'source'.", result.AllOutput);
-            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageY.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
         }
 
         public async Task DotnetRestore_WithDuplicatePackageVersion_WithTreatWarningsAsErrors_ErrorsWithNU1506()
