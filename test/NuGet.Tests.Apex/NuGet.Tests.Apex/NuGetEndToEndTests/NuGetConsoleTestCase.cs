@@ -614,7 +614,7 @@ namespace NuGet.Tests.Apex
             nugetConsole.InstallPackageFromPMC(packageName, packageVersion1);
 
             // Assert
-            var expectedMessage = $"Installed {packageName} {packageVersion1} ({Path.Combine(testContext.UserPackagesFolder, packageName.ToLower(), packageVersion1, ".nupkg.metadata")}) from {privateRepositoryPath}";
+            var expectedMessage = $"Installed {packageName} {packageVersion1} from {privateRepositoryPath}";
             Assert.IsTrue(nugetConsole.IsMessageFoundInPMC(expectedMessage), expectedMessage);
             VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
             Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
@@ -684,7 +684,7 @@ namespace NuGet.Tests.Apex
             nugetConsole.UpdatePackageFromPMC(packageName, packageVersion2);
 
             // Assert
-            var expectedMessage = $"Installed {packageName} {packageVersion2} ({Path.Combine(testContext.UserPackagesFolder, packageName.ToLower(), packageVersion2, ".nupkg.metadata")}) from {privateRepositoryPath}";
+            var expectedMessage = $"Installed {packageName} {packageVersion2} from {privateRepositoryPath}";
             nugetConsole.IsMessageFoundInPMC(expectedMessage).Should().BeTrue(because: nugetConsole.GetText());
             VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
             VisualStudio.HasNoErrorsInOutputWindows().Should().BeTrue();

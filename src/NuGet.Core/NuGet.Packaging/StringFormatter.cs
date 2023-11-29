@@ -19,8 +19,8 @@ namespace NuGet.Packaging
                 Strings.Log_InstalledPackage,
                 packageId,
                 packageVersion,
-                filePath,
                 source,
+                filePath,
                 contentHash);
         }
 

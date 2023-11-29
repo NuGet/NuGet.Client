@@ -10976,10 +10976,10 @@ namespace NuGet.CommandLine.Test
             var result = Util.Restore(pathContext, projectA.ProjectPath);
 
             Assert.True(result.Success);
-            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
-            Assert.Contains($"Installed {packageZ} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageZ.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
-            Assert.Contains($"Installed {packageY} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageY.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
-            Assert.Contains($"Installed {packageK} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageK.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageK} {version} from {packageSource2.FullName}", result.AllOutput);
         }
 
         [Fact]
@@ -11049,8 +11049,8 @@ namespace NuGet.CommandLine.Test
             var result = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1);
 
             Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})'", result.AllOutput);
-            Assert.Contains($"Installed {packageX} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageX.ToLower(), version, ".nupkg.metadata")}) from {packageSource2.FullName}", result.AllOutput);
-            Assert.Contains($"Installed {packageY} {version} ({Path.Combine(pathContext.UserPackagesFolder, packageY.ToLower(), version, ".nupkg.metadata")}) from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
+            Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
         }
 
         [Fact]
