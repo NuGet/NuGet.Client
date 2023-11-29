@@ -429,7 +429,7 @@ namespace NuGet.Commands
         public static RestoreLogMessage GetMessageForUnsupportedProject(string path)
         {
             var text = string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedProject, path);
-            var message = new RestoreLogMessage(LogLevel.Minimal, NuGetLogCode.NU1503, text);
+            var message = new RestoreLogMessage(LogLevel.Information, text);
             message.FilePath = path;
 
             return message;
