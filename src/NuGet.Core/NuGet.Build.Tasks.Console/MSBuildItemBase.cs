@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using NuGet.Commands;
 
 namespace NuGet.Build.Tasks.Console
@@ -16,16 +15,9 @@ namespace NuGet.Build.Tasks.Console
         /// <inheritdoc cref="IMSBuildItem.Identity" />
         public virtual string Identity { get; }
 
+        [Obsolete("This property should not be accessed.  Calculating the names of the item metadata allocates a new list and can cause performance issues.  Use GetProperty(string) instead and check if the value is null or whitespace.")]
         /// <inheritdoc cref="IMSBuildItem.Properties" />
-        public IReadOnlyList<string> Properties
-        {
-            get
-            {
-                Debug.Fail("This property should not be accessed.  Calculating the names of the item metadata allocates a new list and can cause performance issues.  Use GetProperty(string) instead and check if the value is null or whitespace.");
-
-                return Array.Empty<string>();
-            }
-        }
+        public IReadOnlyList<string> Properties => throw new NotSupportedException();
 
         /// <inheritdoc cref="IMSBuildItem.GetProperty(string)" />
         public string GetProperty(string property)
