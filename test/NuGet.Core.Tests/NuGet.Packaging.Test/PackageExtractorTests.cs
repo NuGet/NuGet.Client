@@ -5004,7 +5004,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
                     var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
-                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} to {resolver.GetPackageDirectory(identity.Id, identity.Version)} with content hash {nupkgMetadata.ContentHash}.");
+                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} to {Path.Combine(resolver.RootPath, resolver.GetPackageDirectory(identity.Id, identity.Version))} with content hash {nupkgMetadata.ContentHash}.");
                 }
             }
         }
@@ -5099,7 +5099,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
                     var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
-                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} to {resolver.GetPackageDirectory(identity.Id, identity.Version)} with content hash {nupkgMetadata.ContentHash}.");
+                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} to {Path.Combine(resolver.RootPath, resolver.GetPackageDirectory(identity.Id, identity.Version))} with content hash {nupkgMetadata.ContentHash}.");
                 }
             }
         }
