@@ -135,7 +135,6 @@ namespace NuGet.PackageManagement.UI
             if (_topPanel.IsSolution)
             {
                 _topPanel.CreateAndAddConsolidateTab();
-                _topPanel.CheckBoxVulnerabilities.Visibility = Visibility.Hidden;
             }
 
             _settingsKey = await GetSettingsKeyAsync(CancellationToken.None);
