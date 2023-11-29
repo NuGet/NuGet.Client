@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using NuGet.Commands;
 
 namespace NuGet.Build.Tasks.Console
@@ -15,7 +17,15 @@ namespace NuGet.Build.Tasks.Console
         public virtual string Identity { get; }
 
         /// <inheritdoc cref="IMSBuildItem.Properties" />
-        public virtual IReadOnlyList<string> Properties { get; }
+        public IReadOnlyList<string> Properties
+        {
+            get
+            {
+                Debug.Fail("This property should not be accessed.  Calculating the names of the item metadata allocates a new list and can cause performance issues.  Use GetProperty(string) instead and check if the value is null or whitespace.");
+
+                return Array.Empty<string>();
+            }
+        }
 
         /// <inheritdoc cref="IMSBuildItem.GetProperty(string)" />
         public string GetProperty(string property)
