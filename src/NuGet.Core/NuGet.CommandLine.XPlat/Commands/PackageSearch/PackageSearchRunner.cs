@@ -42,6 +42,12 @@ namespace NuGet.CommandLine.XPlat
 
             WarnForHTTPSources(listEndpoints, packageSearchArgs.Logger);
 
+            if (listEndpoints == null || listEndpoints.Count == 0)
+            {
+                packageSearchArgs.Logger.LogError(Strings.Error_NoSource);
+                return 1;
+            }
+
             Func<PackageSource, Task<IEnumerable<IPackageSearchMetadata>>> searchPackageSourceAsync =
                 packageSearchArgs.ExactMatch
                 ? packageSource => GetPackageAsync(packageSource, packageSearchArgs, cancellationToken)
@@ -56,7 +62,16 @@ namespace NuGet.CommandLine.XPlat
             }
 
             IPackageSearchResultRenderer packageSearchResultRenderer;
-            packageSearchResultRenderer = new PackageSearchResultTablePrinter(packageSearchArgs.SearchTerm, packageSearchArgs.Logger);
+
+            if (packageSearchArgs.JsonFormat)
+            {
+                packageSearchResultRenderer = new PackageSearchResultJsonPrinter(packageSearchArgs.Logger, packageSearchArgs.Verbosity);
+            }
+            else
+            {
+                packageSearchResultRenderer = new PackageSearchResultTablePrinter(packageSearchArgs.SearchTerm, packageSearchArgs.Logger, packageSearchArgs.Verbosity, packageSearchArgs.ExactMatch);
+            }
+
             packageSearchResultRenderer.Start();
 
             while (searchRequests.Count > 0)
@@ -99,18 +114,7 @@ namespace NuGet.CommandLine.XPlat
                 }
                 else
                 {
-                    if (packageSearchArgs.ExactMatch)
-                    {
-                        var lastResult = searchResult.LastOrDefault();
-                        if (lastResult != null)
-                        {
-                            packageSearchResultRenderer.Add(source, new[] { lastResult });
-                        }
-                    }
-                    else
-                    {
-                        packageSearchResultRenderer.Add(source, searchResult);
-                    }
+                    packageSearchResultRenderer.Add(source, searchResult);
                 }
 
                 searchRequests.Remove(completedTask);
@@ -147,7 +151,7 @@ namespace NuGet.CommandLine.XPlat
                     new SearchFilter(includePrerelease: packageSearchArgs.Prerelease),
                     packageSearchArgs.Skip,
                     packageSearchArgs.Take,
-                    packageSearchArgs.Logger,
+                    NullLogger.Instance,
                     cancellationToken);
             });
         }
@@ -180,7 +184,7 @@ namespace NuGet.CommandLine.XPlat
                     includePrerelease: packageSearchArgs.Prerelease,
                     includeUnlisted: false,
                     cache,
-                    packageSearchArgs.Logger,
+                    NullLogger.Instance,
                     cancellationToken);
             });
         }

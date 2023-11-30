@@ -135,7 +135,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string take = "invalid";
-            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, take);
+            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, take, "--take");
 
             // Act
             var exitCode = RootCommand.Parse(new[] { "search", searchTerm, "--take", take }).Invoke();
@@ -152,10 +152,91 @@ namespace NuGet.CommandLine.Xplat.Tests
             Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string skip = "invalid";
-            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, skip);
+            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, skip, "--skip");
 
             // Act
             var exitCode = RootCommand.Parse(new[] { "search", searchTerm, "--skip", skip }).Invoke();
+
+            // Assert
+            Assert.Equal(1, exitCode);
+            Assert.Contains(expectedError, StoredErrorMessage);
+        }
+
+        [Theory]
+        [InlineData("table")]
+        [InlineData("json")]
+        public void Register_withFormatOption_SetsFormat(string format)
+        {
+            // Arrange
+            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+
+            // Act
+            RootCommand.Parse(new[] { "search", "--format", format }).Invoke();
+
+            // Assert
+            if (format == "json")
+            {
+                Assert.True(CapturedArgs.JsonFormat);
+            }
+            else
+            {
+                Assert.False(CapturedArgs.JsonFormat);
+            }
+        }
+
+        [Fact]
+        public void Register_withInvalidFormattingOption_ShowsErrorMessage()
+        {
+            // Arrange
+            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            string invalidFormat = "invalid";
+            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, invalidFormat, "--format");
+
+            // Act
+            var exitCode = RootCommand.Parse(new[] { "search", "--format", invalidFormat }).Invoke();
+
+            // Assert
+            Assert.Equal(1, exitCode);
+            Assert.Contains(expectedError, StoredErrorMessage);
+        }
+
+        [Theory]
+        [InlineData("minimal")]
+        [InlineData("normal")]
+        [InlineData("detailed")]
+        public void Register_withVerbosityOption_SetsFormat(string verbosity)
+        {
+            // Arrange
+            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+
+            // Act
+            RootCommand.Parse(new[] { "search", "--verbosity", verbosity }).Invoke();
+
+            // Assert
+            if (verbosity == "minimal")
+            {
+                Assert.Equal(PackageSearchVerbosity.Minimal, CapturedArgs.Verbosity);
+            }
+            else if (verbosity == "detailed")
+            {
+                Assert.Equal(PackageSearchVerbosity.Detailed, CapturedArgs.Verbosity);
+            }
+            else
+            {
+                Assert.Equal(PackageSearchVerbosity.Normal, CapturedArgs.Verbosity);
+            }
+        }
+
+        [Fact]
+        public void Register_withInvalidVerbosityOption_ShowsErrorMessage()
+        {
+            // Arrange
+            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            string invalidFormat = "invalid";
+            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, invalidFormat, "--verbosity");
+
+            // Act
+            var exitCode = RootCommand.Parse(new[] { "search", "--verbosity", invalidFormat }).Invoke();
 
             // Assert
             Assert.Equal(1, exitCode);

@@ -448,20 +448,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is not a valid integer..
-        /// </summary>
-        internal static string Error_invalid_number {
-            get {
-                return ResourceManager.GetString("Error_invalid_number", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid culture identifier in {0} environment variable. Value read is &apos;{1}&apos;.
         /// </summary>
         internal static string Error_InvalidCultureInfo {
             get {
                 return ResourceManager.GetString("Error_InvalidCultureInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value `{0}` for option {1}..
+        /// </summary>
+        internal static string Error_invalidOptionValue {
+            get {
+                return ResourceManager.GetString("Error_invalidOptionValue", resourceCulture);
             }
         }
         
@@ -489,6 +489,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_NoDgSpec {
             get {
                 return ResourceManager.GetString("Error_NoDgSpec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No package sources found..
+        /// </summary>
+        internal static string Error_NoSource {
+            get {
+                return ResourceManager.GetString("Error_NoSource", resourceCulture);
             }
         }
         
@@ -1310,6 +1319,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The path to a NuGet config file to use..
+        /// </summary>
+        internal static string pkgSearch_ConfigFileDescription {
+            get {
+                return ResourceManager.GetString("pkgSearch_ConfigFileDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used..
         /// </summary>
         internal static string pkgSearch_Description {
@@ -1324,6 +1342,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string pkgSearch_ExactMatchDescription {
             get {
                 return ResourceManager.GetString("pkgSearch_ExactMatchDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Format the output accordingly. Either `table`, or `json`. The default value is `table`..
+        /// </summary>
+        internal static string pkgSearch_FormatDescription {
+            get {
+                return ResourceManager.GetString("pkgSearch_FormatDescription", resourceCulture);
             }
         }
         
@@ -1378,6 +1405,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string pkgSearch_termDescription {
             get {
                 return ResourceManager.GetString("pkgSearch_termDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`..
+        /// </summary>
+        internal static string pkgSearch_VerbosityDescription {
+            get {
+                return ResourceManager.GetString("pkgSearch_VerbosityDescription", resourceCulture);
             }
         }
         

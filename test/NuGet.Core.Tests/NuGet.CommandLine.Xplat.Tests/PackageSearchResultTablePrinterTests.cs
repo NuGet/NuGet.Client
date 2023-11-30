@@ -24,7 +24,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Arrange
             var searchTerm = "TestPackage";
             Mock<ILoggerWithColor> mockLoggerWithColor = new Mock<ILoggerWithColor>();
-            PackageSearchResultTablePrinter renderer = new PackageSearchResultTablePrinter(searchTerm, mockLoggerWithColor.Object);
+            PackageSearchResultTablePrinter renderer = new PackageSearchResultTablePrinter(searchTerm, mockLoggerWithColor.Object, PackageSearchVerbosity.Normal, false);
             Mock<PackageSource> mockSource = new Mock<PackageSource>("http://mysource", "TestSource");
             var packageIdentity = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.3.0"));
             var completedSearch = new List<IPackageSearchMetadata>();
@@ -53,12 +53,12 @@ namespace NuGet.CommandLine.Xplat.Tests
             {
                 mockLoggerWithColor.Verify(x => x.LogMinimal("| Package ID       ", System.Console.ForegroundColor), Times.Once);
                 mockLoggerWithColor.Verify(x => x.LogMinimal("| Latest Version ", System.Console.ForegroundColor), Times.Once);
-                mockLoggerWithColor.Verify(x => x.LogMinimal("| Authors   ", System.Console.ForegroundColor), Times.Once);
-                mockLoggerWithColor.Verify(x => x.LogMinimal("| Downloads ", System.Console.ForegroundColor), Times.Once);
+                mockLoggerWithColor.Verify(x => x.LogMinimal("| Owners ", System.Console.ForegroundColor), Times.Once);
+                mockLoggerWithColor.Verify(x => x.LogMinimal("| Total Downloads ", System.Console.ForegroundColor), Times.Once);
                 mockLoggerWithColor.Verify(x => x.LogMinimal("| NuGet.Versioning ", System.Console.ForegroundColor), Times.Exactly(numberOfPackages));
                 mockLoggerWithColor.Verify(x => x.LogMinimal("| 4.3.0          ", System.Console.ForegroundColor), Times.Exactly(numberOfPackages));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("| Microsoft ", System.Console.ForegroundColor), Times.Exactly(numberOfPackages));
-                mockLoggerWithColor.Verify(x => x.LogMinimal("| 123,456   ", System.Console.ForegroundColor), Times.Exactly(numberOfPackages));
+                mockLoggerWithColor.Verify(x => x.LogMinimal("|        ", System.Console.ForegroundColor), Times.Exactly(numberOfPackages));
+                mockLoggerWithColor.Verify(x => x.LogMinimal("| 123,456         ", System.Console.ForegroundColor), Times.Exactly(numberOfPackages));
             }
         }
 
@@ -69,7 +69,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Arrange
             var searchTerm = "ErrorPackage";
             Mock<ILoggerWithColor> mockLoggerWithColor = new Mock<ILoggerWithColor>();
-            PackageSearchResultTablePrinter renderer = new PackageSearchResultTablePrinter(searchTerm, mockLoggerWithColor.Object);
+            PackageSearchResultTablePrinter renderer = new PackageSearchResultTablePrinter(searchTerm, mockLoggerWithColor.Object, PackageSearchVerbosity.Normal, false);
             Mock<PackageSource> mockSource = new Mock<PackageSource>("http://errorsource", "ErrorTestSource");
             string errorMessage = "Error retrieving data";
 
