@@ -236,7 +236,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 Assert.True(result.ExitCode == 0, result.AllOutput);
                 var resolver = new VersionFolderPathResolver(pathContext.UserPackagesFolder);
                 var nupkg = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(packageX.Id, NuGetVersion.Parse(packageX.Version)), NullLogger.Instance);
-                Assert.Contains($"Installed x 1.0.0 from {pathContext.PackageSource} with content hash {nupkg.ContentHash}.", result.AllOutput);
+                Assert.Contains($"Installed x 1.0.0 from {pathContext.PackageSource} to {Path.Combine(resolver.RootPath, resolver.GetPackageDirectory(packageX.Id, NuGetVersion.Parse(packageX.Version)))} with content hash {nupkg.ContentHash}.", result.AllOutput);
                 Assert.Contains(configAPath, result.AllOutput);
             }
         }
@@ -295,7 +295,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 Assert.True(result.ExitCode == 0, result.AllOutput);
                 var resolver = new VersionFolderPathResolver(pathContext.UserPackagesFolder);
                 var nupkg = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(packageX.Id, NuGetVersion.Parse(packageX.Version)), NullLogger.Instance);
-                Assert.Contains($"Installed x 1.0.0 from {pathContext.PackageSource} with content hash {nupkg.ContentHash}.", result.AllOutput);
+                Assert.Contains($"Installed x 1.0.0 from {pathContext.PackageSource} to {Path.Combine(resolver.RootPath, resolver.GetPackageDirectory(packageX.Id, NuGetVersion.Parse(packageX.Version)))} with content hash {nupkg.ContentHash}.", result.AllOutput);
                 Assert.Contains(configAPath, result.AllOutput);
             }
         }
