@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -857,7 +858,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
         [InlineData(false)]
-        public void MsbuildRestore_WithUnsupportedProjects_Warns(bool restoreUseStaticGraphEvaluation)
+        public void MsbuildRestore_WithUnsupportedProjects_WarnsOrLogsMessage(bool restoreUseStaticGraphEvaluation)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -881,11 +882,12 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 result.ExitCode.Should().Be(0, result.AllOutput);
                 if (restoreUseStaticGraphEvaluation)
                 {
-                    result.AllOutput.Should().Contain($"Skipping restore for project '{project.ProjectPath}'. The project file may be invalid or missing targets required for restore.");
+
+                    result.AllOutput.Should().Contain(MSBuildRestoreUtility.GetMessageForUnsupportedProject(project.ProjectPath).Message);
                 }
                 else
                 {
-                    result.AllOutput.Should().Contain($"warning NU1503: Skipping restore for project '{project.ProjectPath}'. The project file may be invalid or missing targets required for restore.");
+                    result.AllOutput.Should().Contain(MSBuildRestoreUtility.GetWarningForUnsupportedProject(project.ProjectPath).Message);
                 }
             }
         }
