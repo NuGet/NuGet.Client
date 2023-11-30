@@ -57,7 +57,7 @@ namespace NuGet.CommandLine.Xplat.Tests
       {{
         ""total downloads"": 123456,
         ""owners"": null,
-        ""packageId"": ""NuGet.Versioning"",
+        ""id"": ""NuGet.Versioning"",
         ""latestVersion"": ""4.3.0""
       }}
     ]
@@ -71,13 +71,13 @@ namespace NuGet.CommandLine.Xplat.Tests
       {{
         ""total downloads"": 123456,
         ""owners"": null,
-        ""packageId"": ""NuGet.Versioning"",
+        ""id"": ""NuGet.Versioning"",
         ""latestVersion"": ""4.3.0""
       }},
       {{
         ""total downloads"": 123456,
         ""owners"": null,
-        ""packageId"": ""NuGet.Versioning"",
+        ""id"": ""NuGet.Versioning"",
         ""latestVersion"": ""4.3.0""
       }}
     ]

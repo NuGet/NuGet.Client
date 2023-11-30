@@ -155,7 +155,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         ""projectUrl"": ""http://myuri"",
         ""total downloads"": 531607259,
         ""owners"": ""James Newton-King"",
-        ""packageId"": ""Fake.Newtonsoft.Json"",
+        ""id"": ""Fake.Newtonsoft.Json"",
         ""latestVersion"": ""12.0.3""
       }}
     ]
@@ -170,7 +170,7 @@ namespace NuGet.CommandLine.Xplat.Tests
       {{
         ""total downloads"": 531607259,
         ""owners"": ""James Newton-King"",
-        ""packageId"": ""Fake.Newtonsoft.Json"",
+        ""id"": ""Fake.Newtonsoft.Json"",
         ""latestVersion"": ""12.0.3""
       }}
     ]
@@ -183,7 +183,7 @@ namespace NuGet.CommandLine.Xplat.Tests
     ""sourceName"": ""{ServerWithMultipleEndpoints.Uri}v3/index.json"",
     ""packages"": [
       {{
-        ""packageId"": ""Fake.Newtonsoft.Json"",
+        ""id"": ""Fake.Newtonsoft.Json"",
         ""latestVersion"": ""12.0.3""
       }}
     ]

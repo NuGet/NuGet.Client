@@ -9,7 +9,7 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchResultPackageMinimal : IPackageSearchResultPackage
     {
-        [JsonProperty("packageId")]
+        [JsonProperty("id")]
         public string PackageId { get; set; }
 
         [JsonProperty("latestVersion")]
