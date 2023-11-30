@@ -10,6 +10,8 @@ using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
+using System.CommandLine;
+using System.Threading;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -20,6 +22,8 @@ namespace NuGet.CommandLine.XPlat
 #endif
         private const string DotnetNuGetAppName = "dotnet nuget";
         private const string DotnetPackageAppName = "NuGet.CommandLine.XPlat.dll package";
+
+        private const int DotnetPackageSearchTimeOut = 15;
 
         public static int Main(string[] args)
         {
@@ -68,6 +72,37 @@ namespace NuGet.CommandLine.XPlat
             log.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Debug_CurrentUICulture, CultureInfo.DefaultThreadCurrentUICulture));
 
             NuGet.Common.Migrations.MigrationRunner.Run();
+
+            if (args.Count() >= 2 && args[0] == "package" && args[1] == "search")
+            {
+                // We are executing command `dotnet package search`
+                Func<ILoggerWithColor> getHidePrefixLogger = () =>
+                {
+                    log.HidePrefixForInfoAndMinimal = true;
+                    return log;
+                };
+
+                CliCommand rootCommand = new CliCommand("package");
+                PackageSearchCommand.Register(rootCommand, getHidePrefixLogger);
+
+                CancellationTokenSource tokenSource = new CancellationTokenSource();
+                tokenSource.CancelAfter(TimeSpan.FromMinutes(DotnetPackageSearchTimeOut));
+                int exitCodeValue = 0;
+
+                try
+                {
+                    CliConfiguration config = new(rootCommand);
+                    ParseResult parseResult = rootCommand.Parse(args, config);
+                    exitCodeValue = parseResult.InvokeAsync(tokenSource.Token).GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    log.LogError(ex.Message);
+                    exitCodeValue = 1;
+                }
+
+                return exitCodeValue;
+            }
 
             var app = InitializeApp(args, log);
 
@@ -188,7 +223,6 @@ namespace NuGet.CommandLine.XPlat
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
                 ListPackageCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new ListPackageCommandRunner());
-                PackageSearchCommand.Register(app, getHidePrefixLogger);
             }
             else
             {
