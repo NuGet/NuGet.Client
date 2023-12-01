@@ -423,9 +423,6 @@ namespace NuGet.Commands
             return message;
         }
 
-        /// <summary>
-        /// Log warning NU1503
-        /// </summary>
         public static RestoreLogMessage GetMessageForUnsupportedProject(string path)
         {
             var text = string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedProject, path);
