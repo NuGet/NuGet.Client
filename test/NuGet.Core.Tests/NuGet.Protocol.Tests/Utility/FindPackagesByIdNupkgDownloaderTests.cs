@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -166,6 +167,32 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(1, tc.RequestCount);
             }
         }
+        [Fact]
+        public async Task CopyNupkgToStreamAsync_CopiesNupkgToDestinationStreamAsync_abcd()
+        {
+            // Arrange
+            string packageSourceUrl = "https://pkgs.dev.azure.com/azure-public/3ccf6661-f8ce-4e8a-bb2e-eff943ddd3c7/_packaging/36a629e1-6c5b-4bcd-aa2e-6018802d6b99/nuget/v3/flat2/aspire.azure.data.tables/8.0.0-preview.2.23577.3/aspire.azure.data.tables.8.0.0-preview.2.23577.3.nupkg?extract=Icon.png";
+            using (var testDirectory = TestDirectory.Create())
+            using (var cacheContext = new SourceCacheContext())
+            {
+                var tc = await TestContext.CreateAsync(testDirectory, packageSourceUrl);
+
+                // Act
+                var copied = await tc.Target.CopyNupkgToStreamAsync(
+                    identity: new PackageIdentity("aspire.azure.data.tables", NuGetVersion.Parse("8.0.0-preview.2.23577.3")),
+                    url: "https://pkgs.dev.azure.com/azure-public/3ccf6661-f8ce-4e8a-bb2e-eff943ddd3c7/_packaging/36a629e1-6c5b-4bcd-aa2e-6018802d6b99/nuget/v3/flat2/aspire.azure.data.tables/8.0.0-preview.2.23577.3/aspire.azure.data.tables.8.0.0-preview.2.23577.3.nupkg?extract=Icon.png",
+                    tc.DestinationStream,
+                    cacheContext,
+                    tc.Logger,
+                    CancellationToken.None);
+
+                // Assert
+                Assert.True(copied);
+                var actualContent = tc.DestinationStream.ToArray();
+                Assert.Equal(tc.ExpectedContent, actualContent);
+                Assert.Equal(1, tc.RequestCount);
+            }
+        }
 
         [Fact]
         public async Task CopyNupkgToStreamAsync_RemembersCacheFileLocationWithoutDirectDownloadAsync()
@@ -306,7 +333,9 @@ namespace NuGet.Protocol.Tests
 
         private class TestContext
         {
-            public static async Task<TestContext> CreateAsync(TestDirectory testDirectory)
+            public static async Task<TestContext> CreateAsync(TestDirectory testDirectory,
+                string packageSourceUrl = "http://foo/index.json",
+                string nupkgUrl = "http://foo/package.nupkg")
             {
                 var identity = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0-Beta"));
 
@@ -318,17 +347,17 @@ namespace NuGet.Protocol.Tests
 
                 var expectedContent = File.ReadAllBytes(package.FullName);
 
-                return new TestContext(testDirectory, identity, expectedContent);
+                return new TestContext(testDirectory, identity, expectedContent, packageSourceUrl, nupkgUrl);
             }
 
-            private TestContext(TestDirectory testDirectory, PackageIdentity identity, byte[] expectedContent)
+            private TestContext(TestDirectory testDirectory, PackageIdentity identity, byte[] expectedContent, string packageSourceUrl, string nupkgUrl)
             {
                 TestDirectory = testDirectory;
                 Identity = identity;
                 ExpectedContent = expectedContent;
 
-                PackageSource = new PackageSource("http://foo/index.json");
-                NupkgUrl = "http://foo/package.nupkg";
+                PackageSource = new PackageSource(packageSourceUrl);
+                NupkgUrl = nupkgUrl;
                 RequestCount = 0;
                 HttpCacheDirectory = Path.Combine(testDirectory, "httpCache");
                 StatusCode = HttpStatusCode.OK;
@@ -347,6 +376,19 @@ namespace NuGet.Protocol.Tests
                     {
                         {
                             NupkgUrl,
+                            request =>
+                            {
+                                RequestCount++;
+
+                                return Task.FromResult(new HttpResponseMessage
+                                {
+                                    StatusCode = StatusCode,
+                                    Content = new ByteArrayContent(ExpectedContent)
+                                });
+                            }
+                        },
+                        {
+                            PackageSource.Source,
                             request =>
                             {
                                 RequestCount++;

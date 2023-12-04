@@ -18,6 +18,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 
@@ -191,7 +192,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 try
                 {
-                    return await _httpClient.GetStreamAsync(uri);
+                    return await GetHttpStreamAsync(uri);
                 }
                 catch (HttpRequestException)
                 {
@@ -206,6 +207,15 @@ namespace NuGet.PackageManagement.VisualStudio
                     return null;
                 }
             }
+        }
+
+        private Task<Stream?> GetHttpStreamAsync(Uri uri)
+        {
+
+            // Check GPF and fallback folders for this package
+            // Check SourceRepositories for resources before using direct HTTP client.
+
+            return _httpClient.GetStreamAsync(uri);
         }
 
         /// <summary>

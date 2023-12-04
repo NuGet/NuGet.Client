@@ -163,7 +163,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             ISourceRepositoryProvider sourceRepositoryProvider = await ServiceLocator.GetComponentModelServiceAsync<ISourceRepositoryProvider>();
-            var sourceRepositories = sourceRepositoryProvider.GetRepositories();
+            IEnumerable<SourceRepository> sourceRepositories = sourceRepositoryProvider.GetRepositories();
             _packageVulnerabilityService = new PackageVulnerabilityService(sourceRepositories, _uiLogger);
 
             var solutionManager = Model.Context.SolutionManagerService;

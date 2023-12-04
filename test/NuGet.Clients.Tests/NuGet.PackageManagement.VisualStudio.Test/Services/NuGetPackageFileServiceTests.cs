@@ -113,6 +113,45 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public async Task GetPackageIconAsync_HttpNotAuthenticated_Throws()
+        {
+            // Arrange
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                string fileContents = "testFileContents";
+                string filePath = Path.Combine(testDirectory.Path, "testFile.txt");
+
+                File.WriteAllText(filePath, fileContents);
+
+                var packageFileService = new NuGetPackageFileService(
+                        default(ServiceActivationOptions),
+                        Mock.Of<IServiceBroker>(),
+                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                        _telemetryProvider.Object);
+
+                var url = "https://pkgs.dev.azure.com/azure-public/3ccf6661-f8ce-4e8a-bb2e-eff943ddd3c7/_packaging/36a629e1-6c5b-4bcd-aa2e-6018802d6b99/nuget/v3/flat2/aspire.azure.data.tables/8.0.0-preview.2.23578.1/aspire.azure.data.tables.8.0.0-preview.2.23578.1.nupkg?extract=Icon.png";
+                var packageIdentity = new PackageIdentity("aspire.azure.data.tables", NuGetVersion.Parse("8.0.0-preview.2.23577.3"));
+
+                // Add a fragment to consider this an embedded icon.
+                // Note: file:// is required for Uri to parse the Fragment (possibly a Uri bug).
+                var uri = new Uri(url);
+
+                NuGetPackageFileService.AddIconToCache(packageIdentity, uri);
+
+
+                // Act
+                Stream iconStream = await packageFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
+
+                // Assert
+                Assert.NotNull(iconStream);
+                Assert.True(iconStream.CanRead);
+                Assert.False(iconStream.CanWrite);
+
+                Assert.Equal(fileContents.Length, iconStream.Length);
+            }
+        }
+
+        [Fact]
         public async Task GetPackageIconAsync_EmbeddedFromFallbackFolder_DoesNotLockFile()
         {
             //Arrange

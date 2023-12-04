@@ -41,7 +41,7 @@ namespace NuGet.Protocol
 
         /// <summary>
         /// Gets a <see cref="NuspecReader"/> from a .nupkg. If the URL cannot be fetched or there is a problem
-        /// processing the .nuspec, an exception is throw. This method uses HTTP caching to avoid downloading the
+        /// processing the .nuspec, an exception is thrown. This method uses HTTP caching to avoid downloading the
         /// package over and over (unless <see cref="SourceCacheContext.DirectDownload"/> is specified).
         /// </summary>
         /// <param name="identity">The package identity.</param>
