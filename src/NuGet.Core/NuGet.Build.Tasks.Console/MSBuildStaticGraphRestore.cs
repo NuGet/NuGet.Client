@@ -808,7 +808,7 @@ namespace NuGet.Build.Tasks.Console
 
             ProjectStyle? projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
 
-            (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled) = MSBuildRestoreUtility.GetCentralPackageManagementSettings(project, projectStyleOrNull);
+            (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled) = GetCentralPackageManagementSettings(project, projectStyleOrNull);
 
             RestoreAuditProperties auditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(project);
 
@@ -854,7 +854,6 @@ namespace NuGet.Build.Tasks.Console
                     SkipContentFileWrite = IsLegacyProject(project),
                     ValidateRuntimeAssets = project.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility"),
                     CentralPackageVersionsEnabled = isCentralPackageManagementEnabled && projectStyle == ProjectStyle.PackageReference,
-                    CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled,
                     CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled,
                     CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled,
                     RestoreAuditProperties = auditProperties
@@ -972,6 +971,8 @@ namespace NuGet.Build.Tasks.Console
                             // In rare cases, users can set an empty TargetFramework value in a project-to-project reference.  Static Graph will respect that
                             // but NuGet does not need to do anything with that instance of the project since the actual project is still loaded correctly
                             // with its actual TargetFramework.
+                            var message = MSBuildRestoreUtility.GetMessageForUnsupportedProject(projectInstance.FullPath);
+                            MSBuildLogger.Log(message);
                             continue;
                         }
 
@@ -1024,6 +1025,22 @@ namespace NuGet.Build.Tasks.Console
 
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Determines the current settings for central package management for the specified project.
+        /// </summary>
+        /// <param name="project">The <see cref="IMSBuildProject" /> to get the central package management settings for.</param>
+        /// <param name="projectStyle">The <see cref="ProjectStyle?" /> of the specified project.  Specify <see langword="null" /> when the project does not define a restore style.</param>
+        /// <returns>A <see cref="Tuple{T1, T2}" /> containing values indicating whether or not central package management is enabled and if the ability to override a package version is disabled.</returns>
+        internal static (bool IsEnabled, bool IsVersionOverrideDisabled, bool IsCentralPackageTransitivePinningEnabled) GetCentralPackageManagementSettings(IMSBuildProject project, ProjectStyle? projectStyle)
+        {
+            if (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
+            {
+                return (project.IsPropertyTrue("_CentralPackageVersionsEnabled"), project.IsPropertyFalse("CentralPackageVersionOverrideEnabled"), project.IsPropertyTrue("CentralPackageTransitivePinningEnabled"));
+            }
+
+            return (false, false, false);
         }
 
         /// <summary>
