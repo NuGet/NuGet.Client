@@ -12,12 +12,12 @@ namespace NuGet.Test
     public class FrameworkReducerTests
     {
         [Theory]
-        // Generation fall-through patterns of uap10.0: 
-        // 1. lib/uap10, 
-        // 2. then lib/win81, 
-        // 3. then lib/wpa81, 
-        // 4. then lib/netstandard1.2, 
-        // 5. then lib/dotnet5.3, 
+        // Generation fall-through patterns of uap10.0:
+        // 1. lib/uap10,
+        // 2. then lib/win81,
+        // 3. then lib/wpa81,
+        // 4. then lib/netstandard1.2,
+        // 5. then lib/dotnet5.3,
         // 6. then portable-win81+*, etc
         [InlineData("uap10.0", "netcore50,win81,wpa81,dotnet5.4,portable-win81+net45", "netcore50")]
         [InlineData("uap10.0", "uap10.0,win81,wpa81,dotnet5.4,portable-win81+net45", "uap10.0")]
@@ -158,6 +158,8 @@ namespace NuGet.Test
         [InlineData("any", "any", "any")]
         [InlineData("any", "unsupported", "unsupported")]
         [InlineData("netnano1.0", "net48,netstandard1.0,netcoreapp1.0", null)]
+        [InlineData("net8.0-windows", "net6,net6-windows,net40,net48", "net6-windows")]
+        [InlineData("net8.0-windows", "net6,net6-windows7.0,net40,net48", "net6-windows7.0")]
         public void FrameworkReducer_GetNearestWithGenerations(
             string projectFramework,
             string packageFrameworks,
