@@ -9,7 +9,6 @@ using System.Net;
 using System.Text;
 using FluentAssertions;
 using NuGet.Common;
-using NuGet.Configuration.Test;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Test.Utility;
