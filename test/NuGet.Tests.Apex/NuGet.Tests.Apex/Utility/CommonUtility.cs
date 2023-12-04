@@ -332,6 +332,13 @@ namespace NuGet.Tests.Apex
             visualStudio.Dte.ExecuteCommand("Project.ManageNuGetPackages");
         }
 
+        internal static void RestoreNuGetPackages(VisualStudioHost visualStudio, ITestLogger logger)
+        {
+            visualStudio.ObjectModel.Solution.WaitForOperationsInProgress(TimeSpan.FromMinutes(3));
+            WaitForCommandAvailable(visualStudio, "ProjectAndSolutionContextMenus.Solution.RestoreNuGetPackages", TimeSpan.FromMinutes(1), logger);
+            visualStudio.Dte.ExecuteCommand("ProjectAndSolutionContextMenus.Solution.RestoreNuGetPackages");
+        }
+
         private static void WaitForCommandAvailable(VisualStudioHost visualStudio, string commandName, TimeSpan timeout, ITestLogger logger)
         {
             WaitForCommandAvailable(visualStudio.Dte.Commands.Item(commandName), timeout, logger);
