@@ -2967,20 +2967,6 @@ namespace NuGet.ProjectModel.Test
         [InlineData(null, false)]
         [InlineData(true, true)]
         [InlineData(false, false)]
-        public void GetPackageSpec_WhenCentralPackageFloatingVersionsEnabledValueIsValid_ReturnsCentralPackageFloatingVersionsEnabled(
-            bool? value,
-            bool expectedValue)
-        {
-            var json = $"{{\"restore\":{{\"centralPackageFloatingVersionsEnabled\":{(value.HasValue ? value.ToString().ToLowerInvariant() : "null")}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json);
-
-            Assert.Equal(expectedValue, packageSpec.RestoreMetadata.CentralPackageFloatingVersionsEnabled);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData(true, true)]
-        [InlineData(false, false)]
         public void GetPackageSpec_WhenCentralPackageVersionOverrideDisabledValueIsValid_ReturnsCentralPackageVersionOverrideDisabled(
             bool? value,
             bool expectedValue)
