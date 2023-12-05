@@ -202,8 +202,9 @@ namespace NuGet.ProjectModel
             switch (reader.TokenType)
             {
                 case JsonTokenType.True:
+                    return bool.TrueString;
                 case JsonTokenType.False:
-                    return reader.GetBoolean().ToString();
+                    return bool.FalseString;
                 case JsonTokenType.Number:
                     if (reader.TryGetInt16(out short shortValue))
                     {
