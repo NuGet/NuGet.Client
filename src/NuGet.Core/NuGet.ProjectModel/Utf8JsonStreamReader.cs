@@ -186,6 +186,8 @@ namespace NuGet.ProjectModel
             return Encoding.UTF8.GetString(_buffer);
         }
 
+        //Revisit ReadStringArrayAsList and ReadStringArrayAsIList later to see if we can change classes to have a consistent implementaiton
+        //for their lists
         internal IList<string> ReadStringArrayAsIList(IList<string> strings = null)
         {
             if (_complete)
