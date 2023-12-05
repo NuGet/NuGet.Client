@@ -29,7 +29,12 @@ namespace NuGet.ProjectModel
         private Stream _stream;
         private bool _complete;
 
-        internal Utf8JsonStreamReader(Stream stream)
+        internal Utf8JsonStreamReader(Stream stream) : this(stream, ArrayPool<byte>.Shared.Rent(1024))
+        {
+
+        }
+
+        internal Utf8JsonStreamReader(Stream stream, byte[] buffer)
         {
             if (stream is null)
             {
@@ -38,7 +43,7 @@ namespace NuGet.ProjectModel
 
             _complete = false;
             _stream = stream;
-            _buffer = ArrayPool<byte>.Shared.Rent(1024);
+            _buffer = buffer;
             _stream.Read(_buffer, 0, 3);
             var offset = 0;
             if (!_utf8Bom.SequenceEqual(_buffer.AsSpan(0, 3)))

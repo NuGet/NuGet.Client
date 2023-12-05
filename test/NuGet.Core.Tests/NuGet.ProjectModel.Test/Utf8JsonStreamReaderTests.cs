@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -117,7 +118,7 @@ namespace NuGet.ProjectModel.Test
                 {
                     reader.Read();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Assert.IsType<InvalidOperationException>(ex);
                 }
@@ -166,7 +167,7 @@ namespace NuGet.ProjectModel.Test
 
             using (var stream = new MemoryStream(json))
             {
-                var reader = new Utf8JsonStreamReader(stream);
+                var reader = new Utf8JsonStreamReader(stream, new byte[1024]);
                 while (reader.Read())
                 {
                     if (reader.TokenType == JsonTokenType.PropertyName && reader.GetString() == "r")
@@ -193,7 +194,7 @@ namespace NuGet.ProjectModel.Test
 
             using (var stream = new MemoryStream(json))
             {
-                var reader = new Utf8JsonStreamReader(stream);
+                var reader = new Utf8JsonStreamReader(stream, new byte[1024]);
 
                 reader.Read();
                 reader.Read();
@@ -212,7 +213,7 @@ namespace NuGet.ProjectModel.Test
 
             using (var stream = new MemoryStream(json))
             {
-                var reader = new Utf8JsonStreamReader(stream);
+                var reader = new Utf8JsonStreamReader(stream, new byte[1024]);
 
                 reader.Read();
                 reader.Read();
@@ -248,7 +249,7 @@ namespace NuGet.ProjectModel.Test
 
             using (var stream = new MemoryStream(json))
             {
-                var reader = new Utf8JsonStreamReader(stream);
+                var reader = new Utf8JsonStreamReader(stream, new byte[1024]);
                 reader.Read();
                 reader.TrySkip();
                 reader.Read();
@@ -257,7 +258,6 @@ namespace NuGet.ProjectModel.Test
                 reader.Read();
                 Assert.Equal("object3", reader.GetString());
                 Assert.Equal(1024, reader.BufferSize());
-
             }
         }
 
@@ -268,7 +268,7 @@ namespace NuGet.ProjectModel.Test
 
             using (var stream = new MemoryStream(json))
             {
-                var reader = new Utf8JsonStreamReader(stream);
+                var reader = new Utf8JsonStreamReader(stream, new byte[1024]);
 
                 reader.Read();
                 reader.TrySkip();
