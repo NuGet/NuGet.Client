@@ -458,6 +458,15 @@ namespace NuGet.Tests.Apex
                 $"{file.FullName} still existed after {Timeout}.");
         }
 
+        public static void WaitForDirectoryExists(string directoryPath)
+        {
+            Omni.Common.WaitFor.IsTrue(
+                () => !Directory.Exists(directoryPath),
+                Timeout,
+                Interval,
+                $"{directoryPath} still existed after {Timeout}.");
+        }
+
         public static void UIInvoke(Action action)
         {
             var jtf = NuGetUIThreadHelper.JoinableTaskFactory;

@@ -853,7 +853,7 @@ namespace NuGet.Tests.Apex
         [DataRow(ProjectTemplate.NetCoreConsoleApp)]
         [DataRow(ProjectTemplate.ConsoleApplication)]
         [Timeout(DefaultTimeout)]
-        public async Task VerifyRestorePackageByRestoreNuGetPackages(ProjectTemplate projectTemplate)
+        public async Task VerifyRestorePackageByRestoreNuGetPackagesContextMenu(ProjectTemplate projectTemplate)
         {
             // Arrange
             string packageFolderPath;
@@ -893,9 +893,8 @@ namespace NuGet.Tests.Apex
             Directory.Exists(packageFolderPath).Should().BeFalse();
             CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
 
-            // Assert (It takes some time for the package folder to be back after the solution is restored.)
-            Thread.Sleep(200);
-            Directory.Exists(installedPackageFolderPath).Should().BeTrue();
+            // Assert
+            CommonUtility.WaitForDirectoryExists(installedPackageFolderPath);
         }
 
         [DataTestMethod]
