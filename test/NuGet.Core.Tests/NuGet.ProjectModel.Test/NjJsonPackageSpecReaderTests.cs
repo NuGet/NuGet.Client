@@ -3372,7 +3372,7 @@ namespace NuGet.ProjectModel.Test
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.Equal("The value of a script in 'project.json' can only be a string or an array of strings", exception.Message);
-            Assert.Equal(0, exception.Line);
+            Assert.Equal(1, exception.Line);
             Assert.Equal(17, exception.Column);
             Assert.Null(exception.InnerException);
         }
