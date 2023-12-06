@@ -20,8 +20,6 @@ namespace NuGet.ProjectModel
     {
         private static readonly char[] DelimitedStringDelimiters = new char[] { ' ', ',' };
 
-        // The UT8 BOM characters which may appear at the start of a JSON file.
-        private ReadOnlySpan<byte> _utf8Bom = new byte[] { 0xEF, 0xBB, 0xBF };
         private Utf8JsonReader _reader;
         // The buffer is used to read from the stream in chunks.
         private byte[] _buffer;
@@ -46,7 +44,7 @@ namespace NuGet.ProjectModel
             _buffer = buffer;
             _stream.Read(_buffer, 0, 3);
             var offset = 0;
-            if (!_utf8Bom.SequenceEqual(_buffer.AsSpan(0, 3)))
+            if (!Encoding.UTF8.GetPreamble().AsSpan().SequenceEqual(_buffer.AsSpan(0, 3)))
             {
                 offset = 3;
             }
