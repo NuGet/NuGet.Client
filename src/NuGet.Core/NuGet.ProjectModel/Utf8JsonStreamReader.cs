@@ -63,10 +63,8 @@ namespace NuGet.ProjectModel
 
         internal int BufferSize()
         {
-            if (_complete)
-            {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
-            }
+            ThrowExceptionIfCompleted();
+
             return _buffer.Length;
         }
 
@@ -90,10 +88,7 @@ namespace NuGet.ProjectModel
 
         internal bool Read()
         {
-            if (_complete)
-            {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
-            }
+            ThrowExceptionIfCompleted();
 
             bool wasRead;
             while (!(wasRead = _reader.Read()) && !_reader.IsFinalBlock)
@@ -105,10 +100,7 @@ namespace NuGet.ProjectModel
 
         internal bool TrySkip()
         {
-            if (_complete)
-            {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
-            }
+            ThrowExceptionIfCompleted();
 
             bool wasSkipped;
             while (!(wasSkipped = _reader.TrySkip()) && !_reader.IsFinalBlock)
@@ -120,10 +112,7 @@ namespace NuGet.ProjectModel
 
         internal string ReadNextTokenAsString()
         {
-            if (_complete)
-            {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
-            }
+            ThrowExceptionIfCompleted();
 
             if (Read())
             {
@@ -135,10 +124,7 @@ namespace NuGet.ProjectModel
 
         internal string GetCurrentBufferAsString()
         {
-            if (_complete)
-            {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
-            }
+            ThrowExceptionIfCompleted();
 
             return Encoding.UTF8.GetString(_buffer);
         }
@@ -147,10 +133,7 @@ namespace NuGet.ProjectModel
         //for their lists
         internal IList<string> ReadStringArrayAsIList(IList<string> strings = null)
         {
-            if (_complete)
-            {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
-            }
+            ThrowExceptionIfCompleted();
 
             if (TokenType == JsonTokenType.StartArray)
             {
@@ -169,10 +152,7 @@ namespace NuGet.ProjectModel
 
         internal List<string> ReadStringArrayAsList(List<string> strings = null)
         {
-            if (_complete)
-            {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
-            }
+            ThrowExceptionIfCompleted();
 
             if (TokenType == JsonTokenType.StartArray)
             {
@@ -191,10 +171,7 @@ namespace NuGet.ProjectModel
 
         internal IReadOnlyList<string> ReadDelimitedString()
         {
-            if (_complete)
-            {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
-            }
+            ThrowExceptionIfCompleted();
 
             if (Read())
             {
@@ -216,10 +193,7 @@ namespace NuGet.ProjectModel
 
         internal bool ReadNextTokenAsBoolOrFalse()
         {
-            if (_complete)
-            {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
-            }
+            ThrowExceptionIfCompleted();
 
             if (Read() && (TokenType == JsonTokenType.False || TokenType == JsonTokenType.True))
             {
@@ -230,10 +204,7 @@ namespace NuGet.ProjectModel
 
         internal IReadOnlyList<string> ReadNextStringOrArrayOfStringsAsReadOnlyList()
         {
-            if (_complete)
-            {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
-            }
+            ThrowExceptionIfCompleted();
 
             if (Read())
             {
@@ -255,10 +226,7 @@ namespace NuGet.ProjectModel
 
         internal IReadOnlyList<string> ReadStringArrayAsReadOnlyListFromArrayStart()
         {
-            if (_complete)
-            {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
-            }
+            ThrowExceptionIfCompleted();
 
             List<string> strings = null;
 
@@ -292,6 +260,14 @@ namespace NuGet.ProjectModel
                 _stream.Read(_buffer, 0, _buffer.Length);
             }
             _reader = new Utf8JsonReader(_buffer, isFinalBlock: _stream.Length == _stream.Position, _reader.CurrentState);
+        }
+
+        private void ThrowExceptionIfCompleted()
+        {
+            if (_complete)
+            {
+                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
+            }
         }
     }
 }
