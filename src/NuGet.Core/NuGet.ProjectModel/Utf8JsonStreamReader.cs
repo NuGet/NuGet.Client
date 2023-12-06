@@ -120,52 +120,6 @@ namespace NuGet.ProjectModel
             return wasSkipped;
         }
 
-        //internal IList<T> ReadObjectAsList<T>(Utf8JsonStreamReaderConverter<T> streamReaderConverter)
-        //{
-        //    if (TokenType != JsonTokenType.StartObject)
-        //    {
-        //        return Array.Empty<T>();
-
-        //    }
-        //    //We use JsonObjects for the arrays so we advance to the first property in the object which is the name/ver of the first library
-        //    Read();
-
-        //    if (TokenType == JsonTokenType.EndObject)
-        //    {
-        //        return Array.Empty<T>();
-        //    }
-
-        //    var listObjects = new List<T>();
-        //    do
-        //    {
-        //        listObjects.Add(streamReaderConverter.Read(ref this));
-        //        //At this point we're looking at the EndObject token for the object, need to advance.
-        //        Read();
-        //    }
-        //    while (TokenType != JsonTokenType.EndObject);
-        //    return listObjects;
-        //}
-
-        //internal void ReadArrayOfObjects<T1, T2>(IList<T2> objectList, Utf8JsonStreamReaderConverter<T1> streamReaderConverter) where T1 : T2
-        //{
-        //    if (objectList is null)
-        //    {
-        //        return;
-        //    }
-
-        //    if (Read() && TokenType == JsonTokenType.StartArray)
-        //    {
-        //        while (Read() && TokenType != JsonTokenType.EndArray)
-        //        {
-        //            var convertedObject = streamReaderConverter.Read(ref this);
-        //            if (convertedObject != null)
-        //            {
-        //                objectList.Add(convertedObject);
-        //            }
-        //        }
-        //    }
-        //}
-
         internal string ReadNextTokenAsString()
         {
             if (_complete)
