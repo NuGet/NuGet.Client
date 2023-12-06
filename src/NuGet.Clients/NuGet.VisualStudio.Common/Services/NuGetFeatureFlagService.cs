@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using Microsoft.Internal.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 
@@ -48,7 +47,7 @@ namespace NuGet.VisualStudio
                 if (!_featureFlagCache.TryGetValue(featureFlag.Name, out featureEnabled))
                 {
                     featureEnabled = featureFlagService.IsFeatureEnabled(featureFlag.Name, defaultValue: featureFlag.DefaultState);
-                    _featureFlagCache.TryAdd(featureFlag.Name, featureEnabled);
+                    _featureFlagCache[featureFlag.Name] = featureEnabled;
                 }
             }
             return !isFeatureForcedDisabled && (isFeatureForcedEnabled || featureEnabled);
