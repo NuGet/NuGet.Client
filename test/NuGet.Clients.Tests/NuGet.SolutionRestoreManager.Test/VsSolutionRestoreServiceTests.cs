@@ -839,6 +839,48 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        public async Task DifferingPackageIdsFailsWithUsableErrorMessage()
+        {
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var pri = cps.Builder
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo2(
+                        "netcoreapp1.0",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("PackageId", "PackageId.netcoreapp1.0") }))
+                .WithTargetFrameworkInfo(
+                    new VsTargetFrameworkInfo2(
+                        "net46",
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] { new VsProjectProperty("PackageId", "PackageId.net46") }))
+                .ProjectRestoreInfo2;
+
+            var cache = Mock.Of<IProjectSystemCache>();
+            var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
+            var telemetryProvider = Mock.Of<INuGetTelemetryProvider>();
+
+            var service = new VsSolutionRestoreService(
+                cache, restoreWorker, NuGet.Common.NullLogger.Instance, asyncLazySolution2, telemetryProvider);
+
+            // Act
+            var additionalMessages = await CaptureAdditionalMessagesAsync(projectFullPath, pri);
+
+            // Assert
+            var additionalMessage = Assert.Single(additionalMessages);
+            Assert.Equal(NuGetLogCode.NU1105, additionalMessage.Code);
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture, Resources.PropertyDoesNotHaveSingleValue, "PackageId", "PackageId.net46, PackageId.netcoreapp1.0"), additionalMessage.Message);
+        }
+
+        [Fact]
         public async Task NominateProjectAsync_VerifySourcesAreCombinedAcrossFrameworks()
         {
             var cps = NewCpsProject(@"{ }");
