@@ -61,8 +61,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GetReferenceNearestTargetFrameworkTaskSupportsTargetPlatformParameter>true</GetReferenceNearestTargetFrameworkTaskSupportsTargetPlatformParameter>
     <!-- Flag if the Central package file is enabled -->
     <_CentralPackageVersionsEnabled Condition="'$(ManagePackageVersionsCentrally)' == 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
-    <!-- Flag indicating if floating versions can be used in central package management -->
-    <CentralPackageFloatingVersionsEnabled Condition="'$(CentralPackageFloatingVersionsEnabled)' == ''">false</CentralPackageFloatingVersionsEnabled>
   </PropertyGroup>
 
   <!--
