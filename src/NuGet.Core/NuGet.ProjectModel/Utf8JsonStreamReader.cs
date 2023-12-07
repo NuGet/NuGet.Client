@@ -219,8 +219,9 @@ namespace NuGet.ProjectModel
                 ReadOnlySpan<byte> leftover = _buffer.AsSpan((int)_reader.BytesConsumed);
                 if (leftover.Length == _buffer.Length)
                 {
+                    var newLength = _buffer.Length * 2;
                     ArrayPool<byte>.Shared.Return(_buffer);
-                    _buffer = ArrayPool<byte>.Shared.Rent(_buffer.Length * 2);
+                    _buffer = ArrayPool<byte>.Shared.Rent(newLength);
                 }
                 leftover.CopyTo(_buffer);
                 Stream.Read(_buffer, leftover.Length, _buffer.Length - leftover.Length);
