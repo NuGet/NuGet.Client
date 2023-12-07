@@ -24,7 +24,10 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void Utf8JsonStreamReaderCtr_WhenStreamIsNull_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new Utf8JsonStreamReader(null));
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                using var reader = new Utf8JsonStreamReader(null);
+            });
         }
 
         [Fact]
@@ -33,8 +36,8 @@ namespace NuGet.ProjectModel.Test
             var json = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble()) + "{}";
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(5, stream.Position);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
             }
@@ -46,8 +49,8 @@ namespace NuGet.ProjectModel.Test
             var json = "{}";
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(2, stream.Position);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
             }
@@ -60,8 +63,8 @@ namespace NuGet.ProjectModel.Test
             var firstBytes = json.Take(1024).ToArray();
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 var bufferString = reader.GetCurrentBufferAsString();
                 Assert.Equal(Encoding.UTF8.GetString(firstBytes), bufferString);
             }
@@ -73,8 +76,8 @@ namespace NuGet.ProjectModel.Test
             var json = Encoding.UTF8.GetBytes(SmallJson);
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
@@ -92,28 +95,27 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void CompleteRead_NoErrors()
+        public void Dispose_NoErrors()
         {
             var json = Encoding.UTF8.GetBytes(SmallJson);
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
-                reader.CompleteRead();
             }
         }
 
         [Fact]
-        public void CompleteRead_Read_InvalidOperationException()
+        public void Dispose_Read_InvalidOperationException()
         {
             var json = Encoding.UTF8.GetBytes(SmallJson);
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
-                reader.CompleteRead();
+                reader.Dispose();
                 try
                 {
                     reader.Read();
@@ -126,7 +128,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void CompleteRead_TrySkip_InvalidOperationException()
+        public void Dispose_TrySkip_InvalidOperationException()
         {
             var json = Encoding.UTF8.GetBytes(SmallJson);
 
@@ -134,7 +136,7 @@ namespace NuGet.ProjectModel.Test
             {
                 var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
-                reader.CompleteRead();
+                reader.Dispose();
                 try
                 {
                     reader.TrySkip();
@@ -152,8 +154,8 @@ namespace NuGet.ProjectModel.Test
             var json = Encoding.UTF8.GetBytes(JsonWithoutOverflow);
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
@@ -166,8 +168,8 @@ namespace NuGet.ProjectModel.Test
             var json = Encoding.UTF8.GetBytes(JsonWithOverflowObject);
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
             {
-                var reader = new Utf8JsonStreamReader(stream, new byte[1024]);
                 while (reader.Read())
                 {
                     if (reader.TokenType == JsonTokenType.PropertyName && reader.GetString() == "r")
@@ -193,9 +195,8 @@ namespace NuGet.ProjectModel.Test
             var json = Encoding.UTF8.GetBytes("{\"largeToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\",\"smallToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\"}");
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
             {
-                var reader = new Utf8JsonStreamReader(stream, new byte[1024]);
-
                 reader.Read();
                 reader.Read();
 
@@ -212,9 +213,8 @@ namespace NuGet.ProjectModel.Test
             var json = Encoding.UTF8.GetBytes("{\"largeToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrst\",\"smallToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\"}");
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
             {
-                var reader = new Utf8JsonStreamReader(stream, new byte[1024]);
-
                 reader.Read();
                 reader.Read();
                 reader.Read();
@@ -234,8 +234,8 @@ namespace NuGet.ProjectModel.Test
             var json = Encoding.UTF8.GetBytes(JsonWithoutOverflow);
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
                 reader.TrySkip();
                 Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
@@ -248,8 +248,8 @@ namespace NuGet.ProjectModel.Test
             var json = Encoding.UTF8.GetBytes(JsonWithOverflow);
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
             {
-                var reader = new Utf8JsonStreamReader(stream, new byte[1024]);
                 reader.Read();
                 reader.TrySkip();
                 reader.Read();
@@ -267,9 +267,8 @@ namespace NuGet.ProjectModel.Test
             var json = Encoding.UTF8.GetBytes(JsonWithOverflowObject);
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
             {
-                var reader = new Utf8JsonStreamReader(stream, new byte[1024]);
-
                 reader.Read();
                 reader.TrySkip();
                 reader.Read();
@@ -285,8 +284,8 @@ namespace NuGet.ProjectModel.Test
             var json = Encoding.UTF8.GetBytes("{\"token\":\"value\"}");
 
             using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
                 reader.ReadNextTokenAsString();
@@ -303,8 +302,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 reader.Read();
                 Assert.NotEqual(JsonTokenType.PropertyName, reader.TokenType);
@@ -318,8 +317,8 @@ namespace NuGet.ProjectModel.Test
         {
             var encodedBytes = Encoding.UTF8.GetBytes("{\"a\":[]}");
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 reader.Read();
                 Assert.NotEqual(JsonTokenType.PropertyName, reader.TokenType);
@@ -333,8 +332,8 @@ namespace NuGet.ProjectModel.Test
         {
             var encodedBytes = Encoding.UTF8.GetBytes("[\"a\",-2,3.14,true,null]");
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 IList<string> actualValues = reader.ReadStringArrayAsIList();
 
                 Assert.Collection(
@@ -355,8 +354,8 @@ namespace NuGet.ProjectModel.Test
         {
             var encodedBytes = Encoding.UTF8.GetBytes($"[{element}]");
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 Exception exceptionThrown = null;
                 try
                 {
@@ -388,8 +387,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
 
                 Exception exceptionThrown = null;
@@ -417,8 +416,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":\"{expectedResult}\"}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 IEnumerable<string> actualResults = reader.ReadDelimitedString();
                 Assert.Collection(actualResults, actualResult => Assert.Equal(expectedResult, actualResult));
@@ -435,8 +434,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":\"{value}\"}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 IEnumerable<string> actualResults = reader.ReadDelimitedString();
                 Assert.Equal(expectedResults, actualResults);
@@ -453,8 +452,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 reader.Read();
                 Assert.NotEqual(JsonTokenType.PropertyName, reader.TokenType);
@@ -468,8 +467,8 @@ namespace NuGet.ProjectModel.Test
         {
             var encodedBytes = Encoding.UTF8.GetBytes("{\"a\":[]}");
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 reader.Read();
                 Assert.NotEqual(JsonTokenType.PropertyName, reader.TokenType);
@@ -483,9 +482,8 @@ namespace NuGet.ProjectModel.Test
         {
             var encodedBytes = Encoding.UTF8.GetBytes("[\"a\",-2,3.14,true,null]");
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
-
                 List<string> actualValues = reader.ReadStringArrayAsList();
 
                 Assert.Collection(
@@ -506,9 +504,8 @@ namespace NuGet.ProjectModel.Test
         {
             var encodedBytes = Encoding.UTF8.GetBytes($"[{element}]");
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
-
                 Exception exceptionThrown = null;
                 try
                 {
@@ -531,8 +528,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 bool actualResult = reader.ReadNextTokenAsBoolOrFalse();
                 Assert.Equal(expectedResult, actualResult);
@@ -550,8 +547,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 bool actualResult = reader.ReadNextTokenAsBoolOrFalse();
                 Assert.False(actualResult);
@@ -564,8 +561,8 @@ namespace NuGet.ProjectModel.Test
             const string json = "{\"a\":null}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 IEnumerable<string> actualResults = reader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                 Assert.Null(actualResults);
@@ -586,8 +583,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
 
@@ -605,8 +602,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":\"{expectedResult}\"}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
 
@@ -625,8 +622,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":\"{expectedResult}\"}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
 
@@ -643,8 +640,8 @@ namespace NuGet.ProjectModel.Test
             const string json = "{\"a\":[]}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
 
@@ -668,8 +665,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":[{value}]}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
 
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
@@ -691,8 +688,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":[{value}]}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
 
@@ -718,8 +715,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":[{string.Join(",", expectedResults.Select(expectedResult => $"\"{expectedResult}\""))}]}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
 
@@ -736,8 +733,8 @@ namespace NuGet.ProjectModel.Test
             const string json = "[null, true, -2, 3.14, \"a\"]";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(JsonTokenType.StartArray, reader.TokenType);
 
                 IEnumerable<string> actualResults = reader.ReadStringArrayAsReadOnlyListFromArrayStart();
@@ -763,8 +760,8 @@ namespace NuGet.ProjectModel.Test
             var json = $"[{value}]";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(JsonTokenType.StartArray, reader.TokenType);
 
                 Exception exceptionThrown = null;

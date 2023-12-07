@@ -14,7 +14,6 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// This struct is used to read over a memeory stream in parts, in order to avoid reading the entire stream into memory.
     /// It functions as a wrapper around <see cref="Utf8JsonStreamReader"/>, while maintaining a stream and a buffer to read from.
-    /// must call <see cref="CompleteRead"/> to return the buffer to the pool when completed.
     /// </summary>
     internal ref struct Utf8JsonStreamReader
     {
@@ -24,9 +23,7 @@ namespace NuGet.ProjectModel
         private Utf8JsonReader _reader;
         // The buffer is used to read from the stream in chunks.
         private byte[] _buffer;
-        // The stream is the source of the JSON data.
-        private Stream _stream;
-        private bool _complete;
+        private bool _disposed;
 
         internal Utf8JsonStreamReader(Stream stream) : this(stream, ArrayPool<byte>.Shared.Rent(BufferSizeDefault))
         {
@@ -40,16 +37,16 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            _complete = false;
-            _stream = stream;
+            _disposed = false;
+            Stream = stream;
             _buffer = buffer;
-            _stream.Read(_buffer, 0, 3);
+            Stream.Read(_buffer, 0, 3);
             var offset = 0;
             if (!Encoding.UTF8.GetPreamble().AsSpan().SequenceEqual(_buffer.AsSpan(0, 3)))
             {
                 offset = 3;
             }
-            _stream.Read(_buffer, offset, _buffer.Length - offset);
+            Stream.Read(_buffer, offset, _buffer.Length - offset);
             _reader = new Utf8JsonReader(_buffer, isFinalBlock: false, state: new JsonReaderState(new JsonReaderOptions
             {
                 AllowTrailingCommas = true,
@@ -58,13 +55,15 @@ namespace NuGet.ProjectModel
             _reader.Read();
         }
 
+        private Stream Stream { get; set; }
+
         internal bool IsFinalBlock => _reader.IsFinalBlock;
 
         internal JsonTokenType TokenType => _reader.TokenType;
 
         internal int BufferSize()
         {
-            ThrowExceptionIfCompleted();
+            ThrowExceptionIfDisposed();
 
             return _buffer.Length;
         }
@@ -81,15 +80,9 @@ namespace NuGet.ProjectModel
 
         internal int GetInt32() => _reader.GetInt32();
 
-        internal void CompleteRead()
-        {
-            _complete = true;
-            ArrayPool<byte>.Shared.Return(_buffer);
-        }
-
         internal bool Read()
         {
-            ThrowExceptionIfCompleted();
+            ThrowExceptionIfDisposed();
 
             bool wasRead;
             while (!(wasRead = _reader.Read()) && !_reader.IsFinalBlock)
@@ -101,7 +94,7 @@ namespace NuGet.ProjectModel
 
         internal bool TrySkip()
         {
-            ThrowExceptionIfCompleted();
+            ThrowExceptionIfDisposed();
 
             bool wasSkipped;
             while (!(wasSkipped = _reader.TrySkip()) && !_reader.IsFinalBlock)
@@ -113,7 +106,7 @@ namespace NuGet.ProjectModel
 
         internal string ReadNextTokenAsString()
         {
-            ThrowExceptionIfCompleted();
+            ThrowExceptionIfDisposed();
 
             if (Read())
             {
@@ -125,7 +118,7 @@ namespace NuGet.ProjectModel
 
         internal string GetCurrentBufferAsString()
         {
-            ThrowExceptionIfCompleted();
+            ThrowExceptionIfDisposed();
 
             return Encoding.UTF8.GetString(_buffer);
         }
@@ -153,7 +146,7 @@ namespace NuGet.ProjectModel
 
         internal IReadOnlyList<string> ReadDelimitedString()
         {
-            ThrowExceptionIfCompleted();
+            ThrowExceptionIfDisposed();
 
             if (Read())
             {
@@ -175,7 +168,7 @@ namespace NuGet.ProjectModel
 
         internal bool ReadNextTokenAsBoolOrFalse()
         {
-            ThrowExceptionIfCompleted();
+            ThrowExceptionIfDisposed();
 
             if (Read() && (TokenType == JsonTokenType.False || TokenType == JsonTokenType.True))
             {
@@ -186,7 +179,7 @@ namespace NuGet.ProjectModel
 
         internal IReadOnlyList<string> ReadNextStringOrArrayOfStringsAsReadOnlyList()
         {
-            ThrowExceptionIfCompleted();
+            ThrowExceptionIfDisposed();
 
             if (Read())
             {
@@ -208,7 +201,7 @@ namespace NuGet.ProjectModel
 
         internal IReadOnlyList<string> ReadStringArrayAsReadOnlyListFromArrayStart()
         {
-            ThrowExceptionIfCompleted();
+            ThrowExceptionIfDisposed();
 
             List<string> strings = null;
 
@@ -235,20 +228,28 @@ namespace NuGet.ProjectModel
                     _buffer = ArrayPool<byte>.Shared.Rent(_buffer.Length * 2);
                 }
                 leftover.CopyTo(_buffer);
-                _stream.Read(_buffer, leftover.Length, _buffer.Length - leftover.Length);
+                Stream.Read(_buffer, leftover.Length, _buffer.Length - leftover.Length);
             }
             else
             {
-                _stream.Read(_buffer, 0, _buffer.Length);
+                Stream.Read(_buffer, 0, _buffer.Length);
             }
-            _reader = new Utf8JsonReader(_buffer, isFinalBlock: _stream.Length == _stream.Position, _reader.CurrentState);
+            _reader = new Utf8JsonReader(_buffer, isFinalBlock: Stream.Length == Stream.Position, _reader.CurrentState);
         }
 
-        private void ThrowExceptionIfCompleted()
+        public void Dispose()
         {
-            if (_complete)
+            if (!_disposed)
             {
-                throw new InvalidOperationException("Cannot read from completed Utf8JsonStreamReader");
+                ArrayPool<byte>.Shared.Return(_buffer);
+            }
+        }
+
+        private void ThrowExceptionIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(Utf8JsonStreamReader));
             }
         }
     }
