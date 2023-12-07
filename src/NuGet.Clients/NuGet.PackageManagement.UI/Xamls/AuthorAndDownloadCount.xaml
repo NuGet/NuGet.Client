@@ -17,7 +17,7 @@
   </UserControl.Resources>
   <StackPanel Orientation="Horizontal">
     <!-- text "by owner" is shown here -->
-    <ItemsControl x:Name="_panelOwners" ItemsSource="{Binding TrustedOwners}" Visibility="Collapsed">
+    <ItemsControl x:Name="_panelOwners" ItemsSource="{Binding TrustedOwners}" Visibility="Collapsed" Focusable="False">
       <ItemsControl.Template>
         <ControlTemplate>
           <StackPanel Orientation="Horizontal">
