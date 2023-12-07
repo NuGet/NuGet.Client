@@ -19,6 +19,7 @@ namespace NuGet.ProjectModel
     internal ref struct Utf8JsonStreamReader
     {
         private static readonly char[] DelimitedStringDelimiters = new char[] { ' ', ',' };
+        private const int BufferSizeDefault = 16 * 1024;
 
         private Utf8JsonReader _reader;
         // The buffer is used to read from the stream in chunks.
@@ -27,7 +28,7 @@ namespace NuGet.ProjectModel
         private Stream _stream;
         private bool _complete;
 
-        internal Utf8JsonStreamReader(Stream stream) : this(stream, ArrayPool<byte>.Shared.Rent(1024))
+        internal Utf8JsonStreamReader(Stream stream) : this(stream, ArrayPool<byte>.Shared.Rent(BufferSizeDefault))
         {
 
         }
