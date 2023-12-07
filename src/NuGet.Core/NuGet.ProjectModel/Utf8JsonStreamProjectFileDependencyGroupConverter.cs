@@ -20,7 +20,7 @@ namespace NuGet.ProjectModel
 
             var frameworkName = reader.GetString();
             reader.Read();
-            var dependencies = reader.ReadStringArrayAsIList(new List<string>());
+            var dependencies = reader.ReadStringArrayAsList();
 
             return new ProjectFileDependencyGroup(frameworkName, dependencies);
         }

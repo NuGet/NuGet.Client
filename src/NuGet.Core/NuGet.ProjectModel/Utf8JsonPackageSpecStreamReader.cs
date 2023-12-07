@@ -181,7 +181,7 @@ namespace NuGet.ProjectModel
                     else if (jsonReader.ValueTextEquals(Utf8ContentFiles))
                     {
                         jsonReader.Read();
-                        jsonReader.ReadStringArrayAsIList(packageSpec.ContentFiles);
+                        jsonReader.ReadStringArrayIntoList(packageSpec.ContentFiles);
                     }
                     else if (jsonReader.ValueTextEquals(Utf8Copyright))
                     {
@@ -1374,7 +1374,7 @@ namespace NuGet.ProjectModel
                     else if (jsonReader.ValueTextEquals(Utf8Owners))
                     {
                         jsonReader.Read();
-                        string[] owners = jsonReader.ReadStringArrayAsIList()?.ToArray();
+                        string[] owners = jsonReader.ReadStringArrayAsList()?.ToArray();
                         if (owners != null)
                         {
                             packageSpec.Owners = owners;
@@ -1403,7 +1403,7 @@ namespace NuGet.ProjectModel
                     else if (jsonReader.ValueTextEquals(Utf8Tags))
                     {
                         jsonReader.Read();
-                        string[] tags = jsonReader.ReadStringArrayAsIList()?.ToArray();
+                        string[] tags = jsonReader.ReadStringArrayAsList()?.ToArray();
 
                         if (tags != null)
                         {

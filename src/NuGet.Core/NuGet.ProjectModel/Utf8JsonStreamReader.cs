@@ -141,7 +141,7 @@ namespace NuGet.ProjectModel
 
         internal string GetCurrentBufferAsString() => Encoding.UTF8.GetString(_buffer);
 
-        internal IList<string> ReadStringArrayAsIList(IList<string> strings = null)
+        internal void ReadStringArrayIntoList(IList<string> strings = null)
         {
             if (TokenType == JsonTokenType.StartArray)
             {
@@ -154,7 +154,12 @@ namespace NuGet.ProjectModel
                     strings.Add(value);
                 }
             }
+        }
 
+        internal List<string> ReadStringArrayAsList()
+        {
+            List<string> strings = null;
+            ReadStringArrayIntoList(strings);
             return strings;
         }
 
@@ -176,23 +181,6 @@ namespace NuGet.ProjectModel
             }
 
             return null;
-        }
-
-        internal List<string> ReadStringArrayAsList(List<string> strings = null)
-        {
-            if (TokenType == JsonTokenType.StartArray)
-            {
-                while (Read() && TokenType != JsonTokenType.EndArray)
-                {
-                    string value = _reader.ReadTokenAsString();
-
-                    strings = strings ?? new List<string>();
-
-                    strings.Add(value);
-                }
-            }
-
-            return strings;
         }
 
         internal bool ReadNextTokenAsBoolOrFalse()

@@ -101,7 +101,7 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(Utf8FrameworkAssemblies))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.FrameworkAssemblies = reader.ReadStringArrayAsIList(new List<string>());
+                    lockFileTargetLibrary.FrameworkAssemblies = reader.ReadStringArrayAsList();
                 }
                 else if (reader.ValueTextEquals(Utf8Runtime))
                 {
@@ -186,7 +186,7 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(Utf8FrameworkReferences))
                 {
                     reader.Read();
-                    if (reader.ReadStringArrayAsIList(new List<string>()) is { Count: not 0 } frameworkReferences)
+                    if (reader.ReadStringArrayAsList() is { Count: not 0 } frameworkReferences)
                     {
                         lockFileTargetLibrary.FrameworkReferences = frameworkReferences;
                     }
