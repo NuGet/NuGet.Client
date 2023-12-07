@@ -129,12 +129,8 @@ namespace NuGet.ProjectModel
             return Encoding.UTF8.GetString(_buffer);
         }
 
-        //Revisit ReadStringArrayAsList and ReadStringArrayAsIList later to see if we can change classes to have a consistent implementaiton
-        //for their lists
         internal IList<string> ReadStringArrayAsIList(IList<string> strings = null)
         {
-            ThrowExceptionIfCompleted();
-
             if (TokenType == JsonTokenType.StartArray)
             {
                 while (Read() && TokenType != JsonTokenType.EndArray)
@@ -146,27 +142,12 @@ namespace NuGet.ProjectModel
                     strings.Add(value);
                 }
             }
-
             return strings;
         }
 
-        internal List<string> ReadStringArrayAsList(List<string> strings = null)
+        internal List<string> ReadStringArrayAsList()
         {
-            ThrowExceptionIfCompleted();
-
-            if (TokenType == JsonTokenType.StartArray)
-            {
-                while (Read() && TokenType != JsonTokenType.EndArray)
-                {
-                    string value = _reader.ReadTokenAsString();
-
-                    strings = strings ?? new List<string>();
-
-                    strings.Add(value);
-                }
-            }
-
-            return strings;
+            return (List<string>)ReadStringArrayAsIList();
         }
 
         internal IReadOnlyList<string> ReadDelimitedString()
