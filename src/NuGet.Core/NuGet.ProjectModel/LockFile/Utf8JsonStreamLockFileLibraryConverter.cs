@@ -76,7 +76,7 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(Utf8Files))
                 {
                     reader.Read();
-                    reader.ReadStringArrayIntoList(lockFileLibrary.Files);
+                    reader.ReadStringArrayAsIList(lockFileLibrary.Files);
                 }
                 else
                 {

@@ -217,7 +217,7 @@ namespace NuGet.ProjectModel.Test
         [InlineData("null")]
         [InlineData("\"b\"")]
         [InlineData("{}")]
-        public void ReadStringArrayIntoList_WhenValueIsNotArray_ReturnsNull(string value)
+        public void ReadStringArrayAsIList_WhenValueIsNotArray_ReturnsNull(string value)
         {
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
@@ -227,14 +227,13 @@ namespace NuGet.ProjectModel.Test
                 reader.Read();
                 reader.Read();
                 Assert.NotEqual(JsonTokenType.PropertyName, reader.TokenType);
-                List<string> list = null;
-                reader.ReadStringArrayIntoList(list);
+                IList<string> list = reader.ReadStringArrayAsIList();
                 Assert.Null(list);
             }
         }
 
         [Fact]
-        public void ReadStringArrayIntoList_WhenValueIsEmptyArray_ReturnsNull()
+        public void ReadStringArrayAsIList_WhenValueIsEmptyArray_ReturnsNull()
         {
             var encodedBytes = Encoding.UTF8.GetBytes("{\"a\":[]}");
             using (var stream = new MemoryStream(encodedBytes))
@@ -243,21 +242,20 @@ namespace NuGet.ProjectModel.Test
                 reader.Read();
                 reader.Read();
                 Assert.NotEqual(JsonTokenType.PropertyName, reader.TokenType);
-                List<string> list = null;
-                reader.ReadStringArrayIntoList(list);
+                IList<string> list = reader.ReadStringArrayAsIList();
                 Assert.Null(list);
             }
         }
 
         [Fact]
-        public void ReadStringArrayIntoList_WithSupportedTypes_ReturnsStringArray()
+        public void ReadStringArrayAsIList_WithSupportedTypes_ReturnsStringArray()
         {
             var encodedBytes = Encoding.UTF8.GetBytes("[\"a\",-2,3.14,true,null]");
             using (var stream = new MemoryStream(encodedBytes))
             {
                 var reader = new Utf8JsonStreamReader(stream);
-                List<string> actualValues = null;
-                reader.ReadStringArrayIntoList(actualValues);
+                List<string> actualValues = new List<string>();
+                reader.ReadStringArrayAsIList(actualValues);
 
                 Assert.Collection(
                     actualValues,
@@ -273,7 +271,7 @@ namespace NuGet.ProjectModel.Test
         [Theory]
         [InlineData("[]")]
         [InlineData("{}")]
-        public void ReadStringArrayIntoList_WithUnsupportedTypes_Throws(string element)
+        public void ReadStringArrayAsIList_WithUnsupportedTypes_Throws(string element)
         {
             var encodedBytes = Encoding.UTF8.GetBytes($"[{element}]");
             using (var stream = new MemoryStream(encodedBytes))
@@ -282,7 +280,7 @@ namespace NuGet.ProjectModel.Test
                 Exception exceptionThrown = null;
                 try
                 {
-                    reader.ReadStringArrayIntoList();
+                    reader.ReadStringArrayAsIList(new List<string>());
                 }
                 catch (Exception ex)
                 {

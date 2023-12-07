@@ -141,7 +141,7 @@ namespace NuGet.ProjectModel
 
         internal string GetCurrentBufferAsString() => Encoding.UTF8.GetString(_buffer);
 
-        internal void ReadStringArrayIntoList(IList<string> strings = null)
+        internal IList<string> ReadStringArrayAsIList(IList<string> strings = null)
         {
             if (TokenType == JsonTokenType.StartArray)
             {
@@ -154,13 +154,12 @@ namespace NuGet.ProjectModel
                     strings.Add(value);
                 }
             }
+            return strings;
         }
 
         internal List<string> ReadStringArrayAsList()
         {
-            List<string> strings = null;
-            ReadStringArrayIntoList(strings);
-            return strings;
+            return (List<string>)ReadStringArrayAsIList();
         }
 
         internal IReadOnlyList<string> ReadDelimitedString()

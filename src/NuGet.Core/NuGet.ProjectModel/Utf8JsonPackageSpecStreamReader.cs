@@ -181,7 +181,7 @@ namespace NuGet.ProjectModel
                     else if (jsonReader.ValueTextEquals(Utf8ContentFiles))
                     {
                         jsonReader.Read();
-                        jsonReader.ReadStringArrayIntoList(packageSpec.ContentFiles);
+                        jsonReader.ReadStringArrayAsIList(packageSpec.ContentFiles);
                     }
                     else if (jsonReader.ValueTextEquals(Utf8Copyright))
                     {
