@@ -122,7 +122,7 @@ namespace NuGet.ProjectModel.Test
                 }
                 catch (Exception ex)
                 {
-                    Assert.IsType<InvalidOperationException>(ex);
+                    Assert.IsType<ObjectDisposedException>(ex);
                 }
             }
         }
@@ -143,7 +143,7 @@ namespace NuGet.ProjectModel.Test
                 }
                 catch (Exception ex)
                 {
-                    Assert.IsType<InvalidOperationException>(ex);
+                    Assert.IsType<ObjectDisposedException>(ex);
                 }
             }
         }

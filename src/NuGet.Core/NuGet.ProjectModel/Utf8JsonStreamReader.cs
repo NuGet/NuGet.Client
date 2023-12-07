@@ -216,15 +216,23 @@ namespace NuGet.ProjectModel
         {
             if (_reader.BytesConsumed < _buffer.Length)
             {
-                ReadOnlySpan<byte> leftover = _buffer.AsSpan((int)_reader.BytesConsumed);
+                var oldBuffer = _buffer;
+                ReadOnlySpan<byte> leftover = oldBuffer.AsSpan((int)_reader.BytesConsumed);
+
+                var returnOldBuffer = false;
                 if (leftover.Length == _buffer.Length)
                 {
-                    var newLength = _buffer.Length * 2;
-                    ArrayPool<byte>.Shared.Return(_buffer);
-                    _buffer = ArrayPool<byte>.Shared.Rent(newLength);
+                    returnOldBuffer = true;
+                    _buffer = ArrayPool<byte>.Shared.Rent(_buffer.Length * 2);
                 }
+
                 leftover.CopyTo(_buffer);
                 Stream.Read(_buffer, leftover.Length, _buffer.Length - leftover.Length);
+
+                if (returnOldBuffer)
+                {
+                    ArrayPool<byte>.Shared.Return(oldBuffer);
+                }
             }
             else
             {
@@ -237,7 +245,10 @@ namespace NuGet.ProjectModel
         {
             if (!_disposed)
             {
-                ArrayPool<byte>.Shared.Return(_buffer);
+                _disposed = true;
+                byte[] toReturn = _buffer;
+                _buffer = null!;
+                ArrayPool<byte>.Shared.Return(toReturn);
             }
         }
 
