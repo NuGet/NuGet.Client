@@ -139,11 +139,6 @@ namespace NuGet.ProjectModel
             return strings;
         }
 
-        internal List<string> ReadStringArrayAsList()
-        {
-            return (List<string>)ReadStringArrayAsIList();
-        }
-
         internal IReadOnlyList<string> ReadDelimitedString()
         {
             ThrowExceptionIfDisposed();

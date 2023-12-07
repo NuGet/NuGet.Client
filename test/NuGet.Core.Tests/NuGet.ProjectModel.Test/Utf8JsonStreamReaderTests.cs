@@ -294,83 +294,6 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [InlineData("null")]
-        [InlineData("\"b\"")]
-        [InlineData("{}")]
-        public void ReadStringArrayAsIList_WhenValueIsNotArray_ReturnsNull(string value)
-        {
-            var json = $"{{\"a\":{value}}}";
-            var encodedBytes = Encoding.UTF8.GetBytes(json);
-            using (var stream = new MemoryStream(encodedBytes))
-            using (var reader = new Utf8JsonStreamReader(stream))
-            {
-                reader.Read();
-                reader.Read();
-                Assert.NotEqual(JsonTokenType.PropertyName, reader.TokenType);
-                IList<string> actualValues = reader.ReadStringArrayAsIList();
-                Assert.Null(actualValues);
-            }
-        }
-
-        [Fact]
-        public void ReadStringArrayAsIList_WhenValueIsEmptyArray_ReturnsNull()
-        {
-            var encodedBytes = Encoding.UTF8.GetBytes("{\"a\":[]}");
-            using (var stream = new MemoryStream(encodedBytes))
-            using (var reader = new Utf8JsonStreamReader(stream))
-            {
-                reader.Read();
-                reader.Read();
-                Assert.NotEqual(JsonTokenType.PropertyName, reader.TokenType);
-                IList<string> actualValues = reader.ReadStringArrayAsIList();
-                Assert.Null(actualValues);
-            }
-        }
-
-        [Fact]
-        public void ReadStringArrayAsIList_WithSupportedTypes_ReturnsStringArray()
-        {
-            var encodedBytes = Encoding.UTF8.GetBytes("[\"a\",-2,3.14,true,null]");
-            using (var stream = new MemoryStream(encodedBytes))
-            using (var reader = new Utf8JsonStreamReader(stream))
-            {
-                IList<string> actualValues = reader.ReadStringArrayAsIList();
-
-                Assert.Collection(
-                    actualValues,
-                    actualValue => Assert.Equal("a", actualValue),
-                    actualValue => Assert.Equal("-2", actualValue),
-                    actualValue => Assert.Equal("3.14", actualValue),
-                    actualValue => Assert.Equal("True", actualValue),
-                    actualValue => Assert.Equal(null, actualValue));
-                Assert.Equal(JsonTokenType.EndArray, reader.TokenType);
-            }
-        }
-
-        [Theory]
-        [InlineData("[]")]
-        [InlineData("{}")]
-        public void ReadStringArrayAsIList_WithUnsupportedTypes_Throws(string element)
-        {
-            var encodedBytes = Encoding.UTF8.GetBytes($"[{element}]");
-            using (var stream = new MemoryStream(encodedBytes))
-            using (var reader = new Utf8JsonStreamReader(stream))
-            {
-                Exception exceptionThrown = null;
-                try
-                {
-                    reader.ReadStringArrayAsIList();
-                }
-                catch (Exception ex)
-                {
-                    exceptionThrown = ex;
-                }
-                Assert.IsType(typeof(InvalidCastException), exceptionThrown);
-            }
-        }
-
-
-        [Theory]
         [InlineData("true", JsonTokenType.True)]
         [InlineData("false", JsonTokenType.False)]
         [InlineData("-2", JsonTokenType.Number)]
@@ -447,7 +370,7 @@ namespace NuGet.ProjectModel.Test
         [InlineData("null")]
         [InlineData("\"b\"")]
         [InlineData("{}")]
-        public void ReadStringArrayAsList_WhenValueIsNotArray_ReturnsNull(string value)
+        public void ReadStringArrayAsIList_WhenValueIsNotArray_ReturnsNull(string value)
         {
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
@@ -457,13 +380,13 @@ namespace NuGet.ProjectModel.Test
                 reader.Read();
                 reader.Read();
                 Assert.NotEqual(JsonTokenType.PropertyName, reader.TokenType);
-                List<string> actualValues = reader.ReadStringArrayAsList();
+                IList<string> actualValues = reader.ReadStringArrayAsIList();
                 Assert.Null(actualValues);
             }
         }
 
         [Fact]
-        public void ReadStringArrayAsList_WhenValueIsEmptyArray_ReturnsNull()
+        public void ReadStringArrayAsIList_WhenValueIsEmptyArray_ReturnsNull()
         {
             var encodedBytes = Encoding.UTF8.GetBytes("{\"a\":[]}");
             using (var stream = new MemoryStream(encodedBytes))
@@ -472,19 +395,19 @@ namespace NuGet.ProjectModel.Test
                 reader.Read();
                 reader.Read();
                 Assert.NotEqual(JsonTokenType.PropertyName, reader.TokenType);
-                List<string> actualValues = reader.ReadStringArrayAsList();
+                IList<string> actualValues = reader.ReadStringArrayAsIList();
                 Assert.Null(actualValues);
             }
         }
 
         [Fact]
-        public void ReadStringArrayAsList_WithSupportedTypes_ReturnsStringArray()
+        public void ReadStringArrayAsIList_WithSupportedTypes_ReturnsStringArray()
         {
             var encodedBytes = Encoding.UTF8.GetBytes("[\"a\",-2,3.14,true,null]");
             using (var stream = new MemoryStream(encodedBytes))
             using (var reader = new Utf8JsonStreamReader(stream))
             {
-                List<string> actualValues = reader.ReadStringArrayAsList();
+                IList<string> actualValues = reader.ReadStringArrayAsIList();
 
                 Assert.Collection(
                     actualValues,
@@ -500,7 +423,7 @@ namespace NuGet.ProjectModel.Test
         [Theory]
         [InlineData("[]")]
         [InlineData("{}")]
-        public void ReadStringArrayAsList_WithUnsupportedTypes_Throws(string element)
+        public void ReadStringArrayAsIList_WithUnsupportedTypes_Throws(string element)
         {
             var encodedBytes = Encoding.UTF8.GetBytes($"[{element}]");
             using (var stream = new MemoryStream(encodedBytes))
@@ -509,7 +432,7 @@ namespace NuGet.ProjectModel.Test
                 Exception exceptionThrown = null;
                 try
                 {
-                    reader.ReadStringArrayAsList();
+                    reader.ReadStringArrayAsIList();
                 }
                 catch (Exception ex)
                 {
