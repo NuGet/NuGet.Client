@@ -15,12 +15,14 @@ namespace NuGet.ProjectModel.Test
         [InlineData("true", "True")]
         [InlineData("false", "False")]
         [InlineData("-2", "-2")]
+        [InlineData("9223372036854775807", "9223372036854775807")]
         [InlineData("3.14", "3.14")]
         [InlineData("\"b\"", "b")]
         public void ReadTokenAsString_WhenValueIsConvertibleToString_ReturnsValueAsString(
             string value,
             string expectedResult)
         {
+            
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             var reader = new Utf8JsonReader(encodedBytes);

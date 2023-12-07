@@ -2,12 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Text;
 using System.Text.Json;
 
 namespace NuGet.ProjectModel
 {
     internal static class Utf8JsonReaderExtensions
     {
+        private static readonly UTF8Encoding Utf8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
         internal static string ReadTokenAsString(this ref Utf8JsonReader reader)
         {
             switch (reader.TokenType)
@@ -17,19 +21,12 @@ namespace NuGet.ProjectModel
                 case JsonTokenType.False:
                     return bool.FalseString;
                 case JsonTokenType.Number:
-                    if (reader.TryGetInt16(out short shortValue))
-                    {
-                        return shortValue.ToString();
-                    }
-                    if (reader.TryGetInt32(out int intValue))
-                    {
-                        return intValue.ToString();
-                    }
-                    else if (reader.TryGetInt64(out long longValue))
-                    {
-                        return longValue.ToString();
-                    }
-                    return reader.GetDouble().ToString();
+                    var span = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+#if NETCOREAPP
+                    return Utf8Encoding.GetString(span);
+#else
+                    return Utf8Encoding.GetString(span.ToArray());
+#endif
                 case JsonTokenType.String:
                     return reader.GetString();
                 case JsonTokenType.None:
