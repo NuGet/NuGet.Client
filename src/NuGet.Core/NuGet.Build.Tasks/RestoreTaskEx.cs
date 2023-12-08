@@ -65,16 +65,9 @@ namespace NuGet.Build.Tasks
         public bool RestorePackagesConfig { get; set; }
 
         /// <summary>
-        /// Controls whether to embed files produced by the Restore task in the binlog.
-        /// Defaults to true.
+        /// Gets or sets a value indicating whether to embed files produced by restore in the MSBuild binary logger.
         /// </summary>
-        public bool EmbedRestoreFilesInBinlog { get; set; } = true;
-
-        /// <summary>
-        /// Controls whether to embed .nuget.dgspec.json files in the binlog.
-        /// Defaults to true.
-        /// </summary>
-        public bool EmbedDGSpecInBinlog { get; set; } = true;
+        public string EmbedFilesInBinlog { get; set; }
 
         protected override string DebugEnvironmentVariableName => "DEBUG_RESTORE_TASK_EX";
 
@@ -92,8 +85,10 @@ namespace NuGet.Build.Tasks
             options[nameof(NoCache)] = NoCache.ToString();
             options[nameof(NoHttpCache)] = NoHttpCache.ToString();
             options[nameof(RestorePackagesConfig)] = RestorePackagesConfig.ToString();
-            options[nameof(EmbedRestoreFilesInBinlog)] = EmbedRestoreFilesInBinlog.ToString();
-            options[nameof(EmbedDGSpecInBinlog)] = EmbedDGSpecInBinlog.ToString();
+            if (!string.IsNullOrWhiteSpace(EmbedFilesInBinlog))
+            {
+                options[nameof(EmbedFilesInBinlog)] = EmbedFilesInBinlog;
+            }
 
             return options;
         }
