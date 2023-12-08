@@ -74,7 +74,7 @@ namespace NuGet.DependencyResolver
                 }
 
                 // PERF: Avoid Linq in hot paths.
-                var filteredLibraryProviders = new List<IRemoteDependencyProvider>();
+                var filteredLibraryProviders = new List<IRemoteDependencyProvider>(sources.Count);
                 for (int i = 0; i < RemoteLibraryProviders.Count; ++i)
                 {
                     var current = RemoteLibraryProviders[i];
