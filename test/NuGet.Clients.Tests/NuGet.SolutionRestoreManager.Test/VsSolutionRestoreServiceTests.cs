@@ -1840,22 +1840,7 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             // Arrange
             const string projectFullPath = @"f:\project\project.csproj";
-            IReadOnlyList<IAssetsLogMessage> additionalMessages = null;
-
-            var cache = CreateDefaultIProjectSystemCacheMock(projectFullPath);
-            cache.Setup(x => x.AddProjectRestoreInfo(
-                    It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>(),
-                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
-                .Callback<ProjectNames, DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage>>((_, __, callbackAdditionalMessages) =>
-                {
-                    additionalMessages = callbackAdditionalMessages;
-                })
-                .Returns(true);
-
             var restoreWorker = CreateDefaultISolutionRestoreWorkerMock();
-
-            var logger = new Mock<ILogger>();
 
             var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var projectRestoreInfo = new VsProjectRestoreInfo2(@"f:\project\",
@@ -1871,14 +1856,11 @@ namespace NuGet.SolutionRestoreManager.Test
                 }));
 
             // Act
-            var result = await NominateProjectAsync(projectFullPath, projectRestoreInfo, CancellationToken.None, cache: cache, restoreWorker: restoreWorker, logger: logger);
+            var additionalMessages = await CaptureAdditionalMessagesAsync(projectFullPath, projectRestoreInfo, restoreWorker: restoreWorker);
 
             // Assert
-            Assert.True(result);
-            logger.Verify(l => l.LogError(It.IsAny<string>()), Times.Never);
-            Assert.NotNull(additionalMessages);
-            Assert.Equal(1, additionalMessages.Count);
-            Assert.Equal(NuGetLogCode.NU1105, additionalMessages[0].Code);
+            var additionalMessage = Assert.Single(additionalMessages);
+            Assert.Equal(NuGetLogCode.NU1105, additionalMessage.Code);
             restoreWorker.Verify(rw => rw.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -1887,21 +1869,6 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             // Arrange
             const string projectFullPath = @"f:\project\project.csproj";
-
-            IReadOnlyList<IAssetsLogMessage> additionalMessages = null;
-
-            var cache = CreateDefaultIProjectSystemCacheMock(projectFullPath);
-            cache.Setup(x => x.AddProjectRestoreInfo(
-                    It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>(),
-                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
-                .Callback<ProjectNames, DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage>>((_, __, callbackAdditionalMessages) =>
-                {
-                    additionalMessages = callbackAdditionalMessages;
-                })
-                .Returns(true);
-
-            var logger = new Mock<ILogger>();
 
             var restoreWorker = CreateDefaultISolutionRestoreWorkerMock();
 
@@ -1925,14 +1892,11 @@ namespace NuGet.SolutionRestoreManager.Test
                 }));
 
             // Act
-            var result = await NominateProjectAsync(projectFullPath, projectRestoreInfo, CancellationToken.None, cache: cache, restoreWorker: restoreWorker, logger: logger);
+            var additionalMessages = await CaptureAdditionalMessagesAsync(projectFullPath, projectRestoreInfo, restoreWorker);
 
             // Assert
-            Assert.True(result);
-            logger.Verify(l => l.LogError(It.IsAny<string>()), Times.Never);
-            Assert.NotNull(additionalMessages);
-            Assert.Equal(1, additionalMessages.Count);
-            Assert.Equal(NuGetLogCode.NU1105, additionalMessages[0].Code);
+            var additionalMessage = Assert.Single(additionalMessages);
+            Assert.Equal(NuGetLogCode.NU1105, additionalMessage.Code);
             restoreWorker.Verify(rw => rw.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -2445,6 +2409,35 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.True(result, "Project restore nomination should succeed.");
 
             return capturedRestoreSpec;
+        }
+
+        private async Task<IReadOnlyList<IAssetsLogMessage>> CaptureAdditionalMessagesAsync(
+            string projectFullPath,
+            IVsProjectRestoreInfo2 pri,
+            Mock<ISolutionRestoreWorker> restoreWorker = null)
+        {
+            IReadOnlyList<IAssetsLogMessage> additionalMessages = null;
+
+            var cache = CreateDefaultIProjectSystemCacheMock(projectFullPath);
+
+            cache
+                .Setup(x => x.AddProjectRestoreInfo(
+                    It.IsAny<ProjectNames>(),
+                    It.IsAny<DependencyGraphSpec>(),
+                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
+                .Callback<ProjectNames, DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage>>(
+                    (_, _, am) => { additionalMessages = am; })
+                .Returns(true);
+
+            var logger = new Mock<ILogger>();
+
+            // Act
+            var result = await NominateProjectAsync(projectFullPath, pri, CancellationToken.None, cache: cache, restoreWorker, logger);
+
+            Assert.True(result, "Project restore nomination should succeed.");
+            logger.Verify(l => l.LogError(It.IsAny<string>()), Times.Never);
+
+            return additionalMessages;
         }
 
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
