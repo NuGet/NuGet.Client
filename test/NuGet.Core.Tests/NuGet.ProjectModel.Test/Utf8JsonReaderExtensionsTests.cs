@@ -22,7 +22,6 @@ namespace NuGet.ProjectModel.Test
             string value,
             string expectedResult)
         {
-            
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             var reader = new Utf8JsonReader(encodedBytes);
