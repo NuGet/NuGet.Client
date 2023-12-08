@@ -89,7 +89,7 @@ namespace NuGet.Build.Tasks.Test
             }
         }
 
-            [Fact]
+        [Fact]
         public void GetCommandLineArguments_WhenOptionsSpecified_CorrectValuesReturned()
         {
             using (var testDirectory = TestDirectory.Create())
