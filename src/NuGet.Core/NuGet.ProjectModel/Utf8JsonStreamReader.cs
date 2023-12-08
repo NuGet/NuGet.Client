@@ -46,8 +46,9 @@ namespace NuGet.ProjectModel
             {
                 offset = 3;
             }
-            Stream.Read(_buffer, offset, _buffer.Length - offset);
-            _reader = new Utf8JsonReader(_buffer, isFinalBlock: false, state: new JsonReaderState(new JsonReaderOptions
+            var blocksRead = Stream.Read(_buffer, offset, _buffer.Length - offset);
+
+            _reader = new Utf8JsonReader(_buffer.AsSpan(0, blocksRead + offset), isFinalBlock: blocksRead + offset < _buffer.Length, state: new JsonReaderState(new JsonReaderOptions
             {
                 AllowTrailingCommas = true,
                 CommentHandling = JsonCommentHandling.Skip,
@@ -212,23 +213,33 @@ namespace NuGet.ProjectModel
             return (IReadOnlyList<string>)strings ?? Array.Empty<string>();
         }
 
+        // This function is called when Read() returns false
         private void GetMoreBytesFromStream()
         {
+            int leftoverBytes = 0;
+            int bytesReadFromStream;
+
             if (_reader.BytesConsumed < _buffer.Length)
             {
+                // If the number of bytes consumed by the reader is less than the buffer size then we have leftover bytes that need to be shifted
                 var oldBuffer = _buffer;
                 ReadOnlySpan<byte> leftover = oldBuffer.AsSpan((int)_reader.BytesConsumed);
 
                 var returnOldBuffer = false;
+
+                // If the leftover bytes are the same as the buffer size then we are at capacity and need to double the buffer size
                 if (leftover.Length == _buffer.Length)
                 {
                     returnOldBuffer = true;
                     _buffer = ArrayPool<byte>.Shared.Rent(_buffer.Length * 2);
                 }
 
+                //Copy the leftover bytes to the beginning of the new buffer
                 leftover.CopyTo(_buffer);
-                Stream.Read(_buffer, leftover.Length, _buffer.Length - leftover.Length);
 
+                // Read the rest of the bytes from the stream, keeping track of the number of bytes that need to be processed in the new buffer
+                leftoverBytes = leftover.Length;
+                bytesReadFromStream = Stream.Read(_buffer, leftover.Length, _buffer.Length - leftover.Length);
                 if (returnOldBuffer)
                 {
                     ArrayPool<byte>.Shared.Return(oldBuffer);
@@ -236,9 +247,9 @@ namespace NuGet.ProjectModel
             }
             else
             {
-                Stream.Read(_buffer, 0, _buffer.Length);
+                bytesReadFromStream = Stream.Read(_buffer, 0, _buffer.Length);
             }
-            _reader = new Utf8JsonReader(_buffer, isFinalBlock: Stream.Length == Stream.Position, _reader.CurrentState);
+            _reader = new Utf8JsonReader(_buffer.AsSpan(0, leftoverBytes + bytesReadFromStream), isFinalBlock: leftoverBytes + bytesReadFromStream < _buffer.Length, _reader.CurrentState);
         }
 
         public void Dispose()

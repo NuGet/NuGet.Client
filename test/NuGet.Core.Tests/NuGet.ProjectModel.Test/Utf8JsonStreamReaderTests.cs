@@ -78,6 +78,7 @@ namespace NuGet.ProjectModel.Test
             using (var stream = new MemoryStream(json))
             using (var reader = new Utf8JsonStreamReader(stream))
             {
+                Assert.True(reader.IsFinalBlock);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
@@ -91,6 +92,33 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
                 reader.Read();
                 Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
+            }
+        }
+
+        [Fact]
+        public void Read_WhenReadingSmallJsonPastEnd_Read()
+        {
+            var json = Encoding.UTF8.GetBytes(SmallJson);
+            using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream))
+            {
+                var bufferString = reader.GetCurrentBufferAsString();
+                var jsonString = Encoding.UTF8.GetString(json);
+                Assert.True(reader.IsFinalBlock);
+                Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
+                reader.Read();
+                Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
+                reader.Read();
+                Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
+                reader.Read();
+                Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
+                reader.Read();
+                Assert.Equal(JsonTokenType.String, reader.TokenType);
+                reader.Read();
+                Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
+                reader.Read();
+                Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
+                Assert.False(reader.Read());
             }
         }
 
@@ -179,7 +207,6 @@ namespace NuGet.ProjectModel.Test
                 }
                 reader.Read();
 
-                Assert.True(reader.IsFinalBlock);
                 Assert.Equal(1024, reader.BufferSize());
                 Assert.Equal(JsonTokenType.String, reader.TokenType);
                 Assert.Equal("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", reader.GetString());
@@ -208,6 +235,24 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void Read_WhenReadingWithLargeTokenReadPastFinal()
+        {
+            var json = Encoding.UTF8.GetBytes("{\"largeToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\",\"smallToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\"}");
+
+            using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
+            {
+                reader.Read();
+                reader.Read();
+                reader.Read();
+                reader.Read();
+                reader.Read();
+                Assert.Equal(2048, reader.BufferSize());
+                Assert.False(reader.Read());
+            }
+        }
+
+        [Fact]
         public void Read_WhenReadingWithOverflowToBufferSize_LoadNextBuffer()
         {
             var json = Encoding.UTF8.GetBytes("{\"largeToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrst\",\"smallToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\"}");
@@ -219,7 +264,6 @@ namespace NuGet.ProjectModel.Test
                 reader.Read();
                 reader.Read();
 
-                Assert.True(reader.IsFinalBlock);
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
                 Assert.Equal("smallToken", reader.GetString());
                 Assert.True(reader.Read());

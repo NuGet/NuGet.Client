@@ -213,7 +213,6 @@ namespace NuGet.ProjectModel.Test
 
             var target = lockFile.Targets.Single();
             Assert.Equal(NuGetFramework.Parse("dotnet"), target.TargetFramework);
-
             var runtimeTargetLibrary = target.Libraries.Single();
             Assert.Equal("System.Runtime", runtimeTargetLibrary.Name);
             Assert.Equal(NuGetVersion.Parse("4.0.20-beta-22927"), runtimeTargetLibrary.Version);
