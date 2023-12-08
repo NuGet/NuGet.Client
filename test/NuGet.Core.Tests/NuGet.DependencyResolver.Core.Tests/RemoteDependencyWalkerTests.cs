@@ -2151,6 +2151,221 @@ namespace NuGet.DependencyResolver.Tests
             Assert.True(nodesWithEmptyInnerNodes.Where(n => n.Item.Key.Name == "E").Single().InnerNodes == staticEmptyList);
         }
 
+                       [Fact]
+        public async Task Test_SimpleDowngrade()
+        {
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("X", "1.0")
+                    .DependsOn("A", "1.0")
+                    .DependsOn("B", "1.0");
+
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "2.0");
+
+            provider.Package("B", "1.0");
+            provider.Package("B", "2.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "X");
+
+            var result = node.Analyze();
+
+            Assert.Equal(1, result.Downgrades.Count);
+
+            GraphNode<RemoteResolveResult> downgraded = result.Downgrades[0].DowngradedFrom;
+            GraphNode<RemoteResolveResult> downgradedBy = result.Downgrades[0].DowngradedTo;
+
+            AssertPath(downgraded, "X 1.0", "A 1.0", "B 2.0");
+            AssertPath(downgradedBy, "x 1.0", "B 1.0");
+        }
+
+        [Fact]
+        public async Task Test_SimpleDowngradeTransfered()
+        {
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+
+            provider.Package("MyApp", "1.0")
+                .DependsOn("X", "1.0");
+
+            provider.Package("X", "1.0")
+                    .DependsOn("A", "1.0")
+                    .DependsOn("B", "1.0");
+
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "2.0");
+
+            provider.Package("B", "1.0");
+            provider.Package("B", "2.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "MyApp");
+
+            var result = node.Analyze();
+
+            Assert.Equal(1, result.Downgrades.Count);
+
+            GraphNode<RemoteResolveResult> downgraded = result.Downgrades[0].DowngradedFrom;
+            GraphNode<RemoteResolveResult> downgradedBy = result.Downgrades[0].DowngradedTo;
+
+            AssertPath(downgraded, "MyApp 1.0", "X 1.0", "A 1.0", "B 2.0");
+            AssertPath(downgradedBy, "MyApp 1.0", "X 1.0", "B 1.0");
+        }
+
+        [Fact]
+        public async Task Test_RejectedDowngrade()
+        {
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+
+            provider.Package("MyApp", "1.0")
+                .DependsOn("X", "1.0")
+                .DependsOn("C", "1.0");
+
+            provider.Package("X", "1.0")
+                    .DependsOn("A", "1.0")
+                    .DependsOn("B", "1.0");
+
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "2.0");
+
+            provider.Package("B", "1.0");
+            provider.Package("B", "2.0");
+
+            provider.Package("C", "1.0")
+                    .DependsOn("D", "1.0");
+
+            provider.Package("D", "1.0")
+                    .DependsOn("E", "1.0");
+
+            provider.Package("E", "1.0")
+                    .DependsOn("B", "3.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "MyApp");
+
+            var result = node.Analyze();
+
+            Assert.Equal(0, result.Downgrades.Count);
+        }
+
+        [Fact]
+        public async Task Test1()
+        {
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("A", "1.0")
+                    .DependsOn("C", "1.0");
+
+            provider.Package("C", "1.0")
+                    .DependsOn("D", "1.0")
+                    .DependsOn("NJ", "1.0");
+
+            provider.Package("D", "1.0")
+                      .DependsOn("NJ", "2.0");
+
+            provider.Package("D", "1.0");
+            provider.Package("D", "2.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "A");
+
+            var result = node.Analyze();
+
+            Assert.Equal(1, result.Downgrades.Count);
+
+            GraphNode<RemoteResolveResult> downgraded = result.Downgrades[0].DowngradedFrom;
+            GraphNode<RemoteResolveResult> downgradedBy = result.Downgrades[0].DowngradedTo;
+
+            AssertPath(downgraded, "A 1.0", "C 1.0", "D 1.0", "NJ 2.0");
+            AssertPath(downgradedBy, "A 1.0", "C 1.0", "N 1.0");
+        }
+
+        [Fact]
+        public async Task Test2()
+        {
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("MyApp", "1.0")
+                    .DependsOn("A", "1.0");
+
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "1.0")
+                    .DependsOn("C", "2.0");
+
+            provider.Package("B", "1.0")
+                      .DependsOn("C", "3.0");
+
+            provider.Package("C", "2.0");
+            provider.Package("C", "3.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "MyApp");
+
+            var result = node.Analyze();
+
+            Assert.Equal(1, result.Downgrades.Count);
+
+            GraphNode<RemoteResolveResult> downgraded = result.Downgrades[0].DowngradedFrom;
+            GraphNode<RemoteResolveResult> downgradedBy = result.Downgrades[0].DowngradedTo;
+
+            AssertPath(downgraded, "MyApp 1.0", "A 1.0", "B 1.0", "C 3.0");
+            AssertPath(downgradedBy, "MyApp 1.0", "A 1.0", "C 2.0");
+        }
+
+        [Fact]
+        public async Task Test3()
+        {
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("MyApp", "1.0")
+                    .DependsOn("A", "1.0");
+
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "1.0")
+                    .DependsOn("D", "1.0");
+
+            provider.Package("B", "1.0")
+                    .DependsOn("C", "1.0");
+
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "1.0");
+
+            provider.Package("C", "1.0");
+
+            provider.Package("D", "1.0")
+                    .DependsOn("E", "1.0");
+
+            provider.Package("E", "1.0")
+                    .DependsOn("F", "1.0");
+
+            provider.Package("F", "1.0")
+                    .DependsOn("G", "1.0");
+
+            provider.Package("G", "1.0")
+                    .DependsOn("C", "2.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "MyApp");
+
+            var result = node.Analyze();
+
+            Assert.Equal(0, result.Downgrades.Count);
+
+            //GraphNode<RemoteResolveResult> downgraded = result.Downgrades[0].DowngradedFrom;
+            //GraphNode<RemoteResolveResult> downgradedBy = result.Downgrades[0].DowngradedTo;
+
+            //AssertPath(downgraded, "MyApp 1.0", "A 1.0", "B 1.0", "C 3.0");
+            //AssertPath(downgradedBy, "MyApp 1.0", "A 1.0", "C 2.0");
+        }
+
         private void AssertPath<TItem>(GraphNode<TItem> node, params string[] items)
         {
             var matches = new List<string>();

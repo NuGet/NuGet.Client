@@ -406,13 +406,21 @@ namespace NuGet.Test.Utility
         /// </summary>
         public static async Task CreatePackagesAsync(string repositoryPath, params SimpleTestPackageContext[] package)
         {
-            await CreatePackagesAsync(package.ToList(), repositoryPath);
+            await CreatePackagesAsync(package.ToList(), repositoryPath, createDependencies: true);
+        }
+
+        /// <summary>
+        /// Create packages.
+        /// </summary>
+        public static async Task CreatePackagesWithoutDependenciesAsync(string repositoryPath, params SimpleTestPackageContext[] package)
+        {
+            await CreatePackagesAsync(package.ToList(), repositoryPath, createDependencies: false);
         }
 
         /// <summary>
         /// Create all packages in the list, including dependencies.
         /// </summary>
-        public static async Task CreatePackagesAsync(List<SimpleTestPackageContext> packages, string repositoryPath)
+        public static async Task CreatePackagesAsync(List<SimpleTestPackageContext> packages, string repositoryPath, bool createDependencies = true)
         {
             var done = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var toCreate = new Stack<SimpleTestPackageContext>(packages);
@@ -426,10 +434,12 @@ namespace NuGet.Test.Utility
                     await CreateFullPackageAsync(
                         repositoryPath,
                         package);
-
-                    foreach (var dep in package.Dependencies)
+                    if (createDependencies)
                     {
-                        toCreate.Push(dep);
+                        foreach (var dep in package.Dependencies)
+                        {
+                            toCreate.Push(dep);
+                        }
                     }
                 }
             }
@@ -519,6 +529,16 @@ namespace NuGet.Test.Utility
                 await CreatePackagesAsync(tempRoot, contexts);
 
                 var saveMode = PackageSaveMode.Nupkg | PackageSaveMode.Nuspec;
+
+                await CreateFolderFeedV3Async(root, saveMode, Directory.GetFiles(tempRoot));
+            }
+        }
+
+        public static async Task CreateFolderFeedV3WithoutDependenciesAsync(string root, PackageSaveMode saveMode, params SimpleTestPackageContext[] contexts)
+        {
+            using (var tempRoot = TestDirectory.Create())
+            {
+                await CreatePackagesWithoutDependenciesAsync(tempRoot, contexts);
 
                 await CreateFolderFeedV3Async(root, saveMode, Directory.GetFiles(tempRoot));
             }
