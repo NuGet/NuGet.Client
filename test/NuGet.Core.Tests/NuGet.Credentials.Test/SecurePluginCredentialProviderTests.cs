@@ -391,7 +391,7 @@ namespace NuGet.Credentials.Test
                 var credentialResponse = await provider.GetAsync(_uri, proxy, credType, message, isRetry, isInteractive, token);
 
                 Assert.True(credentialResponse.Status == CredentialStatus.UserCanceled);
-                Assert.Null(credentialResponse.Credentials);                
+                Assert.Null(credentialResponse.Credentials);
             }
         }
 
