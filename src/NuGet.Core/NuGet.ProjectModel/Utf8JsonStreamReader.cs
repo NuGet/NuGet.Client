@@ -27,7 +27,6 @@ namespace NuGet.ProjectModel
 
         internal Utf8JsonStreamReader(Stream stream) : this(stream, ArrayPool<byte>.Shared.Rent(BufferSizeDefault))
         {
-
         }
 
         internal Utf8JsonStreamReader(Stream stream, byte[] buffer)
