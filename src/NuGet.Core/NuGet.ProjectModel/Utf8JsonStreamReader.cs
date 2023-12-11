@@ -19,7 +19,7 @@ namespace NuGet.ProjectModel
     {
         private static readonly char[] DelimitedStringDelimiters = new char[] { ' ', ',' };
         private const int BufferSizeDefault = 16 * 1024;
-        private ReadOnlySpan<byte> _utf8Bom = new byte[] { 0xEF, 0xBB, 0xBF };
+        private static ReadOnlySpan<byte> Utf8Bom = new byte[] { 0xEF, 0xBB, 0xBF };
         private Utf8JsonReader _reader;
         // The buffer is used to read from the stream in chunks.
         private byte[] _buffer;
