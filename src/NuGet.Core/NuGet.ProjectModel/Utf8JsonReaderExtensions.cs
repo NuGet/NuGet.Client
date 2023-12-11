@@ -21,12 +21,7 @@ namespace NuGet.ProjectModel
                 case JsonTokenType.False:
                     return bool.FalseString;
                 case JsonTokenType.Number:
-                    var span = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-#if NETCOREAPP
-                    return Utf8Encoding.GetString(span);
-#else
-                    return Utf8Encoding.GetString(span.ToArray());
-#endif
+                    return reader.ReadNumberAsString();
                 case JsonTokenType.String:
                     return reader.GetString();
                 case JsonTokenType.None:
@@ -35,6 +30,15 @@ namespace NuGet.ProjectModel
                 default:
                     throw new InvalidCastException();
             }
+        }
+
+        private static string ReadNumberAsString(this ref Utf8JsonReader reader)
+        {
+            if (reader.TryGetInt64(out long value))
+            {
+                return value.ToString();
+            }
+            return reader.GetDouble().ToString();
         }
     }
 }
