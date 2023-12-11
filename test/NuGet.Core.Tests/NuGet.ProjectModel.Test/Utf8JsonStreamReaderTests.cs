@@ -31,6 +31,34 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void Utf8JsonStreamReaderCtr_WhenBufferIsNull_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var json = "{}";
+
+                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+                using (var reader = new Utf8JsonStreamReader(stream, null))
+                {
+                }
+            });
+        }
+
+        [Fact]
+        public void Utf8JsonStreamReaderCtr_WhenBufferToSmall_Throws()
+        {
+            Assert.Throws<ArgumentException>(() =>
+            {
+                var json = "{}";
+
+                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+                using (var reader = new Utf8JsonStreamReader(stream, new byte[10]))
+                {
+                }
+            });
+        }
+
+        [Fact]
         public void Utf8JsonStreamReaderCtr_WhenStreamStartsWithUtf8Bom_SkipThem()
         {
             var json = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble()) + "{}";
@@ -68,6 +96,46 @@ namespace NuGet.ProjectModel.Test
                 var bufferString = reader.GetCurrentBufferAsString();
                 Assert.Equal(Encoding.UTF8.GetString(firstBytes), bufferString);
             }
+        }
+
+        [Fact]
+        public void Read_WhenReadingMalfornedJsonString_Throws()
+        {
+            var json = Encoding.UTF8.GetBytes("{\"a\":\"string}");
+
+            Assert.ThrowsAny<JsonException>(() =>
+            {
+                using (var stream = new MemoryStream(json))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                    Assert.True(reader.IsFinalBlock);
+                    Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
+                    reader.Read();
+                    Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
+                    reader.Read();
+                }
+            });
+        }
+
+        [Fact]
+        public void Read_WhenReadingMalfornedJson_Throws()
+        {
+            var json = Encoding.UTF8.GetBytes("{\"a\":\"string\"}ohno");
+            Assert.ThrowsAny<JsonException>(() =>
+            {
+                using (var stream = new MemoryStream(json))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                    Assert.True(reader.IsFinalBlock);
+                    Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
+                    reader.Read();
+                    Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
+                    reader.Read();
+                    reader.Read();
+                    reader.Read();
+                    reader.Read();
+                }
+            });
         }
 
         [Fact]
@@ -123,60 +191,6 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Dispose_NoErrors()
-        {
-            var json = Encoding.UTF8.GetBytes(SmallJson);
-
-            using (var stream = new MemoryStream(json))
-            using (var reader = new Utf8JsonStreamReader(stream))
-            {
-                Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
-            }
-        }
-
-        [Fact]
-        public void Dispose_Read_InvalidOperationException()
-        {
-            var json = Encoding.UTF8.GetBytes(SmallJson);
-
-            using (var stream = new MemoryStream(json))
-            using (var reader = new Utf8JsonStreamReader(stream))
-            {
-                Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
-                reader.Dispose();
-                try
-                {
-                    reader.Read();
-                }
-                catch (Exception ex)
-                {
-                    Assert.IsType<ObjectDisposedException>(ex);
-                }
-            }
-        }
-
-        [Fact]
-        public void Dispose_Skip_InvalidOperationException()
-        {
-            var json = Encoding.UTF8.GetBytes(SmallJson);
-
-            using (var stream = new MemoryStream(json))
-            {
-                var reader = new Utf8JsonStreamReader(stream);
-                Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
-                reader.Dispose();
-                try
-                {
-                    reader.Skip();
-                }
-                catch (Exception ex)
-                {
-                    Assert.IsType<ObjectDisposedException>(ex);
-                }
-            }
-        }
-
-        [Fact]
         public void Read_WhenReadingWithoutOverflow_Read()
         {
             var json = Encoding.UTF8.GetBytes(JsonWithoutOverflow);
@@ -207,7 +221,7 @@ namespace NuGet.ProjectModel.Test
                 }
                 reader.Read();
 
-                Assert.Equal(1024, reader.BufferSize());
+                Assert.Equal(1024, reader.GetBufferSize());
                 Assert.Equal(JsonTokenType.String, reader.TokenType);
                 Assert.Equal("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", reader.GetString());
                 reader.Read();
@@ -230,7 +244,7 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(JsonTokenType.String, reader.TokenType);
                 Assert.Equal("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
                     reader.GetString());
-                Assert.Equal(2048, reader.BufferSize());
+                Assert.Equal(2048, reader.GetBufferSize());
             }
         }
 
@@ -247,7 +261,7 @@ namespace NuGet.ProjectModel.Test
                 reader.Read();
                 reader.Read();
                 reader.Read();
-                Assert.Equal(2048, reader.BufferSize());
+                Assert.Equal(2048, reader.GetBufferSize());
                 Assert.False(reader.Read());
             }
         }
@@ -270,6 +284,70 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(JsonTokenType.String, reader.TokenType);
                 Assert.Equal("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", reader.GetString());
             }
+        }
+
+        [Fact]
+        public void Dispose_NoErrors()
+        {
+            var json = Encoding.UTF8.GetBytes(SmallJson);
+
+            using (var stream = new MemoryStream(json))
+            using (var reader = new Utf8JsonStreamReader(stream))
+            {
+                Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
+            }
+        }
+
+        [Fact]
+        public void Dispose_Read_ObjectDisposedException()
+        {
+            var json = Encoding.UTF8.GetBytes(SmallJson);
+            Assert.Throws<ObjectDisposedException>(() =>
+            {
+                using (var stream = new MemoryStream(json))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                    Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
+                    reader.Dispose();
+                    reader.Read();
+                }
+            });
+        }
+
+        [Fact]
+        public void Dispose_Skip_ObjectDisposedException()
+        {
+            var json = Encoding.UTF8.GetBytes(SmallJson);
+            Assert.Throws<ObjectDisposedException>(() =>
+            {
+                using (var stream = new MemoryStream(json))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                    Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
+                    reader.Dispose();
+                    reader.Skip();
+                }
+            });
+        }
+
+        [Theory]
+        [InlineData("{\"object1\": { \"a\":\"asdad\" }")]
+        [InlineData("{\"object1\": { \"a\":\"asdad }}")]
+        [InlineData("{\"object1\":  \"a\":\"asdad\" }}")]
+        public void Skip_WhenReadingWithMalformedJson(string malformedJson)
+        {
+            var json = Encoding.UTF8.GetBytes(malformedJson);
+
+            Assert.ThrowsAny<JsonException>(() =>
+            {
+                using (var stream = new MemoryStream(json))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                    Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
+                    reader.Skip();
+                    Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
+                }
+            });
         }
 
         [Fact]
@@ -301,7 +379,7 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
                 reader.Read();
                 Assert.Equal("object3", reader.GetString());
-                Assert.Equal(1024, reader.BufferSize());
+                Assert.Equal(1024, reader.GetBufferSize());
             }
         }
 
@@ -318,7 +396,7 @@ namespace NuGet.ProjectModel.Test
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
                 Assert.Equal("object2", reader.GetString());
-                Assert.Equal(2048, reader.BufferSize());
+                Assert.Equal(2048, reader.GetBufferSize());
             }
         }
 
@@ -332,9 +410,26 @@ namespace NuGet.ProjectModel.Test
             {
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
-                reader.ReadNextTokenAsString();
+                var result = reader.ReadNextTokenAsString();
                 Assert.Equal(JsonTokenType.String, reader.TokenType);
+                Assert.Equal("value", result);
             }
+        }
+
+        [Fact]
+        public void ReadNextTokenAsString_WithMalformedJson_GetException()
+        {
+            var json = Encoding.UTF8.GetBytes("{\"token\":\"value}");
+            Assert.ThrowsAny<JsonException>(() =>
+            {
+                using (var stream = new MemoryStream(json))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                    reader.Read();
+                    Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
+                    reader.ReadNextTokenAsString();
+                }
+            });
         }
 
         [Theory]
@@ -348,32 +443,28 @@ namespace NuGet.ProjectModel.Test
         [InlineData("[-2]", JsonTokenType.StartArray)]
         [InlineData("[3.14]", JsonTokenType.StartArray)]
         [InlineData("[\"a\", \"b\"]", JsonTokenType.StartArray)]
-
         public void ReadDelimitedString_WhenValueIsNotString_Throws(string value, JsonTokenType expectedTokenType)
         {
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
-            using (var stream = new MemoryStream(encodedBytes))
-            using (var reader = new Utf8JsonStreamReader(stream))
+            var tokenType = JsonTokenType.None;
+            var exceptionThrown = Assert.Throws<JsonException>(() =>
             {
+                using var stream = new MemoryStream(encodedBytes);
+                using var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
-
-                Exception exceptionThrown = null;
                 try
                 {
                     reader.ReadDelimitedString();
                 }
-                catch (Exception ex)
+                finally
                 {
-                    exceptionThrown = ex;
+                    tokenType = reader.TokenType;
                 }
-
-                Assert.NotNull(exceptionThrown);
-                Assert.IsType(typeof(JsonException), exceptionThrown);
-                Assert.NotNull(exceptionThrown.InnerException);
-                Assert.IsType(typeof(InvalidCastException), exceptionThrown.InnerException);
-                Assert.Equal(expectedTokenType, reader.TokenType);
-            }
+            });
+            Assert.NotNull(exceptionThrown.InnerException);
+            Assert.IsType(typeof(InvalidCastException), exceptionThrown.InnerException);
+            Assert.Equal(expectedTokenType, tokenType);
         }
 
         [Fact]
@@ -470,20 +561,14 @@ namespace NuGet.ProjectModel.Test
         public void ReadStringArrayAsIList_WithUnsupportedTypes_Throws(string element)
         {
             var encodedBytes = Encoding.UTF8.GetBytes($"[{element}]");
-            using (var stream = new MemoryStream(encodedBytes))
-            using (var reader = new Utf8JsonStreamReader(stream))
+            Assert.Throws<InvalidCastException>(() =>
             {
-                Exception exceptionThrown = null;
-                try
+                using (var stream = new MemoryStream(encodedBytes))
+                using (var reader = new Utf8JsonStreamReader(stream))
                 {
                     reader.ReadStringArrayAsIList();
                 }
-                catch (Exception ex)
-                {
-                    exceptionThrown = ex;
-                }
-                Assert.IsType(typeof(InvalidCastException), exceptionThrown);
-            }
+            });
         }
 
 
@@ -654,25 +739,23 @@ namespace NuGet.ProjectModel.Test
         {
             var json = $"{{\"a\":[{value}]}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
-            using (var stream = new MemoryStream(encodedBytes))
-            using (var reader = new Utf8JsonStreamReader(stream))
+            var tokenType = JsonTokenType.None;
+            var exceptionThrown = Assert.Throws<InvalidCastException>(() =>
             {
+                using var stream = new MemoryStream(encodedBytes);
+                using var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
-
-                Exception exceptionThrown = null;
                 try
                 {
                     reader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                 }
-                catch (Exception ex)
+                finally
                 {
-                    exceptionThrown = ex;
+                    tokenType = reader.TokenType;
                 }
-                Assert.NotNull(exceptionThrown);
-                Assert.IsType(typeof(InvalidCastException), exceptionThrown);
-                Assert.Equal(expectedToken, reader.TokenType);
-            }
+            });
+            Assert.Equal(expectedToken, tokenType);
         }
 
         [Fact]
@@ -726,24 +809,22 @@ namespace NuGet.ProjectModel.Test
         {
             var json = $"[{value}]";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
-            using (var stream = new MemoryStream(encodedBytes))
-            using (var reader = new Utf8JsonStreamReader(stream))
+            var tokenType = JsonTokenType.None;
+            var exceptionThrown = Assert.Throws<InvalidCastException>(() =>
             {
+                using var stream = new MemoryStream(encodedBytes);
+                using var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(JsonTokenType.StartArray, reader.TokenType);
-
-                Exception exceptionThrown = null;
                 try
                 {
                     reader.ReadStringArrayAsReadOnlyListFromArrayStart();
                 }
-                catch (Exception ex)
+                finally
                 {
-                    exceptionThrown = ex;
+                    tokenType = reader.TokenType;
                 }
-                Assert.NotNull(exceptionThrown);
-                Assert.IsType(typeof(InvalidCastException), exceptionThrown);
-                Assert.Equal(expectedToken, reader.TokenType);
-            }
+            });
+            Assert.Equal(expectedToken, tokenType);
         }
     }
 }

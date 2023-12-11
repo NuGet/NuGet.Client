@@ -19,6 +19,7 @@ namespace NuGet.ProjectModel
     {
         private static readonly char[] DelimitedStringDelimiters = new char[] { ' ', ',' };
         private const int BufferSizeDefault = 16 * 1024;
+        private const int MinBufferSize = 1024;
         private ReadOnlySpan<byte> _utf8Bom = new byte[] { 0xEF, 0xBB, 0xBF };
         private Utf8JsonReader _reader;
         // The buffer is used to read from the stream in chunks.
@@ -34,6 +35,14 @@ namespace NuGet.ProjectModel
             if (stream is null)
             {
                 throw new ArgumentNullException(nameof(stream));
+            }
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+            if (buffer.Length < MinBufferSize)
+            {
+                throw new ArgumentException($"Buffer size must be at least {MinBufferSize} bytes", nameof(buffer));
             }
 
             _disposed = false;
@@ -61,7 +70,7 @@ namespace NuGet.ProjectModel
 
         internal JsonTokenType TokenType => _reader.TokenType;
 
-        internal int BufferSize()
+        internal int GetBufferSize()
         {
             ThrowExceptionIfDisposed();
 
