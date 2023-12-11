@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 
 namespace NuGet.ProjectModel
@@ -26,29 +25,24 @@ namespace NuGet.ProjectModel
         // The buffer is used to read from the stream in chunks.
         private byte[] _buffer;
         private bool _disposed;
+        private ArrayPool<byte> _bufferPool;
 
-        internal Utf8JsonStreamReader(Stream stream) : this(stream, ArrayPool<byte>.Shared.Rent(BufferSizeDefault))
-        {
-        }
-
-        internal Utf8JsonStreamReader(Stream stream, byte[] buffer)
+        internal Utf8JsonStreamReader(Stream stream, int bufferSize = BufferSizeDefault, ArrayPool<byte> arrayPool = null)
         {
             if (stream is null)
             {
                 throw new ArgumentNullException(nameof(stream));
             }
-            if (buffer == null)
+
+            if (bufferSize < MinBufferSize)
             {
-                throw new ArgumentNullException(nameof(buffer));
-            }
-            if (buffer.Length < MinBufferSize)
-            {
-                throw new ArgumentException($"Buffer size must be at least {MinBufferSize} bytes", nameof(buffer));
+                throw new ArgumentException($"Buffer size must be at least {MinBufferSize} bytes", nameof(bufferSize));
             }
 
+            _bufferPool = arrayPool ?? ArrayPool<byte>.Shared;
+            _buffer = _bufferPool.Rent(bufferSize);
             _disposed = false;
             Stream = stream;
-            _buffer = buffer;
             Stream.Read(_buffer, 0, 3);
             var offset = 0;
             if (!Utf8Bom.AsSpan().SequenceEqual(_buffer.AsSpan(0, 3)))
@@ -70,13 +64,6 @@ namespace NuGet.ProjectModel
         internal bool IsFinalBlock => _reader.IsFinalBlock;
 
         internal JsonTokenType TokenType => _reader.TokenType;
-
-        internal int GetBufferSize()
-        {
-            ThrowExceptionIfDisposed();
-
-            return _buffer.Length;
-        }
 
         internal bool ValueTextEquals(ReadOnlySpan<byte> utf8Text) => _reader.ValueTextEquals(utf8Text);
 
@@ -125,13 +112,6 @@ namespace NuGet.ProjectModel
             }
 
             return null;
-        }
-
-        internal string GetCurrentBufferAsString()
-        {
-            ThrowExceptionIfDisposed();
-
-            return Encoding.UTF8.GetString(_buffer);
         }
 
         internal IList<string> ReadStringArrayAsIList(IList<string> strings = null)
@@ -241,7 +221,7 @@ namespace NuGet.ProjectModel
                 if (leftover.Length == _buffer.Length)
                 {
                     returnOldBuffer = true;
-                    _buffer = ArrayPool<byte>.Shared.Rent(_buffer.Length * 2);
+                    _buffer = _bufferPool.Rent(_buffer.Length * 2);
                 }
 
                 //Copy the leftover bytes to the beginning of the new buffer
@@ -252,7 +232,7 @@ namespace NuGet.ProjectModel
                 bytesReadFromStream = Stream.Read(_buffer, leftover.Length, _buffer.Length - leftover.Length);
                 if (returnOldBuffer)
                 {
-                    ArrayPool<byte>.Shared.Return(oldBuffer);
+                    _bufferPool.Return(oldBuffer, true);
                 }
             }
             else
@@ -269,7 +249,7 @@ namespace NuGet.ProjectModel
                 _disposed = true;
                 byte[] toReturn = _buffer;
                 _buffer = null!;
-                ArrayPool<byte>.Shared.Return(toReturn);
+                _bufferPool.Return(toReturn, true);
             }
         }
 

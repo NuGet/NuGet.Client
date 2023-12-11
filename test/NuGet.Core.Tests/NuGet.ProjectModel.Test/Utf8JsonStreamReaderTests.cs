@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using Moq;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -20,27 +21,12 @@ namespace NuGet.ProjectModel.Test
         private static readonly string JsonWithOverflow = "{\"object1\":{\"a\":\"abcdefghijklmnopqrstuvwxyz\",\"b\":\"abcdefghijklmnopqrstuvwxyz\",\"c\":\"abcdefghijklmnopqrstuvwxyz\",\"d\":\"abcdefghijklmnopqrstuvwxyz\",\"e\":\"abcdefghijklmnopqrstuvwxyz\",\"f\":\"abcdefghijklmnopqrstuvwxyz\",\"g\":\"abcdefghijklmnopqrstuvwxyz\",\"h\":\"abcdefghijklmnopqrstuvwxyz\",\"i\":\"abcdefghijklmnopqrstuvwxyz\",\"j\":\"abcdefghijklmnopqrstuvwxyz\",\"k\":\"abcdefghijklmnopqrstuvwxyz\",\"l\":\"abcdefghijklmnopqrstuvwxyz\",\"m\":\"abcdefghijklmnopqrstuvwxyz\",\"n\":\"abcdefghijklmnopqrstuvwxyz\",\"o\":\"abcdefghijklmnopqrstuvwxyz\",\"p\":\"abcdefghijklmnopqrstuvwxyz\",\"q\":\"abcdefghijklmnopqrstuvwxyz\",\"r\":\"abcdefghijklmnopqrstuvwxyz\",\"s\":\"abcdefghijklmnopqrstuvwxyz\",\"t\":\"abcdefghijklmnopqrstuvwxyz\",\"u\":\"abcdefghijklmnopqrstuvwxyz\"}, \"object2\": {\"a\":\"abcdefghijklmnopqrstuvwxyz\",\"b\":\"abcdefghijklmnopqrstuvwxyz\",\"c\":\"abcdefghijklmnopqrstuvwxyz\",\"d\":\"abcdefghijklmnopqrstuvwxyz\",\"e\":\"abcdefghijklmnopqrstuvwxyz\",\"f\":\"abcdefghijklmnopqrstuvwxyz\",\"g\":\"abcdefghijklmnopqrstuvwxyz\",\"h\":\"abcdefghijklmnopqrstuvwxyz\",\"i\":\"abcdefghijklmnopqrstuvwxyz\",\"j\":\"abcdefghijklmnopqrstuvwxyz\",\"k\":\"abcdefghijklmnopqrstuvwxyz\",\"l\":\"abcdefghijklmnopqrstuvwxyz\",\"m\":\"abcdefghijklmnopqrstuvwxyz\",\"n\":\"abcdefghijklmnopqrstuvwxyz\",\"o\":\"abcdefghijklmnopqrstuvwxyz\",\"p\":\"abcdefghijklmnopqrstuvwxyz\",\"q\":\"abcdefghijklmnopqrstuvwxyz\",\"r\":\"abcdefghijklmnopqrstuvwxyz\",\"s\":\"abcdefghijklmnopqrstuvwxyz\",\"t\":\"abcdefghijklmnopqrstuvwxyz\",\"u\":\"abcdefghijklmnopqrstuvwxyz\"}, \"object3\":{\"a\":\"abcdefghijklmnopqrstuvwxyz\",\"b\":\"abcdefghijklmnopqrstuvwxyz\",\"c\":\"abcdefghijklmnopqrstuvwxyz\",\"d\":\"abcdefghijklmnopqrstuvwxyz\",\"e\":\"abcdefghijklmnopqrstuvwxyz\",\"f\":\"abcdefghijklmnopqrstuvwxyz\",\"g\":\"abcdefghijklmnopqrstuvwxyz\",\"h\":\"abcdefghijklmnopqrstuvwxyz\",\"i\":\"abcdefghijklmnopqrstuvwxyz\",\"j\":\"abcdefghijklmnopqrstuvwxyz\",\"k\":\"abcdefghijklmnopqrstuvwxyz\",\"l\":\"abcdefghijklmnopqrstuvwxyz\",\"m\":\"abcdefghijklmnopqrstuvwxyz\",\"n\":\"abcdefghijklmnopqrstuvwxyz\",\"o\":\"abcdefghijklmnopqrstuvwxyz\",\"p\":\"abcdefghijklmnopqrstuvwxyz\",\"q\":\"abcdefghijklmnopqrstuvwxyz\",\"r\":\"abcdefghijklmnopqrstuvwxyz\",\"s\":\"abcdefghijklmnopqrstuvwxyz\",\"t\":\"abcdefghijklmnopqrstuvwxyz\",\"u\":\"abcdefghijklmnopqrstuvwxyz\"}}";
         private static readonly string SmallJson = "{\"object1\":{\"a\":\"abcdefghijklmnopqrstuvwxyz\"}}";
 
-
         [Fact]
         public void Utf8JsonStreamReaderCtr_WhenStreamIsNull_Throws()
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
                 using var reader = new Utf8JsonStreamReader(null);
-            });
-        }
-
-        [Fact]
-        public void Utf8JsonStreamReaderCtr_WhenBufferIsNull_Throws()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-            {
-                var json = "{}";
-
-                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
-                using (var reader = new Utf8JsonStreamReader(stream, null))
-                {
-                }
             });
         }
 
@@ -52,7 +38,7 @@ namespace NuGet.ProjectModel.Test
                 var json = "{}";
 
                 using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
-                using (var reader = new Utf8JsonStreamReader(stream, new byte[10]))
+                using (var reader = new Utf8JsonStreamReader(stream, 10))
                 {
                 }
             });
@@ -85,16 +71,13 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Utf8JsonStreamReaderCtr_WhenReadingWithOverflow_BufferHasFirst1024Bytes()
+        public void Utf8JsonStreamReaderCtr_WhenReadingWithOverflow_FinalBlockFalse()
         {
             var json = Encoding.UTF8.GetBytes(JsonWithOverflowObject);
-            var firstBytes = json.Take(1024).ToArray();
-
             using (var stream = new MemoryStream(json))
-            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
+            using (var reader = new Utf8JsonStreamReader(stream, 1024))
             {
-                var bufferString = reader.GetCurrentBufferAsString();
-                Assert.Equal(Encoding.UTF8.GetString(firstBytes), bufferString);
+                Assert.False(reader.IsFinalBlock);
             }
         }
 
@@ -170,8 +153,6 @@ namespace NuGet.ProjectModel.Test
             using (var stream = new MemoryStream(json))
             using (var reader = new Utf8JsonStreamReader(stream))
             {
-                var bufferString = reader.GetCurrentBufferAsString();
-                var jsonString = Encoding.UTF8.GetString(json);
                 Assert.True(reader.IsFinalBlock);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
                 reader.Read();
@@ -208,9 +189,10 @@ namespace NuGet.ProjectModel.Test
         public void Read_WhenReadingWithOverflow_ReadNextBuffer()
         {
             var json = Encoding.UTF8.GetBytes(JsonWithOverflowObject);
+            var mock = SetupMockArrayBuffer();
 
             using (var stream = new MemoryStream(json))
-            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
+            using (var reader = new Utf8JsonStreamReader(stream, 1024, mock.Object))
             {
                 while (reader.Read())
                 {
@@ -220,8 +202,7 @@ namespace NuGet.ProjectModel.Test
                     }
                 }
                 reader.Read();
-
-                Assert.Equal(1024, reader.GetBufferSize());
+                mock.Verify(m => m.Rent(1024), Times.Exactly(1));
                 Assert.Equal(JsonTokenType.String, reader.TokenType);
                 Assert.Equal("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", reader.GetString());
                 reader.Read();
@@ -234,17 +215,20 @@ namespace NuGet.ProjectModel.Test
         public void Read_WhenReadingWithLargeToken_ResizeBuffer()
         {
             var json = Encoding.UTF8.GetBytes("{\"largeToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\",\"smallToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\"}");
+            var mock = SetupMockArrayBuffer();
 
             using (var stream = new MemoryStream(json))
-            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
+            using (var reader = new Utf8JsonStreamReader(stream, 1024, mock.Object))
             {
                 reader.Read();
                 reader.Read();
 
+                mock.Verify(m => m.Rent(1024), Times.Exactly(1));
+                mock.Verify(m => m.Rent(2048), Times.Exactly(1));
+                mock.Verify(m => m.Return(It.IsAny<byte[]>(), true), Times.Exactly(1));
                 Assert.Equal(JsonTokenType.String, reader.TokenType);
                 Assert.Equal("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
                     reader.GetString());
-                Assert.Equal(2048, reader.GetBufferSize());
             }
         }
 
@@ -252,16 +236,19 @@ namespace NuGet.ProjectModel.Test
         public void Read_WhenReadingWithLargeTokenReadPastFinal()
         {
             var json = Encoding.UTF8.GetBytes("{\"largeToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\",\"smallToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\"}");
+            var mock = SetupMockArrayBuffer();
 
             using (var stream = new MemoryStream(json))
-            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
+            using (var reader = new Utf8JsonStreamReader(stream, 1024, mock.Object))
             {
                 reader.Read();
                 reader.Read();
                 reader.Read();
                 reader.Read();
                 reader.Read();
-                Assert.Equal(2048, reader.GetBufferSize());
+                mock.Verify(m => m.Rent(1024), Times.Exactly(1));
+                mock.Verify(m => m.Rent(2048), Times.Exactly(1));
+                mock.Verify(m => m.Return(It.IsAny<byte[]>(), true), Times.Exactly(1));
                 Assert.False(reader.Read());
             }
         }
@@ -272,7 +259,7 @@ namespace NuGet.ProjectModel.Test
             var json = Encoding.UTF8.GetBytes("{\"largeToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrst\",\"smallToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\"}");
 
             using (var stream = new MemoryStream(json))
-            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
+            using (var reader = new Utf8JsonStreamReader(stream, 1024))
             {
                 reader.Read();
                 reader.Read();
@@ -290,12 +277,14 @@ namespace NuGet.ProjectModel.Test
         public void Dispose_NoErrors()
         {
             var json = Encoding.UTF8.GetBytes(SmallJson);
+            var mock = SetupMockArrayBuffer();
 
             using (var stream = new MemoryStream(json))
-            using (var reader = new Utf8JsonStreamReader(stream))
+            using (var reader = new Utf8JsonStreamReader(stream, 1024, arrayPool: mock.Object))
             {
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
             }
+            mock.Verify(m => m.Return(It.IsAny<byte[]>(), true), Times.Exactly(1));
         }
 
         [Fact]
@@ -368,9 +357,10 @@ namespace NuGet.ProjectModel.Test
         public void Skip_WhenReadingWithOverflow_Skip()
         {
             var json = Encoding.UTF8.GetBytes(JsonWithOverflow);
+            var mock = SetupMockArrayBuffer();
 
             using (var stream = new MemoryStream(json))
-            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
+            using (var reader = new Utf8JsonStreamReader(stream, 1024, mock.Object))
             {
                 reader.Read();
                 reader.Skip();
@@ -379,7 +369,7 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
                 reader.Read();
                 Assert.Equal("object3", reader.GetString());
-                Assert.Equal(1024, reader.GetBufferSize());
+                mock.Verify(m => m.Rent(1024), Times.Exactly(1));
             }
         }
 
@@ -387,16 +377,19 @@ namespace NuGet.ProjectModel.Test
         public void Skip_WhenReadingWithOverflowObject_ResizeBuffer()
         {
             var json = Encoding.UTF8.GetBytes(JsonWithOverflowObject);
+            var mock = SetupMockArrayBuffer();
 
             using (var stream = new MemoryStream(json))
-            using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
+            using (var reader = new Utf8JsonStreamReader(stream, 1024, mock.Object))
             {
                 reader.Read();
                 reader.Skip();
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
                 Assert.Equal("object2", reader.GetString());
-                Assert.Equal(2048, reader.GetBufferSize());
+                mock.Verify(m => m.Rent(1024), Times.Exactly(1));
+                mock.Verify(m => m.Rent(2048), Times.Exactly(1));
+                mock.Verify(m => m.Return(It.IsAny<byte[]>(), true), Times.Exactly(1));
             }
         }
 
@@ -825,6 +818,16 @@ namespace NuGet.ProjectModel.Test
                 }
             });
             Assert.Equal(expectedToken, tokenType);
+        }
+
+        private Mock<ArrayPool<byte>> SetupMockArrayBuffer()
+        {
+            Mock<ArrayPool<byte>> mock = new Mock<ArrayPool<byte>>();
+            mock.Setup(m => m.Rent(1024)).Returns(new byte[1024]);
+            mock.Setup(m => m.Rent(2048)).Returns(new byte[2048]);
+            mock.Setup(m => m.Return(It.IsAny<byte[]>(), It.IsAny<bool>()));
+
+            return mock;
         }
     }
 }
