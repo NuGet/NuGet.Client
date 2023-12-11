@@ -70,8 +70,6 @@ namespace NuGet.ProjectModel
 
         internal bool ValueTextEquals(ReadOnlySpan<byte> utf8Text) => _reader.ValueTextEquals(utf8Text);
 
-        internal bool ValueTextEquals(string text) => _reader.ValueTextEquals(text);
-
         internal bool TryGetInt32(out int value) => _reader.TryGetInt32(out value);
 
         internal string GetString() => _reader.GetString();
