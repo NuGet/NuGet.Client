@@ -102,7 +102,7 @@ namespace NuGet.ProjectModel
                 }
                 else
                 {
-                    reader.TrySkip();
+                    reader.Skip();
                 }
             }
 

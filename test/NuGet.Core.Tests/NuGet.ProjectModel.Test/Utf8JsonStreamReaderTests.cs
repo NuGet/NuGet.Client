@@ -155,7 +155,7 @@ namespace NuGet.ProjectModel.Test
             {
                 var reader = new Utf8JsonStreamReader(stream);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
-                reader.TrySkip();
+                reader.Skip();
                 Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
             }
         }
@@ -169,9 +169,9 @@ namespace NuGet.ProjectModel.Test
             {
                 var reader = new Utf8JsonStreamReader(stream);
                 reader.Read();
-                reader.TrySkip();
+                reader.Skip();
                 reader.Read();
-                reader.TrySkip();
+                reader.Skip();
                 Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
                 reader.Read();
                 Assert.Equal("object3", reader.GetString());
@@ -190,7 +190,7 @@ namespace NuGet.ProjectModel.Test
                 var reader = new Utf8JsonStreamReader(stream);
 
                 reader.Read();
-                reader.TrySkip();
+                reader.Skip();
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
                 Assert.Equal("object2", reader.GetString());

@@ -159,7 +159,7 @@ namespace NuGet.ProjectModel
                 {
                     if (jsonReader.ValueTextEquals(string.Empty))
                     {
-                        jsonReader.TrySkip();
+                        jsonReader.Skip();
                     }
 #pragma warning disable CS0612 // Type or member is obsolete
                     else if (jsonReader.ValueTextEquals(Utf8Authors))
@@ -257,7 +257,7 @@ namespace NuGet.ProjectModel
                     }
                     else
                     {
-                        jsonReader.TrySkip();
+                        jsonReader.Skip();
                     }
                 }
             }
@@ -358,7 +358,7 @@ namespace NuGet.ProjectModel
                                 }
                                 else
                                 {
-                                    jsonReader.TrySkip();
+                                    jsonReader.Skip();
                                 }
                             }
                         }
@@ -521,7 +521,7 @@ namespace NuGet.ProjectModel
                                 }
                                 else
                                 {
-                                    jsonReader.TrySkip();
+                                    jsonReader.Skip();
                                 }
                             }
                         }
@@ -609,7 +609,7 @@ namespace NuGet.ProjectModel
                     }
                     else
                     {
-                        jsonReader.TrySkip();
+                        jsonReader.Skip();
                     }
                 }
             }
@@ -705,7 +705,7 @@ namespace NuGet.ProjectModel
                             }
                             else
                             {
-                                jsonReader.TrySkip();
+                                jsonReader.Skip();
                             }
                         }
                     }
@@ -782,7 +782,7 @@ namespace NuGet.ProjectModel
                             }
                             else
                             {
-                                jsonReader.TrySkip();
+                                jsonReader.Skip();
                             }
                         }
                     }
@@ -883,7 +883,7 @@ namespace NuGet.ProjectModel
                                 }
                                 else
                                 {
-                                    jsonReader.TrySkip();
+                                    jsonReader.Skip();
                                 }
                             }
 
@@ -1051,7 +1051,7 @@ namespace NuGet.ProjectModel
                                 }
                                 else
                                 {
-                                    jsonReader.TrySkip();
+                                    jsonReader.Skip();
                                 }
                             }
                         }
@@ -1078,7 +1078,7 @@ namespace NuGet.ProjectModel
                                 }
                                 else
                                 {
-                                    jsonReader.TrySkip();
+                                    jsonReader.Skip();
                                 }
                             }
                         }
@@ -1103,7 +1103,7 @@ namespace NuGet.ProjectModel
                                 sources = sources ?? new List<PackageSource>();
 
                                 sources.Add(new PackageSource(sourcePropertyName));
-                                jsonReader.TrySkip();
+                                jsonReader.Skip();
                             }
                         }
                     }
@@ -1140,7 +1140,7 @@ namespace NuGet.ProjectModel
                                 }
                                 else
                                 {
-                                    jsonReader.TrySkip();
+                                    jsonReader.Skip();
                                 }
                             }
                         }
@@ -1149,7 +1149,7 @@ namespace NuGet.ProjectModel
                     }
                     else
                     {
-                        jsonReader.TrySkip();
+                        jsonReader.Skip();
                     }
                 }
             }
@@ -1412,7 +1412,7 @@ namespace NuGet.ProjectModel
                     }
                     else
                     {
-                        jsonReader.TrySkip();
+                        jsonReader.Skip();
                     }
                 }
             }
@@ -1462,7 +1462,7 @@ namespace NuGet.ProjectModel
                     }
                     else
                     {
-                        jsonReader.TrySkip();
+                        jsonReader.Skip();
                     }
                 }
             }
@@ -1681,7 +1681,7 @@ namespace NuGet.ProjectModel
                                                 }
                                                 else
                                                 {
-                                                    jsonReader.TrySkip();
+                                                    jsonReader.Skip();
                                                 }
 
                                             }
@@ -1713,7 +1713,7 @@ namespace NuGet.ProjectModel
                             }
                             else
                             {
-                                jsonReader.TrySkip();
+                                jsonReader.Skip();
                             }
                         }
 
@@ -1801,7 +1801,7 @@ namespace NuGet.ProjectModel
                     }
                     else
                     {
-                        jsonReader.TrySkip();
+                        jsonReader.Skip();
                     }
                 }
             }

@@ -73,7 +73,7 @@ namespace NuGet.ProjectModel
             return wasRead;
         }
 
-        internal bool TrySkip()
+        internal bool Skip()
         {
             bool wasSkipped;
             while (!(wasSkipped = _reader.TrySkip()) && !_reader.IsFinalBlock)

@@ -51,7 +51,7 @@ namespace NuGet.ProjectModel
             {
                 if (!isValid)
                 {
-                    reader.TrySkip();
+                    reader.Skip();
                 }
                 if (reader.ValueTextEquals(Utf8Level))
                 {
@@ -107,7 +107,7 @@ namespace NuGet.ProjectModel
                 }
                 else
                 {
-                    reader.TrySkip();
+                    reader.Skip();
                 }
             }
             if (isValid)
