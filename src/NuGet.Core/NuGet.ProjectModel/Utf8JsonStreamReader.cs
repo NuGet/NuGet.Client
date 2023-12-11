@@ -90,7 +90,7 @@ namespace NuGet.ProjectModel
             return wasRead;
         }
 
-        internal bool TrySkip()
+        internal void Skip()
         {
             ThrowExceptionIfDisposed();
 
@@ -99,7 +99,10 @@ namespace NuGet.ProjectModel
             {
                 GetMoreBytesFromStream();
             }
-            return wasSkipped;
+            if (!wasSkipped)
+            {
+                _reader.Skip();
+            }
         }
 
         internal string ReadNextTokenAsString()

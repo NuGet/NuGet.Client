@@ -156,7 +156,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Dispose_TrySkip_InvalidOperationException()
+        public void Dispose_Skip_InvalidOperationException()
         {
             var json = Encoding.UTF8.GetBytes(SmallJson);
 
@@ -167,7 +167,7 @@ namespace NuGet.ProjectModel.Test
                 reader.Dispose();
                 try
                 {
-                    reader.TrySkip();
+                    reader.Skip();
                 }
                 catch (Exception ex)
                 {
@@ -273,7 +273,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void TrySkip_WhenReadingWithoutOverflow_SkipObject()
+        public void Skip_WhenReadingWithoutOverflow_SkipObject()
         {
             var json = Encoding.UTF8.GetBytes(JsonWithoutOverflow);
 
@@ -281,13 +281,13 @@ namespace NuGet.ProjectModel.Test
             using (var reader = new Utf8JsonStreamReader(stream))
             {
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
-                reader.TrySkip();
+                reader.Skip();
                 Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
             }
         }
 
         [Fact]
-        public void TrySkip_WhenReadingWithOverflow_Skip()
+        public void Skip_WhenReadingWithOverflow_Skip()
         {
             var json = Encoding.UTF8.GetBytes(JsonWithOverflow);
 
@@ -295,9 +295,9 @@ namespace NuGet.ProjectModel.Test
             using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
             {
                 reader.Read();
-                reader.TrySkip();
+                reader.Skip();
                 reader.Read();
-                reader.TrySkip();
+                reader.Skip();
                 Assert.Equal(JsonTokenType.EndObject, reader.TokenType);
                 reader.Read();
                 Assert.Equal("object3", reader.GetString());
@@ -306,7 +306,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void TrySkip_WhenReadingWithOverflowObject_ResizeBuffer()
+        public void Skip_WhenReadingWithOverflowObject_ResizeBuffer()
         {
             var json = Encoding.UTF8.GetBytes(JsonWithOverflowObject);
 
@@ -314,7 +314,7 @@ namespace NuGet.ProjectModel.Test
             using (var reader = new Utf8JsonStreamReader(stream, new byte[1024]))
             {
                 reader.Read();
-                reader.TrySkip();
+                reader.Skip();
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
                 Assert.Equal("object2", reader.GetString());

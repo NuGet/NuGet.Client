@@ -2,16 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.Text;
 using System.Text.Json;
 
 namespace NuGet.ProjectModel
 {
     internal static class Utf8JsonReaderExtensions
     {
-        private static readonly UTF8Encoding Utf8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
-
         internal static string ReadTokenAsString(this ref Utf8JsonReader reader)
         {
             switch (reader.TokenType)
