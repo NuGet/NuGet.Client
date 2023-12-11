@@ -203,7 +203,7 @@ namespace NuGet.ProjectModel
             return (IReadOnlyList<string>)strings ?? Array.Empty<string>();
         }
 
-        // This function is called when Read() returns false
+        // This function is called when Read() returns false and we're not already in the final block
         private void GetMoreBytesFromStream()
         {
             int leftoverBytes = 0;
