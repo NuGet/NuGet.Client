@@ -639,12 +639,18 @@ namespace NuGet.Packaging
                 return EmptyList;
             }
 
-            var set = new HashSet<string>(
-                flags.Split(CommaArray, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(flag => flag.Trim()),
-                StringComparer.OrdinalIgnoreCase);
+            // PERF: Avoid Linq on hot paths
+            var splitFlags = flags.Split(CommaArray, StringSplitOptions.RemoveEmptyEntries);
+            var set = new HashSet<string>(splitFlags.Length, StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < splitFlags.Length; ++i)
+            {
+                set.Add(splitFlags[i].Trim());
+            }
 
-            return set.OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList();
+            var result = set.ToList();
+            result.Sort(StringComparer.OrdinalIgnoreCase);
+
+            return result;
         }
 
         private HashSet<PackageDependency> GetPackageDependencies(IEnumerable<XElement> nodes, bool useStrictVersionCheck)
