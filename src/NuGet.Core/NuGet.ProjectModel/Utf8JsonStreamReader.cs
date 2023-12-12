@@ -22,6 +22,9 @@ namespace NuGet.ProjectModel
         private const int BufferSizeDefault = 16 * 1024;
         private const int MinBufferSize = 1024;
         private Utf8JsonReader _reader;
+#pragma warning disable CA2213 // Disposable fields should be disposed
+        private Stream _stream;
+#pragma warning restore CA2213 // Disposable fields should be disposed
         // The buffer is used to read from the stream in chunks.
         private byte[] _buffer;
         private bool _disposed;
@@ -43,8 +46,8 @@ namespace NuGet.ProjectModel
             _bufferPool = arrayPool ?? ArrayPool<byte>.Shared;
             _buffer = _bufferPool.Rent(bufferSize);
             _disposed = false;
-            Stream = stream;
-            Stream.Read(_buffer, 0, 3);
+            _stream = stream;
+            _stream.Read(_buffer, 0, 3);
             if (!Utf8Bom.AsSpan().SequenceEqual(_buffer.AsSpan(0, 3)))
             {
                 _bufferUsed = 3;
@@ -59,8 +62,6 @@ namespace NuGet.ProjectModel
             ReadStreamIntoBuffer(iniialJsonReaderState);
             _reader.Read();
         }
-
-        private Stream Stream { get; set; }
 
         internal bool IsFinalBlock => _reader.IsFinalBlock;
 
@@ -243,7 +244,7 @@ namespace NuGet.ProjectModel
             do
             {
                 var spaceLeftInBuffer = _buffer.Length - _bufferUsed;
-                bytesRead = Stream.Read(_buffer, _bufferUsed, spaceLeftInBuffer);
+                bytesRead = _stream.Read(_buffer, _bufferUsed, spaceLeftInBuffer);
                 _bufferUsed += bytesRead;
             }
             while (bytesRead != 0 && _bufferUsed != _buffer.Length);
