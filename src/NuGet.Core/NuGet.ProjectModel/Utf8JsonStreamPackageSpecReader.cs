@@ -312,9 +312,7 @@ namespace NuGet.ProjectModel
                     var propertyName = jsonReader.GetString();
                     if (string.IsNullOrEmpty(propertyName))
                     {
-                        var exception = new JsonException("Unable to resolve dependency ''.");
-                        exception.Data.Add(FileFormatException.SurfaceMessage, true);
-                        throw exception;
+                        throw new JsonException("Unable to resolve dependency ''.");
                     }
 
                     if (jsonReader.Read())
@@ -418,9 +416,7 @@ namespace NuGet.ProjectModel
                     var propertyName = jsonReader.GetString();
                     if (string.IsNullOrEmpty(propertyName))
                     {
-                        var exception = new JsonException("Unable to resolve dependency ''.");
-                        exception.Data.Add(FileFormatException.SurfaceMessage, true);
-                        throw exception;
+                        throw new JsonException("Unable to resolve dependency ''.");
                     }
 
                     // Support
@@ -1292,12 +1288,10 @@ namespace NuGet.ProjectModel
                             {
                                 if (jsonReader.TokenType != JsonTokenType.String)
                                 {
-                                    var exception = new JsonException(string.Format(
+                                    throw new JsonException(string.Format(
                                         CultureInfo.CurrentCulture,
                                         Strings.InvalidPackageType,
                                         PackageSpec.PackageSpecFileName));
-                                    exception.Data.Add(FileFormatException.SurfaceMessage, true);
-                                    throw exception;
                                 }
 
                                 packageType = CreatePackageType(ref jsonReader);
@@ -1324,12 +1318,10 @@ namespace NuGet.ProjectModel
             }
             catch (Exception)
             {
-                var exception = new JsonException(string.Format(
+                throw new JsonException(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.InvalidPackageType,
                     PackageSpec.PackageSpecFileName));
-                exception.Data.Add(FileFormatException.SurfaceMessage, true);
-                throw exception;
             }
         }
 
@@ -1579,9 +1571,7 @@ namespace NuGet.ProjectModel
                         }
                         else
                         {
-                            var exception = new JsonException(string.Format(CultureInfo.CurrentCulture, "The value of a script in '{0}' can only be a string or an array of strings", PackageSpec.PackageSpecFileName));
-                            exception.Data.Add(FileFormatException.SurfaceMessage, true);
-                            throw exception;
+                            throw new JsonException(string.Format(CultureInfo.CurrentCulture, "The value of a script in '{0}' can only be a string or an array of strings", PackageSpec.PackageSpecFileName));
                         }
                     }
                 }

@@ -1176,8 +1176,7 @@ namespace NuGet.ProjectModel.Test
             const string json = "{\"dependencies\":{\"\":{}}}";
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
-
-            Assert.Equal("Unable to resolve dependency ''.", exception.Message);
+            Assert.Equal("Error reading '' : Unable to resolve dependency ''.", exception.Message);
         }
 
         [Fact]
@@ -1660,7 +1659,7 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Unable to resolve dependency ''.", exception.Message);
+            Assert.Equal("Error reading '' : Unable to resolve dependency ''.", exception.Message);
             Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
@@ -2493,7 +2492,7 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("The pack options package type must be a string or array of strings in 'project.json'.", exception.Message);
+            Assert.Equal("Error reading '' : The pack options package type must be a string or array of strings in 'project.json'.", exception.Message);
             Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
@@ -3363,7 +3362,7 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("The value of a script in 'project.json' can only be a string or an array of strings", exception.Message);
+            Assert.Equal("Error reading '' : The value of a script in 'project.json' can only be a string or an array of strings", exception.Message);
             Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 

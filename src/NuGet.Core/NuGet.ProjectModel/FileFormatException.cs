@@ -10,8 +10,6 @@ namespace NuGet.ProjectModel
 {
     public class FileFormatException : Exception
     {
-        static internal string SurfaceMessage = "SurfaceMessage";
-
         public FileFormatException(string message)
             : base(message)
         {
@@ -128,11 +126,7 @@ namespace NuGet.ProjectModel
         internal static FileFormatException Create(System.Text.Json.JsonException exception, string path)
         {
             string message;
-            if (exception.Data.Contains(SurfaceMessage))
-            {
-                message = exception.Message;
-            }
-            else if (exception.BytePositionInLine is not null && exception.LineNumber is not null)
+            if (exception.BytePositionInLine is not null && exception.LineNumber is not null)
             {
                 message = string.Format(CultureInfo.CurrentCulture,
                     Strings.Log_ErrorReadingProjectJsonWithLocation,
