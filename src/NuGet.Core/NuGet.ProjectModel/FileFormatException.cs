@@ -10,6 +10,8 @@ namespace NuGet.ProjectModel
 {
     public class FileFormatException : Exception
     {
+        static internal string SurfaceMessage = "SurfaceMessage";
+
         public FileFormatException(string message)
             : base(message)
         {
@@ -43,6 +45,14 @@ namespace NuGet.ProjectModel
         {
             Line = line;
             Column = column;
+
+            return this;
+        }
+
+        private FileFormatException WithLineInfo(long? line, long? column)
+        {
+            Line = unchecked((int)line.Value);
+            Column = unchecked((int)column);
 
             return this;
         }
@@ -101,32 +111,50 @@ namespace NuGet.ProjectModel
             return ex.WithFilePath(path).WithLineInfo(line, column);
         }
 
-        internal static FileFormatException Create(Exception exception, string path)
+        internal static FileFormatException Create(JsonReaderException exception, string path)
         {
-            var jex = exception as JsonReaderException;
-
             string message;
-            if (jex == null)
+            message = string.Format(CultureInfo.CurrentCulture,
+                Strings.Log_ErrorReadingProjectJsonWithLocation,
+                path, exception.LineNumber,
+                exception.LinePosition,
+                exception.Message);
+
+            return new FileFormatException(message, exception)
+                .WithFilePath(path)
+                .WithLineInfo(exception);
+        }
+
+        internal static FileFormatException Create(System.Text.Json.JsonException exception, string path)
+        {
+            string message;
+            if (exception.Data.Contains(SurfaceMessage))
+            {
+                message = exception.Message;
+            }
+            else if (exception.BytePositionInLine is not null && exception.LineNumber is not null)
+            {
+                message = string.Format(CultureInfo.CurrentCulture,
+                    Strings.Log_ErrorReadingProjectJsonWithLocation,
+                    path, exception.LineNumber,
+                    exception.BytePositionInLine,
+                    exception.Message);
+            }
+            else
             {
                 message = string.Format(CultureInfo.CurrentCulture,
                     Strings.Log_ErrorReadingProjectJson,
                     path,
                     exception.Message);
-
-                return new FileFormatException(message, exception).WithFilePath(path);
             }
-            else
+            var fileFormatException = new FileFormatException(message, exception);
+            fileFormatException.WithFilePath(path);
+            if (exception.BytePositionInLine is not null && exception.LineNumber is not null)
             {
-                message = string.Format(CultureInfo.CurrentCulture,
-                    Strings.Log_ErrorReadingProjectJsonWithLocation,
-                    path, jex.LineNumber,
-                    jex.LinePosition,
-                    exception.Message);
-
-                return new FileFormatException(message, exception)
-                    .WithFilePath(path)
-                    .WithLineInfo(jex);
+                fileFormatException.WithLineInfo(exception.LineNumber, exception.BytePositionInLine);
             }
+
+            return fileFormatException;
         }
     }
 }

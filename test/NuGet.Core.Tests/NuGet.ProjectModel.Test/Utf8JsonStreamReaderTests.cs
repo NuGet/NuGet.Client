@@ -820,6 +820,20 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedToken, tokenType);
         }
 
+        [Theory]
+        [InlineData("value")]
+        [InlineData("")]
+        public void ValueTextEquals_WithValidData_ReturnTrue(string value)
+        {
+            var json = $"{{ \"{value}\":\"property\"}}";
+            var encodedBytes = Encoding.UTF8.GetBytes(json);
+            var utf8Bytes = Encoding.UTF8.GetBytes(value);
+            using var stream = new MemoryStream(encodedBytes);
+            using var reader = new Utf8JsonStreamReader(stream);
+            reader.Read();
+            Assert.True(reader.ValueTextEquals(utf8Bytes));
+        }
+
         private Mock<ArrayPool<byte>> SetupMockArrayBuffer()
         {
             Mock<ArrayPool<byte>> mock = new Mock<ArrayPool<byte>>();

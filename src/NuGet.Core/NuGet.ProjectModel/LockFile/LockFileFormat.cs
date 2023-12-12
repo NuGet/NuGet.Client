@@ -62,7 +62,9 @@ namespace NuGet.ProjectModel
         {
             using (var reader = new StringReader(lockFileContent))
             {
+#pragma warning disable CS0612 // Type or member is obsolete
                 return Read(reader, log, path);
+#pragma warning restore CS0612 // Type or member is obsolete
             }
         }
 
@@ -88,15 +90,19 @@ namespace NuGet.ProjectModel
         {
             using (var textReader = new StreamReader(stream))
             {
+#pragma warning disable CS0612 // Type or member is obsolete
                 return Read(textReader, log, path);
+#pragma warning restore CS0612 // Type or member is obsolete
             }
         }
 
+        [Obsolete]
         public LockFile Read(TextReader reader, string path)
         {
             return Read(reader, NullLogger.Instance, path);
         }
 
+        [Obsolete]
         public LockFile Read(TextReader reader, ILogger log, string path)
         {
             try
@@ -161,6 +167,7 @@ namespace NuGet.ProjectModel
             }
         }
 
+        [Obsolete]
         private static LockFile ReadLockFile(JObject cursor, string path)
         {
             var lockFile = new LockFile()
@@ -913,6 +920,7 @@ namespace NuGet.ProjectModel
             writer.WriteObjectEnd();
         }
 
+        [Obsolete]
         private static List<CentralTransitiveDependencyGroup> ReadProjectFileTransitiveDependencyGroup(JObject json, string path)
         {
             var results = new List<CentralTransitiveDependencyGroup>();
@@ -930,7 +938,7 @@ namespace NuGet.ProjectModel
                     NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
                     var dependencies = new List<LibraryDependency>();
 
-                    JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                    NjPackageSpecReader.ReadCentralTransitiveDependencyGroup(
                         jsonReader: jsonReader,
                         results: dependencies,
                         packageSpecPath: path);

@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using FluentAssertions;
-using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -19,8 +20,7 @@ using Xunit;
 namespace NuGet.ProjectModel.Test
 {
     [UseCulture("")] // Fix tests failing on systems with non-English locales
-    [Obsolete]
-    public class JsonPackageSpecReaderTests
+    public class Utf8JsonStreamPackageSpecReaderTests
     {
         [Fact]
         public void PackageSpecReader_PackageMissingVersion()
@@ -42,7 +42,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+                var spec = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             }
             catch (Exception ex)
             {
@@ -69,7 +69,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var spec = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var range = spec.Dependencies.Single().LibraryRange.VersionRange;
 
             // Assert
@@ -96,7 +96,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+                var spec = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             }
             catch (Exception ex)
             {
@@ -127,7 +127,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+                var spec = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             }
             catch (Exception ex)
             {
@@ -153,7 +153,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var spec = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var range = spec.TargetFrameworks.Single().Dependencies.Single().LibraryRange.VersionRange;
 
             // Assert
@@ -175,7 +175,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
@@ -209,7 +209,7 @@ namespace NuGet.ProjectModel.Test
         public void PackageSpecReader_PackOptions_Default(string json)
         {
             // Arrange & Act
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             Assert.NotNull(actual.PackOptions);
@@ -251,7 +251,7 @@ namespace NuGet.ProjectModel.Test
                 .ToArray();
 
             // Act
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             Assert.NotNull(actual.PackOptions);
@@ -315,7 +315,7 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange & Act & Assert
             var actual = Assert.Throws<FileFormatException>(
-                () => NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
+                () => Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
 
             Assert.Contains("The pack options package type must be a string or array of strings in 'project.json'.", actual.Message);
         }
@@ -337,7 +337,7 @@ namespace NuGet.ProjectModel.Test
                           }
                         }
                       }";
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             Assert.NotNull(actual.PackOptions);
@@ -379,7 +379,7 @@ namespace NuGet.ProjectModel.Test
                           }
                         }
                       }";
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             Assert.NotNull(actual.PackOptions);
@@ -436,7 +436,7 @@ namespace NuGet.ProjectModel.Test
         public void PackageSpecReader_BuildOptions(string json, string expectedValue, bool nullBuildOptions)
         {
             // Arrange & Act
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             if (nullBuildOptions)
@@ -467,7 +467,7 @@ namespace NuGet.ProjectModel.Test
                             },
                         }";
 
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             Assert.NotNull(actual);
@@ -495,7 +495,7 @@ namespace NuGet.ProjectModel.Test
                             },
                         }";
 
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("packageA"));
@@ -525,7 +525,7 @@ namespace NuGet.ProjectModel.Test
                             },
                         }";
 
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("packageA"));
@@ -553,7 +553,7 @@ namespace NuGet.ProjectModel.Test
                             },
                         }";
 
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("packageA"));
@@ -616,7 +616,7 @@ namespace NuGet.ProjectModel.Test
   }
 }";
 
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -682,7 +682,7 @@ namespace NuGet.ProjectModel.Test
   }
 }";
 
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -743,7 +743,7 @@ namespace NuGet.ProjectModel.Test
   }
 }";
 
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -806,7 +806,7 @@ namespace NuGet.ProjectModel.Test
   }
 }";
 
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -864,7 +864,7 @@ namespace NuGet.ProjectModel.Test
   }
 }";
 
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -917,7 +917,7 @@ namespace NuGet.ProjectModel.Test
   }
 }";
 
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -948,7 +948,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var spec = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             Assert.Null(spec.TargetFrameworks.First().RuntimeIdentifierGraphPath);
@@ -1178,9 +1178,6 @@ namespace NuGet.ProjectModel.Test
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.Equal("Unable to resolve dependency ''.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(21, exception.Column);
-            Assert.Null(exception.InnerException);
         }
 
         [Fact]
@@ -1224,11 +1221,7 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal($"Invalid dependency target value '{target}'.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            // The position is after the target name, which is of variable length.
-            Assert.Equal(json.IndexOf(target.ToString()) + target.ToString().Length + 1, exception.Column);
-            Assert.Null(exception.InnerException);
+            Assert.Equal($"Error reading '' : Invalid dependency target value '{target}'.", exception.Message);
         }
 
         [Fact]
@@ -1259,7 +1252,10 @@ namespace NuGet.ProjectModel.Test
         {
             var json = $"{{\"dependencies\":{{\"a\":{{\"{propertyName}\":[\"b\"]}}}}}}";
 
-            Assert.Throws<InvalidCastException>(() => GetPackageSpec(json));
+            var exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
+            Assert.IsType<InvalidCastException>(exception.InnerException.InnerException);
+
         }
 
         [Fact]
@@ -1351,11 +1347,10 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 35 : 'b' is not a valid version string.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(35, exception.Column);
-            Assert.IsType<ArgumentException>(exception.InnerException);
-            Assert.Null(exception.InnerException.InnerException);
+            Assert.Equal("Error reading '' : 'b' is not a valid version string.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
+            Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
+            Assert.Null(exception.InnerException.InnerException.InnerException);
         }
 
         [Fact]
@@ -1375,11 +1370,10 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 22 : Package dependencies must specify a version range.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(22, exception.Column);
-            Assert.IsType<ArgumentException>(exception.InnerException);
-            Assert.Null(exception.InnerException.InnerException);
+            Assert.Equal("Error reading '' : Package dependencies must specify a version range.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
+            Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
+            Assert.Null(exception.InnerException.InnerException.InnerException);
         }
 
         [Fact]
@@ -1584,10 +1578,8 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve central version ''.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.Equal("Error reading '' : Unable to resolve central version ''.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
 
@@ -1600,10 +1592,8 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 20 : The version cannot be null or empty.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.Equal($"Error reading '' : The version cannot be null or empty.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
 
@@ -1670,10 +1660,8 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve dependency ''.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.Equal("Unable to resolve dependency ''.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
 
@@ -1718,10 +1706,8 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal($"Error reading '' at line 1 column 20 : Invalid dependency target value '{target}'.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.Equal($"Error reading '' : Invalid dependency target value '{target}'.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
 
@@ -1759,11 +1745,10 @@ namespace NuGet.ProjectModel.Test
             // is a Newtonsoft.Json exception, while it's a .NET exception in the improved.
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 20 : Specified cast is not valid.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<InvalidCastException>(exception.InnerException);
-            Assert.Null(exception.InnerException.InnerException);
+            Assert.Equal($"Error reading '' : Specified cast is not valid.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
+            Assert.IsType<InvalidCastException>(exception.InnerException.InnerException);
+            Assert.Null(exception.InnerException.InnerException.InnerException);
         }
 
         [Fact]
@@ -1843,10 +1828,8 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 20 : Error reading '' at line 1 column 54 : 'c' is not a valid version string.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.Equal("Error reading '' : 'c' is not a valid version string.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
         }
@@ -1870,10 +1853,8 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 20 : Error reading '' at line 1 column 41 : Package dependencies must specify a version range.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.Equal("Error reading '' : Package dependencies must specify a version range.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
         }
@@ -1915,7 +1896,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void GetPackageSpec_WhenFrameworksDependenciesDependencyGeneratePathPropertyPropertyIsAbsent_ReturnsFalseGeneratePathProperty()
         {
-            const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"version\":\"1.0.0\"}}}}}}}";
+            const string json = "{\"frameworks\":{\"a\":{\"dependencies\":{\"b\":{\"version\":\"1.0.0\"}}}}}";
 
             LibraryDependency dependency = GetFrameworksDependency(json);
 
@@ -2016,10 +1997,8 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve downloadDependency ''.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.Equal("Error reading '' : Unable to resolve downloadDependency ''.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
 
@@ -2044,10 +2023,8 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 20 : The version cannot be null or empty", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.Equal("Error reading '' : The version cannot be null or empty", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
 
@@ -2060,12 +2037,8 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            int expectedColumn = json.IndexOf($"\"{version}\"") + version.Length + 2;
-
-            Assert.Equal($"Error reading '' at line 1 column 20 : Error reading '' at line 1 column {expectedColumn} : '{version}' is not a valid version string.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.Equal($"Error reading '' : '{version}' is not a valid version string.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
         }
@@ -2143,10 +2116,8 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 20 : Error reading '' at line 1 column 48 : Package dependencies must specify a version range.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.Equal("Error reading '' : Package dependencies must specify a version range.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
         }
@@ -2198,10 +2169,8 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
-            Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve frameworkReference.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.Equal("Error reading '' : Unable to resolve frameworkReference.", exception.Message);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
 
@@ -2308,11 +2277,9 @@ namespace NuGet.ProjectModel.Test
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.Equal(
-                $"Error reading '' at line 1 column 20 : Imports contains an invalid framework: '{expectedImport}' in 'project.json'.",
+                $"Error reading '' : Imports contains an invalid framework: '{expectedImport}' in 'project.json'.",
                 exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(20, exception.Column);
-            Assert.IsType<FileFormatException>(exception.InnerException);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
         }
 
@@ -2346,7 +2313,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void GetPackageSpec_WhenFrameworksRuntimeIdentifierGraphPathPropertyIsAbsent_ReturnsRuntimeIdentifierGraphPath()
         {
-            const string json = "{\"frameworks\":{\"a\":{}}}}";
+            const string json = "{\"frameworks\":{\"a\":{}}}";
 
             TargetFrameworkInformation framework = GetFramework(json);
 
@@ -2370,7 +2337,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void GetPackageSpec_WhenFrameworksWarnPropertyIsAbsent_ReturnsWarn()
         {
-            const string json = "{\"frameworks\":{\"a\":{}}}}";
+            const string json = "{\"frameworks\":{\"a\":{}}}";
 
             TargetFrameworkInformation framework = GetFramework(json);
 
@@ -2510,26 +2477,25 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [InlineData("true", 34)]
-        [InlineData("-2", 32)]
-        [InlineData("3.14", 34)]
-        [InlineData("{}", 31)]
-        [InlineData("[true]", 31)]
-        [InlineData("[-2]", 31)]
-        [InlineData("[3.14]", 31)]
-        [InlineData("[null]", 31)]
-        [InlineData("[{}]", 31)]
-        [InlineData("[[]]", 31)]
-        public void GetPackageSpec_WhenPackOptionsPackageTypeIsInvalid_Throws(string value, int expectedColumn)
+        [InlineData("true")]
+        [InlineData("-2")]
+        [InlineData("3.14")]
+        [InlineData("{}")]
+        [InlineData("[true]")]
+        [InlineData("[-2]")]
+        [InlineData("[3.14]")]
+        [InlineData("[null]")]
+        [InlineData("[{}]")]
+        [InlineData("[[]]")]
+        public void GetPackageSpec_WhenPackOptionsPackageTypeIsInvalid_Throws(string value)
         {
             var json = $"{{\"packOptions\":{{\"packageType\":{value}}}}}";
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.Equal("The pack options package type must be a string or array of strings in 'project.json'.", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(expectedColumn, exception.Column);
-            Assert.Null(exception.InnerException);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
+            Assert.Null(exception.InnerException.InnerException);
         }
 
         [Theory]
@@ -2996,6 +2962,34 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.CentralPackageVersionsEnabled);
         }
 
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        public void GetPackageSpec_WhenCentralPackageVersionOverrideDisabledValueIsValid_ReturnsCentralPackageVersionOverrideDisabled(
+            bool? value,
+            bool expectedValue)
+        {
+            var json = $"{{\"restore\":{{\"centralPackageVersionOverrideDisabled\":{(value.HasValue ? value.ToString().ToLowerInvariant() : "null")}}}}}";
+            PackageSpec packageSpec = GetPackageSpec(json);
+
+            Assert.Equal(expectedValue, packageSpec.RestoreMetadata.CentralPackageVersionOverrideDisabled);
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        public void GetPackageSpec_WhenCentralPackageTransitivePinningEnabledValueIsValid_ReturnsCentralPackageTransitivePinningEnabled(
+            bool? value,
+            bool expectedValue)
+        {
+            var json = $"{{\"restore\":{{\"CentralPackageTransitivePinningEnabled\":{(value.HasValue ? value.ToString().ToLowerInvariant() : "null")}}}}}";
+            PackageSpec packageSpec = GetPackageSpec(json);
+
+            Assert.Equal(expectedValue, packageSpec.RestoreMetadata.CentralPackageTransitivePinningEnabled);
+        }
+
         [Fact]
         public void GetPackageSpec_WhenSourcesValueIsEmptyObject_ReturnsEmptySources()
         {
@@ -3370,9 +3364,9 @@ namespace NuGet.ProjectModel.Test
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json));
 
             Assert.Equal("The value of a script in 'project.json' can only be a string or an array of strings", exception.Message);
-            Assert.Equal(1, exception.Line);
-            Assert.Equal(17, exception.Column);
-            Assert.Null(exception.InnerException);
+            Assert.IsType<System.Text.Json.JsonException>(exception.InnerException);
+            Assert.Null(exception.InnerException.InnerException);
+
         }
 
         [Fact]
@@ -3477,7 +3471,7 @@ namespace NuGet.ProjectModel.Test
   }
 }";
 
-            var actual = NjPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var actual = Utf8JsonStreamPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var metadata = actual.RestoreMetadata;
@@ -3514,22 +3508,29 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var results = new List<CentralTransitiveDependencyGroup>();
-            using (var stringReader = new StringReader(json.ToString()))
-            using (var jsonReader = new JsonTextReader(stringReader))
+            using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
+            var reader = new Utf8JsonStreamReader(stream);
+
+            if (reader.TokenType == JsonTokenType.StartObject)
             {
-                jsonReader.ReadObject(ctdPropertyName =>
+                while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    jsonReader.ReadObject(frameworkPropertyName =>
+                    if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
                     {
-                        var dependencies = new List<LibraryDependency>();
-                        NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
-                        NjPackageSpecReader.ReadCentralTransitiveDependencyGroup(
-                            jsonReader: jsonReader,
-                            results: dependencies,
-                            packageSpecPath: "SomePath");
-                        results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
-                    });
-                });
+                        while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+                        {
+                            var frameworkPropertyName = reader.GetString();
+                            NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
+                            var dependencies = new List<LibraryDependency>();
+
+                            Utf8JsonStreamPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                                jsonReader: ref reader,
+                                results: dependencies,
+                                packageSpecPath: "SomePath");
+                            results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
+                        }
+                    }
+                }
             }
 
             // Assert
@@ -3597,10 +3598,9 @@ namespace NuGet.ProjectModel.Test
 
         private static PackageSpec GetPackageSpec(string json)
         {
-            using (var stringReader = new StringReader(json))
-            using (var stream = new JsonTextReader(stringReader))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
             {
-                return NjPackageSpecReader.GetPackageSpec(stream, name: null, packageSpecPath: null, snapshotValue: null);
+                return Utf8JsonStreamPackageSpecReader.GetPackageSpec(stream, name: null, packageSpecPath: null, snapshotValue: null);
             }
         }
 
