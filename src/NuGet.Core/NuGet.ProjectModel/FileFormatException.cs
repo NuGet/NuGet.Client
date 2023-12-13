@@ -47,14 +47,6 @@ namespace NuGet.ProjectModel
             return this;
         }
 
-        private FileFormatException WithLineInfo(long? line, long? column)
-        {
-            Line = unchecked((int)line.Value);
-            Column = unchecked((int)column);
-
-            return this;
-        }
-
         private FileFormatException WithLineInfo(IJsonLineInfo lineInfo)
         {
             Line = lineInfo.LineNumber;
@@ -139,34 +131,6 @@ namespace NuGet.ProjectModel
         {
             return new FileFormatException(message)
                 .WithFilePath(path);
-        }
-
-        internal static FileFormatException Create(System.Text.Json.JsonException exception, string path)
-        {
-            string message;
-            if (exception.BytePositionInLine is not null && exception.LineNumber is not null)
-            {
-                message = string.Format(CultureInfo.CurrentCulture,
-                    Strings.Log_ErrorReadingProjectJsonWithLocation,
-                    path, exception.LineNumber,
-                    exception.BytePositionInLine,
-                    exception.Message);
-            }
-            else
-            {
-                message = string.Format(CultureInfo.CurrentCulture,
-                    Strings.Log_ErrorReadingProjectJson,
-                    path,
-                    exception.Message);
-            }
-            var fileFormatException = new FileFormatException(message, exception);
-            fileFormatException.WithFilePath(path);
-            if (exception.BytePositionInLine is not null && exception.LineNumber is not null)
-            {
-                fileFormatException.WithLineInfo(exception.LineNumber, exception.BytePositionInLine);
-            }
-
-            return fileFormatException;
         }
     }
 }
