@@ -115,7 +115,7 @@ public class AuditUtilityTests
         var vulnProvider = context.WithVulnerabilityProvider();
 
         // Act
-        var result  = await context.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
+        var result = await context.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
 
         // Assert
         vulnProvider.Mock.Verify(p => p.GetVulnerabilityInformationAsync(It.IsAny<CancellationToken>()), Times.Never);
