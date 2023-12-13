@@ -18,97 +18,97 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    internal static class Utf8JsonStreamPackageSpecReader
+    internal static class JsonStreamPackageSpecReaderPropertyName
     {
         private static readonly char[] VersionSeparators = new[] { ';' };
-        private static readonly byte[] Utf8Authors = Encoding.UTF8.GetBytes("authors");
-        private static readonly byte[] BuildOptionsUtf8 = Encoding.UTF8.GetBytes("buildOptions");
-        private static readonly byte[] Utf8ContentFiles = Encoding.UTF8.GetBytes("contentFiles");
-        private static readonly byte[] Utf8Copyright = Encoding.UTF8.GetBytes("copyright");
-        private static readonly byte[] Utf8Dependencies = Encoding.UTF8.GetBytes("dependencies");
-        private static readonly byte[] Utf8Description = Encoding.UTF8.GetBytes("description");
-        private static readonly byte[] Utf8Language = Encoding.UTF8.GetBytes("language");
-        private static readonly byte[] Utf8PackInclude = Encoding.UTF8.GetBytes("packInclude");
-        private static readonly byte[] Utf8PackOptions = Encoding.UTF8.GetBytes("packOptions");
-        private static readonly byte[] Utf8Scripts = Encoding.UTF8.GetBytes("scripts");
-        private static readonly byte[] Utf8Frameworks = Encoding.UTF8.GetBytes("frameworks");
-        private static readonly byte[] Utf8Restore = Encoding.UTF8.GetBytes("restore");
-        private static readonly byte[] Utf8Runtimes = Encoding.UTF8.GetBytes("runtimes");
-        private static readonly byte[] Utf8Supports = Encoding.UTF8.GetBytes("supports");
-        private static readonly byte[] Utf8Title = Encoding.UTF8.GetBytes("title");
-        private static readonly byte[] Utf8Version = Encoding.UTF8.GetBytes("version");
-        private static readonly byte[] Utf8OutputName = Encoding.UTF8.GetBytes("outputName");
-        private static readonly byte[] Utf8AutoReferenced = Encoding.UTF8.GetBytes("autoReferenced");
-        private static readonly byte[] Utf8Exclude = Encoding.UTF8.GetBytes("exclude");
-        private static readonly byte[] Utf8GeneratePathProperty = Encoding.UTF8.GetBytes("generatePathProperty");
-        private static readonly byte[] Utf8Include = Encoding.UTF8.GetBytes("include");
-        private static readonly byte[] Utf8NoWarn = Encoding.UTF8.GetBytes("noWarn");
-        private static readonly byte[] Utf8SuppressParent = Encoding.UTF8.GetBytes("suppressParent");
-        private static readonly byte[] Utf8Target = Encoding.UTF8.GetBytes("target");
-        private static readonly byte[] Utf8VersionOverride = Encoding.UTF8.GetBytes("versionOverride");
-        private static readonly byte[] Utf8VersionCentrallyManaged = Encoding.UTF8.GetBytes("versionCentrallyManaged");
-        private static readonly byte[] Utf8Aliases = Encoding.UTF8.GetBytes("aliases");
-        private static readonly byte[] Utf8Name = Encoding.UTF8.GetBytes("name");
-        private static readonly byte[] Utf8PrivateAssets = Encoding.UTF8.GetBytes("privateAssets");
-        private static readonly byte[] Utf8ExcludeFiles = Encoding.UTF8.GetBytes("excludeFiles");
-        private static readonly byte[] Utf8IncludeFiles = Encoding.UTF8.GetBytes("includeFiles");
-        private static readonly byte[] Utf8CentralPackageVersionsManagementEnabled = Encoding.UTF8.GetBytes("centralPackageVersionsManagementEnabled");
-        private static readonly byte[] Utf8CentralPackageVersionOverrideDisabled = Encoding.UTF8.GetBytes("centralPackageVersionOverrideDisabled");
-        private static readonly byte[] Utf8CentralPackageTransitivePinningEnabled = Encoding.UTF8.GetBytes("CentralPackageTransitivePinningEnabled");
-        private static readonly byte[] Utf8ConfigFilePaths = Encoding.UTF8.GetBytes("configFilePaths");
-        private static readonly byte[] Utf8CrossTargeting = Encoding.UTF8.GetBytes("crossTargeting");
-        private static readonly byte[] Utf8FallbackFolders = Encoding.UTF8.GetBytes("fallbackFolders");
-        private static readonly byte[] Utf8Files = Encoding.UTF8.GetBytes("files");
-        private static readonly byte[] Utf8LegacyPackagesDirectory = Encoding.UTF8.GetBytes("legacyPackagesDirectory");
-        private static readonly byte[] Utf8OriginalTargetFrameworks = Encoding.UTF8.GetBytes("originalTargetFrameworks");
-        private static readonly byte[] Utf8OutputPath = Encoding.UTF8.GetBytes("outputPath");
-        private static readonly byte[] Utf8PackagesConfigPath = Encoding.UTF8.GetBytes("packagesConfigPath");
-        private static readonly byte[] Utf8PackagesPath = Encoding.UTF8.GetBytes("packagesPath");
-        private static readonly byte[] Utf8ProjectJsonPath = Encoding.UTF8.GetBytes("projectJsonPath");
-        private static readonly byte[] Utf8ProjectName = Encoding.UTF8.GetBytes("projectName");
-        private static readonly byte[] Utf8ProjectPath = Encoding.UTF8.GetBytes("projectPath");
-        private static readonly byte[] Utf8ProjectStyle = Encoding.UTF8.GetBytes("projectStyle");
-        private static readonly byte[] Utf8ProjectUniqueName = Encoding.UTF8.GetBytes("projectUniqueName");
-        private static readonly byte[] Utf8RestoreLockProperties = Encoding.UTF8.GetBytes("restoreLockProperties");
-        private static readonly byte[] Utf8NuGetLockFilePath = Encoding.UTF8.GetBytes("nuGetLockFilePath");
-        private static readonly byte[] Utf8RestoreLockedMode = Encoding.UTF8.GetBytes("restoreLockedMode");
-        private static readonly byte[] Utf8RestorePackagesWithLockFile = Encoding.UTF8.GetBytes("restorePackagesWithLockFile");
-        private static readonly byte[] Utf8RestoreAuditProperties = Encoding.UTF8.GetBytes("restoreAuditProperties");
-        private static readonly byte[] Utf8EnableAudit = Encoding.UTF8.GetBytes("enableAudit");
-        private static readonly byte[] Utf8AuditLevel = Encoding.UTF8.GetBytes("auditLevel");
-        private static readonly byte[] Utf8AuditMode = Encoding.UTF8.GetBytes("auditMode");
-        private static readonly byte[] Utf8SkipContentFileWrite = Encoding.UTF8.GetBytes("skipContentFileWrite");
-        private static readonly byte[] Utf8Sources = Encoding.UTF8.GetBytes("sources");
-        private static readonly byte[] Utf8ValidateRuntimeAssets = Encoding.UTF8.GetBytes("validateRuntimeAssets");
-        private static readonly byte[] Utf8WarningProperties = Encoding.UTF8.GetBytes("warningProperties");
-        private static readonly byte[] Utf8AllWarningsAsErrors = Encoding.UTF8.GetBytes("allWarningsAsErrors");
-        private static readonly byte[] Utf8WarnAsError = Encoding.UTF8.GetBytes("warnAsError");
-        private static readonly byte[] Utf8WarnNotAsError = Encoding.UTF8.GetBytes("warnNotAsError");
-        private static readonly byte[] Utf8ExcludeAssets = Encoding.UTF8.GetBytes("excludeAssets");
-        private static readonly byte[] Utf8IncludeAssets = Encoding.UTF8.GetBytes("includeAssets");
-        private static readonly byte[] Utf8TargetAlias = Encoding.UTF8.GetBytes("targetAlias");
-        private static readonly byte[] Utf8AssetTargetFallback = Encoding.UTF8.GetBytes("assetTargetFallback");
-        private static readonly byte[] Utf8SecondaryFramework = Encoding.UTF8.GetBytes("secondaryFramework");
-        private static readonly byte[] Utf8CentralPackageVersions = Encoding.UTF8.GetBytes("centralPackageVersions");
-        private static readonly byte[] Utf8DownloadDependencies = Encoding.UTF8.GetBytes("downloadDependencies");
-        private static readonly byte[] Utf8FrameworkAssemblies = Encoding.UTF8.GetBytes("frameworkAssemblies");
-        private static readonly byte[] Utf8FrameworkReferences = Encoding.UTF8.GetBytes("frameworkReferences");
-        private static readonly byte[] Utf8Imports = Encoding.UTF8.GetBytes("imports");
-        private static readonly byte[] Utf8RuntimeIdentifierGraphPath = Encoding.UTF8.GetBytes("runtimeIdentifierGraphPath");
-        private static readonly byte[] Utf8Warn = Encoding.UTF8.GetBytes("warn");
-        private static readonly byte[] Utf8IconUrl = Encoding.UTF8.GetBytes("iconUrl");
-        private static readonly byte[] Utf8LicenseUrl = Encoding.UTF8.GetBytes("licenseUrl");
-        private static readonly byte[] Utf8Owners = Encoding.UTF8.GetBytes("owners");
-        private static readonly byte[] Utf8PackageType = Encoding.UTF8.GetBytes("packageType");
-        private static readonly byte[] Utf8ProjectUrl = Encoding.UTF8.GetBytes("projectUrl");
-        private static readonly byte[] Utf8ReleaseNotes = Encoding.UTF8.GetBytes("releaseNotes");
-        private static readonly byte[] Utf8RequireLicenseAcceptance = Encoding.UTF8.GetBytes("requireLicenseAcceptance");
-        private static readonly byte[] Utf8Summary = Encoding.UTF8.GetBytes("summary");
-        private static readonly byte[] Utf8Tags = Encoding.UTF8.GetBytes("tags");
-        private static readonly byte[] Utf8Mappings = Encoding.UTF8.GetBytes("mappings");
-        private static readonly byte[] Utf8HashTagImport = Encoding.UTF8.GetBytes("#import");
-        private static readonly byte[] Utf8ProjectReferences = Encoding.UTF8.GetBytes("projectReferences");
-        private static readonly byte[] Utf8EmptyString = Encoding.UTF8.GetBytes(string.Empty);
+        private static readonly byte[] AuthorsPropertyName = Encoding.UTF8.GetBytes("authors");
+        private static readonly byte[] BuildOptionsPropertyName = Encoding.UTF8.GetBytes("buildOptions");
+        private static readonly byte[] ContentFilesPropertyName = Encoding.UTF8.GetBytes("contentFiles");
+        private static readonly byte[] CopyrightPropertyName = Encoding.UTF8.GetBytes("copyright");
+        private static readonly byte[] DependenciesPropertyName = Encoding.UTF8.GetBytes("dependencies");
+        private static readonly byte[] DescriptionPropertyName = Encoding.UTF8.GetBytes("description");
+        private static readonly byte[] LanguagePropertyName = Encoding.UTF8.GetBytes("language");
+        private static readonly byte[] PackIncludePropertyName = Encoding.UTF8.GetBytes("packInclude");
+        private static readonly byte[] PackOptionsPropertyName = Encoding.UTF8.GetBytes("packOptions");
+        private static readonly byte[] ScriptsPropertyName = Encoding.UTF8.GetBytes("scripts");
+        private static readonly byte[] FrameworksPropertyName = Encoding.UTF8.GetBytes("frameworks");
+        private static readonly byte[] RestorePropertyName = Encoding.UTF8.GetBytes("restore");
+        private static readonly byte[] RuntimesPropertyName = Encoding.UTF8.GetBytes("runtimes");
+        private static readonly byte[] SupportsPropertyName = Encoding.UTF8.GetBytes("supports");
+        private static readonly byte[] TitlePropertyName = Encoding.UTF8.GetBytes("title");
+        private static readonly byte[] VersionPropertyName = Encoding.UTF8.GetBytes("version");
+        private static readonly byte[] OutputNamePropertyName = Encoding.UTF8.GetBytes("outputName");
+        private static readonly byte[] AutoReferencedPropertyName = Encoding.UTF8.GetBytes("autoReferenced");
+        private static readonly byte[] ExcludePropertyName = Encoding.UTF8.GetBytes("exclude");
+        private static readonly byte[] GeneratePathPropertyPropertyName = Encoding.UTF8.GetBytes("generatePathProperty");
+        private static readonly byte[] IncludePropertyName = Encoding.UTF8.GetBytes("include");
+        private static readonly byte[] NoWarnPropertyName = Encoding.UTF8.GetBytes("noWarn");
+        private static readonly byte[] SuppressParentPropertyName = Encoding.UTF8.GetBytes("suppressParent");
+        private static readonly byte[] TargetPropertyName = Encoding.UTF8.GetBytes("target");
+        private static readonly byte[] VersionOverridePropertyName = Encoding.UTF8.GetBytes("versionOverride");
+        private static readonly byte[] VersionCentrallyManagedPropertyName = Encoding.UTF8.GetBytes("versionCentrallyManaged");
+        private static readonly byte[] AliasesPropertyName = Encoding.UTF8.GetBytes("aliases");
+        private static readonly byte[] NamePropertyName = Encoding.UTF8.GetBytes("name");
+        private static readonly byte[] PrivateAssetsPropertyName = Encoding.UTF8.GetBytes("privateAssets");
+        private static readonly byte[] ExcludeFilesPropertyName = Encoding.UTF8.GetBytes("excludeFiles");
+        private static readonly byte[] IncludeFilesPropertyName = Encoding.UTF8.GetBytes("includeFiles");
+        private static readonly byte[] CentralPackageVersionsManagementEnabledPropertyName = Encoding.UTF8.GetBytes("centralPackageVersionsManagementEnabled");
+        private static readonly byte[] CentralPackageVersionOverrideDisabledPropertyName = Encoding.UTF8.GetBytes("centralPackageVersionOverrideDisabled");
+        private static readonly byte[] CentralPackageTransitivePinningEnabledPropertyName = Encoding.UTF8.GetBytes("CentralPackageTransitivePinningEnabled");
+        private static readonly byte[] ConfigFilePathsPropertyName = Encoding.UTF8.GetBytes("configFilePaths");
+        private static readonly byte[] CrossTargetingPropertyName = Encoding.UTF8.GetBytes("crossTargeting");
+        private static readonly byte[] FallbackFoldersPropertyName = Encoding.UTF8.GetBytes("fallbackFolders");
+        private static readonly byte[] FilesPropertyName = Encoding.UTF8.GetBytes("files");
+        private static readonly byte[] LegacyPackagesDirectoryPropertyName = Encoding.UTF8.GetBytes("legacyPackagesDirectory");
+        private static readonly byte[] OriginalTargetFrameworksPropertyName = Encoding.UTF8.GetBytes("originalTargetFrameworks");
+        private static readonly byte[] OutputPathPropertyName = Encoding.UTF8.GetBytes("outputPath");
+        private static readonly byte[] PackagesConfigPathPropertyName = Encoding.UTF8.GetBytes("packagesConfigPath");
+        private static readonly byte[] PackagesPathPropertyName = Encoding.UTF8.GetBytes("packagesPath");
+        private static readonly byte[] ProjectJsonPathPropertyName = Encoding.UTF8.GetBytes("projectJsonPath");
+        private static readonly byte[] ProjectNamePropertyName = Encoding.UTF8.GetBytes("projectName");
+        private static readonly byte[] ProjectPathPropertyName = Encoding.UTF8.GetBytes("projectPath");
+        private static readonly byte[] ProjectStylePropertyName = Encoding.UTF8.GetBytes("projectStyle");
+        private static readonly byte[] ProjectUniqueNamePropertyName = Encoding.UTF8.GetBytes("projectUniqueName");
+        private static readonly byte[] RestoreLockPropertiesPropertyName = Encoding.UTF8.GetBytes("restoreLockProperties");
+        private static readonly byte[] NuGetLockFilePathPropertyName = Encoding.UTF8.GetBytes("nuGetLockFilePath");
+        private static readonly byte[] RestoreLockedModePropertyName = Encoding.UTF8.GetBytes("restoreLockedMode");
+        private static readonly byte[] RestorePackagesWithLockFilePropertyName = Encoding.UTF8.GetBytes("restorePackagesWithLockFile");
+        private static readonly byte[] RestoreAuditPropertiesPropertyName = Encoding.UTF8.GetBytes("restoreAuditProperties");
+        private static readonly byte[] EnableAuditPropertyName = Encoding.UTF8.GetBytes("enableAudit");
+        private static readonly byte[] AuditLevelPropertyName = Encoding.UTF8.GetBytes("auditLevel");
+        private static readonly byte[] AuditModePropertyName = Encoding.UTF8.GetBytes("auditMode");
+        private static readonly byte[] SkipContentFileWritePropertyName = Encoding.UTF8.GetBytes("skipContentFileWrite");
+        private static readonly byte[] SourcesPropertyName = Encoding.UTF8.GetBytes("sources");
+        private static readonly byte[] ValidateRuntimeAssetsPropertyName = Encoding.UTF8.GetBytes("validateRuntimeAssets");
+        private static readonly byte[] WarningPropertiesPropertyName = Encoding.UTF8.GetBytes("warningProperties");
+        private static readonly byte[] AllWarningsAsErrorsPropertyName = Encoding.UTF8.GetBytes("allWarningsAsErrors");
+        private static readonly byte[] WarnAsErrorPropertyName = Encoding.UTF8.GetBytes("warnAsError");
+        private static readonly byte[] WarnNotAsErrorPropertyName = Encoding.UTF8.GetBytes("warnNotAsError");
+        private static readonly byte[] ExcludeAssetsPropertyName = Encoding.UTF8.GetBytes("excludeAssets");
+        private static readonly byte[] IncludeAssetsPropertyName = Encoding.UTF8.GetBytes("includeAssets");
+        private static readonly byte[] TargetAliasPropertyName = Encoding.UTF8.GetBytes("targetAlias");
+        private static readonly byte[] AssetTargetFallbackPropertyName = Encoding.UTF8.GetBytes("assetTargetFallback");
+        private static readonly byte[] SecondaryFrameworkPropertyName = Encoding.UTF8.GetBytes("secondaryFramework");
+        private static readonly byte[] CentralPackageVersionsPropertyName = Encoding.UTF8.GetBytes("centralPackageVersions");
+        private static readonly byte[] DownloadDependenciesPropertyName = Encoding.UTF8.GetBytes("downloadDependencies");
+        private static readonly byte[] FrameworkAssembliesPropertyName = Encoding.UTF8.GetBytes("frameworkAssemblies");
+        private static readonly byte[] FrameworkReferencesPropertyName = Encoding.UTF8.GetBytes("frameworkReferences");
+        private static readonly byte[] ImportsPropertyName = Encoding.UTF8.GetBytes("imports");
+        private static readonly byte[] RuntimeIdentifierGraphPathPropertyName = Encoding.UTF8.GetBytes("runtimeIdentifierGraphPath");
+        private static readonly byte[] WarnPropertyName = Encoding.UTF8.GetBytes("warn");
+        private static readonly byte[] IconUrlPropertyName = Encoding.UTF8.GetBytes("iconUrl");
+        private static readonly byte[] LicenseUrlPropertyName = Encoding.UTF8.GetBytes("licenseUrl");
+        private static readonly byte[] OwnersPropertyName = Encoding.UTF8.GetBytes("owners");
+        private static readonly byte[] PackageTypePropertyName = Encoding.UTF8.GetBytes("packageType");
+        private static readonly byte[] ProjectUrlPropertyName = Encoding.UTF8.GetBytes("projectUrl");
+        private static readonly byte[] ReleaseNotesPropertyName = Encoding.UTF8.GetBytes("releaseNotes");
+        private static readonly byte[] RequireLicenseAcceptancePropertyName = Encoding.UTF8.GetBytes("requireLicenseAcceptance");
+        private static readonly byte[] SummaryPropertyName = Encoding.UTF8.GetBytes("summary");
+        private static readonly byte[] TagsPropertyName = Encoding.UTF8.GetBytes("tags");
+        private static readonly byte[] MappingsPropertyName = Encoding.UTF8.GetBytes("mappings");
+        private static readonly byte[] HashTagImportPropertyName = Encoding.UTF8.GetBytes("#import");
+        private static readonly byte[] ProjectReferencesPropertyName = Encoding.UTF8.GetBytes("projectReferences");
+        private static readonly byte[] EmptyStringPropertyName = Encoding.UTF8.GetBytes(string.Empty);
 
         internal static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath, string snapshotValue = null)
         {
@@ -150,12 +150,12 @@ namespace NuGet.ProjectModel
             {
                 while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (jsonReader.ValueTextEquals(Utf8EmptyString))
+                    if (jsonReader.ValueTextEquals(EmptyStringPropertyName))
                     {
                         jsonReader.Skip();
                     }
 #pragma warning disable CS0612 // Type or member is obsolete
-                    else if (jsonReader.ValueTextEquals(Utf8Authors))
+                    else if (jsonReader.ValueTextEquals(AuthorsPropertyName))
                     {
                         jsonReader.Read();
                         if (jsonReader.TokenType == JsonTokenType.StartArray)
@@ -167,42 +167,42 @@ namespace NuGet.ProjectModel
                             packageSpec.Authors = Array.Empty<string>();
                         }
                     }
-                    else if (jsonReader.ValueTextEquals(BuildOptionsUtf8))
+                    else if (jsonReader.ValueTextEquals(BuildOptionsPropertyName))
                     {
                         ReadBuildOptions(ref jsonReader, packageSpec);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8ContentFiles))
+                    else if (jsonReader.ValueTextEquals(ContentFilesPropertyName))
                     {
                         jsonReader.Read();
                         jsonReader.ReadStringArrayAsIList(packageSpec.ContentFiles);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Copyright))
+                    else if (jsonReader.ValueTextEquals(CopyrightPropertyName))
                     {
                         packageSpec.Copyright = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Description))
+                    else if (jsonReader.ValueTextEquals(DescriptionPropertyName))
                     {
                         packageSpec.Description = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Language))
+                    else if (jsonReader.ValueTextEquals(LanguagePropertyName))
                     {
                         packageSpec.Language = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8PackInclude))
+                    else if (jsonReader.ValueTextEquals(PackIncludePropertyName))
                     {
                         ReadPackInclude(ref jsonReader, packageSpec);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8PackOptions))
+                    else if (jsonReader.ValueTextEquals(PackOptionsPropertyName))
                     {
                         ReadPackOptions(ref jsonReader, packageSpec, ref isMappingsNull);
                         wasPackOptionsSet = true;
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Scripts))
+                    else if (jsonReader.ValueTextEquals(ScriptsPropertyName))
                     {
                         ReadScripts(ref jsonReader, packageSpec);
                     }
 #pragma warning restore CS0612 // Type or member is 
-                    else if (jsonReader.ValueTextEquals(Utf8Dependencies))
+                    else if (jsonReader.ValueTextEquals(DependenciesPropertyName))
                     {
                         ReadDependencies(
                             ref jsonReader,
@@ -210,27 +210,27 @@ namespace NuGet.ProjectModel
                             filePath,
                             isGacOrFrameworkReference: false);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Frameworks))
+                    else if (jsonReader.ValueTextEquals(FrameworksPropertyName))
                     {
                         ReadFrameworks(ref jsonReader, packageSpec);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Restore))
+                    else if (jsonReader.ValueTextEquals(RestorePropertyName))
                     {
                         ReadMSBuildMetadata(ref jsonReader, packageSpec);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Runtimes))
+                    else if (jsonReader.ValueTextEquals(RuntimesPropertyName))
                     {
                         runtimeDescriptions = ReadRuntimes(ref jsonReader);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Supports))
+                    else if (jsonReader.ValueTextEquals(SupportsPropertyName))
                     {
                         compatibilityProfiles = ReadSupports(ref jsonReader);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Title))
+                    else if (jsonReader.ValueTextEquals(TitlePropertyName))
                     {
                         packageSpec.Title = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Version))
+                    else if (jsonReader.ValueTextEquals(VersionPropertyName))
                     {
                         string version = jsonReader.ReadNextTokenAsString();
                         if (version != null)
@@ -327,22 +327,22 @@ namespace NuGet.ProjectModel
                             {
                                 IEnumerable<string> values = null;
 
-                                if (jsonReader.ValueTextEquals(Utf8Exclude))
+                                if (jsonReader.ValueTextEquals(ExcludePropertyName))
                                 {
                                     values = jsonReader.ReadDelimitedString();
                                     dependencyExcludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8Include))
+                                else if (jsonReader.ValueTextEquals(IncludePropertyName))
                                 {
                                     values = jsonReader.ReadDelimitedString();
                                     dependencyIncludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8SuppressParent))
+                                else if (jsonReader.ValueTextEquals(SuppressParentPropertyName))
                                 {
                                     values = jsonReader.ReadDelimitedString();
                                     suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8Version))
+                                else if (jsonReader.ValueTextEquals(VersionPropertyName))
                                 {
                                     if (jsonReader.Read())
                                     {
@@ -453,45 +453,45 @@ namespace NuGet.ProjectModel
                             while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                             {
                                 IEnumerable<string> values = null;
-                                if (jsonReader.ValueTextEquals(Utf8AutoReferenced))
+                                if (jsonReader.ValueTextEquals(AutoReferencedPropertyName))
                                 {
                                     autoReferenced = jsonReader.ReadNextTokenAsBoolOrFalse();
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8Exclude))
+                                else if (jsonReader.ValueTextEquals(ExcludePropertyName))
                                 {
                                     values = jsonReader.ReadDelimitedString();
                                     dependencyExcludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8GeneratePathProperty))
+                                else if (jsonReader.ValueTextEquals(GeneratePathPropertyPropertyName))
                                 {
                                     generatePathProperty = jsonReader.ReadNextTokenAsBoolOrFalse();
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8Include))
+                                else if (jsonReader.ValueTextEquals(IncludePropertyName))
                                 {
                                     values = jsonReader.ReadDelimitedString();
                                     dependencyIncludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8NoWarn))
+                                else if (jsonReader.ValueTextEquals(NoWarnPropertyName))
                                 {
                                     noWarn = ReadNuGetLogCodesList(ref jsonReader);
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8SuppressParent))
+                                else if (jsonReader.ValueTextEquals(SuppressParentPropertyName))
                                 {
                                     values = jsonReader.ReadDelimitedString();
                                     suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8Target))
+                                else if (jsonReader.ValueTextEquals(TargetPropertyName))
                                 {
                                     targetFlagsValue = ReadTarget(ref jsonReader, packageSpecPath, targetFlagsValue);
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8Version))
+                                else if (jsonReader.ValueTextEquals(VersionPropertyName))
                                 {
                                     if (jsonReader.Read())
                                     {
                                         dependencyVersionValue = jsonReader.GetString();
                                     }
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8VersionOverride))
+                                else if (jsonReader.ValueTextEquals(VersionOverridePropertyName))
                                 {
                                     if (jsonReader.Read())
                                     {
@@ -506,11 +506,11 @@ namespace NuGet.ProjectModel
                                         }
                                     }
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8VersionCentrallyManaged))
+                                else if (jsonReader.ValueTextEquals(VersionCentrallyManagedPropertyName))
                                 {
                                     versionCentrallyManaged = jsonReader.ReadNextTokenAsBoolOrFalse();
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8Aliases))
+                                else if (jsonReader.ValueTextEquals(AliasesPropertyName))
                                 {
                                     aliases = jsonReader.ReadNextTokenAsString();
                                 }
@@ -602,7 +602,7 @@ namespace NuGet.ProjectModel
             {
                 while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (jsonReader.ValueTextEquals(Utf8OutputName))
+                    if (jsonReader.ValueTextEquals(OutputNamePropertyName))
                     {
                         packageSpec.BuildOptions.OutputName = jsonReader.ReadNextTokenAsString();
                     }
@@ -692,12 +692,12 @@ namespace NuGet.ProjectModel
                     {
                         while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                         {
-                            if (jsonReader.ValueTextEquals(Utf8Name))
+                            if (jsonReader.ValueTextEquals(NamePropertyName))
                             {
                                 isNameDefined = true;
                                 name = jsonReader.ReadNextTokenAsString();
                             }
-                            else if (jsonReader.ValueTextEquals(Utf8Version))
+                            else if (jsonReader.ValueTextEquals(VersionPropertyName))
                             {
                                 versionValue = jsonReader.ReadNextTokenAsString();
                             }
@@ -777,7 +777,7 @@ namespace NuGet.ProjectModel
                     {
                         while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                         {
-                            if (jsonReader.ValueTextEquals(Utf8PrivateAssets))
+                            if (jsonReader.ValueTextEquals(PrivateAssetsPropertyName))
                             {
                                 IEnumerable<string> strings = jsonReader.ReadDelimitedString();
 
@@ -876,19 +876,19 @@ namespace NuGet.ProjectModel
 
                             while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                             {
-                                if (jsonReader.ValueTextEquals(Utf8ExcludeFiles))
+                                if (jsonReader.ValueTextEquals(ExcludeFilesPropertyName))
                                 {
                                     excludeFiles = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8Exclude))
+                                else if (jsonReader.ValueTextEquals(ExcludePropertyName))
                                 {
                                     exclude = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8IncludeFiles))
+                                else if (jsonReader.ValueTextEquals(IncludeFilesPropertyName))
                                 {
                                     includeFiles = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8Include))
+                                else if (jsonReader.ValueTextEquals(IncludePropertyName))
                                 {
                                     include = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                                 }
@@ -948,33 +948,33 @@ namespace NuGet.ProjectModel
             {
                 while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (jsonReader.ValueTextEquals(Utf8CentralPackageVersionsManagementEnabled))
+                    if (jsonReader.ValueTextEquals(CentralPackageVersionsManagementEnabledPropertyName))
                     {
                         centralPackageVersionsManagementEnabled = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8CentralPackageVersionOverrideDisabled))
+                    else if (jsonReader.ValueTextEquals(CentralPackageVersionOverrideDisabledPropertyName))
                     {
                         centralPackageVersionOverrideDisabled = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8CentralPackageTransitivePinningEnabled))
+                    else if (jsonReader.ValueTextEquals(CentralPackageTransitivePinningEnabledPropertyName))
                     {
                         CentralPackageTransitivePinningEnabled = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8ConfigFilePaths))
+                    else if (jsonReader.ValueTextEquals(ConfigFilePathsPropertyName))
                     {
                         jsonReader.Read();
                         configFilePaths = jsonReader.ReadStringArrayAsIList() as List<string>;
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8CrossTargeting))
+                    else if (jsonReader.ValueTextEquals(CrossTargetingPropertyName))
                     {
                         crossTargeting = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8FallbackFolders))
+                    else if (jsonReader.ValueTextEquals(FallbackFoldersPropertyName))
                     {
                         jsonReader.Read();
                         fallbackFolders = jsonReader.ReadStringArrayAsIList() as List<string>;
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Files))
+                    else if (jsonReader.ValueTextEquals(FilesPropertyName))
                     {
                         if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
                         {
@@ -987,44 +987,44 @@ namespace NuGet.ProjectModel
                             }
                         }
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Frameworks))
+                    else if (jsonReader.ValueTextEquals(FrameworksPropertyName))
                     {
                         targetFrameworks = ReadTargetFrameworks(ref jsonReader);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8LegacyPackagesDirectory))
+                    else if (jsonReader.ValueTextEquals(LegacyPackagesDirectoryPropertyName))
                     {
                         legacyPackagesDirectory = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8OriginalTargetFrameworks))
+                    else if (jsonReader.ValueTextEquals(OriginalTargetFrameworksPropertyName))
                     {
                         jsonReader.Read();
                         originalTargetFrameworks = jsonReader.ReadStringArrayAsIList() as List<string>;
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8OutputPath))
+                    else if (jsonReader.ValueTextEquals(OutputPathPropertyName))
                     {
                         outputPath = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8PackagesConfigPath))
+                    else if (jsonReader.ValueTextEquals(PackagesConfigPathPropertyName))
                     {
                         packagesConfigPath = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8PackagesPath))
+                    else if (jsonReader.ValueTextEquals(PackagesPathPropertyName))
                     {
                         packagesPath = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8ProjectJsonPath))
+                    else if (jsonReader.ValueTextEquals(ProjectJsonPathPropertyName))
                     {
                         projectJsonPath = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8ProjectName))
+                    else if (jsonReader.ValueTextEquals(ProjectNamePropertyName))
                     {
                         projectName = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8ProjectPath))
+                    else if (jsonReader.ValueTextEquals(ProjectPathPropertyName))
                     {
                         projectPath = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8ProjectStyle))
+                    else if (jsonReader.ValueTextEquals(ProjectStylePropertyName))
                     {
                         string projectStyleString = jsonReader.ReadNextTokenAsString();
 
@@ -1034,11 +1034,11 @@ namespace NuGet.ProjectModel
                             projectStyle = projectStyleValue;
                         }
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8ProjectUniqueName))
+                    else if (jsonReader.ValueTextEquals(ProjectUniqueNamePropertyName))
                     {
                         projectUniqueName = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8RestoreLockProperties))
+                    else if (jsonReader.ValueTextEquals(RestoreLockPropertiesPropertyName))
                     {
                         string nuGetLockFilePath = null;
                         var restoreLockedMode = false;
@@ -1048,15 +1048,15 @@ namespace NuGet.ProjectModel
                         {
                             while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                             {
-                                if (jsonReader.ValueTextEquals(Utf8NuGetLockFilePath))
+                                if (jsonReader.ValueTextEquals(NuGetLockFilePathPropertyName))
                                 {
                                     nuGetLockFilePath = jsonReader.ReadNextTokenAsString();
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8RestoreLockedMode))
+                                else if (jsonReader.ValueTextEquals(RestoreLockedModePropertyName))
                                 {
                                     restoreLockedMode = jsonReader.ReadNextTokenAsBoolOrFalse();
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8RestorePackagesWithLockFile))
+                                else if (jsonReader.ValueTextEquals(RestorePackagesWithLockFilePropertyName))
                                 {
                                     restorePackagesWithLockFile = jsonReader.ReadNextTokenAsString();
                                 }
@@ -1068,22 +1068,22 @@ namespace NuGet.ProjectModel
                         }
                         restoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile, nuGetLockFilePath, restoreLockedMode);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8RestoreAuditProperties))
+                    else if (jsonReader.ValueTextEquals(RestoreAuditPropertiesPropertyName))
                     {
                         string enableAudit = null, auditLevel = null, auditMode = null;
                         if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
                         {
                             while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                             {
-                                if (jsonReader.ValueTextEquals(Utf8EnableAudit))
+                                if (jsonReader.ValueTextEquals(EnableAuditPropertyName))
                                 {
                                     enableAudit = jsonReader.ReadNextTokenAsString();
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8AuditLevel))
+                                else if (jsonReader.ValueTextEquals(AuditLevelPropertyName))
                                 {
                                     auditLevel = jsonReader.ReadNextTokenAsString();
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8AuditMode))
+                                else if (jsonReader.ValueTextEquals(AuditModePropertyName))
                                 {
                                     auditMode = jsonReader.ReadNextTokenAsString();
                                 }
@@ -1100,11 +1100,11 @@ namespace NuGet.ProjectModel
                             AuditMode = auditMode,
                         };
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8SkipContentFileWrite))
+                    else if (jsonReader.ValueTextEquals(SkipContentFileWritePropertyName))
                     {
                         skipContentFileWrite = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Sources))
+                    else if (jsonReader.ValueTextEquals(SourcesPropertyName))
                     {
                         if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
                         {
@@ -1118,11 +1118,11 @@ namespace NuGet.ProjectModel
                             }
                         }
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8ValidateRuntimeAssets))
+                    else if (jsonReader.ValueTextEquals(ValidateRuntimeAssetsPropertyName))
                     {
                         validateRuntimeAssets = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8WarningProperties))
+                    else if (jsonReader.ValueTextEquals(WarningPropertiesPropertyName))
                     {
                         var allWarningsAsErrors = false;
                         var noWarn = new HashSet<NuGetLogCode>();
@@ -1133,19 +1133,19 @@ namespace NuGet.ProjectModel
                         {
                             while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                             {
-                                if (jsonReader.ValueTextEquals(Utf8AllWarningsAsErrors))
+                                if (jsonReader.ValueTextEquals(AllWarningsAsErrorsPropertyName))
                                 {
                                     allWarningsAsErrors = jsonReader.ReadNextTokenAsBoolOrFalse();
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8NoWarn))
+                                else if (jsonReader.ValueTextEquals(NoWarnPropertyName))
                                 {
                                     ReadNuGetLogCodes(ref jsonReader, noWarn);
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8WarnAsError))
+                                else if (jsonReader.ValueTextEquals(WarnAsErrorPropertyName))
                                 {
                                     ReadNuGetLogCodes(ref jsonReader, warnAsError);
                                 }
-                                else if (jsonReader.ValueTextEquals(Utf8WarnNotAsError))
+                                else if (jsonReader.ValueTextEquals(WarnNotAsErrorPropertyName))
                                 {
                                     ReadNuGetLogCodes(ref jsonReader, warningsNotAsErrors);
                                 }
@@ -1370,19 +1370,19 @@ namespace NuGet.ProjectModel
                 isPackOptionsValueAnObject = true;
                 while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (jsonReader.ValueTextEquals(Utf8Files))
+                    if (jsonReader.ValueTextEquals(FilesPropertyName))
                     {
                         wasMappingsRead = ReadPackOptionsFiles(packageSpec, ref jsonReader, wasMappingsRead);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8IconUrl))
+                    else if (jsonReader.ValueTextEquals(IconUrlPropertyName))
                     {
                         packageSpec.IconUrl = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8LicenseUrl))
+                    else if (jsonReader.ValueTextEquals(LicenseUrlPropertyName))
                     {
                         packageSpec.LicenseUrl = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Owners))
+                    else if (jsonReader.ValueTextEquals(OwnersPropertyName))
                     {
                         jsonReader.Read();
                         string[] owners = jsonReader.ReadStringArrayAsIList()?.ToArray();
@@ -1391,27 +1391,27 @@ namespace NuGet.ProjectModel
                             packageSpec.Owners = owners;
                         }
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8PackageType))
+                    else if (jsonReader.ValueTextEquals(PackageTypePropertyName))
                     {
                         ReadPackageTypes(packageSpec, ref jsonReader);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8ProjectUrl))
+                    else if (jsonReader.ValueTextEquals(ProjectUrlPropertyName))
                     {
                         packageSpec.ProjectUrl = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8ReleaseNotes))
+                    else if (jsonReader.ValueTextEquals(ReleaseNotesPropertyName))
                     {
                         packageSpec.ReleaseNotes = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8RequireLicenseAcceptance))
+                    else if (jsonReader.ValueTextEquals(RequireLicenseAcceptancePropertyName))
                     {
                         packageSpec.RequireLicenseAcceptance = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Summary))
+                    else if (jsonReader.ValueTextEquals(SummaryPropertyName))
                     {
                         packageSpec.Summary = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Tags))
+                    else if (jsonReader.ValueTextEquals(TagsPropertyName))
                     {
                         jsonReader.Read();
                         string[] tags = jsonReader.ReadStringArrayAsIList()?.ToArray();
@@ -1443,23 +1443,23 @@ namespace NuGet.ProjectModel
                 while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                 {
                     var filesPropertyName = jsonReader.GetString();
-                    if (jsonReader.ValueTextEquals(Utf8ExcludeFiles))
+                    if (jsonReader.ValueTextEquals(ExcludeFilesPropertyName))
                     {
                         excludeFiles = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Exclude))
+                    else if (jsonReader.ValueTextEquals(ExcludePropertyName))
                     {
                         exclude = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8IncludeFiles))
+                    else if (jsonReader.ValueTextEquals(IncludeFilesPropertyName))
                     {
                         includeFiles = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Include))
+                    else if (jsonReader.ValueTextEquals(IncludePropertyName))
                     {
                         include = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Mappings))
+                    else if (jsonReader.ValueTextEquals(MappingsPropertyName))
                     {
                         if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
                         {
@@ -1523,7 +1523,7 @@ namespace NuGet.ProjectModel
             {
                 while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (jsonReader.ValueTextEquals(Utf8HashTagImport))
+                    if (jsonReader.ValueTextEquals(HashTagImportPropertyName))
                     {
                         jsonReader.Read();
                         inheritedRuntimes = jsonReader.ReadStringArrayAsIList() as List<string>;
@@ -1659,7 +1659,7 @@ namespace NuGet.ProjectModel
                     {
                         while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                         {
-                            if (jsonReader.ValueTextEquals(Utf8ProjectReferences))
+                            if (jsonReader.ValueTextEquals(ProjectReferencesPropertyName))
                             {
                                 if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
                                 {
@@ -1675,19 +1675,19 @@ namespace NuGet.ProjectModel
                                         {
                                             while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                                             {
-                                                if (jsonReader.ValueTextEquals(Utf8ExcludeAssets))
+                                                if (jsonReader.ValueTextEquals(ExcludeAssetsPropertyName))
                                                 {
                                                     excludeAssets = jsonReader.ReadNextTokenAsString();
                                                 }
-                                                else if (jsonReader.ValueTextEquals(Utf8IncludeAssets))
+                                                else if (jsonReader.ValueTextEquals(IncludeAssetsPropertyName))
                                                 {
                                                     includeAssets = jsonReader.ReadNextTokenAsString();
                                                 }
-                                                else if (jsonReader.ValueTextEquals(Utf8PrivateAssets))
+                                                else if (jsonReader.ValueTextEquals(PrivateAssetsPropertyName))
                                                 {
                                                     privateAssets = jsonReader.ReadNextTokenAsString();
                                                 }
-                                                else if (jsonReader.ValueTextEquals(Utf8ProjectPath))
+                                                else if (jsonReader.ValueTextEquals(ProjectPathPropertyName))
                                                 {
                                                     projectReferenceProjectPath = jsonReader.ReadNextTokenAsString();
                                                 }
@@ -1719,7 +1719,7 @@ namespace NuGet.ProjectModel
                                     }
                                 }
                             }
-                            else if (jsonReader.ValueTextEquals(Utf8TargetAlias))
+                            else if (jsonReader.ValueTextEquals(TargetAliasPropertyName))
                             {
                                 frameworkGroup.TargetAlias = jsonReader.ReadNextTokenAsString();
                             }
@@ -1747,11 +1747,11 @@ namespace NuGet.ProjectModel
             {
                 while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (jsonReader.ValueTextEquals(Utf8AssetTargetFallback))
+                    if (jsonReader.ValueTextEquals(AssetTargetFallbackPropertyName))
                     {
                         targetFrameworkInformation.AssetTargetFallback = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8SecondaryFramework))
+                    else if (jsonReader.ValueTextEquals(SecondaryFrameworkPropertyName))
                     {
                         var secondaryFrameworkString = jsonReader.ReadNextTokenAsString();
                         if (!string.IsNullOrEmpty(secondaryFrameworkString))
@@ -1759,14 +1759,14 @@ namespace NuGet.ProjectModel
                             secondaryFramework = NuGetFramework.Parse(secondaryFrameworkString);
                         }
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8CentralPackageVersions))
+                    else if (jsonReader.ValueTextEquals(CentralPackageVersionsPropertyName))
                     {
                         ReadCentralPackageVersions(
                             ref jsonReader,
                             targetFrameworkInformation.CentralPackageVersions,
                             packageSpec.FilePath);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Dependencies))
+                    else if (jsonReader.ValueTextEquals(DependenciesPropertyName))
                     {
                         ReadDependencies(
                             ref jsonReader,
@@ -1774,14 +1774,14 @@ namespace NuGet.ProjectModel
                             packageSpec.FilePath,
                             isGacOrFrameworkReference: false);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8DownloadDependencies))
+                    else if (jsonReader.ValueTextEquals(DownloadDependenciesPropertyName))
                     {
                         ReadDownloadDependencies(
                             ref jsonReader,
                             targetFrameworkInformation.DownloadDependencies,
                             packageSpec.FilePath);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8FrameworkAssemblies))
+                    else if (jsonReader.ValueTextEquals(FrameworkAssembliesPropertyName))
                     {
                         ReadDependencies(
                             ref jsonReader,
@@ -1789,26 +1789,26 @@ namespace NuGet.ProjectModel
                             packageSpec.FilePath,
                             isGacOrFrameworkReference: true);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8FrameworkReferences))
+                    else if (jsonReader.ValueTextEquals(FrameworkReferencesPropertyName))
                     {
                         ReadFrameworkReferences(
                             ref jsonReader,
                             targetFrameworkInformation.FrameworkReferences,
                             packageSpec.FilePath);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Imports))
+                    else if (jsonReader.ValueTextEquals(ImportsPropertyName))
                     {
                         ReadImports(packageSpec, ref jsonReader, targetFrameworkInformation);
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8RuntimeIdentifierGraphPath))
+                    else if (jsonReader.ValueTextEquals(RuntimeIdentifierGraphPathPropertyName))
                     {
                         targetFrameworkInformation.RuntimeIdentifierGraphPath = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8TargetAlias))
+                    else if (jsonReader.ValueTextEquals(TargetAliasPropertyName))
                     {
                         targetFrameworkInformation.TargetAlias = jsonReader.ReadNextTokenAsString();
                     }
-                    else if (jsonReader.ValueTextEquals(Utf8Warn))
+                    else if (jsonReader.ValueTextEquals(WarnPropertyName))
                     {
                         targetFrameworkInformation.Warn = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
