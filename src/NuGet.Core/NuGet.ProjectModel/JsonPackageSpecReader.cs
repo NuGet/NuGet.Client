@@ -77,7 +77,7 @@ namespace NuGet.ProjectModel
                 using (var jsonReader = new JsonTextReader(textReader))
                 {
 #pragma warning disable CS0612 // Type or member is obsolete
-                    return GetPackageSpec(jsonReader, packageSpecPath);
+                    return NjPackageSpecReader.GetPackageSpec(jsonReader, name, packageSpecPath, snapshotValue);
 #pragma warning restore CS0612 // Type or member is obsolete
                 }
             }
