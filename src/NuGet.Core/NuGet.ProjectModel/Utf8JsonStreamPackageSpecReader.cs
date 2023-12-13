@@ -18,7 +18,7 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    internal static class JsonStreamPackageSpecReaderPropertyName
+    internal static class Utf8JsonStreamPackageSpecReader
     {
         private static readonly char[] VersionSeparators = new[] { ';' };
         private static readonly byte[] AuthorsPropertyName = Encoding.UTF8.GetBytes("authors");
