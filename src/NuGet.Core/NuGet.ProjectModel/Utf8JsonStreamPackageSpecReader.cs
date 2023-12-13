@@ -122,14 +122,7 @@ namespace NuGet.ProjectModel
         {
             var reader = new Utf8JsonStreamReader(stream);
             PackageSpec packageSpec;
-            try
-            {
-                packageSpec = GetPackageSpec(ref reader, name, packageSpecPath, snapshotValue);
-            }
-            catch (JsonException innerException)
-            {
-                throw FileFormatException.Create(innerException, packageSpecPath);
-            }
+            packageSpec = GetPackageSpec(ref reader, name, packageSpecPath, snapshotValue);
 
             if (!string.IsNullOrEmpty(name))
             {
@@ -251,7 +244,7 @@ namespace NuGet.ProjectModel
                             }
                             catch (Exception ex)
                             {
-                                throw new JsonException($"Error processing versino property. version: {version}", innerException: ex);
+                                throw FileFormatException.Create(ex, version, packageSpec.FilePath);
                             }
                         }
                     }
@@ -312,7 +305,9 @@ namespace NuGet.ProjectModel
                     var propertyName = jsonReader.GetString();
                     if (string.IsNullOrEmpty(propertyName))
                     {
-                        throw new JsonException("Unable to resolve dependency ''.");
+                        throw FileFormatException.Create(
+                            "Unable to resolve dependency ''.",
+                            packageSpecPath);
                     }
 
                     if (jsonReader.Read())
@@ -371,13 +366,17 @@ namespace NuGet.ProjectModel
                             }
                             catch (Exception ex)
                             {
-                                throw new JsonException(null, ex);
+                                throw FileFormatException.Create(
+                                    ex,
+                                    packageSpecPath);
                             }
                         }
 
                         if (dependencyVersionRange == null)
                         {
-                            throw new JsonException(Strings.MissingVersionOnDependency, new ArgumentException(Strings.MissingVersionOnDependency));
+                            throw FileFormatException.Create(
+                                new ArgumentException(Strings.MissingVersionOnDependency),
+                                packageSpecPath);
                         }
 
                         // the dependency flags are: Include flags - Exclude flags
@@ -416,7 +415,7 @@ namespace NuGet.ProjectModel
                     var propertyName = jsonReader.GetString();
                     if (string.IsNullOrEmpty(propertyName))
                     {
-                        throw new JsonException("Unable to resolve dependency ''.");
+                        throw FileFormatException.Create("Unable to resolve dependency ''.", packageSpecPath);
                     }
 
                     // Support
@@ -503,7 +502,7 @@ namespace NuGet.ProjectModel
                                         }
                                         catch (Exception ex)
                                         {
-                                            throw new JsonException(ex.Message, innerException: ex);
+                                            throw FileFormatException.Create(ex, packageSpecPath);
                                         }
                                     }
                                 }
@@ -532,7 +531,9 @@ namespace NuGet.ProjectModel
                             }
                             catch (Exception ex)
                             {
-                                throw new JsonException(ex.Message, ex);
+                                throw FileFormatException.Create(
+                                ex,
+                                packageSpecPath);
                             }
                         }
 
@@ -541,7 +542,9 @@ namespace NuGet.ProjectModel
                         {
                             if ((targetFlagsValue & LibraryDependencyTarget.Package) == LibraryDependencyTarget.Package)
                             {
-                                throw new JsonException(Strings.MissingVersionOnDependency, new ArgumentException(Strings.MissingVersionOnDependency));
+                                throw FileFormatException.Create(
+                                new ArgumentException(Strings.MissingVersionOnDependency),
+                                packageSpecPath);
                             }
                             else
                             {
@@ -613,7 +616,8 @@ namespace NuGet.ProjectModel
 
         private static void ReadCentralPackageVersions(
             ref Utf8JsonStreamReader jsonReader,
-            IDictionary<string, CentralPackageVersion> centralPackageVersions)
+            IDictionary<string, CentralPackageVersion> centralPackageVersions,
+            string filePath)
         {
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
@@ -623,16 +627,14 @@ namespace NuGet.ProjectModel
 
                     if (string.IsNullOrEmpty(propertyName))
                     {
-                        var exception = new JsonException("Unable to resolve central version ''.");
-                        throw exception;
+                        throw FileFormatException.Create("Unable to resolve central version ''.", filePath);
                     }
 
                     string version = jsonReader.ReadNextTokenAsString();
 
                     if (string.IsNullOrEmpty(version))
                     {
-                        var exception = new JsonException("The version cannot be null or empty.");
-                        throw exception;
+                        throw FileFormatException.Create("The version cannot be null or empty.", filePath);
                     }
 
                     centralPackageVersions[propertyName] = new CentralPackageVersion(propertyName, VersionRange.Parse(version));
@@ -713,8 +715,9 @@ namespace NuGet.ProjectModel
 
                     if (!isNameDefined)
                     {
-                        var exception = new JsonException("Unable to resolve downloadDependency ''.");
-                        throw exception;
+                        throw FileFormatException.Create(
+                            "Unable to resolve downloadDependency ''.",
+                            packageSpecPath);
                     }
 
                     if (!seenIds.Add(name))
@@ -725,8 +728,9 @@ namespace NuGet.ProjectModel
 
                     if (string.IsNullOrEmpty(versionValue))
                     {
-                        var exception = new JsonException("The version cannot be null or empty");
-                        throw exception;
+                        throw FileFormatException.Create(
+                            "The version cannot be null or empty",
+                            packageSpecPath);
                     }
 
                     string[] versions = versionValue.Split(VersionSeparators, StringSplitOptions.RemoveEmptyEntries);
@@ -741,7 +745,9 @@ namespace NuGet.ProjectModel
                         }
                         catch (Exception ex)
                         {
-                            throw new JsonException(ex.Message, ex);
+                            throw FileFormatException.Create(
+                               ex,
+                               packageSpecPath);
                         }
                     }
                 } while (jsonReader.TokenType == JsonTokenType.EndObject);
@@ -760,8 +766,9 @@ namespace NuGet.ProjectModel
                     var frameworkName = jsonReader.GetString();
                     if (string.IsNullOrEmpty(frameworkName))
                     {
-                        var exception = new JsonException("Unable to resolve frameworkReference.");
-                        throw exception;
+                        throw FileFormatException.Create(
+                            "Unable to resolve frameworkReference.",
+                            packageSpecPath);
                     }
 
                     var privateAssets = FrameworkDependencyFlagsUtils.Default;
@@ -794,7 +801,14 @@ namespace NuGet.ProjectModel
             {
                 while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    ReadTargetFrameworks(packageSpec, ref reader);
+                    try
+                    {
+                        ReadTargetFrameworks(packageSpec, ref reader);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw FileFormatException.Create(ex, packageSpec.FilePath);
+                    }
                 }
             }
         }
@@ -811,12 +825,13 @@ namespace NuGet.ProjectModel
 
                     if (!framework.IsSpecificFramework)
                     {
-                        var exception = new JsonException(string.Format(
+                        throw FileFormatException.Create(
+                            string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.Log_InvalidImportFramework,
                                 import,
-                                PackageSpec.PackageSpecFileName));
-                        throw exception;
+                                PackageSpec.PackageSpecFileName),
+                            packageSpec.FilePath);
                     }
 
                     targetFrameworkInformation.Imports.Add(framework);
@@ -1288,10 +1303,12 @@ namespace NuGet.ProjectModel
                             {
                                 if (jsonReader.TokenType != JsonTokenType.String)
                                 {
-                                    throw new JsonException(string.Format(
-                                        CultureInfo.CurrentCulture,
-                                        Strings.InvalidPackageType,
-                                        PackageSpec.PackageSpecFileName));
+                                    throw FileFormatException.Create(
+                                        string.Format(
+                                            CultureInfo.CurrentCulture,
+                                            Strings.InvalidPackageType,
+                                            PackageSpec.PackageSpecFileName),
+                                        packageSpec.FilePath);
                                 }
 
                                 packageType = CreatePackageType(ref jsonReader);
@@ -1318,10 +1335,12 @@ namespace NuGet.ProjectModel
             }
             catch (Exception)
             {
-                throw new JsonException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.InvalidPackageType,
-                    PackageSpec.PackageSpecFileName));
+                throw FileFormatException.Create(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidPackageType,
+                        PackageSpec.PackageSpecFileName),
+                    packageSpec.FilePath);
             }
         }
 
@@ -1571,7 +1590,9 @@ namespace NuGet.ProjectModel
                         }
                         else
                         {
-                            throw new JsonException(string.Format(CultureInfo.CurrentCulture, "The value of a script in '{0}' can only be a string or an array of strings", PackageSpec.PackageSpecFileName));
+                            throw FileFormatException.Create(
+                            string.Format(CultureInfo.CurrentCulture, "The value of a script in '{0}' can only be a string or an array of strings", PackageSpec.PackageSpecFileName),
+                            packageSpec.FilePath);
                         }
                     }
                 }
@@ -1613,8 +1634,9 @@ namespace NuGet.ProjectModel
                         CultureInfo.CurrentCulture,
                         Strings.InvalidDependencyTarget,
                         targetString);
-                    var exception = new JsonException(message);
-                    throw exception;
+                    throw FileFormatException.Create(
+                      message,
+                      packageSpecPath);
                 }
             }
 
@@ -1741,7 +1763,8 @@ namespace NuGet.ProjectModel
                     {
                         ReadCentralPackageVersions(
                             ref jsonReader,
-                            targetFrameworkInformation.CentralPackageVersions);
+                            targetFrameworkInformation.CentralPackageVersions,
+                            packageSpec.FilePath);
                     }
                     else if (jsonReader.ValueTextEquals(Utf8Dependencies))
                     {

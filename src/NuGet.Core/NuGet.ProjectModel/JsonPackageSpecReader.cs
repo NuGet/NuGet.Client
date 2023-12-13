@@ -39,22 +39,7 @@ namespace NuGet.ProjectModel
 
         public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
         {
-            var useNj = EnvironmentVariableWrapper.Instance.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING");
-            if (string.IsNullOrEmpty(useNj) || useNj.Equals("false", StringComparison.OrdinalIgnoreCase))
-            {
-                return Utf8JsonStreamPackageSpecReader.GetPackageSpec(stream, name, packageSpecPath, snapshotValue);
-            }
-            else
-            {
-                using (var textReader = new StreamReader(stream))
-                using (var jsonReader = new JsonTextReader(textReader))
-                {
-#pragma warning disable CS0612 // Type or member is obsolete
-                    return GetPackageSpec(jsonReader, packageSpecPath);
-#pragma warning restore CS0612 // Type or member is obsolete
-                }
-            }
-
+            return GetPackageSpec(stream, name, packageSpecPath, snapshotValue, EnvironmentVariableWrapper.Instance);
         }
 
         [Obsolete("This method is obsolete and will be removed in a future release.")]
@@ -77,6 +62,25 @@ namespace NuGet.ProjectModel
         internal static PackageSpec GetPackageSpec(JsonTextReader jsonReader, string packageSpecPath)
         {
             return NjPackageSpecReader.GetPackageSpec(jsonReader, packageSpecPath);
+        }
+
+        internal static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue, IEnvironmentVariableReader environmentVariableReader)
+        {
+            var useNj = environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING");
+            if (string.IsNullOrEmpty(useNj) || useNj.Equals("false", StringComparison.OrdinalIgnoreCase))
+            {
+                return Utf8JsonStreamPackageSpecReader.GetPackageSpec(stream, name, packageSpecPath, snapshotValue);
+            }
+            else
+            {
+                using (var textReader = new StreamReader(stream))
+                using (var jsonReader = new JsonTextReader(textReader))
+                {
+#pragma warning disable CS0612 // Type or member is obsolete
+                    return GetPackageSpec(jsonReader, packageSpecPath);
+#pragma warning restore CS0612 // Type or member is obsolete
+                }
+            }
         }
     }
 }
