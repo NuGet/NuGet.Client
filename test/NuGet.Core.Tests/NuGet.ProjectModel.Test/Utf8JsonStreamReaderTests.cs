@@ -441,7 +441,7 @@ namespace NuGet.ProjectModel.Test
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
             var tokenType = JsonTokenType.None;
-            var exceptionThrown = Assert.Throws<JsonException>(() =>
+            var exceptionThrown = Assert.Throws<InvalidCastException>(() =>
             {
                 using var stream = new MemoryStream(encodedBytes);
                 using var reader = new Utf8JsonStreamReader(stream);
@@ -455,8 +455,7 @@ namespace NuGet.ProjectModel.Test
                     tokenType = reader.TokenType;
                 }
             });
-            Assert.NotNull(exceptionThrown.InnerException);
-            Assert.IsType(typeof(InvalidCastException), exceptionThrown.InnerException);
+            Assert.Null(exceptionThrown.InnerException);
             Assert.Equal(expectedTokenType, tokenType);
         }
 
