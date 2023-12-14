@@ -7,16 +7,21 @@ using System;
 using System.Linq;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
-    public sealed class PackageSourceMappingActionViewModel : ViewModelBase
+    public sealed class PackageSourceMappingActionViewModel : ViewModelBase, IDisposable
     {
+        private readonly ISettings _settings;
+
         internal INuGetUI UIController { get; }
 
-        private PackageSourceMappingActionViewModel(INuGetUI uiController)
+        private PackageSourceMappingActionViewModel(INuGetUI uiController, ISettings settings)
         {
             UIController = uiController ?? throw new ArgumentNullException(nameof(uiController));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _settings.SettingsChanged += Settings_SettingsChanged;
         }
 
         public bool IsPackageSourceMappingEnabled => UIController.UIContext?.PackageSourceMapping?.IsEnabled == true;
@@ -116,7 +121,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        public void SettingsChanged()
+        public void UpdateState()
         {
             RaisePropertyChanged(nameof(IsPackageSourceMappingEnabled));
             RaisePropertyChanged(nameof(IsPackageMapped));
@@ -125,9 +130,16 @@ namespace NuGet.PackageManagement.UI.ViewModels
             RaisePropertyChanged(nameof(CanAutomaticallyCreateSourceMapping));
         }
 
-        public static PackageSourceMappingActionViewModel Create(INuGetUI uiController)
+        public void Dispose()
         {
-            return new PackageSourceMappingActionViewModel(uiController);
+            _settings.SettingsChanged -= Settings_SettingsChanged;
         }
+
+        public static PackageSourceMappingActionViewModel Create(INuGetUI uiController, ISettings settings)
+        {
+            return new PackageSourceMappingActionViewModel(uiController, settings);
+        }
+
+        private void Settings_SettingsChanged(object sender, EventArgs e) => UpdateState();
     }
 }

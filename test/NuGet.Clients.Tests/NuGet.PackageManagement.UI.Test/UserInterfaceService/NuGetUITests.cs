@@ -174,7 +174,7 @@ namespace NuGet.PackageManagement.UI.Test
             Mock<PackageSourceMapping> mockPackageSourceMapping = new(patterns);
             NuGetUI nuGetUI = CreateNuGetUI(Mock.Of<INuGetUILogger>(), Mock.Of<INuGetUILogger>(), currentTab, isSolution, mockPackageSourceMapping);
 
-            var packageSourceMappingActionViewModel = PackageSourceMappingActionViewModel.Create(nuGetUI);
+            var packageSourceMappingActionViewModel = PackageSourceMappingActionViewModel.Create(nuGetUI, Mock.Of<ISettings>());
 
             // Act
             nuGetUI.LaunchNuGetOptionsDialog(packageSourceMappingActionViewModel);
@@ -205,7 +205,7 @@ namespace NuGet.PackageManagement.UI.Test
             bool isSolution = false;
             NuGetUI nuGetUI = CreateNuGetUI(Mock.Of<INuGetUILogger>(), Mock.Of<INuGetUILogger>(), currentTab, isSolution, mockPackageSourceMapping);
 
-            var packageSourceMappingActionViewModel = PackageSourceMappingActionViewModel.Create(nuGetUI);
+            var packageSourceMappingActionViewModel = PackageSourceMappingActionViewModel.Create(nuGetUI, Mock.Of<ISettings>());
 
             // Act
             nuGetUI.LaunchNuGetOptionsDialog(packageSourceMappingActionViewModel);
@@ -236,7 +236,7 @@ namespace NuGet.PackageManagement.UI.Test
             bool isSolution = true;
             NuGetUI nuGetUI = CreateNuGetUI(Mock.Of<INuGetUILogger>(), Mock.Of<INuGetUILogger>(), currentTab, isSolution, mockPackageSourceMapping);
 
-            var packageSourceMappingActionViewModel = PackageSourceMappingActionViewModel.Create(nuGetUI);
+            var packageSourceMappingActionViewModel = PackageSourceMappingActionViewModel.Create(nuGetUI, Mock.Of<ISettings>());
             packageSourceMappingActionViewModel.PackageId = packageId;
             var _ = packageSourceMappingActionViewModel.IsPackageMapped; // Emulate the View binding to this property by invoking the getter which initializes the Property's backing field.
 

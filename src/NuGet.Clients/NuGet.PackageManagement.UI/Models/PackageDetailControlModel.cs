@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Data;
 using Microsoft.ServiceHub.Framework;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -26,8 +27,9 @@ namespace NuGet.PackageManagement.UI
             IServiceBroker serviceBroker,
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
-            INuGetUI uiController)
-            : base(serviceBroker, projects, uiController)
+            INuGetUI uiController,
+            ISettings settings)
+            : base(serviceBroker, projects, uiController, settings)
         {
             _solutionManager = solutionManager;
             _solutionManager.ProjectUpdated += ProjectChanged;

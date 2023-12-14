@@ -21,7 +21,17 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                PackageSourceMappingActionViewModel.Create(uiController: null);
+                PackageSourceMappingActionViewModel.Create(uiController: null, settings: Mock.Of<ISettings>());
+            });
+
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                PackageSourceMappingActionViewModel.Create(uiController: Mock.Of<INuGetUI>(), settings: null);
+            });
+
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                PackageSourceMappingActionViewModel.Create(uiController: null, settings: null);
             });
         }
 
@@ -29,7 +39,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         public void PackageSourceMappingActionViewModel_WithNullMappingObject_PropertiesSetToDefaults()
         {
             var mockUiController = new Mock<INuGetUI>();
-            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);
+            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object, Mock.Of<ISettings>());
 
             Assert.Equal(mockUiController.Object, target.UIController);
             Assert.Equal(false, target.IsPackageSourceMappingEnabled);
@@ -60,7 +70,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             mockUiController.Setup(uiController => uiController.UIContext).Returns(mockUIContext.Object);
 
             // Act
-            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);
+            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object, Mock.Of<ISettings>());
             string targetPackageIdBeforeSelecting = target.PackageId;
             target.PackageId = packageId;
 
@@ -93,7 +103,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             mockUiController.Setup(uiController => uiController.UIContext).Returns(mockUIContext.Object);
 
             // Act
-            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);
+            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object, Mock.Of<ISettings>());
             target.PackageId = packageId;
 
             // Assert
@@ -130,7 +140,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             mockUiController.Setup(uiController => uiController.ActivePackageSourceMoniker).Returns(aggregatePackageSourceMoniker);
 
             // Act
-            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);
+            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object, Mock.Of<ISettings>());
             target.PackageId = packageId;
 
             // Assert
@@ -165,7 +175,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             mockUiController.Setup(uiController => uiController.ActivePackageSourceMoniker).Returns(singlePackageSourceMoniker);
 
             // Act
-            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);
+            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object, Mock.Of<ISettings>());
             target.PackageId = packageId;
 
             // Assert
@@ -216,7 +226,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             mockUiController.Setup(uiController => uiController.ActivePackageSourceMoniker).Returns(singlePackageSourceMoniker);
 
             // Act
-            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object);
+            var target = PackageSourceMappingActionViewModel.Create(mockUiController.Object, Mock.Of<ISettings>());
             target.PackageId = packageId;
 
             // Assert

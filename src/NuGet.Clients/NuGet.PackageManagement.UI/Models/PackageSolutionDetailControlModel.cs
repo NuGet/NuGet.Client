@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -36,8 +37,9 @@ namespace NuGet.PackageManagement.UI
         private PackageSolutionDetailControlModel(
             IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects,
-            INuGetUI uiController)
-            : base(serviceBroker, projects, uiController)
+            INuGetUI uiController,
+            ISettings settings)
+            : base(serviceBroker, projects, uiController, settings)
         {
             IsRequestedVisible = projects.Any(p => p.ProjectStyle == ProjectStyle.PackageReference);
         }
@@ -69,9 +71,10 @@ namespace NuGet.PackageManagement.UI
             INuGetSolutionManagerService solutionManager,
             IEnumerable<IProjectContextInfo> projects,
             INuGetUI uiController,
+            ISettings settings,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController, settings);
             await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }
@@ -81,9 +84,10 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<IProjectContextInfo> projects,
             IServiceBroker serviceBroker,
             INuGetUI uiController,
+            ISettings settings,
             CancellationToken cancellationToken)
         {
-            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController, settings);
             await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
             return packageSolutionDetailControlModel;
         }

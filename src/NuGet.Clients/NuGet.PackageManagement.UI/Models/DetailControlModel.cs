@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
+using NuGet.Configuration;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -49,19 +50,23 @@ namespace NuGet.PackageManagement.UI
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict = new Dictionary<NuGetVersion, DetailedPackageMetadata>();
 
-        private INuGetUI _uiController;
+        private readonly ISettings _settings;
+        private readonly INuGetUI _uiController;
 
         protected DetailControlModel(
             IServiceBroker serviceBroker,
             IEnumerable<IProjectContextInfo> projects,
-            INuGetUI uiController)
+            INuGetUI uiController,
+            ISettings settings)
         {
             _nugetProjects = projects;
             ServiceBroker = serviceBroker;
             _uiController = uiController;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _settings.SettingsChanged += Settings_SettingsChanged;
 
             _options = new OptionsViewModel();
-            PackageSourceMappingViewModel = PackageSourceMappingActionViewModel.Create(uiController);
+            PackageSourceMappingViewModel = PackageSourceMappingActionViewModel.Create(uiController, settings);
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
             _options.ShowClassicOptions = projects.Any(project => project.ProjectKind == NuGetProjectKind.PackagesConfig);
@@ -935,5 +940,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
         }
+
+        private void Settings_SettingsChanged(object sender, EventArgs e) => SetInstalledOrUpdateButtonIsEnabled();
     }
 }

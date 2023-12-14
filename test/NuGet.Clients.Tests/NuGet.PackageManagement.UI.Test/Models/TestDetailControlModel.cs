@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Moq;
+using NuGet.Configuration;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Test
@@ -19,7 +20,7 @@ namespace NuGet.PackageManagement.UI.Test
         public override bool IsSolution => throw new NotImplementedException();
 
         public TestDetailControlModel(IServiceBroker serviceBroker, IEnumerable<IProjectContextInfo> projects)
-            : base(serviceBroker, projects, uiController: Mock.Of<INuGetUI>())
+            : base(serviceBroker, projects, uiController: Mock.Of<INuGetUI>(), settings: Mock.Of<ISettings>())
         {
         }
 
