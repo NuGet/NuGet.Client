@@ -542,9 +542,9 @@ namespace NuGet.ProjectModel
 
         [Obsolete]
         internal static void ReadCentralTransitiveDependencyGroup(
-    JsonTextReader jsonReader,
-    IList<LibraryDependency> results,
-    string packageSpecPath)
+            JsonTextReader jsonReader,
+            IList<LibraryDependency> results,
+            string packageSpecPath)
         {
             jsonReader.ReadObject(propertyName =>
             {
