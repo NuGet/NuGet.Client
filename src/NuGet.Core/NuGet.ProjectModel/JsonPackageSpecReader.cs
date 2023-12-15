@@ -19,7 +19,7 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    public static class JsonPackageSpecReader
+    public static partial class JsonPackageSpecReader
     {
         private static readonly char[] DelimitedStringSeparators = { ' ', ',' };
         private static readonly char[] VersionSeparators = new[] { ';' };
@@ -80,7 +80,7 @@ namespace NuGet.ProjectModel
             var useNj = environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING");
             if (string.IsNullOrEmpty(useNj) || useNj.Equals("false", StringComparison.OrdinalIgnoreCase))
             {
-                return Utf8JsonStreamPackageSpecReader.GetPackageSpec(stream, name, packageSpecPath, snapshotValue);
+                return GetPackageSpecUtf8JsonStreamReader(stream, name, packageSpecPath, snapshotValue);
             }
             else
             {
@@ -1792,6 +1792,12 @@ namespace NuGet.ProjectModel
                 }
             }, out frameworkLine, out frameworkColumn);
 
+            AddTargetFramework(packageSpec, frameworkName, secondaryFramework, targetFrameworkInformation);
+        }
+
+        [Obsolete]
+        private static void AddTargetFramework(PackageSpec packageSpec, NuGetFramework frameworkName, NuGetFramework secondaryFramework, TargetFrameworkInformation targetFrameworkInformation)
+        {
             NuGetFramework updatedFramework = frameworkName;
 
             if (targetFrameworkInformation.Imports.Count > 0)
@@ -1816,6 +1822,7 @@ namespace NuGet.ProjectModel
 
             packageSpec.TargetFrameworks.Add(targetFrameworkInformation);
         }
+
 
         [Obsolete]
         private static NuGetFramework GetDualCompatibilityFrameworkIfNeeded(NuGetFramework frameworkName, NuGetFramework secondaryFramework)

@@ -3850,7 +3850,7 @@ namespace NuGet.ProjectModel.Test
                                 NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
                                 var dependencies = new List<LibraryDependency>();
 
-                                Utf8JsonStreamPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                                JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
                                     jsonReader: ref reader,
                                     results: dependencies,
                                     packageSpecPath: "SomePath");
