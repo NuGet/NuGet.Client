@@ -3871,7 +3871,7 @@ namespace NuGet.ProjectModel.Test
                         {
                             var dependencies = new List<LibraryDependency>();
                             NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
-                            NjPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                            JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
                                 jsonReader: jsonReader,
                                 results: dependencies,
                                 packageSpecPath: "SomePath");
