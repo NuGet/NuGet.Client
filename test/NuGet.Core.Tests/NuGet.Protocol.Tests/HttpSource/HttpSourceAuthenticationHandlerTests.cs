@@ -360,7 +360,7 @@ namespace NuGet.Protocol.Tests
             var clientHandler = new HttpClientHandler();
 
             var credentialService = Mock.Of<ICredentialService>();
-            
+
             int retryCount = 0;
             var innerHandler = new LambdaMessageHandler(
                 _ =>
@@ -384,8 +384,8 @@ namespace NuGet.Protocol.Tests
                     // Assert
                     Assert.NotNull(response);
                     Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                }                
-            }            
+                }
+            }
 
             // Assert
             Assert.Equal(HttpSourceAuthenticationHandler.MaxAuthRetries + 1, retryCount);
