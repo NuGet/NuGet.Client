@@ -981,19 +981,19 @@ namespace NuGet.ProjectModel
                         break;
 
                     case "outputPath":
-                        outputPath = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros);
+                        outputPath = jsonReader.ReadNextTokenAsString();
                         break;
 
                     case "packagesConfigPath":
-                        packagesConfigPath = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros); ;
+                        packagesConfigPath = jsonReader.ReadNextTokenAsString();
                         break;
 
                     case "packagesPath":
-                        packagesPath = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros); ;
+                        packagesPath = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros);
                         break;
 
                     case "projectJsonPath":
-                        projectJsonPath = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros); ;
+                        projectJsonPath = jsonReader.ReadNextTokenAsString();
                         break;
 
                     case "projectName":
@@ -1001,7 +1001,7 @@ namespace NuGet.ProjectModel
                         break;
 
                     case "projectPath":
-                        projectPath = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros); ;
+                        projectPath = jsonReader.ReadNextTokenAsString();
                         break;
 
                     case "projectStyle":

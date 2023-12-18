@@ -727,19 +727,18 @@ namespace NuGet.ProjectModel.Test
             VerifyJsonPackageSpecRoundTrip(json);
         }
 
-        // The roundtrip effectively tests both the reader & writer.
         [Fact]
         public void RestoreMetadataWithMacros_RoundTrips()
         {
             // Arrange
             var json = @"{  
                             ""restore"": {
-    ""projectUniqueName"": ""$(User)source\\code\\project.csproj"",
+    ""projectUniqueName"": ""C:\\users\\me\\source\\code\\project.csproj"",
     ""projectName"": ""project"",
-    ""projectPath"": ""$(User)source\\code\\project.csproj"",
-    ""projectJsonPath"": ""$(User)source\\code\\project.json"",
+    ""projectPath"": ""C:\\users\\me\\source\\code\\project.csproj"",
+    ""projectJsonPath"": ""C:\\users\\me\\source\\code\\project.json"",
     ""packagesPath"": ""$(User).nuget\\packages"",
-    ""outputPath"": ""$(User)source\\code\\obj"",
+    ""outputPath"": ""C:\\users\\me\\source\\code\\obj"",
     ""projectStyle"": ""PackageReference"",
     ""crossTargeting"": true,
     ""fallbackFolders"": [
@@ -761,17 +760,16 @@ namespace NuGet.ProjectModel.Test
                     { MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS, "true" }
             });
 
+            // Act
             var actual = PackageSpecTestUtility.RoundTripJson(json, environmentReader);
+
+            // Assert
 
             var metadata = actual.RestoreMetadata;
             var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
 
             Assert.NotNull(metadata);
-            metadata.ProjectUniqueName.Should().Be(@$"{userSettingsDirectory}source\code\project.csproj");
-            metadata.ProjectPath.Should().Be(@$"{userSettingsDirectory}source\code\project.csproj");
-            metadata.ProjectJsonPath.Should().Be(@$"{userSettingsDirectory}source\code\project.json");
             metadata.PackagesPath.Should().Be(@$"{userSettingsDirectory}.nuget\packages");
-            metadata.OutputPath.Should().Be(@$"{userSettingsDirectory}source\code\obj");
 
             metadata.ConfigFilePaths.Should().Contain(@$"{userSettingsDirectory}source\code\NuGet.Config");
             metadata.ConfigFilePaths.Should().Contain(@"C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.FallbackLocation.config");

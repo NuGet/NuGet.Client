@@ -137,12 +137,12 @@ namespace NuGet.ProjectModel
 
             writer.WriteObjectStart(JsonPackageSpecReader.RestoreOptions);
 
-            SetValue(writer, "projectUniqueName", ApplyMacro(msbuildMetadata.ProjectUniqueName, userSettingsDirectory, useMacros));
+            SetValue(writer, "projectUniqueName", msbuildMetadata.ProjectUniqueName);
             SetValue(writer, "projectName", msbuildMetadata.ProjectName);
-            SetValue(writer, "projectPath", ApplyMacro(msbuildMetadata.ProjectPath, userSettingsDirectory, useMacros));
-            SetValue(writer, "projectJsonPath", ApplyMacro(msbuildMetadata.ProjectJsonPath, userSettingsDirectory, useMacros));
+            SetValue(writer, "projectPath", msbuildMetadata.ProjectPath);
+            SetValue(writer, "projectJsonPath", msbuildMetadata.ProjectJsonPath);
             SetValue(writer, "packagesPath", ApplyMacro(msbuildMetadata.PackagesPath, userSettingsDirectory, useMacros));
-            SetValue(writer, "outputPath", ApplyMacro(msbuildMetadata.OutputPath, userSettingsDirectory, useMacros));
+            SetValue(writer, "outputPath", msbuildMetadata.OutputPath);
 
             if (msbuildMetadata.ProjectStyle != ProjectStyle.Unknown)
             {
@@ -264,7 +264,7 @@ namespace NuGet.ProjectModel
                         {
                             writer.WriteObjectStart(project.ProjectUniqueName);
 
-                            writer.WriteNameValue("projectPath", project.ProjectPath); // Do the project references (?)
+                            writer.WriteNameValue("projectPath", project.ProjectPath);
 
                             if (project.IncludeAssets != LibraryIncludeFlags.All)
                             {
