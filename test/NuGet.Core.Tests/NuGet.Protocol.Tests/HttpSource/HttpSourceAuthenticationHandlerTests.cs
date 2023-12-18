@@ -313,6 +313,152 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public async Task SendAsync_EveryRequestForCredentialsInvokesCacheFirstAndCredentialProvidersIfNeeded_SucceedsAsync()
+        {
+            // Arrange
+            var packageSource = new PackageSource("http://package.source.test");
+            var credentialService = Mock.Of<ICredentialService>();
+            var clientHandler = new HttpClientHandler();
+            NetworkCredential credentialsReturnedByAProvider = new NetworkCredential(userName: "user", password: "password");
+            int retryCount = 0;
+
+            // Setup GetCredentialsAsync mock
+            Mock.Get(credentialService)
+                .Setup(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(credentialsReturnedByAProvider);
+
+            // Setup TryGetLastKnownGoodCredentialsFromCache mock
+            Mock.Get(credentialService)
+                .Setup(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny))
+                .Returns((Uri sourceUri, bool isProxyRequest, out ICredentials outCredentials) =>
+                {
+                    outCredentials = retryCount == 1 ? null : credentialsReturnedByAProvider;
+                    return outCredentials != null;
+                });
+
+            // Setup inner handler
+            var innerHandler = new LambdaMessageHandler(_ =>
+            {
+                retryCount++;
+                var credentials = clientHandler.Credentials.GetCredential(packageSource.SourceUri, "basic");
+                return HandleRequest(retryCount, credentials, credentialsReturnedByAProvider);
+            });
+
+            // Act and Assert in a loop
+            for (int i = 0; i < 5; i++)
+            {
+                await ExecuteRequestAsync(packageSource, clientHandler, credentialService, innerHandler);
+            }
+
+            Assert.Equal(10, retryCount);
+
+            Mock.Get(credentialService).Verify(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny), Times.Exactly(5));
+            Mock.Get(credentialService).Verify(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+
+            static HttpResponseMessage HandleRequest(int retryCount, NetworkCredential credentials, NetworkCredential credentialsReturnedByAProvider)
+            {
+                if (retryCount % 2 == 1)
+                {
+                    Assert.True(string.IsNullOrEmpty(credentials.UserName));
+                    Assert.True(string.IsNullOrEmpty(credentials.Password));
+                    return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                }
+                else
+                {
+                    Assert.Equal(credentialsReturnedByAProvider.UserName, credentials.UserName);
+                    Assert.Equal(credentialsReturnedByAProvider.Password, credentials.Password);
+                    return new HttpResponseMessage(HttpStatusCode.OK);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SendAsync_CachedCredentialsAreUsedUntilTheyAreExpiredThenCredentialProvidersAreInvoked_SucceedsAsync()
+        {
+            // Arrange
+            var packageSource = new PackageSource("http://package.source.test");
+            var credentialService = Mock.Of<ICredentialService>();
+            var clientHandler = new HttpClientHandler();
+            var initialCredentials = new NetworkCredential("user", "password1");
+            int retryCount = 0;
+            bool isUnauthorizedResponse = true;
+
+            // Mock: GetCredentialsAsync
+            Mock.Get(credentialService)
+                .Setup(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(initialCredentials);
+
+            // Mock: TryGetLastKnownGoodCredentialsFromCache
+            Mock.Get(credentialService)
+                .Setup(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny))
+                .Returns((Uri sourceUri, bool isProxyRequest, out ICredentials outCredentials) =>
+                {
+                    outCredentials = retryCount == 1 ? null : initialCredentials;
+                    return outCredentials != null;
+                });
+
+            // Setup inner handler
+            var innerHandler = new LambdaMessageHandler(_ =>
+            {
+                retryCount++;
+                var credentials = clientHandler.Credentials.GetCredential(packageSource.SourceUri, "basic");
+                var response = HandleRequest(retryCount, ref isUnauthorizedResponse, credentials, initialCredentials);
+
+                // Change credentials after 8 requests to mimic credential expired scenario
+                if (retryCount == 8)
+                {
+                    initialCredentials = new NetworkCredential("user", "password2");
+                    Mock.Get(credentialService).Setup(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(initialCredentials);
+                }
+
+                return response;
+            });
+
+            // Act and Assert in a loop
+            for (int i = 0; i < 5; i++)
+            {
+                await ExecuteRequestAsync(packageSource, clientHandler, credentialService, innerHandler);
+            }
+
+            Assert.Equal(11, retryCount); // 11 requests expected
+            Mock.Get(credentialService).Verify(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny), Times.Exactly(5));
+            Mock.Get(credentialService).Verify(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+
+            static HttpResponseMessage HandleRequest(int retryCount, ref bool isUnauthorizedResponse, NetworkCredential credentials, NetworkCredential expectedCredentials)
+            {
+                if (isUnauthorizedResponse)
+                {
+                    Assert.True(string.IsNullOrEmpty(credentials.UserName) && string.IsNullOrEmpty(credentials.Password));
+                    isUnauthorizedResponse = false;
+                    return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                }
+                else
+                {
+                    Assert.Equal(expectedCredentials.UserName, credentials.UserName);
+                    Assert.Equal(expectedCredentials.Password, credentials.Password);
+
+                    isUnauthorizedResponse = true;
+                    if (retryCount == 8) //Cached credentials worked for the first 3 requests, then expired
+                    {
+                        isUnauthorizedResponse = false;
+                        return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                    }
+                    return new HttpResponseMessage(HttpStatusCode.OK);
+                }
+            }
+        }
+
+        private static async Task<HttpResponseMessage> ExecuteRequestAsync(PackageSource packageSource, HttpClientHandler clientHandler, ICredentialService credentialService, HttpMessageHandler innerHandler)
+        {
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = innerHandler
+            };
+
+            return await SendAsync(handler);
+        }
+
+        [Fact]
         public async Task SendAsync_WithMissingCredentials_Returns401()
         {
             // Arrange
