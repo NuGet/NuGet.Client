@@ -228,6 +228,24 @@ namespace NuGet.ProjectModel.Test
             Assert.Empty(actual.PackOptions.PackageType);
         }
 
+
+        [Theory]
+        [MemberData(nameof(TestEnvironmentVariableReader), @"
+                                ""packOptions"": {
+                                  ""packageType"": ""foo""
+                                }
+                              }")]
+        public void PackageSpecReader_Malformed_Default(IEnvironmentVariableReader environmentVariableReader, string json)
+        {
+            // Arrange & Act
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null, environmentVariableReader);
+
+            // Assert
+            Assert.NotNull(actual.PackOptions);
+            Assert.NotNull(actual.PackOptions.PackageType);
+            Assert.Empty(actual.PackOptions.PackageType);
+        }
+
         [Theory]
         [MemberData(nameof(TestEnvironmentVariableReader), @"{
                                 ""packOptions"": {
@@ -269,6 +287,7 @@ namespace NuGet.ProjectModel.Test
             Assert.NotNull(actual.PackOptions.PackageType);
             Assert.Equal(expected, actual.PackOptions.PackageType.ToArray());
         }
+
 
         [Theory]
         [MemberData(nameof(TestEnvironmentVariableReader), @"{
