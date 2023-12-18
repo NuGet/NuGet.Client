@@ -3918,6 +3918,61 @@ namespace NuGet.ProjectModel.Test
             Assert.True(secondGroup.TransitiveDependencies.First().VersionCentrallyManaged);
         }
 
+
+        [Theory]
+        [MemberData(nameof(TestEnvironmentVariableReader))]
+        public void PackageSpecReader_Malformed_Exception(IEnvironmentVariableReader environmentVariableReader)
+        {
+            // Arrange
+            var json = @"
+{
+    "".NETCoreApp,Version=v3.1"": {
+        ""Foo"":";
+
+            // Act
+            var results = new List<CentralTransitiveDependencyGroup>();
+            if (environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING").Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
+            {
+                Assert.ThrowsAny<System.Text.Json.JsonException>(() =>
+                {
+                    using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
+                    var reader = new Utf8JsonStreamReader(stream);
+
+                    if (reader.TokenType == JsonTokenType.StartObject)
+                    {
+                        reader.Read();
+                        NuGetFramework framework = NuGetFramework.Parse(reader.GetString());
+                        var dependencies = new List<LibraryDependency>();
+
+                        JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                            jsonReader: ref reader,
+                            results: dependencies,
+                            packageSpecPath: "SomePath");
+                        results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
+                    }
+                });
+            }
+            else
+            {
+                using (var stringReader = new StringReader(json.ToString()))
+                using (var jsonReader = new JsonTextReader(stringReader))
+                {
+                    jsonReader.Read();
+                    jsonReader.Read();
+                    var dependencies = new List<LibraryDependency>();
+                    NuGetFramework framework = NuGetFramework.Parse((string)jsonReader.Value);
+                    JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                        jsonReader: jsonReader,
+                        results: dependencies,
+                        packageSpecPath: "SomePath");
+                    results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
+                }
+                // Assert
+                Assert.Equal(1, results.Count);
+                var firstGroup = results.ElementAt(0);
+            }
+        }
+
         [Theory]
         [MemberData(nameof(TestEnvironmentVariableReader))]
         public void GetPackageSpec_WithSecondaryFrameworks_ReturnsTargetFrameworkInformationWithDualCompatibilityFramework(IEnvironmentVariableReader environmentVariableReader)
