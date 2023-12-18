@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -11409,6 +11410,60 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // Assert
             result.Success.Should().BeTrue(because: result.AllOutput);
             result.Output.Should().Contain("WARNING: NU1603");
+        }
+
+        [Fact]
+        public async Task NuGetRestore_WithMacrosEnabled_WritesAssetsFileWithMacros()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    "a",
+                    pathContext.SolutionRoot,
+                    "net472");
+            var packageX = new SimpleTestPackageContext()
+            {
+                Id = "x",
+                Version = "1.0.0"
+            };
+
+            // Add 1.0.0
+            projectA.AddPackageToAllFrameworks(packageX);
+            // But create only 2.0.0 on the server.
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var args = new string[] {
+                    "restore",
+                    solution.SolutionPath,
+                    "-Verbosity",
+                    "detailed",
+                };
+            CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    environmentVariables:
+                    new Dictionary<string, string>()
+                    {
+                        { "NUGET_ENABLE_EXPERIMENTAL_MACROS", "true" }
+                    });
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+
+            // Is there a thing that's always guaranteed to have a $(User)
+            projectA.AssetsFile.PackageFolders.Should().HaveCountGreaterThan(0);
+            var globalPackagesFolder = projectA.AssetsFile.PackageFolders[0]; // the package folders are always in priority and gpf is always first.
+
+            JObject assetsFileJson = JObject.Parse(File.ReadAllText(projectA.AssetsFileOutputPath));
+            var configList = assetsFileJson["project"]["restore"]["configFilePaths"].ToArray();
+            var configFilePaths = configList.Select(e => e.Value<string>()).ToList();
+
+
+            configFilePaths.Should().Contain(("$(User)\\NuGet.Config"));
         }
 
         /// <summary>
