@@ -11462,7 +11462,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             var configFilePaths = configList.Select(e => e.Value<string>()).ToList();
 
 
-            configFilePaths.Should().Contain(("$(User)\\NuGet.Config"));
+            configFilePaths.Should().Contain(("$(User)" + Path.DirectorySeparatorChar + "NuGet.Config"));
         }
 
         /// <summary>
