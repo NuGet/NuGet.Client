@@ -852,6 +852,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   </data>
   <data name="Error_CannotObtainSearchSource" xml:space="preserve">
     <value>Failed to obtain a search resource.</value>
+  </data>
   <data name="ConfigPathsCommandDescription" xml:space="preserve">
     <value>Lists the paths to all NuGet configuration files that will be applied when invoking NuGet command in a specific directory</value>
   </data>

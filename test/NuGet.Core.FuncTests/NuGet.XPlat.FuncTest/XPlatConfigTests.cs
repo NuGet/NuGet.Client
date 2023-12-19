@@ -26,8 +26,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config paths {testInfo.WorkingPath}",
-                waitForExit: true);
+                $"{XplatDll} config paths --working-directory {testInfo.WorkingPath}");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
@@ -42,8 +41,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 testInfo.WorkingPath,
-                $"{XplatDll} config paths",
-                waitForExit: true);
+                $"{XplatDll} config paths");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
@@ -59,8 +57,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config paths --help",
-                waitForExit: true);
+                $"{XplatDll} config paths --help");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -75,8 +72,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get http_proxy {testInfo.WorkingPath}",
-                waitForExit: true);
+                $"{XplatDll} config get http_proxy --working-directory {testInfo.WorkingPath}");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, @"http://company-squid:3128@contoso.test");
@@ -91,8 +87,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get http_proxy {testInfo.WorkingPath} --show-path",
-                waitForExit: true);
+                $"{XplatDll} config get http_proxy --working-directory {testInfo.WorkingPath} --show-path");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
@@ -108,8 +103,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 testInfo.WorkingPath,
-                $"{XplatDll} config get http_proxy",
-                waitForExit: true);
+                $"{XplatDll} config get http_proxy");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, @"http://company-squid:3128@contoso.test");
@@ -124,8 +118,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get all {Path.Combine(testInfo.WorkingPath, "subfolder")}",
-                waitForExit: true);
+                $"{XplatDll} config get all --working-directory {Path.Combine(testInfo.WorkingPath, "subfolder")}");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://fontoso.test/v3/index.json\"");
@@ -141,8 +134,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get all {Path.Combine(testInfo.WorkingPath, "subfolder")} --show-path",
-                waitForExit: true);
+                $"{XplatDll} config get all --working-directory {Path.Combine(testInfo.WorkingPath, "subfolder")} --show-path");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, Path.Combine(testInfo.WorkingPath.Path, "NuGet.Config"));
@@ -160,8 +152,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Path.Combine(testInfo.WorkingPath, "subfolder"),
-                $"{XplatDll} config get all",
-                waitForExit: true);
+                $"{XplatDll} config get all");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, "value=\"https://fontoso.test/v3/index.json\"");
@@ -177,8 +168,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Path.Combine(testInfo.WorkingPath, "subfolder"),
-                $"{XplatDll} config get all",
-                waitForExit: true);
+                $"{XplatDll} config get all");
             var firstString = "add key=\"Bar\" value=\"https://bontoso.test/v3/index.json\"";
             var secondString = "add key=\"Foo\" value=\"https://fontoso.test/v3/index.json\"";
             var firstStringIndex = result.Output.IndexOf(firstString);
@@ -198,8 +188,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 workingDirectory,
-                $"{XplatDll} config get all --show-path",
-                waitForExit: true);
+                $"{XplatDll} config get all --show-path");
             var firstPath = Path.Combine(workingDirectory, "NuGet.Config");
             var secondPath = Path.Combine(testInfo.WorkingPath, "NuGet.Config");
             var firstPathIndex = result.Output.IndexOf(firstPath);
@@ -219,8 +208,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get --help",
-                waitForExit: true);
+                $"{XplatDll} config get --help");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -236,8 +224,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get all --help",
-                waitForExit: true);
+                $"{XplatDll} config get all --help");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -253,8 +240,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get http_proxy --help",
-                waitForExit: true);
+                $"{XplatDll} config get http_proxy --help");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -272,8 +258,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true);
+                $"{XplatDll} config set {key} {value} --configfile {filePath}");
 
             ISettings settings = Configuration.Settings.LoadDefaultSettings(
                 testInfo.WorkingPath,
@@ -310,8 +295,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true);
+                $"{XplatDll} config set {key} {value} --configfile {filePath}");
 
             var updatedSettings = Configuration.Settings.LoadDefaultSettings(
                 testInfo.WorkingPath,
@@ -343,8 +327,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true);
+                $"{XplatDll} config set {key} {value} --configfile {filePath}");
 
             var updatedSettings = Configuration.Settings.LoadSpecificSettings(testInfo.WorkingPath, filePath);
             var updatedConfigSection = updatedSettings.GetSection("config");
@@ -371,8 +354,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set --help",
-                waitForExit: true);
+                $"{XplatDll} config set --help");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -389,8 +371,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config unset {key} --configfile {filePath}",
-                waitForExit: true);
+                $"{XplatDll} config unset {key} --configfile {filePath}");
             var settings = Settings.LoadSpecificSettings(testInfo.WorkingPath, filePath);
             var configSection = settings.GetSection("config");
 
@@ -410,8 +391,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config unset {key} --configfile {filePath}",
-                waitForExit: true);
+                $"{XplatDll} config unset {key} --configfile {filePath}");
             var expectedMessage = string.Format(CultureInfo.CurrentCulture, Strings.ConfigUnsetNonExistingKey, key);
 
             // Assert
@@ -428,8 +408,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config unset --help",
-                waitForExit: true);
+                $"{XplatDll} config unset --help");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -445,8 +424,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config --help",
-                waitForExit: true);
+                $"{XplatDll} config --help");
 
             // Assert
             DotnetCliUtil.VerifyResultSuccess(result, helpMessage);
@@ -462,8 +440,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config paths {nonExistingDirectory}",
-                waitForExit: true);
+                $"{XplatDll} config paths --working-directory {nonExistingDirectory}");
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
 
             // Assert
@@ -480,8 +457,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get all {nonExistingDirectory}",
-                waitForExit: true);
+                $"{XplatDll} config get all --working-directory {nonExistingDirectory}");
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_PathNotFound, nonExistingDirectory);
 
             // Assert
@@ -498,8 +474,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get {invalidKey} {testInfo.WorkingPath}",
-                waitForExit: true);
+                $"{XplatDll} config get {invalidKey} --working-directory {testInfo.WorkingPath}");
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, invalidKey);
 
             // Assert
@@ -515,8 +490,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config get",
-                waitForExit: true);
+                $"{XplatDll} config get");
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.ConfigCommandKeyNotFound, "");
 
             // Assert
@@ -535,8 +509,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config set {key} {value} --configfile {filePath}",
-                waitForExit: true);
+                $"{XplatDll} config set {key} {value} --configfile {filePath}");
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, key);
 
             // Assert
@@ -553,8 +526,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
-                $"{XplatDll} config unset {key}",
-                waitForExit: true);
+                $"{XplatDll} config unset {key}");
             var expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_ConfigSetInvalidKey, key);
 
             // Assert
