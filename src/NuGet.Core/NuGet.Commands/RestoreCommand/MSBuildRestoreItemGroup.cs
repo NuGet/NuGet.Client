@@ -52,6 +52,18 @@ namespace NuGet.Commands
 
         public static MSBuildRestoreItemGroup Create(
             string rootName,
+            int position)
+        {
+            var group = new MSBuildRestoreItemGroup();
+
+            group.RootName = rootName;
+            group.Position = position;
+
+            return group;
+        }
+
+        public static MSBuildRestoreItemGroup Create(
+            string rootName,
             IEnumerable<XElement> items,
             int position,
             IEnumerable<string> conditions)
