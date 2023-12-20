@@ -146,8 +146,7 @@ namespace NuGet.ProjectModel
                         return value.Split(DelimitedStringDelimiters, StringSplitOptions.RemoveEmptyEntries);
 
                     default:
-                        var invalidCastException = new InvalidCastException();
-                        throw new JsonException(invalidCastException.Message, invalidCastException);
+                        throw new InvalidCastException();
                 }
             }
 
