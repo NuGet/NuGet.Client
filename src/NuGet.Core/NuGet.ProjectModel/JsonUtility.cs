@@ -43,6 +43,12 @@ namespace NuGet.ProjectModel
             }
         }
 
+        internal static T LoadJson<T>(Stream stream, IUtf8JsonStreamReaderConverter<T> converter)
+        {
+            var streamingJsonReader = new Utf8JsonStreamReader(stream);
+            return converter.Read(ref streamingJsonReader);
+        }
+
         internal static PackageDependency ReadPackageDependency(string property, JToken json)
         {
             var versionStr = json.Value<string>();

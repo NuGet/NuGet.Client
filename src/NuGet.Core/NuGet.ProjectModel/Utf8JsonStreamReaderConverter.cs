@@ -6,8 +6,8 @@ namespace NuGet.ProjectModel
     /// An abstract class that defines a function for reading a <see cref="Utf8JsonStreamReader"/> into a <typeparamref name="T"/>
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal abstract class Utf8JsonStreamReaderConverter<T>
+    internal interface IUtf8JsonStreamReaderConverter<T>
     {
-        public abstract T Read(ref Utf8JsonStreamReader reader);
+        T Read(ref Utf8JsonStreamReader reader);
     }
 }
