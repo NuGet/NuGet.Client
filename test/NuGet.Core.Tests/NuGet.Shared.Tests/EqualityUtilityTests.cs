@@ -19,7 +19,7 @@ namespace NuGet.Shared.Tests
             var list = new List<string>();
 
             // Act & Assert
-            list.ElementsEqual(null, s => s, StringComparer.Ordinal).Should().BeFalse();
+            list.OrderedEquals(null, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace NuGet.Shared.Tests
             List<string> list = null;
 
             // Act & Assert
-            list.ElementsEqual(new List<string>(), s => s, StringComparer.Ordinal).Should().BeFalse();
+            list.OrderedEquals(new List<string>(), (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace NuGet.Shared.Tests
             List<string> list = null;
 
             // Act & Assert
-            list.ElementsEqual(null, s => s, StringComparer.Ordinal).Should().BeTrue();
+            list.OrderedEquals(null, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace NuGet.Shared.Tests
             var list = new List<string>();
 
             // Act & Assert
-            list.ElementsEqual(list, s => s, StringComparer.Ordinal).Should().BeTrue();
+            list.OrderedEquals(list, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();
         }
 
         [Fact]
@@ -60,7 +60,7 @@ namespace NuGet.Shared.Tests
             var list2 = new List<string>();
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.OrdinalIgnoreCase).Should().BeTrue();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeTrue();
         }
 
         [Fact]
@@ -71,7 +71,7 @@ namespace NuGet.Shared.Tests
             var list2 = new List<string> { "unit.test", "unit.test" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.OrdinalIgnoreCase).Should().BeFalse();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeFalse();
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace NuGet.Shared.Tests
             var list2 = new List<string> { "Unit.test" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.OrdinalIgnoreCase).Should().BeTrue();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeTrue();
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace NuGet.Shared.Tests
             var list2 = new List<string> { "Unit.test" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.Ordinal).Should().BeFalse();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace NuGet.Shared.Tests
             var list2 = new List<string> { "test", "unit" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, x => x, StringComparer.Ordinal).Should().BeTrue();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();
         }
 
         //  OrderedEquals ICollection
@@ -116,7 +116,7 @@ namespace NuGet.Shared.Tests
             ICollection<string> list = new List<string>();
 
             // Act & Assert
-            list.ElementsEqual(null, s => s, StringComparer.Ordinal).Should().BeFalse();
+            list.OrderedEquals(null, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
         }
 
         [Fact]
@@ -126,7 +126,7 @@ namespace NuGet.Shared.Tests
             ICollection<string> list = null;
 
             // Act & Assert
-            list.ElementsEqual(new List<string>(), s => s, StringComparer.Ordinal).Should().BeFalse();
+            list.OrderedEquals(new List<string>(), (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace NuGet.Shared.Tests
             ICollection<string> list = null;
 
             // Act & Assert
-            list.ElementsEqual(null, s => s, StringComparer.Ordinal).Should().BeTrue();
+            list.OrderedEquals(null, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();
         }
 
         [Fact]
@@ -146,7 +146,7 @@ namespace NuGet.Shared.Tests
             ICollection<string> list = new List<string>();
 
             // Act & Assert
-            list.ElementsEqual(list, s => s, StringComparer.Ordinal).Should().BeTrue();
+            list.OrderedEquals(list, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();
         }
 
         [Fact]
@@ -157,7 +157,7 @@ namespace NuGet.Shared.Tests
             ICollection<string> list2 = new List<string>();
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.OrdinalIgnoreCase).Should().BeTrue();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeTrue();
         }
 
         [Fact]
@@ -168,7 +168,7 @@ namespace NuGet.Shared.Tests
             ICollection<string> list2 = new List<string> { "unit.test", "unit.test" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.OrdinalIgnoreCase).Should().BeFalse();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeFalse();
         }
 
         [Fact]
@@ -179,7 +179,7 @@ namespace NuGet.Shared.Tests
             ICollection<string> list2 = new List<string> { "Unit.test" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.OrdinalIgnoreCase).Should().BeTrue();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeTrue();
         }
 
         [Fact]
@@ -190,7 +190,7 @@ namespace NuGet.Shared.Tests
             ICollection<string> list2 = new List<string> { "Unit.test" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.Ordinal).Should().BeFalse();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
         }
 
         [Fact]
@@ -201,7 +201,7 @@ namespace NuGet.Shared.Tests
             ICollection<string> list2 = new List<string> { "test", "unit" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, x => x, StringComparer.Ordinal).Should().BeTrue();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();
         }
 
         // OrderedEquals IEnumerable
@@ -213,7 +213,7 @@ namespace NuGet.Shared.Tests
             IEnumerable<string> list = new List<string>();
 
             // Act & Assert
-            list.ElementsEqual(null, s => s, StringComparer.Ordinal).Should().BeFalse();
+            list.OrderedEquals(null, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
         }
 
         [Fact]
@@ -223,7 +223,7 @@ namespace NuGet.Shared.Tests
             IEnumerable<string> list = null;
 
             // Act & Assert
-            list.ElementsEqual(new List<string>(), s => s, StringComparer.Ordinal).Should().BeFalse();
+            list.OrderedEquals(new List<string>(), (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
         }
 
         [Fact]
@@ -233,7 +233,7 @@ namespace NuGet.Shared.Tests
             IEnumerable<string> list = null;
 
             // Act & Assert
-            list.ElementsEqual(null, s => s, StringComparer.Ordinal).Should().BeTrue();
+            list.OrderedEquals(null, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();
         }
 
         [Fact]
@@ -243,7 +243,7 @@ namespace NuGet.Shared.Tests
             IEnumerable<string> list = new List<string>();
 
             // Act & Assert
-            list.ElementsEqual(list, s => s, StringComparer.Ordinal).Should().BeTrue();
+            list.OrderedEquals(list, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();
         }
 
         [Fact]
@@ -254,7 +254,7 @@ namespace NuGet.Shared.Tests
             IEnumerable<string> list2 = new List<string>();
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.OrdinalIgnoreCase).Should().BeTrue();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeTrue();
         }
 
         [Fact]
@@ -265,7 +265,7 @@ namespace NuGet.Shared.Tests
             IEnumerable<string> list2 = new List<string> { "unit.test", "unit.test" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.OrdinalIgnoreCase).Should().BeFalse();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeFalse();
         }
 
         [Fact]
@@ -276,7 +276,7 @@ namespace NuGet.Shared.Tests
             IEnumerable<string> list2 = new List<string> { "Unit.test" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.OrdinalIgnoreCase).Should().BeTrue();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeTrue();
         }
 
         [Fact]
@@ -287,7 +287,7 @@ namespace NuGet.Shared.Tests
             IEnumerable<string> list2 = new List<string> { "Unit.test" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, s => s, StringComparer.Ordinal).Should().BeFalse();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
         }
 
         [Fact]
@@ -298,7 +298,7 @@ namespace NuGet.Shared.Tests
             IEnumerable<string> list2 = new List<string> { "test", "unit" };
 
             // Act & Assert
-            list1.ElementsEqual(list2, x => x, StringComparer.Ordinal).Should().BeTrue();
+            list1.OrderedEquals(list2, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();
         }
 
         // SequenceEqualWithNullCheck IList

@@ -36,7 +36,7 @@ namespace NuGet.ProjectModel
 
             if (string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase))
             {
-                return Properties.ElementsEqual(other.Properties, pair => pair);
+                return Properties.OrderedEquals(other.Properties, (a, b) => StringComparer.Ordinal.Compare(a.Key, b.Key));
             }
 
             return false;

@@ -305,8 +305,8 @@ namespace NuGet.RuntimeModel
                 return true;
             }
 
-            return Runtimes.ElementsEqual(other.Runtimes, pair => pair)
-                && Supports.ElementsEqual(other.Supports, pair => pair);
+            return Runtimes.OrderedEquals(other.Runtimes, (a, b) => StringComparer.Ordinal.Compare(a.Key, b.Key))
+                && Supports.OrderedEquals(other.Supports, (a, b) => StringComparer.Ordinal.Compare(a.Key, b.Key));
         }
 
         public override bool Equals(object? obj)

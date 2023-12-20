@@ -14,116 +14,68 @@ namespace NuGet.Shared
     internal static class EqualityUtility
     {
         /// <summary>
-        /// Compares two enumerables for equality using an optional comparer. Handles null values gracefully.
+        /// Compares two enumerables for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
         /// </summary>
         /// <typeparam name="TSource">The type of the list</typeparam>
-        /// <typeparam name="TKey">The type used for equality checking</typeparam>
+        /// <typeparam name="TKey">The type of the sorting key</typeparam>
         /// <param name="self">This list</param>
         /// <param name="other">The other list</param>
         /// <param name="keySelector">The function to extract the key from each item in the list</param>
-        /// <param name="equalityComparer">An optional comparer for sequences</param>
-        internal static bool ElementsEqual<TSource, TKey>(this IEnumerable<TSource>? self, IEnumerable<TSource>? other, Func<TSource, TKey> keySelector, IEqualityComparer<TKey>? equalityComparer = null) where TKey : notnull
+        /// <param name="orderComparer">An optional comparer for comparing keys</param>
+        /// <param name="sequenceComparer">An optional comparer for sequences</param>
+        internal static bool OrderedEquals<TSource>(this IEnumerable<TSource>? self, IEnumerable<TSource>? other, Comparison<TSource> orderComparer, IEqualityComparer<TSource>? sequenceComparer = null)
         {
-            Debug.Assert(equalityComparer != null || typeof(TKey) != typeof(string), "Argument " + nameof(equalityComparer) + " must be provided if " + nameof(TKey) + " is a string.");
+            Debug.Assert(sequenceComparer != null || typeof(TSource) != typeof(string), "Argument " + "sequenceComparer" + " must be provided if " + "TSource" + " is a string.");
 
-            if (TryIdentityEquals(self, other, out bool identityEquals))
+            bool identityEquals;
+            if (TryIdentityEquals(self, other, out identityEquals))
             {
                 return identityEquals;
             }
 
-            int selfCount = 0;
-            equalityComparer ??= EqualityComparer<TKey>.Default;
-            var sourceItems = new Dictionary<TKey, int>(equalityComparer);
-            foreach (TSource current in self)
-            {
-                ++selfCount;
-                TKey key = keySelector(current);
-                if (sourceItems.TryGetValue(key, out int count))
-                {
-                    sourceItems[key] = count + 1;
-                }
-                else
-                {
-                    sourceItems[key] = 1;
-                }
-            }
+            List<TSource> selfCopy = new List<TSource>(self);
 
             int otherCount = 0;
-            foreach (TSource current in other)
+            TSource[] otherCopy = new TSource[selfCopy.Count];
+            foreach (TSource item in other)
             {
-                ++otherCount;
-                TKey key = keySelector(current);
-                if (!sourceItems.TryGetValue(key, out int count) || count <= 0)
+                if (otherCount >= selfCopy.Count)
                 {
                     return false;
                 }
-                else
-                {
-                    sourceItems[key] = count - 1;
-                }
+
+                otherCopy[otherCount] = item;
+                ++otherCount;
             }
 
-            return selfCount == otherCount;
-        }
-
-        /// <summary>
-        /// Compares two collections for equality using an optional comparer. Handles null values gracefully.
-        /// </summary>
-        /// <typeparam name="TSource">The type of the list</typeparam>
-        /// <typeparam name="TKey">The type used for equality checking</typeparam>
-        /// <param name="self">This list</param>
-        /// <param name="other">The other list</param>
-        /// <param name="keySelector">The function to extract the key from each item in the list</param>
-        /// <param name="equalityComparer">An optional comparer for sequences</param>
-        internal static bool ElementsEqual<TSource, TKey>(this ICollection<TSource>? self, ICollection<TSource>? other, Func<TSource, TKey> keySelector, IEqualityComparer<TKey>? equalityComparer = null) where TKey : notnull
-        {
-            Debug.Assert(equalityComparer != null || typeof(TKey) != typeof(string), "Argument " + nameof(equalityComparer) + " must be provided if " + nameof(TKey) + " is a string.");
-
-            if (TryIdentityEquals(self, other, out bool identityEquals))
-            {
-                return identityEquals;
-            }
-
-            if (self.Count != other.Count)
+            if (selfCopy.Count != otherCount)
             {
                 return false;
             }
 
-            if (self.Count == 0)
+            if (selfCopy.Count == 0)
             {
                 return true;
             }
 
-            equalityComparer ??= EqualityComparer<TKey>.Default;
-            if (self.Count == 1)
+            if (sequenceComparer == null)
             {
-                return equalityComparer.Equals(keySelector(self.First()), keySelector(other.First()));
+                sequenceComparer = EqualityComparer<TSource>.Default;
             }
 
-            Dictionary<TKey, int> sourceItems = new Dictionary<TKey, int>(self.Count, equalityComparer);
-            foreach (TSource current in self)
+            if (selfCopy.Count == 1)
             {
-                TKey key = keySelector(current);
-                if (sourceItems.TryGetValue(key, out int count))
-                {
-                    sourceItems[key] = count + 1;
-                }
-                else
-                {
-                    sourceItems[key] = 1;
-                }
+                return sequenceComparer.Equals(selfCopy[0], otherCopy[0]);
             }
 
-            foreach (TSource current in other)
+            selfCopy.Sort(orderComparer);
+            Array.Sort(otherCopy, orderComparer);
+
+            for (int i = 0; i < selfCopy.Count; ++i)
             {
-                TKey key = keySelector(current);
-                if (!sourceItems.TryGetValue(key, out int count) || count <= 0)
+                if (!sequenceComparer.Equals(selfCopy[i], otherCopy[i]))
                 {
                     return false;
-                }
-                else
-                {
-                    sourceItems[key] = count - 1;
                 }
             }
 
@@ -131,16 +83,18 @@ namespace NuGet.Shared
         }
 
         /// <summary>
-        /// Compares two lists for equality using an optional comparer. Handles null values gracefully.
+        /// Compares two collections for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
         /// </summary>
         /// <typeparam name="TSource">The type of the list</typeparam>
-        /// <typeparam name="TKey">The type used for equality checking</typeparam>
+        /// <typeparam name="TKey">The type of the sorting key</typeparam>
         /// <param name="self">This list</param>
         /// <param name="other">The other list</param>
-        /// <param name="equalityComparer">An optional comparer for sequences</param>
-        internal static bool ElementsEqual<TSource, TKey>(this IList<TSource>? self, IList<TSource>? other, Func<TSource, TKey> keySelector, IEqualityComparer<TKey>? equalityComparer = null) where TKey : notnull
+        /// <param name="keySelector">The function to extract the key from each item in the list</param>
+        /// <param name="orderComparer">An optional comparer for comparing keys</param>
+        /// <param name="sequenceComparer">An optional comparer for sequences</param>
+        internal static bool OrderedEquals<TSource>(this ICollection<TSource>? self, ICollection<TSource>? other, Comparison<TSource> orderComparer, IEqualityComparer<TSource>? sequenceComparer = null)
         {
-            Debug.Assert(equalityComparer != null || typeof(TKey) != typeof(string), "Argument " + nameof(equalityComparer) + " must be provided if " + nameof(TKey) + " is a string.");
+            Debug.Assert(sequenceComparer != null || typeof(TSource) != typeof(string), "Argument " + "sequenceComparer" + " must be provided if " + "TSource" + " is a string.");
 
             if (TryIdentityEquals(self, other, out bool identityEquals))
             {
@@ -157,36 +111,87 @@ namespace NuGet.Shared
                 return true;
             }
 
-            equalityComparer ??= EqualityComparer<TKey>.Default;
+            if (sequenceComparer == null)
+            {
+                sequenceComparer = EqualityComparer<TSource>.Default;
+            }
+
             if (self.Count == 1)
             {
-                return equalityComparer.Equals(keySelector(self[0]), keySelector(other[0]));
+                return sequenceComparer.Equals(self.First(), other.First());
             }
 
-            var sourceItems = new Dictionary<TKey, int>(self.Count, equalityComparer);
-            for (int i = 0; i < self.Count; ++i)
-            {
-                TKey current = keySelector(self[i]);
-                if (sourceItems.TryGetValue(current, out int count))
-                {
-                    sourceItems[current] = count + 1;
-                }
-                else
-                {
-                    sourceItems[current] = 1;
-                }
-            }
+            TSource[] selfCopy = new TSource[self.Count];
+            TSource[] otherCopy = new TSource[other.Count];
+            self.CopyTo(selfCopy, 0);
+            other.CopyTo(otherCopy, 0);
 
-            for (int i = 0; i < other.Count; ++i)
+            Array.Sort(selfCopy, orderComparer);
+            Array.Sort(otherCopy, orderComparer);
+
+            for (int i = 0; i < selfCopy.Length; ++i)
             {
-                TKey current = keySelector(other[i]);
-                if (!sourceItems.TryGetValue(current, out int count) || count <= 0)
+                if (!sequenceComparer.Equals(selfCopy[i], otherCopy[i]))
                 {
                     return false;
                 }
-                else
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Compares two lists for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the list</typeparam>
+        /// <typeparam name="TKey">The type of the sorting key</typeparam>
+        /// <param name="self">This list</param>
+        /// <param name="other">The other list</param>
+        /// <param name="keySelector">The function to extract the key from each item in the list</param>
+        /// <param name="orderComparer">An optional comparer for comparing keys</param>
+        /// <param name="sequenceComparer">An optional comparer for sequences</param>
+        internal static bool OrderedEquals<TSource>(this IList<TSource>? self, IList<TSource>? other, Comparison<TSource> orderComparer, IEqualityComparer<TSource>? sequenceComparer = null)
+        {
+            Debug.Assert(sequenceComparer != null || typeof(TSource) != typeof(string), "Argument " + "sequenceComparer" + " must be provided if " + "TSource" + " is a string.");
+
+            if (TryIdentityEquals(self, other, out bool identityEquals))
+            {
+                return identityEquals;
+            }
+
+            if (self.Count != other.Count)
+            {
+                return false;
+            }
+
+            if (self.Count == 0)
+            {
+                return true;
+            }
+
+            if (sequenceComparer == null)
+            {
+                sequenceComparer = EqualityComparer<TSource>.Default;
+            }
+
+            if (self.Count == 1)
+            {
+                return sequenceComparer.Equals(self[0], other[0]);
+            }
+
+            TSource[] selfCopy = new TSource[self.Count];
+            TSource[] otherCopy = new TSource[other.Count];
+            self.CopyTo(selfCopy, 0);
+            other.CopyTo(otherCopy, 0);
+
+            Array.Sort(selfCopy, orderComparer);
+            Array.Sort(otherCopy, orderComparer);
+
+            for (int i = 0; i < selfCopy.Length; ++i)
+            {
+                if (!sequenceComparer.Equals(selfCopy[i], otherCopy[i]))
                 {
-                    sourceItems[current] = count - 1;
+                    return false;
                 }
             }
 
@@ -208,7 +213,10 @@ namespace NuGet.Shared
                 return identityEquals;
             }
 
-            comparer ??= EqualityComparer<T>.Default;
+            if (comparer == null)
+            {
+                comparer = EqualityComparer<T>.Default;
+            }
 
             return self.SequenceEqual(other, comparer);
         }
@@ -347,10 +355,10 @@ namespace NuGet.Shared
                 return true;
             }
 
-            if (!self.Keys.ElementsEqual(
+            if (!self.Keys.OrderedEquals(
                 other.Keys,
-                s => s,
-                equalityComparer: EqualityComparer<TKey>.Default))
+                (a, b) => Comparer<TKey>.Default.Compare(a, b),
+                sequenceComparer: EqualityComparer<TKey>.Default))
             {
                 return false;
             }

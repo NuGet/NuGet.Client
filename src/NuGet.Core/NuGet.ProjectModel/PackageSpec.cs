@@ -239,8 +239,8 @@ namespace NuGet.ProjectModel
                    EqualityUtility.DictionaryEquals(PackInclude, other.PackInclude, (s, o) => StringComparer.Ordinal.Equals(s, o)) &&
                    EqualityUtility.EqualsWithNullCheck(PackOptions, other.PackOptions) &&
 #pragma warning restore CS0612 // Type or member is obsolete
-                   EqualityUtility.ElementsEqual(Dependencies, other.Dependencies, dep => dep) &&
-                   EqualityUtility.ElementsEqual(TargetFrameworks, other.TargetFrameworks, tfm => tfm) &&
+                   EqualityUtility.OrderedEquals(Dependencies, other.Dependencies, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name)) &&
+                   EqualityUtility.OrderedEquals(TargetFrameworks, other.TargetFrameworks, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.TargetAlias, b.TargetAlias)) &&
                    EqualityUtility.EqualsWithNullCheck(RuntimeGraph, other.RuntimeGraph) &&
                    EqualityUtility.EqualsWithNullCheck(RestoreMetadata, other.RestoreMetadata);
         }

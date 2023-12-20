@@ -184,12 +184,12 @@ namespace NuGet.ProjectModel
                    osStringComparer.Equals(OutputPath, other.OutputPath) &&
                    osStringComparer.Equals(ProjectName, other.ProjectName) &&
                    osStringComparer.Equals(ProjectUniqueName, other.ProjectUniqueName) &&
-                   Sources.ElementsEqual(other.Sources.Distinct(), source => source) &&
+                   Sources.OrderedEquals(other.Sources.Distinct(), (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Source, b.Source)) &&
                    osStringComparer.Equals(PackagesPath, other.PackagesPath) &&
-                   ConfigFilePaths.ElementsEqual(other.ConfigFilePaths, filePath => filePath, osStringComparer) &&
-                   FallbackFolders.ElementsEqual(other.FallbackFolders, fallbackFolder => fallbackFolder, osStringComparer) &&
-                   EqualityUtility.ElementsEqual(TargetFrameworks, other.TargetFrameworks, dep => dep) &&
-                   OriginalTargetFrameworks.ElementsEqual(other.OriginalTargetFrameworks, fw => fw, StringComparer.OrdinalIgnoreCase) &&
+                   ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, (a, b) => osStringComparer.Compare(a, b), osStringComparer) &&
+                   FallbackFolders.OrderedEquals(other.FallbackFolders, (a, b) => osStringComparer.Compare(a, b), osStringComparer) &&
+                   EqualityUtility.OrderedEquals(TargetFrameworks, other.TargetFrameworks, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.TargetAlias, b.TargetAlias)) &&
+                   OriginalTargetFrameworks.OrderedEquals(other.OriginalTargetFrameworks, (a, b) => osStringComparer.Compare(a, b), StringComparer.OrdinalIgnoreCase) &&
                    CrossTargeting == other.CrossTargeting &&
                    LegacyPackagesDirectory == other.LegacyPackagesDirectory &&
                    ValidateRuntimeAssets == other.ValidateRuntimeAssets &&

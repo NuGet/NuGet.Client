@@ -92,7 +92,7 @@ namespace NuGet.Configuration
                     return true;
                 }
 
-                return Content.ElementsEqual(owners.Content, o => o, StringComparer.Ordinal);
+                return Content.OrderedEquals(owners.Content, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal);
             }
 
             return false;

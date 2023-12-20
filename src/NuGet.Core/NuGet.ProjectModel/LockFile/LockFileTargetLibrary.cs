@@ -176,23 +176,23 @@ namespace NuGet.ProjectModel
                 && VersionComparer.Default.Equals(Version!, other.Version!)
                 && string.Equals(Type, other.Type, StringComparison.Ordinal)
                 && string.Equals(Framework, other.Framework, StringComparison.Ordinal)
-                && IsListOrderedEqual<PackageDependency>(DependenciesKey)
-                && IsListOrderedEqual<string>(FrameworkAssembliesKey, equalityComparer: StringComparer.OrdinalIgnoreCase)
-                && IsListOrderedEqual<string>(FrameworkReferencesKey, equalityComparer: StringComparer.OrdinalIgnoreCase)
-                && IsListOrderedEqual<LockFileItem>(RuntimeAssembliesKey)
-                && IsListOrderedEqual<LockFileItem>(ResourceAssembliesKey)
-                && IsListOrderedEqual<LockFileItem>(CompileTimeAssembliesKey)
-                && IsListOrderedEqual<LockFileItem>(NativeLibrariesKey)
-                && IsListOrderedEqual<LockFileContentFile>(ContentFilesKey)
-                && IsListOrderedEqual<LockFileRuntimeTarget>(RuntimeTargetsKey)
-                && IsListOrderedEqual<LockFileItem>(BuildKey)
-                && IsListOrderedEqual<LockFileItem>(BuildMultiTargetingKey)
-                && IsListOrderedEqual<LockFileItem>(ToolsAssembliesKey)
-                && IsListOrderedEqual<LockFileItem>(EmbedAssembliesKey);
+                && IsListOrderedEqual<PackageDependency>(DependenciesKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Id, b.Id))
+                && IsListOrderedEqual<string>(FrameworkAssembliesKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), sequenceComparer: StringComparer.OrdinalIgnoreCase)
+                && IsListOrderedEqual<string>(FrameworkReferencesKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), sequenceComparer: StringComparer.OrdinalIgnoreCase)
+                && IsListOrderedEqual<LockFileItem>(RuntimeAssembliesKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path))
+                && IsListOrderedEqual<LockFileItem>(ResourceAssembliesKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path))
+                && IsListOrderedEqual<LockFileItem>(CompileTimeAssembliesKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path))
+                && IsListOrderedEqual<LockFileItem>(NativeLibrariesKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path))
+                && IsListOrderedEqual<LockFileContentFile>(ContentFilesKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path))
+                && IsListOrderedEqual<LockFileRuntimeTarget>(RuntimeTargetsKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path))
+                && IsListOrderedEqual<LockFileItem>(BuildKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path))
+                && IsListOrderedEqual<LockFileItem>(BuildMultiTargetingKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path))
+                && IsListOrderedEqual<LockFileItem>(ToolsAssembliesKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path))
+                && IsListOrderedEqual<LockFileItem>(EmbedAssembliesKey, static (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Path, b.Path));
 
             // NOTE we don't include PackageType in Equals or GetHashCode, since it's only used for compatibility checking post restore.
 
-            bool IsListOrderedEqual<T>(PropertyKey key, IEqualityComparer<T>? equalityComparer = null) where T : notnull
+            bool IsListOrderedEqual<T>(PropertyKey key, Comparison<T> comparer, IEqualityComparer<T>? sequenceComparer = null)
             {
                 _propertyValues.TryGetValue(key, out object? thisValue);
                 other._propertyValues.TryGetValue(key, out object? thatValue);
@@ -200,7 +200,7 @@ namespace NuGet.ProjectModel
                 IList<T>? thisList = thisValue is IList<T> { Count: not 0 } list1 ? list1 : null;
                 IList<T>? thatList = thatValue is IList<T> { Count: not 0 } list2 ? list2 : null;
 
-                return thisList.ElementsEqual<T, T>(thatList, static o => o, equalityComparer: equalityComparer);
+                return thisList.OrderedEquals<T>(thatList, comparer, sequenceComparer: sequenceComparer);
             }
         }
 

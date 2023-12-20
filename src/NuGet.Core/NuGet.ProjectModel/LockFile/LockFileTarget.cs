@@ -34,7 +34,7 @@ namespace NuGet.ProjectModel
                 && string.Equals(RuntimeIdentifier, other.RuntimeIdentifier, StringComparison.Ordinal)
                 && string.Equals(Name, other.Name, StringComparison.Ordinal))
             {
-                return Libraries.ElementsEqual(other.Libraries, library => library);
+                return Libraries.OrderedEquals(other.Libraries, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name));
             }
 
             return false;
