@@ -18,6 +18,11 @@ namespace NuGet.ProjectModel
     {
         private static readonly char[] DelimitedStringDelimiters = [' ', ','];
         private static readonly byte[] Utf8Bom = [0xEF, 0xBB, 0xBF];
+        private static readonly JsonReaderOptions DefaultJsonReaderOptions = new JsonReaderOptions
+        {
+            AllowTrailingCommas = true,
+            CommentHandling = JsonCommentHandling.Skip,
+        };
 
         private const int BufferSizeDefault = 16 * 1024;
         private const int MinBufferSize = 1024;
@@ -53,11 +58,7 @@ namespace NuGet.ProjectModel
                 _bufferUsed = 3;
             }
 
-            var initialJsonReaderState = new JsonReaderState(new JsonReaderOptions
-            {
-                AllowTrailingCommas = true,
-                CommentHandling = JsonCommentHandling.Skip,
-            });
+            var initialJsonReaderState = new JsonReaderState(DefaultJsonReaderOptions);
 
             ReadStreamIntoBuffer(initialJsonReaderState);
             _reader.Read();
