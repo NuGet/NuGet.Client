@@ -396,7 +396,6 @@ namespace NuGet.Tests.Apex
         {
             var timeout = TimeSpan.FromSeconds(20);
             var timer = Stopwatch.StartNew();
-            string content = null;
 
             do
             {
@@ -405,11 +404,8 @@ namespace NuGet.Tests.Apex
                 {
                     try
                     {
-                        content = File.ReadAllText(path);
                         var format = new LockFileFormat();
-#pragma warning disable CS0612 // Type or member is obsolete
-                        return format.Parse(content, path);
-#pragma warning restore CS0612 // Type or member is obsolete
+                        return format.Read(path);
                     }
                     catch
                     {
