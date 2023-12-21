@@ -53,13 +53,13 @@ namespace NuGet.ProjectModel
                 _bufferUsed = 3;
             }
 
-            var iniialJsonReaderState = new JsonReaderState(new JsonReaderOptions
+            var initialJsonReaderState = new JsonReaderState(new JsonReaderOptions
             {
                 AllowTrailingCommas = true,
                 CommentHandling = JsonCommentHandling.Skip,
             });
 
-            ReadStreamIntoBuffer(iniialJsonReaderState);
+            ReadStreamIntoBuffer(initialJsonReaderState);
             _reader.Read();
         }
 
