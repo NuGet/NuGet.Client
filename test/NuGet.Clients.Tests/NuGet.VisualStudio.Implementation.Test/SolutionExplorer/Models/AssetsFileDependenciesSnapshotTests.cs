@@ -14,6 +14,7 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
     public class AssetsFileDependenciesSnapshotTests
     {
         [Fact]
+        [Obsolete]
         public void ParseLibraries_IgnoreCaseInDependenciesTree_Succeeds()
         {
             var lockFileContent = """
@@ -68,6 +69,7 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
         }
 
         [Fact]
+        [Obsolete]
         public void ParseLibraries_LogForUnknownLibrary_AddsUnknownLibraryType()
         {
             var lockFileContent = """
@@ -118,6 +120,7 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
         }
 
         [Fact]
+        [Obsolete]
         public void ParseLibraries_LogForUnknownLibrary_WithAbsolutePath_AddsUnknownLibraryType()
         {
             var lockFileContent = """

@@ -23,6 +23,7 @@ namespace NuGet.Commands.FuncTest
     {
         // Verify that a v1 lock file can be parsed without crashing.
         [Fact]
+        [System.Obsolete]
         public void UWPRestore_ReadV1LockFile()
         {
             // Arrange
@@ -43,6 +44,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
+        [System.Obsolete]
         public void UWPRestore_ReadLockFileRoundTrip()
         {
             using (var workingDir = TestDirectory.Create())

@@ -407,7 +407,9 @@ namespace NuGet.Tests.Apex
                     {
                         content = File.ReadAllText(path);
                         var format = new LockFileFormat();
+#pragma warning disable CS0612 // Type or member is obsolete
                         return format.Parse(content, path);
+#pragma warning restore CS0612 // Type or member is obsolete
                     }
                     catch
                     {

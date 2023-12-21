@@ -1848,6 +1848,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact(Skip = "https://github.com/NuGet/Home/issues/8765")]
+        [Obsolete]
         public async Task RestoreCommand_LockedLockFileWithOutOfDateProjectAsync()
         {
             const string project = @"

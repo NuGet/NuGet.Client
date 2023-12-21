@@ -855,6 +855,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        [Obsolete]
         public void LockFile_GetTarget_WithNuGetFramework_ReturnsCorrectLockFileTarget()
         {
             // Arrange
@@ -870,6 +871,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        [Obsolete]
         public void LockFile_GetTarget_WithAlias_ReturnsCorrectLockFileTarget()
         {
             // Arrange
