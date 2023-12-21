@@ -82,7 +82,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Read_WhenReadingMalfornedJsonString_Throws()
+        public void Read_WhenReadingMalformedJsonString_Throws()
         {
             var json = Encoding.UTF8.GetBytes("{\"a\":\"string}");
 
