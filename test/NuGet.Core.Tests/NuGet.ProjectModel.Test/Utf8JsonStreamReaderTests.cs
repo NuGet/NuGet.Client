@@ -101,7 +101,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Read_WhenReadingMalfornedJson_Throws()
+        public void Read_WhenReadingMalformedJson_Throws()
         {
             var json = Encoding.UTF8.GetBytes("{\"a\":\"string\"}ohno");
             Assert.ThrowsAny<JsonException>(() =>
