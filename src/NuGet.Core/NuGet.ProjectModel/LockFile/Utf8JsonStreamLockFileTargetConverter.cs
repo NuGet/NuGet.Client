@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text.Json;
 using NuGet.Frameworks;
 
@@ -21,17 +22,27 @@ namespace NuGet.ProjectModel
             var lockFileTarget = new LockFileTarget();
             //We want to read the property name right away
             var propertyName = reader.GetString();
-            var parts = propertyName.Split(JsonUtility.PathSplitChars, 2);
-            lockFileTarget.TargetFramework = NuGetFramework.Parse(parts[0]);
-            if (parts.Length == 2)
-            {
-                lockFileTarget.RuntimeIdentifier = parts[1];
-            }
+            var parts = GetFrameworkAndIdentifier(propertyName, LockFile.DirectorySeparatorChar);
+            lockFileTarget.TargetFramework = NuGetFramework.Parse(parts.targetFramework);
+            lockFileTarget.RuntimeIdentifier = parts.runtimeIdentifier;
 
             reader.Read();
             lockFileTarget.Libraries = reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileTargetLibraryConverter);
 
             return lockFileTarget;
+        }
+
+
+        public static (string targetFramework, string runtimeIdentifier) GetFrameworkAndIdentifier(string input, char separator)
+        {
+            int firstIndex = input.IndexOf(separator);
+            int lastIndex = input.LastIndexOf(separator);
+
+            if (firstIndex == -1)
+                return (input, null);
+
+            return (input.Substring(0, firstIndex),
+                    firstIndex >= input.Length - 1 || firstIndex != lastIndex ? null : input.Substring(firstIndex + 1));
         }
     }
 }
