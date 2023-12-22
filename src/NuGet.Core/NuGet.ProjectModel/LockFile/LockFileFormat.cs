@@ -113,7 +113,7 @@ namespace NuGet.ProjectModel
             var useNj = environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING");
             if (string.IsNullOrEmpty(useNj) || useNj.Equals("false", StringComparison.OrdinalIgnoreCase))
             {
-                return Uf8JsonRead(stream, log, path);
+                return Utf8JsonRead(stream, log, path);
             }
             else
             {
@@ -197,7 +197,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private LockFile Uf8JsonRead(Stream stream, ILogger log, string path)
+        private LockFile Utf8JsonRead(Stream stream, ILogger log, string path)
         {
             try
             {
