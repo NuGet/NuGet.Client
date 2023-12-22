@@ -11,7 +11,6 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using Test.Utility;
 using Xunit;
 using static NuGet.Test.Utility.TestPackagesCore;
 
@@ -21,7 +20,7 @@ namespace NuGet.ProjectModel.Test
     {
         // Verify the value of locked has no impact on the parsed lock file
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
 
         public void LockFileFormat_LockedPropertyIsIgnored(IEnvironmentVariableReader environmentVariableReader)
         {
@@ -170,7 +169,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_ReadsLockFileWithNoTools(IEnvironmentVariableReader environmentVariableReader)
         {
             var lockFileContent = @"{
@@ -1336,7 +1335,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_ReadsMinimalErrorMessage(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -1409,7 +1408,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_ReadsFullErrorMessage(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -1492,7 +1491,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_SafeRead(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -1578,7 +1577,7 @@ namespace NuGet.ProjectModel.Test
 
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_ReadsWarningMessage(IEnvironmentVariableReader environmentVariableReader)
         {
 
@@ -1664,7 +1663,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_ReadsWarningMessageWithoutWarningLevel(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -1749,7 +1748,7 @@ namespace NuGet.ProjectModel.Test
 
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_ReadsMultipleMessages(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -1839,7 +1838,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_ReadsLogMessageWithSameFilePathAndProjectPath(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -1919,7 +1918,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_ReadsLogMessageWithNoFilePath(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -1998,7 +1997,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_ReadsLockFileWithTools(IEnvironmentVariableReader environmentVariableReader)
         {
             var lockFileContent = @"{
@@ -2069,7 +2068,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(TestEnvironmentVariableReader))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_ReadsLockFileWithEmbedAssemblies(IEnvironmentVariableReader environmentVariableReader)
         {
             var lockFileContent = @"{
@@ -2311,41 +2310,6 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Equal(expected.ToString(), output.ToString());
-        }
-
-        public static IEnumerable<object[]> TestEnvironmentVariableReader()
-        {
-            return GetTestEnvironmentVariableReader();
-        }
-
-        private static IEnumerable<object[]> GetTestEnvironmentVariableReader(params object[] objects)
-        {
-            var UseNjForFileTrue = new List<object> {
-                new TestEnvironmentVariableReader(
-                    new Dictionary<string, string>()
-                    {
-                        ["NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING"] = bool.TrueString
-                    }, "NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING: true")
-                };
-            var UseNjForFileFalse = new List<object> {
-                new TestEnvironmentVariableReader(
-                    new Dictionary<string, string>()
-                    {
-                        ["NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING"] = bool.FalseString
-                    }, "NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING: false")
-                };
-
-            if (objects != null)
-            {
-                UseNjForFileFalse.AddRange(objects);
-                UseNjForFileTrue.AddRange(objects);
-            }
-
-            return new List<object[]>
-            {
-                UseNjForFileTrue.ToArray(),
-                UseNjForFileFalse.ToArray()
-            };
         }
     }
 }
