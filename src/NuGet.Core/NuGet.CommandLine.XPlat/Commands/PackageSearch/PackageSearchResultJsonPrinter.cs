@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using NuGet.CommandLine.XPlat.Commands.PackageSearch;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -55,7 +58,12 @@ namespace NuGet.CommandLine.XPlat
 
         public void Finish()
         {
-            var json = JsonConvert.SerializeObject(_packageSearchResults, Formatting.Indented);
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Converters = { new JsonPolymorphicConverter<IPackageSearchResultPackage>() }
+            };
+            var json = JsonSerializer.Serialize(_packageSearchResults, options);
             _logger.LogMinimal(SourceSeparator);
             _logger.LogMinimal("Search Result");
             _logger.LogMinimal(json);
@@ -64,6 +72,23 @@ namespace NuGet.CommandLine.XPlat
         public void Start()
         {
             _packageSearchResults = new List<PackageSearchResult>();
+        }
+    }
+
+    class JsonPolymorphicConverter<T> : JsonConverter<T>
+    {
+        public override bool CanConvert(Type typeToConvert) => typeof(T).IsAssignableFrom(typeToConvert);
+
+        public override T Read(ref Utf8JsonReader reader, Type typeToSerialize, JsonSerializerOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        {
+            Type type = value.GetType();
+
+            JsonSerializer.Serialize(writer, value, type, new JsonSerializerOptions());
         }
     }
 }

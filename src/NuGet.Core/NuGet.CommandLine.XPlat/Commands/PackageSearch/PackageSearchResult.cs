@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using NuGet.CommandLine.XPlat.Commands.PackageSearch;
 
 namespace NuGet.CommandLine.XPlat
@@ -12,10 +12,10 @@ namespace NuGet.CommandLine.XPlat
     /// </summary>
     internal class PackageSearchResult
     {
-        [JsonProperty("sourceName")]
+        [JsonPropertyName("sourceName")]
         public string SourceName { get; set; }
 
-        [JsonProperty("packages")]
+        [JsonPropertyName("packages")]
         public List<IPackageSearchResultPackage> Packages { get; set; }
 
         public PackageSearchResult(string source)

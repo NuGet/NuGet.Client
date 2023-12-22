@@ -3,23 +3,23 @@
 
 using System;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
     internal class PackageSearchResultPackageDetailed : PackageSearchResultPackageNormal
     {
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [JsonProperty("vulnerable")]
+        [JsonPropertyName("vulnerable")]
         public bool? Vulnerable { get; set; }
 
-        [JsonProperty("deprecation")]
+        [JsonPropertyName("deprecation")]
         public string Deprecation { get; set; }
 
-        [JsonProperty("projectUrl")]
+        [JsonPropertyName("projectUrl")]
         public Uri ProjectUrl { get; set; }
 
         public PackageSearchResultPackageDetailed() : base()
