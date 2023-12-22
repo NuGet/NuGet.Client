@@ -231,7 +231,7 @@ namespace NuGet.Commands
                 {
                     lock (_libraryMatchCache)
                     {
-                        result = FindLibraryCoreAsync(libraryRange, cacheContext, logger, cancellationToken);
+                        result = Task.Run(() => FindLibraryCoreAsync(libraryRange, cacheContext, logger, cancellationToken), cancellationToken);
                         _libraryMatchCache[libraryRange] = result;
                     }
                 }
@@ -241,7 +241,7 @@ namespace NuGet.Commands
                     {
                         if (!_libraryMatchCache.TryGetValue(libraryRange, out result))
                         {
-                            result = FindLibraryCoreAsync(libraryRange, cacheContext, logger, cancellationToken);
+                            result = Task.Run(() => FindLibraryCoreAsync(libraryRange, cacheContext, logger, cancellationToken), cancellationToken);
                             _libraryMatchCache[libraryRange] = result;
                         }
                     }
@@ -257,7 +257,6 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken cancellationToken)
         {
-
             await EnsureResource();
 
             if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange.IsMinInclusive && !libraryRange.VersionRange.IsFloating)
