@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text.Json;
 using NuGet.Frameworks;
 
@@ -21,27 +22,20 @@ namespace NuGet.ProjectModel
             var lockFileTarget = new LockFileTarget();
             //We want to read the property name right away
             var propertyName = reader.GetString();
-            var parts = GetFrameworkAndIdentifier(propertyName, LockFile.DirectorySeparatorChar);
-            lockFileTarget.TargetFramework = NuGetFramework.Parse(parts.targetFramework);
-            lockFileTarget.RuntimeIdentifier = parts.runtimeIdentifier;
+            var lazySplitter = new LazyStringSplit(propertyName, LockFile.DirectorySeparatorChar);
+            var targetFramework = lazySplitter.FirstOrDefault();
+            var runtetimeIdentifier = lazySplitter.FirstOrDefault();
+            var leftover = lazySplitter.FirstOrDefault();
+            lockFileTarget.TargetFramework = NuGetFramework.Parse(targetFramework);
+            if (!string.IsNullOrEmpty(runtetimeIdentifier) && string.IsNullOrEmpty(leftover))
+            {
+                lockFileTarget.RuntimeIdentifier = runtetimeIdentifier;
+            }
 
             reader.Read();
             lockFileTarget.Libraries = reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileTargetLibraryConverter);
 
             return lockFileTarget;
-        }
-
-
-        public static (string targetFramework, string runtimeIdentifier) GetFrameworkAndIdentifier(string input, char separator)
-        {
-            int firstIndex = input.IndexOf(separator);
-            int lastIndex = input.LastIndexOf(separator);
-
-            if (firstIndex == -1)
-                return (input, null);
-
-            return (input.Substring(0, firstIndex),
-                    firstIndex >= input.Length - 1 || firstIndex != lastIndex ? null : input.Substring(firstIndex + 1));
         }
     }
 }
