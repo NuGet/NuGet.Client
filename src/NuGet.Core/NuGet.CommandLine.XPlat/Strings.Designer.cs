@@ -1319,15 +1319,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The path to a NuGet config file to use..
-        /// </summary>
-        internal static string pkgSearch_ConfigFileDescription {
-            get {
-                return ResourceManager.GetString("pkgSearch_ConfigFileDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used..
         /// </summary>
         internal static string pkgSearch_Description {

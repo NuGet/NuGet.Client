@@ -26,13 +26,13 @@ namespace NuGet.CommandLine.XPlat
         {
             Skip = VerifyInt(skip, DefaultSkip, "--skip");
             Take = VerifyInt(take, DefaultTake, "--take");
-            JsonFormat = VerifyFormat(format);
-            Verbosity = VerifyVerbosity(verbosity);
+            JsonFormat = IsJsonFormat(format);
+            Verbosity = GetVerbosityFromOption(verbosity);
         }
 
         public PackageSearchArgs() { }
 
-        public int VerifyInt(string number, int defaultValue, string option)
+        private int VerifyInt(string number, int defaultValue, string option)
         {
             if (string.IsNullOrEmpty(number))
             {
@@ -47,28 +47,17 @@ namespace NuGet.CommandLine.XPlat
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, number, option));
         }
 
-        public bool VerifyFormat(string format)
+        private bool IsJsonFormat(string format)
         {
-            if (!string.IsNullOrEmpty(format))
+            if (!string.IsNullOrEmpty(format) && string.Equals(format, "json", StringComparison.CurrentCultureIgnoreCase))
             {
-                if (string.Equals(format, "json", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(format, "table", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    return false;
-                }
-                else
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, format, "--format"));
-                }
+                return true;
             }
 
             return false;
         }
 
-        private PackageSearchVerbosity VerifyVerbosity(string verbosity)
+        private PackageSearchVerbosity GetVerbosityFromOption(string verbosity)
         {
             if (verbosity != null)
             {
@@ -76,17 +65,9 @@ namespace NuGet.CommandLine.XPlat
                 {
                     return PackageSearchVerbosity.Detailed;
                 }
-                else if (string.Equals(verbosity, nameof(PackageSearchVerbosity.Normal), StringComparison.CurrentCultureIgnoreCase))
-                {
-                    return PackageSearchVerbosity.Normal;
-                }
                 else if (string.Equals(verbosity, nameof(PackageSearchVerbosity.Minimal), StringComparison.CurrentCultureIgnoreCase))
                 {
                     return PackageSearchVerbosity.Minimal;
-                }
-                else
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, verbosity, "--verbosity"));
                 }
             }
 

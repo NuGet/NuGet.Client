@@ -185,19 +185,18 @@ namespace NuGet.CommandLine.Xplat.Tests
         }
 
         [Fact]
-        public void Register_withInvalidFormattingOption_ShowsErrorMessage()
+        public void Register_withInvalidFormattingOption_DefaultsTable()
         {
             // Arrange
             Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
             string invalidFormat = "invalid";
-            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, invalidFormat, "--format");
 
             // Act
             var exitCode = RootCommand.Parse(new[] { "search", "--format", invalidFormat }).Invoke();
 
             // Assert
-            Assert.Equal(1, exitCode);
-            Assert.Contains(expectedError, StoredErrorMessage);
+            Assert.Equal(0, exitCode);
+            Assert.False(CapturedArgs.JsonFormat);
         }
 
         [Theory]
@@ -228,19 +227,18 @@ namespace NuGet.CommandLine.Xplat.Tests
         }
 
         [Fact]
-        public void Register_withInvalidVerbosityOption_ShowsErrorMessage()
+        public void Register_withInvalidVerbosityOption_DefaultsNormal()
         {
             // Arrange
             Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
             string invalidFormat = "invalid";
-            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, invalidFormat, "--verbosity");
 
             // Act
             var exitCode = RootCommand.Parse(new[] { "search", "--verbosity", invalidFormat }).Invoke();
 
             // Assert
-            Assert.Equal(1, exitCode);
-            Assert.Contains(expectedError, StoredErrorMessage);
+            Assert.Equal(0, exitCode);
+            Assert.Equal(PackageSearchVerbosity.Normal, CapturedArgs.Verbosity);
         }
 
         [Theory]

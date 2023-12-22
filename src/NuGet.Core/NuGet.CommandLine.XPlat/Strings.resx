@@ -856,9 +856,6 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="Error_NoSource" xml:space="preserve">
     <value>No package sources found.</value>
   </data>
-  <data name="pkgSearch_ConfigFileDescription" xml:space="preserve">
-    <value>The path to a NuGet config file to use.</value>
-  </data>
   <data name="pkgSearch_FormatDescription" xml:space="preserve">
     <value>Format the output accordingly. Either `table`, or `json`. The default value is `table`.</value>
     <comment>Please don't translate `table`, `json`.</comment>

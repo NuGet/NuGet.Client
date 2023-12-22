@@ -80,7 +80,7 @@ namespace NuGet.CommandLine.XPlat
 
             var configFile = new CliOption<string>("--configfile")
             {
-                Description = Strings.pkgSearch_ConfigFileDescription,
+                Description = Strings.Option_ConfigFile,
                 Arity = ArgumentArity.ExactlyOne
             };
 
