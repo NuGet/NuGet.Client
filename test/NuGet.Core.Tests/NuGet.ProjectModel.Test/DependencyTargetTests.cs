@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,11 +10,10 @@ using Xunit;
 
 namespace NuGet.ProjectModel.Test
 {
-    [Obsolete]
     public class DependencyTargetTests
     {
         [Theory]
-        [MemberData(nameof(JsonPackageSpecReaderTests.TestEnvironmentVariableReader), MemberType = typeof(JsonPackageSpecReaderTests))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void DependencyTarget_ExternalProjectValue(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -40,7 +38,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(JsonPackageSpecReaderTests.TestEnvironmentVariableReader), MemberType = typeof(JsonPackageSpecReaderTests))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void DependencyTarget_ProjectValue(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -65,7 +63,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(JsonPackageSpecReaderTests.TestEnvironmentVariableReader), MemberType = typeof(JsonPackageSpecReaderTests))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void DependencyTarget_PackageValue(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -90,7 +88,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(JsonPackageSpecReaderTests.TestEnvironmentVariableReader), MemberType = typeof(JsonPackageSpecReaderTests))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void DependencyTarget_CaseInsensitive(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -115,7 +113,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(JsonPackageSpecReaderTests.TestEnvironmentVariableReader), MemberType = typeof(JsonPackageSpecReaderTests))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void DependencyTarget_DefaultValueDefault(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -138,7 +136,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(JsonPackageSpecReaderTests.TestEnvironmentVariableReader), MemberType = typeof(JsonPackageSpecReaderTests))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void DependencyTarget_UnknownValueFails(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -180,7 +178,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(JsonPackageSpecReaderTests.TestEnvironmentVariableReader), MemberType = typeof(JsonPackageSpecReaderTests))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void DependencyTarget_NonWhiteListValueFails(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -222,7 +220,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(JsonPackageSpecReaderTests.TestEnvironmentVariableReader), MemberType = typeof(JsonPackageSpecReaderTests))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void DependencyTarget_MultipleValuesFail(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -264,7 +262,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [MemberData(nameof(JsonPackageSpecReaderTests.TestEnvironmentVariableReader), MemberType = typeof(JsonPackageSpecReaderTests))]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void DependencyTarget_AcceptsWhitespace(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
