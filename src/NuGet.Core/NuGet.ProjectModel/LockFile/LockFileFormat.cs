@@ -54,13 +54,11 @@ namespace NuGet.ProjectModel
         private const string FrameworkReferencesProperty = "frameworkReferences";
         private const string CentralTransitiveDependencyGroupsProperty = "centralTransitiveDependencyGroups";
 
-        [Obsolete]
         public LockFile Parse(string lockFileContent, string path)
         {
             return Parse(lockFileContent, NullLogger.Instance, path);
         }
 
-        [Obsolete]
         public LockFile Parse(string lockFileContent, ILogger log, string path)
         {
             byte[] byteArray = Encoding.UTF8.GetBytes(lockFileContent);
@@ -91,6 +89,23 @@ namespace NuGet.ProjectModel
         public LockFile Read(Stream stream, ILogger log, string path)
         {
             return Read(stream, log, path, EnvironmentVariableWrapper.Instance);
+        }
+
+        internal LockFile Read(string filePath, IEnvironmentVariableReader environmentVariableReader)
+        {
+            using (var stream = File.OpenRead(filePath))
+            {
+                return Read(stream, NullLogger.Instance, filePath, environmentVariableReader);
+            }
+        }
+
+        internal LockFile Parse(string lockFileContent, string path, IEnvironmentVariableReader environmentVariableReader)
+        {
+            byte[] byteArray = Encoding.UTF8.GetBytes(lockFileContent);
+            using (var stream = new MemoryStream(byteArray))
+            {
+                return Read(stream, NullLogger.Instance, path, environmentVariableReader);
+            }
         }
 
         internal LockFile Read(Stream stream, ILogger log, string path, IEnvironmentVariableReader environmentVariableReader)
