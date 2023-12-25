@@ -693,7 +693,6 @@ namespace NuGet.Tests.Apex
             solutionService.Save();
         }
 
-        [Ignore("https://github.com/NuGet/Home/issues/12931")]
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
@@ -727,7 +726,7 @@ namespace NuGet.Tests.Apex
         }
 
         [DataTestMethod]
-        //[DataRow(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")] [Ignore("https://github.com/NuGet/Home/issues/12932")]
+        [DataRow(ProjectTemplate.ClassLibrary, "PackageA", "1.0.0", "2.0.0", "PackageB", "1.0.1", "2.0.1")]
         [DataRow(ProjectTemplate.NetStandardClassLib, "PackageC", "1.0.0", "2.0.0", "PackageD", "1.1.0", "2.2.0")]
         [Timeout(DefaultTimeout)]
         public async Task UpdateAllPackagesInPMC(ProjectTemplate projectTemplate, string packageName1, string packageVersion1, string packageVersion2, string packageName2, string packageVersion3, string packageVersion4)
@@ -773,7 +772,6 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore("https://github.com/NuGet/Home/issues/12930")]
         [DataTestMethod]
         [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
@@ -808,7 +806,6 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore("https://github.com/NuGet/Home/issues/12930")]
         [DataTestMethod]
         [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
@@ -850,7 +847,6 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore("https://github.com/NuGet/Home/issues/12930")]
         [DataTestMethod]
         [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
@@ -969,11 +965,94 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        // There  is a bug with VS or Apex where NetCoreConsoleApp creates a netcore 2.1 project that is not supported by the sdk
-        // Commenting out any NetCoreConsoleApp template and swapping it for NetStandardClassLib as both are package ref.
+        [DataTestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task VerifyCmdFindPackageExactMatchInPMC()
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var PackageName = "TestPackage";
+                var v100 = "1.0.0";
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, v100);
+
+                using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                {
+                    SolutionService solutionService = VisualStudio.Get<SolutionService>();
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    // Act
+                    nugetConsole.Execute($"find-package {PackageName} -ExactMatch");
+
+                    // Assert
+                    string PMCText = nugetConsole.GetText();
+                    PMCText.Should().Contain(PackageName);
+                    PMCText.Should().Contain(v100);
+                }
+            }
+        }
+
+        [DataTestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task VerifyCmdGetPackageUpdateInPMC()
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageName = "TestPackage";
+                var v100 = "1.0.0";
+                var v200 = "2.0.0";
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v200);
+
+                using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                {
+                    // Arrange
+                    SolutionService solutionService = VisualStudio.Get<SolutionService>();
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    nugetConsole.InstallPackageFromPMC(packageName, v100);
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+                    nugetConsole.Clear();
+
+                    // Act
+                    nugetConsole.Execute("get-package -update");
+
+                    // Assert
+                    string PMCText = nugetConsole.GetText();
+                    PMCText.Should().Contain(v200);
+                }
+            }
+        }
+
+        [DataTestMethod]
+        [Timeout(DefaultTimeout)]
+        public void VerifyCmdGetProjectInPMC()
+        {
+            EnsureVisualStudioHost();
+            using (var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger))
+            {
+                // Arrange
+                SolutionService solutionService = VisualStudio.Get<SolutionService>();
+                var nugetConsole = GetConsole(testContext.Project);
+
+                //Act
+                nugetConsole.Execute("Get-Project");
+
+                // Assert
+                string PMCText = nugetConsole.GetText();
+                PMCText.Should().Contain(testContext.Project.Name);
+                PMCText.Should().Contain("C#");
+                PMCText.Should().Contain(testContext.Project.FullPath);
+            }
+        }
+
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
-            yield return new object[] { ProjectTemplate.NetStandardClassLib };
+            yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
         }
 
         public static IEnumerable<object[]> GetPackageReferenceTemplates()
