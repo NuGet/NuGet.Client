@@ -1,0 +1,100 @@
+parameters:
+  - name: dependsOn
+    type: object
+  - name: bootstrapperUrl
+    type: string
+  - name: runSettingsURI
+    type: string
+  - name: DartLabEnvironment
+    type: string
+  - name: condition
+    type: string
+  - name: variables
+    type: object
+  - name: testExecutionJobTimeoutInMinutes
+    type: number
+  - name: testMachineCleanUpStrategy
+    type: string
+    default: delete
+    values:
+      - delete
+      - stop
+  - name: isOfficialBuild
+    type: boolean
+    default: false
+  - name: preTestMachineConfigurationStepList
+    type: stepList
+    default: []
+
+stages:
+  - template: stages\visual-studio\build-to-build-upgrade\single-runsettings.yml@DartLabTemplates
+    parameters:
+      name: VS_Apex_Tests
+      displayName: Apex Tests On Windows
+      condition: ${{parameters.condition}}
+      dependsOn: ${{parameters.dependsOn}}
+      variables:
+        - name: bootstrapperUrl
+          value: ${{parameters.bootstrapperUrl}}
+        - ${{parameters.variables}}
+      runSettingsURI: ${{parameters.runSettingsURI}}
+      visualStudioBootstrapperURI: $(bootstrapperUrl)  
+      baseVisualStudioBootstrapperURI: https://vsdrop.corp.microsoft.com/file/v1/$(VisualStudio.BaseBuild.ProductsDropName);bootstrappers/Enterprise/vs_enterprise.exe
+      candidateBaselineBuilds: $(BaselineBuildCommitIds)
+      testLabPoolName: VS-Platform
+      dartLabEnvironment: ${{parameters.DartLabEnvironment}}
+      visualStudioSigning: Test
+      testMachineConfigurationJobTimeoutInMinutes: 20
+      testMachineDeploymentJobTimeoutInMinutes: 240
+      testMachineConfigurationJobDisplayName: 'Apex Test Machine Configuration'
+      testMachineDeploymentJobDisplayName: 'Apex Test Machine Deployment'
+      testExecutionJobDisplayName: 'Apex Test Execution'
+      testMachineCleanUpJobDisplayName: 'Apex Test Machine Clean Up'
+      testRunContinueOnError: ${{ parameters.isOfficialBuild }}
+      testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
+      testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
+      testAgentElevated: true
+      preTestMachineConfigurationStepList: ${{parameters.preTestMachineConfigurationStepList}}
+      preDeployAndRunTestsStepList:
+        - task: PowerShell@1
+          displayName: "Print Environment Variables"
+          inputs:
+            scriptType: "inlineScript"
+            inlineScript: |
+              Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+
+        - task: DownloadBuildArtifacts@0
+          displayName: "Download Build artifacts"
+          inputs:
+            buildType: specific
+            project: $(resources.pipeline.ComponentBuildUnderTest.projectID)
+            definition: $(resources.pipeline.ComponentBuildUnderTest.pipelineID)
+            artifactName: "VS15"
+            downloadPath: "$(Pipeline.Workspace)/artifacts"
+
+        - powershell: |
+            $zipPath = "$(Pipeline.Workspace)/artifacts/VS15/EndToEnd.zip"
+            $dest = "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/"
+            Write-Output "Extracting '$zipPath' to '$dest'"
+            Expand-Archive -Path "$zipPath" -DestinationPath "$dest"
+            $nugetExePath = "$(Pipeline.Workspace)/artifacts/VS15/NuGet.exe"
+            Write-Output "Copying '$nugetExePath' to '$dest'"
+            Copy-Item -Path "$nugetExePath" -Destination "$dest"
+          displayName: "Extract EndToEnd.zip"
+
+        - task: PowerShell@1
+          displayName: "SetupFunctionalTests.ps1"
+          inputs:
+            scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
+      postDeployAndRunTestsStepList:
+        # - task: PowerShell@1
+        #   displayName: "Initialize Git Commit Status on GitHub"
+        #   inputs:
+        #     scriptType: "inlineScript"
+        #     inlineScript: |
+        #       . $(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\PostGitCommitStatus.ps1
+        #       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(GitHubStatusName)"
+        #   condition: "not(eq(variables['ManualGitHubChecks'], 'true'))"
+
+        - task: ComponentGovernanceComponentDetection@0
+          displayName: 'Component Detection'

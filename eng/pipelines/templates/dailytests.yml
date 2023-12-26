@@ -59,7 +59,7 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: "Download symbols - NonRTM artifact"
       inputs:
-        source: NuGet.Client-Official
+        source: 'specific'
         project: "devdiv"
         pipeline: "NuGet.Client-Official"
         artifact: "symbols - NonRTM"
@@ -71,21 +71,206 @@ stages:
         inlineScript: |
           Get-ChildItem $(Pipeline.Workspace)\symbols\NonRTM
 
+    - task: PowerShell@2
+      displayName: 'Get Triggering Build Info'
+      inputs:
+        targetType: inline
+        script: |
+          Write-Host "Logging the metadata of the triggering build:"
+          Write-Host "runName -- $(Resources.Pipeline.ComponentBuildUnderTest.runName)"
+          Write-Host "runID -- $(Resources.Pipeline.ComponentBuildUnderTest.runID)"
+          Write-Host "runURI -- $(Resources.Pipeline.ComponentBuildUnderTest.runURI)"
+          Write-Host "sourceBranch -- $(Resources.Pipeline.ComponentBuildUnderTest.sourceBranch)"
+          Write-Host "projectID -- $(Resources.Pipeline.ComponentBuildUnderTest.ProjectID)"
+          Write-Host "pipelineID -- $(resources.pipeline.ComponentBuildUnderTest.pipelineID)"
+          Write-Host "pipelineName -- $(resources.pipeline.ComponentBuildUnderTest.pipelineName)"
+          Write-Host $(Pipeline.Workspace)/VS15/bootstrapper/8684543/f5f34b79-f107-43d4-b547-af3db489870a/vs_enterprise.exe
 
 # Dartlab's template defines this in its own stage
-- template: Apex_Tests_On_Windows.yml
+- template: Apex_Tests_On_Windows_Daily.yml
   parameters:
     condition: "succeeded()"
     dependsOn:
       - Initialize
     variables:
       - name: VsBootstrapperUrl
-        value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['vsbootstrapper.bootstrapperUrl']]
+        value: $[dependencies.TestMachineConfiguration.outputs['SetBootstrapperURI.BootstrapperUrl']]
       - name: GitHubStatusName
         value: Daily Visual Studio Tests
+      - name: RunSettingsURI
+        value: $[dependencies.TestMachineConfiguration.outputs['SetRunSettingsURI.RunSettingsURI']]
+      - name: QBuildSessionId
+        value: $[dependencies.TestMachineConfiguration.outputs['setcloudbuildsessionid.BuildSessionId']]
+      - name: VsBaseBuildDrop
+        value: $[dependencies.TestMachineConfiguration.outputs['setbasebuilddrop.BaseBuildDrop']]
     isOfficialBuild: ${{parameters.isOfficialBuild}}
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.EndToEnd.runsettings
+    runSettingsURI: $(RunSettingsURI)
     dartLabEnvironment: ${{parameters.DartLabEnvironment}}
     testExecutionJobTimeoutInMinutes: 150
     bootstrapperUrl: $(VsBootstrapperUrl)
     testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
+    preTestMachineConfigurationStepList:
+      - download: ComponentBuildUnderTest
+        artifact: MicroBuildOutputs
+        displayName: 'Download BootstrapperInfo.json'
+
+      - task: PowerShell@2 
+        displayName: 'Set BootstrapperURI variable'
+        name: SetBootstrapperURIinputs
+        inputs:
+          targetType: 'inline'
+          script: |
+            try {
+            Write-Host "Set VSBranch, VsTargetChannel &  VsTargetMajorVersion variables"
+            $bootstrapperInfoJsonFilePath = "$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\BootstrapperInfo.json"
+
+            Write-Host "BootstrapperInfo.json drop URI:  $bootstrapperInfoJsonFilePath"
+            $bootstrapperInfoJson = (Get-Content $bootstrapperInfoJsonFilePath -Raw) | ConvertFrom-Json
+            $bootstrapperUrl = $bootstrapperInfoJson.bootstrapperUrl
+
+            Set-AzurePipelinesVariable 'VsBootstrapperUrl' $bootstrapperUrl
+            Set-AzurePipelinesVariable -IsOutput 'BootstrapperUrl' $bootstrapperUrl
+            }
+            catch {
+            Write-Host $_
+            Write-Error "Failed to set VsBootstrapperUrl pipeline variables"
+            throw
+            }
+
+      - task: PowerShell@2
+        displayName: "Set CloudBuild Session ID variable for tests"
+        name: "setcloudbuildsessionid"
+        continueOnError: true
+        inputs:
+          targetType: "inline"
+          Script: |
+            try {
+              $json = Get-Content "$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\Bootstrapperinfo.json" | ConvertFrom-Json
+              $qBuildSessionId = $json[0].QBuildSessionId;
+              Write-Host "CloudBuild Session ID: $qBuildSessionId"
+              # Set-AzurePipelinesVariable 'QBuildSessionId' $qBuildSessionId
+              # Set-AzurePipelinesVariable -IsOutput 'BuildSessionId' $qBuildSessionId
+              Write-Host "##vso[task.setvariable variable=QBuildSessionId;isOutput=true]$qBuildSessionId"
+            } catch {
+            Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
+            }
+      - powershell: |
+          Write-Host $(setcloudbuildsessionid.QBuildSessionId)
+
+      - task: PowerShell@2
+        displayName: "Set Base Build Drop variable for tests"
+        name: "setbasebuilddrop"
+        continueOnError: true
+        inputs:
+          targetType: "inline"
+          Script: |
+            try {
+              $json = Get-Content "$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\Bootstrapperinfo.json" | ConvertFrom-Json
+              $buildDrop = $json[0].BuildDrop;
+              Write-Host "Base Build Drop: $buildDrop"
+              Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
+            } catch {
+            Write-Host "##vso[task.LogIssue type=error;]Unable to set Base Build Drop: $_"
+            }
+
+      - powershell: |
+          Write-Host $(setbasebuilddrop.BaseBuildDrop)
+          Write-Host "BaseBuildDrop: $(VsBaseBuildDrop)"
+
+      - template: \steps\powershell\execute-script.yml@DartLabTemplates
+        parameters:
+          displayName: Get Baseline Build ID using CloudBuild Session ID
+          continueOnError: true
+          filePath: $(DartLab.Path)\Scripts\AzureDevOps\Build\Get-BuildIdFromCloudBuildSessionID.ps1
+          arguments: -ClientSecret (ConvertTo-SecureString '$(CloudBuild-ClientSecret)' -AsPlainText -Force) -ClientID '$(CloudBuild-ClientID)' -SessionID $(setcloudbuildsessionid.QBuildSessionId) -OutVariableName 'BaselineBuildID'
+        
+      - task: PowerShell@2
+        displayName: "Get Baseline build commit ids"
+        name: "getbaselinebuildcommitids"
+        retryCountOnTaskFailure: 3
+        continueOnError: true
+        inputs:
+          targetType: 'inline'
+          script: |
+            try {
+            Write-Host "Getting Baseline build commit ids for build: '$(BaselineBuildID)'"
+              
+            $artifactName = 'BuildArtifacts'
+            $baselineBuildsFile = Join-Path $(Agent.TempDirectory) "BaselineBuilds.json"
+
+            $artifact = Get-BuildArtifact -InstanceURL 'https://dev.azure.com/devdiv' -ProjectName 'DevDiv' -BuildID $(BaselineBuildID)  -ArtifactName $artifactName -OAuthAccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force)
+            $containerName = $artifact.Resource.Data -Split '/' | Select-Object -Last 1
+            $fileName = Join-Path $containerName 'BaselineBuilds.json'
+            $jsonString = Read-BuildArtifactFile -InstanceURL 'https://dev.azure.com/devdiv' -ProjectName 'DevDiv' -BuildID $(BaselineBuildID) -ArtifactName $artifactName -FileName $fileName -OAuthAccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force)
+
+            $jsonString | Out-File -FilePath $baselineBuildsFile
+
+            $(DartLab.Path)\Scripts\VisualStudio\Build\Get-BaselineBuildCommitIDs.ps1 -BuildJson $baselineBuildsFile -OutVariableName "BaselineBuildCommitIds"
+            } catch {
+              Write-Host "Unable to get Baseline build commit ids: $_"
+            }
+      - task: PowerShell@2
+        name: SetVisualStudioBaseBuildID
+        displayName: Set 'VisualStudio.BaseBuild.ID' 
+        retryCountOnTaskFailure: 3
+        condition: ne(variables['BaselineBuildCommitIds'], '')
+        continueOnError: true
+        inputs:
+          filePath: $(DartLab.Path)\Scripts\VisualStudio\Build\Get-BaselineBuildID.ps1
+          arguments: -OAuthAccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force) -InstanceURL '$(System.CollectionUri)' -RepositoryName 'VS' -ProjectName '$(System.TeamProject)' -CommitIDs $(BaselineBuildCommitIds) -BuildDefinitionIDs 10289 -OutVariableName 'VisualStudio.BaseBuild.ID'
+
+      - task: PowerShell@2
+        name: SetVisualStudioBaseBuildProductsDropName
+        displayName: Set 'VisualStudio.BaseBuild.ProductsDropName'
+        retryCountOnTaskFailure: 3
+        condition: ne(variables['VisualStudio.BaseBuild.ID'], '')
+        inputs:
+          filePath: $(DartLab.Path)\Scripts\VisualStudio\Build\Get-VisualStudioDropName.ps1
+          arguments: -AccessToken (ConvertTo-SecureString '$(System.AccessToken)' -AsPlainText -Force) -DropNamePrefix 'Products' -AccountURL '$(System.CollectionUri)' -ProjectName '$(System.TeamProject)' -BuildID $(VisualStudio.BaseBuild.ID) -OutVariableName 'VisualStudio.BaseBuild.ProductsDropName'
+
+      - task: PowerShell@2
+        name: SetBaseProductsDropNameToTarget
+        displayName: Set 'VisualStudio.BaseBuild.ProductsDropName' to drop from target build
+        retryCountOnTaskFailure: 3
+        condition: eq(variables['VisualStudio.BaseBuild.ID'], '')
+        inputs:
+          targetType: 'inline'
+          script: |
+            $buildDrop = "$(VsBaseBuildDrop)" -split "/"
+            $dropName = "Products/DevDiv/VS/$($buildDrop[-2])/$($buildDrop[-1])"
+            Write-Host "BaseBuildDrop: $buildDrop"
+            Write-Host "DropName: $dropName"
+            Write-Host "##vso[task.setvariable variable=VisualStudio.BaseBuild.ProductsDropName]$dropName"
+
+      - task: PowerShell@2
+        displayName: 'Set RunSettingsURI variable'
+        name: SetRunSettingsURI
+        inputs:
+          targetType: 'inline'
+          script: |
+            try {
+              $branchName = "$(resources.pipeline.ComponentBuildUnderTest.sourceBranch)"
+              $branchName = $branchName.Replace('refs/heads/', '')
+
+              $RunSettingsURI = "https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/NuGet-NuGet.Client-Trusted/$branchName/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.Tests.Apex.runsettings"
+              Write-Host "RunSettingsURI: $RunSettingsURI"
+              # non-output variable for VS config in the configure machine job
+              # output variable for test execution job
+              Set-AzurePipelinesVariable 'RunSettingsURI' $RunSettingsURI
+              Set-AzurePipelinesVariable -IsOutput 'RunSettingsURI' $RunSettingsURI
+            }
+            catch {
+            Write-Host $_
+            Write-Error "Failed to set SourceBranchName pipeline variable"
+            throw
+            }
+
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download product NonRTM'
+        continueOnError: true # in case build didn't publish this artifact
+        inputs:
+          buildType: specific
+          project: $(resources.pipeline.ComponentBuildUnderTest.projectID)
+          definition: $(resources.pipeline.ComponentBuildUnderTest.pipelineID)
+          artifactName: 'VS15'
+          Path: $(Pipeline.Workspace)/VS15
