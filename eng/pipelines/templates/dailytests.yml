@@ -116,7 +116,7 @@ stages:
 
       - task: PowerShell@2 
         displayName: 'Set BootstrapperURI variable'
-        name: SetBootstrapperURIinputs
+        name: SetBootstrapperURI
         inputs:
           targetType: 'inline'
           script: |
@@ -175,7 +175,8 @@ stages:
 
       - powershell: |
           Write-Host $(setbasebuilddrop.BaseBuildDrop)
-          Write-Host "BaseBuildDrop: $(VsBaseBuildDrop)"
+          Write-Host "BaseBuildDrop: $(SetBootstrapperURI.BootstrapperUrl)"
+          Write-Host "BaseBuildDropV: $(VsBootstrapperUrl)"
 
       - template: \steps\powershell\execute-script.yml@DartLabTemplates
         parameters:
