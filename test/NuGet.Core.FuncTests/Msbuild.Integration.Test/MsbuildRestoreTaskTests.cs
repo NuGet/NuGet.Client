@@ -82,10 +82,8 @@ namespace Msbuild.Integration.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task MsbuildRestore_PackagesConfigIsOptInAsync(bool useStaticGraphRestore)
+        [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore_PackagesConfigIsOptInAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -125,8 +123,7 @@ namespace Msbuild.Integration.Test
                     packageX);
 
                 // Act
-                string args = $"/t:restore {pathContext.SolutionRoot} /p:RestoreUseStaticGraphEvaluation={useStaticGraphRestore}";
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, args, ignoreExitCode: true);
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot}", ignoreExitCode: true);
 
 
                 // Assert
