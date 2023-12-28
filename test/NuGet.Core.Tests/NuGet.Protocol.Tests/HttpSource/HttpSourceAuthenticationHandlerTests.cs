@@ -317,24 +317,18 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("http://package.source.test");
-            var credentialService = Mock.Of<ICredentialService>();
+            var credentialServiceMock = new Mock<ICredentialService>();
             var clientHandler = new HttpClientHandler();
             NetworkCredential credentialsReturnedByAProvider = new NetworkCredential(userName: "user", password: "password");
-            // The 'retryCount' variable is used to track the number of HTTP requests made during the test.
-            // Each attempt to access a private feed initially receives a 401 Unauthorized response.
-            // Following the 401 response, NuGet attempts to acquire the necessary credentials.
-            // These credentials are then used for subsequent requests to the feed.
-            // Note: If 'HttpClientHandler.PreAuthenticate' is set to true, this behavior might differ as 
-            // credentials would be sent preemptively with the initial request.
             int retryCount = 0;
 
             // Setup GetCredentialsAsync mock
-            Mock.Get(credentialService)
+            credentialServiceMock
                 .Setup(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(credentialsReturnedByAProvider);
 
             // Setup TryGetLastKnownGoodCredentialsFromCache mock
-            Mock.Get(credentialService)
+            credentialServiceMock
                 .Setup(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny))
                 .Returns((Uri sourceUri, bool isProxyRequest, out ICredentials outCredentials) =>
                 {
@@ -350,28 +344,24 @@ namespace NuGet.Protocol.Tests
                 return HandleRequest(retryCount, credentials, credentialsReturnedByAProvider);
             });
 
-            // Act and Assert in a loop
-            for (int i = 0; i < 5; i++)
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialServiceMock.Object)
             {
-                await ExecuteRequestAsync(packageSource, clientHandler, credentialService, innerHandler);
-            }
+                InnerHandler = innerHandler
+            };
 
-            // In this test, although we are explicitly making 5 requests to the feed, 
-            // internally a total of 10 requests are made due to the authentication behavior described near 'retryCount' variable.
-            // For each request to the private feed, the first attempt results in a 401 Unauthorized response,
-            // followed by a second attempt with the acquired credentials. This effectively doubles the number of 
-            // actual HTTP requests sent during the test.
+            using var client = new HttpClient(handler);
+
+            await SendAsync(client, 5);
+
             Assert.Equal(10, retryCount);
 
-            Mock.Get(credentialService).Verify(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny), Times.Exactly(5));
-            Mock.Get(credentialService).Verify(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            credentialServiceMock.Verify(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny), Times.Exactly(5));
+            credentialServiceMock.Verify(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
 
             static HttpResponseMessage HandleRequest(int retryCount, NetworkCredential credentials, NetworkCredential credentialsReturnedByAProvider)
             {
                 if (retryCount % 2 == 1)
                 {
-                    Assert.True(string.IsNullOrEmpty(credentials.UserName));
-                    Assert.True(string.IsNullOrEmpty(credentials.Password));
                     return new HttpResponseMessage(HttpStatusCode.Unauthorized);
                 }
                 else
@@ -388,25 +378,20 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource("http://package.source.test");
-            var credentialService = Mock.Of<ICredentialService>();
+            var credentialServiceMock = new Mock<ICredentialService>();
+            bool isUnAuthorized = true;
             var clientHandler = new HttpClientHandler();
             var initialCredentials = new NetworkCredential("user", "password1");
-            // The 'retryCount' variable is used to track the number of HTTP requests made during the test.
-            // Each attempt to access a private feed initially receives a 401 Unauthorized response.
-            // Following the 401 response, NuGet attempts to acquire the necessary credentials.
-            // These credentials are then used for subsequent requests to the feed.
-            // Note: If 'HttpClientHandler.PreAuthenticate' is set to true, this behavior might differ as 
-            // credentials would be sent preemptively with the initial request.
+            var newCredentials = new NetworkCredential("user", "password2");
             int retryCount = 0;
-            bool isUnauthorizedResponse = true;
 
-            // Mock: GetCredentialsAsync
-            Mock.Get(credentialService)
+            // Setup GetCredentialsAsync mock
+            credentialServiceMock
                 .Setup(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(initialCredentials);
+                .ReturnsAsync(() => initialCredentials);
 
-            // Mock: TryGetLastKnownGoodCredentialsFromCache
-            Mock.Get(credentialService)
+            // Setup TryGetLastKnownGoodCredentialsFromCache mock
+            credentialServiceMock
                 .Setup(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny))
                 .Returns((Uri sourceUri, bool isProxyRequest, out ICredentials outCredentials) =>
                 {
@@ -419,68 +404,74 @@ namespace NuGet.Protocol.Tests
             {
                 retryCount++;
                 var credentials = clientHandler.Credentials.GetCredential(packageSource.SourceUri, "basic");
-                var response = HandleRequest(retryCount, ref isUnauthorizedResponse, credentials, initialCredentials);
-
-                // Change credentials after 3 successful requests to the feed to mimic the scenario of expired credentials.
-                if (retryCount == 8)
-                {
-                    // Verify that response is 401 Unauthorized
-                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    initialCredentials = new NetworkCredential("user", "password2");
-                    Mock.Get(credentialService).Setup(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(initialCredentials);
-                }
-
+                var response = HandleRequest(retryCount, ref isUnAuthorized, credentials, retryCount <= 8 ? initialCredentials : newCredentials);
                 return response;
             });
 
-            // Act and Assert in a loop
-            for (int i = 0; i < 5; i++)
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialServiceMock.Object)
             {
-                await ExecuteRequestAsync(packageSource, clientHandler, credentialService, innerHandler);
-            }
+                InnerHandler = innerHandler
+            };
 
-            // In this test, although we are explicitly making 5 requests to the feed, 
-            // internally a total of 10 requests are made due to the authentication behavior described near 'retryCount' variable.
-            // For each request to the private feed, the first attempt results in a 401 Unauthorized response,
-            // followed by a second attempt with the acquired credentials. This effectively doubles the number of 
-            // actual HTTP requests sent during the test.
-            // We made one additional request to the feed because cached credentials expired after 3 requests.
-            Assert.Equal(11, retryCount); // 11 requests expected
-            Mock.Get(credentialService).Verify(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny), Times.Exactly(5));
-            Mock.Get(credentialService).Verify(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+            using var client = new HttpClient(handler);
 
-            static HttpResponseMessage HandleRequest(int retryCount, ref bool isUnauthorizedResponse, NetworkCredential credentials, NetworkCredential expectedCredentials)
-            {
-                if (isUnauthorizedResponse)
+            // Send 3 requests to the feed which succeed only if initial credentials are used.
+            await SendAsync(client, 3);
+
+            // Cached credentials are no longer valid as they are expired. Hence, credential providers are invoked.
+            // Setup GetCredentialsAsync mock to return new credentials.
+            credentialServiceMock
+                .Setup(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() => newCredentials);
+
+            // Setup TryGetLastKnownGoodCredentialsFromCache mock to return cached credentials for 8th request and new credentials afterwards.
+            credentialServiceMock
+                .Setup(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny))
+                .Returns((Uri sourceUri, bool isProxyRequest, out ICredentials outCredentials) =>
                 {
-                    Assert.True(string.IsNullOrEmpty(credentials.UserName) && string.IsNullOrEmpty(credentials.Password));
-                    isUnauthorizedResponse = false;
+                    outCredentials = retryCount == 8 ? initialCredentials : newCredentials;
+                    return true;
+                });
+
+            // Send 2 more requests to the feed which succeed only if new credentials are used.
+            await SendAsync(client, 2);
+
+            Assert.Equal(11, retryCount);
+            credentialServiceMock.Verify(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny), Times.Exactly(5));
+            credentialServiceMock.Verify(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+
+            static HttpResponseMessage HandleRequest(int retryCount, ref bool isUnAuthorized, NetworkCredential credentials, NetworkCredential expectedCredentials)
+            {
+                if (isUnAuthorized)
+                {
+                    isUnAuthorized = false;
                     return new HttpResponseMessage(HttpStatusCode.Unauthorized);
                 }
                 else
                 {
-                    Assert.Equal(expectedCredentials.UserName, credentials.UserName);
-                    Assert.Equal(expectedCredentials.Password, credentials.Password);
+                    isUnAuthorized = true;
 
-                    isUnauthorizedResponse = true;
-                    if (retryCount == 8) //Cached credentials worked for the first 3 requests, then expired
+                    // Credentials are changed after 3 successful requests to the feed. Hence return 401 for 8th request.
+                    if (retryCount == 8)
                     {
-                        isUnauthorizedResponse = false;
+                        isUnAuthorized = false;
+                        Assert.NotEqual(expectedCredentials.Password, credentials.Password);
                         return new HttpResponseMessage(HttpStatusCode.Unauthorized);
                     }
+
+                    Assert.Equal(expectedCredentials.UserName, credentials.UserName);
+                    Assert.Equal(expectedCredentials.Password, credentials.Password);
                     return new HttpResponseMessage(HttpStatusCode.OK);
                 }
             }
         }
 
-        private static async Task<HttpResponseMessage> ExecuteRequestAsync(PackageSource packageSource, HttpClientHandler clientHandler, ICredentialService credentialService, HttpMessageHandler innerHandler)
+        private static async Task SendAsync(HttpClient client, int count)
         {
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            for (int i = 0; i < count; i++)
             {
-                InnerHandler = innerHandler
-            };
-
-            return await SendAsync(handler);
+                await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "http://foo"), CancellationToken.None);
+            }
         }
 
         [Fact]

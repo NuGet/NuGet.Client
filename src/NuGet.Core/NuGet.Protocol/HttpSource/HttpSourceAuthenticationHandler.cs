@@ -158,8 +158,12 @@ namespace NuGet.Protocol
             }
         }
 
-        private async Task<ICredentials> AcquireCredentialsAsync(HttpStatusCode statusCode, Guid credentialsVersion, ILogger log,
-            bool areLastKnownGoodCredentialsTried, CancellationToken cancellationToken)
+        private async Task<ICredentials> AcquireCredentialsAsync(
+            HttpStatusCode statusCode,
+            Guid credentialsVersion,
+            ILogger log,
+            bool areLastKnownGoodCredentialsTried,
+            CancellationToken cancellationToken)
         {
             // Only one request may prompt and attempt to auth at a time
             await _httpClientLock.WaitAsync(cancellationToken);
@@ -206,6 +210,7 @@ namespace NuGet.Protocol
                 ICredentials promptCredentials = default;
                 if (!areLastKnownGoodCredentialsTried)
                 {
+                    // isProxy is false because the previous if statement allows only Unauthorized or Forbidden types, not Proxy.
                     _ = _credentialService.TryGetLastKnownGoodCredentialsFromCache(uri: _packageSource.SourceUri, isProxy: false, out promptCredentials);
                 }
 
