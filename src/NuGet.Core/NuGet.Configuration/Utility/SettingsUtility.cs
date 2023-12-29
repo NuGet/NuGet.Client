@@ -367,7 +367,7 @@ namespace NuGet.Configuration
             return NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetPluginsCacheDirectory);
         }
 
-        public static IEnumerable<PackageSource> GetEnabledSources(ISettings settings)
+        public static List<PackageSource> GetEnabledSources(ISettings settings)
         {
             if (settings == null)
             {
