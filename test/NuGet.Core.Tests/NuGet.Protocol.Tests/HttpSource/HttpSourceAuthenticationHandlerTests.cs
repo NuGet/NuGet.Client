@@ -382,6 +382,7 @@ namespace NuGet.Protocol.Tests
             bool isUnAuthorized = true;
             var clientHandler = new HttpClientHandler();
             var initialCredentials = new NetworkCredential("user", "password1");
+            var expectedCredentials = initialCredentials;
             var newCredentials = new NetworkCredential("user", "password2");
             int retryCount = 0;
 
@@ -404,7 +405,7 @@ namespace NuGet.Protocol.Tests
             {
                 retryCount++;
                 var credentials = clientHandler.Credentials.GetCredential(packageSource.SourceUri, "basic");
-                var response = HandleRequest(retryCount, ref isUnAuthorized, credentials, retryCount <= 8 ? initialCredentials : newCredentials);
+                var response = HandleRequest(retryCount, ref isUnAuthorized, credentials, expectedCredentials);
                 return response;
             });
 
@@ -418,7 +419,9 @@ namespace NuGet.Protocol.Tests
             // Send 3 requests to the feed which succeed only if initial credentials are used.
             await SendAsync(client, 3);
 
-            // Cached credentials are no longer valid as they are expired. Hence, credential providers are invoked.
+            // Cached credentials are no longer valid as they are expired. Hence, credential providers are invoked to fetch new credentials.
+            expectedCredentials = newCredentials;
+
             // Setup GetCredentialsAsync mock to return new credentials.
             credentialServiceMock
                 .Setup(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -455,7 +458,6 @@ namespace NuGet.Protocol.Tests
                     if (retryCount == 8)
                     {
                         isUnAuthorized = false;
-                        Assert.NotEqual(expectedCredentials.Password, credentials.Password);
                         return new HttpResponseMessage(HttpStatusCode.Unauthorized);
                     }
 
