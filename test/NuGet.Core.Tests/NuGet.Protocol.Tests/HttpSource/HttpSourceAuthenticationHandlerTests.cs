@@ -416,6 +416,7 @@ namespace NuGet.Protocol.Tests
 
             using var client = new HttpClient(handler);
 
+            // Act
             // Send 3 requests to the feed which succeed only if initial credentials are used.
             await SendAsync(client, 3);
 
