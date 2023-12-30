@@ -74,7 +74,7 @@ namespace NuGet.CommandLine.XPlat
 
             NuGet.Common.Migrations.MigrationRunner.Run();
 
-            if ((args.Count() >= 2 && args[0] == "package" && args[1] == "search") || args[0] == "config")
+            if ((args.Count() >= 2 && args[0] == "package" && args[1] == "search") || (args.Any() && args[0] == "config"))
             {
                 // We are executing command `dotnet package search`
                 Func<ILoggerWithColor> getHidePrefixLogger = () =>
