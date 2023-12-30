@@ -60,6 +60,7 @@ namespace NuGet.Protocol
 
             if (packageSource.DisableTLSCertificateValidation)
             {
+                Console.WriteLine(Strings.Warning_HttpsTLSCertificateValidationDisabled);
                 clientHandler.ServerCertificateCustomValidationCallback = (HttpRequestMessage message, X509Certificate2 cert, X509Chain chain, SslPolicyErrors errors) => true;
             }
 
