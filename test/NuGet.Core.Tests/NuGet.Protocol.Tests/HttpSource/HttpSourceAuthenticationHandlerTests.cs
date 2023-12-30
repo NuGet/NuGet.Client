@@ -440,6 +440,7 @@ namespace NuGet.Protocol.Tests
             // Send 2 more requests to the feed which succeed only if new credentials are used.
             await SendAsync(client, 2);
 
+            // Assert
             Assert.Equal(11, retryCount);
             credentialServiceMock.Verify(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny), Times.Exactly(5));
             credentialServiceMock.Verify(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
