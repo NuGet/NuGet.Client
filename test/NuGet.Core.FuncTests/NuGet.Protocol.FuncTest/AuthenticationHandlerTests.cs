@@ -98,11 +98,112 @@ namespace NuGet.Protocol.FuncTest
             }
         }
 
+        [Fact]
+        public async Task GetAsync_GetPackageServiceIndex_EveryRequestForCredentialsInvokesCacheFirstAndCredentialProvidersIfNeeded_SucceedsAsync()
+        {
+            // Arrange
+            var portReserver = new PortReserver();
+            await portReserver.ExecuteAsync(async (port, cancellationToken) =>
+            {
+                var mockedCredentialService = new Mock<ICredentialService>();
+                var expectedCredentials = new NetworkCredential("user", "password1");
+
+                var server = new RequestCollectingServer(_output);
+                server.Start(port);
+                string serviceIndexUrl = server.BaseUrl + "v3/index.json";
+                string packageUrl = server.BaseUrl + "v3/flatcontainer/packageid/index.json";
+
+                try
+                {
+                    var packageSource = new PackageSource(server.BaseUrl + "v3/index.json", "test");
+                    var repository = Repository.Factory.GetCoreV3(packageSource);
+
+                    SetupCredentialServiceMock(mockedCredentialService, expectedCredentials, packageSource);
+                    HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(() => mockedCredentialService.Object);
+
+                    var httpSourceResource = await repository.GetResourceAsync<HttpSourceResource>();
+                    var source = httpSourceResource.HttpSource;
+
+                    using var sourceCacheContext = new SourceCacheContext()
+                    {
+                        DirectDownload = true,
+                        NoCache = true,
+                    };
+                    Mock<ILogger> logger = new();
+                    HttpSourceCacheContext httpSourceCacheContext = HttpSourceCacheContext.Create(sourceCacheContext, isFirstAttempt: true);
+
+                    // Act                    
+                    var request = new HttpSourceCachedRequest(serviceIndexUrl, "1", httpSourceCacheContext);
+                    _ = await source.GetAsync(request, ProcessResponse, logger.Object, cancellationToken);
+
+                    request = new HttpSourceCachedRequest(packageUrl, "2", httpSourceCacheContext);
+                    _ = await source.GetAsync(request, ProcessResponse, logger.Object, cancellationToken);                    
+                }
+                finally
+                {
+                    server.Stop();
+                }
+
+                // Assert
+                server.Requests.Should().HaveCount(5);
+                server.Requests.Count(RequestWithoutAuthorizationHeader).Should().Be(3);
+                server.Requests.Any(r => r.Url!.OriginalString == serviceIndexUrl).Should().BeTrue();
+
+                server.CapturedCredentials.Should().HaveCount(2);
+                foreach (var creds in server.CapturedCredentials)
+                {
+                    Assert.Equal(expectedCredentials.UserName, creds.UserName);
+                    Assert.Equal(expectedCredentials.Password, creds.Password);
+                }
+
+                mockedCredentialService.Verify(x => x.GetCredentialsAsync(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<CredentialRequestType>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+                mockedCredentialService.Verify(x => x.TryGetLastKnownGoodCredentialsFromCache(It.IsAny<Uri>(), It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny), Times.Once);
+
+                // ExecuteAsync returns Task<T>, so need to return something to give it a <T>.
+                return (object?)null;
+            },
+            CancellationToken.None);
+
+            static void SetupCredentialServiceMock(Mock<ICredentialService> mockedCredentialService, NetworkCredential expectedCredentials, PackageSource packageSource)
+            {
+                NetworkCredential? cachedCredentials = default;
+                mockedCredentialService.SetupGet(x => x.HandlesDefaultCredentials).Returns(true);
+                // Setup GetCredentialsAsync mock
+                mockedCredentialService
+                    .Setup(x => x.GetCredentialsAsync(packageSource.SourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(() =>
+                    {
+                        cachedCredentials = expectedCredentials;
+                        return cachedCredentials;
+                    });
+                // Setup TryGetLastKnownGoodCredentialsFromCache mock
+                mockedCredentialService
+                    .Setup(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSource.SourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny))
+                    .Returns((Uri sourceUri, bool isProxyRequest, out ICredentials? outCredentials) =>
+                    {
+                        outCredentials = cachedCredentials;
+                        return outCredentials != null;
+                    });
+            }
+
+            static bool RequestWithoutAuthorizationHeader(HttpListenerRequest request)
+            {
+                string? value = request.Headers["Authorization"];
+                return string.IsNullOrEmpty(value);
+            }
+
+            static Task<string> ProcessResponse(HttpSourceResult result)
+            {
+                return Task.FromResult(string.Empty);
+            }
+        }
+
         private class RequestCollectingServer
         {
             private string? _baseUrl;
             private HttpListener? _httpListener;
             private List<HttpListenerRequest> _requests = new();
+            private List<NetworkCredential> _capturedCredentials { get; } = [];
             private ITestOutputHelper _output;
 
             public RequestCollectingServer(ITestOutputHelper output)
@@ -129,6 +230,8 @@ namespace NuGet.Protocol.FuncTest
                     return _requests;
                 }
             }
+
+            public IReadOnlyList<NetworkCredential> CapturedCredentials => _capturedCredentials;
 
             public void Start(int port)
             {
@@ -170,6 +273,11 @@ namespace NuGet.Protocol.FuncTest
                         else
                         {
                             context.Response.StatusCode = 200;
+
+                            var encodedCredentials = authorization.Substring("Basic ".Length).Trim();
+                            var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(encodedCredentials));
+                            var split = credentials.Split(':');
+                            _capturedCredentials.Add(new NetworkCredential(userName: split[0], password: split[1]));
                         }
 
                         _output.WriteLine($"Got request for {context.Request.Url}. Auth: {authorization}");
