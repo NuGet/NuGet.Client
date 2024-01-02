@@ -22,7 +22,7 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
-        
+
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
@@ -37,7 +37,7 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
-        
+
             var result = CommandRunner.Run(
                 DotnetCli,
                 testInfo.WorkingPath,
@@ -68,7 +68,7 @@ namespace NuGet.XPlat.FuncTest
         {
             // Arrange & Act
             using var testInfo = new TestInfo("NuGet.Config");
-        
+
             var result = CommandRunner.Run(
                 DotnetCli,
                 Directory.GetCurrentDirectory(),
@@ -571,7 +571,7 @@ namespace NuGet.XPlat.FuncTest
 ");
             }
 
-            public TestInfo (string configPath, string subfolder)
+            public TestInfo(string configPath, string subfolder)
             {
                 WorkingPath = TestDirectory.Create();
                 ConfigFile = configPath;
