@@ -641,13 +641,23 @@ namespace NuGet.Packaging
 
             // PERF: Avoid Linq on hot paths
             var splitFlags = flags.Split(CommaArray, StringSplitOptions.RemoveEmptyEntries);
+
+#if NETSTANDARD2_0
+            var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+#elif NET472_OR_GREATER || NET5_0_OR_GREATER
             var set = new HashSet<string>(splitFlags.Length, StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < splitFlags.Length; ++i)
+#endif
+            foreach (string flag in splitFlags)
             {
-                set.Add(splitFlags[i].Trim());
+                set.Add(flag.Trim());
             }
 
-            var result = set.ToList();
+            var result = new List<string>(set.Count);
+            foreach (var s in set)
+            {
+                result.Add(s);
+            }
+
             result.Sort(StringComparer.OrdinalIgnoreCase);
 
             return result;
