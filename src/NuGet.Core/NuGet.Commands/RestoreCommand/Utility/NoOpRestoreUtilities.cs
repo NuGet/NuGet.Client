@@ -155,10 +155,25 @@ namespace NuGet.Commands
 
             }
 
-            if (cacheFile.HasAnyMissingPackageFiles)
+            foreach (var path in cacheFile.ExpectedPackageFilePaths)
             {
-                request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingPackagesOnDisk, request.Project.Name));
-                return false;
+                // For sha and nupkg metadata, cache the checks.
+                if (path.EndsWith(".sha512", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".metadata", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!request.DependencyProviders.PackageFileCache.Sha512Exists(path))
+                    {
+                        request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingPackagesOnDisk, request.Project.Name));
+                        return false;
+                    }
+                }
+                else
+                {
+                    // Project specific files are only going to be checked once.
+                    if (!File.Exists(path))
+                    {
+                        return false;
+                    }
+                }
             }
 
             if (request.UpdatePackageLastAccessTime)

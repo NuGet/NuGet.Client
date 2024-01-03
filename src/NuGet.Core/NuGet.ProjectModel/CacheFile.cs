@@ -23,6 +23,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         public IList<string> ExpectedPackageFilePaths { get; set; }
 
+        [Obsolete("File existence checks are a function of time not the cache file content.")]
         /// <summary>
         /// Gets or sets a value indicating if one or more of the expected files are missing.
         /// </summary>
