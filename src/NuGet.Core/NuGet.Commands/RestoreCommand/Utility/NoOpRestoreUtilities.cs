@@ -11,6 +11,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -155,30 +156,18 @@ namespace NuGet.Commands
 
             }
 
-            foreach (var path in cacheFile.ExpectedPackageFilePaths)
+            foreach (var path in cacheFile.ExpectedPackageFilePaths.AsList())
             {
-                // For sha and nupkg metadata, cache the checks.
-                if (path.EndsWith(".sha512", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".metadata", StringComparison.OrdinalIgnoreCase))
+                if (!request.DependencyProviders.PackageFileCache.Sha512Exists(path))
                 {
-                    if (!request.DependencyProviders.PackageFileCache.Sha512Exists(path))
-                    {
-                        request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingPackagesOnDisk, request.Project.Name));
-                        return false;
-                    }
-                }
-                else
-                {
-                    // Project specific files are only going to be checked once.
-                    if (!File.Exists(path))
-                    {
-                        return false;
-                    }
+                    request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingPackagesOnDisk, request.Project.Name));
+                    return false;
                 }
             }
 
             if (request.UpdatePackageLastAccessTime)
             {
-                foreach (var package in cacheFile.ExpectedPackageFilePaths)
+                foreach (var package in cacheFile.ExpectedPackageFilePaths.AsList())
                 {
                     if (!package.StartsWith(request.PackagesDirectory, StringComparison.OrdinalIgnoreCase)) { continue; }
 

@@ -37,7 +37,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(0, logger.Warnings);
         }
 
-        [Theory]
+        [Fact]
         public void Read_WhenVersionIsCurrentVersion_ReadsCorrectly()
         {
             using (var workingDir = TestDirectory.Create())
