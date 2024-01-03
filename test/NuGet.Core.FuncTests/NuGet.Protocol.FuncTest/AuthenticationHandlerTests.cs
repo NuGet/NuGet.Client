@@ -137,7 +137,7 @@ namespace NuGet.Protocol.FuncTest
                     _ = await source.GetAsync(request, ProcessResponse, logger.Object, cancellationToken);
 
                     request = new HttpSourceCachedRequest(packageUrl, "2", httpSourceCacheContext);
-                    _ = await source.GetAsync(request, ProcessResponse, logger.Object, cancellationToken);                    
+                    _ = await source.GetAsync(request, ProcessResponse, logger.Object, cancellationToken);
                 }
                 finally
                 {
