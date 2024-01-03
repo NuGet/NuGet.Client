@@ -203,7 +203,7 @@ stages:
 
                 $RunSettingsURI = "https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/NuGet-NuGet.Client-Trusted/$branchName/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.Tests.Apex.runsettings"
                 Write-Host "RunSettingsURI: $RunSettingsURI"
-                Write-Host "##vso[task.setvariable variable=RunSettingsURI]$RunSettingsURI"
+                Write-Host "##vso[task.setvariable variable=RunSettingsURI;isOutput=true]$RunSettingsURI"
               }
               catch {
               Write-Host $_
