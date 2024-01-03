@@ -3,6 +3,7 @@
     <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.ProjectModel.</Description>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 
   <ItemGroup>
