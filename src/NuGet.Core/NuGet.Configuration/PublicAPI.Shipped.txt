@@ -425,7 +425,7 @@ static NuGet.Configuration.PackageSourceMapping.GetPackageSourceMapping(NuGet.Co
 ~static NuGet.Configuration.SettingsUtility.GetConfigValue(NuGet.Configuration.ISettings settings, string key, bool decrypt = false, bool isPath = false) -> string
 ~static NuGet.Configuration.SettingsUtility.GetDecryptedValueForAddItem(NuGet.Configuration.ISettings settings, string section, string key, bool isPath = false) -> string
 ~static NuGet.Configuration.SettingsUtility.GetDefaultPushSource(NuGet.Configuration.ISettings settings) -> string
-~static NuGet.Configuration.SettingsUtility.GetEnabledSources(NuGet.Configuration.ISettings settings) -> System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource>
+~static NuGet.Configuration.SettingsUtility.GetEnabledSources(NuGet.Configuration.ISettings settings) -> System.Collections.Generic.List<NuGet.Configuration.PackageSource>
 ~static NuGet.Configuration.SettingsUtility.GetFallbackPackageFolders(NuGet.Configuration.ISettings settings) -> System.Collections.Generic.IReadOnlyList<string>
 ~static NuGet.Configuration.SettingsUtility.GetGlobalPackagesFolder(NuGet.Configuration.ISettings settings) -> string
 ~static NuGet.Configuration.SettingsUtility.GetHttpCacheFolder() -> string
