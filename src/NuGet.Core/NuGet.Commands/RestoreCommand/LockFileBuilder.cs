@@ -630,8 +630,10 @@ namespace NuGet.Commands
                 Path = path
             };
 
-            foreach (var file in package.Files)
+            // Use for loop to avoid boxing enumerator
+            for (var i = 0; i < package.Files.Count; i++)
             {
+                var file = package.Files[i];
                 if (!lockFileLib.HasTools && HasTools(file))
                 {
                     lockFileLib.HasTools = true;
