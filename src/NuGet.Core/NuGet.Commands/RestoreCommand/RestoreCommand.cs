@@ -787,7 +787,6 @@ namespace NuGet.Commands
                 CacheFileExists(_request.Project.RestoreMetadata.CacheFilePath, out cacheFileAge))
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
-                // Read cache first. Then perform validation.
 
                 if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && VerifyCacheFileMatchesProject(cacheFile))
                 {
