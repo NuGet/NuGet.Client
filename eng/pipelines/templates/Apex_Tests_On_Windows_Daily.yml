@@ -38,8 +38,6 @@ stages:
           value: Daily Visual Studio Tests
         - name: RunSettingsURI
           value: $[dependencies.TestMachineConfiguration.outputs['SetRunSettingsURI.RunSettingsURI']]
-        - name: QBuildSessionId
-          value: $[dependencies.TestMachineConfiguration.outputs['setcloudbuildsessionid.BuildSessionId']]
         - name: VsBaseBuildDrop
           value: $[dependencies.TestMachineConfiguration.outputs['setbasebuilddrop.BaseBuildDrop']]
       runSettingsURI: $(RunSettingsURI)
@@ -205,14 +203,11 @@ stages:
 
                 $RunSettingsURI = "https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/NuGet-NuGet.Client-Trusted/$branchName/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.Tests.Apex.runsettings"
                 Write-Host "RunSettingsURI: $RunSettingsURI"
-                # non-output variable for VS config in the configure machine job
-                # output variable for test execution job
-                Set-AzurePipelinesVariable 'RunSettingsURI' $RunSettingsURI
-                Set-AzurePipelinesVariable -IsOutput 'RunSettingsURI' $RunSettingsURI
+                Write-Host "##vso[task.setvariable variable=RunSettingsURI]$RunSettingsURI"
               }
               catch {
               Write-Host $_
-              Write-Error "Failed to set SourceBranchName pipeline variable"
+              Write-Error "Failed to set RunSettingsURI pipeline variable"
               throw
               }
 

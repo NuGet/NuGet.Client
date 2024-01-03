@@ -30,11 +30,6 @@ resources:
   - pipeline: DartLab
     source: DartLab
     branch: main
-  - pipeline: nugetclientprivatedev
-    source: NuGet.Client-PrivateDev
-    trigger:
-        branches:
-          - dev-nkolev92-newPipeline
   repositories:
   - repository: DartLabTemplates
     type: git
