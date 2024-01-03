@@ -145,7 +145,36 @@ namespace NuGet.Protocol.FuncTest
                 }
 
                 // Assert
+
+                // Each attempt to access a private feed initially receives a 401 Unauthorized response.
+                // Following the 401 response, NuGet attempts to acquire the necessary credentials.
+                // These credentials are then used for subsequent requests to the feed.
+                // Note: If 'HttpClientHandler.PreAuthenticate' is set to true, this behavior might differ as 
+                // credentials would be sent preemptively with the initial request.
+
+                // In this test, the expected number of requests is 4, but it turns out to be 5. This discrepancy occurs because 
+                // we initialize _credentials =  new HttpSourceCredentials() in the HttpSourceAuthenticationHandler constructor.
+                // The HttpHandler pipeline operates under the assumption that credentials have already been set, although they have not.
+                // As a result, NuGet initially sends 2 requests to the server without credentials when accessing the private feed for the first time
+                // and then invokes the credential service.
+
+                // Request flow while accessing index.json
+                // NuGet -> Server (No Credentials) - 1st request
+                // Server -> NuGet (401 Unauthorized)
+                // NuGet -> Server (Sends HttpClientHandler.Credentials) - 2nd request
+                // Server -> NuGet (401 Unauthorized because HttpClientHandler.Credentials returns a null value by default)
+                // NuGet -> Credential Service
+                // Credential Service -> NuGet (Returns credentials)
+                // NuGet -> Server (Sends credentials received from the credential service) - 3rd request
+                // Server -> NuGet (200 OK)
+
+                // Request flow while retrieving package information
+                // NuGet -> Server (No Credentials) - 4th request
+                // Server -> NuGet (401 Unauthorized)
+                // NuGet -> Server (Sends HttpClientHandler.Credentials) - 5th request
+                // Server -> NuGet (200 OK)
                 server.Requests.Should().HaveCount(5);
+                // This should have been 2, but is 3 because of the reason mentioned above.
                 server.Requests.Count(RequestWithoutAuthorizationHeader).Should().Be(3);
                 server.Requests.Any(r => r.Url!.OriginalString == serviceIndexUrl).Should().BeTrue();
 
@@ -157,6 +186,11 @@ namespace NuGet.Protocol.FuncTest
                 }
 
                 mockedCredentialService.Verify(x => x.GetCredentialsAsync(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<CredentialRequestType>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+                // The method TryGetLastKnownGoodCredentialsFromCache is invoked only once, despite the client sending two requests:
+                // the first to access index.json and the second to retrieve package information.
+                // This occurs because when HttpClientHandler.Credentials is set (i.e., not null) while accessing the index.json.
+                // These credentials are automatically sent with requests to the private feed upon receiving 401 challenge.
+                // As a result, NuGet does not need to invoke the credential service again while retrieving the package information.
                 mockedCredentialService.Verify(x => x.TryGetLastKnownGoodCredentialsFromCache(It.IsAny<Uri>(), It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny), Times.Once);
 
                 // ExecuteAsync returns Task<T>, so need to return something to give it a <T>.
