@@ -159,7 +159,7 @@ namespace NuGet.Protocol.Tests
                 InnerHandler = GetLambdaMessageHandler(HttpStatusCode.Forbidden)
             };
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://foo");
+            var request = new HttpRequestMessage(HttpMethod.Get, PackageSourceUrl);
             request.SetConfiguration(new HttpRequestMessageConfiguration(promptOn403: false));
 
             // Act
@@ -563,7 +563,7 @@ namespace NuGet.Protocol.Tests
                 for (int i = 0; i < HttpSourceAuthenticationHandler.MaxAuthRetries + 1; i++)
                 {
                     // Act
-                    var response = await client.SendAsync(request: new HttpRequestMessage(HttpMethod.Get, "http://foo"), CancellationToken.None);
+                    var response = await client.SendAsync(request: new HttpRequestMessage(HttpMethod.Get, PackageSourceUrl), CancellationToken.None);
 
                     // Assert
                     Assert.NotNull(response);
