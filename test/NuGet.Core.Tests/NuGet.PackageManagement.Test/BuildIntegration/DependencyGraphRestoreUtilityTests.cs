@@ -185,16 +185,15 @@ namespace NuGet.PackageManagement.Test
 
             IReadOnlyList<string> expectedFileList = new string[] { assetsFilePath, propsFile, targetsFile };
             var pathComparer = PathUtility.GetStringComparerBasedOnOS();
-
             progressReporter.Verify(r =>
                 r.StartProjectUpdate(
                     It.Is<string>(e => e.Equals(packageSpec.FilePath)),
-                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(expectedFileList, (f) => f, pathComparer, pathComparer))),
+                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(expectedFileList, (a, b) => pathComparer.Compare(a, b), pathComparer))),
                     Times.Once);
             progressReporter.Verify(r =>
                 r.EndProjectUpdate(
                     It.Is<string>(e => e.Equals(packageSpec.FilePath)),
-                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(expectedFileList, (f) => f, pathComparer, pathComparer))),
+                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(expectedFileList, (a, b) => pathComparer.Compare(a, b), pathComparer))),
                     Times.Once);
         }
 

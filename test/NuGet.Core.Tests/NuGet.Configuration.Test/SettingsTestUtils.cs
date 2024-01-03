@@ -154,7 +154,7 @@ namespace NuGet.Configuration.Test
 
             if (item1.Attributes.Count == item2.Attributes.Count)
             {
-                return item1.Attributes.OrderedEquals(item2.Attributes, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Key, b.Key));
+                return EqualityUtility.DictionaryEquals(item1.Attributes, item2.Attributes, (a, b) => StringComparer.OrdinalIgnoreCase.Equals(a, b));
             }
 
             return false;
@@ -187,7 +187,7 @@ namespace NuGet.Configuration.Test
             if (section1.Attributes.Count == section2.Attributes.Count &&
                 section1.Items.Count == section2.Items.Count)
             {
-                var attributesEquals = section1.Attributes.OrderedEquals(section2.Attributes, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Key, b.Key));
+                var attributesEquals = EqualityUtility.DictionaryEquals(section1.Attributes, section2.Attributes, (a, b) => StringComparer.OrdinalIgnoreCase.Equals(a, b));
                 var itemsEquals = true;
 
                 var items1 = section1.Items.ToList();

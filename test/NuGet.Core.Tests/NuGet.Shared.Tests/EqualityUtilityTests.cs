@@ -16,7 +16,7 @@ namespace NuGet.Shared.Tests
         public void OrderedEquals_CompareWithNullList_ReturnsFalse()
         {
             // Arrange
-            var list = new List<string>();
+            IList<string> list = new List<string>();
 
             // Act & Assert
             list.OrderedEquals(null, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
@@ -26,7 +26,7 @@ namespace NuGet.Shared.Tests
         public void OrderedEquals_CompareFromANullList_ReturnsFalse()
         {
             // Arrange
-            List<string> list = null;
+            IList<string> list = null;
 
             // Act & Assert
             list.OrderedEquals(new List<string>(), (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
@@ -36,7 +36,7 @@ namespace NuGet.Shared.Tests
         public void OrderedEquals_CompareTwoNullLists_ReturnsTrue()
         {
             // Arrange
-            List<string> list = null;
+            IList<string> list = null;
 
             // Act & Assert
             list.OrderedEquals(null, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();
@@ -46,7 +46,7 @@ namespace NuGet.Shared.Tests
         public void OrderedEquals_CompareSameLists_ReturnsTrue()
         {
             // Arrange
-            var list = new List<string>();
+            IList<string> list = new List<string>();
 
             // Act & Assert
             list.OrderedEquals(list, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();
@@ -56,8 +56,8 @@ namespace NuGet.Shared.Tests
         public void OrderedEquals_CompareEmptyLists_ReturnsTrue()
         {
             // Arrange
-            var list1 = new List<string>();
-            var list2 = new List<string>();
+            IList<string> list1 = new List<string>();
+            IList<string> list2 = new List<string>();
 
             // Act & Assert
             list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeTrue();
@@ -67,8 +67,8 @@ namespace NuGet.Shared.Tests
         public void OrderedEquals_CompareListsWithDifferentLengths_ReturnsFalse()
         {
             // Arrange
-            var list1 = new List<string> { "unit.test" };
-            var list2 = new List<string> { "unit.test", "unit.test" };
+            IList<string> list1 = new List<string> { "unit.test" };
+            IList<string> list2 = new List<string> { "unit.test", "unit.test" };
 
             // Act & Assert
             list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeFalse();
@@ -78,8 +78,8 @@ namespace NuGet.Shared.Tests
         public void OrderedEquals_CompareListsWithDifferentCaseWithOrdinalIgnoreCase_ReturnsTrue()
         {
             // Arrange
-            var list1 = new List<string> { "unit.test" };
-            var list2 = new List<string> { "Unit.test" };
+            IList<string> list1 = new List<string> { "unit.test" };
+            IList<string> list2 = new List<string> { "Unit.test" };
 
             // Act & Assert
             list1.OrderedEquals(list2, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b), StringComparer.OrdinalIgnoreCase).Should().BeTrue();
@@ -89,8 +89,8 @@ namespace NuGet.Shared.Tests
         public void OrderedEquals_CompareListsWithDifferentCaseWithOrdinal_ReturnsFalse()
         {
             // Arrange
-            var list1 = new List<string> { "unit.test" };
-            var list2 = new List<string> { "Unit.test" };
+            IList<string> list1 = new List<string> { "unit.test" };
+            IList<string> list2 = new List<string> { "Unit.test" };
 
             // Act & Assert
             list1.OrderedEquals(list2, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeFalse();
@@ -100,8 +100,8 @@ namespace NuGet.Shared.Tests
         public void OrderedEquals_CompareListsWithSameElementsInDifferentOrder_ReturnsTrue()
         {
             // Arrange
-            var list1 = new List<string> { "unit", "test" };
-            var list2 = new List<string> { "test", "unit" };
+            IList<string> list1 = new List<string> { "unit", "test" };
+            IList<string> list2 = new List<string> { "test", "unit" };
 
             // Act & Assert
             list1.OrderedEquals(list2, (a, b) => StringComparer.Ordinal.Compare(a, b), StringComparer.Ordinal).Should().BeTrue();

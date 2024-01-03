@@ -17,7 +17,6 @@ namespace NuGet.Shared
         /// Compares two enumerables for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
         /// </summary>
         /// <typeparam name="TSource">The type of the list</typeparam>
-        /// <typeparam name="TKey">The type of the sorting key</typeparam>
         /// <param name="self">This list</param>
         /// <param name="other">The other list</param>
         /// <param name="keySelector">The function to extract the key from each item in the list</param>
@@ -86,7 +85,6 @@ namespace NuGet.Shared
         /// Compares two collections for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
         /// </summary>
         /// <typeparam name="TSource">The type of the list</typeparam>
-        /// <typeparam name="TKey">The type of the sorting key</typeparam>
         /// <param name="self">This list</param>
         /// <param name="other">The other list</param>
         /// <param name="keySelector">The function to extract the key from each item in the list</param>
@@ -122,11 +120,11 @@ namespace NuGet.Shared
             }
 
             TSource[] selfCopy = new TSource[self.Count];
-            TSource[] otherCopy = new TSource[other.Count];
             self.CopyTo(selfCopy, 0);
-            other.CopyTo(otherCopy, 0);
-
             Array.Sort(selfCopy, orderComparer);
+
+            TSource[] otherCopy = new TSource[other.Count];
+            other.CopyTo(otherCopy, 0);
             Array.Sort(otherCopy, orderComparer);
 
             for (int i = 0; i < selfCopy.Length; ++i)
@@ -144,7 +142,6 @@ namespace NuGet.Shared
         /// Compares two lists for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
         /// </summary>
         /// <typeparam name="TSource">The type of the list</typeparam>
-        /// <typeparam name="TKey">The type of the sorting key</typeparam>
         /// <param name="self">This list</param>
         /// <param name="other">The other list</param>
         /// <param name="keySelector">The function to extract the key from each item in the list</param>
@@ -180,9 +177,69 @@ namespace NuGet.Shared
             }
 
             TSource[] selfCopy = new TSource[self.Count];
-            TSource[] otherCopy = new TSource[other.Count];
             self.CopyTo(selfCopy, 0);
+            Array.Sort(selfCopy, orderComparer);
+
+            TSource[] otherCopy = new TSource[other.Count];
             other.CopyTo(otherCopy, 0);
+            Array.Sort(otherCopy, orderComparer);
+
+            for (int i = 0; i < selfCopy.Length; ++i)
+            {
+                if (!sequenceComparer.Equals(selfCopy[i], otherCopy[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Compares two lists for equality, ordered according to the specified key and optional comparer. Handles null values gracefully.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the list</typeparam>
+        /// <param name="self">This list</param>
+        /// <param name="other">The other list</param>
+        /// <param name="keySelector">The function to extract the key from each item in the list</param>
+        /// <param name="orderComparer">An optional comparer for comparing keys</param>
+        /// <param name="sequenceComparer">An optional comparer for sequences</param>
+        internal static bool OrderedEquals<TSource>(this IReadOnlyList<TSource>? self, IReadOnlyList<TSource>? other, Comparison<TSource> orderComparer, IEqualityComparer<TSource>? sequenceComparer = null)
+        {
+            Debug.Assert(sequenceComparer != null || typeof(TSource) != typeof(string), "Argument " + "sequenceComparer" + " must be provided if " + "TSource" + " is a string.");
+
+            if (TryIdentityEquals(self, other, out bool identityEquals))
+            {
+                return identityEquals;
+            }
+
+            if (self.Count != other.Count)
+            {
+                return false;
+            }
+
+            if (self.Count == 0)
+            {
+                return true;
+            }
+
+            if (sequenceComparer == null)
+            {
+                sequenceComparer = EqualityComparer<TSource>.Default;
+            }
+
+            if (self.Count == 1)
+            {
+                return sequenceComparer.Equals(self[0], other[0]);
+            }
+
+            TSource[] selfCopy = new TSource[self.Count];
+            TSource[] otherCopy = new TSource[other.Count];
+            for (int i = 0; i < selfCopy.Length; ++i)
+            {
+                selfCopy[i] = self[i];
+                otherCopy[i] = other[i];
+            }
 
             Array.Sort(selfCopy, orderComparer);
             Array.Sort(otherCopy, orderComparer);
@@ -329,14 +386,13 @@ namespace NuGet.Shared
         }
 
         internal static bool DictionaryEquals<TKey, TValue>(
-            IDictionary<TKey, TValue> self,
-            IDictionary<TKey, TValue> other,
+            Dictionary<TKey, TValue> self,
+            Dictionary<TKey, TValue> other,
             Func<TValue, TValue, bool>? compareValues = null)
-            where TKey : notnull
+    where TKey : notnull
         {
-            var comparer = EqualityComparer<TValue>.Default;
-            Func<TValue, TValue, bool> comparerFunc = (s, o) => comparer.Equals(s, o);
-            compareValues = compareValues ?? comparerFunc;
+            Debug.Assert(compareValues != null || typeof(TValue) != typeof(string), "Argument " + nameof(compareValues) + " must be provided if " + nameof(TValue) + " is a string.");
+            compareValues ??= (s, o) => EqualityComparer<TValue>.Default.Equals(s, o);
 
             bool identityEquals;
             if (TryIdentityEquals(self, other, out identityEquals))
@@ -355,17 +411,98 @@ namespace NuGet.Shared
                 return true;
             }
 
-            if (!self.Keys.OrderedEquals(
-                other.Keys,
-                (a, b) => Comparer<TKey>.Default.Compare(a, b),
-                sequenceComparer: EqualityComparer<TKey>.Default))
+            if (self.Comparer != other.Comparer)
             {
                 return false;
             }
 
-            foreach (var key in self.Keys)
+            foreach (var kvp in self)
             {
-                if (!compareValues(self[key], other[key]))
+                if (!other.TryGetValue(kvp.Key, out TValue? otherValue) || !compareValues(kvp.Value, otherValue))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        internal static bool DictionaryEquals<TKey, TValue>(
+            IDictionary<TKey, TValue> self,
+            IDictionary<TKey, TValue> other,
+            Func<TValue, TValue, bool>? compareValues = null)
+            where TKey : notnull
+        {
+            Debug.Assert(compareValues != null || typeof(TValue) != typeof(string), "Argument " + nameof(compareValues) + " must be provided if " + nameof(TValue) + " is a string.");
+            compareValues ??= (s, o) => EqualityComparer<TValue>.Default.Equals(s, o);
+
+            bool identityEquals;
+            if (TryIdentityEquals(self, other, out identityEquals))
+            {
+                return identityEquals;
+            }
+
+            // Verify they could be equal by count
+            if (self.Count != other.Count)
+            {
+                return false;
+            }
+
+            if (self.Count == 0)
+            {
+                return true;
+            }
+
+            if (self is Dictionary<TKey, TValue> selfDict && other is Dictionary<TKey, TValue> otherDict && selfDict.Comparer != otherDict.Comparer)
+            {
+                return false;
+            }
+
+            foreach (var kvp in self)
+            {
+                if (!other.TryGetValue(kvp.Key, out TValue? otherValue) || !compareValues(kvp.Value, otherValue))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        internal static bool DictionaryEquals<TKey, TValue>(
+            IReadOnlyDictionary<TKey, TValue> self,
+            IReadOnlyDictionary<TKey, TValue> other,
+            Func<TValue, TValue, bool>? compareValues = null)
+            where TKey : notnull
+        {
+            Debug.Assert(compareValues != null || typeof(TValue) != typeof(string), "Argument " + nameof(compareValues) + " must be provided if " + nameof(TValue) + " is a string.");
+            compareValues ??= (s, o) => EqualityComparer<TValue>.Default.Equals(s, o);
+
+            bool identityEquals;
+            if (TryIdentityEquals(self, other, out identityEquals))
+            {
+                return identityEquals;
+            }
+
+            // Verify they could be equal by count
+            if (self.Count != other.Count)
+            {
+                return false;
+            }
+
+            if (self.Count == 0)
+            {
+                return true;
+            }
+
+            if (self is Dictionary<TKey, TValue> selfDict && other is Dictionary<TKey, TValue> otherDict && selfDict.Comparer != otherDict.Comparer)
+            {
+                return false;
+            }
+
+            foreach (var kvp in self)
+            {
+                if (!other.TryGetValue(kvp.Key, out TValue? otherValue) || !compareValues(kvp.Value, otherValue))
                 {
                     return false;
                 }

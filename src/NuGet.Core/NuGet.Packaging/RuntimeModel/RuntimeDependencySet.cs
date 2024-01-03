@@ -54,7 +54,7 @@ namespace NuGet.RuntimeModel
             }
 
             return string.Equals(other.Id, Id, StringComparison.OrdinalIgnoreCase)
-                && Dependencies.OrderedEquals(other.Dependencies, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Key, b.Key));
+                && EqualityUtility.DictionaryEquals(Dependencies, other.Dependencies, (a, b) => StringComparer.OrdinalIgnoreCase.Equals(a, b));
         }
 
         public override bool Equals(object obj)
