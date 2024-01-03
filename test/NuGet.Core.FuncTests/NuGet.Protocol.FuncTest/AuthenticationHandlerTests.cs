@@ -150,7 +150,7 @@ namespace NuGet.Protocol.FuncTest
                 // Following the 401 response, NuGet attempts to acquire the necessary credentials.
                 // These credentials are then used for subsequent requests to the feed.
                 // Note: If 'HttpClientHandler.PreAuthenticate' is set to true, this behavior might differ as 
-                // credentials would be sent preemptively with the initial request.
+                // credentials would be sent preemptively after the initial request.
 
                 // In this test, the expected number of requests is 4, but it turns out to be 5. This discrepancy occurs because 
                 // we initialize _credentials =  new HttpSourceCredentials() in the HttpSourceAuthenticationHandler constructor.
