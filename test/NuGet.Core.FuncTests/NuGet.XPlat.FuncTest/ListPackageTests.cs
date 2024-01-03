@@ -5,14 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.ListPackage;
+using NuGet.Commands;
+using NuGet.Commands.Test;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
@@ -154,6 +161,123 @@ namespace NuGet.XPlat.FuncTest
                     // Act & Assert
                     Assert.Throws<AggregateException>(() => testApp.Execute(argList.ToArray()));
                 });
+        }
+
+        [Fact]
+        public async Task ListPackage_WithPrivateHttpSourceCredentialServiceIsInvokedAsNeeded_Succeeds()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
+            var packageB100 = new SimpleTestPackageContext("B", "1.0.0");
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    packageA100,
+                    packageB100);
+
+            var projectA = SimpleTestProjectContext.CreateNETCore("ProjectA", pathContext.SolutionRoot, "net6.0");
+            var projectB = SimpleTestProjectContext.CreateNETCore("ProjectB", pathContext.SolutionRoot, "net6.0");
+
+            projectA.AddPackageToAllFrameworks(packageA100);
+            projectB.AddPackageToAllFrameworks(packageB100);
+
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            solution.Projects.Add(projectA);
+            solution.Projects.Add(projectB);
+            solution.Create(pathContext.SolutionRoot);
+
+            SimpleTestSettingsContext.RemoveSource(pathContext.Settings.XML, "source");
+
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, isPrivateFeed: true);
+            mockServer.Start();
+            pathContext.Settings.AddSource("private-source", mockServer.ServiceIndexUri);
+
+            var mockedCredentialService = new Mock<ICredentialService>();
+            var expectedCredentials = new NetworkCredential("user", "password1");
+            SetupCredentialServiceMock(mockedCredentialService, expectedCredentials, new Uri(mockServer.ServiceIndexUri));
+            HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(() => mockedCredentialService.Object);
+
+            // List package command requires restore to be run before it can list packages.
+            await RestoreProjectsAsync(pathContext, projectA, projectB);
+
+            // Act
+            ListPackageCommandRunner listPackageCommandRunner = new();
+            var packageRefArgs = new ListPackageArgs(
+                                        path: Path.Combine(pathContext.SolutionRoot, "solution.sln"),
+                                        packageSources: [new(mockServer.ServiceIndexUri)],
+                                        frameworks: ["net6.0"],
+                                        reportType: ReportType.Vulnerable,
+                                        renderer: new ListPackageConsoleRenderer(),
+                                        includeTransitive: false,
+                                        prerelease: false,
+                                        highestPatch: false,
+                                        highestMinor: false,
+                                        logger: NullLogger.Instance,
+                                        cancellationToken: CancellationToken.None);
+
+            int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
+
+            // Assert
+            Assert.Equal(0, result);
+            // GetCredentialsAsync should be called once during restore
+            mockedCredentialService.Verify(x => x.GetCredentialsAsync(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<CredentialRequestType>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            // TryGetLastKnownGoodCredentialsFromCache should be called twice during restore and once during list package.Hence total 3 times.
+            mockedCredentialService.Verify(x => x.TryGetLastKnownGoodCredentialsFromCache(It.IsAny<Uri>(), It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny), Times.Exactly(3));
+
+            static void SetupCredentialServiceMock(Mock<ICredentialService> mockedCredentialService, NetworkCredential expectedCredentials, Uri packageSourceUri)
+            {
+                NetworkCredential cachedCredentials = default;
+                mockedCredentialService.SetupGet(x => x.HandlesDefaultCredentials).Returns(true);
+                // Setup GetCredentialsAsync mock
+                mockedCredentialService
+                    .Setup(x => x.GetCredentialsAsync(packageSourceUri, It.IsAny<IWebProxy>(), CredentialRequestType.Unauthorized, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(() =>
+                    {
+                        cachedCredentials = expectedCredentials;
+                        return cachedCredentials;
+                    });
+                // Setup TryGetLastKnownGoodCredentialsFromCache mock
+                mockedCredentialService
+                    .Setup(x => x.TryGetLastKnownGoodCredentialsFromCache(packageSourceUri, It.IsAny<bool>(), out It.Ref<ICredentials>.IsAny))
+                    .Returns((Uri sourceUri, bool isProxyRequest, out ICredentials outCredentials) =>
+                    {
+                        outCredentials = cachedCredentials;
+                        return outCredentials != null;
+                    });
+            }
+
+            static async Task RestoreProjectsAsync(SimpleTestPathContext pathContext, SimpleTestProjectContext projectA, SimpleTestProjectContext projectB)
+            {
+                var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(pathContext.NuGetConfig), Path.GetFileName(pathContext.NuGetConfig), null);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                var sources = packageSourceProvider.LoadPackageSources();
+                var fallbackFolders = (IList<string>)SettingsUtility.GetFallbackPackageFolders(settings);
+                var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+
+                await RestoreProjectAsync(settings, pathContext, projectA, sources, fallbackFolders, globalPackagesFolder);
+                await RestoreProjectAsync(settings, pathContext, projectB, sources, fallbackFolders, globalPackagesFolder);
+            }
+
+            static async Task RestoreProjectAsync(ISettings settings,
+                SimpleTestPathContext pathContext,
+                SimpleTestProjectContext project,
+                IEnumerable<PackageSource> packageSources,
+                IList<string> fallbackFolders,
+                string globalpackagesFolder)
+            {
+                project.Sources = packageSources;
+                project.FallbackFolders = (IList<string>)SettingsUtility.GetFallbackPackageFolders(settings);
+                project.GlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+                project.Save();
+
+                var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, NullLogger.Instance, project.PackageSpec));
+                var restoreResult = await command.ExecuteAsync(CancellationToken.None);
+                await restoreResult.CommitAsync(NullLogger.Instance, CancellationToken.None);
+                Assert.True(restoreResult.Success);
+            }
         }
 
         private void VerifyCommand(Action<string, Mock<IListPackageCommandRunner>, CommandLineApplication, Func<LogLevel>> verify)
