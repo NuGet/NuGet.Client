@@ -31,26 +31,6 @@ namespace NuGet.ProjectModel
         private static readonly byte[] EmbedPropertyName = Encoding.UTF8.GetBytes("embed");
         private static readonly byte[] FrameworkReferencesPropertyName = Encoding.UTF8.GetBytes("frameworkReferences");
 
-        private IList<PackageDependency> ReadPackageDependencyList(ref Utf8JsonStreamReader reader)
-        {
-            if (reader.TokenType != JsonTokenType.StartObject)
-            {
-                return Array.Empty<PackageDependency>();
-            }
-
-            var packageDependencies = new List<PackageDependency>();
-            while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
-            {
-                string propertyName = reader.GetString();
-                string versionString = reader.ReadNextTokenAsString();
-
-                packageDependencies.Add(new PackageDependency(
-                    propertyName,
-                    versionString == null ? null : VersionRange.Parse(versionString)));
-            }
-            return packageDependencies;
-        }
-
         public LockFileTargetLibrary Read(ref Utf8JsonStreamReader reader)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
@@ -199,6 +179,26 @@ namespace NuGet.ProjectModel
             }
             lockFileTargetLibrary.Freeze();
             return lockFileTargetLibrary;
+        }
+
+        private IList<PackageDependency> ReadPackageDependencyList(ref Utf8JsonStreamReader reader)
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                return Array.Empty<PackageDependency>();
+            }
+
+            var packageDependencies = new List<PackageDependency>();
+            while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+            {
+                string propertyName = reader.GetString();
+                string versionString = reader.ReadNextTokenAsString();
+
+                packageDependencies.Add(new PackageDependency(
+                    propertyName,
+                    versionString == null ? null : VersionRange.Parse(versionString)));
+            }
+            return packageDependencies;
         }
     }
 }
