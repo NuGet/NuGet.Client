@@ -27,7 +27,11 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Gets or sets a value indicating if one or more of the expected files are missing.
         /// </summary>
-        public bool HasAnyMissingPackageFiles { get; set; }
+        public bool HasAnyMissingPackageFiles
+        {
+            get => throw new NotImplementedException("This API is no longer support");
+            set => throw new NotImplementedException("This API is no longer support");
+        }
 
         /// <summary>
         /// Gets or sets the full path to the project file.
