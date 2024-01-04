@@ -1,10 +1,6 @@
 parameters:
   - name: dependsOn
     type: object
-  # - name: bootstrapperUrl
-  #   type: string
-  # - name: runSettingsURI
-  #   type: string
   - name: DartLabEnvironment
     type: string
   - name: condition
@@ -20,9 +16,6 @@ parameters:
   - name: isOfficialBuild
     type: boolean
     default: false
-  # - name: preTestMachineConfigurationStepList
-  #   type: stepList
-  #   default: []
 
 stages:
   - template: stages\visual-studio\build-to-build-upgrade\single-runsettings.yml@DartLabTemplates
@@ -39,7 +32,7 @@ stages:
         - name: RunSettingsURI
           value: $[dependencies.TestMachineConfiguration.outputs['SetRunSettingsURI.RunSettingsURI']]
         - name: VsBaseBuildDrop
-          value: $[dependencies.TestMachineConfiguration.outputs['setbasebuilddrop.BaseBuildDrop']]
+          value: $[dependencies.TestMachineConfiguration.outputs['Setbasebuilddrop.BaseBuildDrop']]
       runSettingsURI: $(RunSettingsURI)
       visualStudioBootstrapperURI: $(VsBootstrapperUrl)  
       baseVisualStudioBootstrapperURI: https://vsdrop.corp.microsoft.com/file/v1/$(VisualStudio.BaseBuild.ProductsDropName);bootstrappers/Enterprise/vs_enterprise.exe
@@ -87,7 +80,7 @@ stages:
 
         - task: PowerShell@2
           displayName: "Set CloudBuild Session ID variable for tests"
-          name: "setcloudbuildsessionid"
+          name: "Setcloudbuildsessionid"
           continueOnError: true
           inputs:
             targetType: "inline"
@@ -107,7 +100,7 @@ stages:
 
         - task: PowerShell@2
           displayName: "Set Base Build Drop variable for tests"
-          name: "setbasebuilddrop"
+          name: "Setbasebuilddrop"
           continueOnError: true
           inputs:
             targetType: "inline"
@@ -125,6 +118,7 @@ stages:
             Write-Host $(setbasebuilddrop.BaseBuildDrop)
             Write-Host "BaseBuildDrop: $(SetBootstrapperURI.BootstrapperUrl)"
             Write-Host "BaseBuildDropV: $(VsBootstrapperUrl)"
+            Write-Host "VsBaseBuildDrop: $(VsBaseBuildDrop)"
 
         - template: \steps\powershell\execute-script.yml@DartLabTemplates
           parameters:
@@ -135,7 +129,7 @@ stages:
         
         - task: PowerShell@2
           displayName: "Get Baseline build commit ids"
-          name: "getbaselinebuildcommitids"
+          name: "Getbaselinebuildcommitids"
           retryCountOnTaskFailure: 3
           continueOnError: true
           inputs:
@@ -203,7 +197,8 @@ stages:
 
                 $RunSettingsURI = "https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/NuGet-NuGet.Client-Trusted/$branchName/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.Tests.Apex.runsettings"
                 Write-Host "RunSettingsURI: $RunSettingsURI"
-                Write-Host "##vso[task.setvariable variable=RunSettingsURI;isOutput=true]$RunSettingsURI"
+                Set-AzurePipelinesVariable 'RunSettingsURI' $RunSettingsURI
+                Set-AzurePipelinesVariable -IsOutput 'RunSettingsURI' $RunSettingsURI
               }
               catch {
               Write-Host $_
