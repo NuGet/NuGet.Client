@@ -112,19 +112,7 @@ namespace NuGet.ProjectModel
         internal static PackageSpec GetPackageSpecUtf8JsonStreamReader(Stream stream, string name, string packageSpecPath, string snapshotValue)
         {
             var reader = new Utf8JsonStreamReader(stream);
-            PackageSpec packageSpec;
-            packageSpec = GetPackageSpec(ref reader, name, packageSpecPath, snapshotValue);
-
-            if (!string.IsNullOrEmpty(name))
-            {
-                packageSpec.Name = name;
-                if (!string.IsNullOrEmpty(packageSpecPath))
-                {
-                    packageSpec.FilePath = Path.GetFullPath(packageSpecPath);
-
-                }
-            }
-            return packageSpec;
+            return GetPackageSpec(ref reader, name, packageSpecPath, snapshotValue);
         }
 
         internal static PackageSpec GetPackageSpec(ref Utf8JsonStreamReader jsonReader, string name, string packageSpecPath, string snapshotValue)
