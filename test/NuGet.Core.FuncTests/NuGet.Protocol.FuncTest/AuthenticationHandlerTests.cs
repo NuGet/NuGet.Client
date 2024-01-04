@@ -155,10 +155,10 @@ namespace NuGet.Protocol.FuncTest
                 // In this test, 2 requests are sent from the test's perspective, and the previous paragraph's explanation will
                 // make you believe the server should see 4, but it turns out to be 5. This discrepancy occurs because 
                 // HttpSourceCredentials is only initialized with credentials if the PackageSource object has credentials set.
-                // In other words, if there are creds in nuget.config or the appropriate environment variable. However, if the
+                // In other words, if there are creds in NuGet.Config or the appropriate environment variable. However, if the
                 // package source uses a credential provider, the provider is not asked for credentials until after the first 401
                 // response. After the auth handler requests HttpClientHandler to make a second request, it will again make
-                // an unautheticated request, and then finally obtain the credentials and send an authenticated request from
+                // an unauthenticated request, and then finally obtain the credentials and send an authenticated request from
                 // what the server sees as the 3rd request.
 
                 // Request flow while accessing index.json
@@ -179,12 +179,18 @@ namespace NuGet.Protocol.FuncTest
                 server.Requests.Should().HaveCount(5);
                 // This should have been 2, but is 3 because of the reason mentioned above.
                 server.Requests.Count(RequestWithoutAuthorizationHeader).Should().Be(3);
-
-                server.CapturedCredentials.Should().HaveCount(2);
-                foreach (var creds in server.CapturedCredentials)
+                // Validate that the credentials sent with the 3rd request & 5th request are the ones received from the credential service.
+                foreach (var httpListenerRequest in server.Requests)
                 {
-                    Assert.Equal(expectedCredentials.UserName, creds.UserName);
-                    Assert.Equal(expectedCredentials.Password, creds.Password);
+                    string? authorization = httpListenerRequest.Headers["Authorization"];
+                    if (authorization != null)
+                    {
+                        var encodedCredentials = authorization.Substring("Basic ".Length).Trim();
+                        var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(encodedCredentials));
+                        var creds = credentials.Split(':');
+                        Assert.Equal(expectedCredentials.UserName, creds[0]);
+                        Assert.Equal(expectedCredentials.Password, creds[1]);
+                    }
                 }
 
                 mockedCredentialService.Verify(x => x.GetCredentialsAsync(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<CredentialRequestType>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -239,7 +245,6 @@ namespace NuGet.Protocol.FuncTest
             private string? _baseUrl;
             private HttpListener? _httpListener;
             private List<HttpListenerRequest> _requests = new();
-            private List<NetworkCredential> _capturedCredentials { get; } = [];
             private ITestOutputHelper _output;
 
             public RequestCollectingServer(ITestOutputHelper output)
@@ -266,8 +271,6 @@ namespace NuGet.Protocol.FuncTest
                     return _requests;
                 }
             }
-
-            public IReadOnlyList<NetworkCredential> CapturedCredentials => _capturedCredentials;
 
             public void Start(int port)
             {
@@ -309,11 +312,6 @@ namespace NuGet.Protocol.FuncTest
                         else
                         {
                             context.Response.StatusCode = 200;
-
-                            var encodedCredentials = authorization.Substring("Basic ".Length).Trim();
-                            var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(encodedCredentials));
-                            var split = credentials.Split(':');
-                            _capturedCredentials.Add(new NetworkCredential(userName: split[0], password: split[1]));
                         }
 
                         _output.WriteLine($"Got request for {context.Request.Url}. Auth: {authorization}");
