@@ -243,7 +243,7 @@ namespace NuGet.ProjectModel
             {
                 string value = _reader.ReadTokenAsString();
 
-                strings = strings ?? new List<string>();
+                strings ??= new List<string>();
 
                 strings.Add(value);
             }
