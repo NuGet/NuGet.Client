@@ -109,7 +109,11 @@ stages:
                 $json = Get-Content "$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\Bootstrapperinfo.json" | ConvertFrom-Json
                 $buildDrop = $json[0].BuildDrop;
                 Write-Host "Base Build Drop: $buildDrop"
-                Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
+                # Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
+
+                Set-AzurePipelinesVariable 'BaseBuildDrop' $buildDrop
+                Set-AzurePipelinesVariable -IsOutput 'BaseBuildDrop' $buildDrop
+
               } catch {
               Write-Host "##vso[task.LogIssue type=error;]Unable to set Base Build Drop: $_"
               }
