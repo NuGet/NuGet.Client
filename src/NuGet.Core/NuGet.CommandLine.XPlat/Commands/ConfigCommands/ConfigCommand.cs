@@ -13,6 +13,48 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class ConfigCommand
     {
+        private static HelpOption HelpOption = new HelpOption()
+        {
+            Arity = ArgumentArity.Zero
+        };
+
+        private static CliArgument<string> ConfigKeyArgument = new CliArgument<string>(name: "config-key")
+        {
+            Arity = ArgumentArity.ExactlyOne,
+            Description = Strings.ConfigSetConfigKeyDescription,
+        };
+
+        private static CliArgument<string> ConfigValueArgument = new CliArgument<string>(name: "config-value")
+        {
+            Arity = ArgumentArity.ExactlyOne,
+            Description = Strings.ConfigSetConfigValueDescription,
+        };
+
+        private static CliArgument<string> AllOrConfigKeyOption = new CliArgument<string>(name: "all-or-config-key")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            HelpName = Strings.ConfigGetAllOrConfigKeyDescription,
+            Description = Strings.ConfigGetAllOrConfigKeyDescription
+        };
+
+        private static CliOption<string> WorkingDirectory = new CliOption<string>(name: "--working-directory")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = Strings.ConfigPathsWorkingDirectoryDescription
+        };
+
+        private static CliOption<bool> ShowPathOption = new CliOption<bool>(name: "--show-path")
+        {
+            Arity = ArgumentArity.Zero,
+            Description = Strings.ConfigGetShowPathDescription,
+        };
+
+        private static CliOption<string> ConfigFileOption = new CliOption<string>(name: "--configfile")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = Strings.Option_ConfigFile,
+        };
+
         internal static void LogException(Exception e, ILogger log)
         {
             // Log the error
@@ -39,11 +81,7 @@ namespace NuGet.CommandLine.XPlat
         internal static CliCommand Register(CliCommand app, Func<ILogger> getLogger)
         {
             var ConfigCmd = new CliCommand(name: "config", description: Strings.Config_Description);
-            var help = new HelpOption()
-            {
-                Arity = ArgumentArity.Zero
-            };
-            ConfigCmd.Options.Add(help);
+            ConfigCmd.Options.Add(HelpOption);
 
             // Options directly under the verb 'config'
 
@@ -86,17 +124,8 @@ namespace NuGet.CommandLine.XPlat
 
         private static void RegisterOptionsForCommandConfigPaths(CliCommand cmd, Func<ILogger> getLogger)
         {
-            var workingDirectory_Option = new CliOption<string>(name: "--working-directory")
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                Description = Strings.ConfigPathsWorkingDirectoryDescription
-            };
-            cmd.Add(workingDirectory_Option);
-            var help = new HelpOption()
-            {
-                Arity = ArgumentArity.Zero
-            };
-            cmd.Add(help);
+            cmd.Add(WorkingDirectory);
+            cmd.Add(HelpOption);
             // Create handler delegate handler for cmd
             cmd.SetAction((parseResult, cancellationToken) =>
             {
@@ -104,7 +133,7 @@ namespace NuGet.CommandLine.XPlat
 
                 var args = new ConfigPathsArgs()
                 {
-                    WorkingDirectory = parseResult.GetValue(workingDirectory_Option),
+                    WorkingDirectory = parseResult.GetValue(WorkingDirectory),
                 };
 
                 try
@@ -125,30 +154,10 @@ namespace NuGet.CommandLine.XPlat
 
         private static void RegisterOptionsForCommandConfigGet(CliCommand cmd, Func<ILogger> getLogger)
         {
-            var allOrConfigKey_Argument = new CliArgument<string>(name: "all-or-config-key")
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                HelpName = Strings.ConfigGetAllOrConfigKeyDescription,
-                Description = Strings.ConfigGetAllOrConfigKeyDescription
-            };
-            cmd.Add(allOrConfigKey_Argument);
-            var workingDirectory_Argument = new CliOption<string>(name: "--working-directory")
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                Description = Strings.ConfigPathsWorkingDirectoryDescription,
-            };
-            cmd.Add(workingDirectory_Argument);
-            var showPath_Option = new CliOption<bool>(name: "--show-path")
-            {
-                Arity = ArgumentArity.Zero,
-                Description = Strings.ConfigGetShowPathDescription,
-            };
-            cmd.Add(showPath_Option);
-            var help = new HelpOption()
-            {
-                Arity = ArgumentArity.Zero
-            };
-            cmd.Add(help);
+            cmd.Add(AllOrConfigKeyOption);
+            cmd.Add(WorkingDirectory);
+            cmd.Add(ShowPathOption);
+            cmd.Add(HelpOption);
 
             // Create handler delegate handler for cmd
             cmd.SetAction((parseResult, cancellationToken) =>
@@ -156,9 +165,9 @@ namespace NuGet.CommandLine.XPlat
                 int exitCode;
                 var args = new ConfigGetArgs()
                 {
-                    AllOrConfigKey = parseResult.GetValue(allOrConfigKey_Argument),
-                    WorkingDirectory = parseResult.GetValue(workingDirectory_Argument),
-                    ShowPath = parseResult.GetValue(showPath_Option),
+                    AllOrConfigKey = parseResult.GetValue(AllOrConfigKeyOption),
+                    WorkingDirectory = parseResult.GetValue(WorkingDirectory),
+                    ShowPath = parseResult.GetValue(ShowPathOption),
                 };
 
                 try
@@ -179,38 +188,19 @@ namespace NuGet.CommandLine.XPlat
 
         private static void RegisterOptionsForCommandConfigSet(CliCommand cmd, Func<ILogger> getLogger)
         {
-            var configKey_Argument = new CliArgument<string>(name: "config-key")
-            {
-                Arity = ArgumentArity.ExactlyOne,
-                Description = Strings.ConfigSetConfigKeyDescription,
-            };
-            cmd.Add(configKey_Argument);
-            var configValue_Argument = new CliArgument<string>(name: "config-value")
-            {
-                Arity = ArgumentArity.ExactlyOne,
-                Description = Strings.ConfigSetConfigValueDescription,
-            };
-            cmd.Add(configValue_Argument);
-            var configFile_Option = new CliOption<string>(name: "--configfile")
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                Description = Strings.Option_ConfigFile,
-            };
-            cmd.Add(configFile_Option);
-            var help = new HelpOption()
-            {
-                Arity = ArgumentArity.Zero
-            };
-            cmd.Add(help);
+            cmd.Add(ConfigKeyArgument);
+            cmd.Add(ConfigValueArgument);
+            cmd.Add(ConfigFileOption);
+            cmd.Add(HelpOption);
             // Create handler delegate handler for cmd
             cmd.SetAction((parseResult, cancellationToken) =>
             {
                 int exitCode;
                 var args = new ConfigSetArgs()
                 {
-                    ConfigKey = parseResult.GetValue(configKey_Argument),
-                    ConfigValue = parseResult.GetValue(configValue_Argument),
-                    ConfigFile = parseResult.GetValue(configFile_Option),
+                    ConfigKey = parseResult.GetValue(ConfigKeyArgument),
+                    ConfigValue = parseResult.GetValue(ConfigValueArgument),
+                    ConfigFile = parseResult.GetValue(ConfigFileOption),
                 };
 
                 try
@@ -231,23 +221,9 @@ namespace NuGet.CommandLine.XPlat
 
         private static void RegisterOptionsForCommandConfigUnset(CliCommand cmd, Func<ILogger> getLogger)
         {
-            var configKey_Argument = new CliArgument<string>(name: "config-key")
-            {
-                Arity = ArgumentArity.ExactlyOne,
-                Description = Strings.ConfigUnsetConfigKeyDescription,
-            };
-            cmd.Add(configKey_Argument);
-            var configFile_Option = new CliOption<string>(name: "--configfile")
-            {
-                Arity = ArgumentArity.ZeroOrOne,
-                Description = Strings.Option_ConfigFile,
-            };
-            cmd.Add(configFile_Option);
-            var help = new HelpOption()
-            {
-                Arity = ArgumentArity.Zero
-            };
-            cmd.Add(help);
+            cmd.Add(ConfigKeyArgument);
+            cmd.Add(ConfigFileOption);
+            cmd.Add(HelpOption);
             // Create handler delegate handler for cmd
             cmd.SetAction((parseResult, cancellationToken) =>
             {
@@ -255,8 +231,8 @@ namespace NuGet.CommandLine.XPlat
 
                 var args = new ConfigUnsetArgs()
                 {
-                    ConfigKey = parseResult.GetValue(configKey_Argument),
-                    ConfigFile = parseResult.GetValue(configFile_Option),
+                    ConfigKey = parseResult.GetValue(ConfigKeyArgument),
+                    ConfigFile = parseResult.GetValue(ConfigFileOption),
                 };
 
                 try
