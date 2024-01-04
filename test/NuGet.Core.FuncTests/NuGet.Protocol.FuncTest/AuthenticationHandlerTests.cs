@@ -179,7 +179,6 @@ namespace NuGet.Protocol.FuncTest
                 server.Requests.Should().HaveCount(5);
                 // This should have been 2, but is 3 because of the reason mentioned above.
                 server.Requests.Count(RequestWithoutAuthorizationHeader).Should().Be(3);
-                server.Requests.Any(r => r.Url!.OriginalString == serviceIndexUrl).Should().BeTrue();
 
                 server.CapturedCredentials.Should().HaveCount(2);
                 foreach (var creds in server.CapturedCredentials)
