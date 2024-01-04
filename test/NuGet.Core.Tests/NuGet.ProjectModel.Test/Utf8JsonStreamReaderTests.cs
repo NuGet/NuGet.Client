@@ -179,6 +179,7 @@ namespace NuGet.ProjectModel.Test
             using (var stream = new MemoryStream(json))
             using (var reader = new Utf8JsonStreamReader(stream))
             {
+                Assert.True(reader.IsFinalBlock);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
