@@ -109,7 +109,7 @@ namespace NuGet.ProjectModel
         {
             if (TokenType != JsonTokenType.StartObject)
             {
-                return new List<T>(0);
+                return Array.Empty<T>();
 
             }
             //We use JsonObjects for the arrays so we advance to the first property in the object which is the name/ver of the first library
@@ -117,7 +117,7 @@ namespace NuGet.ProjectModel
 
             if (TokenType == JsonTokenType.EndObject)
             {
-                return new List<T>(0);
+                return Array.Empty<T>();
             }
 
             var listObjects = new List<T>();
