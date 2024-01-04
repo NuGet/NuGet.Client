@@ -18,10 +18,16 @@ namespace NuGet.CommandLine.XPlat
             Arity = ArgumentArity.Zero
         };
 
-        private static CliArgument<string> ConfigKeyArgument = new CliArgument<string>(name: "config-key")
+        private static CliArgument<string> SetConfigKeyArgument = new CliArgument<string>(name: "config-key")
         {
             Arity = ArgumentArity.ExactlyOne,
             Description = Strings.ConfigSetConfigKeyDescription,
+        };
+
+        private static CliArgument<string> UnsetConfigKeyArgument = new CliArgument<string>(name: "config-key")
+        {
+            Arity = ArgumentArity.ExactlyOne,
+            Description = Strings.ConfigUnsetConfigKeyDescription,
         };
 
         private static CliArgument<string> ConfigValueArgument = new CliArgument<string>(name: "config-value")
@@ -188,7 +194,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static void RegisterOptionsForCommandConfigSet(CliCommand cmd, Func<ILogger> getLogger)
         {
-            cmd.Add(ConfigKeyArgument);
+            cmd.Add(SetConfigKeyArgument);
             cmd.Add(ConfigValueArgument);
             cmd.Add(ConfigFileOption);
             cmd.Add(HelpOption);
@@ -198,7 +204,7 @@ namespace NuGet.CommandLine.XPlat
                 int exitCode;
                 var args = new ConfigSetArgs()
                 {
-                    ConfigKey = parseResult.GetValue(ConfigKeyArgument),
+                    ConfigKey = parseResult.GetValue(SetConfigKeyArgument),
                     ConfigValue = parseResult.GetValue(ConfigValueArgument),
                     ConfigFile = parseResult.GetValue(ConfigFileOption),
                 };
@@ -221,7 +227,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static void RegisterOptionsForCommandConfigUnset(CliCommand cmd, Func<ILogger> getLogger)
         {
-            cmd.Add(ConfigKeyArgument);
+            cmd.Add(UnsetConfigKeyArgument);
             cmd.Add(ConfigFileOption);
             cmd.Add(HelpOption);
             // Create handler delegate handler for cmd
@@ -231,7 +237,7 @@ namespace NuGet.CommandLine.XPlat
 
                 var args = new ConfigUnsetArgs()
                 {
-                    ConfigKey = parseResult.GetValue(ConfigKeyArgument),
+                    ConfigKey = parseResult.GetValue(UnsetConfigKeyArgument),
                     ConfigFile = parseResult.GetValue(ConfigFileOption),
                 };
 
