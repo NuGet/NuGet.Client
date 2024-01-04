@@ -325,7 +325,12 @@ namespace NuGet.Packaging.Signing
                     X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
                     X509VerificationFlags.IgnoreEndRevocationUnknown;
 
-                chain.Build(certificate);
+                bool buildSuccess = chain.Build(certificate);
+
+                if (!buildSuccess && chain.ChainStatus.Length == 0)
+                {
+                    throw new SignatureException(Strings.CertificateChainValidationFailed);
+                }
 
                 if (chain.ChainElements.Count != 1)
                 {

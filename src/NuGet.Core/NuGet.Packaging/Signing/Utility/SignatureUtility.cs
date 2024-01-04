@@ -625,7 +625,11 @@ namespace NuGet.Packaging.Signing
 
                 chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
 
-                chain.Build(certificate);
+                bool buildSuccess = chain.Build(certificate);
+                if (!buildSuccess && chain.ChainStatus.Length == 0)
+                {
+                    throw new SignatureException(Strings.CertificateChainValidationFailed);
+                }
 
                 if (chain.ChainStatus.Any(chainStatus =>
                     chainStatus.Status.HasFlag(X509ChainStatusFlags.Cyclic) ||

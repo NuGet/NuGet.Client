@@ -109,8 +109,6 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var flags = SignatureVerificationStatusFlags.NoErrors;
-
             if (signature == null)
             {
                 throw new ArgumentNullException(nameof(signature));
@@ -124,14 +122,16 @@ namespace NuGet.Packaging.Signing
             var timestamperCertificate = SignerInfo.Certificate;
             if (timestamperCertificate == null)
             {
-                flags |= SignatureVerificationStatusFlags.NoCertificate;
-
                 issues.Add(SignatureLog.Issue(treatIssueAsError, NuGetLogCode.NU3020, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampNoCertificate, signature.FriendlyName)));
-                return flags;
+                return SignatureVerificationStatusFlags.NoCertificate;
             }
 
-            flags |= VerificationUtility.ValidateTimestamp(this, signature, treatIssueAsError, issues, SigningSpecifications.V1);
-            if (flags == SignatureVerificationStatusFlags.NoErrors)
+            var timestampFlags = VerificationUtility.ValidateTimestamp(this, signature, treatIssueAsError, issues, SigningSpecifications.V1);
+            if (timestampFlags != SignatureVerificationStatusFlags.NoErrors)
+            {
+                return timestampFlags;
+            }
+            else
             {
                 issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.TimestampValue, GeneralizedTime.LocalDateTime.ToString()) + Environment.NewLine));
 
@@ -140,6 +140,7 @@ namespace NuGet.Packaging.Signing
                     signature.FriendlyName,
                     $"{Environment.NewLine}{CertificateUtility.X509Certificate2ToString(timestamperCertificate, fingerprintAlgorithm)}")));
 
+                SignatureVerificationStatusFlags flags = SignatureVerificationStatusFlags.NoErrors;
                 var certificateExtraStore = SignedCms.Certificates;
 
                 using (var chainHolder = new X509ChainHolder())
@@ -170,9 +171,14 @@ namespace NuGet.Packaging.Signing
 
                     if (chainBuildSucceed)
                     {
-                        return flags;
+                        return SignatureVerificationStatusFlags.NoErrors;
                     }
-
+                    else if (chainStatusList.Length == 0)
+                    {
+                        return SignatureVerificationStatusFlags.UnknownBuildStatus;
+                    }
+                    else
+                    {
                     var chainBuildingHasIssues = false;
                     IEnumerable<string> messages;
 
@@ -251,11 +257,12 @@ namespace NuGet.Packaging.Signing
 
                         if (!chainBuildingHasIssues && (settings.AllowIgnoreTimestamp || settings.AllowUnknownRevocation))
                         {
-                            return flags;
+                                return SignatureVerificationStatusFlags.NoErrors;
                         }
 
                         flags |= SignatureVerificationStatusFlags.UnknownRevocation;
                         chainBuildingHasIssues = true;
+                    }
                     }
 
                     // Debug log any errors
@@ -267,9 +274,9 @@ namespace NuGet.Packaging.Signing
                                 Strings.VerifyError_InvalidCertificateChain,
                                 string.Join(", ", chainStatusList.Select(x => x.Status.ToString())))));
                 }
-            }
 
             return flags;
+        }
         }
 #endif
     }
