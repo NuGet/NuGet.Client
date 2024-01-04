@@ -167,7 +167,7 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(FrameworkReferencesPropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadStringArrayAsIList(new List<string>()) is { Count: not 0 } frameworkReferences)
+                    if (reader.ReadStringArrayAsIList() is { Count: not 0 } frameworkReferences)
                     {
                         lockFileTargetLibrary.FrameworkReferences = frameworkReferences;
                     }
