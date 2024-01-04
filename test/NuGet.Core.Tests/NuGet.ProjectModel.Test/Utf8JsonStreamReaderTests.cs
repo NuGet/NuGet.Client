@@ -44,6 +44,33 @@ namespace NuGet.ProjectModel.Test
             });
         }
 
+
+        [Fact]
+        public void Utf8JsonStreamReaderCtr_WhenEmptyJson_Throws()
+        {
+            Assert.ThrowsAny<JsonException>(() =>
+            {
+                var json = "";
+
+                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                }
+            });
+        }
+
+        [Fact]
+        public void Utf8JsonStreamReaderCtr_WhenEmptySream_Throws()
+        {
+            Assert.ThrowsAny<JsonException>(() =>
+            {
+                using (var stream = new MemoryStream(Array.Empty<byte>()))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                }
+            });
+        }
+
         [Fact]
         public void Utf8JsonStreamReaderCtr_WhenStreamStartsWithUtf8Bom_SkipThem()
         {
