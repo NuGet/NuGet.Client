@@ -152,11 +152,14 @@ namespace NuGet.Protocol.FuncTest
                 // Note: If 'HttpClientHandler.PreAuthenticate' is set to true, this behavior might differ as 
                 // credentials would be sent preemptively after the initial request.
 
-                // In this test, the expected number of requests is 4, but it turns out to be 5. This discrepancy occurs because 
-                // we initialize _credentials =  new HttpSourceCredentials() in the HttpSourceAuthenticationHandler constructor.
-                // The HttpHandler pipeline operates under the assumption that credentials have already been set, although they have not.
-                // As a result, NuGet initially sends 2 requests to the server without credentials when accessing the private feed for the first time
-                // and then invokes the credential service.
+                // In this test, 2 requests are sent from the test's perspective, and the previous paragraph's explanation will
+                // make you believe the server should see 4, but it turns out to be 5. This discrepancy occurs because 
+                // HttpSourceCredentials is only initialized with credentials if the PackageSource object has credentials set.
+                // In other words, if there are creds in nuget.config or the appropriate environment variable. However, if the
+                // package source uses a credential provider, the provider is not asked for credentials until after the first 401
+                // response. After the auth handler requests HttpClientHandler to make a second request, it will again make
+                // an unautheticated request, and then finally obtain the credentials and send an authenticated request from
+                // what the server sees as the 3rd request.
 
                 // Request flow while accessing index.json
                 // NuGet -> Server (No Credentials) - 1st request
