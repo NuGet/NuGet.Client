@@ -75,7 +75,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Normal,
-                JsonFormat = false
+                Format = PackageSearchFormat.Table
             };
 
             // Act
@@ -146,7 +146,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Minimal,
-                JsonFormat = false
+                Format = PackageSearchFormat.Table
             };
 
             // Act
@@ -223,7 +223,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Detailed,
-                JsonFormat = false
+                Format = PackageSearchFormat.Table
             };
 
             // Act
@@ -265,7 +265,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Normal,
-                JsonFormat = true
+                Format = PackageSearchFormat.Json
             };
 
             // Act
@@ -303,7 +303,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Minimal,
-                JsonFormat = true
+                Format = PackageSearchFormat.Json
             };
 
             // Act
@@ -341,7 +341,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 SearchTerm = "json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
                 Verbosity = PackageSearchVerbosity.Detailed,
-                JsonFormat = true
+                Format = PackageSearchFormat.Json
             };
 
             // Act

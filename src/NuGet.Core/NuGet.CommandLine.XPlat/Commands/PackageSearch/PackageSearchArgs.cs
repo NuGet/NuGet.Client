@@ -20,13 +20,13 @@ namespace NuGet.CommandLine.XPlat
         public ILoggerWithColor Logger { get; set; }
         public string SearchTerm { get; set; }
         public PackageSearchVerbosity Verbosity { get; set; } = PackageSearchVerbosity.Normal;
-        public bool JsonFormat { get; set; } = false;
+        public PackageSearchFormat Format { get; set; } = PackageSearchFormat.Table;
 
         public PackageSearchArgs(string skip, string take, string format, string verbosity)
         {
             Skip = VerifyInt(skip, DefaultSkip, "--skip");
             Take = VerifyInt(take, DefaultTake, "--take");
-            JsonFormat = IsJsonFormat(format);
+            Format = GetFormatFromOption(format);
             Verbosity = GetVerbosityFromOption(verbosity);
         }
 
@@ -47,31 +47,28 @@ namespace NuGet.CommandLine.XPlat
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, number, option));
         }
 
-        private bool IsJsonFormat(string format)
+        private PackageSearchFormat GetFormatFromOption(string format)
         {
-            if (!string.IsNullOrEmpty(format) && string.Equals(format, "json", StringComparison.CurrentCultureIgnoreCase))
+            PackageSearchFormat packageSearchFormat = PackageSearchFormat.Table;
+
+            if (!string.IsNullOrEmpty(format) && !Enum.TryParse(format, ignoreCase: true, out packageSearchFormat))
             {
-                return true;
+                packageSearchFormat = PackageSearchFormat.Table;
             }
 
-            return false;
+            return packageSearchFormat;
         }
 
         private PackageSearchVerbosity GetVerbosityFromOption(string verbosity)
         {
-            if (verbosity != null)
+            PackageSearchVerbosity packageSearchVerbosity = PackageSearchVerbosity.Normal;
+
+            if (!string.IsNullOrEmpty(verbosity) && !Enum.TryParse(verbosity, ignoreCase: true, out packageSearchVerbosity))
             {
-                if (string.Equals(verbosity, nameof(PackageSearchVerbosity.Detailed), StringComparison.CurrentCultureIgnoreCase))
-                {
-                    return PackageSearchVerbosity.Detailed;
-                }
-                else if (string.Equals(verbosity, nameof(PackageSearchVerbosity.Minimal), StringComparison.CurrentCultureIgnoreCase))
-                {
-                    return PackageSearchVerbosity.Minimal;
-                }
+                packageSearchVerbosity = PackageSearchVerbosity.Normal;
             }
 
-            return PackageSearchVerbosity.Normal;
+            return packageSearchVerbosity;
         }
     }
 }

@@ -63,7 +63,7 @@ namespace NuGet.CommandLine.XPlat
 
             IPackageSearchResultRenderer packageSearchResultRenderer;
 
-            if (packageSearchArgs.JsonFormat)
+            if (packageSearchArgs.Format == PackageSearchFormat.Json)
             {
                 packageSearchResultRenderer = new PackageSearchResultJsonPrinter(packageSearchArgs.Logger, packageSearchArgs.Verbosity);
             }

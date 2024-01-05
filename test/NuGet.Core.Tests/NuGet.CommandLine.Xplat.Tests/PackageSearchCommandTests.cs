@@ -176,11 +176,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Assert
             if (format == "json")
             {
-                Assert.True(CapturedArgs.JsonFormat);
+                Assert.Equal(PackageSearchFormat.Json, CapturedArgs.Format);
             }
             else
             {
-                Assert.False(CapturedArgs.JsonFormat);
+                Assert.Equal(PackageSearchFormat.Table, CapturedArgs.Format);
             }
         }
 
@@ -196,7 +196,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(0, exitCode);
-            Assert.False(CapturedArgs.JsonFormat);
+            Assert.Equal(PackageSearchFormat.Table, CapturedArgs.Format);
         }
 
         [Theory]
