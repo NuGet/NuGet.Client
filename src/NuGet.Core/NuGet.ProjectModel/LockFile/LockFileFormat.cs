@@ -444,6 +444,8 @@ namespace NuGet.ProjectModel
                         assetsLogMessage.WarningLevel = (WarningLevel)Enum.ToObject(typeof(WarningLevel), warningLevelJson.Value<int>());
                     }
 
+                    assetsLogMessage.ProjectPath = projectPath;
+
                     if (filePathJson != null)
                     {
                         assetsLogMessage.FilePath = filePathJson.Value<string>();
@@ -452,9 +454,6 @@ namespace NuGet.ProjectModel
                     {
                         assetsLogMessage.FilePath = projectPath;
                     }
-
-                    assetsLogMessage.ProjectPath = projectPath; // TODO NK - Should we ever use ProjectPath? ReferenceNearest sets it, so I think it was intended, but reference nearest doesn't undergo round tripping.
-                    // MSBuild logger depends on it, so do we have issues reporting errors/warnings?
 
                     if (startLineNumberJson != null)
                     {

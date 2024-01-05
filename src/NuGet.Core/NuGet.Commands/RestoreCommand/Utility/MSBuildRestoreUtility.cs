@@ -420,6 +420,7 @@ namespace NuGet.Commands
             var text = string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedProject, path);
             var message = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1503, text);
             message.FilePath = path;
+            message.ProjectPath = path;
 
             return message;
         }
@@ -429,6 +430,7 @@ namespace NuGet.Commands
             var text = string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedProject, path);
             var message = new RestoreLogMessage(LogLevel.Information, text);
             message.FilePath = path;
+            message.ProjectPath = path;
 
             return message;
         }
