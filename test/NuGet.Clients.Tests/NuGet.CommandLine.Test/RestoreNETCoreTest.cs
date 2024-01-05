@@ -11427,9 +11427,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 Version = "1.0.0"
             };
 
-            // Add 1.0.0
             projectA.AddPackageToAllFrameworks(packageX);
-            // But create only 2.0.0 on the server.
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
             solution.Projects.Add(projectA);
             solution.Create(pathContext.SolutionRoot);
@@ -11453,7 +11451,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // Assert
             result.Success.Should().BeTrue(because: result.AllOutput);
 
-            // Is there a thing that's always guaranteed to have a $(User)
             projectA.AssetsFile.PackageFolders.Should().HaveCountGreaterThan(0);
             var globalPackagesFolder = projectA.AssetsFile.PackageFolders[0]; // the package folders are always in priority and gpf is always first.
 
