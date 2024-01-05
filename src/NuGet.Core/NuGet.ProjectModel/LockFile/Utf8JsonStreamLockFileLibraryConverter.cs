@@ -19,7 +19,6 @@ namespace NuGet.ProjectModel
         private static readonly byte[] ServicablePropertyName = Encoding.UTF8.GetBytes("servicable");
         private static readonly byte[] HasToolsPropertyName = Encoding.UTF8.GetBytes("hasTools");
         private static readonly byte[] FilesPropertyName = Encoding.UTF8.GetBytes("files");
-        private static readonly char[] Separators = new[] { '/' };
 
         public LockFileLibrary Read(ref Utf8JsonStreamReader reader)
         {
@@ -32,11 +31,11 @@ namespace NuGet.ProjectModel
             var lockFileLibrary = new LockFileLibrary();
             //We want to read the property name right away
             var propertyName = reader.GetString();
-            var parts = propertyName.Split(Separators, 2);
-            lockFileLibrary.Name = parts[0];
-            if (parts.Length == 2)
+            var (name, version) = propertyName.SplitInTwo(LockFile.DirectorySeparatorChar);
+            lockFileLibrary.Name = name;
+            if (!string.IsNullOrWhiteSpace(version))
             {
-                lockFileLibrary.Version = NuGetVersion.Parse(parts[1]);
+                lockFileLibrary.Version = NuGetVersion.Parse(version);
             }
 
             reader.Read();

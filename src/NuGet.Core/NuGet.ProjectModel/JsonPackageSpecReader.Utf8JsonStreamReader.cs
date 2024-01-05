@@ -721,10 +721,15 @@ namespace NuGet.ProjectModel
                             packageSpecPath);
                     }
 
-                    string[] versions = versionValue.Split(VersionSeparators, StringSplitOptions.RemoveEmptyEntries);
+                    var versions = new LazyStringSplit(versionValue, VersionSeparator);
 
                     foreach (string singleVersionValue in versions)
                     {
+                        if (string.IsNullOrEmpty(singleVersionValue))
+                        {
+                            continue;
+                        }
+
                         try
                         {
                             VersionRange version = VersionRange.Parse(singleVersionValue);

@@ -2299,6 +2299,22 @@ namespace NuGet.ProjectModel.Test
 
         [Theory]
         [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueIsValidWithMultipleVersions_ReturnsDownloadDependencies(IEnvironmentVariableReader environmentVariableReader)
+        {
+            var json = $"{{\"frameworks\":{{\"a\":{{\"downloadDependencies\":[{{\"name\":\"b\",\"version\":\"1.2.3;;2.0.0\"}}]}}}}}}";
+
+            TargetFrameworkInformation framework = GetFramework(json, environmentVariableReader);
+
+            Assert.Equal(2, framework.DownloadDependencies.Count());
+            Assert.Equal("b", framework.DownloadDependencies[0].Name);
+            Assert.Equal(new VersionRange(new NuGetVersion("1.2.3")), framework.DownloadDependencies[0].VersionRange);
+            Assert.Equal("b", framework.DownloadDependencies[1].Name);
+            Assert.Equal(new VersionRange(new NuGetVersion("2.0.0")), framework.DownloadDependencies[1].VersionRange);
+
+        }
+
+        [Theory]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void GetPackageSpec_WhenFrameworksDownloadDependenciesValueHasDuplicates_PrefersFirstByName(IEnvironmentVariableReader environmentVariableReader)
         {
             var expectedResult = new DownloadDependency(name: "b", new VersionRange(new NuGetVersion("1.2.3")));

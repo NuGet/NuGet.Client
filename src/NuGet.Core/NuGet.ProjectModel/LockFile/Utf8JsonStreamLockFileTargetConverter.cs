@@ -21,15 +21,10 @@ namespace NuGet.ProjectModel
             var lockFileTarget = new LockFileTarget();
             //We want to read the property name right away
             var propertyName = reader.GetString();
-            var lazySplitter = new LazyStringSplit(propertyName, LockFile.DirectorySeparatorChar);
-            var targetFramework = lazySplitter.FirstOrDefault();
-            var runtetimeIdentifier = lazySplitter.FirstOrDefault();
-            var leftover = lazySplitter.FirstOrDefault();
+            var (targetFramework, runTimeFramework) = propertyName.SplitInTwo(LockFile.DirectorySeparatorChar);
+
             lockFileTarget.TargetFramework = NuGetFramework.Parse(targetFramework);
-            if (!string.IsNullOrEmpty(runtetimeIdentifier) && string.IsNullOrEmpty(leftover))
-            {
-                lockFileTarget.RuntimeIdentifier = runtetimeIdentifier;
-            }
+            lockFileTarget.RuntimeIdentifier = runTimeFramework;
 
             reader.Read();
             lockFileTarget.Libraries = reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileTargetLibraryConverter);
