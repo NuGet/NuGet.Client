@@ -143,10 +143,10 @@ namespace NuGet.CommandLine.Xplat.Tests
                     }}
                 }}";
 
-            string detailedJson = $@"
-[
+            string detailedJson = $@"[
   {{
     ""sourceName"": ""{ServerWithMultipleEndpoints.Uri}v3/index.json"",
+    ""errors"": null,
     ""packages"": [
       {{
         ""description"": ""My description."",
@@ -162,10 +162,10 @@ namespace NuGet.CommandLine.Xplat.Tests
   }}
 ]";
 
-            string normalJson = $@"
-[
+            string normalJson = $@"[
   {{
     ""sourceName"": ""{ServerWithMultipleEndpoints.Uri}v3/index.json"",
+    ""errors"": null,
     ""packages"": [
       {{
         ""total downloads"": 531607259,
@@ -177,10 +177,10 @@ namespace NuGet.CommandLine.Xplat.Tests
   }}
 ]";
 
-            string minimalJson = $@"
-[
+            string minimalJson = $@"[
   {{
     ""sourceName"": ""{ServerWithMultipleEndpoints.Uri}v3/index.json"",
+    ""errors"": null,
     ""packages"": [
       {{
         ""id"": ""Fake.Newtonsoft.Json"",

@@ -46,6 +46,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             var expectedZeroJson = $@"[
   {{
     ""sourceName"": ""MockSource"",
+    ""errors"": null,
     ""packages"": []
   }}
 ]";
@@ -53,6 +54,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             var expectedOneJson = $@"[
   {{
     ""sourceName"": ""MockSource"",
+    ""errors"": null,
     ""packages"": [
       {{
         ""total downloads"": 123456,
@@ -67,6 +69,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             var expectedTwoJson = $@"[
   {{
     ""sourceName"": ""MockSource"",
+    ""errors"": null,
     ""packages"": [
       {{
         ""total downloads"": 123456,
@@ -99,21 +102,30 @@ namespace NuGet.CommandLine.Xplat.Tests
         }
 
         [Fact]
-        public void Add_Error_ShouldLogError()
+        public void Add_Error_ShouldAddError()
         {
             // Arrange
             var mockLoggerWithColor = new Mock<ILoggerWithColor>();
             var printer = new PackageSearchResultJsonPrinter(mockLoggerWithColor.Object, PackageSearchVerbosity.Minimal);
             Mock<PackageSource> mockSource = new Mock<PackageSource>("http://errorsource", "ErrorTestSource");
             string errorMessage = "An error occurred";
+            var expectedJson = $@"[
+  {{
+    ""sourceName"": ""ErrorTestSource"",
+    ""errors"": [
+      ""An error occurred""
+    ],
+    ""packages"": []
+  }}
+]";
 
             // Act
+            printer.Start();
             printer.Add(mockSource.Object, errorMessage);
+            printer.Finish();
 
             // Assert
-            mockLoggerWithColor.Verify(x => x.LogMinimal("****************************************"), Times.Once);
-            mockLoggerWithColor.Verify(x => x.LogMinimal($"Source: ErrorTestSource (http://errorsource/)"), Times.Once);
-            mockLoggerWithColor.Verify(x => x.LogError(errorMessage), Times.Once);
+            mockLoggerWithColor.Verify(x => x.LogMinimal(expectedJson), Times.Once);
         }
     }
 }

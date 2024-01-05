@@ -15,6 +15,9 @@ namespace NuGet.CommandLine.XPlat
         [JsonPropertyName("sourceName")]
         public string SourceName { get; set; }
 
+        [JsonPropertyName("errors")]
+        public List<string> Errors { get; set; }
+
         [JsonPropertyName("packages")]
         public List<IPackageSearchResultPackage> Packages { get; set; }
 

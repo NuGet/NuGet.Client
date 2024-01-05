@@ -15,8 +15,6 @@ namespace NuGet.CommandLine.XPlat
     internal class PackageSearchResultJsonPrinter : IPackageSearchResultRenderer
     {
         private ILoggerWithColor _logger;
-        private const int LineSeparatorLength = 40;
-        private static readonly string SourceSeparator = new('*', LineSeparatorLength);
         private PackageSearchVerbosity _verbosity;
         private List<PackageSearchResult> _packageSearchResults;
 
@@ -51,9 +49,9 @@ namespace NuGet.CommandLine.XPlat
 
         public void Add(PackageSource source, string error)
         {
-            _logger.LogMinimal(SourceSeparator);
-            _logger.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
-            _logger.LogError(error);
+            PackageSearchResult packageSearchResult = new PackageSearchResult(source.Name);
+            packageSearchResult.Errors = new List<string>() { error };
+            _packageSearchResults.Add(packageSearchResult);
         }
 
         public void Finish()
@@ -64,8 +62,6 @@ namespace NuGet.CommandLine.XPlat
                 Converters = { new JsonPolymorphicConverter<IPackageSearchResultPackage>() }
             };
             var json = JsonSerializer.Serialize(_packageSearchResults, options);
-            _logger.LogMinimal(SourceSeparator);
-            _logger.LogMinimal("Search Result");
             _logger.LogMinimal(json);
         }
 
