@@ -1379,51 +1379,45 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         public async Task MsbuildRestore_ProjectWithWarnings_SkipsWritingAssetsFileWhenUpToDate()
         {
             // Arrange
-            using (var pathContext = new SimpleTestPathContext())
+            using var pathContext = new SimpleTestPathContext();
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var project = SimpleTestProjectContext.CreateLegacyPackageReference(
+                "a",
+                pathContext.SolutionRoot,
+                NuGetFramework.Parse("net472"));
+
+            var packageX150 = new SimpleTestPackageContext()
             {
-                // Arrange
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                Id = "x",
+                Version = "1.5.0"
+            };
 
+            project.AddPackageToAllFrameworks(new SimpleTestPackageContext()
+            {
+                Id = "x",
+                Version = "1.0.0"
+            });
+            solution.Projects.Add(project);
+            solution.Create(pathContext.SolutionRoot);
 
-                var project = SimpleTestProjectContext.CreateLegacyPackageReference(
-                    "a",
-                    pathContext.SolutionRoot,
-                    NuGetFramework.Parse("net472"));
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                packageX150);
 
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = "x",
-                    Version = "1.5.0"
-                };
+            // Pre-Conditions
+            var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {project.ProjectPath}", ignoreExitCode: true);
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            DateTime assetsFileWriteTime = GetFileLastWriteTime(project.AssetsFileOutputPath);
+            var logMessages = project.AssetsFile.LogMessages;
+            logMessages.Should().HaveCount(1);
+            logMessages[0].Code.Should().Be(NuGetLogCode.NU1603);
 
-                project.AddPackageToAllFrameworks(new SimpleTestPackageContext()
-                {
-                    Id = "x",
-                    Version = "1.0.0"
-                });
-                solution.Projects.Add(project);
-                solution.Create(pathContext.SolutionRoot);
+            // Act
+            result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore /p:RestoreForce=true {project.ProjectPath}");
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    packageX);
-
-                // Pre-Conditions
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {project.ProjectPath}", ignoreExitCode: true);
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                DateTime assetsFileWriteTime = GetFileLastWriteTime(project.AssetsFileOutputPath);
-                var logMessages = project.AssetsFile.LogMessages;
-                logMessages.Should().HaveCount(1);
-                logMessages[0].Code.Should().Be(NuGetLogCode.NU1603);
-
-                // Act
-                result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore /p:RestoreForce=true {project.ProjectPath}", ignoreExitCode: true);
-
-                // Assert
-                result.Success.Should().BeTrue();
-                var currentWriteTime = GetFileLastWriteTime(project.AssetsFileOutputPath);
-                currentWriteTime.Should().Be(assetsFileWriteTime);
-            }
+            // Assert
+            var currentWriteTime = GetFileLastWriteTime(project.AssetsFileOutputPath);
+            currentWriteTime.Should().Be(assetsFileWriteTime);
 
             static DateTime GetFileLastWriteTime(string path)
             {
@@ -1432,7 +1426,5 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 return fileInfo.LastWriteTimeUtc;
             }
         }
-
-        
     }
 }
