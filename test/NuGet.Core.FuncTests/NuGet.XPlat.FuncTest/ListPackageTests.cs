@@ -21,12 +21,15 @@ using NuGet.Protocol;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {
     [Collection("NuGet XPlat Test Collection")]
-    public class ListPackageTests
+    public class ListPackageTests(ITestOutputHelper output)
     {
+        private readonly TestLogger _logger = new(output);
+
         [Fact]
         public void BasicListPackageParsing_Interactive()
         {
@@ -248,7 +251,7 @@ namespace NuGet.XPlat.FuncTest
                     });
             }
 
-            static async Task RestoreProjectsAsync(SimpleTestPathContext pathContext, SimpleTestProjectContext projectA, SimpleTestProjectContext projectB)
+            async Task RestoreProjectsAsync(SimpleTestPathContext pathContext, SimpleTestProjectContext projectA, SimpleTestProjectContext projectB)
             {
                 var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(pathContext.NuGetConfig), Path.GetFileName(pathContext.NuGetConfig), null);
                 var packageSourceProvider = new PackageSourceProvider(settings);
@@ -261,7 +264,7 @@ namespace NuGet.XPlat.FuncTest
                 await RestoreProjectAsync(settings, pathContext, projectB, sources, fallbackFolders, globalPackagesFolder);
             }
 
-            static async Task RestoreProjectAsync(ISettings settings,
+            async Task RestoreProjectAsync(ISettings settings,
                 SimpleTestPathContext pathContext,
                 SimpleTestProjectContext project,
                 IEnumerable<PackageSource> packageSources,
@@ -273,12 +276,10 @@ namespace NuGet.XPlat.FuncTest
                 project.GlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
                 project.Save();
 
-                TestLogger logger = new();
-
-                var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project.PackageSpec));
+                var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, _logger, project.PackageSpec));
                 var restoreResult = await command.ExecuteAsync(CancellationToken.None);
-                await restoreResult.CommitAsync(logger, CancellationToken.None);
-                Assert.True(restoreResult.Success, logger.ShowErrors());
+                await restoreResult.CommitAsync(_logger, CancellationToken.None);
+                Assert.True(restoreResult.Success, _logger.ShowMessages());
             }
         }
 
