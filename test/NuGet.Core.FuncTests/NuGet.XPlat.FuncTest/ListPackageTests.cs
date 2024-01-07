@@ -21,15 +21,12 @@ using NuGet.Protocol;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {
     [Collection("NuGet XPlat Test Collection")]
-    public class ListPackageTests(ITestOutputHelper output)
+    public class ListPackageTests
     {
-        private readonly TestLogger _logger = new(output);
-
         [Fact]
         public void BasicListPackageParsing_Interactive()
         {
@@ -166,7 +163,7 @@ namespace NuGet.XPlat.FuncTest
                 });
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task ListPackage_WithPrivateHttpSourceCredentialServiceIsInvokedAsNeeded_Succeeds()
         {
             // Arrange
@@ -195,7 +192,7 @@ namespace NuGet.XPlat.FuncTest
 
             using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, isPrivateFeed: true);
             mockServer.Start();
-            pathContext.Settings.AddSource("private-source", mockServer.ServiceIndexUri);
+            pathContext.Settings.AddSource(sourceName: "private-source", sourceUri: mockServer.ServiceIndexUri, allowInsecureConnectionsValue: bool.TrueString);
 
             var mockedCredentialService = new Mock<ICredentialService>();
             var expectedCredentials = new NetworkCredential("user", "password1");
@@ -251,7 +248,7 @@ namespace NuGet.XPlat.FuncTest
                     });
             }
 
-            async Task RestoreProjectsAsync(SimpleTestPathContext pathContext, SimpleTestProjectContext projectA, SimpleTestProjectContext projectB)
+            static async Task RestoreProjectsAsync(SimpleTestPathContext pathContext, SimpleTestProjectContext projectA, SimpleTestProjectContext projectB)
             {
                 var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(pathContext.NuGetConfig), Path.GetFileName(pathContext.NuGetConfig), null);
                 var packageSourceProvider = new PackageSourceProvider(settings);
@@ -264,7 +261,7 @@ namespace NuGet.XPlat.FuncTest
                 await RestoreProjectAsync(settings, pathContext, projectB, sources, fallbackFolders, globalPackagesFolder);
             }
 
-            async Task RestoreProjectAsync(ISettings settings,
+            static async Task RestoreProjectAsync(ISettings settings,
                 SimpleTestPathContext pathContext,
                 SimpleTestProjectContext project,
                 IEnumerable<PackageSource> packageSources,
@@ -276,10 +273,10 @@ namespace NuGet.XPlat.FuncTest
                 project.GlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
                 project.Save();
 
-                var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, _logger, project.PackageSpec));
+                var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, NullLogger.Instance, project.PackageSpec));
                 var restoreResult = await command.ExecuteAsync(CancellationToken.None);
-                await restoreResult.CommitAsync(_logger, CancellationToken.None);
-                Assert.True(restoreResult.Success, _logger.ShowMessages());
+                await restoreResult.CommitAsync(NullLogger.Instance, CancellationToken.None);
+                Assert.True(restoreResult.Success);
             }
         }
 
