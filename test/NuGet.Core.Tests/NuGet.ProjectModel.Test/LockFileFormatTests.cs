@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -151,9 +152,9 @@ namespace NuGet.ProjectModel.Test
 
             // Act
 #pragma warning disable CS0612 // Type or member is obsolete
-            var lockFileTrue = lockFileFormat.Parse(lockFileContentTrue, "In Memory", environmentVariableReader);
-            var lockFileFalse = lockFileFormat.Parse(lockFileContentFalse, "In Memory", environmentVariableReader);
-            var lockFileMissing = lockFileFormat.Parse(lockFileContentMissing, "In Memory", environmentVariableReader);
+            var lockFileTrue = Parse(lockFileContentTrue, "In Memory", environmentVariableReader);
+            var lockFileFalse = Parse(lockFileContentFalse, "In Memory", environmentVariableReader);
+            var lockFileMissing = Parse(lockFileContentMissing, "In Memory", environmentVariableReader);
 #pragma warning restore CS0612 // Type or member is obsolete
 
             var lockFileTrueString = lockFileFormat.Render(lockFileTrue);
@@ -211,10 +212,7 @@ namespace NuGet.ProjectModel.Test
     "".NETPlatform,Version=v5.0"": []
   }
 }";
-            var lockFileFormat = new LockFileFormat();
-#pragma warning disable CS0612 // Type or member is obsolete
-            var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory", environmentVariableReader);
-#pragma warning restore CS0612 // Type or member is obsolete
+            var lockFile = Parse(lockFileContent, "In Memory", environmentVariableReader);
 
             Assert.Equal(1, lockFile.Version);
 
@@ -1385,8 +1383,7 @@ namespace NuGet.ProjectModel.Test
                 File.WriteAllText(lockFile, lockFileContent);
 
                 // Act
-                var reader = new LockFileFormat();
-                lockFileObj = reader.Read(lockFile, environmentVariableReader);
+                lockFileObj = Read(lockFile, environmentVariableReader);
                 logMessage = lockFileObj?.LogMessages?.First();
             }
 
@@ -1469,8 +1466,7 @@ namespace NuGet.ProjectModel.Test
                 File.WriteAllText(lockFile, lockFileContent);
 
                 // Act
-                var reader = new LockFileFormat();
-                lockFileObj = reader.Read(lockFile, environmentVariableReader);
+                lockFileObj = Read(lockFile, environmentVariableReader);
                 logMessage = lockFileObj?.LogMessages?.First();
             }
 
@@ -1552,8 +1548,7 @@ namespace NuGet.ProjectModel.Test
                 File.WriteAllText(lockFile, lockFileContent);
 
                 // Act
-                var reader = new LockFileFormat();
-                lockFileObj = reader.Read(lockFile, environmentVariableReader);
+                lockFileObj = Read(lockFile, environmentVariableReader);
                 logMessage = lockFileObj?.LogMessages?.First();
             }
 
@@ -1723,8 +1718,7 @@ namespace NuGet.ProjectModel.Test
                 File.WriteAllText(lockFile, lockFileContent);
 
                 // Act
-                var reader = new LockFileFormat();
-                lockFileObj = reader.Read(lockFile, environmentVariableReader);
+                lockFileObj = Read(lockFile, environmentVariableReader);
                 logMessage = lockFileObj?.LogMessages?.First();
             }
 
@@ -1807,8 +1801,7 @@ namespace NuGet.ProjectModel.Test
                 File.WriteAllText(lockFile, lockFileContent);
 
                 // Act
-                var reader = new LockFileFormat();
-                lockFileObj = reader.Read(lockFile, environmentVariableReader);
+                lockFileObj = Read(lockFile, environmentVariableReader);
                 logMessage = lockFileObj?.LogMessages?.First();
             }
 
@@ -1903,8 +1896,7 @@ namespace NuGet.ProjectModel.Test
                 File.WriteAllText(lockFile, lockFileContent);
 
                 // Act
-                var reader = new LockFileFormat();
-                lockFileObj = reader.Read(lockFile, environmentVariableReader);
+                lockFileObj = Read(lockFile, environmentVariableReader);
             }
 
 
@@ -1978,8 +1970,7 @@ namespace NuGet.ProjectModel.Test
                 File.WriteAllText(lockFile, lockFileContent);
 
                 // Act
-                var reader = new LockFileFormat();
-                lockFileObj = reader.Read(lockFile, environmentVariableReader);
+                lockFileObj = Read(lockFile, environmentVariableReader);
                 logMessage = lockFileObj?.LogMessages?.First();
             }
 
@@ -2057,8 +2048,7 @@ namespace NuGet.ProjectModel.Test
                 File.WriteAllText(lockFile, lockFileContent);
 
                 // Act
-                var reader = new LockFileFormat();
-                lockFileObj = reader.Read(lockFile, environmentVariableReader);
+                lockFileObj = Read(lockFile, environmentVariableReader);
                 logMessage = lockFileObj?.LogMessages?.First();
             }
 
@@ -2117,8 +2107,7 @@ namespace NuGet.ProjectModel.Test
                 "".NETPlatform,Version=v5.0"": []
               }
             }";
-            var lockFileFormat = new LockFileFormat();
-            var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory", environmentVariableReader);
+            var lockFile = Parse(lockFileContent, "In Memory", environmentVariableReader);
 
             Assert.Equal(1, lockFile.Version);
 
@@ -2194,8 +2183,7 @@ namespace NuGet.ProjectModel.Test
               }
             }";
 
-            var lockFileFormat = new LockFileFormat();
-            var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory", environmentVariableReader);
+            var lockFile = Parse(lockFileContent, "In Memory", environmentVariableReader);
 
             Assert.Equal(1, lockFile.Version);
 
@@ -2394,6 +2382,25 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+        private LockFile Read(string filePath, IEnvironmentVariableReader environmentVariableReader)
+        {
+            var reader = new LockFileFormat();
+            using (var stream = File.OpenRead(filePath))
+            {
+                return reader.Read(stream, NullLogger.Instance, filePath, environmentVariableReader);
+            }
+        }
+
+        private LockFile Parse(string lockFileContent, string path, IEnvironmentVariableReader environmentVariableReader)
+        {
+            var reader = new LockFileFormat();
+            byte[] byteArray = Encoding.UTF8.GetBytes(lockFileContent);
+            using (var stream = new MemoryStream(byteArray))
+            {
+                return reader.Read(stream, NullLogger.Instance, path, environmentVariableReader);
+            }
         }
     }
 }

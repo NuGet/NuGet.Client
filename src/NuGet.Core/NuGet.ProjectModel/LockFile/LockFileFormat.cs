@@ -91,23 +91,6 @@ namespace NuGet.ProjectModel
             return Read(stream, log, path, EnvironmentVariableWrapper.Instance);
         }
 
-        internal LockFile Read(string filePath, IEnvironmentVariableReader environmentVariableReader)
-        {
-            using (var stream = File.OpenRead(filePath))
-            {
-                return Read(stream, NullLogger.Instance, filePath, environmentVariableReader);
-            }
-        }
-
-        internal LockFile Parse(string lockFileContent, string path, IEnvironmentVariableReader environmentVariableReader)
-        {
-            byte[] byteArray = Encoding.UTF8.GetBytes(lockFileContent);
-            using (var stream = new MemoryStream(byteArray))
-            {
-                return Read(stream, NullLogger.Instance, path, environmentVariableReader);
-            }
-        }
-
         internal LockFile Read(Stream stream, ILogger log, string path, IEnvironmentVariableReader environmentVariableReader)
         {
             var useNj = environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING");
