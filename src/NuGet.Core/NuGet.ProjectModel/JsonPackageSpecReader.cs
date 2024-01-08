@@ -76,10 +76,9 @@ namespace NuGet.ProjectModel
             return GetPackageSpec(jsonReader, name: null, packageSpecPath, snapshotValue: null);
         }
 
-        internal static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue, IEnvironmentVariableReader environmentVariableReader)
+        internal static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue, IEnvironmentVariableReader environmentVariableReader, bool bypassCache = false)
         {
-            var useNj = environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING");
-            if (string.IsNullOrEmpty(useNj) || useNj.Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
+            if (!JsonUtility.UseNewstonSoftJsonForParsing(environmentVariableReader, bypassCache))
             {
                 return GetPackageSpecUtf8JsonStreamReader(stream, name, packageSpecPath, snapshotValue);
             }

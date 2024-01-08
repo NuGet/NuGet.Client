@@ -1632,7 +1632,7 @@ namespace NuGet.ProjectModel.Test
 
                 // Act
                 var reader = new LockFileFormat();
-                lockFileObj = FileUtility.SafeRead(lockFile, (stream, path) => reader.Read(stream, NullLogger.Instance, path, environmentVariableReader));
+                lockFileObj = FileUtility.SafeRead(lockFile, (stream, path) => reader.Read(stream, NullLogger.Instance, path, environmentVariableReader, true));
                 logMessage = lockFileObj?.LogMessages?.First();
             }
 
@@ -2389,7 +2389,7 @@ namespace NuGet.ProjectModel.Test
             var reader = new LockFileFormat();
             using (var stream = File.OpenRead(filePath))
             {
-                return reader.Read(stream, NullLogger.Instance, filePath, environmentVariableReader);
+                return reader.Read(stream, NullLogger.Instance, filePath, environmentVariableReader, true);
             }
         }
 
@@ -2399,7 +2399,7 @@ namespace NuGet.ProjectModel.Test
             byte[] byteArray = Encoding.UTF8.GetBytes(lockFileContent);
             using (var stream = new MemoryStream(byteArray))
             {
-                return reader.Read(stream, NullLogger.Instance, path, environmentVariableReader);
+                return reader.Read(stream, NullLogger.Instance, path, environmentVariableReader, true);
             }
         }
     }

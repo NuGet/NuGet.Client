@@ -893,7 +893,7 @@ namespace NuGet.ProjectModel.Test
             byte[] byteArray = Encoding.UTF8.GetBytes(lockFileContent);
             using (var stream = new MemoryStream(byteArray))
             {
-                return reader.Read(stream, NullLogger.Instance, path, environmentVariableReader);
+                return reader.Read(stream, NullLogger.Instance, path, environmentVariableReader, true);
             }
         }
     }

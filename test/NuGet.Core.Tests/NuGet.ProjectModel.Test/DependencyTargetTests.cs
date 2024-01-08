@@ -290,7 +290,7 @@ namespace NuGet.ProjectModel.Test
         private static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader)
         {
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
-            return JsonPackageSpecReader.GetPackageSpec(stream, name, packageSpecPath, null, environmentVariableReader);
+            return JsonPackageSpecReader.GetPackageSpec(stream, name, packageSpecPath, null, environmentVariableReader, true);
         }
 
     }

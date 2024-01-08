@@ -91,10 +91,9 @@ namespace NuGet.ProjectModel
             return Read(stream, log, path, EnvironmentVariableWrapper.Instance);
         }
 
-        internal LockFile Read(Stream stream, ILogger log, string path, IEnvironmentVariableReader environmentVariableReader)
+        internal LockFile Read(Stream stream, ILogger log, string path, IEnvironmentVariableReader environmentVariableReader, bool bypassCache = false)
         {
-            var useNj = environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING");
-            if (string.IsNullOrEmpty(useNj) || useNj.Equals("false", StringComparison.OrdinalIgnoreCase))
+            if (JsonUtility.UseNewstonSoftJsonForParsing(environmentVariableReader, bypassCache))
             {
                 return Utf8JsonRead(stream, log, path);
             }
