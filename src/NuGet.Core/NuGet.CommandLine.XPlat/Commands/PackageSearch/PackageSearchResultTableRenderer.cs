@@ -10,7 +10,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class PackageSearchResultTablePrinter : IPackageSearchResultRenderer
+    internal class PackageSearchResultTableRenderer : IPackageSearchResultRenderer
     {
         private string _searchTerm;
         private ILoggerWithColor _loggerWithColor;
@@ -31,7 +31,7 @@ namespace NuGet.CommandLine.XPlat
         private readonly string[] _detailedVerbosityTableHeaderForExactMatch = { "Package ID", "Version", "Owners", "Total Downloads", "Vulnerable", "Deprecation", "Project URL", "Description" };
         private readonly int[] _detailedColumnsToHighlight = { 0, 2, 6, 7 };
 
-        public PackageSearchResultTablePrinter(string searchTerm, ILoggerWithColor loggerWithColor, PackageSearchVerbosity verbosity, bool exactMatch)
+        public PackageSearchResultTableRenderer(string searchTerm, ILoggerWithColor loggerWithColor, PackageSearchVerbosity verbosity, bool exactMatch)
         {
             _searchTerm = searchTerm;
             _loggerWithColor = loggerWithColor;
@@ -80,7 +80,7 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
-            PopulateTableWithResults(completedSearch, table);
+            PopulateTableWithResults(completedSearch, table, _verbosity);
             table.PrintResult(_searchTerm, _loggerWithColor);
         }
 
@@ -114,7 +114,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="results">An enumerable of package search metadata to be processed and added to the table.</param>
         /// <param name="table">The table where the results will be added as rows.</param>
-        private async void PopulateTableWithResults(IEnumerable<IPackageSearchMetadata> results, Table table)
+        private static async void PopulateTableWithResults(IEnumerable<IPackageSearchMetadata> results, Table table, PackageSearchVerbosity verbosity)
         {
             CultureInfo culture = CultureInfo.CurrentCulture;
             NumberFormatInfo nfi = (NumberFormatInfo)culture.NumberFormat.Clone();
@@ -132,11 +132,11 @@ namespace NuGet.CommandLine.XPlat
                     downloads = string.Format(nfi, "{0:N}", result.DownloadCount);
                 }
 
-                if (_verbosity == PackageSearchVerbosity.Minimal)
+                if (verbosity == PackageSearchVerbosity.Minimal)
                 {
                     table.AddRow(packageId, version);
                 }
-                else if (_verbosity == PackageSearchVerbosity.Detailed)
+                else if (verbosity == PackageSearchVerbosity.Detailed)
                 {
                     PackageDeprecationMetadata packageDeprecationMetadata = await result.GetDeprecationMetadataAsync();
                     string vulnerable = "N/A";

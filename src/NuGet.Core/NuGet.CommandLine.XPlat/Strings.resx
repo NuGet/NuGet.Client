@@ -842,7 +842,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="pkgSearch_termDescription" xml:space="preserve">
     <value>Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</value>
   </data>
-  <data name="Error_invalidOptionValue" xml:space="preserve">
+  <data name="Error_InvalidOptionValue" xml:space="preserve">
     <value>Invalid value `{0}` for option {1}.</value>
     <comment>0 - The invalid value. 1 - the option.</comment>
   </data>

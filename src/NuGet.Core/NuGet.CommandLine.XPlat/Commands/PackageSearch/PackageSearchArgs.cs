@@ -44,7 +44,7 @@ namespace NuGet.CommandLine.XPlat
                 return verifiedNumber;
             }
 
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_invalidOptionValue, number, option));
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidOptionValue, number, option));
         }
 
         private PackageSearchFormat GetFormatFromOption(string format)

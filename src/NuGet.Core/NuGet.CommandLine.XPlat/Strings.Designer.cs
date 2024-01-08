@@ -459,9 +459,9 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to Invalid value `{0}` for option {1}..
         /// </summary>
-        internal static string Error_invalidOptionValue {
+        internal static string Error_InvalidOptionValue {
             get {
-                return ResourceManager.GetString("Error_invalidOptionValue", resourceCulture);
+                return ResourceManager.GetString("Error_InvalidOptionValue", resourceCulture);
             }
         }
         

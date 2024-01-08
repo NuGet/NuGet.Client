@@ -12,13 +12,13 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class PackageSearchResultJsonPrinter : IPackageSearchResultRenderer
+    internal class PackageSearchResultJsonRenderer : IPackageSearchResultRenderer
     {
         private ILoggerWithColor _logger;
         private PackageSearchVerbosity _verbosity;
         private PackageSearchMainOutput _packageSearchMainOutput;
 
-        public PackageSearchResultJsonPrinter(ILoggerWithColor loggerWithColor, PackageSearchVerbosity verbosity)
+        public PackageSearchResultJsonRenderer(ILoggerWithColor loggerWithColor, PackageSearchVerbosity verbosity)
         {
             _logger = loggerWithColor;
             _verbosity = verbosity;

@@ -14,35 +14,18 @@ namespace NuGet.CommandLine.Xplat.Tests
 {
     public class PackageSearchResultJsonPrinterTests
     {
-        [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void Add_MultiplePackageSearchMetadata_RendersCorrectNumberOfPackages(int numberOfPackages)
+        [Fact]
+        public void Add_NoPackage_RendersCorrectJson()
         {
             // Arrange
             var mockLoggerWithColor = new Mock<ILoggerWithColor>();
-            var printer = new PackageSearchResultJsonPrinter(mockLoggerWithColor.Object, PackageSearchVerbosity.Normal);
+            var printer = new PackageSearchResultJsonRenderer(mockLoggerWithColor.Object, PackageSearchVerbosity.Normal);
             var mockSource = new Mock<PackageSource>("http://mocksource", "MockSource");
             var completedSearch = new List<IPackageSearchMetadata>();
             var mockMetadata = new Mock<IPackageSearchMetadata>();
             var packageIdentity = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.3.0"));
-
-            mockMetadata.Setup(m => m.Identity).Returns(packageIdentity);
-            mockMetadata.Setup(m => m.Authors).Returns("Microsoft");
-            mockMetadata.Setup(m => m.DownloadCount).Returns(123456);
             printer.Start();
 
-            for (int i = 0; i < numberOfPackages; i++)
-            {
-                completedSearch.Add(mockMetadata.Object);
-            }
-
-            // Act
-            printer.Add(mockSource.Object, completedSearch);
-            printer.Finish();
-
-            // Assert
             var expectedZeroJson = $@"{{
   ""version"": 1,
   ""problems"": [],
@@ -54,6 +37,33 @@ namespace NuGet.CommandLine.Xplat.Tests
     }}
   ]
 }}";
+
+            // Act
+            printer.Add(mockSource.Object, completedSearch);
+            printer.Finish();
+
+            // Assert
+            mockLoggerWithColor.Verify(x => x.LogMinimal(expectedZeroJson), Times.Exactly(1));
+        }
+
+        [Fact]
+        public void Add_SinglePackage_RendersCorrectJson()
+        {
+            // Arrange
+            var mockLoggerWithColor = new Mock<ILoggerWithColor>();
+            var printer = new PackageSearchResultJsonRenderer(mockLoggerWithColor.Object, PackageSearchVerbosity.Normal);
+            var mockSource = new Mock<PackageSource>("http://mocksource", "MockSource");
+            var completedSearch = new List<IPackageSearchMetadata>();
+            var mockMetadata = new Mock<IPackageSearchMetadata>();
+            var packageIdentity = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.3.0"));
+
+            mockMetadata.Setup(m => m.Identity).Returns(packageIdentity);
+            mockMetadata.Setup(m => m.Authors).Returns("Microsoft");
+            mockMetadata.Setup(m => m.DownloadCount).Returns(123456);
+
+            completedSearch.Add(mockMetadata.Object);
+
+            printer.Start();
 
             var expectedOneJson = $@"{{
   ""version"": 1,
@@ -73,6 +83,34 @@ namespace NuGet.CommandLine.Xplat.Tests
     }}
   ]
 }}";
+
+            // Act
+            printer.Add(mockSource.Object, completedSearch);
+            printer.Finish();
+
+            // Assert
+            mockLoggerWithColor.Verify(x => x.LogMinimal(expectedOneJson), Times.Exactly(1));
+        }
+
+        [Fact]
+        public void Add_MultiplePackages_RendersCorrectJson()
+        {
+            // Arrange
+            var mockLoggerWithColor = new Mock<ILoggerWithColor>();
+            var printer = new PackageSearchResultJsonRenderer(mockLoggerWithColor.Object, PackageSearchVerbosity.Normal);
+            var mockSource = new Mock<PackageSource>("http://mocksource", "MockSource");
+            var completedSearch = new List<IPackageSearchMetadata>();
+            var mockMetadata = new Mock<IPackageSearchMetadata>();
+            var packageIdentity = new PackageIdentity("NuGet.Versioning", new NuGetVersion("4.3.0"));
+
+            mockMetadata.Setup(m => m.Identity).Returns(packageIdentity);
+            mockMetadata.Setup(m => m.Authors).Returns("Microsoft");
+            mockMetadata.Setup(m => m.DownloadCount).Returns(123456);
+
+            completedSearch.Add(mockMetadata.Object);
+            completedSearch.Add(mockMetadata.Object);
+
+            printer.Start();
 
             var expectedTwoJson = $@"{{
   ""version"": 1,
@@ -99,18 +137,12 @@ namespace NuGet.CommandLine.Xplat.Tests
   ]
 }}";
 
-            if (numberOfPackages == 2)
-            {
-                mockLoggerWithColor.Verify(x => x.LogMinimal(expectedTwoJson), Times.Exactly(1));
-            }
-            else if (numberOfPackages == 0)
-            {
-                mockLoggerWithColor.Verify(x => x.LogMinimal(expectedZeroJson), Times.Exactly(1));
-            }
-            else
-            {
-                mockLoggerWithColor.Verify(x => x.LogMinimal(expectedOneJson), Times.Exactly(1));
-            }
+            // Act
+            printer.Add(mockSource.Object, completedSearch);
+            printer.Finish();
+
+            // Assert
+            mockLoggerWithColor.Verify(x => x.LogMinimal(expectedTwoJson), Times.Exactly(1));
         }
 
         [Fact]
@@ -118,7 +150,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         {
             // Arrange
             var mockLoggerWithColor = new Mock<ILoggerWithColor>();
-            var printer = new PackageSearchResultJsonPrinter(mockLoggerWithColor.Object, PackageSearchVerbosity.Minimal);
+            var printer = new PackageSearchResultJsonRenderer(mockLoggerWithColor.Object, PackageSearchVerbosity.Minimal);
             Mock<PackageSource> mockSource = new Mock<PackageSource>("http://errorsource", "ErrorTestSource");
             string errorMessage = "An error occurred";
             var expectedJson = $@"{{
@@ -137,7 +169,6 @@ namespace NuGet.CommandLine.Xplat.Tests
     }}
   ]
 }}";
-
 
             // Act
             printer.Start();
