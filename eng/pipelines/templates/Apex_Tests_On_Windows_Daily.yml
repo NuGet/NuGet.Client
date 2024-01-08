@@ -50,6 +50,7 @@ stages:
       testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
       testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
       testAgentElevated: true
+      testCaseMaximumRerunAttempts: 2
       preTestMachineConfigurationStepList: 
         - download: ComponentBuildUnderTest
           artifact: MicroBuildOutputs
@@ -111,7 +112,7 @@ stages:
                 Write-Host "Base Build Drop: $buildDrop"
                 # Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
 
-                Set-AzurePipelinesVariable 'BaseBuildDrop' $buildDrop
+                Set-AzurePipelinesVariable 'VsBaseBuildDrop' $buildDrop
                 Set-AzurePipelinesVariable -IsOutput 'BaseBuildDrop' $buildDrop
 
               } catch {
@@ -119,7 +120,7 @@ stages:
               }
 
         - powershell: |
-            Write-Host $(setbasebuilddrop.BaseBuildDrop)
+            Write-Host $(Setbasebuilddrop.BaseBuildDrop)
             Write-Host "BaseBuildDrop: $(SetBootstrapperURI.BootstrapperUrl)"
             Write-Host "BaseBuildDropV: $(VsBootstrapperUrl)"
             Write-Host "VsBaseBuildDrop: $(VsBaseBuildDrop)"
