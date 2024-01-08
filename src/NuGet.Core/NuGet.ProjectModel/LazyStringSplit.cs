@@ -28,7 +28,7 @@ namespace NuGet.ProjectModel
 
         public LazyStringSplit(string input, char delimiter)
         {
-            if (string.IsNullOrEmpty(input))
+            if (input is null)
             {
                 throw new ArgumentNullException(nameof(input));
             }
