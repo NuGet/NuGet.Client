@@ -74,10 +74,7 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(DependenciesPropertyName))
                 {
                     reader.Read();
-                    if (ReadPackageDependencyList(ref reader) is { Count: not 0 } packageDependencies)
-                    {
-                        lockFileTargetLibrary.Dependencies = packageDependencies;
-                    }
+                    lockFileTargetLibrary.Dependencies = ReadPackageDependencyList(ref reader);
                 }
                 else if (reader.ValueTextEquals(FrameworkAssembliesPropertyName))
                 {
@@ -87,90 +84,57 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(RuntimePropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter) is { Count: not 0 } runtimeAssemblies)
-                    {
-                        lockFileTargetLibrary.RuntimeAssemblies = runtimeAssemblies;
-                    }
+                    lockFileTargetLibrary.RuntimeAssemblies = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(CompilePropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter) is { Count: not 0 } compileTimeAssemblies)
-                    {
-                        lockFileTargetLibrary.CompileTimeAssemblies = compileTimeAssemblies;
-                    }
+                    lockFileTargetLibrary.CompileTimeAssemblies = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(ResourcePropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter) is { Count: not 0 } resourceAssemblies)
-                    {
-                        lockFileTargetLibrary.ResourceAssemblies = resourceAssemblies;
-                    }
+                    lockFileTargetLibrary.ResourceAssemblies = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(NativePropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter) is { Count: not 0 } nativeLibraries)
-                    {
-                        lockFileTargetLibrary.NativeLibraries = nativeLibraries;
-                    }
+                    lockFileTargetLibrary.NativeLibraries = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(BuildPropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter) is { Count: not 0 } build)
-                    {
-                        lockFileTargetLibrary.Build = build;
-                    }
+                    lockFileTargetLibrary.Build = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(BuildMultiTargetingPropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter) is { Count: not 0 } buildMultiTargeting)
-                    {
-                        lockFileTargetLibrary.BuildMultiTargeting = buildMultiTargeting;
-                    }
+                    lockFileTargetLibrary.BuildMultiTargeting = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(ContentFilesPropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadObjectAsList<LockFileContentFile>(Utf8JsonReaderExtensions.LockFileContentFileConverter) is { Count: not 0 } contentFiles)
-                    {
-                        lockFileTargetLibrary.ContentFiles = contentFiles;
-                    }
+                    lockFileTargetLibrary.ContentFiles = reader.ReadObjectAsList<LockFileContentFile>(Utf8JsonReaderExtensions.LockFileContentFileConverter);
                 }
                 else if (reader.ValueTextEquals(RuntimeTargetsPropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadObjectAsList<LockFileRuntimeTarget>(Utf8JsonReaderExtensions.LockFileRuntimeTargetConverter) is { Count: not 0 } runtimeTargets)
-                    {
-                        lockFileTargetLibrary.RuntimeTargets = runtimeTargets;
-                    }
+                    lockFileTargetLibrary.RuntimeTargets = reader.ReadObjectAsList<LockFileRuntimeTarget>(Utf8JsonReaderExtensions.LockFileRuntimeTargetConverter);
                 }
                 else if (reader.ValueTextEquals(ToolsPropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter) is { Count: not 0 } toolsAssemblies)
-                    {
-                        lockFileTargetLibrary.ToolsAssemblies = toolsAssemblies;
-                    }
+                    lockFileTargetLibrary.ToolsAssemblies = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(EmbedPropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter) is { Count: not 0 } embedAssemblies)
-                    {
-                        lockFileTargetLibrary.EmbedAssemblies = embedAssemblies;
-                    }
+                    lockFileTargetLibrary.EmbedAssemblies = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(FrameworkReferencesPropertyName))
                 {
                     reader.Read();
-                    if (reader.ReadStringArrayAsIList() is { Count: not 0 } frameworkReferences)
-                    {
-                        lockFileTargetLibrary.FrameworkReferences = frameworkReferences;
-                    }
+                    lockFileTargetLibrary.FrameworkReferences = reader.ReadStringArrayAsIList();
                 }
                 else
                 {
