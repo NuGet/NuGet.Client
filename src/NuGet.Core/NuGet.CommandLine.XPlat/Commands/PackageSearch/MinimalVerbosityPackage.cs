@@ -7,7 +7,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class PackageSearchResultPackageMinimal : IPackageSearchResultPackage
+    internal class MinimalVerbosityPackage : ISearchResultPackage
     {
         [JsonPropertyName("id")]
         public string PackageId { get; set; }
@@ -15,9 +15,9 @@ namespace NuGet.CommandLine.XPlat
         [JsonPropertyName("latestVersion")]
         public string LatestVersion { get; set; }
 
-        public PackageSearchResultPackageMinimal() { }
+        public MinimalVerbosityPackage() { }
 
-        public PackageSearchResultPackageMinimal(IPackageSearchMetadata packageSearchMetadata)
+        public MinimalVerbosityPackage(IPackageSearchMetadata packageSearchMetadata)
         {
             PackageId = packageSearchMetadata.Identity.Id;
             LatestVersion = packageSearchMetadata.Identity.Version.ToString();

@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.XPlat
     {
         private ILoggerWithColor _logger;
         private PackageSearchVerbosity _verbosity;
-        private List<PackageSearchResult> _packageSearchResults;
+        private PackageSearchMainOutput _packageSearchMainOutput;
 
         public PackageSearchResultJsonPrinter(ILoggerWithColor loggerWithColor, PackageSearchVerbosity verbosity)
         {
@@ -31,27 +31,29 @@ namespace NuGet.CommandLine.XPlat
             {
                 if (_verbosity == PackageSearchVerbosity.Minimal)
                 {
-                    packageSearchResult.AddPackage(new PackageSearchResultPackageMinimal(metadata));
+                    packageSearchResult.Packages.Add(new MinimalVerbosityPackage(metadata));
                 }
                 else if (_verbosity == PackageSearchVerbosity.Detailed)
                 {
                     PackageDeprecationMetadata packageDeprecationMetadata = await metadata.GetDeprecationMetadataAsync();
-                    packageSearchResult.AddPackage(new PackageSearchResultPackageDetailed(metadata, packageDeprecationMetadata?.Message));
+                    packageSearchResult.Packages.Add(new DetailedVerbosityPackage(metadata, packageDeprecationMetadata?.Message));
                 }
                 else
                 {
-                    packageSearchResult.AddPackage(new PackageSearchResultPackageNormal(metadata));
+                    packageSearchResult.Packages.Add(new NormalVerbosityPackage(metadata));
                 }
             }
 
-            _packageSearchResults.Add(packageSearchResult);
+            _packageSearchMainOutput.SearchResult.Add(packageSearchResult);
         }
 
-        public void Add(PackageSource source, string error)
+        public void Add(PackageSource source, PackageSearchProblem packageSearchProblem)
         {
-            PackageSearchResult packageSearchResult = new PackageSearchResult(source.Name);
-            packageSearchResult.Errors = new List<string>() { error };
-            _packageSearchResults.Add(packageSearchResult);
+            PackageSearchResult packageSearchResult = new PackageSearchResult(source.Name)
+            {
+                Problems = new List<PackageSearchProblem>() { packageSearchProblem }
+            };
+            _packageSearchMainOutput.SearchResult.Add(packageSearchResult);
         }
 
         public void Finish()
@@ -59,15 +61,20 @@ namespace NuGet.CommandLine.XPlat
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true,
-                Converters = { new JsonPolymorphicConverter<IPackageSearchResultPackage>() }
+                Converters = { new JsonPolymorphicConverter<ISearchResultPackage>() }
             };
-            var json = JsonSerializer.Serialize(_packageSearchResults, options);
+            var json = JsonSerializer.Serialize(_packageSearchMainOutput, options);
             _logger.LogMinimal(json);
+        }
+
+        public void RenderProblem(PackageSearchProblem packageSearchProblem)
+        {
+            _packageSearchMainOutput.Problems.Add(packageSearchProblem);
         }
 
         public void Start()
         {
-            _packageSearchResults = new List<PackageSearchResult>();
+            _packageSearchMainOutput = new PackageSearchMainOutput();
         }
     }
 

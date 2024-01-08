@@ -3,7 +3,7 @@
 
 namespace NuGet.CommandLine.XPlat.Commands.PackageSearch
 {
-    internal interface IPackageSearchResultPackage
+    internal interface ISearchResultPackage
     {
     }
 }

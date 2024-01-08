@@ -43,49 +43,61 @@ namespace NuGet.CommandLine.Xplat.Tests
             printer.Finish();
 
             // Assert
-            var expectedZeroJson = $@"[
-  {{
-    ""sourceName"": ""MockSource"",
-    ""errors"": null,
-    ""packages"": []
-  }}
-]";
+            var expectedZeroJson = $@"{{
+  ""version"": 1,
+  ""problems"": [],
+  ""searchResult"": [
+    {{
+      ""sourceName"": ""MockSource"",
+      ""problems"": null,
+      ""packages"": []
+    }}
+  ]
+}}";
 
-            var expectedOneJson = $@"[
-  {{
-    ""sourceName"": ""MockSource"",
-    ""errors"": null,
-    ""packages"": [
-      {{
-        ""total downloads"": 123456,
-        ""owners"": null,
-        ""id"": ""NuGet.Versioning"",
-        ""latestVersion"": ""4.3.0""
-      }}
-    ]
-  }}
-]";
+            var expectedOneJson = $@"{{
+  ""version"": 1,
+  ""problems"": [],
+  ""searchResult"": [
+    {{
+      ""sourceName"": ""MockSource"",
+      ""problems"": null,
+      ""packages"": [
+        {{
+          ""total downloads"": 123456,
+          ""owners"": null,
+          ""id"": ""NuGet.Versioning"",
+          ""latestVersion"": ""4.3.0""
+        }}
+      ]
+    }}
+  ]
+}}";
 
-            var expectedTwoJson = $@"[
-  {{
-    ""sourceName"": ""MockSource"",
-    ""errors"": null,
-    ""packages"": [
-      {{
-        ""total downloads"": 123456,
-        ""owners"": null,
-        ""id"": ""NuGet.Versioning"",
-        ""latestVersion"": ""4.3.0""
-      }},
-      {{
-        ""total downloads"": 123456,
-        ""owners"": null,
-        ""id"": ""NuGet.Versioning"",
-        ""latestVersion"": ""4.3.0""
-      }}
-    ]
-  }}
-]";
+            var expectedTwoJson = $@"{{
+  ""version"": 1,
+  ""problems"": [],
+  ""searchResult"": [
+    {{
+      ""sourceName"": ""MockSource"",
+      ""problems"": null,
+      ""packages"": [
+        {{
+          ""total downloads"": 123456,
+          ""owners"": null,
+          ""id"": ""NuGet.Versioning"",
+          ""latestVersion"": ""4.3.0""
+        }},
+        {{
+          ""total downloads"": 123456,
+          ""owners"": null,
+          ""id"": ""NuGet.Versioning"",
+          ""latestVersion"": ""4.3.0""
+        }}
+      ]
+    }}
+  ]
+}}";
 
             if (numberOfPackages == 2)
             {
@@ -109,19 +121,27 @@ namespace NuGet.CommandLine.Xplat.Tests
             var printer = new PackageSearchResultJsonPrinter(mockLoggerWithColor.Object, PackageSearchVerbosity.Minimal);
             Mock<PackageSource> mockSource = new Mock<PackageSource>("http://errorsource", "ErrorTestSource");
             string errorMessage = "An error occurred";
-            var expectedJson = $@"[
-  {{
-    ""sourceName"": ""ErrorTestSource"",
-    ""errors"": [
-      ""An error occurred""
-    ],
-    ""packages"": []
-  }}
-]";
+            var expectedJson = $@"{{
+  ""version"": 1,
+  ""problems"": [],
+  ""searchResult"": [
+    {{
+      ""sourceName"": ""ErrorTestSource"",
+      ""problems"": [
+        {{
+          ""text"": ""An error occurred"",
+          ""problemType"": ""Warning""
+        }}
+      ],
+      ""packages"": []
+    }}
+  ]
+}}";
+
 
             // Act
             printer.Start();
-            printer.Add(mockSource.Object, errorMessage);
+            printer.Add(mockSource.Object, new PackageSearchProblem(PackageSearchProblemType.Warning, errorMessage));
             printer.Finish();
 
             // Assert

@@ -6,7 +6,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class PackageSearchResultPackageNormal : PackageSearchResultPackageMinimal
+    internal class NormalVerbosityPackage : MinimalVerbosityPackage
     {
         [JsonPropertyName("total downloads")]
         public long? Downloads { get; set; }
@@ -14,9 +14,9 @@ namespace NuGet.CommandLine.XPlat
         [JsonPropertyName("owners")]
         public string Owners { get; set; }
 
-        public PackageSearchResultPackageNormal() : base() { }
+        public NormalVerbosityPackage() : base() { }
 
-        public PackageSearchResultPackageNormal(IPackageSearchMetadata packageSearchMetadata) : base(packageSearchMetadata)
+        public NormalVerbosityPackage(IPackageSearchMetadata packageSearchMetadata) : base(packageSearchMetadata)
         {
             Downloads = packageSearchMetadata.DownloadCount;
             Owners = packageSearchMetadata.Owners;

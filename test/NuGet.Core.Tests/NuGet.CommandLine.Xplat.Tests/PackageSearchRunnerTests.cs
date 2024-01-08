@@ -472,7 +472,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(0, exitCode);
-            Assert.Contains(expectedError, StoredErrorMessage);
+            Assert.Contains(expectedError, StoredWarningMessage);
         }
 
         [Fact]
@@ -509,7 +509,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(0, exitCode);
-            Assert.Contains(expectedError, StoredErrorMessage);
+            Assert.Contains(expectedError, StoredWarningMessage);
         }
     }
 }

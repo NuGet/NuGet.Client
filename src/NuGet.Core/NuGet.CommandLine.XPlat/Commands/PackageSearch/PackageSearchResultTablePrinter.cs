@@ -84,11 +84,19 @@ namespace NuGet.CommandLine.XPlat
             table.PrintResult(_searchTerm, _loggerWithColor);
         }
 
-        public void Add(PackageSource source, string error)
+        public void Add(PackageSource source, PackageSearchProblem packageSearchProblem)
         {
             _loggerWithColor.LogMinimal(SourceSeparator);
             _loggerWithColor.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
-            _loggerWithColor.LogError(error);
+
+            if (packageSearchProblem.ProblemType == PackageSearchProblemType.Error)
+            {
+                _loggerWithColor.LogError(packageSearchProblem.Text);
+            }
+            else
+            {
+                _loggerWithColor.LogWarning(packageSearchProblem.Text);
+            }
         }
 
         public void Finish()
@@ -164,6 +172,18 @@ namespace NuGet.CommandLine.XPlat
                 {
                     table.AddRow(packageId, version, owners, downloads);
                 }
+            }
+        }
+
+        public void RenderProblem(PackageSearchProblem packageSearchProblem)
+        {
+            if (packageSearchProblem.ProblemType == PackageSearchProblemType.Error)
+            {
+                _loggerWithColor.LogError(packageSearchProblem.Text);
+            }
+            else
+            {
+                _loggerWithColor.LogWarning(packageSearchProblem.Text);
             }
         }
     }

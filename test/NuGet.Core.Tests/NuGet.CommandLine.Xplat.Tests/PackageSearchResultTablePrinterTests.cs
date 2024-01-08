@@ -74,12 +74,12 @@ namespace NuGet.CommandLine.Xplat.Tests
             string errorMessage = "Error retrieving data";
 
             // Act
-            renderer.Add(mockSource.Object, errorMessage);
+            renderer.Add(mockSource.Object, new PackageSearchProblem(PackageSearchProblemType.Warning, errorMessage));
 
             // Assert
             mockLoggerWithColor.Verify(x => x.LogMinimal("****************************************"), Times.Once);
             mockLoggerWithColor.Verify(x => x.LogMinimal($"Source: ErrorTestSource (http://errorsource/)"), Times.Once);
-            mockLoggerWithColor.Verify(x => x.LogError(errorMessage), Times.Once);
+            mockLoggerWithColor.Verify(x => x.LogWarning(errorMessage), Times.Once);
         }
 
     }

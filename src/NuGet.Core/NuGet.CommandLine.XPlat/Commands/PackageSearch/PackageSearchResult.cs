@@ -15,21 +15,16 @@ namespace NuGet.CommandLine.XPlat
         [JsonPropertyName("sourceName")]
         public string SourceName { get; set; }
 
-        [JsonPropertyName("errors")]
-        public List<string> Errors { get; set; }
+        [JsonPropertyName("problems")]
+        public List<PackageSearchProblem> Problems { get; set; }
 
         [JsonPropertyName("packages")]
-        public List<IPackageSearchResultPackage> Packages { get; set; }
+        public List<ISearchResultPackage> Packages { get; set; }
 
         public PackageSearchResult(string source)
         {
             SourceName = source;
-            Packages = new List<IPackageSearchResultPackage>();
-        }
-
-        public void AddPackage(IPackageSearchResultPackage package)
-        {
-            Packages.Add(package);
+            Packages = new List<ISearchResultPackage>();
         }
     }
 }
