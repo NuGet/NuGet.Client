@@ -3,6 +3,5 @@ NuGet.Commands.ResolvedDependencyKey.Equals(NuGet.Commands.ResolvedDependencyKey
 NuGet.Commands.ResolvedDependencyKey.ResolvedDependencyKey() -> void
 static NuGet.Commands.ResolvedDependencyKey.operator !=(NuGet.Commands.ResolvedDependencyKey left, NuGet.Commands.ResolvedDependencyKey right) -> bool
 static NuGet.Commands.ResolvedDependencyKey.operator ==(NuGet.Commands.ResolvedDependencyKey left, NuGet.Commands.ResolvedDependencyKey right) -> bool
-static NuGet.Commands.UnexpectedDependencyMessages.DependencyRangeHasMissingExactMatch(NuGet.Commands.ResolvedDependencyKey dependency) -> bool
 ~static NuGet.Commands.MSBuildRestoreUtility.GetCentralPackageManagementSettings(NuGet.Commands.IMSBuildItem projectSpecItem, NuGet.ProjectModel.ProjectStyle projectStyle) -> (bool IsEnabled, bool IsVersionOverrideDisabled, bool IsCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled)
 ~static NuGet.Commands.MSBuildRestoreUtility.GetMessageForUnsupportedProject(string path) -> NuGet.Common.RestoreLogMessage
