@@ -12,6 +12,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using System.CommandLine;
 using System.Threading;
+using System.CommandLine.Parsing;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -89,15 +90,19 @@ namespace NuGet.CommandLine.XPlat
                 tokenSource.CancelAfter(TimeSpan.FromMinutes(DotnetPackageSearchTimeOut));
                 int exitCodeValue = 0;
 
+                CliConfiguration config = new(rootCommand);
+                ParseResult parseResult = rootCommand.Parse(args, config);
+
                 try
                 {
-                    CliConfiguration config = new(rootCommand);
-                    ParseResult parseResult = rootCommand.Parse(args, config);
-                    exitCodeValue = parseResult.InvokeAsync(tokenSource.Token).GetAwaiter().GetResult();
+                    exitCodeValue = parseResult.Invoke();
                 }
                 catch (Exception ex)
                 {
-                    log.LogError(ex.Message);
+                    LogException(ex, log);
+                    var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == CliTokenType.Argument || token.Type == CliTokenType.Command || token.Type == CliTokenType.Directive).Select(t => t.Value).ToList();
+                    tokenList.Add("-h");
+                    rootCommand.Parse(tokenList).Invoke();
                     exitCodeValue = 1;
                 }
 
@@ -201,6 +206,21 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
+        internal static void LogException(Exception e, ILogger log)
+        {
+            // Log the error
+            if (ExceptionLogger.Instance.ShowStack)
+            {
+                log.LogError(e.ToString());
+            }
+            else
+            {
+                log.LogError(ExceptionUtilities.DisplayMessage(e));
+            }
+
+            // Log the stack trace as verbose output.
+            log.LogVerbose(e.ToString());
+        }
 
         private static CommandLineApplication InitializeApp(string[] args, CommandOutputLogger log)
         {

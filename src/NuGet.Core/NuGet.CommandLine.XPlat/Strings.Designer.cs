@@ -448,20 +448,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is not a valid integer..
-        /// </summary>
-        internal static string Error_invalid_number {
-            get {
-                return ResourceManager.GetString("Error_invalid_number", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid culture identifier in {0} environment variable. Value read is &apos;{1}&apos;.
         /// </summary>
         internal static string Error_InvalidCultureInfo {
             get {
                 return ResourceManager.GetString("Error_InvalidCultureInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value `{0}` for option {1}..
+        /// </summary>
+        internal static string Error_InvalidOptionValue {
+            get {
+                return ResourceManager.GetString("Error_InvalidOptionValue", resourceCulture);
             }
         }
         
@@ -489,6 +489,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_NoDgSpec {
             get {
                 return ResourceManager.GetString("Error_NoDgSpec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No package sources found..
+        /// </summary>
+        internal static string Error_NoSource {
+            get {
+                return ResourceManager.GetString("Error_NoSource", resourceCulture);
             }
         }
         
@@ -1328,6 +1337,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Format the output accordingly. Either `table`, or `json`. The default value is `table`..
+        /// </summary>
+        internal static string pkgSearch_FormatDescription {
+            get {
+                return ResourceManager.GetString("pkgSearch_FormatDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Stop and wait for user input or action (for example to complete authentication)..
         /// </summary>
         internal static string pkgSearch_InteractiveDescription {
@@ -1378,6 +1396,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string pkgSearch_termDescription {
             get {
                 return ResourceManager.GetString("pkgSearch_termDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`..
+        /// </summary>
+        internal static string pkgSearch_VerbosityDescription {
+            get {
+                return ResourceManager.GetString("pkgSearch_VerbosityDescription", resourceCulture);
             }
         }
         

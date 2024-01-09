@@ -29,6 +29,16 @@ namespace NuGet.CommandLine.XPlat
             CancellationToken cancellationToken)
         {
             IList<PackageSource> listEndpoints;
+            IPackageSearchResultRenderer packageSearchResultRenderer;
+
+            if (packageSearchArgs.Format == PackageSearchFormat.Json)
+            {
+                packageSearchResultRenderer = new PackageSearchResultJsonRenderer(packageSearchArgs.Logger, packageSearchArgs.Verbosity);
+            }
+            else
+            {
+                packageSearchResultRenderer = new PackageSearchResultTableRenderer(packageSearchArgs.SearchTerm, packageSearchArgs.Logger, packageSearchArgs.Verbosity, packageSearchArgs.ExactMatch);
+            }
 
             try
             {
@@ -36,11 +46,23 @@ namespace NuGet.CommandLine.XPlat
             }
             catch (ArgumentException ex)
             {
-                packageSearchArgs.Logger.LogError(ex.Message);
+                packageSearchResultRenderer.Start();
+                packageSearchResultRenderer.RenderProblem(new PackageSearchProblem(PackageSearchProblemType.Error, ex.Message));
+                packageSearchResultRenderer.Finish();
+
                 return 1;
             }
 
             WarnForHTTPSources(listEndpoints, packageSearchArgs.Logger);
+
+            if (listEndpoints == null || listEndpoints.Count == 0)
+            {
+                packageSearchResultRenderer.Start();
+                packageSearchResultRenderer.RenderProblem(new PackageSearchProblem(PackageSearchProblemType.Error, Strings.Error_NoSource));
+                packageSearchResultRenderer.Finish();
+
+                return 1;
+            }
 
             Func<PackageSource, Task<IEnumerable<IPackageSearchMetadata>>> searchPackageSourceAsync =
                 packageSearchArgs.ExactMatch
@@ -55,8 +77,6 @@ namespace NuGet.CommandLine.XPlat
                 searchRequests.Add(searchTask, packageSource);
             }
 
-            IPackageSearchResultRenderer packageSearchResultRenderer;
-            packageSearchResultRenderer = new PackageSearchResultTablePrinter(packageSearchArgs.SearchTerm, packageSearchArgs.Logger);
             packageSearchResultRenderer.Start();
 
             while (searchRequests.Count > 0)
@@ -75,42 +95,31 @@ namespace NuGet.CommandLine.XPlat
                     // search
                     // Throws FatalProtocolException for JSON parsing errors as fatal metadata issues.
                     // Throws FatalProtocolException for HTTP request issues indicating critical source(v2/v3) problems.
-                    packageSearchResultRenderer.Add(source, ex.Message);
+                    packageSearchResultRenderer.Add(source, new PackageSearchProblem(PackageSearchProblemType.Warning, ex.Message));
                     searchRequests.Remove(completedTask);
                     continue;
                 }
                 catch (OperationCanceledException ex)
                 {
-                    packageSearchResultRenderer.Add(source, ex.Message);
+                    packageSearchResultRenderer.Add(source, new PackageSearchProblem(PackageSearchProblemType.Warning, ex.Message));
                     searchRequests.Remove(completedTask);
                     continue;
                 }
                 catch (InvalidOperationException ex)
                 {
                     // Thrown for a local package with an invalid source destination.
-                    packageSearchResultRenderer.Add(source, ex.Message);
+                    packageSearchResultRenderer.Add(source, new PackageSearchProblem(PackageSearchProblemType.Warning, ex.Message));
                     searchRequests.Remove(completedTask);
                     continue;
                 }
 
                 if (searchResult == null)
                 {
-                    packageSearchResultRenderer.Add(source, Strings.Error_CannotObtainSearchSource);
+                    packageSearchResultRenderer.Add(source, new PackageSearchProblem(PackageSearchProblemType.Warning, Strings.Error_CannotObtainSearchSource));
                 }
                 else
                 {
-                    if (packageSearchArgs.ExactMatch)
-                    {
-                        var lastResult = searchResult.LastOrDefault();
-                        if (lastResult != null)
-                        {
-                            packageSearchResultRenderer.Add(source, new[] { lastResult });
-                        }
-                    }
-                    else
-                    {
-                        packageSearchResultRenderer.Add(source, searchResult);
-                    }
+                    packageSearchResultRenderer.Add(source, searchResult);
                 }
 
                 searchRequests.Remove(completedTask);
@@ -147,7 +156,7 @@ namespace NuGet.CommandLine.XPlat
                     new SearchFilter(includePrerelease: packageSearchArgs.Prerelease),
                     packageSearchArgs.Skip,
                     packageSearchArgs.Take,
-                    packageSearchArgs.Logger,
+                    NullLogger.Instance,
                     cancellationToken);
             });
         }
@@ -180,7 +189,7 @@ namespace NuGet.CommandLine.XPlat
                     includePrerelease: packageSearchArgs.Prerelease,
                     includeUnlisted: false,
                     cache,
-                    packageSearchArgs.Logger,
+                    NullLogger.Instance,
                     cancellationToken);
             });
         }

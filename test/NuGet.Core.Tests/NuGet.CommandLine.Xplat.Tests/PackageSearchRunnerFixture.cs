@@ -10,6 +10,9 @@ namespace NuGet.CommandLine.Xplat.Tests
         public string SinglePackageQueryResponse { get; private set; }
         public string ExactMatchMetadataResponse { get; private set; }
         public MockServer ServerWithMultipleEndpoints { get; private set; }
+        internal string ExpectedSearchResultDetailed { get; set; }
+        internal string ExpectedSearchResultNormal { get; set; }
+        internal string ExpectedSearchResultMinimal { get; set; }
 
         public PackageSearchRunnerFixture()
         {
@@ -32,12 +35,17 @@ namespace NuGet.CommandLine.Xplat.Tests
                         ""title"": ""Json.NET"",
                         ""iconUrl"": ""https://api.nuget.org/v3-flatcontainer/newtonsoft.json/12.0.3/icon"",
                         ""licenseUrl"": ""https://www.nuget.org/packages/Newtonsoft.Json/12.0.3/license"",
-
+                        ""projectUrl"": ""http://myuri"",
+                        ""deprecation"": {{
+                            ""message"": ""This package has been deprecated"",
+                            ""reasons"": [ ] }},
+                        ""vulnerabilities"": [],
+                        ""description"": ""My description."",
                         ""tags"": [
                             ""json""
                         ],
 
-                        ""authors"": [
+                        ""owners"": [
                         ""James Newton-King""
                         ],
 
@@ -73,7 +81,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                                             ""@type"": ""Package"",
                                             ""catalogEntry"": {
                                                 ""@type"": ""PackageDetails"",
-                                                ""authors"": ""James Newton-King"",
+                                                ""owners"": ""James Newton-King"",
                                                 ""id"": ""Fake.Newtonsoft.Json"",
                                                 ""version"": ""12.0.3"",
                                                 ""totalDownloads"": 531607259
@@ -135,6 +143,69 @@ namespace NuGet.CommandLine.Xplat.Tests
                     }}
                 }}";
 
+            string detailedJson = $@"{{
+  ""version"": 1,
+  ""problems"": [],
+  ""searchResult"": [
+    {{
+      ""sourceName"": ""{ServerWithMultipleEndpoints.Uri}v3/index.json"",
+      ""problems"": null,
+      ""packages"": [
+        {{
+          ""description"": ""My description."",
+          ""vulnerable"": null,
+          ""deprecation"": ""This package has been deprecated"",
+          ""projectUrl"": ""http://myuri"",
+          ""total downloads"": 531607259,
+          ""owners"": ""James Newton-King"",
+          ""id"": ""Fake.Newtonsoft.Json"",
+          ""latestVersion"": ""12.0.3""
+        }}
+      ]
+    }}
+  ]
+}}";
+
+            string normalJson = $@"{{
+  ""version"": 1,
+  ""problems"": [],
+  ""searchResult"": [
+    {{
+      ""sourceName"": ""{ServerWithMultipleEndpoints.Uri}v3/index.json"",
+      ""problems"": null,
+      ""packages"": [
+        {{
+          ""total downloads"": 531607259,
+          ""owners"": ""James Newton-King"",
+          ""id"": ""Fake.Newtonsoft.Json"",
+          ""latestVersion"": ""12.0.3""
+        }}
+      ]
+    }}
+  ]
+}}";
+
+            string minimalJson = $@"{{
+  ""version"": 1,
+  ""problems"": [],
+  ""searchResult"": [
+    {{
+      ""sourceName"": ""{ServerWithMultipleEndpoints.Uri}v3/index.json"",
+      ""problems"": null,
+      ""packages"": [
+        {{
+          ""id"": ""Fake.Newtonsoft.Json"",
+          ""latestVersion"": ""12.0.3""
+        }}
+      ]
+    }}
+  ]
+}}";
+
+            ExpectedSearchResultDetailed = NormalizeNewlines(detailedJson);
+            ExpectedSearchResultMinimal = NormalizeNewlines(minimalJson);
+            ExpectedSearchResultNormal = NormalizeNewlines(normalJson);
+
             ServerWithMultipleEndpoints.Get.Add("/v3/index.json", r => index);
             ServerWithMultipleEndpoints.Get.Add("/v3/indexWithNoSearchResource.json", r => indexWithNoSearchResource);
             ServerWithMultipleEndpoints.Get.Add($"/search/query?q=json&skip=0&take=10&prerelease=true&semVerLevel=2.0.0", r => SinglePackageQueryResponse);
@@ -143,6 +214,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             ServerWithMultipleEndpoints.Get.Add($"/search/query?q=json&skip=10&take=20&prerelease=false&semVerLevel=2.0.0", r => SinglePackageQueryResponse);
             ServerWithMultipleEndpoints.Get.Add($"/v3/registration5-semver1/fake.newtonsoft.json/index.json", r => ExactMatchMetadataResponse);
             ServerWithMultipleEndpoints.Start();
+        }
+
+        internal string NormalizeNewlines(string input)
+        {
+            return input.Replace("\r\n", "\n").Replace("\r", "\n");
         }
     }
 }

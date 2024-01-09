@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.XPlat
             Register(rootCommand, getLogger, SetupSettingsAndRunSearchAsync);
         }
 
-        public static void Register(CliCommand rootCommand, Func<ILoggerWithColor> getLogger, Func<PackageSearchArgs, CancellationToken, Task<int>> setupSettingsAndRunSearchAsync)
+        public static void Register(CliCommand rootCommand, Func<ILoggerWithColor> getLogger, Func<PackageSearchArgs, string, CancellationToken, Task<int>> setupSettingsAndRunSearchAsync)
         {
             var searchCommand = new CliCommand("search", Strings.pkgSearch_Description);
 
@@ -66,6 +66,24 @@ namespace NuGet.CommandLine.XPlat
                 Arity = ArgumentArity.ExactlyOne
             };
 
+            var format = new CliOption<string>("--format")
+            {
+                Description = Strings.pkgSearch_FormatDescription,
+                Arity = ArgumentArity.ExactlyOne
+            };
+
+            var verbosity = new CliOption<string>("--verbosity")
+            {
+                Description = Strings.pkgSearch_VerbosityDescription,
+                Arity = ArgumentArity.ExactlyOne
+            };
+
+            var configFile = new CliOption<string>("--configfile")
+            {
+                Description = Strings.Option_ConfigFile,
+                Arity = ArgumentArity.ExactlyOne
+            };
+
             var help = new HelpOption()
             {
                 Arity = ArgumentArity.Zero
@@ -78,6 +96,9 @@ namespace NuGet.CommandLine.XPlat
             searchCommand.Options.Add(interactive);
             searchCommand.Options.Add(take);
             searchCommand.Options.Add(skip);
+            searchCommand.Options.Add(format);
+            searchCommand.Options.Add(verbosity);
+            searchCommand.Options.Add(configFile);
             searchCommand.Options.Add(help);
 
             searchCommand.SetAction(async (parserResult, cancelationToken) =>
@@ -86,7 +107,7 @@ namespace NuGet.CommandLine.XPlat
 
                 try
                 {
-                    var packageSearchArgs = new PackageSearchArgs(parserResult.GetValue(skip), parserResult.GetValue(take))
+                    var packageSearchArgs = new PackageSearchArgs(parserResult.GetValue(skip), parserResult.GetValue(take), parserResult.GetValue(format), parserResult.GetValue(verbosity))
                     {
                         Sources = parserResult.GetValue(sources),
                         SearchTerm = parserResult.GetValue(searchTerm),
@@ -96,7 +117,7 @@ namespace NuGet.CommandLine.XPlat
                         Logger = logger,
                     };
 
-                    return await setupSettingsAndRunSearchAsync(packageSearchArgs, cancelationToken);
+                    return await setupSettingsAndRunSearchAsync(packageSearchArgs, parserResult.GetValue(configFile), cancelationToken);
                 }
                 catch (ArgumentException ex)
                 {
@@ -108,13 +129,13 @@ namespace NuGet.CommandLine.XPlat
             rootCommand.Subcommands.Add(searchCommand);
         }
 
-        public static async Task<int> SetupSettingsAndRunSearchAsync(PackageSearchArgs packageSearchArgs, CancellationToken cancellationToken)
+        public static async Task<int> SetupSettingsAndRunSearchAsync(PackageSearchArgs packageSearchArgs, string configFile, CancellationToken cancellationToken)
         {
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageSearchArgs.Logger, !packageSearchArgs.Interactive);
 
             ISettings settings = Settings.LoadDefaultSettings(
                 Directory.GetCurrentDirectory(),
-                configFileName: null,
+                configFileName: configFile,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
 

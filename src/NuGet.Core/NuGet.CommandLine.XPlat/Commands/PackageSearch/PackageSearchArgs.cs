@@ -19,16 +19,20 @@ namespace NuGet.CommandLine.XPlat
         public bool Interactive { get; set; }
         public ILoggerWithColor Logger { get; set; }
         public string SearchTerm { get; set; }
+        public PackageSearchVerbosity Verbosity { get; set; } = PackageSearchVerbosity.Normal;
+        public PackageSearchFormat Format { get; set; } = PackageSearchFormat.Table;
 
-        public PackageSearchArgs(string skip, string take)
+        public PackageSearchArgs(string skip, string take, string format, string verbosity)
         {
-            Skip = VerifyInt(skip, DefaultSkip);
-            Take = VerifyInt(take, DefaultTake);
+            Skip = VerifyInt(skip, DefaultSkip, "--skip");
+            Take = VerifyInt(take, DefaultTake, "--take");
+            Format = GetFormatFromOption(format);
+            Verbosity = GetVerbosityFromOption(verbosity);
         }
 
         public PackageSearchArgs() { }
 
-        public int VerifyInt(string number, int defaultValue)
+        private int VerifyInt(string number, int defaultValue, string option)
         {
             if (string.IsNullOrEmpty(number))
             {
@@ -40,7 +44,31 @@ namespace NuGet.CommandLine.XPlat
                 return verifiedNumber;
             }
 
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, number));
+            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidOptionValue, number, option));
+        }
+
+        private PackageSearchFormat GetFormatFromOption(string format)
+        {
+            PackageSearchFormat packageSearchFormat = PackageSearchFormat.Table;
+
+            if (!string.IsNullOrEmpty(format) && !Enum.TryParse(format, ignoreCase: true, out packageSearchFormat))
+            {
+                packageSearchFormat = PackageSearchFormat.Table;
+            }
+
+            return packageSearchFormat;
+        }
+
+        private PackageSearchVerbosity GetVerbosityFromOption(string verbosity)
+        {
+            PackageSearchVerbosity packageSearchVerbosity = PackageSearchVerbosity.Normal;
+
+            if (!string.IsNullOrEmpty(verbosity) && !Enum.TryParse(verbosity, ignoreCase: true, out packageSearchVerbosity))
+            {
+                packageSearchVerbosity = PackageSearchVerbosity.Normal;
+            }
+
+            return packageSearchVerbosity;
         }
     }
 }

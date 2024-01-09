@@ -28,11 +28,17 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="source">The source</param>
         /// <param name="error">The error message to be rendered</param>
         /// <returns></returns>
-        void Add(PackageSource source, string error);
+        void Add(PackageSource source, PackageSearchProblem packageSearchProblem);
 
         /// <summary>
         /// Finishes the rendering operation.
         /// </summary>
         void Finish();
+
+        /// <summary>
+        ///  Renders a problem that prevented the search from happening at all.
+        /// </summary>
+        /// <param name="packageSearchProblem"></param>
+        void RenderProblem(PackageSearchProblem packageSearchProblem);
     }
 }

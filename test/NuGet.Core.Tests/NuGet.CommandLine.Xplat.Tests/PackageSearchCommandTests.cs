@@ -135,7 +135,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string take = "invalid";
-            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, take);
+            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidOptionValue, take, "--take");
 
             // Act
             var exitCode = RootCommand.Parse(new[] { "search", searchTerm, "--take", take }).Invoke();
@@ -152,7 +152,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
             string searchTerm = "nuget";
             string skip = "invalid";
-            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_invalid_number, skip);
+            string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidOptionValue, skip, "--skip");
 
             // Act
             var exitCode = RootCommand.Parse(new[] { "search", searchTerm, "--skip", skip }).Invoke();
@@ -160,6 +160,110 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Assert
             Assert.Equal(1, exitCode);
             Assert.Contains(expectedError, StoredErrorMessage);
+        }
+
+        [Fact]
+        public void Register_withFormatTableOption_SetsFormat()
+        {
+            // Arrange
+            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+
+            // Act
+            RootCommand.Parse(new[] { "search", "--format", "table" }).Invoke();
+
+            // Assert
+            Assert.Equal(PackageSearchFormat.Table, CapturedArgs.Format);
+        }
+
+        [Fact]
+        public void Register_withFormatJsonOption_SetsFormat()
+        {
+            // Arrange
+            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+
+            // Act
+            RootCommand.Parse(new[] { "search", "--format", "json" }).Invoke();
+
+            // Assert
+            Assert.Equal(PackageSearchFormat.Json, CapturedArgs.Format);
+        }
+
+        [Fact]
+        public void Register_withInvalidFormattingOption_DefaultsTable()
+        {
+            // Arrange
+            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            string invalidFormat = "invalid";
+
+            // Act
+            var exitCode = RootCommand.Parse(new[] { "search", "--format", invalidFormat }).Invoke();
+
+            // Assert
+            Assert.Equal(0, exitCode);
+            Assert.Equal(PackageSearchFormat.Table, CapturedArgs.Format);
+        }
+
+        [Theory]
+        [InlineData("minimal")]
+        [InlineData("MinImal")]
+        [InlineData("MINIMAL")]
+        public void Register_withVerbosityMinimalOption_SetsFormat(string minimal)
+        {
+            // Arrange
+            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+
+            // Act
+            RootCommand.Parse(new[] { "search", "--verbosity", minimal }).Invoke();
+
+            // Assert
+            Assert.Equal(PackageSearchVerbosity.Minimal, CapturedArgs.Verbosity);
+        }
+
+        [Theory]
+        [InlineData("normal")]
+        [InlineData("NorMal")]
+        [InlineData("NORMAL")]
+        public void Register_withVerbosityNormalOption_SetsFormat(string normal)
+        {
+            // Arrange
+            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+
+            // Act
+            RootCommand.Parse(new[] { "search", "--verbosity", normal }).Invoke();
+
+            // Assert
+            Assert.Equal(PackageSearchVerbosity.Normal, CapturedArgs.Verbosity);
+        }
+
+        [Theory]
+        [InlineData("detailed")]
+        [InlineData("DEtaiLed")]
+        [InlineData("DETAILED")]
+        public void Register_withVerbosityDetailedOption_SetsFormat(string detailed)
+        {
+            // Arrange
+            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+
+            // Act
+            RootCommand.Parse(new[] { "search", "--verbosity", detailed }).Invoke();
+
+            // Assert
+            Assert.Equal(PackageSearchVerbosity.Detailed, CapturedArgs.Verbosity);
+        }
+
+        [Fact]
+        public void Register_withInvalidVerbosityOption_DefaultsNormal()
+        {
+            // Arrange
+            Register(RootCommand, GetLogger, SetupSettingsAndRunSearchAsync);
+            string invalidFormat = "invalid";
+
+            // Act
+            var exitCode = RootCommand.Parse(new[] { "search", "--verbosity", invalidFormat }).Invoke();
+
+            // Assert
+            Assert.Equal(0, exitCode);
+            Assert.Equal(PackageSearchVerbosity.Normal, CapturedArgs.Verbosity);
         }
 
         [Theory]
