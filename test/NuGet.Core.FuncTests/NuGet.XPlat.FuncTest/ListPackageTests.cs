@@ -250,32 +250,25 @@ namespace NuGet.XPlat.FuncTest
 
             static async Task RestoreProjectsAsync(SimpleTestPathContext pathContext, SimpleTestProjectContext projectA, SimpleTestProjectContext projectB)
             {
-                var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(pathContext.NuGetConfig), Path.GetFileName(pathContext.NuGetConfig), null);
+                var settings = Settings.LoadDefaultSettings(Path.GetDirectoryName(pathContext.SolutionRoot), Path.GetFileName(pathContext.NuGetConfig), null);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 var sources = packageSourceProvider.LoadPackageSources();
-                var fallbackFolders = (IList<string>)SettingsUtility.GetFallbackPackageFolders(settings);
-                var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
 
-                await RestoreProjectAsync(settings, pathContext, projectA, sources, fallbackFolders, globalPackagesFolder);
-                await RestoreProjectAsync(settings, pathContext, projectB, sources, fallbackFolders, globalPackagesFolder);
+                await RestoreProjectAsync(settings, pathContext, projectA, sources);
+                await RestoreProjectAsync(settings, pathContext, projectB, sources);
             }
 
             static async Task RestoreProjectAsync(ISettings settings,
                 SimpleTestPathContext pathContext,
                 SimpleTestProjectContext project,
-                IEnumerable<PackageSource> packageSources,
-                IList<string> fallbackFolders,
-                string globalpackagesFolder)
+                IEnumerable<PackageSource> packageSources)
             {
-                project.Sources = packageSources;
-                project.FallbackFolders = (IList<string>)SettingsUtility.GetFallbackPackageFolders(settings);
-                project.GlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
-                project.Save();
+                var packageSpec = ProjectTestHelpers.WithSettingsBasedRestoreMetadata(project.PackageSpec, settings);
 
                 var logger = new TestLogger();
 
-                var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project.PackageSpec));
+                var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec));
                 var restoreResult = await command.ExecuteAsync(CancellationToken.None);
                 await restoreResult.CommitAsync(logger, CancellationToken.None);
                 Assert.True(restoreResult.Success, userMessage: logger.ShowMessages());
