@@ -897,18 +897,22 @@ namespace NuGet.Tests.Apex
             CommonUtility.WaitForDirectoryExists(installedPackageFolderPath);
         }
 
-        [DataTestMethod]
+        [TestMethod]
+        [DataRow(ProjectTemplate.NetCoreConsoleApp)]
+        [DataRow(ProjectTemplate.ConsoleApplication)]
         [Timeout(DefaultTimeout)]
-        public async Task VerifyRestorePackageByBuilding()
+        public async Task VerifyPackageRestoredByBuilding(ProjectTemplate projectTemplate)
         {
             // Arrange
+            string packageFolderPath;
+            string installedPackageFolderPath;
             await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
 
             NuGetApexTestService nugetTestService = GetNuGetTestService();
 
             SolutionService solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
-            ProjectTestExtension project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V48, "TestProject");
+            ProjectTestExtension project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, "TestProject");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
@@ -916,17 +920,81 @@ namespace NuGet.Tests.Apex
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
 
-            var packageFolderPath = _pathContext.PackagesV2;
-            var installedPackageFolderPath = Path.Combine(packageFolderPath, "Contoso.A.1.0.0");
+            if (projectTemplate.Equals(ProjectTemplate.NetCoreConsoleApp))
+            {
+                packageFolderPath = _pathContext.UserPackagesFolder;
+                installedPackageFolderPath = Path.Combine(packageFolderPath, TestPackageName);
+            }
+            else
+            {
+                packageFolderPath = _pathContext.PackagesV2;
+                installedPackageFolderPath = Path.Combine(packageFolderPath, "Contoso.A.1.0.0");
+            }
+
             Directory.Exists(installedPackageFolderPath).Should().BeTrue();
 
-            // Act
+            // Act (we doesn't edit the "nuget.config" file by setting the "automatic" to "true" since it is enabled by default)
             Directory.Delete(packageFolderPath, true);
             Directory.Exists(packageFolderPath).Should().BeFalse();
             solutionService.Build();
 
             // Assert
             Directory.Exists(installedPackageFolderPath).Should().BeTrue();
+        }
+
+
+        [DataTestMethod]
+        [Timeout(DefaultTimeout)]
+        public void VerifyPackageNotRestoredAfterDisablingPackageRestore()
+        {
+            // Arrange
+            EnsureVisualStudioHost();
+
+            SolutionService solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.IOSLibraryApp, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            _pathContext.Settings.DisableAutoRestore();
+            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
+
+            // Assert
+            VisualStudio.AssertErrorListContainsSpecificError("NuGet restore is currently disabled.");
+        }
+
+        [DataTestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task VerifyPackageNotRestoredAfterDisablingAutomaticInPackageRestoreSection()
+        {
+            // Arrange
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
+
+            SolutionService solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            ProjectTestExtension project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreConsoleApp, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+            NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+
+            // Act
+            _pathContext.Settings.DisableAutomaticInPackageRestoreSection();
+
+            var installedPackageFolderPath = Path.Combine(_pathContext.UserPackagesFolder, TestPackageName);
+            Directory.Exists(installedPackageFolderPath).Should().BeTrue();
+            Directory.Delete(installedPackageFolderPath, true);
+            Directory.Exists(installedPackageFolderPath).Should().BeFalse();
+
+            solutionService.Build();
+
+            // Assert
+            Directory.Exists(installedPackageFolderPath).Should().BeFalse();
         }
     }
 }
