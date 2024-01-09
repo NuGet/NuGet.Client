@@ -6,7 +6,7 @@
     <NewtonsoftJsonPackageVersion Condition="'$(NewtonsoftJsonPackageVersion)' == ''">13.0.3</NewtonsoftJsonPackageVersion>
     <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">7.0.3</SystemTextJsonVersion>
     <SystemPackagesVersion Condition="'$(SystemPackagesVersion)' == ''">4.3.0</SystemPackagesVersion>
-    <VSFrameworkVersion Condition="'$(VSFrameworkVersion)' == ''">17.4.33103.184</VSFrameworkVersion>
+    <VSFrameworkVersion Condition="'$(VSFrameworkVersion)' == ''">17.6.36389</VSFrameworkVersion>
     <VSServicesVersion Condition="'$(VSServicesVersion)' == ''">16.153.0</VSServicesVersion>
     <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == ''">2.0.0-beta4.23307.1</SystemCommandLineVersion>
     <!-- Default MSBuild version -->
@@ -128,7 +128,7 @@
               '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Contracts.csproj' OR
               '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Interop.csproj' OR
               '$(MSBuildProjectFile)' == 'NuGet.SolutionRestoreManager.Interop.csproj'">
-    <PackageVersion Include="Microsoft.ServiceHub.Framework" Version="4.1.112" />
+    <PackageVersion Include="Microsoft.ServiceHub.Framework" Version="4.2.102" />
     <PackageVersion Include="Microsoft.VisualStudio.ComponentModelHost" Version="17.4.255" />
     <PackageVersion Update="Microsoft.VisualStudio.SDK" Version="" />
     <PackageVersion Include="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
