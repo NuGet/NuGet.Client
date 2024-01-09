@@ -42,18 +42,9 @@ namespace NuGet.ProjectModel
 
             //We want to read the property name right away
             var propertyName = reader.GetString();
-#pragma warning disable CA1307 // Specify StringComparison
-            int slashIndex = propertyName.IndexOf('/');
-#pragma warning restore CA1307 // Specify StringComparison
-            if (slashIndex == -1)
-            {
-                lockFileTargetLibrary.Name = propertyName;
-            }
-            else
-            {
-                lockFileTargetLibrary.Name = propertyName.Substring(0, slashIndex);
-                lockFileTargetLibrary.Version = NuGetVersion.Parse(propertyName.Substring(slashIndex + 1));
-            }
+            var (targetLibraryName, version) = propertyName.SplitInTwo('/');
+            lockFileTargetLibrary.Name = targetLibraryName;
+            lockFileTargetLibrary.Version = version is null ? null : NuGetVersion.Parse(version);
 
             reader.Read();
             if (reader.TokenType != JsonTokenType.StartObject)
