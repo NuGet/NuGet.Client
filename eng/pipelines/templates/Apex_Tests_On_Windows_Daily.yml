@@ -50,7 +50,6 @@ stages:
       testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
       testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
       testAgentElevated: true
-      testCaseMaximumRerunAttempts: 2
       preTestMachineConfigurationStepList: 
         - download: ComponentBuildUnderTest
           artifact: MicroBuildOutputs
@@ -63,7 +62,7 @@ stages:
             targetType: 'inline'
             script: |
               try {
-              Write-Host "Set VSBranch, VsTargetChannel &  VsTargetMajorVersion variables"
+              Write-Host "Set VsBootstrapperUrl variables"
               $bootstrapperInfoJsonFilePath = "$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\BootstrapperInfo.json"
 
               Write-Host "BootstrapperInfo.json drop URI:  $bootstrapperInfoJsonFilePath"
@@ -96,8 +95,6 @@ stages:
               } catch {
               Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
               }
-        - powershell: |
-            Write-Host $(setcloudbuildsessionid.QBuildSessionId)
 
         - task: PowerShell@2
           displayName: "Set Base Build Drop variable for tests"
@@ -118,12 +115,6 @@ stages:
               } catch {
               Write-Host "##vso[task.LogIssue type=error;]Unable to set Base Build Drop: $_"
               }
-
-        - powershell: |
-            Write-Host $(Setbasebuilddrop.BaseBuildDrop)
-            Write-Host "BaseBuildDrop: $(SetBootstrapperURI.BootstrapperUrl)"
-            Write-Host "BaseBuildDropV: $(VsBootstrapperUrl)"
-            Write-Host "VsBaseBuildDrop: $(VsBaseBuildDrop)"
 
         - template: \steps\powershell\execute-script.yml@DartLabTemplates
           parameters:
@@ -243,14 +234,5 @@ stages:
           inputs:
             scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
       postDeployAndRunTestsStepList:
-        # - task: PowerShell@1
-        #   displayName: "Initialize Git Commit Status on GitHub"
-        #   inputs:
-        #     scriptType: "inlineScript"
-        #     inlineScript: |
-        #       . $(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\PostGitCommitStatus.ps1
-        #       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(GitHubStatusName)"
-        #   condition: "not(eq(variables['ManualGitHubChecks'], 'true'))"
-
         - task: ComponentGovernanceComponentDetection@0
           displayName: 'Component Detection'

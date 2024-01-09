@@ -28,3 +28,4 @@ extends:
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
     NuGetLocalizationType: Full
+    isOfficialBuild: true
