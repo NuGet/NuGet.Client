@@ -14,10 +14,9 @@ namespace NuGet.ProjectModel
             {
                 return (s, null);
             }
-#if NETCORE5_0
+#if NETCOREAPP2_1_OR_GREATER
             var index = s.IndexOf(separator, StringComparison.OrdinalIgnoreCase);
-#endif
-#if NETFRAMEWORK || NETSTANDARD
+#else
             var index = s.IndexOf(separator.ToString(), StringComparison.OrdinalIgnoreCase);
 #endif
             if (index == -1)
