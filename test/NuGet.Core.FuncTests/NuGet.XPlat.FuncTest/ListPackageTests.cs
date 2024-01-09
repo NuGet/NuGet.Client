@@ -273,10 +273,12 @@ namespace NuGet.XPlat.FuncTest
                 project.GlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
                 project.Save();
 
-                var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, NullLogger.Instance, project.PackageSpec));
+                var logger = new TestLogger();
+
+                var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project.PackageSpec));
                 var restoreResult = await command.ExecuteAsync(CancellationToken.None);
-                await restoreResult.CommitAsync(NullLogger.Instance, CancellationToken.None);
-                Assert.True(restoreResult.Success);
+                await restoreResult.CommitAsync(logger, CancellationToken.None);
+                Assert.True(restoreResult.Success, userMessage: logger.ShowMessages());
             }
         }
 
