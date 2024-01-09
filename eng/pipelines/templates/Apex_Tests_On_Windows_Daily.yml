@@ -1,6 +1,4 @@
 parameters:
-  - name: dependsOn
-    type: object
   - name: DartLabEnvironment
     type: string
   - name: condition
@@ -23,7 +21,6 @@ stages:
       name: VS_Apex_Tests
       displayName: Apex Tests On Windows
       condition: ${{parameters.condition}}
-      dependsOn: ${{parameters.dependsOn}}
       variables:
         - name: VsBootstrapperUrl
           value: $[dependencies.TestMachineConfiguration.outputs['SetBootstrapperURI.BootstrapperUrl']]
