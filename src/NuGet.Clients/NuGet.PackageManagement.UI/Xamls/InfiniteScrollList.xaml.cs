@@ -375,6 +375,7 @@ namespace NuGet.PackageManagement.UI
                     else
                     {
                         Items.Remove(_loadingStatusIndicator);
+                        Items.Remove(_loadingVulnerabilitiesStatusIndicator);
                     }
                 }
             }
@@ -738,7 +739,7 @@ namespace NuGet.PackageManagement.UI
                 var first = _scrollViewer.VerticalOffset;
                 var last = _scrollViewer.ViewportHeight + first;
 
-                if (_scrollViewer.ViewportHeight > 0 && last >= PackageItems.Count())
+                if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
                         LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
