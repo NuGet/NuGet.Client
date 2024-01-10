@@ -668,7 +668,7 @@ namespace NuGet.Configuration
             }
 
             var isDirty = false;
-            var existingSettingsLookup = GetExistingSettingsLookup();
+            var existingSettingsLookup = GetExistingSettingsLookup(includeReadOnly: true, includeIsMachineWide: true);
 
             var disabledSourcesSection = Settings.GetSection(ConfigurationConstants.DisabledPackageSources);
             var existingDisabledSources = disabledSourcesSection?.Items.OfType<AddItem>();
@@ -764,10 +764,28 @@ namespace NuGet.Configuration
 
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()
         {
+            return GetExistingSettingsLookup(includeReadOnly: false, includeIsMachineWide: false);
+        }
+
+        private Dictionary<string, SourceItem> GetExistingSettingsLookup(bool includeReadOnly, bool includeIsMachineWide)
+        {
             var sourcesSection = Settings.GetSection(ConfigurationConstants.PackageSources);
-            var existingSettings = sourcesSection?.Items.OfType<SourceItem>().Where(
-                c => !(c.Origin == null || c.Origin.IsReadOnly || c.Origin.IsMachineWide))
-                .ToList();
+            List<SourceItem> existingSettings = null;
+
+            IEnumerable<SourceItem> existingSourceItems = sourcesSection?.Items.OfType<SourceItem>()
+                .Where(c => c.Origin != null);
+
+            if (!includeReadOnly)
+            {
+                existingSourceItems = existingSourceItems.Where(c => !c.Origin.IsReadOnly);
+            }
+
+            if (!includeIsMachineWide)
+            {
+                existingSourceItems = existingSourceItems.Where(c => !c.Origin.IsMachineWide);
+            }
+
+            existingSettings = existingSourceItems.ToList();
 
             var existingSettingsLookup = new Dictionary<string, SourceItem>(StringComparer.OrdinalIgnoreCase);
             if (existingSettings != null)
