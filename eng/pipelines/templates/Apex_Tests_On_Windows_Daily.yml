@@ -1,6 +1,4 @@
 parameters:
-  - name: dependsOn
-    type: object
   - name: DartLabEnvironment
     type: string
   - name: condition
@@ -23,7 +21,6 @@ stages:
       name: VS_Apex_Tests
       displayName: Apex Tests On Windows
       condition: ${{parameters.condition}}
-      dependsOn: ${{parameters.dependsOn}}
       variables:
         - name: VsBootstrapperUrl
           value: $[dependencies.TestMachineConfiguration.outputs['SetBootstrapperURI.BootstrapperUrl']]
@@ -89,8 +86,7 @@ stages:
                 $json = Get-Content "$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\Bootstrapperinfo.json" | ConvertFrom-Json
                 $qBuildSessionId = $json[0].QBuildSessionId;
                 Write-Host "CloudBuild Session ID: $qBuildSessionId"
-                # Set-AzurePipelinesVariable 'QBuildSessionId' $qBuildSessionId
-                # Set-AzurePipelinesVariable -IsOutput 'BuildSessionId' $qBuildSessionId
+
                 Write-Host "##vso[task.setvariable variable=QBuildSessionId;isOutput=true]$qBuildSessionId"
               } catch {
               Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
@@ -107,7 +103,6 @@ stages:
                 $json = Get-Content "$(Pipeline.Workspace)\ComponentBuildUnderTest\MicroBuildOutputs\Bootstrapperinfo.json" | ConvertFrom-Json
                 $buildDrop = $json[0].BuildDrop;
                 Write-Host "Base Build Drop: $buildDrop"
-                # Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
 
                 Set-AzurePipelinesVariable 'VsBaseBuildDrop' $buildDrop
                 Set-AzurePipelinesVariable -IsOutput 'BaseBuildDrop' $buildDrop

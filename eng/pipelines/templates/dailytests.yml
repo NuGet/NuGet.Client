@@ -42,36 +42,10 @@ variables:
   Codeql.TSAEnabled: ${{ parameters.isOfficialBuild }}
 
 stages:
-- stage: Initialize
-  jobs:
-  - job: GetSemanticVersion
-    displayName: Get NuGet.Client semantic version
-    timeoutInMinutes: 10
-    pool:
-      vmImage: windows-latest
-    steps:
-    - template: Initialize_Build_SemanticVersion.yml
-    - task: DownloadPipelineArtifact@2
-      displayName: "Download symbols - NonRTM artifact"
-      inputs:
-        source: 'specific'
-        project: "devdiv"
-        pipeline: "NuGet.Client-Official"
-        artifact: "symbols - NonRTM"
-        path: $(Pipeline.Workspace)\symbols\NonRTM
-    - task: PowerShell@1
-      displayName: "Print content in folder"
-      inputs:
-        scriptType: "inlineScript"
-        inlineScript: |
-          Get-ChildItem $(Pipeline.Workspace)\symbols\NonRTM
-
 # Dartlab's template defines this in its own stage
 - template: Apex_Tests_On_Windows_Daily.yml
   parameters:
     condition: "succeeded()"
-    dependsOn:
-      - Initialize
     isOfficialBuild: ${{parameters.isOfficialBuild}}
     dartLabEnvironment: ${{parameters.DartLabEnvironment}}
     testExecutionJobTimeoutInMinutes: 150
