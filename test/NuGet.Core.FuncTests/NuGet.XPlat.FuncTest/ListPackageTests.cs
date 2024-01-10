@@ -203,6 +203,7 @@ namespace NuGet.XPlat.FuncTest
             await RestoreProjectsAsync(pathContext, projectA, projectB);
 
             // Act
+            var logger = new TestLogger();
             ListPackageCommandRunner listPackageCommandRunner = new();
             var packageRefArgs = new ListPackageArgs(
                                         path: Path.Combine(pathContext.SolutionRoot, "solution.sln"),
@@ -214,13 +215,13 @@ namespace NuGet.XPlat.FuncTest
                                         prerelease: false,
                                         highestPatch: false,
                                         highestMinor: false,
-                                        logger: NullLogger.Instance,
+                                        logger: logger,
                                         cancellationToken: CancellationToken.None);
 
             int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
 
             // Assert
-            Assert.Equal(0, result);
+            Assert.True(result == 0, userMessage: logger.ShowMessages());
             // GetCredentialsAsync should be called once during restore
             mockedCredentialService.Verify(x => x.GetCredentialsAsync(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<CredentialRequestType>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
             // TryGetLastKnownGoodCredentialsFromCache should be called twice during restore and once during list package.Hence total 3 times.
