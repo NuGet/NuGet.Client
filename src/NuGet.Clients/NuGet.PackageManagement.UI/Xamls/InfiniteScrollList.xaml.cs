@@ -738,7 +738,6 @@ namespace NuGet.PackageManagement.UI
             {
                 var first = _scrollViewer.VerticalOffset;
                 var last = _scrollViewer.ViewportHeight + first;
-
                 if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
